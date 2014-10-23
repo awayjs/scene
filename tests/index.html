@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+
+    <style>
+
+        body
+        {
+            height: 100%;
+        }
+
+    </style>
+
+    <script type="text/javascript" language="javascript" src="AppHarness.js"></script>
+
+    <script type="text/javascript">
+
+
+        window.onload = function ()
+        {
+            var harness = new AppHarness();
+
+            //---------------------------------------------------------------------------
+            // Test - Entities
+            //---------------------------------------------------------------------------
+
+            harness.addSeperator( 'Entities' );
+            harness.addTest( 'Entities.BillboardEntityTest'    ,  'tests.entities.BillboardEntityTest'  , 'entities/BillboardEntityTest.js'    , 'entities/BillboardEntityTest.ts'  );
+            harness.addTest( 'Entities.LayoutTest'    ,  'tests.entities.LayoutTest'  , 'entities/LayoutTest.js'    , 'entities/LayoutTest.ts'  );
+
+
+            //---------------------------------------------------------------------------
+            // Load a default
+            harness.load( 'tests.entities.BillboardEntityTest', 'entities/BillboardEntityTest.js'     , 'entities/BillboardEntityTest.ts'  );
+            harness.start(); // Start
+
+        }
+
+
+    </script>
+</head>
+
+</head>
+<body>
+
+</body>
+</html>
