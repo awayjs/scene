@@ -1,22 +1,23 @@
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import Event					= require("awayjs-core/lib/events/Event");
-import AssetType				= require("awayjs-core/lib/library/AssetType");
-import IAsset					= require("awayjs-core/lib/library/IAsset");
-import NamedAssetBase			= require("awayjs-core/lib/library/NamedAssetBase");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Event						= require("awayjs-core/lib/events/Event");
+import AssetType					= require("awayjs-core/lib/library/AssetType");
+import IAsset						= require("awayjs-core/lib/library/IAsset");
+import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+import Texture2DBase				= require("awayjs-core/lib/textures/Texture2DBase");
 
-import IAnimationSet			= require("awayjs-display/lib/animators/IAnimationSet");
-import IAnimator				= require("awayjs-display/lib/animators/IAnimator");
-import BlendMode				= require("awayjs-display/lib/base/BlendMode");
-import IMaterialOwner			= require("awayjs-display/lib/base/IMaterialOwner");
-import IStage					= require("awayjs-display/lib/base/IStage");
-import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
-import IMaterialData			= require("awayjs-display/lib/pool/IMaterialData");
-import IMaterialPassData		= require("awayjs-display/lib/pool/IMaterialPassData");
-import Camera					= require("awayjs-display/lib/entities/Camera");
-import MaterialEvent			= require("awayjs-display/lib/events/MaterialEvent");
-import LightPickerBase			= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-import IMaterialPass			= require("awayjs-display/lib/materials/passes/IMaterialPass");
-import Texture2DBase			= require("awayjs-core/lib/textures/Texture2DBase");
+import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
+import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
+import BlendMode					= require("awayjs-display/lib/base/BlendMode");
+import IMaterialOwner				= require("awayjs-display/lib/base/IMaterialOwner");
+import IStage						= require("awayjs-display/lib/base/IStage");
+import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
+import IMaterialData				= require("awayjs-display/lib/pool/IMaterialData");
+import IMaterialPassData			= require("awayjs-display/lib/pool/IMaterialPassData");
+import Camera						= require("awayjs-display/lib/entities/Camera");
+import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
+import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+import IMaterialPass				= require("awayjs-display/lib/materials/passes/IMaterialPass");
+import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 
 
 /**
@@ -478,9 +479,9 @@ class MaterialBase extends NamedAssetBase implements IAsset
 	 * @param camera The camera from which the scene is viewed.
 	 * @private
 	 */
-	public _iActivatePass(pass:IMaterialPassData, stage:IStage, camera:Camera) // ARCANE
+	public _iActivatePass(pass:IMaterialPassData, renderer:IRenderer, camera:Camera) // ARCANE
 	{
-		pass.materialPass._iActivate(pass, stage, camera);
+		pass.materialPass._iActivate(pass, renderer, camera);
 	}
 
 	/**
@@ -490,9 +491,9 @@ class MaterialBase extends NamedAssetBase implements IAsset
 	 *
 	 * @internal
 	 */
-	public _iDeactivatePass(pass:IMaterialPassData, stage:IStage) // ARCANE
+	public _iDeactivatePass(pass:IMaterialPassData, renderer:IRenderer) // ARCANE
 	{
-		pass.materialPass._iDeactivate(pass, stage);
+		pass.materialPass._iDeactivate(pass, renderer);
 	}
 
 	/**

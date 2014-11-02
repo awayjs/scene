@@ -11891,8 +11891,8 @@ var MaterialBase = (function (_super) {
      * @param camera The camera from which the scene is viewed.
      * @private
      */
-    MaterialBase.prototype._iActivatePass = function (pass, stage, camera) {
-        pass.materialPass._iActivate(pass, stage, camera);
+    MaterialBase.prototype._iActivatePass = function (pass, renderer, camera) {
+        pass.materialPass._iActivate(pass, renderer, camera);
     };
     /**
      * Clears the render state for a pass. This needs to be called before activating another pass.
@@ -11901,8 +11901,8 @@ var MaterialBase = (function (_super) {
      *
      * @internal
      */
-    MaterialBase.prototype._iDeactivatePass = function (pass, stage) {
-        pass.materialPass._iDeactivate(pass, stage);
+    MaterialBase.prototype._iDeactivatePass = function (pass, renderer) {
+        pass.materialPass._iDeactivate(pass, renderer);
     };
     /**
      * Renders the current pass. Before calling renderPass, activatePass needs to be called with the same index.

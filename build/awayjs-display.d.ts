@@ -5399,22 +5399,18 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 }
 declare module "awayjs-display/lib/materials/passes/IMaterialPass" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IStage = require("awayjs-display/lib/base/IStage");
 	import IMaterialPassData = require("awayjs-display/lib/pool/IMaterialPassData");
 	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
 	/**
 	 * MaterialPassBase provides an abstract base class for material shader passes. A material pass constitutes at least
 	 * a render call per required renderable.
 	 */
-	interface IMaterialPass extends IEventDispatcher {
-	    /**
-	     * Cleans up any resources used by the current object.
-	     * @param deep Indicates whether other resources should be cleaned up, that could potentially be shared across different instances.
-	     */
-	    dispose(): any;
+	interface IMaterialPass extends IAsset {
 	    /**
 	     * Renders an object to the current render target.
 	     *
@@ -5428,14 +5424,14 @@ declare module "awayjs-display/lib/materials/passes/IMaterialPass" {
 	     * @param camera The camera from which the scene is viewed.
 	     * @private
 	     */
-	    _iActivate(pass: IMaterialPassData, stage: IStage, camera: Camera): any;
+	    _iActivate(pass: IMaterialPassData, renderer: IRenderer, camera: Camera): any;
 	    /**
 	     * Clears the render state for the pass. This needs to be called before activating another pass.
 	     * @param stage The Stage used for rendering
 	     *
 	     * @private
 	     */
-	    _iDeactivate(pass: IMaterialPassData, stage: IStage): any;
+	    _iDeactivate(pass: IMaterialPassData, renderer: IRenderer): any;
 	    /**
 	     * The light picker used by the material to provide lights to the material if it supports lighting.
 	     *
@@ -5476,6 +5472,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
 	import IMaterialOwner = require("awayjs-display/lib/base/IMaterialOwner");
 	import IStage = require("awayjs-display/lib/base/IStage");
@@ -5485,7 +5482,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import IMaterialPass = require("awayjs-display/lib/materials/passes/IMaterialPass");
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
 	/**
 	 * MaterialBase forms an abstract base class for any material.
 	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
@@ -5662,7 +5659,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     * @param camera The camera from which the scene is viewed.
 	     * @private
 	     */
-	    _iActivatePass(pass: IMaterialPassData, stage: IStage, camera: Camera): void;
+	    _iActivatePass(pass: IMaterialPassData, renderer: IRenderer, camera: Camera): void;
 	    /**
 	     * Clears the render state for a pass. This needs to be called before activating another pass.
 	     * @param pass The pass to deactivate.
@@ -5670,7 +5667,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     *
 	     * @internal
 	     */
-	    _iDeactivatePass(pass: IMaterialPassData, stage: IStage): void;
+	    _iDeactivatePass(pass: IMaterialPassData, renderer: IRenderer): void;
 	    /**
 	     * Renders the current pass. Before calling renderPass, activatePass needs to be called with the same index.
 	     * @param pass The pass used to render the renderable.

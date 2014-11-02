@@ -1,9 +1,11 @@
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import IAsset						= require("awayjs-core/lib/library/IAsset");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import ArgumentError				= require("awayjs-core/lib/errors/ArgumentError");
 import Event						= require("awayjs-core/lib/events/Event");
 import IEventDispatcher				= require("awayjs-core/lib/events/IEventDispatcher");
+import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -13,20 +15,14 @@ import IMaterialPassData			= require("awayjs-display/lib/pool/IMaterialPassData"
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
+import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 
 /**
  * MaterialPassBase provides an abstract base class for material shader passes. A material pass constitutes at least
  * a render call per required renderable.
  */
-interface IMaterialPass extends IEventDispatcher
+interface IMaterialPass extends IAsset
 {
-	/**
-	 * Cleans up any resources used by the current object.
-	 * @param deep Indicates whether other resources should be cleaned up, that could potentially be shared across different instances.
-	 */
-	dispose();
-
 	/**
 	 * Renders an object to the current render target.
 	 *
@@ -41,7 +37,7 @@ interface IMaterialPass extends IEventDispatcher
 	 * @param camera The camera from which the scene is viewed.
 	 * @private
 	 */
-	_iActivate(pass:IMaterialPassData, stage:IStage, camera:Camera);
+	_iActivate(pass:IMaterialPassData, renderer:IRenderer, camera:Camera);
 
 	/**
 	 * Clears the render state for the pass. This needs to be called before activating another pass.
@@ -49,7 +45,7 @@ interface IMaterialPass extends IEventDispatcher
 	 *
 	 * @private
 	 */
-	_iDeactivate(pass:IMaterialPassData, stage:IStage);
+	_iDeactivate(pass:IMaterialPassData, renderer:IRenderer);
 
 	/**
 	 * The light picker used by the material to provide lights to the material if it supports lighting.
