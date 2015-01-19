@@ -4,7 +4,6 @@ import IAnimationSet			= require("awayjs-display/lib/animators/IAnimationSet");
 import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
 import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
 import IEntity					= require("awayjs-display/lib/entities/IEntity");
-import IMaterialPass			= require("awayjs-display/lib/materials/passes/IMaterialPass");
 
 /**
  * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.

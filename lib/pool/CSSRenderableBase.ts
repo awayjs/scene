@@ -1,8 +1,8 @@
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 
-import IMaterialOwner				= require("awayjs-display/lib/base/IMaterialOwner");
+import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import RenderablePool				= require("awayjs-display/lib/pool/RenderablePool");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
 /**
@@ -13,7 +13,7 @@ class CSSRenderableBase implements IRenderable
 	/**
 	 *
 	 */
-	private _pool:RenderablePool;
+	private _pool:IRenderablePool;
 
 	/**
 	 *
@@ -53,7 +53,12 @@ class CSSRenderableBase implements IRenderable
 	/**
 	 *
 	 */
-	public materialOwner:IMaterialOwner;
+	public renderObjectId:number;
+
+	/**
+	 *
+	 */
+	public renderableOwner:IRenderableOwner;
 
 	/**
 	 *
@@ -66,13 +71,14 @@ class CSSRenderableBase implements IRenderable
 	 * @param material
 	 * @param animator
 	 */
-	constructor(pool:RenderablePool, sourceEntity:IEntity, materialOwner:IMaterialOwner)
+	constructor(pool:IRenderablePool, sourceEntity:IEntity, renderableOwner:IRenderableOwner)
 	{
 		//store a reference to the pool for later disposal
 		this._pool = pool;
 
 		this.sourceEntity = sourceEntity;
-		this.materialOwner = materialOwner;
+
+		this.renderableOwner = renderableOwner;
 	}
 
 	/**
@@ -80,7 +86,7 @@ class CSSRenderableBase implements IRenderable
 	 */
 	public dispose()
 	{
-		this._pool.disposeItem(this.materialOwner);
+		this._pool.disposeItem(this.renderableOwner);
 	}
 
 	/**

@@ -8,21 +8,16 @@ import IRenderer				= require("awayjs-display/lib/render/IRenderer");
 
 
 /**
- * IMaterialOwner provides an interface for objects that can use materials.
+ * IRenderableOwner provides an interface for objects that can use materials.
  *
- * @interface away.base.IMaterialOwner
+ * @interface away.base.IRenderableOwner
  */
-interface IMaterialOwner extends IAsset
+interface IRenderableOwner extends IAsset
 {
 	/**
 	 * The animation used by the material owner to assemble the vertex code.
 	 */
 	animator:IAnimator;
-
-	/**
-	 * The material with which to render the object.
-	 */
-	material:MaterialBase;
 
 	/**
 	 *
@@ -52,4 +47,4 @@ interface IMaterialOwner extends IAsset
 	_iCollectRenderable(renderer:IRenderer)
 }
 
-export = IMaterialOwner;
+export = IRenderableOwner;

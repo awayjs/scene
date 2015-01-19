@@ -1,4 +1,3 @@
-import IMaterialOwner				= require("awayjs-display/lib/base/IMaterialOwner");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
 /**
@@ -14,21 +13,15 @@ interface IRenderable
 	 */
 	next:IRenderable;
 
-
-	/**
-	 *
-	 */
-	materialId:number;
-
-	/**
-	 *
-	 */
-	materialOwner:IMaterialOwner;
-
 	/**
 	 *
 	 */
 	sourceEntity:IEntity;
+
+	/**
+	 *
+	 */
+	renderObjectId:number;
 
 	/**
 	 *

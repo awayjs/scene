@@ -159,7 +159,7 @@ class CSSDefaultRenderer extends CSSRendererBase implements IRenderer
 		var viewProjection:Matrix3D = entityCollector.camera.viewProjection.clone();
 
 		while (item) {
-			this._activeMaterial = <CSSMaterialBase> item.materialOwner.material;
+			//this._activeMaterial = <CSSMaterialBase> item.materialOwner.material;
 
 			//serialise transform and apply to html element
 			this._transform.copyRawDataFrom(item.renderSceneTransform.rawData);

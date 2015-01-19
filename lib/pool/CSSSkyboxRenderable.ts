@@ -1,5 +1,5 @@
 import CSSRenderableBase			= require("awayjs-display/lib/pool/CSSRenderableBase");
-import RenderablePool				= require("awayjs-display/lib/pool/RenderablePool");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
 
 
@@ -10,7 +10,7 @@ class CSSSkyboxRenderable extends CSSRenderableBase
 {
 	public static id:string = "skybox";
 
-	constructor(pool:RenderablePool, skyBox:Skybox)
+	constructor(pool:IRenderablePool, skyBox:Skybox)
 	{
 		super(pool, skyBox, skyBox);
 
@@ -34,7 +34,7 @@ class CSSSkyboxRenderable extends CSSRenderableBase
 
 		div.appendChild(img);
 
-		img.className = "material" + skyBox.material.id;
+		img.className = "material" + skyBox.id;
 	}
 }
 

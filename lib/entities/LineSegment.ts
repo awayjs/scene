@@ -5,7 +5,7 @@ import AssetType					= require("awayjs-core/lib/library/AssetType");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import IMaterialOwner				= require("awayjs-display/lib/base/IMaterialOwner");
+import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
@@ -15,7 +15,7 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 /**
  * A Line Segment primitive.
  */
-class LineSegment extends DisplayObject implements IEntity, IMaterialOwner
+class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 {
 	private _animator:IAnimator;
 	private _material:MaterialBase;

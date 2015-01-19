@@ -110,14 +110,14 @@ class RenderableMergeSort implements IEntitySorter
 		while (head && headB && head != null && headB != null) {
 
 			// first sort per render order id (reduces program3D switches),
-			// then on material id (reduces setting props),
+			// then on render object id (reduces setting props),
 			// then on zIndex (reduces overdraw)
 			var aid:number = head.renderOrderId;
 			var bid:number = headB.renderOrderId;
 
 			if (aid == bid) {
-				var ma:number = head.materialId;
-				var mb:number = headB.materialId;
+				var ma:number = head.renderObjectId;
+				var mb:number = headB.renderObjectId;
 
 				if (ma == mb) {
 					if (head.zIndex < headB.zIndex)

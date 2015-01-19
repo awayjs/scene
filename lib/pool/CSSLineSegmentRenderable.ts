@@ -1,5 +1,5 @@
 import CSSRenderableBase			= require("awayjs-display/lib/pool/CSSRenderableBase");
-import RenderablePool				= require("awayjs-display/lib/pool/RenderablePool");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import LineSegment					= require("awayjs-display/lib/entities/LineSegment");
 
 /**
@@ -9,7 +9,7 @@ class CSSLineSegmentRenderable extends CSSRenderableBase
 {
 	public static id:string = "lineSegment";
 
-	constructor(pool:RenderablePool, lineSegment:LineSegment)
+	constructor(pool:IRenderablePool, lineSegment:LineSegment)
 	{
 		super(pool, lineSegment, lineSegment);
 

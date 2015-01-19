@@ -1,7 +1,7 @@
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
  * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to

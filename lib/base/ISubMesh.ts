@@ -1,7 +1,7 @@
-import IMaterialOwner			= require("awayjs-display/lib/base/IMaterialOwner");
+import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
  * ISubMesh is an interface for object SubMesh that is used to
@@ -9,11 +9,13 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  *
  * @class away.base.ISubMesh
  */
-interface ISubMesh extends IMaterialOwner
+interface ISubMesh extends IRenderableOwner
 {
 	subGeometry:SubGeometryBase;
 
 	parentMesh:Mesh;
+
+	material:MaterialBase;
 
 	_iIndex:number;
 

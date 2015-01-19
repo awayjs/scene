@@ -171,7 +171,7 @@ class MouseManager
 		if (collider) {
 			// Object.
 			event.object = collider.displayObject;
-			event.materialOwner = collider.materialOwner;
+			event.renderableOwner = collider.renderableOwner;
 			// UV.
 			event.uv = collider.uv;
 			// Position.

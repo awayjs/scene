@@ -1,5 +1,5 @@
 import CSSRenderableBase			= require("awayjs-display/lib/pool/CSSRenderableBase");
-import RenderablePool				= require("awayjs-display/lib/pool/RenderablePool");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import Billboard					= require("awayjs-display/lib/entities/Billboard");
 
 /**
@@ -9,7 +9,7 @@ class CSSBillboardRenderable extends CSSRenderableBase
 {
 	public static id:string = "billboard";
 
-	constructor(pool:RenderablePool, billboard:Billboard)
+	constructor(pool:IRenderablePool, billboard:Billboard)
 	{
 		super(pool, billboard, billboard);
 

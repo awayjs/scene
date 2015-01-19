@@ -2,13 +2,21 @@ import BoundingVolumeBase			= require("awayjs-core/lib/bounds/BoundingVolumeBase
 import NullBounds					= require("awayjs-core/lib/bounds/NullBounds");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import AssetType					= require("awayjs-core/lib/library/AssetType");
+import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");
 
+import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import IMaterialOwner				= require("awayjs-display/lib/base/IMaterialOwner");
+import BlendMode					= require("awayjs-display/lib/base/BlendMode");
+import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
+import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
+import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
 import SkyboxNode					= require("awayjs-display/lib/partition/SkyboxNode");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
@@ -16,12 +24,156 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-class Skybox extends DisplayObject implements IEntity, IMaterialOwner
+class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderObjectOwner
 {
+	private _cubeMap:CubeTextureBase;
+	public _pAlphaThreshold:number = 0;
+	private _animationSet:IAnimationSet;
+	public _pLightPicker:LightPickerBase;
+	public _pBlendMode:string = BlendMode.NORMAL;
+	private _renderObjects:Array<IRenderObject> = new Array<IRenderObject>();
+	private _renderables:Array<IRenderable> = new Array<IRenderable>();
 	private _uvTransform:UVTransform;
-
+	private _owners:Array<IRenderableOwner>;
+	private _mipmap:boolean = false;
+	private _smooth:boolean = true;
+	
 	private _material:MaterialBase;
 	private _animator:IAnimator;
+
+	/**
+	 * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	 * invisible or entirely opaque, often used with textures for foliage, etc.
+	 * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	 */
+	public get alphaThreshold():number
+	{
+		return this._pAlphaThreshold;
+	}
+
+	public set alphaThreshold(value:number)
+	{
+		if (value < 0)
+			value = 0;
+		else if (value > 1)
+			value = 1;
+
+		if (this._pAlphaThreshold == value)
+			return;
+
+		this._pAlphaThreshold = value;
+
+		this._pInvalidateProperties();
+	}
+
+	/**
+	 * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	 */
+	public get mipmap():boolean
+	{
+		return this._mipmap;
+	}
+
+	public set mipmap(value:boolean)
+	{
+		if (this._mipmap == value)
+			return;
+
+		this._mipmap = value;
+
+		this._pInvalidateProperties();
+	}
+
+	/**
+	 * Indicates whether or not any used textures should use smoothing.
+	 */
+	public get smooth():boolean
+	{
+		return this._smooth;
+	}
+
+	public set smooth(value:boolean)
+	{
+		if (this._smooth == value)
+			return;
+
+		this._smooth = value;
+
+		this._pInvalidateProperties();
+	}
+	
+	/**
+	 * The light picker used by the material to provide lights to the material if it supports lighting.
+	 *
+	 * @see LightPickerBase
+	 * @see StaticLightPicker
+	 */
+	public get lightPicker():LightPickerBase
+	{
+		return this._pLightPicker;
+	}
+
+	/**
+	 *
+	 */
+	public get animationSet():IAnimationSet
+	{
+		return this._animationSet;
+	}
+
+	/**
+	 * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	 * <ul>
+	 * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	 * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	 * <li>BlendMode.MULTIPLY</li>
+	 * <li>BlendMode.ADD</li>
+	 * <li>BlendMode.ALPHA</li>
+	 * </ul>
+	 */
+	public get blendMode():string
+	{
+		return this._pBlendMode;
+	}
+
+	public set blendMode(value:string)
+	{
+		if (this._pBlendMode == value)
+			return;
+
+		this._pBlendMode = value;
+
+		this._pInvalidateRenderObject();
+	}
+
+	public _pInvalidateRenderObject()
+	{
+		var len:number = this._renderObjects.length;
+		for (var i:number = 0; i < len; i++)
+			this._renderObjects[i].invalidateRenderObject();
+	}
+
+	/**
+	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	 *
+	 * @private
+	 */
+	public _pInvalidateProperties()
+	{
+		var len:number = this._renderObjects.length;
+		for (var i:number = 0; i < len; i++)
+			this._renderObjects[i].invalidateProperties();
+	}
+
+	/**
+	 * A list of the IRenderableOwners that use this material
+	 *
+	 * @private
+	 */
+	public get iOwners():Array<IRenderableOwner>
+	{
+		return this._owners;
+	}
 
 	public get animator():IAnimator
 	{
@@ -42,39 +194,34 @@ class Skybox extends DisplayObject implements IEntity, IMaterialOwner
 	}
 
 	/**
+	* The cube texture to use as the skybox.
+	*/
+	public get cubeMap():CubeTextureBase
+	{
+		return this._cubeMap;
+	}
+
+	public set cubeMap(value:CubeTextureBase)
+	{
+		if (value && this._cubeMap && (value.hasMipmaps != this._cubeMap.hasMipmaps || value.format != this._cubeMap.format))
+			this._pInvalidateRenderObject();
+
+		this._cubeMap = value;
+	}
+
+	/**
 	 * Create a new Skybox object.
 	 *
 	 * @param material	The material with which to render the Skybox.
 	 */
-	constructor(material:MaterialBase)
+	constructor(cubeMap:CubeTextureBase = null)
 	{
 		super();
 
 		this._pIsEntity = true;
+		this._owners = new Array<IRenderableOwner>(this);
 
-		this.material = material;
-	}
-
-/**
- * The material with which to render the Skybox.
- */
-	public get material():MaterialBase
-	{
-		return this._material;
-	}
-
-	public set material(value:MaterialBase)
-	{
-		if (value == this._material)
-			return;
-
-		if (this._material)
-			this._material.iRemoveOwner(<IMaterialOwner> this);
-
-		this._material = value;
-
-		if (this._material)
-			this._material.iAddOwner(<IMaterialOwner> this);
+		this.cubeMap = cubeMap;
 	}
 
 	public get assetType():string
@@ -119,6 +266,28 @@ class Skybox extends DisplayObject implements IEntity, IMaterialOwner
 		return false; //TODO
 	}
 
+	/**
+	 * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
+	 * could be used by other materials and will not be disposed.
+	 */
+	public dispose()
+	{
+		var i:number;
+		var len:number;
+
+		len = this._renderObjects.length;
+		for (i = 0; i < len; i++)
+			this._renderObjects[i].dispose();
+
+		this._renderObjects = new Array<IRenderObject>();
+
+		var len:number = this._renderables.length;
+		for (var i:number = 0; i < len; i++)
+			this._renderables[i].dispose();
+
+		this._renderables = new Array<IRenderable>();
+	}
+
 	public _iCollectRenderables(renderer:IRenderer)
 	{
 		//skybox do not get collected in the standard entity list
@@ -127,6 +296,48 @@ class Skybox extends DisplayObject implements IEntity, IMaterialOwner
 	public _iCollectRenderable(renderer:IRenderer)
 	{
 
+	}
+
+	public _iAddRenderObject(renderObject:IRenderObject):IRenderObject
+	{
+		this._renderObjects.push(renderObject);
+
+		return renderObject;
+	}
+
+	public _iRemoveRenderObject(renderObject:IRenderObject):IRenderObject
+	{
+		this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
+
+		return renderObject;
+	}
+
+	public _iAddRenderable(renderable:IRenderable):IRenderable
+	{
+		this._renderables.push(renderable);
+
+		return renderable;
+	}
+
+
+	public _iRemoveRenderable(renderable:IRenderable):IRenderable
+	{
+		var index:number = this._renderables.indexOf(renderable);
+
+		this._renderables.splice(index, 1);
+
+		return renderable;
+	}
+
+	/**
+	 *
+	 * @param renderer
+	 *
+	 * @internal
+	 */
+	public getRenderObject(renderablePool:IRenderablePool)
+	{
+		return renderablePool.getSkyboxRenderObject(this);
 	}
 }
 

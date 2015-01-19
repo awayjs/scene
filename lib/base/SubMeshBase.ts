@@ -110,6 +110,8 @@ class SubMeshBase extends NamedAssetBase
 		var len:number = this._renderables.length;
 		for (var i:number = 0; i < len; i++)
 			this._renderables[i].dispose();
+
+		this._renderables = new Array<IRenderable>();
 	}
 
 	/**

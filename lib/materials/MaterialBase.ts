@@ -8,15 +8,13 @@ import Texture2DBase				= require("awayjs-core/lib/textures/Texture2DBase");
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import BlendMode					= require("awayjs-display/lib/base/BlendMode");
-import IMaterialOwner				= require("awayjs-display/lib/base/IMaterialOwner");
-import IStage						= require("awayjs-display/lib/base/IStage");
-import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import IMaterialData				= require("awayjs-display/lib/pool/IMaterialData");
-import IMaterialPassData			= require("awayjs-display/lib/pool/IMaterialPassData");
+import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
+import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-import IMaterialPass				= require("awayjs-display/lib/materials/passes/IMaterialPass");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 
 
@@ -31,11 +29,10 @@ import IRenderer					= require("awayjs-display/lib/render/IRenderer");
  * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
  * shaders, or entire new material frameworks.
  */
-class MaterialBase extends NamedAssetBase implements IAsset
+class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 {
 	private _sizeChanged:MaterialEvent;
-	private _materialPassData:Array<IMaterialPassData> = new Array<IMaterialPassData>();
-	private _materialData:Array<IMaterialData> = new Array<IMaterialData>();
+	private _renderObjects:Array<IRenderObject> = new Array<IRenderObject>();
 
 	public _pAlphaThreshold:number = 0;
 	public _pAnimateUVs:boolean = false;
@@ -69,19 +66,15 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 	private _bothSides:boolean = false; // update
 	private _animationSet:IAnimationSet;
-	public _pScreenPassesInvalid:boolean = true;
 
 	/**
 	 * A list of material owners, renderables or custom Entities.
 	 */
-	private _owners:Array<IMaterialOwner>;
+	private _owners:Array<IRenderableOwner>;
 
 	private _alphaPremultiplied:boolean;
 
 	public _pBlendMode:string = BlendMode.NORMAL;
-
-	private _numPasses:number = 0;
-	private _passes:Array<IMaterialPass>;
 
 	private _mipmap:boolean = false;
 	private _smooth:boolean = true;
@@ -93,9 +86,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 	public _pHeight:number = 1;
 	public _pWidth:number = 1;
-	public _pRequiresBlending:boolean = false;
 
-	private _onPassChangeDelegate:(event:Event) => void;
 	private _onLightChangeDelegate:(event:Event) => void;
 
 	/**
@@ -107,21 +98,11 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._iMaterialId = Number(this.id);
 
-		this._owners = new Array<IMaterialOwner>();
-		this._passes = new Array<IMaterialPass>();
+		this._owners = new Array<IRenderableOwner>();
 
-		this._onPassChangeDelegate = (event:Event) => this.onPassChange(event);
 		this._onLightChangeDelegate = (event:Event) => this.onLightsChange(event);
 
 		this.alphaPremultiplied = false; //TODO: work out why this is different for WebGL
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public get assetType():string
-	{
-		return AssetType.MATERIAL;
 	}
 
 	/**
@@ -165,7 +146,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 		if (this._pLightPicker)
 			this._pLightPicker.addEventListener(Event.CHANGE, this._onLightChangeDelegate);
 
-		this._pInvalidateScreenPasses();
+		this._pInvalidateRenderObject();
 	}
 
 	/**
@@ -183,7 +164,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._mipmap = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -201,7 +182,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._smooth = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -220,7 +201,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._repeat = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -238,7 +219,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._color = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -256,7 +237,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._pTexture = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 
 		this._pHeight = this._pTexture.height;
 		this._pWidth = this._pTexture.width;
@@ -279,7 +260,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._pAnimateUVs = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -298,7 +279,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._enableLightFallOff = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -319,7 +300,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._diffuseLightSources = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -340,7 +321,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._specularLightSources = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -352,19 +333,11 @@ class MaterialBase extends NamedAssetBase implements IAsset
 		var i:number;
 		var len:number;
 
-		this._pClearScreenPasses();
-
-		len = this._materialData.length;
+		len = this._renderObjects.length;
 		for (i = 0; i < len; i++)
-			this._materialData[i].dispose();
+			this._renderObjects[i].dispose();
 
-		this._materialData = new Array<IMaterialData>();
-
-		len = this._materialPassData.length;
-		for (i = 0; i < len; i++)
-			this._materialPassData[i].dispose();
-
-		this._materialPassData = new Array<IMaterialPassData>();
+		this._renderObjects = new Array<IRenderObject>();
 	}
 
 	/**
@@ -382,7 +355,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._bothSides = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -407,7 +380,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._pBlendMode = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateRenderObject();
 	}
 
 	/**
@@ -427,7 +400,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._alphaPremultiplied = value;
 
-		this._pInvalidatePasses();
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -452,15 +425,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 
 		this._pAlphaThreshold = value;
 
-		this._pInvalidatePasses();
-	}
-
-	/**
-	 * Indicates whether or not the material requires alpha blending during rendering.
-	 */
-	public get requiresBlending():boolean
-	{
-		return this._pRequiresBlending;
+		this._pInvalidateProperties();
 	}
 
 	/**
@@ -471,63 +436,19 @@ class MaterialBase extends NamedAssetBase implements IAsset
 		return this._pWidth;
 	}
 
-	/**
-	 * Sets the render state for a pass that is independent of the rendered object. This needs to be called before
-	 * calling renderPass. Before activating a pass, the previously used pass needs to be deactivated.
-	 * @param pass The pass data to activate.
-	 * @param stage The Stage object which is currently used for rendering.
-	 * @param camera The camera from which the scene is viewed.
-	 * @private
-	 */
-	public _iActivatePass(pass:IMaterialPassData, renderer:IRenderer, camera:Camera) // ARCANE
-	{
-		pass.materialPass._iActivate(pass, renderer, camera);
-	}
-
-	/**
-	 * Clears the render state for a pass. This needs to be called before activating another pass.
-	 * @param pass The pass to deactivate.
-	 * @param stage The Stage used for rendering
-	 *
-	 * @internal
-	 */
-	public _iDeactivatePass(pass:IMaterialPassData, renderer:IRenderer) // ARCANE
-	{
-		pass.materialPass._iDeactivate(pass, renderer);
-	}
-
-	/**
-	 * Renders the current pass. Before calling renderPass, activatePass needs to be called with the same index.
-	 * @param pass The pass used to render the renderable.
-	 * @param renderable The IRenderable object to draw.
-	 * @param stage The Stage object used for rendering.
-	 * @param entityCollector The EntityCollector object that contains the visible scene data.
-	 * @param viewProjection The view-projection matrix used to project to the screen. This is not the same as
-	 * camera.viewProjection as it includes the scaling factors when rendering to textures.
-	 *
-	 * @internal
-	 */
-	public _iRenderPass(pass:IMaterialPassData, renderable:IRenderable, stage:IStage, camera:Camera, viewProjection:Matrix3D)
-	{
-		if (this._pLightPicker)
-			this._pLightPicker.collectLights(renderable);
-
-		pass.materialPass._iRender(pass, renderable, stage, camera, viewProjection);
-	}
-
 	//
 	// MATERIAL MANAGEMENT
 	//
 	/**
-	 * Mark an IMaterialOwner as owner of this material.
+	 * Mark an IRenderableOwner as owner of this material.
 	 * Assures we're not using the same material across renderables with different animations, since the
 	 * Programs depend on animation. This method needs to be called when a material is assigned.
 	 *
-	 * @param owner The IMaterialOwner that had this material assigned
+	 * @param owner The IRenderableOwner that had this material assigned
 	 *
 	 * @internal
 	 */
-	public iAddOwner(owner:IMaterialOwner)
+	public iAddOwner(owner:IRenderableOwner)
 	{
 		this._owners.push(owner);
 
@@ -552,12 +473,12 @@ class MaterialBase extends NamedAssetBase implements IAsset
 	}
 
 	/**
-	 * Removes an IMaterialOwner as owner.
+	 * Removes an IRenderableOwner as owner.
 	 * @param owner
 	 *
 	 * @internal
 	 */
-	public iRemoveOwner(owner:IMaterialOwner)
+	public iRemoveOwner(owner:IRenderableOwner)
 	{
 		this._owners.splice(this._owners.indexOf(owner), 1);
 
@@ -569,33 +490,13 @@ class MaterialBase extends NamedAssetBase implements IAsset
 	}
 
 	/**
-	 * A list of the IMaterialOwners that use this material
+	 * A list of the IRenderableOwners that use this material
 	 *
 	 * @private
 	 */
-	public get iOwners():Array<IMaterialOwner>
+	public get iOwners():Array<IRenderableOwner>
 	{
 		return this._owners;
-	}
-
-	/**
-	 * The amount of passes used by the material.
-	 *
-	 * @private
-	 */
-	public _iNumScreenPasses():number
-	{
-		return this._numPasses;
-	}
-
-	/**
-	 * A list of the screen passes used in this material
-	 *
-	 * @private
-	 */
-	public get _iScreenPasses():Array<IMaterialPass>
-	{
-		return this._passes;
 	}
 
 	/**
@@ -603,103 +504,25 @@ class MaterialBase extends NamedAssetBase implements IAsset
 	 *
 	 * @private
 	 */
-	public _pInvalidatePasses()
+	public _pInvalidateProperties()
 	{
-		var len:number = this._materialPassData.length;
+		var len:number = this._renderObjects.length;
 		for (var i:number = 0; i < len; i++)
-			this._materialPassData[i].invalidate();
-
-		this.invalidateMaterial();
-	}
-
-	/**
-	 * Flags that the screen passes have become invalid and need possible re-ordering / adding / deleting
-	 */
-	public _pInvalidateScreenPasses()
-	{
-		this._pScreenPassesInvalid = true;
-	}
-
-	/**
-	 * Removes a pass from the material.
-	 * @param pass The pass to be removed.
-	 */
-	public _pRemoveScreenPass(pass:IMaterialPass)
-	{
-		pass.removeEventListener(Event.CHANGE, this._onPassChangeDelegate);
-		this._passes.splice(this._passes.indexOf(pass), 1);
-
-		this._numPasses--;
-	}
-
-	/**
-	 * Removes all passes from the material
-	 */
-	public _pClearScreenPasses()
-	{
-		for (var i:number = 0; i < this._numPasses; ++i)
-			this._passes[i].removeEventListener(Event.CHANGE, this._onPassChangeDelegate);
-
-		this._passes.length = this._numPasses = 0;
-	}
-
-	/**
-	 * Adds a pass to the material
-	 * @param pass
-	 */
-	public _pAddScreenPass(pass:IMaterialPass)
-	{
-		this._passes[this._numPasses++] = pass;
-
-		pass.lightPicker = this._pLightPicker;
-		pass.addEventListener(Event.CHANGE, this._onPassChangeDelegate);
-
-		this.invalidateMaterial();
-	}
-
-	public _iAddMaterialData(materialData:IMaterialData):IMaterialData
-	{
-		this._materialData.push(materialData);
-
-		return materialData;
-	}
-
-	public _iRemoveMaterialData(materialData:IMaterialData):IMaterialData
-	{
-		this._materialData.splice(this._materialData.indexOf(materialData), 1);
-
-		return materialData;
-	}
-
-	/**
-	 * Performs any processing that needs to occur before any of its passes are used.
-	 *
-	 * @private
-	 */
-	public _iUpdateMaterial()
-	{
-	}
-	
-	/**
-	 * Listener for when a pass's shader code changes. It recalculates the render order id.
-	 */
-	private onPassChange(event:Event)
-	{
-		this.invalidateMaterial();
+			this._renderObjects[i].invalidateProperties();
 	}
 
 	private invalidateAnimation()
 	{
-		var len:number = this._materialData.length;
+		var len:number = this._renderObjects.length;
 		for (var i:number = 0; i < len; i++)
-			this._materialData[i].invalidateAnimation();
+			this._renderObjects[i].invalidateAnimation();
 	}
 	
-	private invalidateMaterial()
+	public _pInvalidateRenderObject()
 	{
-		var len:number = this._materialData.length;
+		var len:number = this._renderObjects.length;
 		for (var i:number = 0; i < len; i++)
-			this._materialData[i].invalidateMaterial();
+			this._renderObjects[i].invalidateRenderObject();
 	}
 
 	/**
@@ -707,7 +530,7 @@ class MaterialBase extends NamedAssetBase implements IAsset
 	 */
 	private onLightsChange(event:Event)
 	{
-		this._pInvalidateScreenPasses();
+		this._pInvalidateRenderObject();
 	}
 
 	public _pNotifySizeChanged()
@@ -718,18 +541,29 @@ class MaterialBase extends NamedAssetBase implements IAsset
 		this.dispatchEvent(this._sizeChanged);
 	}
 
-	public _iAddMaterialPassData(materialPassData:IMaterialPassData):IMaterialPassData
+	public _iAddRenderObject(renderObject:IRenderObject):IRenderObject
 	{
-		this._materialPassData.push(materialPassData);
+		this._renderObjects.push(renderObject);
 
-		return materialPassData;
+		return renderObject;
 	}
 
-	public _iRemoveMaterialPassData(materialPassData:IMaterialPassData):IMaterialPassData
+	public _iRemoveRenderObject(renderObject:IRenderObject):IRenderObject
 	{
-		this._materialPassData.splice(this._materialPassData.indexOf(materialPassData), 1);
+		this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
 
-		return materialPassData;
+		return renderObject;
+	}
+
+	/**
+	 *
+	 * @param renderer
+	 *
+	 * @internal
+	 */
+	public getRenderObject(renderablePool:IRenderablePool)
+	{
+		return renderablePool.getMaterialRenderObject(this);
 	}
 }
 

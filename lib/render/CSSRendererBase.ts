@@ -10,7 +10,7 @@ import CSSBillboardRenderable		= require("awayjs-display/lib/pool/CSSBillboardRe
 import CSSLineSegmentRenderable		= require("awayjs-display/lib/pool/CSSLineSegmentRenderable");
 import CSSRenderableBase			= require("awayjs-display/lib/pool/CSSRenderableBase");
 import EntityListItem				= require("awayjs-display/lib/pool/EntityListItem");
-import RenderablePool				= require("awayjs-display/lib/pool/RenderablePool");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import IEntitySorter				= require("awayjs-display/lib/sort/IEntitySorter");
 import CSSEntityCollector			= require("awayjs-display/lib/traverse/CSSEntityCollector");
@@ -32,8 +32,8 @@ import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase"
  */
 class CSSRendererBase extends EventDispatcher
 {
-	private _billboardRenderablePool:RenderablePool;
-	private _lineSegmentRenderablePool:RenderablePool;
+	private _billboardRenderablePool:IRenderablePool;
+	private _lineSegmentRenderablePool:IRenderablePool;
 
 	public _pCamera:Camera;
 	public _iEntryPoint:Vector3D;
@@ -174,8 +174,8 @@ class CSSRendererBase extends EventDispatcher
 	{
 		super();
 
-		this._billboardRenderablePool = RenderablePool.getPool(CSSBillboardRenderable);
-		this._lineSegmentRenderablePool = RenderablePool.getPool(CSSLineSegmentRenderable);
+		//this._billboardRenderablePool = RenderablePool.getPool(CSSBillboardRenderable);
+		//this._lineSegmentRenderablePool = RenderablePool.getPool(CSSLineSegmentRenderable);
 
 		this._viewPort = new Rectangle();
 
@@ -360,7 +360,7 @@ class CSSRendererBase extends EventDispatcher
 	 */
 	public applyBillboard(billboard:Billboard)
 	{
-		this._applyRenderable(<CSSRenderableBase> this._billboardRenderablePool.getItem(billboard));
+		//this._applyRenderable(<CSSRenderableBase> this._billboardRenderablePool.getItem(billboard));
 	}
 
 	/**
@@ -397,7 +397,7 @@ class CSSRendererBase extends EventDispatcher
 	 */
 	private _applyRenderable(renderable:CSSRenderableBase)
 	{
-		var material:CSSMaterialBase = <CSSMaterialBase> renderable.materialOwner.material;
+		var material:CSSMaterialBase;// = <CSSMaterialBase> renderable.renderableOwner.material;
 		var entity:IEntity = renderable.sourceEntity;
 		var position:Vector3D = entity.scenePosition;
 

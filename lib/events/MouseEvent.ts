@@ -3,7 +3,7 @@ import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
 import Event					= require("awayjs-core/lib/events/Event");
 
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
-import IMaterialOwner			= require("awayjs-display/lib/base/IMaterialOwner");
+import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
 import View						= require("awayjs-display/lib/containers/View");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 
@@ -88,9 +88,9 @@ class MouseEvent extends Event
 	public object:DisplayObject;
 
 	/**
-	 * The material owner inside which the event took place.
+	 * The renderable owner inside which the event took place.
 	 */
-	public materialOwner:IMaterialOwner;
+	public renderableOwner:IRenderableOwner;
 
 	/**
 	 * The material of the 3d element inside which the event took place.
@@ -202,7 +202,7 @@ class MouseEvent extends Event
 
 		result.view = this.view;
 		result.object = this.object;
-		result.materialOwner = this.materialOwner;
+		result.renderableOwner = this.renderableOwner;
 		result.material = this.material;
 		result.uv = this.uv;
 		result.localPosition = this.localPosition;
