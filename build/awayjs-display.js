@@ -3146,7 +3146,11 @@ module.exports = Graphics;
 
 
 
-},{}],"awayjs-display/lib/base/IStage":[function(require,module,exports){
+},{}],"awayjs-display/lib/base/IRenderObjectOwner":[function(require,module,exports){
+
+
+
+},{}],"awayjs-display/lib/base/IRenderableOwner":[function(require,module,exports){
 
 
 
@@ -4470,6 +4474,7 @@ var SubMeshBase = (function (_super) {
         var len = this._renderables.length;
         for (var i = 0; i < len; i++)
             this._renderables[i].dispose();
+        this._renderables = new Array();
     };
     /**
      *
@@ -9993,6 +9998,7 @@ var __extends = this.__extends || function (d, b) {
 var NullBounds = require("awayjs-core/lib/bounds/NullBounds");
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+var BlendMode = require("awayjs-display/lib/base/BlendMode");
 var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
@@ -10006,11 +10012,146 @@ var Skybox = (function (_super) {
      *
      * @param material	The material with which to render the Skybox.
      */
-    function Skybox(material) {
+    function Skybox(cubeMap) {
+        if (cubeMap === void 0) { cubeMap = null; }
         _super.call(this);
+        this._pAlphaThreshold = 0;
+        this._pBlendMode = BlendMode.NORMAL;
+        this._renderObjects = new Array();
+        this._renderables = new Array();
+        this._mipmap = false;
+        this._smooth = true;
         this._pIsEntity = true;
-        this.material = material;
+        this._owners = new Array(this);
+        this.cubeMap = cubeMap;
     }
+    Object.defineProperty(Skybox.prototype, "alphaThreshold", {
+        /**
+         * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+         * invisible or entirely opaque, often used with textures for foliage, etc.
+         * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+         */
+        get: function () {
+            return this._pAlphaThreshold;
+        },
+        set: function (value) {
+            if (value < 0)
+                value = 0;
+            else if (value > 1)
+                value = 1;
+            if (this._pAlphaThreshold == value)
+                return;
+            this._pAlphaThreshold = value;
+            this._pInvalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "mipmap", {
+        /**
+         * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+         */
+        get: function () {
+            return this._mipmap;
+        },
+        set: function (value) {
+            if (this._mipmap == value)
+                return;
+            this._mipmap = value;
+            this._pInvalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "smooth", {
+        /**
+         * Indicates whether or not any used textures should use smoothing.
+         */
+        get: function () {
+            return this._smooth;
+        },
+        set: function (value) {
+            if (this._smooth == value)
+                return;
+            this._smooth = value;
+            this._pInvalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "lightPicker", {
+        /**
+         * The light picker used by the material to provide lights to the material if it supports lighting.
+         *
+         * @see LightPickerBase
+         * @see StaticLightPicker
+         */
+        get: function () {
+            return this._pLightPicker;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "animationSet", {
+        /**
+         *
+         */
+        get: function () {
+            return this._animationSet;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "blendMode", {
+        /**
+         * The blend mode to use when drawing this renderable. The following blend modes are supported:
+         * <ul>
+         * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+         * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+         * <li>BlendMode.MULTIPLY</li>
+         * <li>BlendMode.ADD</li>
+         * <li>BlendMode.ALPHA</li>
+         * </ul>
+         */
+        get: function () {
+            return this._pBlendMode;
+        },
+        set: function (value) {
+            if (this._pBlendMode == value)
+                return;
+            this._pBlendMode = value;
+            this._pInvalidateRenderObject();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Skybox.prototype._pInvalidateRenderObject = function () {
+        var len = this._renderObjects.length;
+        for (var i = 0; i < len; i++)
+            this._renderObjects[i].invalidateRenderObject();
+    };
+    /**
+     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+     *
+     * @private
+     */
+    Skybox.prototype._pInvalidateProperties = function () {
+        var len = this._renderObjects.length;
+        for (var i = 0; i < len; i++)
+            this._renderObjects[i].invalidateProperties();
+    };
+    Object.defineProperty(Skybox.prototype, "iOwners", {
+        /**
+         * A list of the IRenderableOwners that use this material
+         *
+         * @private
+         */
+        get: function () {
+            return this._owners;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Skybox.prototype, "animator", {
         get: function () {
             return this._animator;
@@ -10031,21 +10172,17 @@ var Skybox = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Skybox.prototype, "material", {
+    Object.defineProperty(Skybox.prototype, "cubeMap", {
         /**
-         * The material with which to render the Skybox.
-         */
+        * The cube texture to use as the skybox.
+        */
         get: function () {
-            return this._material;
+            return this._cubeMap;
         },
         set: function (value) {
-            if (value == this._material)
-                return;
-            if (this._material)
-                this._material.iRemoveOwner(this);
-            this._material = value;
-            if (this._material)
-                this._material.iAddOwner(this);
+            if (value && this._cubeMap && (value.hasMipmaps != this._cubeMap.hasMipmaps || value.format != this._cubeMap.format))
+                this._pInvalidateRenderObject();
+            this._cubeMap = value;
         },
         enumerable: true,
         configurable: true
@@ -10088,17 +10225,59 @@ var Skybox = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
+     * could be used by other materials and will not be disposed.
+     */
+    Skybox.prototype.dispose = function () {
+        var i;
+        var len;
+        len = this._renderObjects.length;
+        for (i = 0; i < len; i++)
+            this._renderObjects[i].dispose();
+        this._renderObjects = new Array();
+        var len = this._renderables.length;
+        for (var i = 0; i < len; i++)
+            this._renderables[i].dispose();
+        this._renderables = new Array();
+    };
     Skybox.prototype._iCollectRenderables = function (renderer) {
         //skybox do not get collected in the standard entity list
     };
     Skybox.prototype._iCollectRenderable = function (renderer) {
+    };
+    Skybox.prototype._iAddRenderObject = function (renderObject) {
+        this._renderObjects.push(renderObject);
+        return renderObject;
+    };
+    Skybox.prototype._iRemoveRenderObject = function (renderObject) {
+        this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
+        return renderObject;
+    };
+    Skybox.prototype._iAddRenderable = function (renderable) {
+        this._renderables.push(renderable);
+        return renderable;
+    };
+    Skybox.prototype._iRemoveRenderable = function (renderable) {
+        var index = this._renderables.indexOf(renderable);
+        this._renderables.splice(index, 1);
+        return renderable;
+    };
+    /**
+     *
+     * @param renderer
+     *
+     * @internal
+     */
+    Skybox.prototype.getRenderObject = function (renderablePool) {
+        return renderablePool.getSkyboxRenderObject(this);
     };
     return Skybox;
 })(DisplayObject);
 module.exports = Skybox;
 
 
-},{"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/partition/SkyboxNode":undefined}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/partition/SkyboxNode":undefined}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11616,7 +11795,7 @@ var MouseEvent = (function (_super) {
         result.screenY = this.screenY;
         result.view = this.view;
         result.object = this.object;
-        result.materialOwner = this.materialOwner;
+        result.renderableOwner = this.renderableOwner;
         result.material = this.material;
         result.uv = this.uv;
         result.localPosition = this.localPosition;
@@ -11864,7 +12043,69 @@ var SubGeometryEvent = (function (_super) {
 module.exports = SubGeometryEvent;
 
 
-},{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
+},{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
+var BitmapData = require("awayjs-core/lib/base/BitmapData");
+var AssetType = require("awayjs-core/lib/library/AssetType");
+var BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
+var DefaultMaterialManager = (function () {
+    function DefaultMaterialManager() {
+    }
+    DefaultMaterialManager.getDefaultMaterial = function (renderableOwner) {
+        if (renderableOwner === void 0) { renderableOwner = null; }
+        if (renderableOwner != null && renderableOwner.assetType == AssetType.LINE_SUB_MESH) {
+            if (!DefaultMaterialManager._defaultLineMaterial)
+                DefaultMaterialManager.createDefaultLineMaterial();
+            return DefaultMaterialManager._defaultLineMaterial;
+        }
+        else {
+            if (!DefaultMaterialManager._defaultTriangleMaterial)
+                DefaultMaterialManager.createDefaultTriangleMaterial();
+            return DefaultMaterialManager._defaultTriangleMaterial;
+        }
+    };
+    DefaultMaterialManager.getDefaultTexture = function (renderableOwner) {
+        if (renderableOwner === void 0) { renderableOwner = null; }
+        if (!DefaultMaterialManager._defaultTexture)
+            DefaultMaterialManager.createDefaultTexture();
+        return DefaultMaterialManager._defaultTexture;
+    };
+    DefaultMaterialManager.createDefaultTexture = function () {
+        DefaultMaterialManager._defaultBitmapData = DefaultMaterialManager.createCheckeredBitmapData();
+        DefaultMaterialManager._defaultTexture = new BitmapTexture(DefaultMaterialManager._defaultBitmapData, true);
+        DefaultMaterialManager._defaultTexture.name = "defaultTexture";
+    };
+    DefaultMaterialManager.createCheckeredBitmapData = function () {
+        var b = new BitmapData(8, 8, false, 0x000000);
+        //create chekerboard
+        var i, j;
+        for (i = 0; i < 8; i++) {
+            for (j = 0; j < 8; j++) {
+                if ((j & 1) ^ (i & 1)) {
+                    b.setPixel(i, j, 0XFFFFFF);
+                }
+            }
+        }
+        return b;
+    };
+    DefaultMaterialManager.createDefaultTriangleMaterial = function () {
+        if (!DefaultMaterialManager._defaultTexture)
+            DefaultMaterialManager.createDefaultTexture();
+        DefaultMaterialManager._defaultTriangleMaterial = new BasicMaterial(DefaultMaterialManager._defaultTexture);
+        DefaultMaterialManager._defaultTriangleMaterial.mipmap = false;
+        DefaultMaterialManager._defaultTriangleMaterial.smooth = false;
+        DefaultMaterialManager._defaultTriangleMaterial.name = "defaultTriangleMaterial";
+    };
+    DefaultMaterialManager.createDefaultLineMaterial = function () {
+        DefaultMaterialManager._defaultLineMaterial = new BasicMaterial();
+        DefaultMaterialManager._defaultLineMaterial.name = "defaultLineMaterial";
+    };
+    return DefaultMaterialManager;
+})();
+module.exports = DefaultMaterialManager;
+
+
+},{"awayjs-core/lib/base/BitmapData":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/textures/BitmapTexture":undefined,"awayjs-display/lib/materials/BasicMaterial":undefined}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayMouseEvent = require("awayjs-display/lib/events/MouseEvent");
 /**
@@ -11986,7 +12227,7 @@ var MouseManager = (function () {
         if (collider) {
             // Object.
             event.object = collider.displayObject;
-            event.materialOwner = collider.materialOwner;
+            event.renderableOwner = collider.renderableOwner;
             // UV.
             event.uv = collider.uv;
             // Position.
@@ -12084,7 +12325,83 @@ var MouseManager = (function () {
 module.exports = MouseManager;
 
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/MouseEvent":undefined}],"awayjs-display/lib/materials/CSSMaterialBase":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/MouseEvent":undefined}],"awayjs-display/lib/materials/BasicMaterial":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+var MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+/**
+ * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
+ * using material methods to define their appearance.
+ */
+var BasicMaterial = (function (_super) {
+    __extends(BasicMaterial, _super);
+    function BasicMaterial(textureColor, smoothAlpha, repeat, mipmap) {
+        if (textureColor === void 0) { textureColor = null; }
+        if (smoothAlpha === void 0) { smoothAlpha = null; }
+        if (repeat === void 0) { repeat = false; }
+        if (mipmap === void 0) { mipmap = false; }
+        _super.call(this);
+        this._alphaBlending = false;
+        this._alpha = 1;
+        if (textureColor instanceof Texture2DBase) {
+            this.texture = textureColor;
+            this.smooth = (smoothAlpha == null) ? true : false;
+            this.repeat = repeat;
+            this.mipmap = mipmap;
+        }
+        else {
+            this.color = textureColor ? Number(textureColor) : 0xCCCCCC;
+            this.alpha = (smoothAlpha == null) ? 1 : Number(smoothAlpha);
+        }
+    }
+    Object.defineProperty(BasicMaterial.prototype, "alpha", {
+        /**
+         * The alpha of the surface.
+         */
+        get: function () {
+            return this._alpha;
+        },
+        set: function (value) {
+            if (value > 1)
+                value = 1;
+            else if (value < 0)
+                value = 0;
+            if (this._alpha == value)
+                return;
+            this._alpha = value;
+            this._pInvalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BasicMaterial.prototype, "alphaBlending", {
+        /**
+         * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
+         * example when using textures of foliage, consider using alphaThreshold instead.
+         */
+        get: function () {
+            return this._alphaBlending;
+        },
+        set: function (value) {
+            if (this._alphaBlending == value)
+                return;
+            this._alphaBlending = value;
+            this._pInvalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return BasicMaterial;
+})(MaterialBase);
+module.exports = BasicMaterial;
+
+
+},{"awayjs-core/lib/textures/Texture2DBase":undefined,"awayjs-display/lib/materials/MaterialBase":undefined}],"awayjs-display/lib/materials/CSSMaterialBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -12214,7 +12531,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var Event = require("awayjs-core/lib/events/Event");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
 var BlendMode = require("awayjs-display/lib/base/BlendMode");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
@@ -12237,8 +12553,7 @@ var MaterialBase = (function (_super) {
     function MaterialBase() {
         var _this = this;
         _super.call(this);
-        this._materialPassData = new Array();
-        this._materialData = new Array();
+        this._renderObjects = new Array();
         this._pAlphaThreshold = 0;
         this._pAnimateUVs = false;
         this._enableLightFallOff = true;
@@ -12252,33 +12567,18 @@ var MaterialBase = (function (_super) {
         this._iMaterialId = 0;
         this._iBaseScreenPassIndex = 0;
         this._bothSides = false; // update
-        this._pScreenPassesInvalid = true;
         this._pBlendMode = BlendMode.NORMAL;
-        this._numPasses = 0;
         this._mipmap = false;
         this._smooth = true;
         this._repeat = false;
         this._color = 0xFFFFFF;
         this._pHeight = 1;
         this._pWidth = 1;
-        this._pRequiresBlending = false;
         this._iMaterialId = Number(this.id);
         this._owners = new Array();
-        this._passes = new Array();
-        this._onPassChangeDelegate = function (event) { return _this.onPassChange(event); };
         this._onLightChangeDelegate = function (event) { return _this.onLightsChange(event); };
         this.alphaPremultiplied = false; //TODO: work out why this is different for WebGL
     }
-    Object.defineProperty(MaterialBase.prototype, "assetType", {
-        /**
-         * @inheritDoc
-         */
-        get: function () {
-            return AssetType.MATERIAL;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(MaterialBase.prototype, "height", {
         /**
          *
@@ -12317,7 +12617,7 @@ var MaterialBase = (function (_super) {
             this._pLightPicker = value;
             if (this._pLightPicker)
                 this._pLightPicker.addEventListener(Event.CHANGE, this._onLightChangeDelegate);
-            this._pInvalidateScreenPasses();
+            this._pInvalidateRenderObject();
         },
         enumerable: true,
         configurable: true
@@ -12333,7 +12633,7 @@ var MaterialBase = (function (_super) {
             if (this._mipmap == value)
                 return;
             this._mipmap = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12349,7 +12649,7 @@ var MaterialBase = (function (_super) {
             if (this._smooth == value)
                 return;
             this._smooth = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12366,7 +12666,7 @@ var MaterialBase = (function (_super) {
             if (this._repeat == value)
                 return;
             this._repeat = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12382,7 +12682,7 @@ var MaterialBase = (function (_super) {
             if (this._color == value)
                 return;
             this._color = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12398,7 +12698,7 @@ var MaterialBase = (function (_super) {
             if (this._pTexture == value)
                 return;
             this._pTexture = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
             this._pHeight = this._pTexture.height;
             this._pWidth = this._pTexture.width;
             this._pNotifySizeChanged();
@@ -12417,7 +12717,7 @@ var MaterialBase = (function (_super) {
             if (this._pAnimateUVs == value)
                 return;
             this._pAnimateUVs = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12434,7 +12734,7 @@ var MaterialBase = (function (_super) {
             if (this._enableLightFallOff == value)
                 return;
             this._enableLightFallOff = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12453,7 +12753,7 @@ var MaterialBase = (function (_super) {
             if (this._diffuseLightSources == value)
                 return;
             this._diffuseLightSources = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12472,7 +12772,7 @@ var MaterialBase = (function (_super) {
             if (this._specularLightSources == value)
                 return;
             this._specularLightSources = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12484,15 +12784,10 @@ var MaterialBase = (function (_super) {
     MaterialBase.prototype.dispose = function () {
         var i;
         var len;
-        this._pClearScreenPasses();
-        len = this._materialData.length;
+        len = this._renderObjects.length;
         for (i = 0; i < len; i++)
-            this._materialData[i].dispose();
-        this._materialData = new Array();
-        len = this._materialPassData.length;
-        for (i = 0; i < len; i++)
-            this._materialPassData[i].dispose();
-        this._materialPassData = new Array();
+            this._renderObjects[i].dispose();
+        this._renderObjects = new Array();
     };
     Object.defineProperty(MaterialBase.prototype, "bothSides", {
         /**
@@ -12505,7 +12800,7 @@ var MaterialBase = (function (_super) {
             if (this._bothSides = value)
                 return;
             this._bothSides = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12528,7 +12823,7 @@ var MaterialBase = (function (_super) {
             if (this._pBlendMode == value)
                 return;
             this._pBlendMode = value;
-            this._pInvalidatePasses();
+            this._pInvalidateRenderObject();
         },
         enumerable: true,
         configurable: true
@@ -12546,7 +12841,7 @@ var MaterialBase = (function (_super) {
             if (this._alphaPremultiplied == value)
                 return;
             this._alphaPremultiplied = value;
-            this._pInvalidatePasses();
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12568,17 +12863,7 @@ var MaterialBase = (function (_super) {
             if (this._pAlphaThreshold == value)
                 return;
             this._pAlphaThreshold = value;
-            this._pInvalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MaterialBase.prototype, "requiresBlending", {
-        /**
-         * Indicates whether or not the material requires alpha blending during rendering.
-         */
-        get: function () {
-            return this._pRequiresBlending;
+            this._pInvalidateProperties();
         },
         enumerable: true,
         configurable: true
@@ -12593,52 +12878,15 @@ var MaterialBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    /**
-     * Sets the render state for a pass that is independent of the rendered object. This needs to be called before
-     * calling renderPass. Before activating a pass, the previously used pass needs to be deactivated.
-     * @param pass The pass data to activate.
-     * @param stage The Stage object which is currently used for rendering.
-     * @param camera The camera from which the scene is viewed.
-     * @private
-     */
-    MaterialBase.prototype._iActivatePass = function (pass, renderer, camera) {
-        pass.materialPass._iActivate(pass, renderer, camera);
-    };
-    /**
-     * Clears the render state for a pass. This needs to be called before activating another pass.
-     * @param pass The pass to deactivate.
-     * @param stage The Stage used for rendering
-     *
-     * @internal
-     */
-    MaterialBase.prototype._iDeactivatePass = function (pass, renderer) {
-        pass.materialPass._iDeactivate(pass, renderer);
-    };
-    /**
-     * Renders the current pass. Before calling renderPass, activatePass needs to be called with the same index.
-     * @param pass The pass used to render the renderable.
-     * @param renderable The IRenderable object to draw.
-     * @param stage The Stage object used for rendering.
-     * @param entityCollector The EntityCollector object that contains the visible scene data.
-     * @param viewProjection The view-projection matrix used to project to the screen. This is not the same as
-     * camera.viewProjection as it includes the scaling factors when rendering to textures.
-     *
-     * @internal
-     */
-    MaterialBase.prototype._iRenderPass = function (pass, renderable, stage, camera, viewProjection) {
-        if (this._pLightPicker)
-            this._pLightPicker.collectLights(renderable);
-        pass.materialPass._iRender(pass, renderable, stage, camera, viewProjection);
-    };
     //
     // MATERIAL MANAGEMENT
     //
     /**
-     * Mark an IMaterialOwner as owner of this material.
+     * Mark an IRenderableOwner as owner of this material.
      * Assures we're not using the same material across renderables with different animations, since the
      * Programs depend on animation. This method needs to be called when a material is assigned.
      *
-     * @param owner The IMaterialOwner that had this material assigned
+     * @param owner The IRenderableOwner that had this material assigned
      *
      * @internal
      */
@@ -12661,7 +12909,7 @@ var MaterialBase = (function (_super) {
         }
     };
     /**
-     * Removes an IMaterialOwner as owner.
+     * Removes an IRenderableOwner as owner.
      * @param owner
      *
      * @internal
@@ -12675,7 +12923,7 @@ var MaterialBase = (function (_super) {
     };
     Object.defineProperty(MaterialBase.prototype, "iOwners", {
         /**
-         * A list of the IMaterialOwners that use this material
+         * A list of the IRenderableOwners that use this material
          *
          * @private
          */
@@ -12686,125 +12934,59 @@ var MaterialBase = (function (_super) {
         configurable: true
     });
     /**
-     * The amount of passes used by the material.
-     *
-     * @private
-     */
-    MaterialBase.prototype._iNumScreenPasses = function () {
-        return this._numPasses;
-    };
-    Object.defineProperty(MaterialBase.prototype, "_iScreenPasses", {
-        /**
-         * A list of the screen passes used in this material
-         *
-         * @private
-         */
-        get: function () {
-            return this._passes;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
      * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
      *
      * @private
      */
-    MaterialBase.prototype._pInvalidatePasses = function () {
-        var len = this._materialPassData.length;
+    MaterialBase.prototype._pInvalidateProperties = function () {
+        var len = this._renderObjects.length;
         for (var i = 0; i < len; i++)
-            this._materialPassData[i].invalidate();
-        this.invalidateMaterial();
-    };
-    /**
-     * Flags that the screen passes have become invalid and need possible re-ordering / adding / deleting
-     */
-    MaterialBase.prototype._pInvalidateScreenPasses = function () {
-        this._pScreenPassesInvalid = true;
-    };
-    /**
-     * Removes a pass from the material.
-     * @param pass The pass to be removed.
-     */
-    MaterialBase.prototype._pRemoveScreenPass = function (pass) {
-        pass.removeEventListener(Event.CHANGE, this._onPassChangeDelegate);
-        this._passes.splice(this._passes.indexOf(pass), 1);
-        this._numPasses--;
-    };
-    /**
-     * Removes all passes from the material
-     */
-    MaterialBase.prototype._pClearScreenPasses = function () {
-        for (var i = 0; i < this._numPasses; ++i)
-            this._passes[i].removeEventListener(Event.CHANGE, this._onPassChangeDelegate);
-        this._passes.length = this._numPasses = 0;
-    };
-    /**
-     * Adds a pass to the material
-     * @param pass
-     */
-    MaterialBase.prototype._pAddScreenPass = function (pass) {
-        this._passes[this._numPasses++] = pass;
-        pass.lightPicker = this._pLightPicker;
-        pass.addEventListener(Event.CHANGE, this._onPassChangeDelegate);
-        this.invalidateMaterial();
-    };
-    MaterialBase.prototype._iAddMaterialData = function (materialData) {
-        this._materialData.push(materialData);
-        return materialData;
-    };
-    MaterialBase.prototype._iRemoveMaterialData = function (materialData) {
-        this._materialData.splice(this._materialData.indexOf(materialData), 1);
-        return materialData;
-    };
-    /**
-     * Performs any processing that needs to occur before any of its passes are used.
-     *
-     * @private
-     */
-    MaterialBase.prototype._iUpdateMaterial = function () {
-    };
-    /**
-     * Listener for when a pass's shader code changes. It recalculates the render order id.
-     */
-    MaterialBase.prototype.onPassChange = function (event) {
-        this.invalidateMaterial();
+            this._renderObjects[i].invalidateProperties();
     };
     MaterialBase.prototype.invalidateAnimation = function () {
-        var len = this._materialData.length;
+        var len = this._renderObjects.length;
         for (var i = 0; i < len; i++)
-            this._materialData[i].invalidateAnimation();
+            this._renderObjects[i].invalidateAnimation();
     };
-    MaterialBase.prototype.invalidateMaterial = function () {
-        var len = this._materialData.length;
+    MaterialBase.prototype._pInvalidateRenderObject = function () {
+        var len = this._renderObjects.length;
         for (var i = 0; i < len; i++)
-            this._materialData[i].invalidateMaterial();
+            this._renderObjects[i].invalidateRenderObject();
     };
     /**
      * Called when the light picker's configuration changed.
      */
     MaterialBase.prototype.onLightsChange = function (event) {
-        this._pInvalidateScreenPasses();
+        this._pInvalidateRenderObject();
     };
     MaterialBase.prototype._pNotifySizeChanged = function () {
         if (!this._sizeChanged)
             this._sizeChanged = new MaterialEvent(MaterialEvent.SIZE_CHANGED);
         this.dispatchEvent(this._sizeChanged);
     };
-    MaterialBase.prototype._iAddMaterialPassData = function (materialPassData) {
-        this._materialPassData.push(materialPassData);
-        return materialPassData;
+    MaterialBase.prototype._iAddRenderObject = function (renderObject) {
+        this._renderObjects.push(renderObject);
+        return renderObject;
     };
-    MaterialBase.prototype._iRemoveMaterialPassData = function (materialPassData) {
-        this._materialPassData.splice(this._materialPassData.indexOf(materialPassData), 1);
-        return materialPassData;
+    MaterialBase.prototype._iRemoveRenderObject = function (renderObject) {
+        this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
+        return renderObject;
+    };
+    /**
+     *
+     * @param renderer
+     *
+     * @internal
+     */
+    MaterialBase.prototype.getRenderObject = function (renderablePool) {
+        return renderablePool.getMaterialRenderObject(this);
     };
     return MaterialBase;
 })(NamedAssetBase);
 module.exports = MaterialBase;
 
 
-},{"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/base/BlendMode":undefined,"awayjs-display/lib/events/MaterialEvent":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
+},{"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/base/BlendMode":undefined,"awayjs-display/lib/events/MaterialEvent":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13158,11 +13340,7 @@ var StaticLightPicker = (function (_super) {
 module.exports = StaticLightPicker;
 
 
-},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/LightProbe":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/events/LightEvent":undefined,"awayjs-display/lib/materials/lightpickers/LightPickerBase":undefined}],"awayjs-display/lib/materials/passes/IMaterialPass":[function(require,module,exports){
-
-
-
-},{}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/entities/DirectionalLight":undefined,"awayjs-display/lib/entities/LightProbe":undefined,"awayjs-display/lib/entities/PointLight":undefined,"awayjs-display/lib/events/LightEvent":undefined,"awayjs-display/lib/materials/lightpickers/LightPickerBase":undefined}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14576,17 +14754,17 @@ var CSSRenderableBase = (function () {
      * @param material
      * @param animator
      */
-    function CSSRenderableBase(pool, sourceEntity, materialOwner) {
+    function CSSRenderableBase(pool, sourceEntity, renderableOwner) {
         //store a reference to the pool for later disposal
         this._pool = pool;
         this.sourceEntity = sourceEntity;
-        this.materialOwner = materialOwner;
+        this.renderableOwner = renderableOwner;
     }
     /**
      *
      */
     CSSRenderableBase.prototype.dispose = function () {
-        this._pool.disposeItem(this.materialOwner);
+        this._pool.disposeItem(this.renderableOwner);
     };
     /**
      *
@@ -14633,7 +14811,7 @@ var CSSSkyboxRenderable = (function (_super) {
         style.transformOrigin = style["-webkit-transform-origin"] = style["-moz-transform-origin"] = style["-o-transform-origin"] = style["-ms-transform-origin"] = "0% 0%";
         img = document.createElement("div");
         div.appendChild(img);
-        img.className = "material" + skyBox.material.id;
+        img.className = "material" + skyBox.id;
     }
     CSSSkyboxRenderable.id = "skybox";
     return CSSSkyboxRenderable;
@@ -14696,79 +14874,16 @@ var EntityListItem = (function () {
 module.exports = EntityListItem;
 
 
-},{}],"awayjs-display/lib/pool/IMaterialData":[function(require,module,exports){
+},{}],"awayjs-display/lib/pool/IRenderObject":[function(require,module,exports){
 
 
 
-},{}],"awayjs-display/lib/pool/IMaterialPassData":[function(require,module,exports){
-
-
-
-},{}],"awayjs-display/lib/pool/IRenderableClass":[function(require,module,exports){
+},{}],"awayjs-display/lib/pool/IRenderablePool":[function(require,module,exports){
 
 
 
 },{}],"awayjs-display/lib/pool/IRenderable":[function(require,module,exports){
 
-
-
-},{}],"awayjs-display/lib/pool/RenderablePool":[function(require,module,exports){
-/**
- * @class away.pool.RenderablePool
- */
-var RenderablePool = (function () {
-    /**
-     * //TODO
-     *
-     * @param renderableClass
-     */
-    function RenderablePool(renderableClass) {
-        this._pool = new Object();
-        this._renderableClass = renderableClass;
-    }
-    /**
-     * //TODO
-     *
-     * @param materialOwner
-     * @returns IRenderable
-     */
-    RenderablePool.prototype.getItem = function (materialOwner) {
-        return (this._pool[materialOwner.id] || (this._pool[materialOwner.id] = materialOwner._iAddRenderable(new this._renderableClass(this, materialOwner))));
-    };
-    /**
-     * //TODO
-     *
-     * @param materialOwner
-     */
-    RenderablePool.prototype.disposeItem = function (materialOwner) {
-        materialOwner._iRemoveRenderable(this._pool[materialOwner.id]);
-        this._pool[materialOwner.id] = null;
-    };
-    /**
-     * //TODO
-     *
-     * @param renderableClass
-     * @returns RenderablePool
-     */
-    RenderablePool.getPool = function (renderableClass) {
-        var pool = RenderablePool._pools[renderableClass.id];
-        if (pool != undefined)
-            return pool;
-        return (RenderablePool._pools[renderableClass.id] = new RenderablePool(renderableClass));
-    };
-    /**
-     * //TODO
-     *
-     * @param renderableClass
-     */
-    RenderablePool.disposePool = function (renderableClass) {
-        if (RenderablePool._pools[renderableClass.id])
-            RenderablePool._pools[renderableClass.id] = undefined;
-    };
-    RenderablePool._pools = new Object();
-    return RenderablePool;
-})();
-module.exports = RenderablePool;
 
 
 },{}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
@@ -17494,7 +17609,7 @@ var CSSDefaultRenderer = (function (_super) {
     CSSDefaultRenderer.prototype.drawRenderables = function (item, entityCollector) {
         var viewProjection = entityCollector.camera.viewProjection.clone();
         while (item) {
-            this._activeMaterial = item.materialOwner.material;
+            //this._activeMaterial = <CSSMaterialBase> item.materialOwner.material;
             //serialise transform and apply to html element
             this._transform.copyRawDataFrom(item.renderSceneTransform.rawData);
             this._transform.append(viewProjection);
@@ -17571,9 +17686,6 @@ var Point = require("awayjs-core/lib/geom/Point");
 var Rectangle = require("awayjs-core/lib/geom/Rectangle");
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-var CSSBillboardRenderable = require("awayjs-display/lib/pool/CSSBillboardRenderable");
-var CSSLineSegmentRenderable = require("awayjs-display/lib/pool/CSSLineSegmentRenderable");
-var RenderablePool = require("awayjs-display/lib/pool/RenderablePool");
 var RendererEvent = require("awayjs-display/lib/events/RendererEvent");
 /**
  * RendererBase forms an abstract base class for classes that are used in the rendering pipeline to render the
@@ -17602,8 +17714,8 @@ var CSSRendererBase = (function (_super) {
         this._scissorRect = new Rectangle();
         this._localPos = new Point();
         this._globalPos = new Point();
-        this._billboardRenderablePool = RenderablePool.getPool(CSSBillboardRenderable);
-        this._lineSegmentRenderablePool = RenderablePool.getPool(CSSLineSegmentRenderable);
+        //this._billboardRenderablePool = RenderablePool.getPool(CSSBillboardRenderable);
+        //this._lineSegmentRenderablePool = RenderablePool.getPool(CSSLineSegmentRenderable);
         this._viewPort = new Rectangle();
         if (this._width == 0)
             this.width = window.innerWidth;
@@ -17850,7 +17962,7 @@ var CSSRendererBase = (function (_super) {
      * @param billboard
      */
     CSSRendererBase.prototype.applyBillboard = function (billboard) {
-        this._applyRenderable(this._billboardRenderablePool.getItem(billboard));
+        //this._applyRenderable(<CSSRenderableBase> this._billboardRenderablePool.getItem(billboard));
     };
     /**
      *
@@ -17877,7 +17989,7 @@ var CSSRendererBase = (function (_super) {
      * @private
      */
     CSSRendererBase.prototype._applyRenderable = function (renderable) {
-        var material = renderable.materialOwner.material;
+        var material; // = <CSSMaterialBase> renderable.renderableOwner.material;
         var entity = renderable.sourceEntity;
         var position = entity.scenePosition;
         if (material) {
@@ -17934,7 +18046,7 @@ var CSSRendererBase = (function (_super) {
 module.exports = CSSRendererBase;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/events/RendererEvent":undefined,"awayjs-display/lib/pool/CSSBillboardRenderable":undefined,"awayjs-display/lib/pool/CSSLineSegmentRenderable":undefined,"awayjs-display/lib/pool/RenderablePool":undefined}],"awayjs-display/lib/render/IRenderer":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/events/RendererEvent":undefined}],"awayjs-display/lib/render/IRenderer":[function(require,module,exports){
 
 
 
@@ -18032,13 +18144,13 @@ var RenderableMergeSort = (function () {
             return head;
         while (head && headB && head != null && headB != null) {
             // first sort per render order id (reduces program3D switches),
-            // then on material id (reduces setting props),
+            // then on render object id (reduces setting props),
             // then on zIndex (reduces overdraw)
             var aid = head.renderOrderId;
             var bid = headB.renderOrderId;
             if (aid == bid) {
-                var ma = head.materialId;
-                var mb = headB.materialId;
+                var ma = head.renderObjectId;
+                var mb = headB.renderObjectId;
                 if (ma == mb) {
                     if (head.zIndex < headB.zIndex)
                         cmp = 1;
