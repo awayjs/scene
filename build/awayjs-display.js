@@ -9687,7 +9687,7 @@ var Mesh = (function (_super) {
      * @protected
      */
     Mesh.prototype.pUpdateBounds = function () {
-        var i, j, p;
+        var i, j, p, len;
         var subGeoms = this._geometry.subGeometries;
         var subGeom;
         var boundingPositions;
@@ -9701,12 +9701,11 @@ var Mesh = (function (_super) {
             minX = maxX = boundingPositions[i];
             minY = maxY = boundingPositions[i + 1];
             minZ = maxZ = boundingPositions[i + 2];
-            j = numSubGeoms;
-            while (j--) {
+            for (j = 0; j < numSubGeoms; j++) {
                 subGeom = subGeoms[j];
                 boundingPositions = subGeom.getBoundingPositions();
-                i = boundingPositions.length;
-                while (i--) {
+                len = boundingPositions.length;
+                for (i = 0; i < len; i += 3) {
                     p = boundingPositions[i];
                     if (p < minX)
                         minX = p;
