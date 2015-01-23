@@ -337,7 +337,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public pUpdateBounds()
 	{
-		var i:number, j:number, p:number;
+		var i:number, j:number, p:number, len:number;
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
 		var subGeom:SubGeometryBase;
 		var boundingPositions:Array<number>;
@@ -353,12 +353,12 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			minY = maxY = boundingPositions[i + 1];
 			minZ = maxZ = boundingPositions[i + 2];
 
-			j = numSubGeoms;
-			while (j--) {
+			for (j = 0; j < numSubGeoms; j++) {
 				subGeom = subGeoms[j];
 				boundingPositions = subGeom.getBoundingPositions();
-				i = boundingPositions.length;
-				while (i--) {
+				len = boundingPositions.length;
+
+				for (i = 0; i < len; i+=3) {
 					p = boundingPositions[i];
 					if (p < minX)
 						minX = p;
