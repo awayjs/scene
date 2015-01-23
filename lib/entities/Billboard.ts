@@ -7,7 +7,7 @@ import IAnimator				= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
 import EntityNode				= require("awayjs-display/lib/partition/EntityNode");
-import IRenderer				= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
 import IEntity					= require("awayjs-display/lib/entities/IEntity");
 import MaterialEvent			= require("awayjs-display/lib/events/MaterialEvent");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
@@ -220,7 +220,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 			this._pRenderables[i].invalidateVertexData("vertices"); //TODO
 	}
 
-	public _iCollectRenderables(renderer:IRenderer)
+	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		// Since this getter is invoked every iteration of the render loop, and
 		// the prefab construct could affect the sub-meshes, the prefab is
@@ -228,12 +228,12 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
 
-		this._iCollectRenderable(renderer);
+		this._iCollectRenderable(rendererPool);
 	}
 
-	public _iCollectRenderable(renderer:IRenderer)
+	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
-		renderer.applyBillboard(this);
+		rendererPool.applyBillboard(this);
 	}
 }
 

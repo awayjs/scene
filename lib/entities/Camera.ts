@@ -13,7 +13,7 @@ import IEntity					= require("awayjs-display/lib/entities/IEntity");
 import CameraEvent				= require("awayjs-display/lib/events/CameraEvent");
 import CameraNode				= require("awayjs-display/lib/partition/CameraNode");
 import EntityNode				= require("awayjs-display/lib/partition/EntityNode");
-import IRenderer				= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
 
 
 class Camera extends DisplayObjectContainer implements IEntity
@@ -273,7 +273,7 @@ class Camera extends DisplayObjectContainer implements IEntity
 		return this.sceneTransform.transformVector(this._projection.unproject(nX, nY, sZ));
 	}
 
-	public _iCollectRenderables(renderer:IRenderer)
+	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		// Since this getter is invoked every iteration of the render loop, and
 		// the prefab construct could affect the sub-meshes, the prefab is
@@ -281,10 +281,10 @@ class Camera extends DisplayObjectContainer implements IEntity
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
 
-		this._iCollectRenderable(renderer);
+		this._iCollectRenderable(rendererPool);
 	}
 
-	public _iCollectRenderable(renderer:IRenderer)
+	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
 		//nothing to do here
 	}

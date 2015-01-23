@@ -1,14 +1,14 @@
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import UVTransform				= require("awayjs-core/lib/geom/UVTransform");
-import NamedAssetBase			= require("awayjs-core/lib/library/NamedAssetBase");
+import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
 
-import IAnimator				= require("awayjs-display/lib/animators/IAnimator");
-import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
-import IRenderer				= require("awayjs-display/lib/render/IRenderer");
-import Camera					= require("awayjs-display/lib/entities/Camera");
-import Mesh						= require("awayjs-display/lib/entities/Mesh");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
+import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
+import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
+import Camera						= require("awayjs-display/lib/entities/Camera");
+import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
@@ -148,7 +148,7 @@ class SubMeshBase extends NamedAssetBase
 			this._renderables[i].invalidateGeometry();
 	}
 
-	public _iCollectRenderable(renderer:IRenderer)
+	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
 		throw new AbstractMethodError();
 	}

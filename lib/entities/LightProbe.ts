@@ -7,7 +7,7 @@ import Error						= require("awayjs-core/lib/errors/Error");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import LightProbeNode				= require("awayjs-display/lib/partition/LightProbeNode");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");
@@ -73,7 +73,7 @@ class LightProbe extends LightBase implements IEntity
 		throw new Error("Object projection matrices are not supported for LightProbe objects!");
 	}
 
-	public _iCollectRenderables(renderer:IRenderer)
+	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		//nothing to do here
 	}

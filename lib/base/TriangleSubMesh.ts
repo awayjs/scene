@@ -3,7 +3,7 @@ import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
 import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
 
-import IRenderer				= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 
@@ -59,9 +59,9 @@ class TriangleSubMesh extends SubMeshBase implements ISubMesh
 		super.dispose();
 	}
 
-	public _iCollectRenderable(renderer:IRenderer)
+	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
-		renderer.applyTriangleSubMesh(this);
+		rendererPool.applyTriangleSubMesh(this);
 	}
 }
 

@@ -3,7 +3,7 @@ import AssetType				= require("awayjs-core/lib/library/AssetType");
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
-import IRenderer				= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 
@@ -61,9 +61,9 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 		super.dispose();
 	}
 
-	public _iCollectRenderable(renderer:IRenderer)
+	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
-		renderer.applyLineSubMesh(this);
+		rendererPool.applyLineSubMesh(this);
 	}
 }
 

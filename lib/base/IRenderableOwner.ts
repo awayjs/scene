@@ -4,7 +4,7 @@ import IAsset					= require("awayjs-core/lib/library/IAsset");
 import IAnimator				= require("awayjs-display/lib/animators/IAnimator");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
-import IRenderer				= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
 
 
 /**
@@ -44,7 +44,7 @@ interface IRenderableOwner extends IAsset
 	 * @param renderer
 	 * @private
 	 */
-	_iCollectRenderable(renderer:IRenderer)
+	_iCollectRenderable(rendererPool:IRendererPool)
 }
 
 export = IRenderableOwner;

@@ -10,7 +10,7 @@ import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeome
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -482,7 +482,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 *
 	 * @internal
 	 */
-	public _iCollectRenderables(renderer:IRenderer)
+	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		// Since this getter is invoked every iteration of the render loop, and
 		// the prefab construct could affect the sub-meshes, the prefab is
@@ -492,7 +492,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		var len:number /*uint*/ = this._subMeshes.length;
 		for (var i:number /*uint*/ = 0; i < len; i++)
-			this._subMeshes[i]._iCollectRenderable(renderer);
+			this._subMeshes[i]._iCollectRenderable(rendererPool);
 	}
 
 	public _iInvalidateRenderableGeometries()

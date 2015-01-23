@@ -17,7 +17,7 @@ interface IRenderObject
 	/**
 	 *
 	 */
-	invalidateProperties();
+	invalidatePasses();
 
 	/**
 	 *

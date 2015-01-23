@@ -14,7 +14,7 @@ import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
 import SkyboxNode					= require("awayjs-display/lib/partition/SkyboxNode");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -63,7 +63,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._pAlphaThreshold = value;
 
-		this._pInvalidateProperties();
+		this._pIinvalidatePasses();
 	}
 
 	/**
@@ -81,7 +81,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._mipmap = value;
 
-		this._pInvalidateProperties();
+		this._pIinvalidatePasses();
 	}
 
 	/**
@@ -99,7 +99,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._smooth = value;
 
-		this._pInvalidateProperties();
+		this._pIinvalidatePasses();
 	}
 	
 	/**
@@ -158,11 +158,11 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	 *
 	 * @private
 	 */
-	public _pInvalidateProperties()
+	public _pIinvalidatePasses()
 	{
 		var len:number = this._renderObjects.length;
 		for (var i:number = 0; i < len; i++)
-			this._renderObjects[i].invalidateProperties();
+			this._renderObjects[i].invalidatePasses();
 	}
 
 	/**
@@ -288,12 +288,12 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._renderables = new Array<IRenderable>();
 	}
 
-	public _iCollectRenderables(renderer:IRenderer)
+	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		//skybox do not get collected in the standard entity list
 	}
 
-	public _iCollectRenderable(renderer:IRenderer)
+	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
 
 	}

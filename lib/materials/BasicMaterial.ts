@@ -1,22 +1,16 @@
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import Texture2DBase				= require("awayjs-core/lib/textures/Texture2DBase");
 
-import BlendMode					= require("awayjs-display/lib/base/BlendMode");
+import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeometry");
-import Camera						= require("awayjs-display/lib/entities/Camera");
+import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
+import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
 
 /**
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
  * using material methods to define their appearance.
  */
-class BasicMaterial extends MaterialBase
+class BasicMaterial extends MaterialBase implements IRenderObjectOwner
 {
-	private _alphaBlending:boolean = false;
-	private _alpha:number = 1;
-
 	/**
 	 * Creates a new BasicMaterial object.
 	 *
@@ -44,45 +38,14 @@ class BasicMaterial extends MaterialBase
 	}
 
 	/**
-	 * The alpha of the surface.
+	 *
+	 * @param renderer
+	 *
+	 * @internal
 	 */
-	public get alpha():number
+	public getRenderObject(renderablePool:IRenderablePool):IRenderObject
 	{
-		return this._alpha;
-	}
-
-	public set alpha(value:number)
-	{
-		if (value > 1)
-			value = 1;
-		else if (value < 0)
-			value = 0;
-
-		if (this._alpha == value)
-			return;
-
-		this._alpha = value;
-
-		this._pInvalidateProperties();
-	}
-
-	/**
-	 * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
-	 * example when using textures of foliage, consider using alphaThreshold instead.
-	 */
-	public get alphaBlending():boolean
-	{
-		return this._alphaBlending;
-	}
-
-	public set alphaBlending(value:boolean)
-	{
-		if (this._alphaBlending == value)
-			return;
-
-		this._alphaBlending = value;
-
-		this._pInvalidateProperties();
+		return renderablePool.getMaterialRenderObject(this);
 	}
 }
 

@@ -1,4 +1,6 @@
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Event						= require("awayjs-core/lib/events/Event");
 import AssetType					= require("awayjs-core/lib/library/AssetType");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
@@ -14,6 +16,7 @@ import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
 import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
+import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 
@@ -31,6 +34,10 @@ import IRenderer					= require("awayjs-display/lib/render/IRenderer");
  */
 class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 {
+	private _colorTransform:ColorTransform;
+	private _alphaBlending:boolean = false;
+	private _alpha:number = 1;
+	
 	private _sizeChanged:MaterialEvent;
 	private _renderObjects:Array<IRenderObject> = new Array<IRenderObject>();
 
@@ -89,6 +96,15 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 	private _onLightChangeDelegate:(event:Event) => void;
 
+
+	/**
+	 *
+	 */
+	public get assetType():string
+	{
+		return AssetType.MATERIAL;;
+	}
+
 	/**
 	 * Creates a new MaterialBase object.
 	 */
@@ -105,6 +121,68 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 		this.alphaPremultiplied = false; //TODO: work out why this is different for WebGL
 	}
 
+	/**
+	 * The alpha of the surface.
+	 */
+	public get alpha():number
+	{
+		return this._alpha;
+	}
+
+	public set alpha(value:number)
+	{
+		if (value > 1)
+			value = 1;
+		else if (value < 0)
+			value = 0;
+
+		if (this._alpha == value)
+			return;
+
+		this._alpha = value;
+
+		if (this._colorTransform == null)
+			this._colorTransform = new ColorTransform();
+
+		this._colorTransform.alphaMultiplier = value;
+
+		this._pInvalidateRenderObject();
+	}
+
+	/**
+	 * The ColorTransform object to transform the colour of the material with. Defaults to null.
+	 */
+	public get colorTransform():ColorTransform
+	{
+		return this._colorTransform;
+	}
+
+	public set colorTransform(value:ColorTransform)
+	{
+		this._colorTransform = value;
+
+		this._pInvalidateRenderObject();
+	}
+
+	/**
+	 * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
+	 * example when using textures of foliage, consider using alphaThreshold instead.
+	 */
+	public get alphaBlending():boolean
+	{
+		return this._alphaBlending;
+	}
+
+	public set alphaBlending(value:boolean)
+	{
+		if (this._alphaBlending == value)
+			return;
+
+		this._alphaBlending = value;
+
+		this._pInvalidateRenderObject();
+	}
+	
 	/**
 	 *
 	 */
@@ -164,7 +242,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._mipmap = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -182,7 +260,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._smooth = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -201,7 +279,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._repeat = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -219,7 +297,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._color = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -237,7 +315,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._pTexture = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 
 		this._pHeight = this._pTexture.height;
 		this._pWidth = this._pTexture.width;
@@ -260,7 +338,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._pAnimateUVs = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -279,7 +357,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._enableLightFallOff = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -300,7 +378,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._diffuseLightSources = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -321,7 +399,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._specularLightSources = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -355,7 +433,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._bothSides = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -400,7 +478,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._alphaPremultiplied = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -425,7 +503,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 		this._pAlphaThreshold = value;
 
-		this._pInvalidateProperties();
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -470,6 +548,8 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 				}
 			}
 		}
+
+		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OBJECT_OWNER_UPDATED, this));
 	}
 
 	/**
@@ -487,6 +567,8 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 			this.invalidateAnimation();
 		}
+
+		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OBJECT_OWNER_UPDATED, this));
 	}
 
 	/**
@@ -504,11 +586,11 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 	 *
 	 * @private
 	 */
-	public _pInvalidateProperties()
+	public _pInvalidatePasses()
 	{
 		var len:number = this._renderObjects.length;
 		for (var i:number = 0; i < len; i++)
-			this._renderObjects[i].invalidateProperties();
+			this._renderObjects[i].invalidatePasses();
 	}
 
 	private invalidateAnimation()
@@ -561,9 +643,9 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 	 *
 	 * @internal
 	 */
-	public getRenderObject(renderablePool:IRenderablePool)
+	public getRenderObject(renderablePool:IRenderablePool):IRenderObject
 	{
-		return renderablePool.getMaterialRenderObject(this);
+		throw new AbstractMethodError();
 	}
 }
 

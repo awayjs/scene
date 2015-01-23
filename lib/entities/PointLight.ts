@@ -7,7 +7,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import PointLightNode				= require("awayjs-display/lib/partition/PointLightNode");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import CubeMapShadowMapper			= require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
@@ -136,7 +136,7 @@ class PointLight extends LightBase implements IEntity
 		return target;
 	}
 
-	public _iCollectRenderables(renderer:IRenderer)
+	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		//nothing to do here
 	}

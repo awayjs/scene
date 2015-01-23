@@ -11,7 +11,7 @@ import Partition					= require("awayjs-display/lib/partition/Partition");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 
 interface IEntity extends IAsset
 {
@@ -145,7 +145,7 @@ interface IEntity extends IAsset
 	 * @param renderer
 	 * @private
 	 */
-	_iCollectRenderables(renderer:IRenderer);
+	_iCollectRenderables(rendererPool:IRendererPool);
 }
 
 export = IEntity;

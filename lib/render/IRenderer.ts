@@ -1,11 +1,8 @@
 import IEventDispatcher				= require("awayjs-core/lib/events/IEventDispatcher");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 
-import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");
-import TriangleSubMesh				= require("awayjs-display/lib/base/TriangleSubMesh");
 import IEntitySorter				= require("awayjs-display/lib/sort/IEntitySorter");
 import ICollector					= require("awayjs-display/lib/traverse/ICollector");
-import Billboard					= require("awayjs-display/lib/entities/Billboard");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
 import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
@@ -57,24 +54,6 @@ interface IRenderer extends IEventDispatcher
 	 *
 	 */
 	scissorRect:Rectangle;
-
-	/**
-	 *
-	 * @param billboard
-	 */
-	applyBillboard(billboard:Billboard);
-
-	/**
-	 *
-	 * @param triangleSubMesh
-	 */
-	applyLineSubMesh(triangleSubMesh:LineSubMesh);
-
-	/**
-	 *
-	 * @param triangleSubMesh
-	 */
-	applyTriangleSubMesh(triangleSubMesh:TriangleSubMesh);
 
 	/**
 	 *
