@@ -188,7 +188,7 @@ class RaycastPicker implements IPicker
 
 	private updateLocalPosition(pickingCollisionVO:PickingCollisionVO)
 	{
-		var collisionPos:Vector3D = ( pickingCollisionVO.localPosition == null )? new Vector3D() : pickingCollisionVO.localPosition;
+		var collisionPos:Vector3D = ( pickingCollisionVO.localPosition == null )? (pickingCollisionVO.localPosition = new Vector3D()) : pickingCollisionVO.localPosition;
 
 		var rayDir:Vector3D = pickingCollisionVO.localRayDirection;
 		var rayPos:Vector3D = pickingCollisionVO.localRayPosition;

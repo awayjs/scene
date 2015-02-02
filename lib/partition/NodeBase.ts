@@ -231,8 +231,8 @@ class NodeBase
 			this._pBoundsPrimitive = null;
 		}
 
-		if (this._implicitBoundsVisible)
-			this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
+		//if (this._implicitBoundsVisible)
+		//	this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
 	}
 }
 
