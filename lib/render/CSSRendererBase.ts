@@ -299,22 +299,22 @@ class CSSRendererBase extends EventDispatcher
 	}
 	public pCollectRenderables(entityCollector:ICollector)
 	{
-		//reset head values
-		this._renderableHead = null;
-
-		//grab entity head
-		var item:EntityListItem = entityCollector.entityHead;
-
-		//set temp values for entry point and camera forward vector
-		this._pCamera = entityCollector.camera;
-		this._iEntryPoint = this._pCamera.scenePosition;
-		this._pCameraForward = this._pCamera.transform.forwardVector;
-
-		//iterate through all entities
-		while (item) {
-			item.entity._iCollectRenderables(this);
-			item = item.next;
-		}
+		////reset head values
+		//this._renderableHead = null;
+		//
+		////grab entity head
+		//var item:EntityListItem = entityCollector.entityHead;
+		//
+		////set temp values for entry point and camera forward vector
+		//this._pCamera = entityCollector.camera;
+		//this._iEntryPoint = this._pCamera.scenePosition;
+		//this._pCameraForward = this._pCamera.transform.forwardVector;
+		//
+		////iterate through all entities
+		//while (item) {
+		//	//item.entity._iCollectRenderables(this);
+		//	item = item.next;
+		//}
 	}
 
 	/**

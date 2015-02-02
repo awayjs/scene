@@ -1,6 +1,7 @@
 import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");
 import TriangleSubMesh				= require("awayjs-display/lib/base/TriangleSubMesh");
 import Billboard					= require("awayjs-display/lib/entities/Billboard");
+import LineSegment					= require("awayjs-display/lib/entities/LineSegment");
 
 /**
  * IRenderer is an interface for classes that are used in the rendering pipeline to render the
@@ -20,7 +21,13 @@ interface IRendererPool
 	 *
 	 * @param triangleSubMesh
 	 */
-	applyLineSubMesh(triangleSubMesh:LineSubMesh);
+	applyLineSegment(lineSegment:LineSegment);
+
+	/**
+	 *
+	 * @param triangleSubMesh
+	 */
+	applyLineSubMesh(lineSubMesh:LineSubMesh);
 
 	/**
 	 *
