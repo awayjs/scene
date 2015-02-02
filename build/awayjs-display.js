@@ -8749,7 +8749,7 @@ var Billboard = (function (_super) {
         this._pBoundsInvalid = true;
         var len = this._pRenderables.length;
         for (var i = 0; i < len; i++)
-            this._pRenderables[i].invalidateVertexData("vertices");
+            this._pRenderables[i].invalidateGeometry();
     };
     Billboard.prototype._iCollectRenderables = function (rendererPool) {
         // Since this getter is invoked every iteration of the render loop, and
@@ -9235,7 +9235,6 @@ var __extends = this.__extends || function (d, b) {
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var EntityNode = require("awayjs-display/lib/partition/EntityNode");
-var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
 /**
  * A Line Segment primitive.
  */
@@ -9249,11 +9248,9 @@ var LineSegment = (function (_super) {
      * @param thickness Thickness of the line
      */
     function LineSegment(material, startPosition, endPosition, thickness) {
-        var _this = this;
         if (thickness === void 0) { thickness = 1; }
         _super.call(this);
         this._pIsEntity = true;
-        this.onSizeChangedDelegate = function (event) { return _this.onSizeChanged(event); };
         this.material = material;
         this._startPosition = startPosition;
         this._endPosition = endPosition;
@@ -9323,17 +9320,11 @@ var LineSegment = (function (_super) {
             return this._material;
         },
         set: function (value) {
-            if (value == this._material)
-                return;
-            if (this._material) {
-                this._material.iRemoveOwner(this);
-                this._material.removeEventListener(MaterialEvent.SIZE_CHANGED, this.onSizeChangedDelegate);
-            }
+            if (this.material)
+                this.material.iRemoveOwner(this);
             this._material = value;
-            if (this._material) {
-                this._material.iAddOwner(this);
-                this._material.addEventListener(MaterialEvent.SIZE_CHANGED, this.onSizeChangedDelegate);
-            }
+            if (this.material)
+                this.material.iAddOwner(this);
         },
         enumerable: true,
         configurable: true
@@ -9387,16 +9378,10 @@ var LineSegment = (function (_super) {
     /**
      * @private
      */
-    LineSegment.prototype.onSizeChanged = function (event) {
-        this.notifyRenderableUpdate();
-    };
-    /**
-     * @private
-     */
     LineSegment.prototype.notifyRenderableUpdate = function () {
         var len = this._pRenderables.length;
         for (var i = 0; i < len; i++)
-            this._pRenderables[i].invalidateVertexData("vertices");
+            this._pRenderables[i].invalidateGeometry();
     };
     LineSegment.prototype._iCollectRenderables = function (rendererPool) {
         // Since this getter is invoked every iteration of the render loop, and
@@ -9407,14 +9392,14 @@ var LineSegment = (function (_super) {
         this._iCollectRenderable(rendererPool);
     };
     LineSegment.prototype._iCollectRenderable = function (rendererPool) {
-        //TODO
+        rendererPool.applyLineSegment(this);
     };
     return LineSegment;
 })(DisplayObject);
 module.exports = LineSegment;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/events/MaterialEvent":undefined,"awayjs-display/lib/partition/EntityNode":undefined}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/partition/EntityNode":undefined}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14400,8 +14385,8 @@ var NodeBase = (function () {
             this._pBoundsPrimitive.dispose();
             this._pBoundsPrimitive = null;
         }
-        if (this._implicitBoundsVisible)
-            this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
+        //if (this._implicitBoundsVisible)
+        //	this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
     };
     return NodeBase;
 })();
@@ -14759,7 +14744,7 @@ var RaycastPicker = (function () {
         return bestCollisionVO;
     };
     RaycastPicker.prototype.updateLocalPosition = function (pickingCollisionVO) {
-        var collisionPos = (pickingCollisionVO.localPosition == null) ? new Vector3D() : pickingCollisionVO.localPosition;
+        var collisionPos = (pickingCollisionVO.localPosition == null) ? (pickingCollisionVO.localPosition = new Vector3D()) : pickingCollisionVO.localPosition;
         var rayDir = pickingCollisionVO.localRayDirection;
         var rayPos = pickingCollisionVO.localRayPosition;
         var t = pickingCollisionVO.rayEntryDistance;
@@ -16094,6 +16079,7 @@ var PrimitiveCylinderPrefab = (function (_super) {
         var comp2;
         var startIndex = 0;
         var nextVertexIndex = 0;
+        var centerVertexIndex = 0;
         var t1;
         var t2;
         // reset utility variables
@@ -16134,30 +16120,31 @@ var PrimitiveCylinderPrefab = (function (_super) {
             // top
             if (this._topClosed && this._topRadius > 0) {
                 z = -0.5 * this._height;
+                // central vertex
+                if (this._yUp) {
+                    t1 = 1;
+                    t2 = 0;
+                    comp1 = -z;
+                    comp2 = 0;
+                }
+                else {
+                    t1 = 0;
+                    t2 = -1;
+                    comp1 = 0;
+                    comp2 = z;
+                }
+                positions[vidx] = 0;
+                positions[vidx + 1] = comp1;
+                positions[vidx + 2] = comp2;
+                normals[vidx] = 0;
+                normals[vidx + 1] = t1;
+                normals[vidx + 2] = t2;
+                tangents[vidx] = 1;
+                tangents[vidx + 1] = 0;
+                tangents[vidx + 2] = 0;
+                vidx += 3;
+                nextVertexIndex += 1;
                 for (i = 0; i <= this._pSegmentsW; ++i) {
-                    // central vertex
-                    if (this._yUp) {
-                        t1 = 1;
-                        t2 = 0;
-                        comp1 = -z;
-                        comp2 = 0;
-                    }
-                    else {
-                        t1 = 0;
-                        t2 = -1;
-                        comp1 = 0;
-                        comp2 = z;
-                    }
-                    positions[vidx] = 0;
-                    positions[vidx + 1] = comp1;
-                    positions[vidx + 2] = comp2;
-                    normals[vidx] = 0;
-                    normals[vidx + 1] = t1;
-                    normals[vidx + 2] = t2;
-                    tangents[vidx] = 1;
-                    tangents[vidx + 1] = 0;
-                    tangents[vidx + 2] = 0;
-                    vidx += 3;
                     // revolution vertex
                     revolutionAngle = i * revolutionAngleDelta;
                     x = this._topRadius * Math.cos(revolutionAngle);
@@ -16189,31 +16176,32 @@ var PrimitiveCylinderPrefab = (function (_super) {
                     vidx += 3;
                     if (i > 0) {
                         // add triangle
+                        indices[fidx++] = nextVertexIndex - 1;
+                        indices[fidx++] = centerVertexIndex;
                         indices[fidx++] = nextVertexIndex;
-                        indices[fidx++] = nextVertexIndex + 1;
-                        indices[fidx++] = nextVertexIndex + 2;
-                        nextVertexIndex += 2;
                     }
+                    nextVertexIndex += 1;
                 }
-                nextVertexIndex += 2;
             }
             // bottom
             if (this._bottomClosed && this._pBottomRadius > 0) {
                 z = 0.5 * this._height;
                 startIndex = nextVertexIndex * 3;
-                for (i = 0; i <= this._pSegmentsW; ++i) {
-                    if (this._yUp) {
-                        t1 = -1;
-                        t2 = 0;
-                        comp1 = -z;
-                        comp2 = 0;
-                    }
-                    else {
-                        t1 = 0;
-                        t2 = 1;
-                        comp1 = 0;
-                        comp2 = z;
-                    }
+                centerVertexIndex = nextVertexIndex;
+                // central vertex
+                if (this._yUp) {
+                    t1 = -1;
+                    t2 = 0;
+                    comp1 = -z;
+                    comp2 = 0;
+                }
+                else {
+                    t1 = 0;
+                    t2 = 1;
+                    comp1 = 0;
+                    comp2 = z;
+                }
+                if (i > 0) {
                     positions[vidx] = 0;
                     positions[vidx + 1] = comp1;
                     positions[vidx + 2] = comp2;
@@ -16224,6 +16212,9 @@ var PrimitiveCylinderPrefab = (function (_super) {
                     tangents[vidx + 1] = 0;
                     tangents[vidx + 2] = 0;
                     vidx += 3;
+                }
+                nextVertexIndex += 1;
+                for (i = 0; i <= this._pSegmentsW; ++i) {
                     // revolution vertex
                     revolutionAngle = i * revolutionAngleDelta;
                     x = this._pBottomRadius * Math.cos(revolutionAngle);
@@ -16255,13 +16246,12 @@ var PrimitiveCylinderPrefab = (function (_super) {
                     vidx += 3;
                     if (i > 0) {
                         // add triangle
+                        indices[fidx++] = nextVertexIndex - 1;
                         indices[fidx++] = nextVertexIndex;
-                        indices[fidx++] = nextVertexIndex + 2;
-                        indices[fidx++] = nextVertexIndex + 1;
-                        nextVertexIndex += 2;
+                        indices[fidx++] = centerVertexIndex;
                     }
+                    nextVertexIndex += 1;
                 }
-                nextVertexIndex += 2;
             }
             // The normals on the lateral surface all have the same incline, i.e.
             // the "elevation" component (Y or Z depending on yUp) is constant.
@@ -16437,24 +16427,24 @@ var PrimitiveCylinderPrefab = (function (_super) {
             var index = 0;
             // top
             if (this._topClosed) {
+                uvs[index++] = 0.5 * triangleGeometry.scaleU; // central vertex
+                uvs[index++] = 0.5 * triangleGeometry.scaleV;
                 for (i = 0; i <= this._pSegmentsW; ++i) {
                     revolutionAngle = i * revolutionAngleDelta;
                     x = 0.5 + 0.5 * -Math.cos(revolutionAngle);
                     y = 0.5 + 0.5 * Math.sin(revolutionAngle);
-                    uvs[index++] = 0.5 * triangleGeometry.scaleU; // central vertex
-                    uvs[index++] = 0.5 * triangleGeometry.scaleV;
                     uvs[index++] = x * triangleGeometry.scaleU; // revolution vertex
                     uvs[index++] = y * triangleGeometry.scaleV;
                 }
             }
             // bottom
             if (this._bottomClosed) {
+                uvs[index++] = 0.5 * triangleGeometry.scaleU; // central vertex
+                uvs[index++] = 0.5 * triangleGeometry.scaleV;
                 for (i = 0; i <= this._pSegmentsW; ++i) {
                     revolutionAngle = i * revolutionAngleDelta;
                     x = 0.5 + 0.5 * Math.cos(revolutionAngle);
                     y = 0.5 + 0.5 * Math.sin(revolutionAngle);
-                    uvs[index++] = 0.5 * triangleGeometry.scaleU; // central vertex
-                    uvs[index++] = 0.5 * triangleGeometry.scaleV;
                     uvs[index++] = x * triangleGeometry.scaleU; // revolution vertex
                     uvs[index++] = y * triangleGeometry.scaleV;
                 }
@@ -18011,18 +18001,22 @@ var CSSRendererBase = (function (_super) {
     CSSRendererBase.prototype._iRenderCascades = function (entityCollector, target, numCascades, scissorRects, cameras) {
     };
     CSSRendererBase.prototype.pCollectRenderables = function (entityCollector) {
-        //reset head values
-        this._renderableHead = null;
-        //grab entity head
-        var item = entityCollector.entityHead;
-        //set temp values for entry point and camera forward vector
-        this._pCamera = entityCollector.camera;
-        this._iEntryPoint = this._pCamera.scenePosition;
-        this._pCameraForward = this._pCamera.transform.forwardVector;
-        while (item) {
-            item.entity._iCollectRenderables(this);
-            item = item.next;
-        }
+        ////reset head values
+        //this._renderableHead = null;
+        //
+        ////grab entity head
+        //var item:EntityListItem = entityCollector.entityHead;
+        //
+        ////set temp values for entry point and camera forward vector
+        //this._pCamera = entityCollector.camera;
+        //this._iEntryPoint = this._pCamera.scenePosition;
+        //this._pCameraForward = this._pCamera.transform.forwardVector;
+        //
+        ////iterate through all entities
+        //while (item) {
+        //	//item.entity._iCollectRenderables(this);
+        //	item = item.next;
+        //}
     };
     /**
      * Renders the potentially visible geometry to the back buffer or texture. Only executed if everything is set up.
