@@ -217,7 +217,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		var len:number = this._pRenderables.length;
 		for (var i:number = 0; i < len; i++)
-			this._pRenderables[i].invalidateVertexData("vertices"); //TODO
+			this._pRenderables[i].invalidateGeometry();
 	}
 
 	public _iCollectRenderables(rendererPool:IRendererPool)

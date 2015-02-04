@@ -21,8 +21,6 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	private _material:MaterialBase;
 	private _uvTransform:UVTransform;
 
-	private onSizeChangedDelegate:(event:MaterialEvent) => void;
-
 	public _startPosition:Vector3D;
 	public _endPosition:Vector3D;
 	public _halfThickness:number;
@@ -90,21 +88,13 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 	public set material(value:MaterialBase)
 	{
-		if (value == this._material)
-			return;
-
-		if (this._material) {
-			this._material.iRemoveOwner(this);
-			this._material.removeEventListener(MaterialEvent.SIZE_CHANGED, this.onSizeChangedDelegate);
-		}
-
+		if (this.material)
+			this.material.iRemoveOwner(this);
 
 		this._material = value;
 
-		if (this._material) {
-			this._material.iAddOwner(this);
-			this._material.addEventListener(MaterialEvent.SIZE_CHANGED, this.onSizeChangedDelegate);
-		}
+		if (this.material)
+			this.material.iAddOwner(this);
 	}
 
 	/**
@@ -151,8 +141,6 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._pIsEntity = true;
 
-		this.onSizeChangedDelegate = (event:MaterialEvent) => this.onSizeChanged(event);
-
 		this.material = material;
 
 		this._startPosition = startPosition;
@@ -187,19 +175,11 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	/**
 	 * @private
 	 */
-	private onSizeChanged(event:MaterialEvent)
-	{
-		this.notifyRenderableUpdate();
-	}
-
-	/**
-	 * @private
-	 */
 	private notifyRenderableUpdate()
 	{
 		var len:number = this._pRenderables.length;
 		for (var i:number = 0; i < len; i++)
-			this._pRenderables[i].invalidateVertexData("vertices"); //TODO
+			this._pRenderables[i].invalidateGeometry(); //TODO improve performance by only using one geometry for all line segments
 	}
 
 	public _iCollectRenderables(rendererPool:IRendererPool)
@@ -215,7 +195,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
-		//TODO
+		rendererPool.applyLineSegment(this);
 	}
 }
 

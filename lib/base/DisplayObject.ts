@@ -82,8 +82,8 @@ import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
  *                         event:
  *                         <code>DisplayObjectContainer.addChild()</code>,
  *                         <code>DisplayObjectContainer.addChildAt()</code>.
- * @event addedToStage     Dispatched when a display object is added to the on
- *                         stage display list, either directly or through the
+ * @event addedToScene     Dispatched when a display object is added to the on
+ *                         scene display list, either directly or through the
  *                         addition of a sub tree in which the display object
  *                         is contained. The following methods trigger this
  *                         event:
@@ -124,7 +124,7 @@ import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
  *                         the new object: <code>addChild()</code>,
  *                         <code>addChildAt()</code>, and
  *                         <code>setChildIndex()</code>. </p>
- * @event removedFromStage Dispatched when a display object is about to be
+ * @event removedFromScene Dispatched when a display object is about to be
  *                         removed from the display list, either directly or
  *                         through the removal of a sub tree in which the
  *                         display object is contained. Two methods of the
@@ -143,12 +143,12 @@ import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
  *                         provides the last opportunity for objects listening
  *                         for this event to make changes before the display
  *                         list is rendered. You must call the
- *                         <code>invalidate()</code> method of the Stage
+ *                         <code>invalidate()</code> method of the Scene
  *                         object each time you want a <code>render</code>
  *                         event to be dispatched. <code>Render</code> events
  *                         are dispatched to an object only if there is mutual
  *                         trust between it and the object that called
- *                         <code>Stage.invalidate()</code>. This event is a
+ *                         <code>Scene.invalidate()</code>. This event is a
  *                         broadcast event, which means that it is dispatched
  *                         by all display objects with a listener registered
  *                         for this event.
@@ -816,7 +816,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 * loaded image file, the <code>root</code> property is the Bitmap object
 	 * itself. For the instance of the main class of the first SWF file loaded,
 	 * the <code>root</code> property is the display object itself. The
-	 * <code>root</code> property of the Stage object is the Stage object itself.
+	 * <code>root</code> property of the Scene object is the Scene object itself.
 	 * The <code>root</code> property is set to <code>null</code> for any display
 	 * object that has not been added to the display list, unless it has been
 	 * added to a display object container that is off the display list but that
@@ -1452,7 +1452,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 *
 	 * <p><b>Note:</b> Use <code>localToGlobal()</code> and
 	 * <code>globalToLocal()</code> methods to convert the display object's local
-	 * coordinates to Stage coordinates, or Stage coordinates to local
+	 * coordinates to Scene coordinates, or Scene coordinates to local
 	 * coordinates, respectively.</p>
 	 *
 	 * @param targetCoordinateSpace The display object that defines the
@@ -1467,7 +1467,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	}
 
 	/**
-	 * Converts the <code>point</code> object from the Stage(global) coordinates
+	 * Converts the <code>point</code> object from the Scene(global) coordinates
 	 * to the display object's(local) coordinates.
 	 *
 	 * <p>To use this method, first create an instance of the Point class. The
@@ -1476,7 +1476,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 * pass the Point instance as the parameter to the
 	 * <code>globalToLocal()</code> method. The method returns a new Point object
 	 * with <i>x</i> and <i>y</i> values that relate to the origin of the display
-	 * object instead of the origin of the Stage.</p>
+	 * object instead of the origin of the Scene.</p>
 	 *
 	 * @param point An object created with the Point class. The Point object
 	 *              specifies the <i>x</i> and <i>y</i> coordinates as
@@ -1489,26 +1489,26 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	}
 
 	/**
-	 * Converts a two-dimensional point from the Stage(global) coordinates to a
+	 * Converts a two-dimensional point from the Scene(global) coordinates to a
 	 * three-dimensional display object's(local) coordinates.
 	 *
-	 * <p>To use this method, first create an instance of the Point class. The x
-	 * and y values that you assign to the Point object represent global
-	 * coordinates because they are relative to the origin(0,0) of the main
-	 * display area. Then pass the Point object to the
-	 * <code>globalToLocal3D()</code> method as the <code>point</code> parameter.
+	 * <p>To use this method, first create an instance of the Vector3D class. The x,
+	 * y and z values that you assign to the Vector3D object represent global
+	 * coordinates because they are relative to the origin(0,0,0) of the scene. Then
+	 * pass the Vector3D object to the <code>globalToLocal3D()</code> method as the
+	 * <code>position</code> parameter.
 	 * The method returns three-dimensional coordinates as a Vector3D object
 	 * containing <code>x</code>, <code>y</code>, and <code>z</code> values that
 	 * are relative to the origin of the three-dimensional display object.</p>
 	 *
-	 * @param point A two dimensional Point object representing global x and y
-	 *              coordinates.
-	 * @return A Vector3D object with coordinates relative to the
-	 *         three-dimensional display object.
+	 * @param point A Vector3D object representing global x, y and z coordinates in
+	 *              the scene.
+	 * @return A Vector3D object with coordinates relative to the three-dimensional
+	 *         display object.
 	 */
-	public globalToLocal3D(point:Point):Vector3D
+	public globalToLocal3D(position:Vector3D):Vector3D
 	{
-		return new Vector3D(); //TODO
+		return this.inverseSceneTransform.transformVector(position);
 	}
 
 	/**
@@ -1528,9 +1528,9 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 * Evaluates the display object to see if it overlaps or intersects with the
 	 * point specified by the <code>x</code> and <code>y</code> parameters. The
 	 * <code>x</code> and <code>y</code> parameters specify a point in the
-	 * coordinate space of the Stage, not the display object container that
+	 * coordinate space of the Scene, not the display object container that
 	 * contains the display object(unless that display object container is the
-	 * Stage).
+	 * Scene).
 	 *
 	 * @param x         The <i>x</i> coordinate to test against this object.
 	 * @param y         The <i>y</i> coordinate to test against this object.
@@ -1570,33 +1570,6 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
 
 		return true;
-	}
-
-	/**
-	 * Converts a three-dimensional point of the three-dimensional display
-	 * object's(local) coordinates to a two-dimensional point in the Stage
-	 * (global) coordinates.
-	 *
-	 * <p>For example, you can only use two-dimensional coordinates(x,y) to draw
-	 * with the <code>display.Graphics</code> methods. To draw a
-	 * three-dimensional object, you need to map the three-dimensional
-	 * coordinates of a display object to two-dimensional coordinates. First,
-	 * create an instance of the Vector3D class that holds the x-, y-, and z-
-	 * coordinates of the three-dimensional display object. Then pass the
-	 * Vector3D object to the <code>local3DToGlobal()</code> method as the
-	 * <code>point3d</code> parameter. The method returns a two-dimensional Point
-	 * object that can be used with the Graphics API to draw the
-	 * three-dimensional object.</p>
-	 *
-	 * @param point3d A Vector3D object containing either a three-dimensional
-	 *                point or the coordinates of the three-dimensional display
-	 *                object.
-	 * @return A two-dimensional point representing a three-dimensional point in
-	 *         two-dimensional space.
-	 */
-	public local3DToGlobal(point3d:Vector3D):Point
-	{
-		return new Point(); //TODO
 	}
 
 	/**
@@ -1664,12 +1637,12 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 
 	/**
 	 * Converts the <code>point</code> object from the display object's(local)
-	 * coordinates to the Stage(global) coordinates.
+	 * coordinates to the Scene(global) coordinates.
 	 *
 	 * <p>This method allows you to convert any given <i>x</i> and <i>y</i>
 	 * coordinates from values that are relative to the origin(0,0) of a
 	 * specific display object(local coordinates) to values that are relative to
-	 * the origin of the Stage(global coordinates).</p>
+	 * the origin of the Scene(global coordinates).</p>
 	 *
 	 * <p>To use this method, first create an instance of the Point class. The
 	 * <i>x</i> and <i>y</i> values that you assign represent local coordinates
@@ -1678,16 +1651,46 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 * <p>You then pass the Point instance that you created as the parameter to
 	 * the <code>localToGlobal()</code> method. The method returns a new Point
 	 * object with <i>x</i> and <i>y</i> values that relate to the origin of the
-	 * Stage instead of the origin of the display object.</p>
+	 * Scene instead of the origin of the display object.</p>
 	 *
 	 * @param point The name or identifier of a point created with the Point
 	 *              class, specifying the <i>x</i> and <i>y</i> coordinates as
 	 *              properties.
-	 * @return A Point object with coordinates relative to the Stage.
+	 * @return A Point object with coordinates relative to the Scene.
 	 */
 	public localToGlobal(point:Point):Point
 	{
 		return new Point(); //TODO
+	}
+
+	/**
+	 * Converts a three-dimensional point of the three-dimensional display
+	 * object's(local) coordinates to a three-dimensional point in the Scene
+	 * (global) coordinates.
+	 *
+	 * <p>This method allows you to convert any given <i>x</i>, <i>y</i> and
+	 * <i>z</i> coordinates from values that are relative to the origin(0,0,0) of
+	 * a specific display object(local coordinates) to values that are relative to
+	 * the origin of the Scene(global coordinates).</p>
+	 *
+	 * <p>To use this method, first create an instance of the Point class. The
+	 * <i>x</i> and <i>y</i> values that you assign represent local coordinates
+	 * because they relate to the origin of the display object.</p>
+	 *
+	 * <p>You then pass the Vector3D instance that you created as the parameter to
+	 * the <code>localToGlobal3D()</code> method. The method returns a new
+	 * Vector3D object with <i>x</i>, <i>y</i> and <i>z</i> values that relate to
+	 * the origin of the Scene instead of the origin of the display object.</p>
+	 *
+	 * @param position A Vector3D object containing either a three-dimensional
+	 *                position or the coordinates of the three-dimensional
+	 *                display object.
+	 * @return A Vector3D object representing a three-dimensional position in
+	 *         the Scene.
+	 */
+	public localToGlobal3D(position:Vector3D):Vector3D
+	{
+		return this.sceneTransform.transformVector(position);
 	}
 
 	/**

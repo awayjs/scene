@@ -207,6 +207,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 		var comp2:number;
 		var startIndex:number = 0;
 		var nextVertexIndex:number = 0;
+		var centerVertexIndex:number = 0;
 
 		var t1:number;
 		var t2:number;
@@ -258,31 +259,34 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 
 				z = -0.5*this._height;
 
+				// central vertex
+				if (this._yUp) {
+					t1 = 1;
+					t2 = 0;
+					comp1 = -z;
+					comp2 = 0;
+
+				} else {
+					t1 = 0;
+					t2 = -1;
+					comp1 = 0;
+					comp2 = z;
+				}
+
+				positions[vidx] = 0;
+				positions[vidx + 1] = comp1;
+				positions[vidx + 2] = comp2;
+				normals[vidx] = 0;
+				normals[vidx + 1] = t1;
+				normals[vidx + 2] = t2;
+				tangents[vidx] = 1;
+				tangents[vidx + 1] = 0;
+				tangents[vidx + 2] = 0;
+				vidx += 3;
+
+				nextVertexIndex += 1;
+
 				for (i = 0; i <= this._pSegmentsW; ++i) {
-					// central vertex
-					if (this._yUp) {
-						t1 = 1;
-						t2 = 0;
-						comp1 = -z;
-						comp2 = 0;
-
-					} else {
-						t1 = 0;
-						t2 = -1;
-						comp1 = 0;
-						comp2 = z;
-					}
-
-					positions[vidx] = 0;
-					positions[vidx + 1] = comp1;
-					positions[vidx + 2] = comp2;
-					normals[vidx] = 0;
-					normals[vidx + 1] = t1;
-					normals[vidx + 2] = t2;
-					tangents[vidx] = 1;
-					tangents[vidx + 1] = 0;
-					tangents[vidx + 2] = 0;
-					vidx += 3;
 
 					// revolution vertex
 					revolutionAngle = i*revolutionAngleDelta;
@@ -318,15 +322,13 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 
 					if (i > 0) {
 						// add triangle
+						indices[fidx++] = nextVertexIndex - 1;
+						indices[fidx++] = centerVertexIndex;
 						indices[fidx++] = nextVertexIndex;
-						indices[fidx++] = nextVertexIndex + 1;
-						indices[fidx++] = nextVertexIndex + 2;
-
-						nextVertexIndex += 2;
 					}
-				}
 
-				nextVertexIndex += 2;
+					nextVertexIndex += 1;
+				}
 			}
 
 			// bottom
@@ -336,19 +338,22 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 
 				startIndex = nextVertexIndex*3;
 
-				for (i = 0; i <= this._pSegmentsW; ++i) {
-					if (this._yUp) {
-						t1 = -1;
-						t2 = 0;
-						comp1 = -z;
-						comp2 = 0;
-					} else {
-						t1 = 0;
-						t2 = 1;
-						comp1 = 0;
-						comp2 = z;
-					}
+				centerVertexIndex = nextVertexIndex;
 
+				// central vertex
+				if (this._yUp) {
+					t1 = -1;
+					t2 = 0;
+					comp1 = -z;
+					comp2 = 0;
+				} else {
+					t1 = 0;
+					t2 = 1;
+					comp1 = 0;
+					comp2 = z;
+				}
+
+				if (i > 0) {
 					positions[vidx] = 0;
 					positions[vidx + 1] = comp1;
 					positions[vidx + 2] = comp2;
@@ -359,6 +364,11 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 					tangents[vidx + 1] = 0;
 					tangents[vidx + 2] = 0;
 					vidx += 3;
+				}
+
+				nextVertexIndex += 1;
+
+				for (i = 0; i <= this._pSegmentsW; ++i) {
 
 					// revolution vertex
 					revolutionAngle = i*revolutionAngleDelta;
@@ -393,15 +403,13 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 
 					if (i > 0) {
 						// add triangle
+						indices[fidx++] = nextVertexIndex - 1;
 						indices[fidx++] = nextVertexIndex;
-						indices[fidx++] = nextVertexIndex + 2;
-						indices[fidx++] = nextVertexIndex + 1;
-
-						nextVertexIndex += 2;
+						indices[fidx++] = centerVertexIndex;
 					}
-				}
 
-				nextVertexIndex += 2;
+					nextVertexIndex += 1;
+				}
 			}
 
 			// The normals on the lateral surface all have the same incline, i.e.
@@ -612,14 +620,15 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 
 			// top
 			if (this._topClosed) {
+
+				uvs[index++] = 0.5*triangleGeometry.scaleU; // central vertex
+				uvs[index++] = 0.5*triangleGeometry.scaleV;
+
 				for (i = 0; i <= this._pSegmentsW; ++i) {
 
 					revolutionAngle = i*revolutionAngleDelta;
 					x = 0.5 + 0.5* -Math.cos(revolutionAngle);
 					y = 0.5 + 0.5*Math.sin(revolutionAngle);
-
-					uvs[index++] = 0.5*triangleGeometry.scaleU; // central vertex
-					uvs[index++] = 0.5*triangleGeometry.scaleV;
 
 					uvs[index++] = x*triangleGeometry.scaleU; // revolution vertex
 					uvs[index++] = y*triangleGeometry.scaleV;
@@ -628,14 +637,15 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
 
 			// bottom
 			if (this._bottomClosed) {
+
+				uvs[index++] = 0.5*triangleGeometry.scaleU; // central vertex
+				uvs[index++] = 0.5*triangleGeometry.scaleV;
+
 				for (i = 0; i <= this._pSegmentsW; ++i) {
 
 					revolutionAngle = i*revolutionAngleDelta;
 					x = 0.5 + 0.5*Math.cos(revolutionAngle);
 					y = 0.5 + 0.5*Math.sin(revolutionAngle);
-
-					uvs[index++] = 0.5*triangleGeometry.scaleU; // central vertex
-					uvs[index++] = 0.5*triangleGeometry.scaleV;
 
 					uvs[index++] = x*triangleGeometry.scaleU; // revolution vertex
 					uvs[index++] = y*triangleGeometry.scaleV;

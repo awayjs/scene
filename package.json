@@ -1,10 +1,10 @@
 {
   "name": "awayjs-display",
-  "version": "0.4.2",
+  "version": "0.4.4",
   "description": "AwayJS displaylist classes",
   "url": "http://www.away3d.com",
   "dependencies": {
-    "awayjs-core": "^0.2.4"
+    "awayjs-core": "^0.2.6"
   },
   "devDependencies": {
     "browserify": "^5.12.0",

@@ -1662,10 +1662,87 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	export = Billboard;
 	
 }
+declare module "awayjs-display/lib/entities/LineSegment" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * A Line Segment primitive.
+	 */
+	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
+	    private _animator;
+	    private _material;
+	    private _uvTransform;
+	    _startPosition: Vector3D;
+	    _endPosition: Vector3D;
+	    _halfThickness: number;
+	    /**
+	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    startPostion: Vector3D;
+	    startPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    endPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    /**
+	     *
+	     */
+	    thickness: number;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     * Create a line segment
+	     *
+	     * @param startPosition Start position of the line segment
+	     * @param endPosition Ending position of the line segment
+	     * @param thickness Thickness of the line
+	     */
+	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
+	    dispose(): void;
+	    /**
+	     * @protected
+	     */
+	    pCreateEntityPartitionNode(): EntityNode;
+	    /**
+	     * @protected
+	     */
+	    pUpdateBounds(): void;
+	    /**
+	     * @private
+	     */
+	    private notifyRenderableUpdate();
+	    _iCollectRenderables(rendererPool: IRendererPool): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	}
+	export = LineSegment;
+	
+}
 declare module "awayjs-display/lib/pool/IRendererPool" {
 	import LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
 	import TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
 	import Billboard = require("awayjs-display/lib/entities/Billboard");
+	import LineSegment = require("awayjs-display/lib/entities/LineSegment");
 	/**
 	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
 	 * contents of a partition
@@ -1682,7 +1759,12 @@ declare module "awayjs-display/lib/pool/IRendererPool" {
 	     *
 	     * @param triangleSubMesh
 	     */
-	    applyLineSubMesh(triangleSubMesh: LineSubMesh): any;
+	    applyLineSegment(lineSegment: LineSegment): any;
+	    /**
+	     *
+	     * @param triangleSubMesh
+	     */
+	    applyLineSubMesh(lineSubMesh: LineSubMesh): any;
 	    /**
 	     *
 	     * @param triangleSubMesh
@@ -4015,8 +4097,8 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	 *                         event:
 	 *                         <code>DisplayObjectContainer.addChild()</code>,
 	 *                         <code>DisplayObjectContainer.addChildAt()</code>.
-	 * @event addedToStage     Dispatched when a display object is added to the on
-	 *                         stage display list, either directly or through the
+	 * @event addedToScene     Dispatched when a display object is added to the on
+	 *                         scene display list, either directly or through the
 	 *                         addition of a sub tree in which the display object
 	 *                         is contained. The following methods trigger this
 	 *                         event:
@@ -4057,7 +4139,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	 *                         the new object: <code>addChild()</code>,
 	 *                         <code>addChildAt()</code>, and
 	 *                         <code>setChildIndex()</code>. </p>
-	 * @event removedFromStage Dispatched when a display object is about to be
+	 * @event removedFromScene Dispatched when a display object is about to be
 	 *                         removed from the display list, either directly or
 	 *                         through the removal of a sub tree in which the
 	 *                         display object is contained. Two methods of the
@@ -4076,12 +4158,12 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	 *                         provides the last opportunity for objects listening
 	 *                         for this event to make changes before the display
 	 *                         list is rendered. You must call the
-	 *                         <code>invalidate()</code> method of the Stage
+	 *                         <code>invalidate()</code> method of the Scene
 	 *                         object each time you want a <code>render</code>
 	 *                         event to be dispatched. <code>Render</code> events
 	 *                         are dispatched to an object only if there is mutual
 	 *                         trust between it and the object that called
-	 *                         <code>Stage.invalidate()</code>. This event is a
+	 *                         <code>Scene.invalidate()</code>. This event is a
 	 *                         broadcast event, which means that it is dispatched
 	 *                         by all display objects with a listener registered
 	 *                         for this event.
@@ -4526,7 +4608,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * loaded image file, the <code>root</code> property is the Bitmap object
 	     * itself. For the instance of the main class of the first SWF file loaded,
 	     * the <code>root</code> property is the display object itself. The
-	     * <code>root</code> property of the Stage object is the Stage object itself.
+	     * <code>root</code> property of the Scene object is the Scene object itself.
 	     * The <code>root</code> property is set to <code>null</code> for any display
 	     * object that has not been added to the display list, unless it has been
 	     * added to a display object container that is off the display list but that
@@ -4858,7 +4940,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *
 	     * <p><b>Note:</b> Use <code>localToGlobal()</code> and
 	     * <code>globalToLocal()</code> methods to convert the display object's local
-	     * coordinates to Stage coordinates, or Stage coordinates to local
+	     * coordinates to Scene coordinates, or Scene coordinates to local
 	     * coordinates, respectively.</p>
 	     *
 	     * @param targetCoordinateSpace The display object that defines the
@@ -4869,7 +4951,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    getRect(targetCoordinateSpace: DisplayObject): Rectangle;
 	    /**
-	     * Converts the <code>point</code> object from the Stage(global) coordinates
+	     * Converts the <code>point</code> object from the Scene(global) coordinates
 	     * to the display object's(local) coordinates.
 	     *
 	     * <p>To use this method, first create an instance of the Point class. The
@@ -4878,7 +4960,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * pass the Point instance as the parameter to the
 	     * <code>globalToLocal()</code> method. The method returns a new Point object
 	     * with <i>x</i> and <i>y</i> values that relate to the origin of the display
-	     * object instead of the origin of the Stage.</p>
+	     * object instead of the origin of the Scene.</p>
 	     *
 	     * @param point An object created with the Point class. The Point object
 	     *              specifies the <i>x</i> and <i>y</i> coordinates as
@@ -4887,24 +4969,24 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    globalToLocal(point: Point): Point;
 	    /**
-	     * Converts a two-dimensional point from the Stage(global) coordinates to a
+	     * Converts a two-dimensional point from the Scene(global) coordinates to a
 	     * three-dimensional display object's(local) coordinates.
 	     *
-	     * <p>To use this method, first create an instance of the Point class. The x
-	     * and y values that you assign to the Point object represent global
-	     * coordinates because they are relative to the origin(0,0) of the main
-	     * display area. Then pass the Point object to the
-	     * <code>globalToLocal3D()</code> method as the <code>point</code> parameter.
+	     * <p>To use this method, first create an instance of the Vector3D class. The x,
+	     * y and z values that you assign to the Vector3D object represent global
+	     * coordinates because they are relative to the origin(0,0,0) of the scene. Then
+	     * pass the Vector3D object to the <code>globalToLocal3D()</code> method as the
+	     * <code>position</code> parameter.
 	     * The method returns three-dimensional coordinates as a Vector3D object
 	     * containing <code>x</code>, <code>y</code>, and <code>z</code> values that
 	     * are relative to the origin of the three-dimensional display object.</p>
 	     *
-	     * @param point A two dimensional Point object representing global x and y
-	     *              coordinates.
-	     * @return A Vector3D object with coordinates relative to the
-	     *         three-dimensional display object.
+	     * @param point A Vector3D object representing global x, y and z coordinates in
+	     *              the scene.
+	     * @return A Vector3D object with coordinates relative to the three-dimensional
+	     *         display object.
 	     */
-	    globalToLocal3D(point: Point): Vector3D;
+	    globalToLocal3D(position: Vector3D): Vector3D;
 	    /**
 	     * Evaluates the bounding box of the display object to see if it overlaps or
 	     * intersects with the bounding box of the <code>obj</code> display object.
@@ -4918,9 +5000,9 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * Evaluates the display object to see if it overlaps or intersects with the
 	     * point specified by the <code>x</code> and <code>y</code> parameters. The
 	     * <code>x</code> and <code>y</code> parameters specify a point in the
-	     * coordinate space of the Stage, not the display object container that
+	     * coordinate space of the Scene, not the display object container that
 	     * contains the display object(unless that display object container is the
-	     * Stage).
+	     * Scene).
 	     *
 	     * @param x         The <i>x</i> coordinate to test against this object.
 	     * @param y         The <i>y</i> coordinate to test against this object.
@@ -4936,29 +5018,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    isIntersectingRay(rayPosition: Vector3D, rayDirection: Vector3D): boolean;
 	    /**
-	     * Converts a three-dimensional point of the three-dimensional display
-	     * object's(local) coordinates to a two-dimensional point in the Stage
-	     * (global) coordinates.
-	     *
-	     * <p>For example, you can only use two-dimensional coordinates(x,y) to draw
-	     * with the <code>display.Graphics</code> methods. To draw a
-	     * three-dimensional object, you need to map the three-dimensional
-	     * coordinates of a display object to two-dimensional coordinates. First,
-	     * create an instance of the Vector3D class that holds the x-, y-, and z-
-	     * coordinates of the three-dimensional display object. Then pass the
-	     * Vector3D object to the <code>local3DToGlobal()</code> method as the
-	     * <code>point3d</code> parameter. The method returns a two-dimensional Point
-	     * object that can be used with the Graphics API to draw the
-	     * three-dimensional object.</p>
-	     *
-	     * @param point3d A Vector3D object containing either a three-dimensional
-	     *                point or the coordinates of the three-dimensional display
-	     *                object.
-	     * @return A two-dimensional point representing a three-dimensional point in
-	     *         two-dimensional space.
-	     */
-	    local3DToGlobal(point3d: Vector3D): Point;
-	    /**
 	     * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	     *
 	     * @param    target        The vector defining the point to be looked at
@@ -4967,12 +5026,12 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    lookAt(target: Vector3D, upAxis?: Vector3D): void;
 	    /**
 	     * Converts the <code>point</code> object from the display object's(local)
-	     * coordinates to the Stage(global) coordinates.
+	     * coordinates to the Scene(global) coordinates.
 	     *
 	     * <p>This method allows you to convert any given <i>x</i> and <i>y</i>
 	     * coordinates from values that are relative to the origin(0,0) of a
 	     * specific display object(local coordinates) to values that are relative to
-	     * the origin of the Stage(global coordinates).</p>
+	     * the origin of the Scene(global coordinates).</p>
 	     *
 	     * <p>To use this method, first create an instance of the Point class. The
 	     * <i>x</i> and <i>y</i> values that you assign represent local coordinates
@@ -4981,14 +5040,40 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * <p>You then pass the Point instance that you created as the parameter to
 	     * the <code>localToGlobal()</code> method. The method returns a new Point
 	     * object with <i>x</i> and <i>y</i> values that relate to the origin of the
-	     * Stage instead of the origin of the display object.</p>
+	     * Scene instead of the origin of the display object.</p>
 	     *
 	     * @param point The name or identifier of a point created with the Point
 	     *              class, specifying the <i>x</i> and <i>y</i> coordinates as
 	     *              properties.
-	     * @return A Point object with coordinates relative to the Stage.
+	     * @return A Point object with coordinates relative to the Scene.
 	     */
 	    localToGlobal(point: Point): Point;
+	    /**
+	     * Converts a three-dimensional point of the three-dimensional display
+	     * object's(local) coordinates to a three-dimensional point in the Scene
+	     * (global) coordinates.
+	     *
+	     * <p>This method allows you to convert any given <i>x</i>, <i>y</i> and
+	     * <i>z</i> coordinates from values that are relative to the origin(0,0,0) of
+	     * a specific display object(local coordinates) to values that are relative to
+	     * the origin of the Scene(global coordinates).</p>
+	     *
+	     * <p>To use this method, first create an instance of the Point class. The
+	     * <i>x</i> and <i>y</i> values that you assign represent local coordinates
+	     * because they relate to the origin of the display object.</p>
+	     *
+	     * <p>You then pass the Vector3D instance that you created as the parameter to
+	     * the <code>localToGlobal3D()</code> method. The method returns a new
+	     * Vector3D object with <i>x</i>, <i>y</i> and <i>z</i> values that relate to
+	     * the origin of the Scene instead of the origin of the display object.</p>
+	     *
+	     * @param position A Vector3D object containing either a three-dimensional
+	     *                position or the coordinates of the three-dimensional
+	     *                display object.
+	     * @return A Vector3D object representing a three-dimensional position in
+	     *         the Scene.
+	     */
+	    localToGlobal3D(position: Vector3D): Vector3D;
 	    /**
 	     * Moves the 3d object directly to a point in space
 	     *
@@ -7306,87 +7391,6 @@ declare module "awayjs-display/lib/pool/CSSBillboardRenderable" {
 	export = CSSBillboardRenderable;
 	
 }
-declare module "awayjs-display/lib/entities/LineSegment" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * A Line Segment primitive.
-	 */
-	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
-	    private _animator;
-	    private _material;
-	    private _uvTransform;
-	    private onSizeChangedDelegate;
-	    _startPosition: Vector3D;
-	    _endPosition: Vector3D;
-	    _halfThickness: number;
-	    /**
-	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    startPostion: Vector3D;
-	    startPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    endPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     *
-	     */
-	    thickness: number;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     * Create a line segment
-	     *
-	     * @param startPosition Start position of the line segment
-	     * @param endPosition Ending position of the line segment
-	     * @param thickness Thickness of the line
-	     */
-	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
-	    dispose(): void;
-	    /**
-	     * @protected
-	     */
-	    pCreateEntityPartitionNode(): EntityNode;
-	    /**
-	     * @protected
-	     */
-	    pUpdateBounds(): void;
-	    /**
-	     * @private
-	     */
-	    private onSizeChanged(event);
-	    /**
-	     * @private
-	     */
-	    private notifyRenderableUpdate();
-	    _iCollectRenderables(rendererPool: IRendererPool): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	}
-	export = LineSegment;
-	
-}
 declare module "awayjs-display/lib/pool/CSSLineSegmentRenderable" {
 	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
 	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
@@ -8218,31 +8222,12 @@ declare module "awayjs-display/lib/controllers/SpringController" {
 	export = SpringController;
 	
 }
-declare module "awayjs-display/lib/display/ContextMode" {
-	class ContextMode {
-	    static AUTO: string;
-	    static WEBGL: string;
-	    static FLASH: string;
-	    static NATIVE: string;
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
 	}
-	export = ContextMode;
-	
-}
-declare module "awayjs-display/lib/display/IContext" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	/**
-	 *
-	 * @class away.base.IContext
-	 */
-	interface IContext {
-	    container: HTMLElement;
-	    clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): any;
-	    configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): any;
-	    dispose(): any;
-	    present(): any;
-	    setScissorRectangle(rect: Rectangle): any;
-	}
-	export = IContext;
+	export = CastError;
 	
 }
 declare module "awayjs-display/lib/entities/Shape" {
@@ -9576,12 +9561,29 @@ declare module "awayjs-display/lib/entities/TextField" {
 	export = TextField;
 	
 }
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
+declare module "awayjs-display/lib/events/ResizeEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class ResizeEvent extends Event {
+	    static RESIZE: string;
+	    private _oldHeight;
+	    private _oldWidth;
+	    constructor(type: string, oldHeight?: number, oldWidth?: number);
+	    oldHeight: number;
+	    oldWidth: number;
 	}
-	export = CastError;
+	export = ResizeEvent;
+	
+}
+declare module "awayjs-display/lib/events/StageEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class StageEvent extends Event {
+	    static CONTEXT_CREATED: string;
+	    static CONTEXT_DISPOSED: string;
+	    static CONTEXT_RECREATED: string;
+	    static VIEWPORT_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = StageEvent;
 	
 }
 declare module "awayjs-display/lib/materials/BasicMaterial" {
@@ -9634,31 +9636,6 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	    private static createDefaultLineMaterial();
 	}
 	export = DefaultMaterialManager;
-	
-}
-declare module "awayjs-display/lib/events/ResizeEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class ResizeEvent extends Event {
-	    static RESIZE: string;
-	    private _oldHeight;
-	    private _oldWidth;
-	    constructor(type: string, oldHeight?: number, oldWidth?: number);
-	    oldHeight: number;
-	    oldWidth: number;
-	}
-	export = ResizeEvent;
-	
-}
-declare module "awayjs-display/lib/events/StageEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class StageEvent extends Event {
-	    static CONTEXT_CREATED: string;
-	    static CONTEXT_DISPOSED: string;
-	    static CONTEXT_RECREATED: string;
-	    static VIEWPORT_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = StageEvent;
 	
 }
 declare module "awayjs-display/lib/materials/LightSources" {
@@ -9758,19 +9735,6 @@ declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
 	    _iCreateEntityCollector(): ICollector;
 	}
 	export = CSSDefaultRenderer;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
 	
 }
 declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
@@ -10268,6 +10232,46 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableMergeSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.RenderableMergeSort
+	 */
+	class RenderableMergeSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/display/ContextMode" {
+	class ContextMode {
+	    static AUTO: string;
+	    static WEBGL: string;
+	    static FLASH: string;
+	    static NATIVE: string;
+	}
+	export = ContextMode;
+	
+}
+declare module "awayjs-display/lib/display/IContext" {
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	/**
+	 *
+	 * @class away.base.IContext
+	 */
+	interface IContext {
+	    container: HTMLElement;
+	    clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): any;
+	    configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): any;
+	    dispose(): any;
+	    present(): any;
+	    setScissorRectangle(rect: Rectangle): any;
+	}
+	export = IContext;
 	
 }
 declare module "awayjs-display/lib/text/TextFormatAlign" {
