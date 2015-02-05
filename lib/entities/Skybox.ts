@@ -1,3 +1,4 @@
+import BlendMode					= require("awayjs-core/lib/base/BlendMode");
 import BoundingVolumeBase			= require("awayjs-core/lib/bounds/BoundingVolumeBase");
 import NullBounds					= require("awayjs-core/lib/bounds/NullBounds");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
@@ -7,7 +8,6 @@ import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import BlendMode					= require("awayjs-display/lib/base/BlendMode");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
@@ -203,7 +203,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 	public set cubeMap(value:CubeTextureBase)
 	{
-		if (value && this._cubeMap && (value.hasMipmaps != this._cubeMap.hasMipmaps || value.format != this._cubeMap.format))
+		if (value && this._cubeMap && (value.format != this._cubeMap.format))
 			this._pInvalidateRenderObject();
 
 		this._cubeMap = value;

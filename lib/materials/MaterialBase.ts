@@ -1,3 +1,4 @@
+import BlendMode					= require("awayjs-core/lib/base/BlendMode");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
@@ -9,7 +10,6 @@ import Texture2DBase				= require("awayjs-core/lib/textures/Texture2DBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import BlendMode					= require("awayjs-display/lib/base/BlendMode");
 import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");

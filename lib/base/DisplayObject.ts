@@ -1,3 +1,4 @@
+import BlendMode				= require("awayjs-core/lib/base/BlendMode");
 import AxisAlignedBoundingBox	= require("awayjs-core/lib/bounds/AxisAlignedBoundingBox");
 import BoundingVolumeBase		= require("awayjs-core/lib/bounds/BoundingVolumeBase");
 import MathConsts				= require("awayjs-core/lib/geom/MathConsts");
@@ -13,7 +14,6 @@ import DisplayObjectContainer	= require("awayjs-display/lib/containers/DisplayOb
 import Scene					= require("awayjs-display/lib/containers/Scene");
 import ControllerBase			= require("awayjs-display/lib/controllers/ControllerBase");
 import AlignmentMode			= require("awayjs-display/lib/base/AlignmentMode");
-import BlendMode				= require("awayjs-display/lib/base/BlendMode");
 import LoaderInfo				= require("awayjs-display/lib/base/LoaderInfo");
 import OrientationMode			= require("awayjs-display/lib/base/OrientationMode");
 import IBitmapDrawable			= require("awayjs-display/lib/base/IBitmapDrawable");
