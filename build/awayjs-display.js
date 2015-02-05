@@ -73,186 +73,6 @@ var AlignmentMode = (function () {
 module.exports = AlignmentMode;
 
 
-},{}],"awayjs-display/lib/base/BlendMode":[function(require,module,exports){
-/**
- * A class that provides constant values for visual blend mode effects. These
- * constants are used in the following:
- * <ul>
- *   <li> The <code>blendMode</code> property of the
- * flash.display.DisplayObject class.</li>
- *   <li> The <code>blendMode</code> parameter of the <code>draw()</code>
- * method of the flash.display.BitmapData class</li>
- * </ul>
- */
-var BlendMode = (function () {
-    function BlendMode() {
-    }
-    /**
-     * Adds the values of the constituent colors of the display object to the
-     * colors of its background, applying a ceiling of 0xFF. This setting is
-     * commonly used for animating a lightening dissolve between two objects.
-     *
-     * <p>For example, if the display object has a pixel with an RGB value of
-     * 0xAAA633, and the background pixel has an RGB value of 0xDD2200, the
-     * resulting RGB value for the displayed pixel is 0xFFC833(because 0xAA +
-     * 0xDD > 0xFF, 0xA6 + 0x22 = 0xC8, and 0x33 + 0x00 = 0x33).</p>
-     */
-    BlendMode.ADD = "add";
-    /**
-     * Applies the alpha value of each pixel of the display object to the
-     * background. This requires the <code>blendMode</code> property of the
-     * parent display object be set to
-     * <code>away.base.BlendMode.LAYER</code>.
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.ALPHA = "alpha";
-    /**
-     * Selects the darker of the constituent colors of the display object and the
-     * colors of the background(the colors with the smaller values). This
-     * setting is commonly used for superimposing type.
-     *
-     * <p>For example, if the display object has a pixel with an RGB value of
-     * 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the
-     * resulting RGB value for the displayed pixel is 0xDDCC00(because 0xFF >
-     * 0xDD, 0xCC < 0xF8, and 0x33 > 0x00 = 33).</p>
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.DARKEN = "darken";
-    /**
-     * Compares the constituent colors of the display object with the colors of
-     * its background, and subtracts the darker of the values of the two
-     * constituent colors from the lighter value. This setting is commonly used
-     * for more vibrant colors.
-     *
-     * <p>For example, if the display object has a pixel with an RGB value of
-     * 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the
-     * resulting RGB value for the displayed pixel is 0x222C33(because 0xFF -
-     * 0xDD = 0x22, 0xF8 - 0xCC = 0x2C, and 0x33 - 0x00 = 0x33).</p>
-     */
-    BlendMode.DIFFERENCE = "difference";
-    /**
-     * Erases the background based on the alpha value of the display object. This
-     * process requires that the <code>blendMode</code> property of the parent
-     * display object be set to <code>flash.display.BlendMode.LAYER</code>.
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.ERASE = "erase";
-    /**
-     * Adjusts the color of each pixel based on the darkness of the display
-     * object. If the display object is lighter than 50% gray, the display object
-     * and background colors are screened, which results in a lighter color. If
-     * the display object is darker than 50% gray, the colors are multiplied,
-     * which results in a darker color. This setting is commonly used for shading
-     * effects.
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.HARDLIGHT = "hardlight";
-    /**
-     * Inverts the background.
-     */
-    BlendMode.INVERT = "invert";
-    /**
-     * Forces the creation of a transparency group for the display object. This
-     * means that the display object is precomposed in a temporary buffer before
-     * it is processed further. The precomposition is done automatically if the
-     * display object is precached by means of bitmap caching or if the display
-     * object is a display object container that has at least one child object
-     * with a <code>blendMode</code> setting other than <code>"normal"</code>.
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.LAYER = "layer";
-    /**
-     * Selects the lighter of the constituent colors of the display object and
-     * the colors of the background(the colors with the larger values). This
-     * setting is commonly used for superimposing type.
-     *
-     * <p>For example, if the display object has a pixel with an RGB value of
-     * 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the
-     * resulting RGB value for the displayed pixel is 0xFFF833(because 0xFF >
-     * 0xDD, 0xCC < 0xF8, and 0x33 > 0x00 = 33).</p>
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.LIGHTEN = "lighten";
-    /**
-     * Multiplies the values of the display object constituent colors by the
-     * constituent colors of the background color, and normalizes by dividing by
-     * 0xFF, resulting in darker colors. This setting is commonly used for
-     * shadows and depth effects.
-     *
-     * <p>For example, if a constituent color(such as red) of one pixel in the
-     * display object and the corresponding color of the pixel in the background
-     * both have the value 0x88, the multiplied result is 0x4840. Dividing by
-     * 0xFF yields a value of 0x48 for that constituent color, which is a darker
-     * shade than the color of the display object or the color of the
-     * background.</p>
-     */
-    BlendMode.MULTIPLY = "multiply";
-    /**
-     * The display object appears in front of the background. Pixel values of the
-     * display object override the pixel values of the background. Where the
-     * display object is transparent, the background is visible.
-     */
-    BlendMode.NORMAL = "normal";
-    /**
-     * Adjusts the color of each pixel based on the darkness of the background.
-     * If the background is lighter than 50% gray, the display object and
-     * background colors are screened, which results in a lighter color. If the
-     * background is darker than 50% gray, the colors are multiplied, which
-     * results in a darker color. This setting is commonly used for shading
-     * effects.
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.OVERLAY = "overlay";
-    /**
-     * Multiplies the complement(inverse) of the display object color by the
-     * complement of the background color, resulting in a bleaching effect. This
-     * setting is commonly used for highlights or to remove black areas of the
-     * display object.
-     */
-    BlendMode.SCREEN = "screen";
-    /**
-     * Uses a shader to define the blend between objects.
-     *
-     * <p>Setting the <code>blendShader</code> property to a Shader instance
-     * automatically sets the display object's <code>blendMode</code> property to
-     * <code>BlendMode.SHADER</code>. If the <code>blendMode</code> property is
-     * set to <code>BlendMode.SHADER</code> without first setting the
-     * <code>blendShader</code> property, the <code>blendMode</code> property is
-     * set to <code>BlendMode.NORMAL</code> instead. If the
-     * <code>blendShader</code> property is set(which sets the
-     * <code>blendMode</code> property to <code>BlendMode.SHADER</code>), then
-     * later the value of the <code>blendMode</code> property is changed, the
-     * blend mode can be reset to use the blend shader simply by setting the
-     * <code>blendMode</code> property to <code>BlendMode.SHADER</code>. The
-     * <code>blendShader</code> property does not need to be set again except to
-     * change the shader that's used to define the blend mode.</p>
-     *
-     * <p>Not supported under GPU rendering.</p>
-     */
-    BlendMode.SHADER = "shader";
-    /**
-     * Subtracts the values of the constituent colors in the display object from
-     * the values of the background color, applying a floor of 0. This setting is
-     * commonly used for animating a darkening dissolve between two objects.
-     *
-     * <p>For example, if the display object has a pixel with an RGB value of
-     * 0xAA2233, and the background pixel has an RGB value of 0xDDA600, the
-     * resulting RGB value for the displayed pixel is 0x338400(because 0xDD -
-     * 0xAA = 0x33, 0xA6 - 0x22 = 0x84, and 0x00 - 0x33 < 0x00).</p>
-     */
-    BlendMode.SUBTRACT = "subtract";
-    return BlendMode;
-})();
-module.exports = BlendMode;
-
-
 },{}],"awayjs-display/lib/base/CapsStyle":[function(require,module,exports){
 /**
  * The CapsStyle class is an enumeration of constant values that specify the
@@ -9982,10 +9802,10 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var BlendMode = require("awayjs-core/lib/base/BlendMode");
 var NullBounds = require("awayjs-core/lib/bounds/NullBounds");
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var BlendMode = require("awayjs-display/lib/base/BlendMode");
 var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
@@ -10167,7 +9987,7 @@ var Skybox = (function (_super) {
             return this._cubeMap;
         },
         set: function (value) {
-            if (value && this._cubeMap && (value.hasMipmaps != this._cubeMap.hasMipmaps || value.format != this._cubeMap.format))
+            if (value && this._cubeMap && (value.format != this._cubeMap.format))
                 this._pInvalidateRenderObject();
             this._cubeMap = value;
         },
@@ -10264,7 +10084,7 @@ var Skybox = (function (_super) {
 module.exports = Skybox;
 
 
-},{"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/partition/SkyboxNode":undefined}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/partition/SkyboxNode":undefined}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -12111,7 +11931,7 @@ var DefaultMaterialManager = (function () {
     };
     DefaultMaterialManager.createDefaultTexture = function () {
         DefaultMaterialManager._defaultBitmapData = DefaultMaterialManager.createCheckeredBitmapData();
-        DefaultMaterialManager._defaultTexture = new BitmapTexture(DefaultMaterialManager._defaultBitmapData, true);
+        DefaultMaterialManager._defaultTexture = new BitmapTexture(DefaultMaterialManager._defaultBitmapData);
         DefaultMaterialManager._defaultTexture.name = "defaultTexture";
     };
     DefaultMaterialManager.createCheckeredBitmapData = function () {
@@ -12539,12 +12359,12 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var BlendMode = require("awayjs-core/lib/base/BlendMode");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var Event = require("awayjs-core/lib/events/Event");
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-var BlendMode = require("awayjs-display/lib/base/BlendMode");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
 var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
 /**
@@ -13068,7 +12888,7 @@ var MaterialBase = (function (_super) {
 module.exports = MaterialBase;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/base/BlendMode":undefined,"awayjs-display/lib/events/MaterialEvent":undefined,"awayjs-display/lib/events/RenderableOwnerEvent":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
+},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/events/MaterialEvent":undefined,"awayjs-display/lib/events/RenderableOwnerEvent":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
