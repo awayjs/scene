@@ -6991,252 +6991,6 @@ declare module "awayjs-display/lib/base/PixelSnapping" {
 	export = PixelSnapping;
 	
 }
-declare module "awayjs-display/lib/controllers/FirstPersonController" {
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FirstPersonController extends ControllerBase {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _walkIncrement;
-	    private _strafeIncrement;
-	    private _wrapPanAngle;
-	    fly: boolean;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	    incrementWalk(val: number): void;
-	    incrementStrafe(val: number): void;
-	}
-	export = FirstPersonController;
-	
-}
-declare module "awayjs-display/lib/controllers/LookAtController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	class LookAtController extends ControllerBase {
-	    _pLookAtPosition: Vector3D;
-	    _pLookAtObject: DisplayObject;
-	    _pOrigin: Vector3D;
-	    private _onLookAtObjectChangedDelegate;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
-	    lookAtPosition: Vector3D;
-	    lookAtObject: DisplayObject;
-	    update(interpolate?: boolean): void;
-	    private onLookAtObjectChanged(event);
-	}
-	export = LookAtController;
-	
-}
-declare module "awayjs-display/lib/controllers/HoverController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away.containers.View
-	 */
-	class HoverController extends LookAtController {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _distance;
-	    private _minPanAngle;
-	    private _maxPanAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _yFactor;
-	    private _wrapPanAngle;
-	    private _upAxis;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Distance between the camera and the specified target. Defaults to 1000.
-	     */
-	    distance: number;
-	    /**
-	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    minPanAngle: number;
-	    /**
-	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    maxPanAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
-	     *
-	     * @see    #distance
-	     */
-	    yFactor: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	}
-	export = HoverController;
-	
-}
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
-	
-}
-declare module "awayjs-display/lib/controllers/SpringController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Uses spring physics to animate the target object towards a position that is
-	 * defined as the lookAtTarget object's position plus the vector defined by the
-	 * positionOffset property.
-	 */
-	class SpringController extends LookAtController {
-	    private _velocity;
-	    private _dv;
-	    private _stretch;
-	    private _force;
-	    private _acceleration;
-	    private _desiredPosition;
-	    /**
-	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
-	     * A number between 1 and 20 is recommended.
-	     */
-	    stiffness: number;
-	    /**
-	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
-	     * A number between 1 and 20 is recommended.
-	     */
-	    damping: number;
-	    /**
-	     * Mass of the camera, if over 120 and it'll be very heavy to move.
-	     */
-	    mass: number;
-	    /**
-	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
-	     */
-	    positionOffset: Vector3D;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = SpringController;
-	
-}
 declare module "awayjs-display/lib/pick/IPicker" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import Scene = require("awayjs-display/lib/containers/Scene");
@@ -8043,6 +7797,279 @@ declare module "awayjs-display/lib/containers/View" {
 	    updateCollider(): void;
 	}
 	export = View;
+	
+}
+declare module "awayjs-display/lib/controllers/FirstPersonController" {
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FirstPersonController extends ControllerBase {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _walkIncrement;
+	    private _strafeIncrement;
+	    private _wrapPanAngle;
+	    fly: boolean;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	    incrementWalk(val: number): void;
+	    incrementStrafe(val: number): void;
+	}
+	export = FirstPersonController;
+	
+}
+declare module "awayjs-display/lib/controllers/LookAtController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	class LookAtController extends ControllerBase {
+	    _pLookAtPosition: Vector3D;
+	    _pLookAtObject: DisplayObject;
+	    _pOrigin: Vector3D;
+	    private _onLookAtObjectChangedDelegate;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
+	    lookAtPosition: Vector3D;
+	    lookAtObject: DisplayObject;
+	    update(interpolate?: boolean): void;
+	    private onLookAtObjectChanged(event);
+	}
+	export = LookAtController;
+	
+}
+declare module "awayjs-display/lib/controllers/HoverController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away.containers.View
+	 */
+	class HoverController extends LookAtController {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _distance;
+	    private _minPanAngle;
+	    private _maxPanAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _yFactor;
+	    private _wrapPanAngle;
+	    private _upAxis;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Distance between the camera and the specified target. Defaults to 1000.
+	     */
+	    distance: number;
+	    /**
+	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    minPanAngle: number;
+	    /**
+	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    maxPanAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
+	     *
+	     * @see    #distance
+	     */
+	    yFactor: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	}
+	export = HoverController;
+	
+}
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
+	
+}
+declare module "awayjs-display/lib/controllers/SpringController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Uses spring physics to animate the target object towards a position that is
+	 * defined as the lookAtTarget object's position plus the vector defined by the
+	 * positionOffset property.
+	 */
+	class SpringController extends LookAtController {
+	    private _velocity;
+	    private _dv;
+	    private _stretch;
+	    private _force;
+	    private _acceleration;
+	    private _desiredPosition;
+	    /**
+	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
+	     * A number between 1 and 20 is recommended.
+	     */
+	    stiffness: number;
+	    /**
+	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
+	     * A number between 1 and 20 is recommended.
+	     */
+	    damping: number;
+	    /**
+	     * Mass of the camera, if over 120 and it'll be very heavy to move.
+	     */
+	    mass: number;
+	    /**
+	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
+	     */
+	    positionOffset: Vector3D;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = SpringController;
+	
+}
+declare module "awayjs-display/lib/display/ContextMode" {
+	class ContextMode {
+	    static AUTO: string;
+	    static WEBGL: string;
+	    static FLASH: string;
+	    static NATIVE: string;
+	}
+	export = ContextMode;
+	
+}
+declare module "awayjs-display/lib/display/IContext" {
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	/**
+	 *
+	 * @class away.base.IContext
+	 */
+	interface IContext {
+	    container: HTMLElement;
+	    clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): any;
+	    configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): any;
+	    dispose(): any;
+	    present(): any;
+	    setScissorRectangle(rect: Rectangle): any;
+	}
+	export = IContext;
 	
 }
 declare module "awayjs-display/lib/entities/Shape" {
@@ -9376,221 +9403,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	export = TextField;
 	
 }
-declare module "awayjs-display/lib/entities/timelinedata/CommandPropsBase" {
-	/**
-	 * BaseClass for CommandProperties. Should not be instantiated directly.
-	 */
-	class CommandPropsBase {
-	    constructor();
-	    deactivate(thisObj: any): void;
-	    apply(thisObj: any, time: number, speed: number): void;
-	}
-	export = CommandPropsBase;
-	
-}
-declare module "awayjs-display/lib/entities/timelinedata/TimeLineObject" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import CommandPropsBase = require("awayjs-display/lib/entities/timelinedata/CommandPropsBase");
-	/**
-	 * TimeLineObject represents a unique object that is (or will be) used by a TimeLine.
-	 *  A TimeLineObject basically consists of an objID, and an IAsset.
-	 *  The FrameCommands hold references to these TimeLineObjects, so they can access and modify the IAssets
-	
-	 */
-	class TimeLineObject {
-	    private _asset;
-	    private _objID;
-	    private _deactivateCommandProps;
-	    private _isActive;
-	    private _is2D;
-	    constructor(asset: IAsset, objID: number, deactiveCommandProps: CommandPropsBase);
-	    deactivateCommandProps: CommandPropsBase;
-	    deactivate(): void;
-	    asset: IAsset;
-	    objID: number;
-	    is2D: boolean;
-	    isActive: boolean;
-	}
-	export = TimeLineObject;
-	
-}
-declare module "awayjs-display/lib/entities/timelinedata/FrameCommand" {
-	import CommandPropsBase = require("awayjs-display/lib/entities/timelinedata/CommandPropsBase");
-	import TimeLineObject = require("awayjs-display/lib/entities/timelinedata/TimeLineObject");
-	/**
-	 * FrameCommand associates a TimeLineobject with CommandProps.
-	 * CommandProps can be of different class, depending on the type of Asset that the TimeLineObject references to.
-	 */
-	class FrameCommand {
-	    private _commandProps;
-	    private _tlObj;
-	    private _activate;
-	    constructor(tlObj: TimeLineObject);
-	    activateObj: boolean;
-	    commandProps: CommandPropsBase;
-	    tlObj: TimeLineObject;
-	    execute(time: number, speed: number): void;
-	}
-	export = FrameCommand;
-	
-}
-declare module "awayjs-display/lib/entities/timelinedata/TimeLineFrame" {
-	import FrameCommand = require("awayjs-display/lib/entities/timelinedata/FrameCommand");
-	/**
-	 * TimelineFrame holds 3 list of FrameCommands
-	 *  - list1 _frameCommands should be  executed when playing the timeline (previous Frame was played)
-	 *  - list2 _frameCommandsReverse should be executed when playing the timeline reversed (previous Frame was played)
-	 *  - list3 _frameCommandsInit should be executed when jumping to a frame, so we need to fully init the frame
-	 *
-	 *  Addionial TimelineFrame properties are:
-	 *  - script - can be executed, after the frameCommands have been executed
-	 *  - list of FrameLabels, and list of corresponding labelTypes
-	 *  - duration-value (1 frame is not necessary 1 frame long)
-	 *  - startTime and endTime are needed internally when deciding what frame to display
-	 */
-	class TimeLineFrame {
-	    private _script;
-	    private _startTime;
-	    private _endTime;
-	    private _duration;
-	    private _timeline;
-	    private _frameCommands;
-	    private _frameCommandsReverse;
-	    private _frameCommandsInit;
-	    private _framelabels;
-	    private _labelTypes;
-	    private _isDirty;
-	    constructor();
-	    addCommand(newCommand: FrameCommand): void;
-	    addCommandReverse(newCommand: FrameCommand): void;
-	    addCommandInit(newCommand: FrameCommand): void;
-	    addLabel(label: string, type: number): void;
-	    framelabels: string[];
-	    labelTypes: number[];
-	    script: string;
-	    addToScript(newscript: string): void;
-	    isDirty: boolean;
-	    makeDirty(): void;
-	    startTime: number;
-	    duration: number;
-	    endTime: number;
-	    setFrameTime(startTime: number, duration: number): void;
-	    /**
-	     * executes the set of Commands for this Frame.
-	     * Each Frame has 3 sets of commands:
-	     *  0 = init frame commands = the frame must be init as if previous frame was not played
-	     *  1 = play frame commands = the previous frame was played
-	     *  2 = playReverse Commands = the next frame was played
-	     */
-	    executeCommands(commandSet: number, time: number, speed: number): void;
-	}
-	export = TimeLineFrame;
-	
-}
-declare module "awayjs-display/lib/entities/TimeLine" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import TimeLineFrame = require("awayjs-display/lib/entities/timelinedata/TimeLineFrame");
-	import TimeLineObject = require("awayjs-display/lib/entities/timelinedata/TimeLineObject");
-	/**
-	 * Timeline is a DisplayObjectContainer, that can control the animation of a list of TimeLineObjects.
-	 * For now, the focus of Development is on animating the new type of 2D-Geometry exported from FlashPro,
-	 * but there is no reason that this cannot be used to animate any type of object, that implements IAsset.
-	**/
-	class TimeLine extends DisplayObjectContainer {
-	    private _timeLineObjs;
-	    private _frames;
-	    private _time;
-	    private _currentFrame;
-	    private _speed;
-	    private _fps;
-	    private _isplaying;
-	    private _isInit;
-	    private _playMode;
-	    private _duration;
-	    constructor();
-	    speed: number;
-	    fps: number;
-	    assetType: string;
-	    /**
-	     * should be called right before the call to away3d-render.
-	     */
-	    update(timeDelta: number, jumpingToFrame?: boolean): void;
-	    /**
-	     * Add a new TimeLineFrame.
-	     */
-	    addFrame(newFrame: TimeLineFrame): void;
-	    duration: number;
-	    /**
-	     * This is called inside the TimeLineFrame.execute() function.
-	     */
-	    executeFrameScript(frameScript: string): void;
-	    /**
-	     * Starts playback of animation from current position
-	     */
-	    start(): void;
-	    /**
-	     * Stop playback of animation and hold current position
-	     */
-	    stop(): void;
-	    /**
-	     * Classic gotoAndPlay like as3 api - set frame by frame-number.
-	     */
-	    gotoAndPlay(frameNumber: number): void;
-	    /**
-	     * Classic gotoAndStop as3 api - set frame by frame-number.
-	     */
-	    gotoAndStop(frameNumber: number): void;
-	    /**
-	     * gotoAndPlay - set frame by frame-label.
-	     */
-	    gotoAndPlayLabel(frameLabel: string): void;
-	    /**
-	     * gotoAndStop - set frame by frame-label.
-	     */
-	    gotoAndStopLabel(frameLabel: string): void;
-	    /**
-	     * gotoAndPlay - set time in ms.
-	     */
-	    gotoAndPlayTime(time: number): void;
-	    /**
-	     * gotoAndStop - set time in ms.
-	     */
-	    gotoAndStopTime(time: number): void;
-	    addTimeLineObject(newTlObj: TimeLineObject, isDisplayObj?: boolean): void;
-	    getTimeLineObjectByID(objID: number): TimeLineObject;
-	    getObjectByInstanceName(instanceName: string): IAsset;
-	}
-	export = TimeLine;
-	
-}
-declare module "awayjs-display/lib/display/ContextMode" {
-	class ContextMode {
-	    static AUTO: string;
-	    static WEBGL: string;
-	    static FLASH: string;
-	    static NATIVE: string;
-	}
-	export = ContextMode;
-	
-}
-declare module "awayjs-display/lib/display/IContext" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	/**
-	 *
-	 * @class away.base.IContext
-	 */
-	interface IContext {
-	    container: HTMLElement;
-	    clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): any;
-	    configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): any;
-	    dispose(): any;
-	    present(): any;
-	    setScissorRectangle(rect: Rectangle): any;
-	}
-	export = IContext;
-	
-}
 declare module "awayjs-display/lib/errors/CastError" {
 	import Error = require("awayjs-core/lib/errors/Error");
 	class CastError extends Error {
@@ -9720,59 +9532,6 @@ declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
 	    constructor(pool: IRenderablePool, skyBox: Skybox);
 	}
 	export = CSSSkyboxRenderable;
-	
-}
-declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
-	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import ICollector = require("awayjs-display/lib/traverse/ICollector");
-	/**
-	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
-	 * materials assigned to them.
-	 *
-	 * @class away.render.DefaultRenderer
-	 */
-	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
-	    private _container;
-	    private _context;
-	    private _contextStyle;
-	    private _contextMatrix;
-	    private _activeMaterial;
-	    private _skyboxProjection;
-	    private _transform;
-	    /**
-	     * Creates a new CSSDefaultRenderer object.
-	     */
-	    constructor();
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: ICollector): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    pDraw(entityCollector: EntityCollector): void;
-	    /**
-	     * Updates the backbuffer properties.
-	     */
-	    pUpdateBackBuffer(): void;
-	    /**
-	     * Draw the skybox if present.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawSkybox(entityCollector);
-	    /**
-	     * Draw a list of renderables.
-	     * @param renderables The renderables to draw.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawRenderables(item, entityCollector);
-	    dispose(): void;
-	    _iCreateEntityCollector(): ICollector;
-	}
-	export = CSSDefaultRenderer;
 	
 }
 declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
@@ -10272,6 +10031,59 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	export = PrimitiveTorusPrefab;
 	
 }
+declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
+	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import ICollector = require("awayjs-display/lib/traverse/ICollector");
+	/**
+	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
+	 * materials assigned to them.
+	 *
+	 * @class away.render.DefaultRenderer
+	 */
+	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
+	    private _container;
+	    private _context;
+	    private _contextStyle;
+	    private _contextMatrix;
+	    private _activeMaterial;
+	    private _skyboxProjection;
+	    private _transform;
+	    /**
+	     * Creates a new CSSDefaultRenderer object.
+	     */
+	    constructor();
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: ICollector): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    pDraw(entityCollector: EntityCollector): void;
+	    /**
+	     * Updates the backbuffer properties.
+	     */
+	    pUpdateBackBuffer(): void;
+	    /**
+	     * Draw the skybox if present.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawSkybox(entityCollector);
+	    /**
+	     * Draw a list of renderables.
+	     * @param renderables The renderables to draw.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawRenderables(item, entityCollector);
+	    dispose(): void;
+	    _iCreateEntityCollector(): ICollector;
+	}
+	export = CSSDefaultRenderer;
+	
+}
 declare module "awayjs-display/lib/sort/RenderableMergeSort" {
 	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
@@ -10283,30 +10095,6 @@ declare module "awayjs-display/lib/sort/RenderableMergeSort" {
 	    sortOpaqueRenderables(head: IRenderable): IRenderable;
 	}
 	export = RenderableMergeSort;
-	
-}
-declare module "awayjs-display/lib/utils/Cast" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-	/**
-	 * Helper class for casting assets to usable objects
-	 */
-	class Cast {
-	    private static _colorNames;
-	    private static _hexChars;
-	    private static _notClasses;
-	    private static _classes;
-	    static string(data: any): string;
-	    static byteArray(data: any): ByteArray;
-	    private static isHex(str);
-	    static tryColor(data: any): number;
-	    static color(data: any): number;
-	    static tryClass(name: string): any;
-	    static bitmapData(data: any): BitmapData;
-	    static bitmapTexture(data: any): BitmapTexture;
-	}
-	export = Cast;
 	
 }
 declare module "awayjs-display/lib/text/TextFormatAlign" {
@@ -10339,63 +10127,28 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	export = TextFormatAlign;
 	
 }
-declare module "awayjs-display/lib/entities/timelinedata/InterpolationObject" {
+declare module "awayjs-display/lib/utils/Cast" {
+	import BitmapData = require("awayjs-core/lib/base/BitmapData");
+	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
+	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
 	/**
-	 * TimeLineObject represents a unique object that is (or will be) used by a TimeLine.
-	 *  A TimeLineObject basically consists of an objID, and an IAsset.
-	 *  The FrameCommands hold references to these TimeLineObjects, so they can access and modify the IAssets
-	
+	 * Helper class for casting assets to usable objects
 	 */
-	class InterpolationObject {
-	    private _type;
-	    private _startValue;
-	    private _startTime;
-	    private _endValue;
-	    private _endTime;
-	    private _duration;
-	    constructor(type: number, startValue: any, endValue: any, startTime: number, endTime: number);
-	    getState(time: number, speed: number): any;
+	class Cast {
+	    private static _colorNames;
+	    private static _hexChars;
+	    private static _notClasses;
+	    private static _classes;
+	    static string(data: any): string;
+	    static byteArray(data: any): ByteArray;
+	    private static isHex(str);
+	    static tryColor(data: any): number;
+	    static color(data: any): number;
+	    static tryClass(name: string): any;
+	    static bitmapData(data: any): BitmapData;
+	    static bitmapTexture(data: any): BitmapTexture;
 	}
-	export = InterpolationObject;
-	
-}
-declare module "awayjs-display/lib/entities/timelinedata/CommandPropsDisplayObject" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import CommandPropsBase = require("awayjs-display/lib/entities/timelinedata/CommandPropsBase");
-	import InterpolationObject = require("awayjs-display/lib/entities/timelinedata/InterpolationObject");
-	class CommandPropsDisplayObject extends CommandPropsBase {
-	    private _doDisplaymatrix;
-	    private _displayMatrix;
-	    private _displayMatrixInterpolate;
-	    private _doColorTransform;
-	    private _colorTransform;
-	    private _colorTransformInterpolate;
-	    private _doDepth;
-	    private _depth;
-	    private _doFilters;
-	    private _filter;
-	    private _doBlendMode;
-	    private _blendMode;
-	    private _doDepthClip;
-	    private _depthClip;
-	    private _doInstanceName;
-	    private _instanceName;
-	    constructor();
-	    setBlendMode(blendMode: number): void;
-	    setClipDepth(clipDepth: number): void;
-	    setFilter(filter: any): void;
-	    setDepth(depth: number): void;
-	    setDisplaymatrixInterpolate(interpolate: InterpolationObject): void;
-	    setDisplaymatrix(displayMatrix: Matrix3D): void;
-	    setColorTransform(colorTransform: ColorTransform): void;
-	    setColorTranformInterpolate(interpolate: InterpolationObject): void;
-	    setInstancename(instanceName: string): void;
-	    deactivate(thisObj: DisplayObjectContainer): void;
-	    apply(thisObj: DisplayObjectContainer, time: number, speed: number): void;
-	}
-	export = CommandPropsDisplayObject;
+	export = Cast;
 	
 }
 declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
