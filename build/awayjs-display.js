@@ -111,7 +111,8 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AxisAlignedBoundingBox = require("awayjs-core/lib/bounds/AxisAlignedBoundingBox");
+var Box = require("awayjs-core/lib/geom/Box");
+var Sphere = require("awayjs-core/lib/geom/Sphere");
 var MathConsts = require("awayjs-core/lib/geom/MathConsts");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
@@ -261,6 +262,8 @@ var DisplayObject = (function (_super) {
      */
     function DisplayObject() {
         _super.call(this);
+        this._boxBoundsInvalid = true;
+        this._sphereBoundsInvalid = true;
         this._pSceneTransform = new Matrix3D();
         this._pSceneTransformDirty = true;
         this._matrix3D = new Matrix3D();
@@ -296,9 +299,8 @@ var DisplayObject = (function (_super) {
         this._rot = new Vector3D();
         this._sca = new Vector3D();
         this._pIgnoreTransform = false;
-        this._pBoundsInvalid = true;
-        this._worldBoundsInvalid = true;
         this._pRenderables = new Array();
+        this._entityNodes = new Array();
         /**
          *
          */
@@ -313,7 +315,7 @@ var DisplayObject = (function (_super) {
         this.orientationMode = OrientationMode.DEFAULT;
         // Cached vector of transformation components used when
         // recomposing the transform matrix in updateTransform()
-        this._transformComponents = new Array(3); //_transformComponents = new Vector.<Vector3D>(3, true);
+        this._transformComponents = new Array(3);
         this._transformComponents[0] = this._pos;
         this._transformComponents[1] = this._rot;
         this._transformComponents[2] = this._sca;
@@ -321,26 +323,22 @@ var DisplayObject = (function (_super) {
         this._transform = new Transform(this);
         this._matrix3D.identity();
         this._flipY.appendScale(1, -1, 1);
-        this._pBounds = this.pCreateDefaultBoundingVolume();
-        this._worldBounds = this.pCreateDefaultBoundingVolume();
     }
-    Object.defineProperty(DisplayObject.prototype, "bounds", {
+    Object.defineProperty(DisplayObject.prototype, "boundsType", {
         /**
          *
          */
         get: function () {
-            if (this._pBoundsInvalid)
-                this.pUpdateBounds();
-            return this._pBounds;
+            return this._boundsType;
         },
         set: function (value) {
-            if (this._pBounds == value)
+            if (this._boundsType == value)
                 return;
-            this._pBounds = value;
-            this._worldBounds = value.clone();
-            this.pInvalidateBounds();
-            if (this._boundsVisible)
-                this._partitionNode._iUpdateEntityBounds();
+            this._boundsType = value;
+            this._pInvalidateBounds();
+            var len = this._entityNodes.length;
+            for (var i = 0; i < len; i++)
+                this._entityNodes[i].updateBounds();
         },
         enumerable: true,
         configurable: true
@@ -357,15 +355,15 @@ var DisplayObject = (function (_super) {
          * set <code>depth</code> to a different value.</p>
          */
         get: function () {
-            if (this._pBoundsInvalid)
-                this.pUpdateBounds();
-            return this._depth;
+            if (this._boxBoundsInvalid)
+                this._pUpdateBoxBounds();
+            return this._pBoxBounds.depth * this._pScaleZ;
         },
         set: function (val) {
-            if (this._depth == val)
+            var scaleZ = val / this.getBox().depth;
+            if (this._pScaleZ == scaleZ)
                 return;
-            this._depth == val;
-            this._pScaleZ = val / this.bounds.aabb.depth;
+            this._pScaleZ = scaleZ;
             this.invalidateScale();
         },
         enumerable: true,
@@ -482,15 +480,15 @@ var DisplayObject = (function (_super) {
          * set <code>height</code> to a different value.</p>
          */
         get: function () {
-            if (this._pBoundsInvalid)
-                this.pUpdateBounds();
-            return this._height;
+            if (this._boxBoundsInvalid)
+                this._pUpdateBoxBounds();
+            return this._pBoxBounds.height * this._pScaleY;
         },
         set: function (val) {
-            if (this._height == val)
+            var scaleY = val / this.getBox().height;
+            if (this._pScaleY == scaleY)
                 return;
-            this._height == val;
-            this._pScaleY = val / this.bounds.aabb.height;
+            this._pScaleY = scaleY;
             this.invalidateScale();
         },
         enumerable: true,
@@ -666,24 +664,8 @@ var DisplayObject = (function (_super) {
         set: function (value) {
             if (this._explicitPartition == value)
                 return;
-            if (this._pScene && this._explicitPartition)
-                this._pScene.iUnregisterPartition(this._explicitPartition);
             this._explicitPartition = value;
-            if (this._pScene && value)
-                this._pScene.iRegisterPartition(value);
-            this._pUpdateImplicitPartition(this._pParent ? this._pParent._iAssignedPartition : null);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObject.prototype, "partitionNode", {
-        /**
-         *
-         */
-        get: function () {
-            if (!this._partitionNode)
-                this._partitionNode = this.pCreateEntityPartitionNode();
-            return this._partitionNode;
+            this._pUpdateImplicitPartition(this._pParent ? this._pParent._iAssignedPartition : null, this._pScene);
         },
         enumerable: true,
         configurable: true
@@ -921,18 +903,20 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(DisplayObject.prototype, "boundsVisible", {
+    Object.defineProperty(DisplayObject.prototype, "debugVisible", {
         /**
          *
          */
         get: function () {
-            return this._boundsVisible;
+            return this._debugVisible;
         },
         set: function (value) {
-            if (value == this._boundsVisible)
+            if (value == this._debugVisible)
                 return;
-            this._boundsVisible = value;
-            this._partitionNode.boundsVisible = value;
+            this._debugVisible = value;
+            var len = this._entityNodes.length;
+            for (var i = 0; i < len; i++)
+                this._entityNodes[i].debugVisible = this._debugVisible;
         },
         enumerable: true,
         configurable: true
@@ -1012,35 +996,16 @@ var DisplayObject = (function (_super) {
          * <code>width</code> to a different value.</p>
          */
         get: function () {
-            if (this._pBoundsInvalid)
-                this.pUpdateBounds();
-            return this._width;
+            if (this._boxBoundsInvalid)
+                this._pUpdateBoxBounds();
+            return this._pBoxBounds.width * this._pScaleX;
         },
         set: function (val) {
-            if (this._width == val)
+            var scaleX = val / this.getBox().width;
+            if (this._pScaleX == scaleX)
                 return;
-            this._width == val;
-            this._pScaleX = val / this.bounds.aabb.width;
+            this._pScaleX = scaleX;
             this.invalidateScale();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObject.prototype, "worldBounds", {
-        /**
-         *
-         */
-        get: function () {
-            // Since this getter is invoked every iteration of the render loop, and
-            // the prefab construct could affect the bounds of the entity, the prefab is
-            // validated here to give it a chance to rebuild.
-            if (this._iSourcePrefab)
-                this._iSourcePrefab._iValidate();
-            if (this._worldBoundsInvalid) {
-                this._worldBoundsInvalid = false;
-                this._worldBounds.transformFrom(this.bounds, this.sceneTransform);
-            }
-            return this._worldBounds;
         },
         enumerable: true,
         configurable: true
@@ -1151,6 +1116,12 @@ var DisplayObject = (function (_super) {
             case DisplayObjectEvent.SCALE_CHANGED:
                 this._listenToScaleChanged = true;
                 break;
+            case DisplayObjectEvent.SCENE_CHANGED:
+                this._listenToSceneChanged = true;
+                break;
+            case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
+                this._listenToSceneTransformChanged = true;
+                break;
         }
     };
     /**
@@ -1225,7 +1196,25 @@ var DisplayObject = (function (_super) {
      *         system.
      */
     DisplayObject.prototype.getRect = function (targetCoordinateSpace) {
+        if (targetCoordinateSpace === void 0) { targetCoordinateSpace = null; }
         return this._bounds; //TODO
+    };
+    DisplayObject.prototype.getBox = function (targetCoordinateSpace) {
+        if (targetCoordinateSpace === void 0) { targetCoordinateSpace = null; }
+        if (this._iSourcePrefab)
+            this._iSourcePrefab._iValidate();
+        //TODO targetCoordinateSpace
+        if (this._boxBoundsInvalid)
+            this._pUpdateBoxBounds();
+        return this._pBoxBounds;
+    };
+    DisplayObject.prototype.getSphere = function (targetCoordinateSpace) {
+        if (targetCoordinateSpace === void 0) { targetCoordinateSpace = null; }
+        if (this._iSourcePrefab)
+            this._iSourcePrefab._iValidate();
+        if (this._sphereBoundsInvalid)
+            this._pUpdateSphereBounds();
+        return this._pSphereBounds;
     };
     /**
      * Converts the <code>point</code> object from the Scene(global) coordinates
@@ -1298,26 +1287,6 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.hitTestPoint = function (x, y, shapeFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
         return false; //TODO
-    };
-    /**
-     * @inheritDoc
-     */
-    DisplayObject.prototype.isIntersectingRay = function (rayPosition, rayDirection) {
-        var localRayPosition = this.inverseSceneTransform.transformVector(rayPosition);
-        var localRayDirection = this.inverseSceneTransform.deltaTransformVector(rayDirection);
-        var pickingCollisionVO = this._iPickingCollisionVO;
-        if (!pickingCollisionVO.localNormal)
-            pickingCollisionVO.localNormal = new Vector3D();
-        var rayEntryDistance = this.bounds.rayIntersection(localRayPosition, localRayDirection, pickingCollisionVO.localNormal);
-        if (rayEntryDistance < 0)
-            return false;
-        pickingCollisionVO.rayEntryDistance = rayEntryDistance;
-        pickingCollisionVO.localRayPosition = localRayPosition;
-        pickingCollisionVO.localRayDirection = localRayDirection;
-        pickingCollisionVO.rayPosition = rayPosition;
-        pickingCollisionVO.rayDirection = rayDirection;
-        pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
-        return true;
     };
     /**
      * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
@@ -1651,38 +1620,13 @@ var DisplayObject = (function (_super) {
         if (value) {
             this._pUpdateImplicitMouseEnabled(value.mouseChildren);
             this._pUpdateImplicitVisibility(value._iIsVisible());
-            this._pUpdateImplicitPartition(value._iAssignedPartition);
-            this._iSetScene(value._pScene);
+            this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
         }
         else {
             this._pUpdateImplicitMouseEnabled(true);
             this._pUpdateImplicitVisibility(true);
-            this._pUpdateImplicitPartition(null);
-            this._iSetScene(null);
+            this._pUpdateImplicitPartition(null, null);
         }
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype.pCreateDefaultBoundingVolume = function () {
-        // point lights should be using sphere bounds
-        // directional lights should be using null bounds
-        return new AxisAlignedBoundingBox();
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype.pCreateEntityPartitionNode = function () {
-        throw new AbstractMethodError();
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype.pInvalidateBounds = function () {
-        this._pBoundsInvalid = true;
-        this._worldBoundsInvalid = true;
-        if (this.isEntity)
-            this.invalidatePartition();
     };
     /**
      * @protected
@@ -1691,20 +1635,10 @@ var DisplayObject = (function (_super) {
         this._pSceneTransformDirty = !this._pIgnoreTransform;
         this._inverseSceneTransformDirty = !this._pIgnoreTransform;
         this._scenePositionDirty = !this._pIgnoreTransform;
-        this._worldBoundsInvalid = !this._pIgnoreTransform;
         if (this.isEntity)
             this.invalidatePartition();
         if (this._listenToSceneTransformChanged)
             this.notifySceneTransformChange();
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype.pUpdateBounds = function () {
-        this._width = this._pBounds.aabb.width * this._pScaleX;
-        this._height = this._pBounds.aabb.height * this._pScaleY;
-        this._depth = this._pBounds.aabb.depth * this._pScaleZ;
-        this._pBoundsInvalid = false;
     };
     /**
      * @protected
@@ -1718,9 +1652,37 @@ var DisplayObject = (function (_super) {
     /**
      * @protected
      */
-    DisplayObject.prototype._pUpdateImplicitPartition = function (value) {
+    DisplayObject.prototype._pUpdateImplicitPartition = function (partition, scene) {
+        var sceneChanged = this._pScene != scene;
+        if (sceneChanged && this._pScene)
+            this._pScene.dispatchEvent(new SceneEvent(SceneEvent.REMOVED_FROM_SCENE, this));
+        if (this._pScene && this._pImplicitPartition) {
+            //unregister partition from current scene
+            this._pScene._iUnregisterPartition(this._pImplicitPartition);
+            //unregister entity from current partition
+            if (this._pIsEntity)
+                this._pUnregisterEntity(this._pImplicitPartition);
+        }
         // assign parent implicit partition if no explicit one is given
-        this._pImplicitPartition = this._explicitPartition || value;
+        this._pImplicitPartition = this._explicitPartition || partition;
+        //assign scene
+        if (sceneChanged)
+            this._pScene = scene;
+        if (this._pScene && this._pImplicitPartition) {
+            //register partition with scene
+            this._pScene._iRegisterPartition(this._pImplicitPartition);
+            //register entity with new partition
+            if (this._pIsEntity)
+                this._pRegisterEntity(this._pImplicitPartition);
+        }
+        if (sceneChanged && this._pScene)
+            this._pScene.dispatchEvent(new SceneEvent(SceneEvent.ADDED_TO_SCENE, this));
+        if (sceneChanged) {
+            if (!this._pSceneTransformDirty && !this._pIgnoreTransform)
+                this.pInvalidateSceneTransform();
+            if (this._listenToSceneChanged)
+                this.notifySceneChange();
+        }
     };
     /**
      * @protected
@@ -1810,41 +1772,9 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype._iSetScene = function (value) {
-        // test to see if we're switching roots while we're already using a scene partition
-        /*
-        if (value == null)
-            this._oldScene = this._pScene;
-
-        if (this._explicitPartition && this._oldScene && this._oldScene != this._pScene)
-            this.partition = null;
-
-        if (value)
-            this._oldScene = null;
-
-        // end of stupid partition test code
-        //*/
         if (this._pScene == value)
             return;
-        this._pUpdateScene(value);
-        if (!this._pSceneTransformDirty && !this._pIgnoreTransform)
-            this.pInvalidateSceneTransform();
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype._pUpdateScene = function (value) {
-        if (this._pScene) {
-            this._pScene.dispatchEvent(new SceneEvent(SceneEvent.REMOVED_FROM_SCENE, this));
-            //unregister entity from current scene
-            this._pScene.iUnregisterEntity(this);
-        }
-        this._pScene = value;
-        if (value) {
-            value.dispatchEvent(new SceneEvent(SceneEvent.ADDED_TO_SCENE, this));
-            //register entity with new scene
-            value.iRegisterEntity(this);
-        }
-        this.notifySceneChange();
+        this._pUpdateImplicitPartition(this._pParent ? this._pParent._iAssignedPartition : null, value);
     };
     /**
      * @private
@@ -1874,11 +1804,9 @@ var DisplayObject = (function (_super) {
      * @private
      */
     DisplayObject.prototype.notifySceneChange = function () {
-        if (this._listenToSceneChanged) {
-            if (!this._scenechanged)
-                this._scenechanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this);
-            this.dispatchEvent(this._scenechanged);
-        }
+        if (!this._scenechanged)
+            this._scenechanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this);
+        this.dispatchEvent(this._scenechanged);
     };
     /**
      * @private
@@ -1904,8 +1832,9 @@ var DisplayObject = (function (_super) {
      * @private
      */
     DisplayObject.prototype.invalidatePartition = function () {
-        if (this._iAssignedPartition)
-            this._iAssignedPartition.iMarkForUpdate(this);
+        var len = this._entityNodes.length;
+        for (var i = 0; i < len; i++)
+            this._entityNodes[i].invalidatePartition();
     };
     /**
      * @private
@@ -1950,12 +1879,43 @@ var DisplayObject = (function (_super) {
         if (this._listenToScaleChanged)
             this.notifyScaleChanged();
     };
+    DisplayObject.prototype._iAddEntityNode = function (entityNode) {
+        this._entityNodes.push(entityNode);
+        return entityNode;
+    };
+    DisplayObject.prototype._iRemoveEntityNode = function (entityNode) {
+        var index = this._entityNodes.indexOf(entityNode);
+        this._entityNodes.splice(index, 1);
+        return entityNode;
+    };
+    DisplayObject.prototype._pRegisterEntity = function (partition) {
+        throw new AbstractMethodError();
+    };
+    DisplayObject.prototype._pUnregisterEntity = function (partition) {
+        throw new AbstractMethodError();
+    };
+    DisplayObject.prototype._pInvalidateBounds = function () {
+        this._boxBoundsInvalid = true;
+        this._sphereBoundsInvalid = true;
+        if (this.isEntity)
+            this.invalidatePartition();
+    };
+    DisplayObject.prototype._pUpdateBoxBounds = function () {
+        this._boxBoundsInvalid = false;
+        if (this._pBoxBounds == null)
+            this._pBoxBounds = new Box();
+    };
+    DisplayObject.prototype._pUpdateSphereBounds = function () {
+        this._sphereBoundsInvalid = false;
+        if (this._pSphereBounds == null)
+            this._pSphereBounds = new Sphere();
+    };
     return DisplayObject;
 })(NamedAssetBase);
 module.exports = DisplayObject;
 
 
-},{"awayjs-core/lib/bounds/AxisAlignedBoundingBox":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":undefined,"awayjs-display/lib/base/OrientationMode":undefined,"awayjs-display/lib/base/Transform":undefined,"awayjs-display/lib/events/DisplayObjectEvent":undefined,"awayjs-display/lib/events/SceneEvent":undefined,"awayjs-display/lib/pick/PickingCollisionVO":undefined}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":undefined,"awayjs-display/lib/base/OrientationMode":undefined,"awayjs-display/lib/base/Transform":undefined,"awayjs-display/lib/events/DisplayObjectEvent":undefined,"awayjs-display/lib/events/SceneEvent":undefined,"awayjs-display/lib/pick/PickingCollisionVO":undefined}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5945,7 +5905,333 @@ var TriangleSubMesh = (function (_super) {
 module.exports = TriangleSubMesh;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/SubMeshBase":undefined}],"awayjs-display/lib/containers/DisplayObjectContainer":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/SubMeshBase":undefined}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
+var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
+var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+var PrimitiveCubePrefab = require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
+/**
+ * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
+ * This is useful for most meshes.
+ */
+var AxisAlignedBoundingBox = (function (_super) {
+    __extends(AxisAlignedBoundingBox, _super);
+    /**
+     * Creates a new <code>AxisAlignedBoundingBox</code> object.
+     */
+    function AxisAlignedBoundingBox(entity) {
+        _super.call(this, entity);
+        this._x = 0;
+        this._y = 0;
+        this._z = 0;
+        this._width = 0;
+        this._height = 0;
+        this._depth = 0;
+        this._centerX = 0;
+        this._centerY = 0;
+        this._centerZ = 0;
+        this._halfExtentsX = 0;
+        this._halfExtentsY = 0;
+        this._halfExtentsZ = 0;
+    }
+    /**
+     * @inheritDoc
+     */
+    AxisAlignedBoundingBox.prototype.nullify = function () {
+        this._x = this._y = this._z = 0;
+        this._width = this._height = this._depth = 0;
+        this._centerX = this._centerY = this._centerZ = 0;
+        this._halfExtentsX = this._halfExtentsY = this._halfExtentsZ = 0;
+    };
+    /**
+     * @inheritDoc
+     */
+    AxisAlignedBoundingBox.prototype.isInFrustum = function (planes, numPlanes) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        for (var i = 0; i < numPlanes; ++i) {
+            var plane = planes[i];
+            var a = plane.a;
+            var b = plane.b;
+            var c = plane.c;
+            var flippedExtentX = a < 0 ? -this._halfExtentsX : this._halfExtentsX;
+            var flippedExtentY = b < 0 ? -this._halfExtentsY : this._halfExtentsY;
+            var flippedExtentZ = c < 0 ? -this._halfExtentsZ : this._halfExtentsZ;
+            var projDist = a * (this._centerX + flippedExtentX) + b * (this._centerY + flippedExtentY) + c * (this._centerZ + flippedExtentZ) - plane.d;
+            if (projDist < 0)
+                return false;
+        }
+        return true;
+    };
+    AxisAlignedBoundingBox.prototype.rayIntersection = function (position, direction, targetNormal) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        return this._box.rayIntersection(position, direction, targetNormal);
+    };
+    AxisAlignedBoundingBox.prototype.classifyToPlane = function (plane) {
+        var a = plane.a;
+        var b = plane.b;
+        var c = plane.c;
+        var centerDistance = a * this._centerX + b * this._centerY + c * this._centerZ - plane.d;
+        if (a < 0)
+            a = -a;
+        if (b < 0)
+            b = -b;
+        if (c < 0)
+            c = -c;
+        var boundOffset = a * this._halfExtentsX + b * this._halfExtentsY + c * this._halfExtentsZ;
+        return centerDistance > boundOffset ? PlaneClassification.FRONT : centerDistance < -boundOffset ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
+    };
+    AxisAlignedBoundingBox.prototype._pUpdate = function () {
+        _super.prototype._pUpdate.call(this);
+        this._box = this._pEntity.getBox();
+        var matrix = this._pEntity.sceneTransform;
+        var hx = this._box.width / 2;
+        var hy = this._box.height / 2;
+        var hz = this._box.depth / 2;
+        var cx = this._box.x + hx;
+        var cy = this._box.y + hy;
+        var cz = this._box.z + hz;
+        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
+        matrix.copyRawDataTo(raw);
+        var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
+        var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
+        var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
+        this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
+        this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
+        this._centerZ = cx * m31 + cy * m32 + cz * m33 + m34;
+        this._halfExtentsX = Math.abs(hx * m11 + hy * m12 + hz * m13);
+        this._halfExtentsY = Math.abs(hx * m21 + hy * m22 + hz * m23);
+        this._halfExtentsZ = Math.abs(hx * m31 + hy * m32 + hz * m33);
+        if (this._prefab) {
+            this._prefab.width = this._box.width;
+            this._prefab.height = this._box.height;
+            this._prefab.depth = this._box.depth;
+            this._pBoundsPrimitive.transform.matrix3D = matrix;
+        }
+        this._width = this._halfExtentsX * 2;
+        this._height = this._halfExtentsY * 2;
+        this._depth = this._halfExtentsZ * 2;
+        this._x = this._centerX - this._halfExtentsX;
+        this._y = this._centerY - this._halfExtentsY;
+        this._z = this._centerZ - this._halfExtentsZ;
+    };
+    AxisAlignedBoundingBox.prototype._pCreateBoundsPrimitive = function () {
+        this._prefab = new PrimitiveCubePrefab();
+        this._prefab.geometryType = "lineSubGeometry";
+        return this._prefab.getNewObject();
+    };
+    return AxisAlignedBoundingBox;
+})(BoundingVolumeBase);
+module.exports = AxisAlignedBoundingBox;
+
+
+},{"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":undefined,"awayjs-display/lib/prefabs/PrimitiveCubePrefab":undefined}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
+var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+var PrimitiveSpherePrefab = require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
+var BoundingSphere = (function (_super) {
+    __extends(BoundingSphere, _super);
+    function BoundingSphere(entity) {
+        _super.call(this, entity);
+        this._radius = 0;
+        this._centerX = 0;
+        this._centerY = 0;
+        this._centerZ = 0;
+    }
+    BoundingSphere.prototype.nullify = function () {
+        this._centerX = this._centerY = this._centerZ = 0;
+        this._radius = 0;
+    };
+    BoundingSphere.prototype.isInFrustum = function (planes, numPlanes) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        for (var i = 0; i < numPlanes; ++i) {
+            var plane = planes[i];
+            var flippedExtentX = plane.a < 0 ? -this._radius : this._radius;
+            var flippedExtentY = plane.b < 0 ? -this._radius : this._radius;
+            var flippedExtentZ = plane.c < 0 ? -this._radius : this._radius;
+            var projDist = plane.a * (this._centerX + flippedExtentX) + plane.b * (this._centerY + flippedExtentY) + plane.c * (this._centerZ + flippedExtentZ) - plane.d;
+            if (projDist < 0) {
+                return false;
+            }
+        }
+        return true;
+    };
+    BoundingSphere.prototype.rayIntersection = function (position, direction, targetNormal) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        return this._sphere.rayIntersection(position, direction, targetNormal);
+    };
+    //@override
+    BoundingSphere.prototype.classifyToPlane = function (plane) {
+        var a = plane.a;
+        var b = plane.b;
+        var c = plane.c;
+        var dd = a * this._centerX + b * this._centerY + c * this._centerZ - plane.d;
+        if (a < 0)
+            a = -a;
+        if (b < 0)
+            b = -b;
+        if (c < 0)
+            c = -c;
+        var rr = (a + b + c) * this._radius;
+        return dd > rr ? PlaneClassification.FRONT : dd < -rr ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
+    };
+    BoundingSphere.prototype._pUpdate = function () {
+        _super.prototype._pUpdate.call(this);
+        this._sphere = this._pEntity.getSphere();
+        var matrix = this._pEntity.sceneTransform;
+        var cx = this._sphere.x;
+        var cy = this._sphere.y;
+        var cz = this._sphere.z;
+        var r = this._sphere.radius;
+        var raw = new Array(16);
+        matrix.copyRawDataTo(raw);
+        var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
+        var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
+        var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
+        this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
+        this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
+        this._centerZ = cx * m31 + cy * m32 + cz * m33 + m34;
+        var rx = m11 + m12 + m13;
+        var ry = m21 + m22 + m23;
+        var rz = m31 + m32 + m33;
+        this._radius = r * Math.sqrt((rx * rx + ry * ry + rz * rz) / 3);
+        if (this._prefab) {
+            this._prefab.radius = r;
+            this._pBoundsPrimitive.x = cx;
+            this._pBoundsPrimitive.y = cy;
+            this._pBoundsPrimitive.z = cz;
+            this._pBoundsPrimitive.transform.matrix3D = matrix;
+        }
+    };
+    BoundingSphere.prototype._pCreateBoundsPrimitive = function () {
+        this._prefab = new PrimitiveSpherePrefab();
+        this._prefab.geometryType = "lineSubGeometry";
+        return this._prefab.getNewObject();
+    };
+    return BoundingSphere;
+})(BoundingVolumeBase);
+module.exports = BoundingSphere;
+
+
+},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":undefined,"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":undefined}],"awayjs-display/lib/bounds/BoundingVolumeBase":[function(require,module,exports){
+var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
+var BoundingVolumeBase = (function () {
+    function BoundingVolumeBase(entity) {
+        this._pInvalidated = true;
+        this._pEntity = entity;
+    }
+    Object.defineProperty(BoundingVolumeBase.prototype, "boundsPrimitive", {
+        get: function () {
+            if (this._pBoundsPrimitive == null) {
+                this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
+                this._pUpdate();
+            }
+            return this._pBoundsPrimitive;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BoundingVolumeBase.prototype.nullify = function () {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype.isInFrustum = function (planes, numPlanes) {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype.clone = function () {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype.rayIntersection = function (position, direction, targetNormal) {
+        return -1;
+    };
+    BoundingVolumeBase.prototype.classifyToPlane = function (plane) {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype._pUpdate = function () {
+        this._pInvalidated = false;
+    };
+    BoundingVolumeBase.prototype.invalidate = function () {
+        this._pInvalidated = true;
+    };
+    BoundingVolumeBase.prototype._pCreateBoundsPrimitive = function () {
+        throw new AbstractMethodError();
+    };
+    return BoundingVolumeBase;
+})();
+module.exports = BoundingVolumeBase;
+
+
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/bounds/BoundsType":[function(require,module,exports){
+/**
+ *
+ */
+var BoundsType = (function () {
+    function BoundsType() {
+    }
+    /**
+     *
+     */
+    BoundsType.SPHERE = "sphere";
+    /**
+     *
+     */
+    BoundsType.AXIS_ALIGNED_BOX = "axisAlignedBox";
+    /**
+     *
+     */
+    BoundsType.NULL = "null";
+    return BoundsType;
+})();
+module.exports = BoundsType;
+
+
+},{}],"awayjs-display/lib/bounds/NullBounds":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
+var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+var NullBounds = (function (_super) {
+    __extends(NullBounds, _super);
+    function NullBounds(alwaysIn) {
+        if (alwaysIn === void 0) { alwaysIn = true; }
+        _super.call(this, null);
+        this._alwaysIn = alwaysIn;
+    }
+    //@override
+    NullBounds.prototype.clone = function () {
+        return new NullBounds(this._alwaysIn);
+    };
+    //@override
+    NullBounds.prototype.isInFrustum = function (planes, numPlanes) {
+        return this._alwaysIn;
+    };
+    NullBounds.prototype.classifyToPlane = function (plane) {
+        return PlaneClassification.INTERSECT;
+    };
+    return NullBounds;
+})(BoundingVolumeBase);
+module.exports = NullBounds;
+
+
+},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":undefined}],"awayjs-display/lib/containers/DisplayObjectContainer":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -6385,15 +6671,6 @@ var DisplayObjectContainer = (function (_super) {
     /**
      * @protected
      */
-    DisplayObjectContainer.prototype._pUpdateScene = function (value) {
-        _super.prototype._pUpdateScene.call(this, value);
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateScene(value);
-    };
-    /**
-     * @protected
-     */
     DisplayObjectContainer.prototype._pUpdateImplicitMouseEnabled = function (value) {
         _super.prototype._pUpdateImplicitMouseEnabled.call(this, value);
         var len = this._children.length;
@@ -6412,11 +6689,11 @@ var DisplayObjectContainer = (function (_super) {
     /**
      * @protected
      */
-    DisplayObjectContainer.prototype._pUpdateImplicitPartition = function (value) {
-        _super.prototype._pUpdateImplicitPartition.call(this, value);
+    DisplayObjectContainer.prototype._pUpdateImplicitPartition = function (value, scene) {
+        _super.prototype._pUpdateImplicitPartition.call(this, value, scene);
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateImplicitPartition(this._pImplicitPartition);
+            this._children[i]._pUpdateImplicitPartition(this._pImplicitPartition, scene);
     };
     /**
      * @private
@@ -7050,19 +7327,19 @@ var Scene = (function (_super) {
         this._expandedPartitions = new Array();
         this._partitions = new Array();
         this._iCollectionMark = 0;
+        this._partition = new Partition(new NodeBase());
         this._iSceneGraphRoot = new DisplayObjectContainer();
         this._iSceneGraphRoot._iSetScene(this);
         this._iSceneGraphRoot._iIsRoot = true;
-        this._iSceneGraphRoot.partition = new Partition(new NodeBase());
+        this._iSceneGraphRoot.partition = this._partition;
     }
     Scene.prototype.traversePartitions = function (traverser) {
         var i = 0;
         var len = this._partitions.length;
         traverser.scene = this;
-        while (i < len) {
-            this._iCollectionMark++;
+        this._iCollectionMark++;
+        while (i < len)
             this._partitions[i++].traverse(traverser);
-        }
     };
     Object.defineProperty(Scene.prototype, "partition", {
         get: function () {
@@ -7100,16 +7377,7 @@ var Scene = (function (_super) {
     /**
      * @internal
      */
-    Scene.prototype.iRegisterEntity = function (displayObject) {
-        if (displayObject.partition)
-            this.iRegisterPartition(displayObject.partition);
-        if (displayObject.isEntity)
-            displayObject._iAssignedPartition.iMarkForUpdate(displayObject);
-    };
-    /**
-     * @internal
-     */
-    Scene.prototype.iRegisterPartition = function (partition) {
+    Scene.prototype._iRegisterPartition = function (partition) {
         this._expandedPartitions.push(partition);
         //ensure duplicates are not found in partitions array
         if (this._partitions.indexOf(partition) == -1)
@@ -7118,16 +7386,7 @@ var Scene = (function (_super) {
     /**
      * @internal
      */
-    Scene.prototype.iUnregisterEntity = function (displayObject) {
-        if (displayObject.partition)
-            this.iUnregisterPartition(displayObject.partition);
-        if (displayObject.isEntity)
-            displayObject._iAssignedPartition.iRemoveEntity(displayObject);
-    };
-    /**
-     * @internal
-     */
-    Scene.prototype.iUnregisterPartition = function (partition) {
+    Scene.prototype._iUnregisterPartition = function (partition) {
         this._expandedPartitions.splice(this._expandedPartitions.indexOf(partition), 1);
         //if no more partition references found, remove from partitions array
         if (this._expandedPartitions.indexOf(partition) == -1)
@@ -7194,7 +7453,7 @@ var View = (function () {
      */
     View.prototype.onScenePartitionChanged = function (event) {
         if (this._pCamera)
-            this._pCamera.partition = this.scene.partition;
+            this._pScene.partition._iRegisterCamera(this._pCamera);
     };
     Object.defineProperty(View.prototype, "mouseX", {
         get: function () {
@@ -7333,7 +7592,7 @@ var View = (function () {
             if (this._pEntityCollector)
                 this._pEntityCollector.camera = this._pCamera;
             if (this._pScene)
-                this._pCamera.partition = this._pScene.partition;
+                this._pScene.partition._iRegisterCamera(this._pCamera);
             this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
             this._scissorDirty = true;
             this._viewportDirty = true;
@@ -7360,7 +7619,7 @@ var View = (function () {
             this._pScene = value;
             this._pScene.addEventListener(SceneEvent.PARTITION_CHANGED, this._onScenePartitionChangedDelegate);
             if (this._pCamera)
-                this._pCamera.partition = this._pScene.partition;
+                this._pScene.partition._iRegisterCamera(this._pCamera);
         },
         enumerable: true,
         configurable: true
@@ -7623,8 +7882,8 @@ var ControllerBase = (function () {
         this.targetObject = targetObject;
     }
     ControllerBase.prototype.pNotifyUpdate = function () {
-        if (this._pTargetObject && this._pTargetObject._iAssignedPartition && this._pAutoUpdate) {
-            this._pTargetObject._iAssignedPartition.iMarkForUpdate(this._pTargetObject);
+        if (this._pTargetObject && this._pAutoUpdate) {
+            this._pTargetObject.invalidatePartition();
         }
     };
     Object.defineProperty(ControllerBase.prototype, "targetObject", {
@@ -8413,7 +8672,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var EntityNode = require("awayjs-display/lib/partition/EntityNode");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -8461,6 +8720,8 @@ var Billboard = (function (_super) {
         this.material = material;
         this._billboardWidth = material.width;
         this._billboardHeight = material.height;
+        //default bounds type
+        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
     Object.defineProperty(Billboard.prototype, "animator", {
         /**
@@ -8541,15 +8802,10 @@ var Billboard = (function (_super) {
     /**
      * @protected
      */
-    Billboard.prototype.pCreateEntityPartitionNode = function () {
-        return new EntityNode(this);
-    };
-    /**
-     * @protected
-     */
-    Billboard.prototype.pUpdateBounds = function () {
-        this._pBounds.fromExtremes(0, 0, 0, this._billboardWidth, this._billboardHeight, 0);
-        _super.prototype.pUpdateBounds.call(this);
+    Billboard.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        this._pBoxBounds.width = this._billboardWidth;
+        this._pBoxBounds.height = this._billboardHeight;
     };
     /**
      * //TODO
@@ -8569,7 +8825,7 @@ var Billboard = (function (_super) {
     Billboard.prototype.onSizeChanged = function (event) {
         this._billboardWidth = this._material.width;
         this._billboardHeight = this._material.height;
-        this._pBoundsInvalid = true;
+        this._pInvalidateBounds();
         var len = this._pRenderables.length;
         for (var i = 0; i < len; i++)
             this._pRenderables[i].invalidateGeometry();
@@ -8585,27 +8841,32 @@ var Billboard = (function (_super) {
     Billboard.prototype._iCollectRenderable = function (rendererPool) {
         rendererPool.applyBillboard(this);
     };
+    Billboard.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterEntity(this);
+    };
+    Billboard.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterEntity(this);
+    };
     return Billboard;
 })(DisplayObject);
 module.exports = Billboard;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/events/MaterialEvent":undefined,"awayjs-display/lib/partition/EntityNode":undefined}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/bounds/BoundsType":undefined,"awayjs-display/lib/events/MaterialEvent":undefined}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NullBounds = require("awayjs-core/lib/bounds/NullBounds");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Plane3D = require("awayjs-core/lib/geom/Plane3D");
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var ProjectionEvent = require("awayjs-core/lib/events/ProjectionEvent");
 var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var CameraEvent = require("awayjs-display/lib/events/CameraEvent");
-var CameraNode = require("awayjs-display/lib/partition/CameraNode");
 var Camera = (function (_super) {
     __extends(Camera, _super);
     function Camera(projection) {
@@ -8623,16 +8884,9 @@ var Camera = (function (_super) {
         for (var i = 0; i < 6; ++i)
             this._frustumPlanes[i] = new Plane3D();
         this.z = -1000;
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
     }
-    Camera.prototype.pCreateDefaultBoundingVolume = function () {
-        return new NullBounds();
-    };
-    /**
-     * @protected
-     */
-    Camera.prototype.pCreateEntityPartitionNode = function () {
-        return new CameraNode(this);
-    };
     Object.defineProperty(Camera.prototype, "assetType", {
         //@override
         get: function () {
@@ -8753,13 +9007,6 @@ var Camera = (function (_super) {
         this._viewProjectionDirty = true;
         this._frustumPlanesDirty = true;
     };
-    /**
-     * @protected
-     */
-    Camera.prototype.pUpdateBounds = function () {
-        this._pBoundsInvalid = false;
-        this._pBounds.nullify();
-    };
     Object.defineProperty(Camera.prototype, "projection", {
         /**
          *
@@ -8837,23 +9084,28 @@ var Camera = (function (_super) {
     Camera.prototype._iCollectRenderable = function (rendererPool) {
         //nothing to do here
     };
+    Camera.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterCamera(this);
+    };
+    Camera.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterCamera(this);
+    };
     return Camera;
 })(DisplayObjectContainer);
 module.exports = Camera;
 
 
-},{"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/events/CameraEvent":undefined,"awayjs-display/lib/partition/CameraNode":undefined}],"awayjs-display/lib/entities/DirectionalLight":[function(require,module,exports){
+},{"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/bounds/BoundsType":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/events/CameraEvent":undefined}],"awayjs-display/lib/entities/DirectionalLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NullBounds = require("awayjs-core/lib/bounds/NullBounds");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var LightBase = require("awayjs-display/lib/base/LightBase");
-var DirectionalLightNode = require("awayjs-display/lib/partition/DirectionalLightNode");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 var DirectionalLight = (function (_super) {
     __extends(DirectionalLight, _super);
@@ -8862,9 +9114,12 @@ var DirectionalLight = (function (_super) {
         if (yDir === void 0) { yDir = -1; }
         if (zDir === void 0) { zDir = 1; }
         _super.call(this);
+        this._pAabbPoints = new Array(24);
         this._pIsEntity = true;
         this.direction = new Vector3D(xDir, yDir, zDir);
         this._sceneDirection = new Vector3D();
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
     }
     Object.defineProperty(DirectionalLight.prototype, "sceneDirection", {
         get: function () {
@@ -8891,19 +9146,6 @@ var DirectionalLight = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    /**
-     *
-     * @returns {away.bounds.NullBounds}
-     */
-    DirectionalLight.prototype.pCreateDefaultBoundingVolume = function () {
-        //directional lights are to be considered global, hence always in view
-        return new NullBounds();
-    };
-    /**
-     *
-     */
-    DirectionalLight.prototype.pUpdateBounds = function () {
-    };
     //@override
     DirectionalLight.prototype.pUpdateSceneTransform = function () {
         _super.prototype.pUpdateSceneTransform.call(this);
@@ -8914,23 +9156,16 @@ var DirectionalLight = (function (_super) {
     DirectionalLight.prototype.pCreateShadowMapper = function () {
         return new DirectionalShadowMapper();
     };
-    /**
-     * @protected
-     */
-    DirectionalLight.prototype.pCreateEntityPartitionNode = function () {
-        return new DirectionalLightNode(this);
-    };
     //override
     DirectionalLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
         if (target === void 0) { target = null; }
         var raw = new Array();
-        var bounds = entity.bounds;
         var m = new Matrix3D();
         m.copyFrom(entity.getRenderSceneTransform(camera));
         m.append(this.inverseSceneTransform);
         if (!this._projAABBPoints)
             this._projAABBPoints = [];
-        m.transformVectors(bounds.aabbPoints, this._projAABBPoints);
+        m.transformVectors(this._pAabbPoints, this._projAABBPoints);
         var xMin = Infinity, xMax = -Infinity;
         var yMin = Infinity, yMax = -Infinity;
         var zMin = Infinity, zMax = -Infinity;
@@ -8972,12 +9207,57 @@ var DirectionalLight = (function (_super) {
     DirectionalLight.prototype._iCollectRenderables = function (rendererPool) {
         //nothing to do here
     };
+    DirectionalLight.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterDirectionalLight(this);
+    };
+    DirectionalLight.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterDirectionalLight(this);
+    };
+    /**
+     * //TODO
+     *
+     * @protected
+     */
+    DirectionalLight.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        //update points
+        var minX = this._pBoxBounds.x;
+        var minY = this._pBoxBounds.y - this._pBoxBounds.height;
+        var minZ = this._pBoxBounds.z;
+        var maxX = this._pBoxBounds.x + this._pBoxBounds.width;
+        var maxY = this._pBoxBounds.y;
+        var maxZ = this._pBoxBounds.z + this._pBoxBounds.depth;
+        this._pAabbPoints[0] = minX;
+        this._pAabbPoints[1] = minY;
+        this._pAabbPoints[2] = minZ;
+        this._pAabbPoints[3] = maxX;
+        this._pAabbPoints[4] = minY;
+        this._pAabbPoints[5] = minZ;
+        this._pAabbPoints[6] = minX;
+        this._pAabbPoints[7] = maxY;
+        this._pAabbPoints[8] = minZ;
+        this._pAabbPoints[9] = maxX;
+        this._pAabbPoints[10] = maxY;
+        this._pAabbPoints[11] = minZ;
+        this._pAabbPoints[12] = minX;
+        this._pAabbPoints[13] = minY;
+        this._pAabbPoints[14] = maxZ;
+        this._pAabbPoints[15] = maxX;
+        this._pAabbPoints[16] = minY;
+        this._pAabbPoints[17] = maxZ;
+        this._pAabbPoints[18] = minX;
+        this._pAabbPoints[19] = maxY;
+        this._pAabbPoints[20] = maxZ;
+        this._pAabbPoints[21] = maxX;
+        this._pAabbPoints[22] = maxY;
+        this._pAabbPoints[23] = maxZ;
+    };
     return DirectionalLight;
 })(LightBase);
 module.exports = DirectionalLight;
 
 
-},{"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined,"awayjs-display/lib/partition/DirectionalLightNode":undefined}],"awayjs-display/lib/entities/IEntity":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/bounds/BoundsType":undefined,"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":undefined}],"awayjs-display/lib/entities/IEntity":[function(require,module,exports){
 
 
 
@@ -8988,10 +9268,9 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NullBounds = require("awayjs-core/lib/bounds/NullBounds");
 var Error = require("awayjs-core/lib/errors/Error");
 var LightBase = require("awayjs-display/lib/base/LightBase");
-var LightProbeNode = require("awayjs-display/lib/partition/LightProbeNode");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var LightProbe = (function (_super) {
     __extends(LightProbe, _super);
     function LightProbe(diffuseMap, specularMap) {
@@ -9000,6 +9279,8 @@ var LightProbe = (function (_super) {
         this._pIsEntity = true;
         this._diffuseMap = diffuseMap;
         this._specularMap = specularMap;
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
     }
     Object.defineProperty(LightProbe.prototype, "diffuseMap", {
         get: function () {
@@ -9021,20 +9302,6 @@ var LightProbe = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    /**
-     * @protected
-     */
-    LightProbe.prototype.pCreateEntityPartitionNode = function () {
-        return new LightProbeNode(this);
-    };
-    //@override
-    LightProbe.prototype.pUpdateBounds = function () {
-        this._pBoundsInvalid = false;
-    };
-    //@override
-    LightProbe.prototype.pCreateDefaultBoundingVolume = function () {
-        return new NullBounds();
-    };
     //@override
     LightProbe.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
         if (target === void 0) { target = null; }
@@ -9043,12 +9310,18 @@ var LightProbe = (function (_super) {
     LightProbe.prototype._iCollectRenderables = function (rendererPool) {
         //nothing to do here
     };
+    LightProbe.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterLightProbe(this);
+    };
+    LightProbe.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterLightProbe(this);
+    };
     return LightProbe;
 })(LightBase);
 module.exports = LightProbe;
 
 
-},{"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/partition/LightProbeNode":undefined}],"awayjs-display/lib/entities/LineSegment":[function(require,module,exports){
+},{"awayjs-core/lib/errors/Error":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/bounds/BoundsType":undefined}],"awayjs-display/lib/entities/LineSegment":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9057,7 +9330,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var EntityNode = require("awayjs-display/lib/partition/EntityNode");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 /**
  * A Line Segment primitive.
  */
@@ -9078,6 +9351,8 @@ var LineSegment = (function (_super) {
         this._startPosition = startPosition;
         this._endPosition = endPosition;
         this._halfThickness = thickness * 0.5;
+        //default bounds type
+        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
     Object.defineProperty(LineSegment.prototype, "animator", {
         /**
@@ -9188,15 +9463,25 @@ var LineSegment = (function (_super) {
     /**
      * @protected
      */
-    LineSegment.prototype.pCreateEntityPartitionNode = function () {
-        return new EntityNode(this);
+    LineSegment.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        this._pBoxBounds.x = Math.min(this._startPosition.x, this._endPosition.x);
+        this._pBoxBounds.y = Math.min(this._startPosition.y, this._endPosition.y);
+        this._pBoxBounds.z = Math.min(this._startPosition.z, this._endPosition.z);
+        this._pBoxBounds.width = Math.abs(this._startPosition.x - this._endPosition.x);
+        this._pBoxBounds.height = Math.abs(this._startPosition.y - this._endPosition.y);
+        this._pBoxBounds.depth = Math.abs(this._startPosition.z - this._endPosition.z);
     };
-    /**
-     * @protected
-     */
-    LineSegment.prototype.pUpdateBounds = function () {
-        this._pBounds.fromExtremes(this._startPosition.x, this._startPosition.y, this._startPosition.z, this._endPosition.x, this._endPosition.y, this._endPosition.z);
-        _super.prototype.pUpdateBounds.call(this);
+    LineSegment.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        this._pUpdateBoxBounds();
+        var halfWidth = (this._endPosition.x - this._startPosition.x) / 2;
+        var halfHeight = (this._endPosition.y - this._startPosition.y) / 2;
+        var halfDepth = (this._endPosition.z - this._startPosition.z) / 2;
+        this._pSphereBounds.x = this._startPosition.x + halfWidth;
+        this._pSphereBounds.y = this._startPosition.y + halfHeight;
+        this._pSphereBounds.z = this._startPosition.z + halfDepth;
+        this._pSphereBounds.radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
     };
     /**
      * @private
@@ -9217,12 +9502,18 @@ var LineSegment = (function (_super) {
     LineSegment.prototype._iCollectRenderable = function (rendererPool) {
         rendererPool.applyLineSegment(this);
     };
+    LineSegment.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterEntity(this);
+    };
+    LineSegment.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterEntity(this);
+    };
     return LineSegment;
 })(DisplayObject);
 module.exports = LineSegment;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/partition/EntityNode":undefined}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/bounds/BoundsType":undefined}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9231,8 +9522,8 @@ var __extends = this.__extends || function (d, b) {
 };
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var Geometry = require("awayjs-display/lib/base/Geometry");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-var EntityNode = require("awayjs-display/lib/partition/EntityNode");
 var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 /**
  * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
@@ -9261,6 +9552,8 @@ var Mesh = (function (_super) {
         //this should never happen, but if people insist on trying to create their meshes before they have geometry to fill it, it becomes necessary
         this.geometry = geometry || new Geometry();
         this.material = material;
+        //default bounds type
+        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
     Object.defineProperty(Mesh.prototype, "animator", {
         /**
@@ -9457,7 +9750,7 @@ var Mesh = (function (_super) {
         clone._iMatrix3D = this._iMatrix3D;
         clone.pivot = this.pivot;
         clone.partition = this.partition;
-        clone.bounds = this.bounds.clone();
+        clone.boundsType = this.boundsType;
         clone.name = this.name;
         clone.castsShadows = this.castsShadows;
         clone.shareAnimationGeometry = this.shareAnimationGeometry;
@@ -9489,17 +9782,12 @@ var Mesh = (function (_super) {
         return this._subMeshes[this._geometry.subGeometries.indexOf(subGeometry)];
     };
     /**
-     * @protected
-     */
-    Mesh.prototype.pCreateEntityPartitionNode = function () {
-        return new EntityNode(this);
-    };
-    /**
      * //TODO
      *
      * @protected
      */
-    Mesh.prototype.pUpdateBounds = function () {
+    Mesh.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
         var i, j, p, len;
         var subGeoms = this._geometry.subGeometries;
         var subGeom;
@@ -9536,12 +9824,52 @@ var Mesh = (function (_super) {
                         maxZ = p;
                 }
             }
-            this._pBounds.fromExtremes(minX, minY, minZ, maxX, maxY, maxZ);
+            this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+            this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+            this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
         }
         else {
-            this._pBounds.fromExtremes(0, 0, 0, 0, 0, 0);
+            this._pBoxBounds.setEmpty();
         }
-        _super.prototype.pUpdateBounds.call(this);
+    };
+    Mesh.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        var box = this.getBox();
+        var centerX = box.x + box.width / 2;
+        var centerY = box.y + box.height / 2;
+        var centerZ = box.z + box.depth / 2;
+        var i, j, p, len;
+        var subGeoms = this._geometry.subGeometries;
+        var subGeom;
+        var boundingPositions;
+        var numSubGeoms = subGeoms.length;
+        var maxRadiusSquared = 0;
+        var radiusSquared;
+        var distanceX;
+        var distanceY;
+        var distanceZ;
+        if (numSubGeoms > 0) {
+            i = 0;
+            subGeom = subGeoms[0];
+            boundingPositions = subGeom.getBoundingPositions();
+            for (j = 0; j < numSubGeoms; j++) {
+                subGeom = subGeoms[j];
+                boundingPositions = subGeom.getBoundingPositions();
+                len = boundingPositions.length;
+                for (i = 0; i < len; i += 3) {
+                    distanceX = boundingPositions[i] - centerX;
+                    distanceY = boundingPositions[i + 1] - centerY;
+                    distanceZ = boundingPositions[i + 2] - centerZ;
+                    radiusSquared = distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ;
+                    if (maxRadiusSquared < radiusSquared)
+                        maxRadiusSquared = radiusSquared;
+                }
+            }
+        }
+        this._pSphereBounds.x = centerX;
+        this._pSphereBounds.y = centerY;
+        this._pSphereBounds.z = centerZ;
+        this._pSphereBounds.radius = Math.sqrt(maxRadiusSquared);
     };
     /**
      * //TODO
@@ -9549,7 +9877,7 @@ var Mesh = (function (_super) {
      * @private
      */
     Mesh.prototype.onGeometryBoundsInvalid = function (event) {
-        this.pInvalidateBounds();
+        this._pInvalidateBounds();
     };
     /**
      * Called when a SubGeometry was added to the Geometry.
@@ -9592,7 +9920,7 @@ var Mesh = (function (_super) {
         var len = this._subMeshes.length;
         subMesh._iIndex = len;
         this._subMeshes[len] = subMesh;
-        this.pInvalidateBounds();
+        this._pInvalidateBounds();
     };
     /**
      * //TODO
@@ -9627,23 +9955,28 @@ var Mesh = (function (_super) {
         for (var i = 0; i < len; ++i)
             this._subMeshes[i]._iInvalidateRenderableGeometry();
     };
+    Mesh.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterEntity(this);
+    };
+    Mesh.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterEntity(this);
+    };
     return Mesh;
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/events/GeometryEvent":undefined,"awayjs-display/lib/partition/EntityNode":undefined}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/Geometry":undefined,"awayjs-display/lib/bounds/BoundsType":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":undefined,"awayjs-display/lib/events/GeometryEvent":undefined}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var BoundingSphere = require("awayjs-core/lib/bounds/BoundingSphere");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var LightBase = require("awayjs-display/lib/base/LightBase");
-var PointLightNode = require("awayjs-display/lib/partition/PointLightNode");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
 var PointLight = (function (_super) {
     __extends(PointLight, _super);
@@ -9653,6 +9986,8 @@ var PointLight = (function (_super) {
         this._pFallOff = 100000;
         this._pIsEntity = true;
         this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
+        //default bounds type
+        this._boundsType = BoundsType.SPHERE;
     }
     PointLight.prototype.pCreateShadowMapper = function () {
         return new CubeMapShadowMapper();
@@ -9668,7 +10003,7 @@ var PointLight = (function (_super) {
             }
             else if (this._pRadius > this._pFallOff) {
                 this._pFallOff = this._pRadius;
-                this.pInvalidateBounds();
+                this._pInvalidateBounds();
             }
             this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
         },
@@ -9689,29 +10024,18 @@ var PointLight = (function (_super) {
             if (this._pFallOff < this._pRadius)
                 this._pRadius = this._pFallOff;
             this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
-            this.pInvalidateBounds();
+            this._pInvalidateBounds();
         },
         enumerable: true,
         configurable: true
     });
-    /**
-     * @protected
-     */
-    PointLight.prototype.pCreateEntityPartitionNode = function () {
-        return new PointLightNode(this);
-    };
-    PointLight.prototype.pUpdateBounds = function () {
-        this._pBounds.fromSphere(new Vector3D(), this._pFallOff);
-        this._pBoundsInvalid = false;
-    };
-    PointLight.prototype.pCreateDefaultBoundingVolume = function () {
-        //point lights are culled based on their falloff radius
-        return new BoundingSphere();
+    PointLight.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        this._pSphereBounds.radius = this._pFallOff;
     };
     PointLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
         if (target === void 0) { target = null; }
         var raw = new Array(16);
-        var bounds = entity.bounds;
         var m = new Matrix3D();
         // todo: do not use lookAt on Light
         m.copyFrom(entity.getRenderSceneTransform(camera));
@@ -9719,7 +10043,7 @@ var PointLight = (function (_super) {
         this.lookAt(m.position);
         m.copyFrom(entity.getRenderSceneTransform(camera));
         m.append(this.inverseSceneTransform);
-        var box = bounds.aabb;
+        var box = entity.getBox();
         var v1 = m.deltaTransformVector(new Vector3D(box.left, box.bottom, box.front));
         var v2 = m.deltaTransformVector(new Vector3D(box.right, box.top, box.back));
         var d1 = v1.x * v1.x + v1.y * v1.y + v1.z * v1.z;
@@ -9744,12 +10068,18 @@ var PointLight = (function (_super) {
     PointLight.prototype._iCollectRenderables = function (rendererPool) {
         //nothing to do here
     };
+    PointLight.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterPointLight(this);
+    };
+    PointLight.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterPointLight(this);
+    };
     return PointLight;
 })(LightBase);
 module.exports = PointLight;
 
 
-},{"awayjs-core/lib/bounds/BoundingSphere":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined,"awayjs-display/lib/partition/PointLightNode":undefined}],"awayjs-display/lib/entities/Shape":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":undefined,"awayjs-display/lib/bounds/BoundsType":undefined,"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":undefined}],"awayjs-display/lib/entities/Shape":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9803,10 +10133,9 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var BlendMode = require("awayjs-core/lib/base/BlendMode");
-var NullBounds = require("awayjs-core/lib/bounds/NullBounds");
 var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
@@ -9831,6 +10160,8 @@ var Skybox = (function (_super) {
         this._pIsEntity = true;
         this._owners = new Array(this);
         this.cubeMap = cubeMap;
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
     }
     Object.defineProperty(Skybox.prototype, "alphaThreshold", {
         /**
@@ -9856,7 +10187,7 @@ var Skybox = (function (_super) {
     });
     Object.defineProperty(Skybox.prototype, "mipmap", {
         /**
-         * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+         * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
          */
         get: function () {
             return this._mipmap;
@@ -9872,7 +10203,7 @@ var Skybox = (function (_super) {
     });
     Object.defineProperty(Skybox.prototype, "smooth", {
         /**
-         * Indicates whether or not any used textures should use smoothing.
+         * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
          */
         get: function () {
             return this._smooth;
@@ -10001,30 +10332,6 @@ var Skybox = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    /**
-     * @protected
-     */
-    Skybox.prototype.pInvalidateBounds = function () {
-        // dead end
-    };
-    /**
-     * @protected
-     */
-    Skybox.prototype.pCreateEntityPartitionNode = function () {
-        return new SkyboxNode(this);
-    };
-    /**
-     * @protected
-     */
-    Skybox.prototype.pCreateDefaultBoundingVolume = function () {
-        return new NullBounds();
-    };
-    /**
-     * @protected
-     */
-    Skybox.prototype.pUpdateBounds = function () {
-        this._pBoundsInvalid = false;
-    };
     Object.defineProperty(Skybox.prototype, "castsShadows", {
         get: function () {
             return false; //TODO
@@ -10079,12 +10386,18 @@ var Skybox = (function (_super) {
     Skybox.prototype.getRenderObject = function (renderablePool) {
         return renderablePool.getSkyboxRenderObject(this);
     };
+    Skybox.prototype._pRegisterEntity = function (partition) {
+        partition._iRegisterSkybox(this);
+    };
+    Skybox.prototype._pUnregisterEntity = function (partition) {
+        partition._iUnregisterSkybox(this);
+    };
     return Skybox;
 })(DisplayObject);
 module.exports = Skybox;
 
 
-},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/bounds/NullBounds":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/partition/SkyboxNode":undefined}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/base/BlendMode":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":undefined,"awayjs-display/lib/bounds/BoundsType":undefined}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11693,7 +12006,7 @@ var MaterialBase = (function (_super) {
         this._iBaseScreenPassIndex = 0;
         this._bothSides = false; // update
         this._pBlendMode = BlendMode.NORMAL;
-        this._mipmap = false;
+        this._mipmap = true;
         this._smooth = true;
         this._repeat = false;
         this._color = 0xFFFFFF;
@@ -11830,7 +12143,7 @@ var MaterialBase = (function (_super) {
     });
     Object.defineProperty(MaterialBase.prototype, "smooth", {
         /**
-         * Indicates whether or not any used textures should use smoothing.
+         * Indicates whether or not any used textures should use smoothing. Defaults to true.
          */
         get: function () {
             return this._smooth;
@@ -11847,7 +12160,7 @@ var MaterialBase = (function (_super) {
     Object.defineProperty(MaterialBase.prototype, "repeat", {
         /**
          * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
-         * the texture's borders when the uv coordinates are outside the [0, 1] interval.
+         * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
          */
         get: function () {
             return this._repeat;
@@ -13147,8 +13460,8 @@ var EntityNode = require("awayjs-display/lib/partition/EntityNode");
  */
 var CameraNode = (function (_super) {
     __extends(CameraNode, _super);
-    function CameraNode(camera) {
-        _super.call(this, camera);
+    function CameraNode(pool, camera, partition) {
+        _super.call(this, pool, camera, partition);
     }
     /**
      * @inheritDoc
@@ -13156,6 +13469,7 @@ var CameraNode = (function (_super) {
     CameraNode.prototype.acceptTraverser = function (traverser) {
         // todo: dead end for now, if it has a debug mesh, then sure accept that
     };
+    CameraNode.id = "cameraNode";
     return CameraNode;
 })(EntityNode);
 module.exports = CameraNode;
@@ -13178,8 +13492,8 @@ var DirectionalLightNode = (function (_super) {
      *
      * @param directionalLight
      */
-    function DirectionalLightNode(directionalLight) {
-        _super.call(this, directionalLight);
+    function DirectionalLightNode(pool, directionalLight, partition) {
+        _super.call(this, pool, directionalLight, partition);
         this._directionalLight = directionalLight;
     }
     /**
@@ -13196,6 +13510,7 @@ var DirectionalLightNode = (function (_super) {
     DirectionalLightNode.prototype.isCastingShadow = function () {
         return false;
     };
+    DirectionalLightNode.id = "directionalLightNode";
     return DirectionalLightNode;
 })(EntityNode);
 module.exports = DirectionalLightNode;
@@ -13208,17 +13523,25 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var PartialImplementationError = require("awayjs-core/lib/errors/PartialImplementationError");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var AxisAlignedBoundingBox = require("awayjs-display/lib/bounds/AxisAlignedBoundingBox");
+var BoundingSphere = require("awayjs-display/lib/bounds/BoundingSphere");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var NullBounds = require("awayjs-display/lib/bounds/NullBounds");
 var NodeBase = require("awayjs-display/lib/partition/NodeBase");
 /**
  * @class away.partition.EntityNode
  */
 var EntityNode = (function (_super) {
     __extends(EntityNode, _super);
-    function EntityNode(entity) {
+    function EntityNode(pool, entity, partition) {
         _super.call(this);
+        this._pool = pool;
         this._entity = entity;
+        this._partition = partition;
         this._iNumEntities = 1;
+        this.updateBounds();
+        this.debugVisible = this._entity.debugVisible;
     }
     Object.defineProperty(EntityNode.prototype, "entity", {
         get: function () {
@@ -13248,14 +13571,17 @@ var EntityNode = (function (_super) {
     EntityNode.prototype.isInFrustum = function (planes, numPlanes) {
         if (!this._entity._iIsVisible())
             return false;
-        return this._entity.worldBounds.isInFrustum(planes, numPlanes);
+        return this._bounds.isInFrustum(planes, numPlanes);
     };
     /**
      * @inheritDoc
      */
     EntityNode.prototype.acceptTraverser = function (traverser) {
-        if (traverser.enterNode(this))
+        if (traverser.enterNode(this)) {
             traverser.applyEntity(this._entity);
+            if (this._pImplicitDebugVisible && traverser.isEntityCollector)
+                traverser.applyEntity(this._pDebugEntity);
+        }
     };
     /**
      * @inheritDoc
@@ -13263,22 +13589,47 @@ var EntityNode = (function (_super) {
     EntityNode.prototype.isIntersectingRay = function (rayPosition, rayDirection) {
         if (!this._entity._iIsVisible())
             return false;
-        return this._entity.isIntersectingRay(rayPosition, rayDirection);
+        var pickingCollisionVO = this._entity._iPickingCollisionVO;
+        pickingCollisionVO.localRayPosition = this._entity.inverseSceneTransform.transformVector(rayPosition);
+        pickingCollisionVO.localRayDirection = this._entity.inverseSceneTransform.deltaTransformVector(rayDirection);
+        if (!pickingCollisionVO.localNormal)
+            pickingCollisionVO.localNormal = new Vector3D();
+        var rayEntryDistance = this._bounds.rayIntersection(pickingCollisionVO.localRayPosition, pickingCollisionVO.localRayDirection, pickingCollisionVO.localNormal);
+        if (rayEntryDistance < 0)
+            return false;
+        pickingCollisionVO.rayEntryDistance = rayEntryDistance;
+        pickingCollisionVO.rayPosition = rayPosition;
+        pickingCollisionVO.rayDirection = rayDirection;
+        pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
+        return true;
     };
     /**
      *
      * @protected
      */
-    EntityNode.prototype._pCreateBoundsPrimitive = function () {
-        throw new PartialImplementationError();
-        //return this._entity.bounds.boundingEntity;
+    EntityNode.prototype._pCreateDebugEntity = function () {
+        return this._bounds.boundsPrimitive;
     };
+    EntityNode.prototype.invalidatePartition = function () {
+        this._bounds.invalidate();
+        this._partition.iMarkForUpdate(this);
+    };
+    EntityNode.prototype.updateBounds = function () {
+        if (this._entity.boundsType == BoundsType.AXIS_ALIGNED_BOX)
+            this._bounds = new AxisAlignedBoundingBox(this._entity);
+        else if (this._entity.boundsType == BoundsType.SPHERE)
+            this._bounds = new BoundingSphere(this._entity);
+        else if (this._entity.boundsType == BoundsType.NULL)
+            this._bounds = new NullBounds();
+        this.updateDebugEntity();
+    };
+    EntityNode.id = "entityNode";
     return EntityNode;
 })(NodeBase);
 module.exports = EntityNode;
 
 
-},{"awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-display/lib/partition/NodeBase":undefined}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/bounds/AxisAlignedBoundingBox":undefined,"awayjs-display/lib/bounds/BoundingSphere":undefined,"awayjs-display/lib/bounds/BoundsType":undefined,"awayjs-display/lib/bounds/NullBounds":undefined,"awayjs-display/lib/partition/NodeBase":undefined}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13295,8 +13646,8 @@ var LightProbeNode = (function (_super) {
      *
      * @param lightProbe
      */
-    function LightProbeNode(lightProbe) {
-        _super.call(this, lightProbe);
+    function LightProbeNode(pool, lightProbe, partition) {
+        _super.call(this, pool, lightProbe, partition);
         this._lightProbe = lightProbe;
     }
     /**
@@ -13313,12 +13664,14 @@ var LightProbeNode = (function (_super) {
     LightProbeNode.prototype.isCastingShadow = function () {
         return false;
     };
+    LightProbeNode.id = "lightProbeNode";
     return LightProbeNode;
 })(EntityNode);
 module.exports = LightProbeNode;
 
 
 },{"awayjs-display/lib/partition/EntityNode":undefined}],"awayjs-display/lib/partition/NodeBase":[function(require,module,exports){
+var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 /**
  * @class away.partition.NodeBase
  */
@@ -13331,32 +13684,32 @@ var NodeBase = (function () {
         this._iNumEntities = 0;
         this._pChildNodes = new Array();
     }
-    Object.defineProperty(NodeBase.prototype, "boundsVisible", {
+    Object.defineProperty(NodeBase.prototype, "debugVisible", {
         /**
          *
          */
         get: function () {
-            return this._explicitBoundsVisible;
+            return this._explicitDebugVisible;
         },
         set: function (value) {
-            if (this._explicitBoundsVisible == value)
+            if (this._explicitDebugVisible == value)
                 return;
-            this._explicitBoundsVisible = value;
-            this._iUpdateImplicitBoundsVisible(this._iParent ? this._iParent.boundsChildrenVisible : false);
+            this._explicitDebugVisible = value;
+            this._iUpdateImplicitDebugVisible(this._iParent ? this._iParent.debugChildrenVisible : false);
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(NodeBase.prototype, "boundsChildrenVisible", {
+    Object.defineProperty(NodeBase.prototype, "debugChildrenVisible", {
         get: function () {
-            return this._boundsChildrenVisible;
+            return this._debugChildrenVisible;
         },
         set: function (value) {
-            if (this._boundsChildrenVisible == value)
+            if (this._debugChildrenVisible == value)
                 return;
-            this._boundsChildrenVisible = value;
+            this._debugChildrenVisible = value;
             for (var i = 0; i < this._pNumChildNodes; ++i)
-                this._pChildNodes[i]._iUpdateImplicitBoundsVisible(this._boundsChildrenVisible);
+                this._pChildNodes[i]._iUpdateImplicitDebugVisible(this._debugChildrenVisible);
         },
         enumerable: true,
         configurable: true
@@ -13421,22 +13774,24 @@ var NodeBase = (function () {
      * @param traverser
      */
     NodeBase.prototype.acceptTraverser = function (traverser) {
-        if (this._pNumEntities == 0 && !this._implicitBoundsVisible)
+        if (this._pNumEntities == 0 && !this._pImplicitDebugVisible)
             return;
         if (traverser.enterNode(this)) {
             var i = 0;
             while (i < this._pNumChildNodes)
                 this._pChildNodes[i++].acceptTraverser(traverser);
-            if (this._implicitBoundsVisible)
-                this._pBoundsPrimitive.partitionNode.acceptTraverser(traverser);
+            if (this._pImplicitDebugVisible && traverser.isEntityCollector)
+                traverser.applyEntity(this._pDebugEntity);
         }
     };
     /**
      *
      * @protected
      */
-    NodeBase.prototype._pCreateBoundsPrimitive = function () {
-        return null;
+    NodeBase.prototype.applyDebugEntity = function (traverser) {
+        if (this._pDebugEntity == null)
+            this._pDebugEntity = this._pCreateDebugEntity();
+        traverser.applyEntity(this._pDebugEntity);
     };
     /**
      *
@@ -13447,7 +13802,7 @@ var NodeBase = (function () {
         node._iParent = this;
         this._iNumEntities += node._pNumEntities;
         this._pChildNodes[this._pNumChildNodes++] = node;
-        node._iUpdateImplicitBoundsVisible(this.boundsChildrenVisible);
+        node._iUpdateImplicitDebugVisible(this.debugChildrenVisible);
         var numEntities = node._pNumEntities;
         node = this;
         do {
@@ -13463,50 +13818,42 @@ var NodeBase = (function () {
         var index = this._pChildNodes.indexOf(node);
         this._pChildNodes[index] = this._pChildNodes[--this._pNumChildNodes];
         this._pChildNodes.pop();
-        node._iUpdateImplicitBoundsVisible(false);
+        node._iUpdateImplicitDebugVisible(false);
         var numEntities = node._pNumEntities;
         node = this;
         do {
             node._pNumEntities -= numEntities;
         } while ((node = node._iParent) != null);
     };
-    NodeBase.prototype._iUpdateImplicitBoundsVisible = function (value) {
-        if (this._implicitBoundsVisible == this._explicitBoundsVisible || value)
+    NodeBase.prototype._iUpdateImplicitDebugVisible = function (value) {
+        if (this._pImplicitDebugVisible == this._explicitDebugVisible || value)
             return;
-        this._implicitBoundsVisible = this._explicitBoundsVisible || value;
-        this._iUpdateEntityBounds();
+        this._pImplicitDebugVisible = this._explicitDebugVisible || value;
         for (var i = 0; i < this._pNumChildNodes; ++i)
-            this._pChildNodes[i]._iUpdateImplicitBoundsVisible(this._boundsChildrenVisible);
-    };
-    /**
-     * @internal
-     */
-    NodeBase.prototype._iIsBoundsVisible = function () {
-        return this._implicitBoundsVisible;
-    };
-    //		public _pUpdateNumEntities(value:number)
-    //		{
-    //			var diff:number = value - this._pNumEntities;
-    //			var node:NodeBase = this;
-    //
-    //			do {
-    //				node._pNumEntities += diff;
-    //			} while ((node = node._iParent) != null);
-    //		}
-    NodeBase.prototype._iUpdateEntityBounds = function () {
-        if (this._pBoundsPrimitive) {
-            this._pBoundsPrimitive.dispose();
-            this._pBoundsPrimitive = null;
+            this._pChildNodes[i]._iUpdateImplicitDebugVisible(this._debugChildrenVisible);
+        if (this._pImplicitDebugVisible) {
+            this._pDebugEntity = this._pCreateDebugEntity();
         }
-        //if (this._implicitBoundsVisible)
-        //	this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
+        else {
+            //this._pDebugEntity.dispose();
+            this._pDebugEntity = null;
+        }
+    };
+    NodeBase.prototype.updateDebugEntity = function () {
+        if (this._pImplicitDebugVisible) {
+            //this._pDebugEntity.dispose();
+            this._pDebugEntity = this._pCreateDebugEntity();
+        }
+    };
+    NodeBase.prototype._pCreateDebugEntity = function () {
+        throw new AbstractMethodError();
     };
     return NodeBase;
 })();
 module.exports = NodeBase;
 
 
-},{}],"awayjs-display/lib/partition/NullNode":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/partition/NullNode":[function(require,module,exports){
 /**
  * @class away.partition.NullNode
  */
@@ -13519,7 +13866,14 @@ module.exports = NullNode;
 
 
 },{}],"awayjs-display/lib/partition/Partition":[function(require,module,exports){
+var CameraNode = require("awayjs-display/lib/partition/CameraNode");
+var DirectionalLightNode = require("awayjs-display/lib/partition/DirectionalLightNode");
+var EntityNode = require("awayjs-display/lib/partition/EntityNode");
+var LightProbeNode = require("awayjs-display/lib/partition/LightProbeNode");
+var PointLightNode = require("awayjs-display/lib/partition/PointLightNode");
+var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
 var NullNode = require("awayjs-display/lib/partition/NullNode");
+var EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
 /**
  * @class away.partition.Partition
  */
@@ -13527,6 +13881,12 @@ var Partition = (function () {
     function Partition(rootNode) {
         this._updatesMade = false;
         this._rootNode = rootNode || new NullNode();
+        this._cameraNodePool = new EntityNodePool(CameraNode, this);
+        this._directionalLightNodePool = new EntityNodePool(DirectionalLightNode, this);
+        this._entityNodePool = new EntityNodePool(EntityNode, this);
+        this._lightProbeNodePool = new EntityNodePool(LightProbeNode, this);
+        this._pointLightNodePool = new EntityNodePool(PointLightNode, this);
+        this._skyboxNodePool = new EntityNodePool(SkyboxNode, this);
     }
     Object.defineProperty(Partition.prototype, "rootNode", {
         get: function () {
@@ -13540,8 +13900,7 @@ var Partition = (function () {
             this.updateEntities();
         this._rootNode.acceptTraverser(traverser);
     };
-    Partition.prototype.iMarkForUpdate = function (entity) {
-        var node = entity.partitionNode;
+    Partition.prototype.iMarkForUpdate = function (node) {
         var t = this._updateQueue;
         while (t) {
             if (node == t)
@@ -13552,8 +13911,7 @@ var Partition = (function () {
         this._updateQueue = node;
         this._updatesMade = true;
     };
-    Partition.prototype.iRemoveEntity = function (entity) {
-        var node = entity.partitionNode;
+    Partition.prototype.iRemoveEntity = function (node) {
         var t;
         node.removeFromParent();
         if (node == this._updateQueue) {
@@ -13589,12 +13947,84 @@ var Partition = (function () {
             node.entity._iInternalUpdate();
         } while ((node = t) != null);
     };
+    /**
+     * @internal
+     */
+    Partition.prototype._iRegisterCamera = function (camera) {
+        this.iMarkForUpdate(this._cameraNodePool.getItem(camera));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iRegisterDirectionalLight = function (directionalLight) {
+        this.iMarkForUpdate(this._directionalLightNodePool.getItem(directionalLight));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iRegisterEntity = function (entity) {
+        this.iMarkForUpdate(this._entityNodePool.getItem(entity));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iRegisterLightProbe = function (lightProbe) {
+        this.iMarkForUpdate(this._lightProbeNodePool.getItem(lightProbe));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iRegisterPointLight = function (pointLight) {
+        this.iMarkForUpdate(this._pointLightNodePool.getItem(pointLight));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iRegisterSkybox = function (skybox) {
+        this.iMarkForUpdate(this._skyboxNodePool.getItem(skybox));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iUnregisterCamera = function (camera) {
+        this.iRemoveEntity(this._cameraNodePool.getItem(camera));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iUnregisterDirectionalLight = function (directionalLight) {
+        this.iRemoveEntity(this._directionalLightNodePool.getItem(directionalLight));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iUnregisterEntity = function (entity) {
+        this.iRemoveEntity(this._entityNodePool.getItem(entity));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iUnregisterLightProbe = function (lightProbe) {
+        this.iRemoveEntity(this._lightProbeNodePool.getItem(lightProbe));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iUnregisterPointLight = function (pointLight) {
+        this.iRemoveEntity(this._pointLightNodePool.getItem(pointLight));
+    };
+    /**
+     * @internal
+     */
+    Partition.prototype._iUnregisterSkybox = function (skybox) {
+        this.iRemoveEntity(this._skyboxNodePool.getItem(skybox));
+    };
     return Partition;
 })();
 module.exports = Partition;
 
 
-},{"awayjs-display/lib/partition/NullNode":undefined}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
+},{"awayjs-display/lib/partition/CameraNode":undefined,"awayjs-display/lib/partition/DirectionalLightNode":undefined,"awayjs-display/lib/partition/EntityNode":undefined,"awayjs-display/lib/partition/LightProbeNode":undefined,"awayjs-display/lib/partition/NullNode":undefined,"awayjs-display/lib/partition/PointLightNode":undefined,"awayjs-display/lib/partition/SkyboxNode":undefined,"awayjs-display/lib/pool/EntityNodePool":undefined}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13611,8 +14041,8 @@ var PointLightNode = (function (_super) {
      *
      * @param pointLight
      */
-    function PointLightNode(pointLight) {
-        _super.call(this, pointLight);
+    function PointLightNode(pool, pointLight, partition) {
+        _super.call(this, pool, pointLight, partition);
         this._pointLight = pointLight;
     }
     /**
@@ -13629,6 +14059,7 @@ var PointLightNode = (function (_super) {
     PointLightNode.prototype.isCastingShadow = function () {
         return false;
     };
+    PointLightNode.id = "pointLightNode";
     return PointLightNode;
 })(EntityNode);
 module.exports = PointLightNode;
@@ -13653,8 +14084,8 @@ var SkyboxNode = (function (_super) {
      * Creates a new SkyboxNode object.
      * @param skyBox The Skybox to be contained in the node.
      */
-    function SkyboxNode(skyBox) {
-        _super.call(this, skyBox);
+    function SkyboxNode(pool, skyBox, partition) {
+        _super.call(this, pool, skyBox, partition);
         this._skyBox = skyBox;
     }
     /**
@@ -13676,6 +14107,7 @@ var SkyboxNode = (function (_super) {
         //a skybox is always in view unless its visibility is set to false
         return true;
     };
+    SkyboxNode.id = "skyboxNode";
     return SkyboxNode;
 })(EntityNode);
 module.exports = SkyboxNode;
@@ -14064,6 +14496,48 @@ var EntityListItem = (function () {
     return EntityListItem;
 })();
 module.exports = EntityListItem;
+
+
+},{}],"awayjs-display/lib/pool/EntityNodePool":[function(require,module,exports){
+/**
+ * @class away.pool.EntityNodePool
+ */
+var EntityNodePool = (function () {
+    /**
+     * //TODO
+     *
+     * @param entityNodeClass
+     */
+    function EntityNodePool(entityNodeClass, partition) {
+        this._entityNodePool = new Object();
+        this._entityNodeClass = entityNodeClass;
+        this._partition = partition;
+    }
+    /**
+     * //TODO
+     *
+     * @param entity
+     * @returns EntityNode
+     */
+    EntityNodePool.prototype.getItem = function (entity) {
+        return (this._entityNodePool[entity.id] || (this._entityNodePool[entity.id] = entity._iAddEntityNode(new this._entityNodeClass(this, entity, this._partition))));
+    };
+    /**
+     * //TODO
+     *
+     * @param entity
+     */
+    EntityNodePool.prototype.disposeItem = function (entity) {
+        entity._iRemoveEntityNode(this._entityNodePool[entity.id]);
+        this._entityNodePool[entity.id] = null;
+    };
+    return EntityNodePool;
+})();
+module.exports = EntityNodePool;
+
+
+},{}],"awayjs-display/lib/pool/IEntityNodeClass":[function(require,module,exports){
+
 
 
 },{}],"awayjs-display/lib/pool/IRenderObject":[function(require,module,exports){
@@ -17914,6 +18388,7 @@ var EntityCollector = (function (_super) {
         this._directionalLights = new Array();
         this._pointLights = new Array();
         this._lightProbes = new Array();
+        this.isEntityCollector = true;
     }
     Object.defineProperty(EntityCollector.prototype, "directionalLights", {
         /**
@@ -18013,11 +18488,7 @@ var EntityCollector = (function (_super) {
 module.exports = EntityCollector;
 
 
-},{"awayjs-display/lib/traverse/CollectorBase":undefined}],"awayjs-display/lib/traverse/ICollector":[function(require,module,exports){
-
-
-
-},{}],"awayjs-display/lib/traverse/RaycastCollector":[function(require,module,exports){
+},{"awayjs-display/lib/traverse/CollectorBase":undefined}],"awayjs-display/lib/traverse/RaycastCollector":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
