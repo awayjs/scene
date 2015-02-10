@@ -2,7 +2,7 @@ import IEventDispatcher				= require("awayjs-core/lib/events/IEventDispatcher");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 
 import IEntitySorter				= require("awayjs-display/lib/sort/IEntitySorter");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
 import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
@@ -64,7 +64,7 @@ interface IRenderer extends IEventDispatcher
 	 *
 	 * @param entityCollector
 	 */
-	render(entityCollector:ICollector);
+	render(entityCollector:CollectorBase);
 
 	/**
 	 * @internal
@@ -89,11 +89,11 @@ interface IRenderer extends IEventDispatcher
 	/**
 	 * @internal
 	 */
-	_iCreateEntityCollector():ICollector;
+	_iCreateEntityCollector():CollectorBase;
 
-	_iRender(entityCollector:ICollector, target?:TextureProxyBase, scissorRect?:Rectangle, surfaceSelector?:number);
+	_iRender(entityCollector:CollectorBase, target?:TextureProxyBase, scissorRect?:Rectangle, surfaceSelector?:number);
 
-	_iRenderCascades(entityCollector:ICollector, target:TextureProxyBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
+	_iRenderCascades(entityCollector:CollectorBase, target:TextureProxyBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
 }
 
 export = IRenderer;

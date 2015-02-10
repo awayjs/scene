@@ -1,4 +1,5 @@
-﻿import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+﻿import Box							= require("awayjs-core/lib/geom/Box");
+import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import AssetType					= require("awayjs-core/lib/library/AssetType");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -8,7 +9,9 @@ import ISubMesh						= require("awayjs-display/lib/base/ISubMesh");
 import ISubMeshClass				= require("awayjs-display/lib/base/ISubMeshClass");
 import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeometry");
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import Partition					= require("awayjs-display/lib/partition/Partition");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
@@ -223,6 +226,9 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		this.geometry = geometry || new Geometry();
 
 		this.material = material;
+
+		//default bounds type
+		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
 	/**
@@ -280,7 +286,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		clone._iMatrix3D = this._iMatrix3D;
 		clone.pivot = this.pivot;
 		clone.partition = this.partition;
-		clone.bounds = this.bounds.clone();
+		clone.boundsType = this.boundsType;
 
 
 		clone.name = this.name;
@@ -323,20 +329,14 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * @protected
-	 */
-	public pCreateEntityPartitionNode():EntityNode
-	{
-		return new EntityNode(this);
-	}
-
-	/**
 	 * //TODO
 	 *
 	 * @protected
 	 */
-	public pUpdateBounds()
+	public _pUpdateBoxBounds()
 	{
+		super._pUpdateBoxBounds();
+
 		var i:number, j:number, p:number, len:number;
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
 		var subGeom:SubGeometryBase;
@@ -381,12 +381,60 @@ class Mesh extends DisplayObjectContainer implements IEntity
 				}
 			}
 
-			this._pBounds.fromExtremes(minX, minY, minZ, maxX, maxY, maxZ);
+			this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+			this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+			this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
 		} else {
-			this._pBounds.fromExtremes(0, 0, 0, 0, 0, 0);
+			this._pBoxBounds.setEmpty();
+		}
+	}
+
+
+	public _pUpdateSphereBounds()
+	{
+		super._pUpdateSphereBounds();
+
+		var box:Box = this.getBox();
+		var centerX:number = box.x + box.width/2;
+		var centerY:number = box.y + box.height/2;
+		var centerZ:number = box.z + box.depth/2;
+
+		var i:number, j:number, p:number, len:number;
+		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
+		var subGeom:SubGeometryBase;
+		var boundingPositions:Array<number>;
+		var numSubGeoms:number = subGeoms.length;
+		var maxRadiusSquared:number = 0;
+		var radiusSquared:number;
+		var distanceX:number;
+		var distanceY:number;
+		var distanceZ:number;
+
+		if (numSubGeoms > 0) {
+			i = 0;
+			subGeom = subGeoms[0];
+			boundingPositions = subGeom.getBoundingPositions();
+			for (j = 0; j < numSubGeoms; j++) {
+				subGeom = subGeoms[j];
+				boundingPositions = subGeom.getBoundingPositions();
+				len = boundingPositions.length;
+
+				for (i = 0; i < len; i += 3) {
+					distanceX = boundingPositions[i] - centerX;
+					distanceY = boundingPositions[i + 1] - centerY;
+					distanceZ = boundingPositions[i + 2] - centerZ;
+					radiusSquared = distanceX*distanceX + distanceY*distanceY + distanceZ*distanceZ;
+
+					if (maxRadiusSquared < radiusSquared)
+						maxRadiusSquared = radiusSquared;
+				}
+			}
 		}
 
-		super.pUpdateBounds();
+		this._pSphereBounds.x = centerX;
+		this._pSphereBounds.y = centerY;
+		this._pSphereBounds.z = centerZ;
+		this._pSphereBounds.radius = Math.sqrt(maxRadiusSquared);
 	}
 
 	/**
@@ -396,7 +444,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	private onGeometryBoundsInvalid(event:GeometryEvent)
 	{
-		this.pInvalidateBounds();
+		this._pInvalidateBounds();
 	}
 
 	/**
@@ -459,7 +507,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		this._subMeshes[len] = subMesh;
 
-		this.pInvalidateBounds();
+		this._pInvalidateBounds();
 	}
 
 	/**
@@ -500,6 +548,16 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var len:number = this._subMeshes.length;
 		for (var i:number = 0; i < len; ++i)
 			this._subMeshes[i]._iInvalidateRenderableGeometry();
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterEntity(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterEntity(this);
 	}
 }
 

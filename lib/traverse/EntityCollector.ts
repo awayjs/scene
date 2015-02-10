@@ -71,6 +71,8 @@ class EntityCollector extends CollectorBase
 		this._directionalLights = new Array<DirectionalLight>();
 		this._pointLights = new Array<PointLight>();
 		this._lightProbes = new Array<LightProbe>();
+
+		this.isEntityCollector = true;
 	}
 
 	/**

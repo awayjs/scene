@@ -1,19 +1,19 @@
-import BoundingVolumeBase		= require("awayjs-core/lib/bounds/BoundingVolumeBase");
-import NullBounds				= require("awayjs-core/lib/bounds/NullBounds");
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import Plane3D					= require("awayjs-core/lib/geom/Plane3D");
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import AssetType				= require("awayjs-core/lib/library/AssetType");
-import ProjectionEvent			= require("awayjs-core/lib/events/ProjectionEvent");
-import IProjection				= require("awayjs-core/lib/projections/IProjection");
-import PerspectiveProjection	= require("awayjs-core/lib/projections/PerspectiveProjection");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import AssetType					= require("awayjs-core/lib/library/AssetType");
+import ProjectionEvent				= require("awayjs-core/lib/events/ProjectionEvent");
+import IProjection					= require("awayjs-core/lib/projections/IProjection");
+import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
 
-import DisplayObjectContainer	= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import IEntity					= require("awayjs-display/lib/entities/IEntity");
-import CameraEvent				= require("awayjs-display/lib/events/CameraEvent");
-import CameraNode				= require("awayjs-display/lib/partition/CameraNode");
-import EntityNode				= require("awayjs-display/lib/partition/EntityNode");
-import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import Partition					= require("awayjs-display/lib/partition/Partition");
+import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
+import CameraNode					= require("awayjs-display/lib/partition/CameraNode");
+import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 
 
 class Camera extends DisplayObjectContainer implements IEntity
@@ -43,19 +43,8 @@ class Camera extends DisplayObjectContainer implements IEntity
 
 		this.z = -1000;
 
-	}
-
-	public pCreateDefaultBoundingVolume():BoundingVolumeBase
-	{
-		return new NullBounds();
-	}
-
-	/**
-	 * @protected
-	 */
-	public pCreateEntityPartitionNode():EntityNode
-	{
-		return new CameraNode(this);
+		//default bounds type
+		this._boundsType = BoundsType.NULL;
 	}
 
 	//@override
@@ -192,15 +181,6 @@ class Camera extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * @protected
-	 */
-	public pUpdateBounds()
-	{
-		this._pBoundsInvalid = false;
-		this._pBounds.nullify();
-	}
-
-	/**
 	 *
 	 */
 	public get projection():IProjection
@@ -287,6 +267,16 @@ class Camera extends DisplayObjectContainer implements IEntity
 	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
 		//nothing to do here
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterCamera(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterCamera(this);
 	}
 }
 

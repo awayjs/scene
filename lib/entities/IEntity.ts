@@ -1,8 +1,11 @@
-import BoundingVolumeBase			= require("awayjs-core/lib/bounds/BoundingVolumeBase");
+import Box							= require("awayjs-core/lib/geom/Box");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Sphere							= require("awayjs-core/lib/geom/Sphere");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 
+import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import Transform					= require("awayjs-display/lib/base/Transform");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
@@ -30,7 +33,12 @@ interface IEntity extends IAsset
 	/**
 	 *
 	 */
-	bounds:BoundingVolumeBase;
+	debugVisible:boolean;
+
+	/**
+	 *
+	 */
+	boundsType:string;
 
 	/**
 	 *
@@ -41,11 +49,6 @@ interface IEntity extends IAsset
 	 *
 	 */
 	inverseSceneTransform:Matrix3D;
-
-	/**
-	 *
-	 */
-	partitionNode:EntityNode;
 
 	/**
 	 *
@@ -75,17 +78,19 @@ interface IEntity extends IAsset
 	/**
 	 *
 	 */
-	worldBounds:BoundingVolumeBase;
+	zOffset:number;
 
 	/**
 	 *
+	 * @param targetCoordinateSpace
 	 */
-	zOffset:number
+	getBox(targetCoordinateSpace?:DisplayObject):Box
 
 	/**
 	 *
+	 * @param targetCoordinateSpace
 	 */
-	isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean;
+	getSphere(targetCoordinateSpace?:DisplayObject):Sphere
 
 	/**
 	 *
@@ -131,7 +136,24 @@ interface IEntity extends IAsset
 	 */
 	_iIsVisible():boolean
 
-	_iInternalUpdate()
+	/**
+	 * @internal
+	 */
+	_iInternalUpdate();
+
+	/**
+	 *
+	 * @param entityNode
+	 * @private
+	 */
+	_iAddEntityNode(entityNode:EntityNode):EntityNode;
+
+	/**
+	 *
+	 * @param entityNode
+	 * @private
+	 */
+	_iRemoveEntityNode(entityNode:EntityNode):EntityNode;
 
 	/**
 	 * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.

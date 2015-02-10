@@ -1,6 +1,4 @@
 import BlendMode					= require("awayjs-core/lib/base/BlendMode");
-import BoundingVolumeBase			= require("awayjs-core/lib/bounds/BoundingVolumeBase");
-import NullBounds					= require("awayjs-core/lib/bounds/NullBounds");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import AssetType					= require("awayjs-core/lib/library/AssetType");
 import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");
@@ -10,6 +8,8 @@ import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import Partition					= require("awayjs-display/lib/partition/Partition");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
@@ -67,7 +67,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	}
 
 	/**
-	 * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	 * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
 	 */
 	public get mipmap():boolean
 	{
@@ -85,7 +85,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	}
 
 	/**
-	 * Indicates whether or not any used textures should use smoothing.
+	 * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
 	 */
 	public get smooth():boolean
 	{
@@ -222,43 +222,14 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._owners = new Array<IRenderableOwner>(this);
 
 		this.cubeMap = cubeMap;
+
+		//default bounds type
+		this._boundsType = BoundsType.NULL;
 	}
 
 	public get assetType():string
 	{
 		return AssetType.SKYBOX;
-	}
-
-	/**
-	 * @protected
-	 */
-	public pInvalidateBounds()
-	{
-		// dead end
-	}
-
-	/**
-	 * @protected
-	 */
-	public pCreateEntityPartitionNode():SkyboxNode
-	{
-		return new SkyboxNode(this);
-	}
-
-	/**
-	 * @protected
-	 */
-	public pCreateDefaultBoundingVolume():BoundingVolumeBase
-	{
-		return <BoundingVolumeBase> new NullBounds();
-	}
-
-	/**
-	 * @protected
-	 */
-	public pUpdateBounds()
-	{
-		this._pBoundsInvalid = false;
 	}
 
 	public get castsShadows():boolean
@@ -338,6 +309,16 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	public getRenderObject(renderablePool:IRenderablePool)
 	{
 		return renderablePool.getSkyboxRenderObject(this);
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterSkybox(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterSkybox(this);
 	}
 }
 

@@ -1,14 +1,31 @@
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import Camera						= require("awayjs-display/lib/entities/Camera");
+import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
+import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import LightProbe					= require("awayjs-display/lib/entities/LightProbe");
+import PointLight					= require("awayjs-display/lib/entities/PointLight");
+import Skybox						= require("awayjs-display/lib/entities/Skybox");
+import CameraNode					= require("awayjs-display/lib/partition/CameraNode");
+import DirectionalLightNode			= require("awayjs-display/lib/partition/DirectionalLightNode");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
+import LightProbeNode				= require("awayjs-display/lib/partition/LightProbeNode");
+import PointLightNode				= require("awayjs-display/lib/partition/PointLightNode");
+import SkyboxNode					= require("awayjs-display/lib/partition/SkyboxNode");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import NullNode						= require("awayjs-display/lib/partition/NullNode");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 /**
  * @class away.partition.Partition
  */
 class Partition
 {
+	private _cameraNodePool:EntityNodePool;
+	private _directionalLightNodePool:EntityNodePool;
+	private _entityNodePool:EntityNodePool;
+	private _lightProbeNodePool:EntityNodePool;
+	private _pointLightNodePool:EntityNodePool;
+	private _skyboxNodePool:EntityNodePool;
 
 	public _rootNode:NodeBase;
 	private _updatesMade:Boolean = false;
@@ -17,6 +34,13 @@ class Partition
 	constructor(rootNode:NodeBase)
 	{
 		this._rootNode = rootNode || <NodeBase> new NullNode();
+
+		this._cameraNodePool = new EntityNodePool(CameraNode, this);
+		this._directionalLightNodePool = new EntityNodePool(DirectionalLightNode, this);
+		this._entityNodePool = new EntityNodePool(EntityNode, this);
+		this._lightProbeNodePool = new EntityNodePool(LightProbeNode, this);
+		this._pointLightNodePool = new EntityNodePool(PointLightNode, this);
+		this._skyboxNodePool = new EntityNodePool(SkyboxNode, this);
 	}
 
 	public get rootNode():NodeBase
@@ -24,7 +48,7 @@ class Partition
 		return this._rootNode;
 	}
 
-	public traverse(traverser:ICollector)
+	public traverse(traverser:CollectorBase)
 	{
 		if (this._updatesMade)
 			this.updateEntities();
@@ -32,9 +56,8 @@ class Partition
 		this._rootNode.acceptTraverser(traverser);
 	}
 
-	public iMarkForUpdate(entity:DisplayObject)
+	public iMarkForUpdate(node:EntityNode)
 	{
-		var node:EntityNode = entity.partitionNode;
 		var t:EntityNode = this._updateQueue;
 
 		while (t) {
@@ -50,9 +73,8 @@ class Partition
 		this._updatesMade = true;
 	}
 
-	public iRemoveEntity(entity:DisplayObject)
+	public iRemoveEntity(node:EntityNode)
 	{
-		var node:EntityNode = entity.partitionNode;
 		var t:EntityNode;
 
 		node.removeFromParent();
@@ -99,6 +121,103 @@ class Partition
 			node.entity._iInternalUpdate();
 
 		} while ((node = t) != null);
+	}
+
+
+	/**
+	 * @internal
+	 */
+	public _iRegisterCamera(camera:Camera)
+	{
+		this.iMarkForUpdate(this._cameraNodePool.getItem(camera));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iRegisterDirectionalLight(directionalLight:DirectionalLight)
+	{
+		this.iMarkForUpdate(this._directionalLightNodePool.getItem(directionalLight));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iRegisterEntity(entity:IEntity)
+	{
+		this.iMarkForUpdate(this._entityNodePool.getItem(entity));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iRegisterLightProbe(lightProbe:LightProbe)
+	{
+		this.iMarkForUpdate(this._lightProbeNodePool.getItem(lightProbe));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iRegisterPointLight(pointLight:PointLight)
+	{
+		this.iMarkForUpdate(this._pointLightNodePool.getItem(pointLight));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iRegisterSkybox(skybox:Skybox)
+	{
+		this.iMarkForUpdate(this._skyboxNodePool.getItem(skybox));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iUnregisterCamera(camera:Camera)
+	{
+		this.iRemoveEntity(this._cameraNodePool.getItem(camera));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iUnregisterDirectionalLight(directionalLight:DirectionalLight)
+	{
+		this.iRemoveEntity(this._directionalLightNodePool.getItem(directionalLight));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iUnregisterEntity(entity:IEntity)
+	{
+		this.iRemoveEntity(this._entityNodePool.getItem(entity));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iUnregisterLightProbe(lightProbe:LightProbe)
+	{
+		this.iRemoveEntity(this._lightProbeNodePool.getItem(lightProbe));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iUnregisterPointLight(pointLight:PointLight)
+	{
+		this.iRemoveEntity(this._pointLightNodePool.getItem(pointLight));
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iUnregisterSkybox(skybox:Skybox)
+	{
+		this.iRemoveEntity(this._skyboxNodePool.getItem(skybox));
 	}
 }
 

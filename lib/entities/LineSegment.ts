@@ -6,6 +6,8 @@ import AssetType					= require("awayjs-core/lib/library/AssetType");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import Partition					= require("awayjs-display/lib/partition/Partition");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
@@ -146,6 +148,9 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 		this._startPosition = startPosition;
 		this._endPosition = endPosition;
 		this._halfThickness = thickness*0.5;
+
+		//default bounds type
+		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
 	public dispose()
@@ -157,19 +162,31 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	/**
 	 * @protected
 	 */
-	public pCreateEntityPartitionNode():EntityNode
+	public _pUpdateBoxBounds()
 	{
-		return new EntityNode(this);
+		super._pUpdateBoxBounds();
+
+		this._pBoxBounds.x = Math.min(this._startPosition.x, this._endPosition.x);
+		this._pBoxBounds.y = Math.min(this._startPosition.y, this._endPosition.y);
+		this._pBoxBounds.z = Math.min(this._startPosition.z, this._endPosition.z);
+		this._pBoxBounds.width = Math.abs(this._startPosition.x - this._endPosition.x);
+		this._pBoxBounds.height = Math.abs(this._startPosition.y - this._endPosition.y);
+		this._pBoxBounds.depth = Math.abs(this._startPosition.z - this._endPosition.z);
 	}
 
-	/**
-	 * @protected
-	 */
-	public pUpdateBounds()
+	public _pUpdateSphereBounds()
 	{
-		this._pBounds.fromExtremes(this._startPosition.x, this._startPosition.y, this._startPosition.z, this._endPosition.x, this._endPosition.y, this._endPosition.z);
+		super._pUpdateSphereBounds();
 
-		super.pUpdateBounds();
+		this._pUpdateBoxBounds();
+
+		var halfWidth:number = (this._endPosition.x - this._startPosition.x)/2;
+		var halfHeight:number = (this._endPosition.y - this._startPosition.y)/2;
+		var halfDepth:number = (this._endPosition.z - this._startPosition.z)/2;
+		this._pSphereBounds.x = this._startPosition.x + halfWidth;
+		this._pSphereBounds.y = this._startPosition.y + halfHeight;
+		this._pSphereBounds.z = this._startPosition.z + halfDepth;
+		this._pSphereBounds.radius = Math.sqrt(halfWidth*halfWidth + halfHeight*halfHeight + halfDepth*halfDepth);
 	}
 
 	/**
@@ -196,6 +213,16 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
 		rendererPool.applyLineSegment(this);
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterEntity(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterEntity(this);
 	}
 }
 

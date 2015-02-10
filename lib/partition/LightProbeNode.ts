@@ -1,21 +1,25 @@
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import Partition					= require("awayjs-display/lib/partition/Partition");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
  * @class away.partition.LightProbeNode
  */
 class LightProbeNode extends EntityNode
 {
+	public static id:string = "lightProbeNode";
+
 	private _lightProbe:IEntity;
 
 	/**
 	 *
 	 * @param lightProbe
 	 */
-	constructor(lightProbe:IEntity)
+	constructor(pool:EntityNodePool, lightProbe:IEntity, partition:Partition)
 	{
-		super(lightProbe);
+		super(pool, lightProbe, partition);
 
 		this._lightProbe = lightProbe;
 	}
@@ -23,7 +27,7 @@ class LightProbeNode extends EntityNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ICollector)
+	public acceptTraverser(traverser:CollectorBase)
 	{
 		if (traverser.enterNode(this))
 			traverser.applyLightProbe(this._lightProbe);

@@ -6,7 +6,7 @@ import CSSRendererBase				= require("awayjs-display/lib/render/CSSRendererBase")
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import CSSEntityCollector			= require("awayjs-display/lib/traverse/CSSEntityCollector");
 import EntityCollector				= require("awayjs-display/lib/traverse/EntityCollector");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import CSSMaterialBase				= require("awayjs-display/lib/materials/CSSMaterialBase");
 
 
@@ -65,7 +65,7 @@ class CSSDefaultRenderer extends CSSRendererBase implements IRenderer
 	 *
 	 * @param entityCollector
 	 */
-	public render(entityCollector:ICollector)
+	public render(entityCollector:CollectorBase)
 	{
 		super.render(entityCollector);
 
@@ -237,7 +237,7 @@ class CSSDefaultRenderer extends CSSRendererBase implements IRenderer
 	}
 
 
-	public _iCreateEntityCollector():ICollector
+	public _iCreateEntityCollector():CollectorBase
 	{
 		return new CSSEntityCollector();
 	}

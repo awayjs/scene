@@ -1,9 +1,9 @@
-import BoundingVolumeBase			= require("awayjs-core/lib/bounds/BoundingVolumeBase");
-import NullBounds					= require("awayjs-core/lib/bounds/NullBounds");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import Partition					= require("awayjs-display/lib/partition/Partition");
 import DirectionalLightNode			= require("awayjs-display/lib/partition/DirectionalLightNode");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
@@ -16,6 +16,7 @@ class DirectionalLight extends LightBase implements IEntity
 	private _direction:Vector3D;
 	private _tmpLookAt:Vector3D;
 	private _sceneDirection:Vector3D;
+	private _pAabbPoints:Array<number> = new Array<number>(24);
 	private _projAABBPoints:Array<number>;
 
 	constructor(xDir:number = 0, yDir:number = -1, zDir:number = 1)
@@ -27,6 +28,9 @@ class DirectionalLight extends LightBase implements IEntity
 		this.direction = new Vector3D(xDir, yDir, zDir);
 
 		this._sceneDirection = new Vector3D();
+
+		//default bounds type
+		this._boundsType = BoundsType.NULL;
 	}
 
 	public get sceneDirection():Vector3D
@@ -56,23 +60,6 @@ class DirectionalLight extends LightBase implements IEntity
 		this.lookAt(this._tmpLookAt);
 	}
 
-	/**
-	 *
-	 * @returns {away.bounds.NullBounds}
-	 */
-	public pCreateDefaultBoundingVolume():BoundingVolumeBase
-	{
-		//directional lights are to be considered global, hence always in view
-		return new NullBounds();
-	}
-
-	/**
-	 *
-	 */
-	public pUpdateBounds()
-	{
-	}
-
 	//@override
 	public pUpdateSceneTransform()
 	{
@@ -87,19 +74,10 @@ class DirectionalLight extends LightBase implements IEntity
 		return new DirectionalShadowMapper();
 	}
 
-	/**
-	 * @protected
-	 */
-	public pCreateEntityPartitionNode():EntityNode
-	{
-		return new DirectionalLightNode(this);
-	}
-
 	//override
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
 		var raw:Array<number> = new Array<number>();
-		var bounds:BoundingVolumeBase = entity.bounds;
 		var m:Matrix3D = new Matrix3D();
 
 		m.copyFrom(entity.getRenderSceneTransform(camera));
@@ -108,7 +86,7 @@ class DirectionalLight extends LightBase implements IEntity
 		if (!this._projAABBPoints)
 			this._projAABBPoints = [];
 
-		m.transformVectors(bounds.aabbPoints, this._projAABBPoints);
+		m.transformVectors(this._pAabbPoints, this._projAABBPoints);
 
 		var xMin:number = Infinity, xMax:number = -Infinity;
 		var yMin:number = Infinity, yMax:number = -Infinity;
@@ -164,6 +142,60 @@ class DirectionalLight extends LightBase implements IEntity
 	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		//nothing to do here
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterDirectionalLight(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterDirectionalLight(this);
+	}
+
+
+	/**
+	 * //TODO
+	 *
+	 * @protected
+	 */
+	public _pUpdateBoxBounds()
+	{
+		super._pUpdateBoxBounds();
+
+		//update points
+		var minX:number = this._pBoxBounds.x;
+		var minY:number = this._pBoxBounds.y - this._pBoxBounds.height;
+		var minZ:number = this._pBoxBounds.z;
+		var maxX:number = this._pBoxBounds.x + this._pBoxBounds.width;
+		var maxY:number = this._pBoxBounds.y;
+		var maxZ:number = this._pBoxBounds.z + this._pBoxBounds.depth;
+
+		this._pAabbPoints[0] = minX;
+		this._pAabbPoints[1] = minY;
+		this._pAabbPoints[2] = minZ;
+		this._pAabbPoints[3] = maxX;
+		this._pAabbPoints[4] = minY;
+		this._pAabbPoints[5] = minZ;
+		this._pAabbPoints[6] = minX;
+		this._pAabbPoints[7] = maxY;
+		this._pAabbPoints[8] = minZ;
+		this._pAabbPoints[9] = maxX;
+		this._pAabbPoints[10] = maxY;
+		this._pAabbPoints[11] = minZ;
+		this._pAabbPoints[12] = minX;
+		this._pAabbPoints[13] = minY;
+		this._pAabbPoints[14] = maxZ;
+		this._pAabbPoints[15] = maxX;
+		this._pAabbPoints[16] = minY;
+		this._pAabbPoints[17] = maxZ;
+		this._pAabbPoints[18] = minX;
+		this._pAabbPoints[19] = maxY;
+		this._pAabbPoints[20] = maxZ;
+		this._pAabbPoints[21] = maxX;
+		this._pAabbPoints[22] = maxY;
+		this._pAabbPoints[23] = maxZ;
 	}
 }
 

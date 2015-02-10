@@ -1,16 +1,18 @@
-import BitmapData				= require("awayjs-core/lib/base/BitmapData");
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import UVTransform				= require("awayjs-core/lib/geom/UVTransform");
-import AssetType				= require("awayjs-core/lib/library/AssetType");
+import BitmapData					= require("awayjs-core/lib/base/BitmapData");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import AssetType					= require("awayjs-core/lib/library/AssetType");
 
-import IAnimator				= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
-import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
-import EntityNode				= require("awayjs-display/lib/partition/EntityNode");
-import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
-import IEntity					= require("awayjs-display/lib/entities/IEntity");
-import MaterialEvent			= require("awayjs-display/lib/events/MaterialEvent");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
+import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import Partition					= require("awayjs-display/lib/partition/Partition");
+import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
+import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
+import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -171,24 +173,20 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._billboardWidth = material.width;
 		this._billboardHeight = material.height;
+
+		//default bounds type
+		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
 	/**
 	 * @protected
 	 */
-	public pCreateEntityPartitionNode():EntityNode
+	public _pUpdateBoxBounds()
 	{
-		return new EntityNode(this);
-	}
+		super._pUpdateBoxBounds();
 
-	/**
-	 * @protected
-	 */
-	public pUpdateBounds()
-	{
-		this._pBounds.fromExtremes(0, 0, 0, this._billboardWidth, this._billboardHeight, 0);
-
-		super.pUpdateBounds();
+		this._pBoxBounds.width = this._billboardWidth;
+		this._pBoxBounds.height = this._billboardHeight;
 	}
 
 	/**
@@ -213,7 +211,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		this._billboardWidth = this._material.width;
 		this._billboardHeight = this._material.height;
 
-		this._pBoundsInvalid = true;
+		this._pInvalidateBounds();
 
 		var len:number = this._pRenderables.length;
 		for (var i:number = 0; i < len; i++)
@@ -234,6 +232,16 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	public _iCollectRenderable(rendererPool:IRendererPool)
 	{
 		rendererPool.applyBillboard(this);
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterEntity(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterEntity(this);
 	}
 }
 

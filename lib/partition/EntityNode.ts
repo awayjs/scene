@@ -1,25 +1,43 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import PartialImplementationError	= require("awayjs-core/lib/errors/PartialImplementationError");
 
+import AxisAlignedBoundingBox		= require("awayjs-display/lib/bounds/AxisAlignedBoundingBox");
+import BoundingSphere				= require("awayjs-display/lib/bounds/BoundingSphere");
+import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import NullBounds					= require("awayjs-display/lib/bounds/NullBounds");
+import Partition					= require("awayjs-display/lib/partition/Partition");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
  * @class away.partition.EntityNode
  */
 class EntityNode extends NodeBase
 {
+	public static id:string = "entityNode";
 
+	private _pool:EntityNodePool;
 	private _entity:IEntity;
+	private _partition:Partition;
+	private _bounds:BoundingVolumeBase;
 	public _iUpdateQueueNext:EntityNode;
 
-	constructor(entity:IEntity)
+	constructor(pool:EntityNodePool, entity:IEntity, partition:Partition)
 	{
 		super();
+		this._pool = pool;
 		this._entity = entity;
+		this._partition = partition;
 		this._iNumEntities = 1;
+
+		this.updateBounds();
+
+		this.debugVisible = this._entity.debugVisible;
 	}
 
 	public get entity():IEntity
@@ -55,16 +73,20 @@ class EntityNode extends NodeBase
 		if (!this._entity._iIsVisible())
 			return false;
 
-		return this._entity.worldBounds.isInFrustum(planes, numPlanes);
+		return this._bounds.isInFrustum(planes, numPlanes);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ICollector)
+	public acceptTraverser(traverser:CollectorBase)
 	{
-		if (traverser.enterNode(this))
+		if (traverser.enterNode(this)) {
 			traverser.applyEntity(this._entity);
+
+			if (this._pImplicitDebugVisible && traverser.isEntityCollector)
+				traverser.applyEntity(this._pDebugEntity);
+		}
 	}
 
 	/**
@@ -75,17 +97,52 @@ class EntityNode extends NodeBase
 		if (!this._entity._iIsVisible())
 			return false;
 
-		return this._entity.isIntersectingRay(rayPosition, rayDirection);
+		var pickingCollisionVO:PickingCollisionVO = this._entity._iPickingCollisionVO;
+		pickingCollisionVO.localRayPosition = this._entity.inverseSceneTransform.transformVector(rayPosition);
+		pickingCollisionVO.localRayDirection = this._entity.inverseSceneTransform.deltaTransformVector(rayDirection);
+
+		if (!pickingCollisionVO.localNormal)
+			pickingCollisionVO.localNormal = new Vector3D();
+
+		var rayEntryDistance:number = this._bounds.rayIntersection(pickingCollisionVO.localRayPosition, pickingCollisionVO.localRayDirection, pickingCollisionVO.localNormal);
+
+		if (rayEntryDistance < 0)
+			return false;
+
+		pickingCollisionVO.rayEntryDistance = rayEntryDistance;
+		pickingCollisionVO.rayPosition = rayPosition;
+		pickingCollisionVO.rayDirection = rayDirection;
+		pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
+
+		return true;
 	}
 
 	/**
 	 *
 	 * @protected
 	 */
-	public _pCreateBoundsPrimitive():IEntity
+	public _pCreateDebugEntity():IEntity
 	{
-		throw new PartialImplementationError();
-		//return this._entity.bounds.boundingEntity;
+		return this._bounds.boundsPrimitive;
+	}
+
+	public invalidatePartition()
+	{
+		this._bounds.invalidate();
+
+		this._partition.iMarkForUpdate(this);
+	}
+
+	public updateBounds()
+	{
+		if (this._entity.boundsType == BoundsType.AXIS_ALIGNED_BOX)
+			this._bounds = new AxisAlignedBoundingBox(this._entity);
+		else if (this._entity.boundsType == BoundsType.SPHERE)
+			this._bounds = new BoundingSphere(this._entity);
+		else if (this._entity.boundsType == BoundsType.NULL)
+			this._bounds = new NullBounds();
+
+		this.updateDebugEntity();
 	}
 }
 

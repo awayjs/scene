@@ -83,7 +83,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 	public _pBlendMode:string = BlendMode.NORMAL;
 
-	private _mipmap:boolean = false;
+	private _mipmap:boolean = true;
 	private _smooth:boolean = true;
 	private _repeat:boolean = false;
 	private _color:number = 0xFFFFFF;
@@ -246,7 +246,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 	}
 
 	/**
-	 * Indicates whether or not any used textures should use smoothing.
+	 * Indicates whether or not any used textures should use smoothing. Defaults to true.
 	 */
 	public get smooth():boolean
 	{
@@ -265,7 +265,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 
 	/**
 	 * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
-	 * the texture's borders when the uv coordinates are outside the [0, 1] interval.
+	 * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
 	 */
 	public get repeat():boolean
 	{

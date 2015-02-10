@@ -5,7 +5,7 @@ import View							= require("awayjs-display/lib/containers/View");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import EntityListItem				= require("awayjs-display/lib/pool/EntityListItem");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import RaycastCollector				= require("awayjs-display/lib/traverse/RaycastCollector");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
@@ -139,7 +139,7 @@ class RaycastPicker implements IPicker
 		return entity1._iPickingCollisionVO.rayEntryDistance > entity2._iPickingCollisionVO.rayEntryDistance? 1 : -1;
 	}
 
-	private getPickingCollisionVO(collector:ICollector):PickingCollisionVO
+	private getPickingCollisionVO(collector:CollectorBase):PickingCollisionVO
 	{
 		// trim before sorting
 		this._entities.length = this._numEntities;

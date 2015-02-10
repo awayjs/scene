@@ -5,14 +5,13 @@ import EntityListItem				= require("awayjs-display/lib/pool/EntityListItem");
 import EntityListItemPool			= require("awayjs-display/lib/pool/EntityListItemPool");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
 /**
  * @class away.traverse.CollectorBase
  */
-class CollectorBase implements ICollector
+class CollectorBase
 {
 	public scene:Scene;
 
@@ -24,6 +23,8 @@ class CollectorBase implements ICollector
 	private _numCullPlanes:number = 0;
 	public _pNumEntities:number = 0;
 	public _pNumInteractiveEntities:number = 0;
+
+	public isEntityCollector:boolean;
 
 	constructor()
 	{

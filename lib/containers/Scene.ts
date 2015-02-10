@@ -5,12 +5,13 @@ import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayO
 import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import Partition					= require("awayjs-display/lib/partition/Partition");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 class Scene extends EventDispatcher
 {
 	private _expandedPartitions:Array<Partition> = new Array<Partition>();
 	private _partitions:Array<Partition> = new Array<Partition>();
+	private _partition:Partition;
 
 	public _iSceneGraphRoot:DisplayObjectContainer;
 	public _iCollectionMark = 0;
@@ -19,24 +20,26 @@ class Scene extends EventDispatcher
 	{
 		super();
 
+		this._partition = new Partition(new NodeBase());
+
 		this._iSceneGraphRoot = new DisplayObjectContainer();
 
 		this._iSceneGraphRoot._iSetScene(this);
 		this._iSceneGraphRoot._iIsRoot = true;
-		this._iSceneGraphRoot.partition = new Partition(new NodeBase());
+		this._iSceneGraphRoot.partition = this._partition;
 	}
 
-	public traversePartitions(traverser:ICollector)
+	public traversePartitions(traverser:CollectorBase)
 	{
 		var i:number = 0;
 		var len:number = this._partitions.length;
 
 		traverser.scene = this;
 
-		while (i < len) {
-			this._iCollectionMark++;
+		this._iCollectionMark++;
+
+		while (i < len)
 			this._partitions[i++].traverse(traverser);
-		}
 	}
 
 	public get partition():Partition
@@ -85,19 +88,7 @@ class Scene extends EventDispatcher
 	/**
 	 * @internal
 	 */
-	public iRegisterEntity(displayObject:DisplayObject)
-	{
-		if (displayObject.partition)
-			this.iRegisterPartition(displayObject.partition);
-
-		if (displayObject.isEntity)
-			displayObject._iAssignedPartition.iMarkForUpdate(displayObject);
-	}
-
-	/**
-	 * @internal
-	 */
-	public iRegisterPartition(partition:Partition)
+	public _iRegisterPartition(partition:Partition)
 	{
 		this._expandedPartitions.push(partition);
 
@@ -109,19 +100,7 @@ class Scene extends EventDispatcher
 	/**
 	 * @internal
 	 */
-	public iUnregisterEntity(displayObject:DisplayObject)
-	{
-		if (displayObject.partition)
-			this.iUnregisterPartition(displayObject.partition);
-
-		if (displayObject.isEntity)
-			displayObject._iAssignedPartition.iRemoveEntity(displayObject);
-	}
-
-	/**
-	 * @internal
-	 */
-	public iUnregisterPartition(partition:Partition)
+	public _iUnregisterPartition(partition:Partition)
 	{
 		this._expandedPartitions.splice(this._expandedPartitions.indexOf(partition), 1);
 

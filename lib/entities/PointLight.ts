@@ -1,10 +1,10 @@
-import BoundingSphere				= require("awayjs-core/lib/bounds/BoundingSphere");
-import BoundingVolumeBase			= require("awayjs-core/lib/bounds/BoundingVolumeBase");
 import Box							= require("awayjs-core/lib/geom/Box");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import Partition					= require("awayjs-display/lib/partition/Partition");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import PointLightNode				= require("awayjs-display/lib/partition/PointLightNode");
 import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
@@ -25,6 +25,9 @@ class PointLight extends LightBase implements IEntity
 		this._pIsEntity = true;
 
 		this._pFallOffFactor = 1/(this._pFallOff*this._pFallOff - this._pRadius*this._pRadius);
+
+		//default bounds type
+		this._boundsType = BoundsType.SPHERE;
 	}
 
 	public pCreateShadowMapper():CubeMapShadowMapper
@@ -45,7 +48,7 @@ class PointLight extends LightBase implements IEntity
 			this._pRadius = 0;
 		} else if (this._pRadius > this._pFallOff) {
 			this._pFallOff = this._pRadius;
-			this.pInvalidateBounds();
+			this._pInvalidateBounds();
 		}
 		this._pFallOffFactor = 1/( this._pFallOff*this._pFallOff - this._pRadius*this._pRadius );
 	}
@@ -71,33 +74,19 @@ class PointLight extends LightBase implements IEntity
 			this._pRadius = this._pFallOff;
 
 		this._pFallOffFactor = 1/( this._pFallOff*this._pFallOff - this._pRadius*this._pRadius);
-		this.pInvalidateBounds();
+		this._pInvalidateBounds();
 	}
 
-	/**
-	 * @protected
-	 */
-	public pCreateEntityPartitionNode():EntityNode
+	public _pUpdateSphereBounds()
 	{
-		return new PointLightNode(this);
-	}
+		super._pUpdateSphereBounds();
 
-	public pUpdateBounds()
-	{
-		this._pBounds.fromSphere(new Vector3D(), this._pFallOff);
-		this._pBoundsInvalid = false;
-	}
-
-	public pCreateDefaultBoundingVolume():BoundingVolumeBase
-	{
-		//point lights are culled based on their falloff radius
-		return new BoundingSphere();
+		this._pSphereBounds.radius = this._pFallOff;
 	}
 
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
 		var raw:number[] = new Array<number>(16);
-		var bounds:BoundingVolumeBase = entity.bounds;
 		var m:Matrix3D = new Matrix3D();
 
 		// todo: do not use lookAt on Light
@@ -108,7 +97,7 @@ class PointLight extends LightBase implements IEntity
 		m.copyFrom(entity.getRenderSceneTransform(camera));
 		m.append(this.inverseSceneTransform);
 
-		var box:Box = bounds.aabb;
+		var box:Box = entity.getBox();
 		var v1:Vector3D = m.deltaTransformVector(new Vector3D(box.left, box.bottom, box.front));
 		var v2:Vector3D = m.deltaTransformVector(new Vector3D(box.right, box.top, box.back));
 		var d1:number = v1.x*v1.x + v1.y*v1.y + v1.z*v1.z;
@@ -139,6 +128,16 @@ class PointLight extends LightBase implements IEntity
 	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		//nothing to do here
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterPointLight(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterPointLight(this);
 	}
 }
 

@@ -10,7 +10,7 @@ import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionV
 import RaycastPicker				= require("awayjs-display/lib/pick/RaycastPicker");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import CSSRendererBase				= require("awayjs-display/lib/render/CSSRendererBase");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
 import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
@@ -37,7 +37,7 @@ class View
 	// Protected
 	public _pScene:Scene;
 	public _pCamera:Camera;
-	public _pEntityCollector:ICollector;
+	public _pEntityCollector:CollectorBase;
 	public _pRenderer:IRenderer;
 
 	// Private
@@ -108,7 +108,7 @@ class View
 	private onScenePartitionChanged(event:SceneEvent)
 	{
 		if (this._pCamera)
-			this._pCamera.partition = this.scene.partition;
+			this._pScene.partition._iRegisterCamera(this._pCamera);
 	}
 
 	public layeredView:boolean; //TODO: something to enable this correctly
@@ -261,7 +261,7 @@ class View
 			this._pEntityCollector.camera = this._pCamera;
 
 		if (this._pScene)
-			this._pCamera.partition = this._pScene.partition;
+			this._pScene.partition._iRegisterCamera(this._pCamera);
 
 		this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
 		this._scissorDirty = true;
@@ -293,7 +293,7 @@ class View
 		this._pScene.addEventListener(SceneEvent.PARTITION_CHANGED, this._onScenePartitionChangedDelegate);
 
 		if (this._pCamera)
-			this._pCamera.partition = this._pScene.partition;
+			this._pScene.partition._iRegisterCamera(this._pCamera);
 	}
 
 	/**
@@ -499,7 +499,7 @@ class View
 	/**
 	 *
 	 */
-	public get iEntityCollector():ICollector
+	public get iEntityCollector():CollectorBase
 	{
 		return this._pEntityCollector;
 	}

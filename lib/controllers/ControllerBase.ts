@@ -15,8 +15,8 @@ class ControllerBase
 
 	public pNotifyUpdate()
 	{
-		if (this._pTargetObject && this._pTargetObject._iAssignedPartition && this._pAutoUpdate) {
-			this._pTargetObject._iAssignedPartition.iMarkForUpdate(this._pTargetObject);
+		if (this._pTargetObject && this._pAutoUpdate) {
+			this._pTargetObject.invalidatePartition();
 		}
 	}
 

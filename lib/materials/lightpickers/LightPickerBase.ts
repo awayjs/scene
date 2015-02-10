@@ -5,7 +5,7 @@ import IAsset						= require("awayjs-core/lib/library/IAsset");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import LightProbe					= require("awayjs-display/lib/entities/LightProbe");
 import PointLight					= require("awayjs-display/lib/entities/PointLight");

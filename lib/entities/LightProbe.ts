@@ -1,10 +1,10 @@
-import BoundingVolumeBase			= require("awayjs-core/lib/bounds/BoundingVolumeBase");
-import NullBounds					= require("awayjs-core/lib/bounds/NullBounds");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import Error						= require("awayjs-core/lib/errors/Error");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
+import Partition					= require("awayjs-display/lib/partition/Partition");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import LightProbeNode				= require("awayjs-display/lib/partition/LightProbeNode");
 import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
@@ -25,6 +25,9 @@ class LightProbe extends LightBase implements IEntity
 
 		this._diffuseMap = diffuseMap;
 		this._specularMap = specularMap;
+
+		//default bounds type
+		this._boundsType = BoundsType.NULL;
 	}
 
 	public get diffuseMap():CubeTextureBase
@@ -47,26 +50,6 @@ class LightProbe extends LightBase implements IEntity
 		this._specularMap = value;
 	}
 
-	/**
-	 * @protected
-	 */
-	public pCreateEntityPartitionNode():EntityNode
-	{
-		return new LightProbeNode(this);
-	}
-
-	//@override
-	public pUpdateBounds()
-	{
-		this._pBoundsInvalid = false;
-	}
-
-	//@override
-	public pCreateDefaultBoundingVolume():BoundingVolumeBase
-	{
-		return new NullBounds();
-	}
-
 	//@override
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
@@ -76,6 +59,16 @@ class LightProbe extends LightBase implements IEntity
 	public _iCollectRenderables(rendererPool:IRendererPool)
 	{
 		//nothing to do here
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		partition._iRegisterLightProbe(this);
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		partition._iUnregisterLightProbe(this);
 	}
 }
 

@@ -1,32 +1,32 @@
-import BlendMode				= require("awayjs-core/lib/base/BlendMode");
-import AxisAlignedBoundingBox	= require("awayjs-core/lib/bounds/AxisAlignedBoundingBox");
-import BoundingVolumeBase		= require("awayjs-core/lib/bounds/BoundingVolumeBase");
-import MathConsts				= require("awayjs-core/lib/geom/MathConsts");
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils			= require("awayjs-core/lib/geom/Matrix3DUtils");
-import Point					= require("awayjs-core/lib/geom/Point");
-import Rectangle				= require("awayjs-core/lib/geom/Rectangle");
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import NamedAssetBase			= require("awayjs-core/lib/library/NamedAssetBase");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
+import BlendMode					= require("awayjs-core/lib/base/BlendMode");
+import Box							= require("awayjs-core/lib/geom/Box");
+import Sphere						= require("awayjs-core/lib/geom/Sphere");
+import MathConsts					= require("awayjs-core/lib/geom/MathConsts");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
+import Point						= require("awayjs-core/lib/geom/Point");
+import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import DisplayObjectContainer	= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import Scene					= require("awayjs-display/lib/containers/Scene");
-import ControllerBase			= require("awayjs-display/lib/controllers/ControllerBase");
-import AlignmentMode			= require("awayjs-display/lib/base/AlignmentMode");
-import LoaderInfo				= require("awayjs-display/lib/base/LoaderInfo");
-import OrientationMode			= require("awayjs-display/lib/base/OrientationMode");
-import IBitmapDrawable			= require("awayjs-display/lib/base/IBitmapDrawable");
-import Transform				= require("awayjs-display/lib/base/Transform");
-import EntityNode				= require("awayjs-display/lib/partition/EntityNode");
-import Partition				= require("awayjs-display/lib/partition/Partition");
-import IPickingCollider			= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO		= require("awayjs-display/lib/pick/PickingCollisionVO");
-import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
-import Camera					= require("awayjs-display/lib/entities/Camera");
-import DisplayObjectEvent		= require("awayjs-display/lib/events/DisplayObjectEvent");
-import SceneEvent				= require("awayjs-display/lib/events/SceneEvent");
-import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
+import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import Scene						= require("awayjs-display/lib/containers/Scene");
+import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
+import AlignmentMode				= require("awayjs-display/lib/base/AlignmentMode");
+import LoaderInfo					= require("awayjs-display/lib/base/LoaderInfo");
+import OrientationMode				= require("awayjs-display/lib/base/OrientationMode");
+import IBitmapDrawable				= require("awayjs-display/lib/base/IBitmapDrawable");
+import Transform					= require("awayjs-display/lib/base/Transform");
+import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
+import Partition					= require("awayjs-display/lib/partition/Partition");
+import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
+import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
+import Camera						= require("awayjs-display/lib/entities/Camera");
+import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
+import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
+import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -164,10 +164,11 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	private _mouseY:number;
 	private _root:DisplayObjectContainer;
 	private _bounds:Rectangle;
-	private _boundsVisible:boolean;
-	private _depth:number;
-	private _height:number;
-	private _width:number;
+	public _pBoxBounds:Box;
+	private _boxBoundsInvalid:boolean = true;
+	public _pSphereBounds:Sphere;
+	private _sphereBoundsInvalid:boolean = true;
+	private _debugVisible:boolean;
 
 	public _pScene:Scene;
 	public _pParent:DisplayObjectContainer;
@@ -177,7 +178,6 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 
 	private _explicitPartition:Partition;
 	public _pImplicitPartition:Partition;
-	private _partitionNode:EntityNode;
 
 	private _sceneTransformChanged:DisplayObjectEvent;
 	private _scenechanged:DisplayObjectEvent;
@@ -236,14 +236,12 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 
 	public _pPickingCollisionVO:PickingCollisionVO;
 
-	public _pBounds:BoundingVolumeBase;
-	public _pBoundsInvalid:boolean = true;
-	private _worldBounds:BoundingVolumeBase;
-	private _worldBoundsInvalid:boolean = true;
+	public _boundsType:string;
 
 	public _pPickingCollider:IPickingCollider;
 
 	public _pRenderables:Array<IRenderable> = new Array<IRenderable>();
+	private _entityNodes:Array<EntityNode> = new Array<EntityNode>();
 
 	public _iSourcePrefab:PrefabBase;
 
@@ -289,27 +287,23 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	/**
 	 *
 	 */
-	public get bounds():BoundingVolumeBase
+	public get boundsType():string
 	{
-		if (this._pBoundsInvalid)
-			this.pUpdateBounds();
-
-		return this._pBounds;
+		return this._boundsType;
 	}
 
-	public set bounds(value:BoundingVolumeBase)
+	public set boundsType(value:string)
 	{
-		if (this._pBounds == value)
+		if (this._boundsType == value)
 			return;
 
-		this._pBounds = value;
+		this._boundsType = value;
 
-		this._worldBounds = value.clone();
+		this._pInvalidateBounds();
 
-		this.pInvalidateBounds();
-
-		if (this._boundsVisible)
-			this._partitionNode._iUpdateEntityBounds();
+		var len:number = this._entityNodes.length;
+		for (var i:number = 0; i < len; i++)
+			this._entityNodes[i].updateBounds();
 	}
 
 	/**
@@ -388,20 +382,20 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	public get depth():number
 	{
-		if (this._pBoundsInvalid)
-			this.pUpdateBounds();
+		if (this._boxBoundsInvalid)
+			this._pUpdateBoxBounds();
 
-		return this._depth;
+		return this._pBoxBounds.depth*this._pScaleZ;
 	}
 
 	public set depth(val:number)
 	{
-		if (this._depth == val)
+		var scaleZ:number = val/this.getBox().depth;
+
+		if (this._pScaleZ == scaleZ)
 			return;
 
-		this._depth == val;
-
-		this._pScaleZ = val/this.bounds.aabb.depth;
+		this._pScaleZ = scaleZ;
 
 		this.invalidateScale();
 	}
@@ -525,20 +519,20 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	public get height():number
 	{
-		if (this._pBoundsInvalid)
-			this.pUpdateBounds();
+		if (this._boxBoundsInvalid)
+			this._pUpdateBoxBounds();
 
-		return this._height;
+		return this._pBoxBounds.height*this._pScaleY;
 	}
 
 	public set height(val:number)
 	{
-		if (this._height == val)
+		var scaleY:number = val/this.getBox().height;
+
+		if (this._pScaleY == scaleY)
 			return;
 
-		this._height == val;
-
-		this._pScaleY = val/this.bounds.aabb.height;
+		this._pScaleY = scaleY;
 
 		this.invalidateScale();
 	}
@@ -602,6 +596,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	{
 		return this._pIsEntity;
 	}
+
 	/**
 	 * Returns a LoaderInfo object containing information about loading the file
 	 * to which this display object belongs. The <code>loaderInfo</code> property
@@ -758,26 +753,9 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		if (this._explicitPartition == value)
 			return;
 
-		if (this._pScene && this._explicitPartition)
-			this._pScene.iUnregisterPartition(this._explicitPartition);
-
 		this._explicitPartition = value;
 
-		if (this._pScene && value)
-			this._pScene.iRegisterPartition(value);
-
-		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null);
-	}
-
-	/**
-	 *
-	 */
-	public get partitionNode():EntityNode
-	{
-		if (!this._partitionNode)
-			this._partitionNode = this.pCreateEntityPartitionNode();
-
-		return this._partitionNode;
+		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null, this._pScene);
 	}
 
 	/**
@@ -1108,19 +1086,21 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	/**
 	 *
 	 */
-	public get boundsVisible():boolean
+	public get debugVisible():boolean
 	{
-		return this._boundsVisible;
+		return this._debugVisible;
 	}
 
-	public set boundsVisible(value:boolean)
+	public set debugVisible(value:boolean)
 	{
-		if (value == this._boundsVisible)
+		if (value == this._debugVisible)
 			return;
 
-		this._boundsVisible = value;
+		this._debugVisible = value;
 
-		this._partitionNode.boundsVisible = value;
+		var len:number = this._entityNodes.length;
+		for (var i:number = 0; i < len; i++)
+			this._entityNodes[i].debugVisible = this._debugVisible;
 	}
 
 	/**
@@ -1198,41 +1178,22 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	public get width():number
 	{
-		if (this._pBoundsInvalid)
-			this.pUpdateBounds();
+		if (this._boxBoundsInvalid)
+			this._pUpdateBoxBounds();
 
-		return this._width;
+		return this._pBoxBounds.width*this._pScaleX;
 	}
 
 	public set width(val:number)
 	{
-		if (this._width == val)
+		var scaleX:number = val/this.getBox().width;
+
+		if (this._pScaleX == scaleX)
 			return;
 
-		this._width == val;
-
-		this._pScaleX = val/this.bounds.aabb.width;
+		this._pScaleX = scaleX;
 
 		this.invalidateScale();
-	}
-
-	/**
-	 *
-	 */
-	public get worldBounds():BoundingVolumeBase
-	{
-		// Since this getter is invoked every iteration of the render loop, and
-		// the prefab construct could affect the bounds of the entity, the prefab is
-		// validated here to give it a chance to rebuild.
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-
-		if (this._worldBoundsInvalid) {
-			this._worldBoundsInvalid = false;
-			this._worldBounds.transformFrom(this.bounds, this.sceneTransform);
-		}
-
-		return this._worldBounds;
 	}
 
 	/**
@@ -1342,7 +1303,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		// Cached vector of transformation components used when
 		// recomposing the transform matrix in updateTransform()
 
-		this._transformComponents = new Array<Vector3D>(3);//_transformComponents = new Vector.<Vector3D>(3, true);
+		this._transformComponents = new Array<Vector3D>(3);
 
 		this._transformComponents[0] = this._pos;
 		this._transformComponents[1] = this._rot;
@@ -1354,10 +1315,6 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		this._matrix3D.identity();
 
 		this._flipY.appendScale(1, -1, 1);
-
-		this._pBounds = this.pCreateDefaultBoundingVolume();
-
-		this._worldBounds = this.pCreateDefaultBoundingVolume();
 	}
 
 	/**
@@ -1376,6 +1333,12 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 				break;
 			case DisplayObjectEvent.SCALE_CHANGED:
 				this._listenToScaleChanged = true;
+				break;
+			case DisplayObjectEvent.SCENE_CHANGED:
+				this._listenToSceneChanged = true;
+				break;
+			case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
+				this._listenToSceneTransformChanged = true;
 				break;
 		}
 	}
@@ -1461,9 +1424,32 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 *         to the <code>targetCoordinateSpace</code> object's coordinate
 	 *         system.
 	 */
-	public getRect(targetCoordinateSpace:DisplayObject):Rectangle
+	public getRect(targetCoordinateSpace:DisplayObject = null):Rectangle
 	{
 		return this._bounds; //TODO
+	}
+
+	public getBox(targetCoordinateSpace:DisplayObject = null):Box
+	{
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
+
+		//TODO targetCoordinateSpace
+		if (this._boxBoundsInvalid)
+			this._pUpdateBoxBounds();
+
+		return this._pBoxBounds;
+	}
+
+	public getSphere(targetCoordinateSpace:DisplayObject = null):Sphere
+	{
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
+
+		if (this._sphereBoundsInvalid)
+			this._pUpdateSphereBounds();
+
+		return this._pSphereBounds;
 	}
 
 	/**
@@ -1543,33 +1529,6 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
 	{
 		return false; //TODO
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean
-	{
-		var localRayPosition:Vector3D = this.inverseSceneTransform.transformVector(rayPosition);
-		var localRayDirection:Vector3D = this.inverseSceneTransform.deltaTransformVector(rayDirection);
-		var pickingCollisionVO:PickingCollisionVO = this._iPickingCollisionVO;
-
-		if (!pickingCollisionVO.localNormal)
-			pickingCollisionVO.localNormal = new Vector3D();
-
-		var rayEntryDistance:number = this.bounds.rayIntersection(localRayPosition, localRayDirection, pickingCollisionVO.localNormal);
-
-		if (rayEntryDistance < 0)
-			return false;
-
-		pickingCollisionVO.rayEntryDistance = rayEntryDistance;
-		pickingCollisionVO.localRayPosition = localRayPosition;
-		pickingCollisionVO.localRayDirection = localRayDirection;
-		pickingCollisionVO.rayPosition = rayPosition;
-		pickingCollisionVO.rayDirection = rayDirection;
-		pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
-
-		return true;
 	}
 
 	/**
@@ -1982,46 +1941,12 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		if (value) {
 			this._pUpdateImplicitMouseEnabled(value.mouseChildren);
 			this._pUpdateImplicitVisibility(value._iIsVisible());
-			this._pUpdateImplicitPartition(value._iAssignedPartition);
-			this._iSetScene(value._pScene);
+			this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
 		} else {
 			this._pUpdateImplicitMouseEnabled(true);
 			this._pUpdateImplicitVisibility(true);
-			this._pUpdateImplicitPartition(null);
-
-			this._iSetScene(null);
+			this._pUpdateImplicitPartition(null, null);
 		}
-	}
-
-	/**
-	 * @protected
-	 */
-	public pCreateDefaultBoundingVolume():BoundingVolumeBase
-	{
-		// point lights should be using sphere bounds
-		// directional lights should be using null bounds
-		return new AxisAlignedBoundingBox();
-	}
-
-	/**
-	 * @protected
-	 */
-	public pCreateEntityPartitionNode():EntityNode
-	{
-		throw new AbstractMethodError();
-	}
-
-	/**
-	 * @protected
-	 */
-	public pInvalidateBounds()
-	{
-		this._pBoundsInvalid = true;
-		this._worldBoundsInvalid = true;
-
-
-		if (this.isEntity)
-			this.invalidatePartition();
 	}
 
 	/**
@@ -2033,25 +1958,11 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		this._inverseSceneTransformDirty = !this._pIgnoreTransform;
 		this._scenePositionDirty = !this._pIgnoreTransform;
 
-		this._worldBoundsInvalid = !this._pIgnoreTransform;
-
 		if (this.isEntity)
 			this.invalidatePartition();
 
 		if (this._listenToSceneTransformChanged)
 			this.notifySceneTransformChange();
-	}
-
-	/**
-	 * @protected
-	 */
-	public pUpdateBounds()
-	{
-		this._width = this._pBounds.aabb.width*this._pScaleX;
-		this._height = this._pBounds.aabb.height*this._pScaleY;
-		this._depth = this._pBounds.aabb.depth*this._pScaleZ;
-
-		this._pBoundsInvalid = false;
 	}
 
 	/**
@@ -2069,10 +1980,48 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	/**
 	 * @protected
 	 */
-	public _pUpdateImplicitPartition(value:Partition)
+	public _pUpdateImplicitPartition(partition:Partition, scene:Scene)
 	{
+		var sceneChanged:boolean = this._pScene != scene;
+
+		if (sceneChanged && this._pScene)
+			this._pScene.dispatchEvent(new SceneEvent(SceneEvent.REMOVED_FROM_SCENE, this));
+
+		if (this._pScene && this._pImplicitPartition) {
+			//unregister partition from current scene
+			this._pScene._iUnregisterPartition(this._pImplicitPartition);
+
+			//unregister entity from current partition
+			if (this._pIsEntity)
+				this._pUnregisterEntity(this._pImplicitPartition);
+		}
+
 		// assign parent implicit partition if no explicit one is given
-		this._pImplicitPartition = this._explicitPartition || value;
+		this._pImplicitPartition = this._explicitPartition || partition;
+
+		//assign scene
+		if (sceneChanged)
+			this._pScene = scene;
+
+		if (this._pScene && this._pImplicitPartition) {
+			//register partition with scene
+			this._pScene._iRegisterPartition(this._pImplicitPartition);
+
+			//register entity with new partition
+			if (this._pIsEntity)
+				this._pRegisterEntity(this._pImplicitPartition);
+		}
+
+		if (sceneChanged && this._pScene)
+			this._pScene.dispatchEvent(new SceneEvent(SceneEvent.ADDED_TO_SCENE, this));
+
+		if (sceneChanged) {
+			if (!this._pSceneTransformDirty && !this._pIgnoreTransform)
+				this.pInvalidateSceneTransform();
+
+			if (this._listenToSceneChanged)
+				this.notifySceneChange();
+		}
 	}
 
 	/**
@@ -2192,51 +2141,10 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	public _iSetScene(value:Scene)
 	{
-		// test to see if we're switching roots while we're already using a scene partition
-		/*
-		if (value == null)
-			this._oldScene = this._pScene;
-
-		if (this._explicitPartition && this._oldScene && this._oldScene != this._pScene)
-			this.partition = null;
-
-		if (value)
-			this._oldScene = null;
-
-		// end of stupid partition test code
-		//*/
-
 		if (this._pScene == value)
 			return;
 
-		this._pUpdateScene(value);
-
-		if (!this._pSceneTransformDirty && !this._pIgnoreTransform)
-			this.pInvalidateSceneTransform();
-	}
-
-	/**
-	 * @protected
-	 */
-	public _pUpdateScene(value:Scene)
-	{
-		if (this._pScene) {
-			this._pScene.dispatchEvent(new SceneEvent(SceneEvent.REMOVED_FROM_SCENE, this));
-
-			//unregister entity from current scene
-			this._pScene.iUnregisterEntity(this);
-		}
-
-		this._pScene = value;
-
-		if (value) {
-			value.dispatchEvent(new SceneEvent(SceneEvent.ADDED_TO_SCENE, this));
-
-			//register entity with new scene
-			value.iRegisterEntity(this);
-		}
-
-		this.notifySceneChange();
+		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null, value);
 	}
 
 	/**
@@ -2277,13 +2185,11 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	private notifySceneChange()
 	{
-		if (this._listenToSceneChanged) {
-			if (!this._scenechanged)
-				this._scenechanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this);
+		if (!this._scenechanged)
+			this._scenechanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this);
 
-			this.dispatchEvent(this._scenechanged);
-		}
-	}
+		this.dispatchEvent(this._scenechanged);
+}
 
 	/**
 	 * @private
@@ -2315,10 +2221,11 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	/**
 	 * @private
 	 */
-	private invalidatePartition()
+	public invalidatePartition()
 	{
-		if (this._iAssignedPartition)
-			this._iAssignedPartition.iMarkForUpdate(this);
+		var len:number = this._entityNodes.length;
+		for (var i:number = 0; i < len; i++)
+			this._entityNodes[i].invalidatePartition();
 	}
 
 	/**
@@ -2382,6 +2289,59 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 
 		if (this._listenToScaleChanged)
 			this.notifyScaleChanged();
+	}
+
+
+	public _iAddEntityNode(entityNode:EntityNode):EntityNode
+	{
+		this._entityNodes.push(entityNode);
+
+		return entityNode;
+	}
+
+
+	public _iRemoveEntityNode(entityNode:EntityNode):EntityNode
+	{
+		var index:number = this._entityNodes.indexOf(entityNode);
+
+		this._entityNodes.splice(index, 1);
+
+		return entityNode;
+	}
+
+	public _pRegisterEntity(partition:Partition)
+	{
+		throw new AbstractMethodError();
+	}
+
+	public _pUnregisterEntity(partition:Partition)
+	{
+		throw new AbstractMethodError();
+	}
+
+	public _pInvalidateBounds()
+	{
+		this._boxBoundsInvalid = true;
+		this._sphereBoundsInvalid = true;
+
+		if (this.isEntity)
+			this.invalidatePartition();
+	}
+	
+	public _pUpdateBoxBounds()
+	{
+		this._boxBoundsInvalid = false;
+		
+		if (this._pBoxBounds == null)
+			this._pBoxBounds = new Box();
+	}
+
+	public _pUpdateSphereBounds()
+	{
+		this._sphereBoundsInvalid = false;
+
+		if (this._pSphereBounds == null)
+			this._pSphereBounds = new Sphere();
 	}
 }
 

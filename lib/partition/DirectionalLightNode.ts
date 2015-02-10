@@ -1,21 +1,25 @@
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import Partition					= require("awayjs-display/lib/partition/Partition");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
  * @class away.partition.DirectionalLightNode
  */
 class DirectionalLightNode extends EntityNode
 {
+	public static id:string = "directionalLightNode";
+
 	private _directionalLight:IEntity;
 
 	/**
 	 *
 	 * @param directionalLight
 	 */
-	constructor(directionalLight:IEntity)
+	constructor(pool:EntityNodePool, directionalLight:IEntity, partition:Partition)
 	{
-		super(directionalLight);
+		super(pool, directionalLight, partition);
 
 		this._directionalLight = directionalLight;
 	}
@@ -23,7 +27,7 @@ class DirectionalLightNode extends EntityNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ICollector)
+	public acceptTraverser(traverser:CollectorBase)
 	{
 		if (traverser.enterNode(this))
 			traverser.applyDirectionalLight(this._directionalLight);

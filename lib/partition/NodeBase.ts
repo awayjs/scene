@@ -1,7 +1,8 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
 /**
@@ -9,13 +10,14 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
  */
 class NodeBase
 {
-	private _boundsChildrenVisible:boolean;
-	private _explicitBoundsVisible:boolean;
-	private _implicitBoundsVisible:boolean;
+	private _debugChildrenVisible:boolean;
+	private _explicitDebugVisible:boolean;
+	public _pImplicitDebugVisible:boolean;
 	public _iParent:NodeBase;
 	public _pChildNodes:Array<NodeBase>;
 	public _pNumChildNodes:number = 0;
-	public _pBoundsPrimitive:IEntity;
+
+	public _pDebugEntity:IEntity;
 
 	public _iNumEntities:number = 0;
 	public _iCollectionMark:number;// = 0;
@@ -23,36 +25,36 @@ class NodeBase
 	/**
 	 *
 	 */
-	public get boundsVisible():boolean
+	public get debugVisible():boolean
 	{
-		return this._explicitBoundsVisible;
+		return this._explicitDebugVisible;
 	}
 
-	public set boundsVisible(value:boolean)
+	public set debugVisible(value:boolean)
 	{
-		if (this._explicitBoundsVisible == value)
+		if (this._explicitDebugVisible == value)
 			return;
 
-		this._explicitBoundsVisible = value;
+		this._explicitDebugVisible = value;
 
-		this._iUpdateImplicitBoundsVisible(this._iParent? this._iParent.boundsChildrenVisible : false);
+		this._iUpdateImplicitDebugVisible(this._iParent? this._iParent.debugChildrenVisible : false);
 
 	}
 
-	public get boundsChildrenVisible():boolean
+	public get debugChildrenVisible():boolean
 	{
-		return this._boundsChildrenVisible;
+		return this._debugChildrenVisible;
 	}
 
-	public set boundsChildrenVisible(value:boolean)
+	public set debugChildrenVisible(value:boolean)
 	{
-		if (this._boundsChildrenVisible == value)
+		if (this._debugChildrenVisible == value)
 			return;
 
-		this._boundsChildrenVisible = value;
+		this._debugChildrenVisible = value;
 
 		for (var i:number = 0; i < this._pNumChildNodes; ++i)
-			this._pChildNodes[i]._iUpdateImplicitBoundsVisible(this._boundsChildrenVisible);
+			this._pChildNodes[i]._iUpdateImplicitDebugVisible(this._debugChildrenVisible);
 	}
 
 	/**
@@ -126,9 +128,9 @@ class NodeBase
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:ICollector)
+	public acceptTraverser(traverser:CollectorBase)
 	{
-		if (this._pNumEntities == 0 && !this._implicitBoundsVisible)
+		if (this._pNumEntities == 0 && !this._pImplicitDebugVisible)
 			return;
 
 		if (traverser.enterNode(this)) {
@@ -137,8 +139,8 @@ class NodeBase
 			while (i < this._pNumChildNodes)
 				this._pChildNodes[i++].acceptTraverser(traverser);
 
-			if (this._implicitBoundsVisible)
-				this._pBoundsPrimitive.partitionNode.acceptTraverser(traverser);
+			if (this._pImplicitDebugVisible && traverser.isEntityCollector)
+				traverser.applyEntity(this._pDebugEntity);
 		}
 	}
 
@@ -146,9 +148,12 @@ class NodeBase
 	 *
 	 * @protected
 	 */
-	public _pCreateBoundsPrimitive():IEntity
+	public applyDebugEntity(traverser:CollectorBase)
 	{
-		return null;
+		if (this._pDebugEntity == null)
+			this._pDebugEntity = this._pCreateDebugEntity();
+
+		traverser.applyEntity(this._pDebugEntity);
 	}
 
 	/**
@@ -162,7 +167,7 @@ class NodeBase
 		this._iNumEntities += node._pNumEntities;
 		this._pChildNodes[ this._pNumChildNodes++ ] = node;
 
-		node._iUpdateImplicitBoundsVisible(this.boundsChildrenVisible);
+		node._iUpdateImplicitDebugVisible(this.debugChildrenVisible);
 
 		var numEntities:number = node._pNumEntities;
 		node = this;
@@ -183,7 +188,7 @@ class NodeBase
 		this._pChildNodes[index] = this._pChildNodes[--this._pNumChildNodes];
 		this._pChildNodes.pop();
 
-		node._iUpdateImplicitBoundsVisible(false);
+		node._iUpdateImplicitDebugVisible(false);
 
 		var numEntities:number = node._pNumEntities;
 		node = this;
@@ -193,46 +198,36 @@ class NodeBase
 		} while ((node = node._iParent) != null);
 	}
 
-	private _iUpdateImplicitBoundsVisible(value:boolean)
+	private _iUpdateImplicitDebugVisible(value:boolean)
 	{
-		if (this._implicitBoundsVisible == this._explicitBoundsVisible || value)
+		if (this._pImplicitDebugVisible == this._explicitDebugVisible || value)
 			return;
 
-		this._implicitBoundsVisible = this._explicitBoundsVisible || value;
-
-		this._iUpdateEntityBounds();
+		this._pImplicitDebugVisible = this._explicitDebugVisible || value;
 
 		for (var i:number = 0; i < this._pNumChildNodes; ++i)
-			this._pChildNodes[i]._iUpdateImplicitBoundsVisible(this._boundsChildrenVisible);
-	}
+			this._pChildNodes[i]._iUpdateImplicitDebugVisible(this._debugChildrenVisible);
 
-	/**
-	 * @internal
-	 */
-	public _iIsBoundsVisible():boolean
-	{
-		return this._implicitBoundsVisible;
-	}
-
-//		public _pUpdateNumEntities(value:number)
-//		{
-//			var diff:number = value - this._pNumEntities;
-//			var node:NodeBase = this;
-//
-//			do {
-//				node._pNumEntities += diff;
-//			} while ((node = node._iParent) != null);
-//		}
-
-	public _iUpdateEntityBounds()
-	{
-		if (this._pBoundsPrimitive) {
-			this._pBoundsPrimitive.dispose();
-			this._pBoundsPrimitive = null;
+		if (this._pImplicitDebugVisible) {
+			this._pDebugEntity = this._pCreateDebugEntity();
+		} else {
+			//this._pDebugEntity.dispose();
+			this._pDebugEntity = null;
 		}
+		
+	}
 
-		//if (this._implicitBoundsVisible)
-		//	this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
+	public updateDebugEntity()
+	{
+		if (this._pImplicitDebugVisible) {
+			//this._pDebugEntity.dispose();
+			this._pDebugEntity = this._pCreateDebugEntity();
+		}
+	}
+
+	public _pCreateDebugEntity():IEntity
+	{
+		throw new AbstractMethodError();
 	}
 }
 

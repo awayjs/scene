@@ -501,18 +501,6 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 * @protected
 	 */
-	public _pUpdateScene(value:Scene)
-	{
-		super._pUpdateScene(value);
-
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateScene(value);
-	}
-
-	/**
-	 * @protected
-	 */
 	public _pUpdateImplicitMouseEnabled(value:boolean)
 	{
 		super._pUpdateImplicitMouseEnabled(value);
@@ -537,13 +525,13 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 * @protected
 	 */
-	public _pUpdateImplicitPartition(value:Partition)
+	public _pUpdateImplicitPartition(value:Partition, scene:Scene)
 	{
-		super._pUpdateImplicitPartition(value);
+		super._pUpdateImplicitPartition(value, scene);
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateImplicitPartition(this._pImplicitPartition);
+			this._children[i]._pUpdateImplicitPartition(this._pImplicitPartition, scene);
 	}
 
 	/**

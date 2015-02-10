@@ -15,7 +15,7 @@ import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import IEntitySorter				= require("awayjs-display/lib/sort/IEntitySorter");
 import CSSEntityCollector			= require("awayjs-display/lib/traverse/CSSEntityCollector");
 import EntityCollector				= require("awayjs-display/lib/traverse/EntityCollector");
-import ICollector					= require("awayjs-display/lib/traverse/ICollector");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Billboard					= require("awayjs-display/lib/entities/Billboard");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
@@ -274,7 +274,7 @@ class CSSRendererBase extends EventDispatcher
 		 */
 	}
 
-	public render(entityCollector:ICollector)
+	public render(entityCollector:CollectorBase)
 	{
 		this._viewportDirty = false;
 		this._scissorDirty = false;
@@ -293,11 +293,11 @@ class CSSRendererBase extends EventDispatcher
 		this.pExecuteRender(entityCollector, scissorRect);
 	}
 
-	public _iRenderCascades(entityCollector:ICollector, target:TextureProxyBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
+	public _iRenderCascades(entityCollector:CollectorBase, target:TextureProxyBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
 	{
 
 	}
-	public pCollectRenderables(entityCollector:ICollector)
+	public pCollectRenderables(entityCollector:CollectorBase)
 	{
 		////reset head values
 		//this._renderableHead = null;
@@ -467,7 +467,7 @@ class CSSRendererBase extends EventDispatcher
 	}
 
 
-	public _iCreateEntityCollector():ICollector
+	public _iCreateEntityCollector():CollectorBase
 	{
 		throw new AbstractMethodError();
 	}
