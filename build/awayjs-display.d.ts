@@ -1251,7 +1251,7 @@ declare module "awayjs-display/lib/pool/EntityNodePool" {
 	     *
 	     * @param entity
 	     */
-	    disposeItem(entity: IEntity): void;
+	    disposeItem(entity: IEntity): EntityNode;
 	}
 	export = EntityNodePool;
 	
