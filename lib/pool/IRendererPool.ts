@@ -1,5 +1,6 @@
 import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");
 import TriangleSubMesh				= require("awayjs-display/lib/base/TriangleSubMesh");
+import CurveSubMesh				    = require("awayjs-display/lib/base/CurveSubMesh");
 import Billboard					= require("awayjs-display/lib/entities/Billboard");
 import LineSegment					= require("awayjs-display/lib/entities/LineSegment");
 
@@ -34,6 +35,12 @@ interface IRendererPool
 	 * @param triangleSubMesh
 	 */
 	applyTriangleSubMesh(triangleSubMesh:TriangleSubMesh);
+
+    /**
+     *
+     * @param curveSubMesh
+     */
+    applyCurveSubMesh(curveSubMesh:CurveSubMesh);
 }
 
 export = IRendererPool;

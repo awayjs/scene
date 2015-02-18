@@ -9,7 +9,7 @@ import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
  * using material methods to define their appearance.
  */
-class BasicMaterial extends MaterialBase implements IRenderObjectOwner
+class CurveMaterial extends MaterialBase implements IRenderObjectOwner
 {
     private _preserveAlpha:boolean = false;
 	/**
@@ -64,4 +64,4 @@ class BasicMaterial extends MaterialBase implements IRenderObjectOwner
 	}
 }
 
-export = BasicMaterial;
+export = CurveMaterial;
