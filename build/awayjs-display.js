@@ -14722,37 +14722,37 @@ var Partition = (function () {
      * @internal
      */
     Partition.prototype._iUnregisterCamera = function (camera) {
-        this.iRemoveEntity(this._cameraNodePool.getItem(camera));
+        this.iRemoveEntity(this._cameraNodePool.disposeItem(camera));
     };
     /**
      * @internal
      */
     Partition.prototype._iUnregisterDirectionalLight = function (directionalLight) {
-        this.iRemoveEntity(this._directionalLightNodePool.getItem(directionalLight));
+        this.iRemoveEntity(this._directionalLightNodePool.disposeItem(directionalLight));
     };
     /**
      * @internal
      */
     Partition.prototype._iUnregisterEntity = function (entity) {
-        this.iRemoveEntity(this._entityNodePool.getItem(entity));
+        this.iRemoveEntity(this._entityNodePool.disposeItem(entity));
     };
     /**
      * @internal
      */
     Partition.prototype._iUnregisterLightProbe = function (lightProbe) {
-        this.iRemoveEntity(this._lightProbeNodePool.getItem(lightProbe));
+        this.iRemoveEntity(this._lightProbeNodePool.disposeItem(lightProbe));
     };
     /**
      * @internal
      */
     Partition.prototype._iUnregisterPointLight = function (pointLight) {
-        this.iRemoveEntity(this._pointLightNodePool.getItem(pointLight));
+        this.iRemoveEntity(this._pointLightNodePool.disposeItem(pointLight));
     };
     /**
      * @internal
      */
     Partition.prototype._iUnregisterSkybox = function (skybox) {
-        this.iRemoveEntity(this._skyboxNodePool.getItem(skybox));
+        this.iRemoveEntity(this._skyboxNodePool.disposeItem(skybox));
     };
     return Partition;
 })();
@@ -15263,8 +15263,12 @@ var EntityNodePool = (function () {
      * @param entity
      */
     EntityNodePool.prototype.disposeItem = function (entity) {
-        entity._iRemoveEntityNode(this._entityNodePool[entity.id]);
-        this._entityNodePool[entity.id] = null;
+        var entityNode = this._entityNodePool[entity.id];
+        if (entityNode) {
+            entity._iRemoveEntityNode(entityNode);
+            this._entityNodePool[entity.id] = null;
+        }
+        return entityNode;
     };
     return EntityNodePool;
 })();
@@ -18610,6 +18614,24 @@ var RenderableMergeSort = (function () {
     return RenderableMergeSort;
 })();
 module.exports = RenderableMergeSort;
+
+
+},{}],"awayjs-display\\lib\\sort\\RenderableNullSort":[function(require,module,exports){
+/**
+ * @class away.sort.NullSort
+ */
+var RenderableNullSort = (function () {
+    function RenderableNullSort() {
+    }
+    RenderableNullSort.prototype.sortBlendedRenderables = function (head) {
+        return head;
+    };
+    RenderableNullSort.prototype.sortOpaqueRenderables = function (head) {
+        return head;
+    };
+    return RenderableNullSort;
+})();
+module.exports = RenderableNullSort;
 
 
 },{}],"awayjs-display\\lib\\text\\AntiAliasType":[function(require,module,exports){

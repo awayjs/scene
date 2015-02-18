@@ -1438,7 +1438,7 @@ declare module "awayjs-display/lib/pool/EntityNodePool" {
 	     *
 	     * @param entity
 	     */
-	    disposeItem(entity: IEntity): void;
+	    disposeItem(entity: IEntity): EntityNode;
 	}
 	export = EntityNodePool;
 	
@@ -10470,6 +10470,19 @@ declare module "awayjs-display/lib/sort/RenderableMergeSort" {
 	    sortOpaqueRenderables(head: IRenderable): IRenderable;
 	}
 	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.NullSort
+	 */
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableNullSort;
 	
 }
 declare module "awayjs-display/lib/text/TextFormatAlign" {
