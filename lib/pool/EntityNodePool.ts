@@ -39,11 +39,17 @@ class EntityNodePool
 	 *
 	 * @param entity
 	 */
-	public disposeItem(entity:IEntity)
+	public disposeItem(entity:IEntity):EntityNode
 	{
-		entity._iRemoveEntityNode(this._entityNodePool[entity.id]);
+		var entityNode:EntityNode = this._entityNodePool[entity.id];
 
-		this._entityNodePool[entity.id] = null;
+		if (entityNode) {
+			entity._iRemoveEntityNode(entityNode);
+
+			this._entityNodePool[entity.id] = null;
+		}
+
+		return entityNode;
 	}
 }
 

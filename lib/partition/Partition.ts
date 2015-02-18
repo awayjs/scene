@@ -177,7 +177,7 @@ class Partition
 	 */
 	public _iUnregisterCamera(camera:Camera)
 	{
-		this.iRemoveEntity(this._cameraNodePool.getItem(camera));
+		this.iRemoveEntity(this._cameraNodePool.disposeItem(camera));
 	}
 
 	/**
@@ -185,7 +185,7 @@ class Partition
 	 */
 	public _iUnregisterDirectionalLight(directionalLight:DirectionalLight)
 	{
-		this.iRemoveEntity(this._directionalLightNodePool.getItem(directionalLight));
+		this.iRemoveEntity(this._directionalLightNodePool.disposeItem(directionalLight));
 	}
 
 	/**
@@ -193,7 +193,7 @@ class Partition
 	 */
 	public _iUnregisterEntity(entity:IEntity)
 	{
-		this.iRemoveEntity(this._entityNodePool.getItem(entity));
+		this.iRemoveEntity(this._entityNodePool.disposeItem(entity));
 	}
 
 	/**
@@ -201,7 +201,7 @@ class Partition
 	 */
 	public _iUnregisterLightProbe(lightProbe:LightProbe)
 	{
-		this.iRemoveEntity(this._lightProbeNodePool.getItem(lightProbe));
+		this.iRemoveEntity(this._lightProbeNodePool.disposeItem(lightProbe));
 	}
 
 	/**
@@ -209,7 +209,7 @@ class Partition
 	 */
 	public _iUnregisterPointLight(pointLight:PointLight)
 	{
-		this.iRemoveEntity(this._pointLightNodePool.getItem(pointLight));
+		this.iRemoveEntity(this._pointLightNodePool.disposeItem(pointLight));
 	}
 
 	/**
@@ -217,7 +217,7 @@ class Partition
 	 */
 	public _iUnregisterSkybox(skybox:Skybox)
 	{
-		this.iRemoveEntity(this._skyboxNodePool.getItem(skybox));
+		this.iRemoveEntity(this._skyboxNodePool.disposeItem(skybox));
 	}
 }
 
