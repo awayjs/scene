@@ -132,8 +132,8 @@ declare module "awayjs-display/lib/base/Geometry" {
 	    /**
 	     * A collection of TriangleSubGeometry objects, each of which contain geometrical data such as vertices, normals, etc.
 	     */
-	    subGeometries: SubGeometryBase[];
-	    getSubGeometries(): SubGeometryBase[];
+	    subGeometries: Array<SubGeometryBase>;
+	    getSubGeometries(): Array<SubGeometryBase>;
 	    /**
 	     * Creates a new Geometry object.
 	     */
@@ -341,27 +341,27 @@ declare module "awayjs-display/lib/base/LineSubGeometry" {
 	    /**
 	     *
 	     */
-	    vertices: number[];
+	    vertices: Array<number>;
 	    /**
 	     *
 	     */
-	    startPositions: number[];
+	    startPositions: Array<number>;
 	    /**
 	     *
 	     */
-	    endPositions: number[];
+	    endPositions: Array<number>;
 	    /**
 	     *
 	     */
-	    thickness: number[];
+	    thickness: Array<number>;
 	    /**
 	     *
 	     */
-	    startColors: number[];
+	    startColors: Array<number>;
 	    /**
 	     *
 	     */
-	    endColors: number[];
+	    endColors: Array<number>;
 	    /**
 	     * The total amount of segments in the TriangleSubGeometry.
 	     */
@@ -370,19 +370,19 @@ declare module "awayjs-display/lib/base/LineSubGeometry" {
 	     *
 	     */
 	    constructor();
-	    getBoundingPositions(): number[];
+	    getBoundingPositions(): Array<number>;
 	    /**
 	     *
 	     */
-	    updatePositions(startValues: number[], endValues: number[]): void;
+	    updatePositions(startValues: Array<number>, endValues: Array<number>): void;
 	    /**
 	     * Updates the thickness.
 	     */
-	    updateThickness(values: number[]): void;
+	    updateThickness(values: Array<number>): void;
 	    /**
 	     *
 	     */
-	    updateColors(startValues: number[], endValues: number[]): void;
+	    updateColors(startValues: Array<number>, endValues: Array<number>): void;
 	    /**
 	     *
 	     */
@@ -459,7 +459,7 @@ declare module "awayjs-display/lib/prefabs/PrefabBase" {
 	 * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
 	 */
 	class PrefabBase extends NamedAssetBase {
-	    _pObjects: DisplayObject[];
+	    _pObjects: Array<DisplayObject>;
 	    /**
 	     * Creates a new PrefabBase object.
 	     */
@@ -657,7 +657,7 @@ declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
 	    /**
 	     * @inheritDoc
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
 	    classifyToPlane(plane: Plane3D): number;
 	    _pUpdate(): void;
@@ -730,7 +730,7 @@ declare module "awayjs-display/lib/bounds/BoundingSphere" {
 	    private _prefab;
 	    constructor(entity: IEntity);
 	    nullify(): void;
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
 	    classifyToPlane(plane: Plane3D): number;
 	    _pUpdate(): void;
@@ -746,7 +746,7 @@ declare module "awayjs-display/lib/bounds/NullBounds" {
 	    private _alwaysIn;
 	    constructor(alwaysIn?: boolean);
 	    clone(): BoundingVolumeBase;
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    classifyToPlane(plane: Plane3D): number;
 	}
 	export = NullBounds;
@@ -942,7 +942,7 @@ declare module "awayjs-display/lib/render/IRenderer" {
 	     */
 	    _iCreateEntityCollector(): CollectorBase;
 	    _iRender(entityCollector: CollectorBase, target?: TextureProxyBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Rectangle[], cameras: Camera[]): any;
+	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
 	}
 	export = IRenderer;
 	
@@ -977,7 +977,7 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    /**
 	     *
 	     */
-	    cullPlanes: Plane3D[];
+	    cullPlanes: Array<Plane3D>;
 	    /**
 	     *
 	     */
@@ -1042,7 +1042,7 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	    private _explicitDebugVisible;
 	    _pImplicitDebugVisible: boolean;
 	    _iParent: NodeBase;
-	    _pChildNodes: NodeBase[];
+	    _pChildNodes: Array<NodeBase>;
 	    _pNumChildNodes: number;
 	    _pDebugEntity: IEntity;
 	    _iNumEntities: number;
@@ -1072,7 +1072,7 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	     * @returns {boolean}
 	     * @internal
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    /**
 	     *
 	     * @param rayPosition
@@ -1288,7 +1288,7 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	     * @param numPlanes
 	     * @returns {boolean}
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    /**
 	     * @inheritDoc
 	     */
@@ -1762,82 +1762,82 @@ declare module "awayjs-display/lib/base/TriangleSubGeometry" {
 	    /**
 	     *
 	     */
-	    vertices: number[];
+	    vertices: Array<number>;
 	    /**
 	     *
 	     */
-	    positions: number[];
+	    positions: Array<number>;
 	    /**
 	     *
 	     */
-	    vertexNormals: number[];
+	    vertexNormals: Array<number>;
 	    /**
 	     *
 	     */
-	    vertexTangents: number[];
+	    vertexTangents: Array<number>;
 	    /**
 	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
 	     */
-	    faceNormals: number[];
+	    faceNormals: Array<number>;
 	    /**
 	     * The raw data of the face tangets, in the same order as the faces are listed in the index list.
 	     */
-	    faceTangents: number[];
+	    faceTangents: Array<number>;
 	    /**
 	     *
 	     */
-	    uvs: number[];
+	    uvs: Array<number>;
 	    /**
 	     *
 	     */
-	    secondaryUVs: number[];
+	    secondaryUVs: Array<number>;
 	    /**
 	     *
 	     */
-	    jointIndices: number[];
+	    jointIndices: Array<number>;
 	    /**
 	     *
 	     */
-	    jointWeights: number[];
+	    jointWeights: Array<number>;
 	    /**
 	     * Indicates whether or not to take the size of faces into account when auto-deriving vertex normals and tangents.
 	     */
 	    useFaceWeights: boolean;
 	    numCondensedJoints: number;
-	    condensedIndexLookUp: number[];
+	    condensedIndexLookUp: Array<number>;
 	    /**
 	     *
 	     */
 	    constructor(concatenatedArrays: boolean);
-	    getBoundingPositions(): number[];
+	    getBoundingPositions(): Array<number>;
 	    /**
 	     *
 	     */
-	    updatePositions(values: number[]): void;
+	    updatePositions(values: Array<number>): void;
 	    /**
 	     * Updates the vertex normals based on the geometry.
 	     */
-	    updateVertexNormals(values: number[]): void;
+	    updateVertexNormals(values: Array<number>): void;
 	    /**
 	     * Updates the vertex tangents based on the geometry.
 	     */
-	    updateVertexTangents(values: number[]): void;
+	    updateVertexTangents(values: Array<number>): void;
 	    /**
 	     * Updates the uvs based on the geometry.
 	     */
-	    updateUVs(values: number[]): void;
+	    updateUVs(values: Array<number>): void;
 	    /**
 	     * Updates the secondary uvs based on the geometry.
 	     */
-	    updateSecondaryUVs(values: number[]): void;
+	    updateSecondaryUVs(values: Array<number>): void;
 	    /**
 	     * Updates the joint indices
 	     */
-	    updateJointIndices(values: number[]): void;
+	    updateJointIndices(values: Array<number>): void;
 	    /**
 	     * Updates the joint weights.
 	     */
-	    updateJointWeights(values: number[]): void;
+	    updateJointWeights(values: Array<number>): void;
 	    /**
 	     *
 	     */
@@ -1847,7 +1847,7 @@ declare module "awayjs-display/lib/base/TriangleSubGeometry" {
 	     *
 	     * @param indices The face indices to upload.
 	     */
-	    updateIndices(indices: number[]): void;
+	    updateIndices(indices: Array<number>): void;
 	    /**
 	     * Clones the current object
 	     * @return An exact duplicate of the current object.
@@ -1936,7 +1936,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
 	     * material.
 	     */
-	    subMeshes: ISubMesh[];
+	    subMeshes: Array<ISubMesh>;
 	    /**
 	     *
 	     */
@@ -2052,7 +2052,7 @@ declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	    constructor(entity: any);
 	    boundsPrimitive: IEntity;
 	    nullify(): void;
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    clone(): BoundingVolumeBase;
 	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
 	    classifyToPlane(plane: Plane3D): number;
@@ -2550,7 +2550,7 @@ declare module "awayjs-display/lib/entities/Camera" {
 	    constructor(projection?: IProjection);
 	    assetType: string;
 	    private onProjectionMatrixChanged(event);
-	    frustumPlanes: Plane3D[];
+	    frustumPlanes: Array<Plane3D>;
 	    private updateFrustum();
 	    /**
 	     * @protected
@@ -2749,7 +2749,7 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	 */
 	class EntityCollector extends CollectorBase {
 	    _pSkybox: Skybox;
-	    _pLights: LightBase[];
+	    _pLights: Array<LightBase>;
 	    private _directionalLights;
 	    private _pointLights;
 	    private _lightProbes;
@@ -2760,19 +2760,19 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	    /**
 	     *
 	     */
-	    directionalLights: DirectionalLight[];
+	    directionalLights: Array<DirectionalLight>;
 	    /**
 	     *
 	     */
-	    lightProbes: LightProbe[];
+	    lightProbes: Array<LightProbe>;
 	    /**
 	     *
 	     */
-	    lights: LightBase[];
+	    lights: Array<LightBase>;
 	    /**
 	     *
 	     */
-	    pointLights: PointLight[];
+	    pointLights: Array<PointLight>;
 	    /**
 	     *
 	     */
@@ -2941,12 +2941,12 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	import TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
 	class DirectionalShadowMapper extends ShadowMapperBase {
 	    _pOverallDepthCamera: Camera;
-	    _pLocalFrustum: number[];
+	    _pLocalFrustum: Array<number>;
 	    _pLightOffset: number;
 	    _pMatrix: Matrix3D;
 	    _pOverallDepthProjection: FreeMatrixProjection;
 	    _pSnap: number;
-	    _pCullPlanes: Plane3D[];
+	    _pCullPlanes: Array<Plane3D>;
 	    _pMinZ: number;
 	    _pMaxZ: number;
 	    constructor();
@@ -2957,7 +2957,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	    pDrawDepthMap(target: TextureProxyBase, scene: Scene, renderer: IRenderer): void;
 	    pUpdateCullPlanes(viewCamera: Camera): void;
 	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: number[], matrix: Matrix3D): void;
+	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
 	}
 	export = DirectionalShadowMapper;
 	
@@ -3026,7 +3026,7 @@ declare module "awayjs-display/lib/partition/SkyboxNode" {
 	     * @param numPlanes
 	     * @returns {boolean}
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	}
 	export = SkyboxNode;
 	
@@ -3269,7 +3269,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *              list.
 	     */
 	    addChildAt(child: DisplayObject, index: number): DisplayObject;
-	    addChildren(...childarray: DisplayObject[]): void;
+	    addChildren(...childarray: Array<DisplayObject>): void;
 	    /**
 	     *
 	     */
@@ -3344,7 +3344,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *         children(or grandchildren, and so on) of this
 	     *         DisplayObjectContainer instance.
 	     */
-	    getObjectsUnderPoint(point: Point): DisplayObject[];
+	    getObjectsUnderPoint(point: Point): Array<DisplayObject>;
 	    /**
 	     * Removes the specified <code>child</code> DisplayObject instance from the
 	     * child list of the DisplayObjectContainer instance. The <code>parent</code>
@@ -3976,7 +3976,7 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     * @param parserClasses A Vector of parser classes to enable.
 	     * @see away.parsers.Parsers
 	     */
-	    static enableParsers(parserClasses: Object[]): void;
+	    static enableParsers(parserClasses: Array<Object>): void;
 	    private removeListeners(dispatcher);
 	    private onAssetComplete(event);
 	    /**
@@ -4471,7 +4471,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pPickingCollisionVO: PickingCollisionVO;
 	    _boundsType: string;
 	    _pPickingCollider: IPickingCollider;
-	    _pRenderables: IRenderable[];
+	    _pRenderables: Array<IRenderable>;
 	    private _entityNodes;
 	    _iSourcePrefab: PrefabBase;
 	    /**
@@ -5517,13 +5517,13 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	    _pNumCastingPointLights: number;
 	    _pNumCastingDirectionalLights: number;
 	    _pNumLightProbes: number;
-	    _pAllPickedLights: LightBase[];
-	    _pPointLights: PointLight[];
-	    _pCastingPointLights: PointLight[];
-	    _pDirectionalLights: DirectionalLight[];
-	    _pCastingDirectionalLights: DirectionalLight[];
-	    _pLightProbes: LightProbe[];
-	    _pLightProbeWeights: number[];
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
 	    /**
 	     * Creates a new LightPickerBase object.
 	     */
@@ -5559,31 +5559,31 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	    /**
 	     * The collected point lights to be used for shading.
 	     */
-	    pointLights: PointLight[];
+	    pointLights: Array<PointLight>;
 	    /**
 	     * The collected directional lights to be used for shading.
 	     */
-	    directionalLights: DirectionalLight[];
+	    directionalLights: Array<DirectionalLight>;
 	    /**
 	     * The collected point lights that cast shadows to be used for shading.
 	     */
-	    castingPointLights: PointLight[];
+	    castingPointLights: Array<PointLight>;
 	    /**
 	     * The collected directional lights that cast shadows to be used for shading.
 	     */
-	    castingDirectionalLights: DirectionalLight[];
+	    castingDirectionalLights: Array<DirectionalLight>;
 	    /**
 	     * The collected light probes to be used for shading.
 	     */
-	    lightProbes: LightProbe[];
+	    lightProbes: Array<LightProbe>;
 	    /**
 	     * The weights for each light probe, defining their influence on the object.
 	     */
-	    lightProbeWeights: number[];
+	    lightProbeWeights: Array<number>;
 	    /**
 	     * A collection of all the collected lights.
 	     */
-	    allPickedLights: LightBase[];
+	    allPickedLights: Array<LightBase>;
 	    /**
 	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
 	     */
@@ -5679,7 +5679,7 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     *
 	     * @private
 	     */
-	    iOwners: IRenderableOwner[];
+	    iOwners: Array<IRenderableOwner>;
 	    animator: IAnimator;
 	    /**
 	     *
@@ -5757,7 +5757,7 @@ declare module "awayjs-display/lib/base/IRenderObjectOwner" {
 	    blendMode: string;
 	    lightPicker: LightPickerBase;
 	    animationSet: IAnimationSet;
-	    iOwners: IRenderableOwner[];
+	    iOwners: Array<IRenderableOwner>;
 	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
 	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
 	    /**
@@ -6012,7 +6012,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     *
 	     * @private
 	     */
-	    iOwners: IRenderableOwner[];
+	    iOwners: Array<IRenderableOwner>;
 	    /**
 	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	     *
@@ -6134,8 +6134,8 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	class SubGeometryBase extends NamedAssetBase {
 	    static VERTEX_DATA: string;
 	    _pStrideOffsetDirty: boolean;
-	    _pIndices: number[];
-	    _pVertices: number[];
+	    _pIndices: Array<number>;
+	    _pVertices: Array<number>;
 	    private _numIndices;
 	    private _numTriangles;
 	    _pNumVertices: number;
@@ -6153,11 +6153,11 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	    /**
 	     * The raw index data that define the faces.
 	     */
-	    indices: number[];
+	    indices: Array<number>;
 	    /**
 	     *
 	     */
-	    vertices: number[];
+	    vertices: Array<number>;
 	    /**
 	     * The total amount of triangles in the TriangleSubGeometry.
 	     */
@@ -6185,7 +6185,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	     *
 	     * @param indices The face indices to upload.
 	     */
-	    updateIndices(indices: number[]): void;
+	    updateIndices(indices: Array<number>): void;
 	    /**
 	     * @protected
 	     */
@@ -6208,7 +6208,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	     */
 	    scale(scale: number): void;
 	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    getBoundingPositions(): number[];
+	    getBoundingPositions(): Array<number>;
 	    private notifyIndicesUpdate();
 	    _pNotifyVerticesUpdate(): void;
 	}
@@ -6681,7 +6681,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     *                            a <code>focalPointRatio</code> set to 0.75:
 	     * @throws ArgumentError If the <code>type</code> parameter is not valid.
 	     */
-	    beginGradientFill(type: GradientType, colors: number[], alphas: number[], ratios: number[], matrix?: Matrix, spreadMethod?: string, interpolationMethod?: string, focalPointRatio?: number): void;
+	    beginGradientFill(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: string, interpolationMethod?: string, focalPointRatio?: number): void;
 	    /**
 	     * Specifies a shader fill used by subsequent calls to other Graphics methods
 	     * (such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
@@ -6873,7 +6873,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     * sub-paths are rendered during this operation. </p>
 	     *
 	     */
-	    drawGraphicsData(graphicsData: IGraphicsData[]): void;
+	    drawGraphicsData(graphicsData: Array<IGraphicsData>): void;
 	    /**
 	     * Submits a series of commands for drawing. The <code>drawPath()</code>
 	     * method uses vector arrays to consolidate individual <code>moveTo()</code>,
@@ -6919,7 +6919,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     * @param winding Specifies the winding rule using a value defined in the
 	     *                GraphicsPathWinding class.
 	     */
-	    drawPath(commands: number[], data: number[], winding: GraphicsPathWinding): void;
+	    drawPath(commands: Array<number>, data: Array<number>, winding: GraphicsPathWinding): void;
 	    /**
 	     * Draws a rectangle. Set the line style, fill, or both before you call the
 	     * <code>drawRect()</code> method, by calling the <code>linestyle()</code>,
@@ -6983,7 +6983,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     *                parameter can be set to any value defined by the
 	     *                TriangleCulling class.
 	     */
-	    drawTriangles(vertices: number[], indices?: number[], uvtData?: number[], culling?: TriangleCulling): void;
+	    drawTriangles(vertices: Array<number>, indices?: Array<number>, uvtData?: Array<number>, culling?: TriangleCulling): void;
 	    /**
 	     * Applies a fill to the lines and curves that were added since the last call
 	     * to the <code>beginFill()</code>, <code>beginGradientFill()</code>, or
@@ -7096,7 +7096,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     *                            image shows a gradient with a
 	     *                            <code>focalPointRatio</code> of -0.75:
 	     */
-	    lineGradientStyle(type: GradientType, colors: number[], alphas: number[], ratios: number[], matrix?: Matrix, spreadMethod?: SpreadMethod, interpolationMethod?: InterpolationMethod, focalPointRatio?: number): void;
+	    lineGradientStyle(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: SpreadMethod, interpolationMethod?: InterpolationMethod, focalPointRatio?: number): void;
 	    /**
 	     * Specifies a shader to use for the line stroke when drawing lines.
 	     *
@@ -7326,6 +7326,279 @@ declare module "awayjs-display/lib/base/PixelSnapping" {
 	    static NEVER: string;
 	}
 	export = PixelSnapping;
+	
+}
+declare module "awayjs-display/lib/controllers/FirstPersonController" {
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FirstPersonController extends ControllerBase {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _walkIncrement;
+	    private _strafeIncrement;
+	    private _wrapPanAngle;
+	    fly: boolean;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	    incrementWalk(val: number): void;
+	    incrementStrafe(val: number): void;
+	}
+	export = FirstPersonController;
+	
+}
+declare module "awayjs-display/lib/controllers/LookAtController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	class LookAtController extends ControllerBase {
+	    _pLookAtPosition: Vector3D;
+	    _pLookAtObject: DisplayObject;
+	    _pOrigin: Vector3D;
+	    private _onLookAtObjectChangedDelegate;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
+	    lookAtPosition: Vector3D;
+	    lookAtObject: DisplayObject;
+	    update(interpolate?: boolean): void;
+	    private onLookAtObjectChanged(event);
+	}
+	export = LookAtController;
+	
+}
+declare module "awayjs-display/lib/controllers/HoverController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away.containers.View
+	 */
+	class HoverController extends LookAtController {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _distance;
+	    private _minPanAngle;
+	    private _maxPanAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _yFactor;
+	    private _wrapPanAngle;
+	    private _upAxis;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Distance between the camera and the specified target. Defaults to 1000.
+	     */
+	    distance: number;
+	    /**
+	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    minPanAngle: number;
+	    /**
+	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    maxPanAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
+	     *
+	     * @see    #distance
+	     */
+	    yFactor: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	}
+	export = HoverController;
+	
+}
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
+	
+}
+declare module "awayjs-display/lib/controllers/SpringController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Uses spring physics to animate the target object towards a position that is
+	 * defined as the lookAtTarget object's position plus the vector defined by the
+	 * positionOffset property.
+	 */
+	class SpringController extends LookAtController {
+	    private _velocity;
+	    private _dv;
+	    private _stretch;
+	    private _force;
+	    private _acceleration;
+	    private _desiredPosition;
+	    /**
+	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
+	     * A number between 1 and 20 is recommended.
+	     */
+	    stiffness: number;
+	    /**
+	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
+	     * A number between 1 and 20 is recommended.
+	     */
+	    damping: number;
+	    /**
+	     * Mass of the camera, if over 120 and it'll be very heavy to move.
+	     */
+	    mass: number;
+	    /**
+	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
+	     */
+	    positionOffset: Vector3D;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = SpringController;
+	
+}
+declare module "awayjs-display/lib/display/ContextMode" {
+	class ContextMode {
+	    static AUTO: string;
+	    static WEBGL: string;
+	    static FLASH: string;
+	    static NATIVE: string;
+	}
+	export = ContextMode;
+	
+}
+declare module "awayjs-display/lib/display/IContext" {
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	/**
+	 *
+	 * @class away.base.IContext
+	 */
+	interface IContext {
+	    container: HTMLElement;
+	    clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): any;
+	    configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): any;
+	    dispose(): any;
+	    present(): any;
+	    setScissorRectangle(rect: Rectangle): any;
+	}
+	export = IContext;
 	
 }
 declare module "awayjs-display/lib/pick/IPicker" {
@@ -7724,7 +7997,7 @@ declare module "awayjs-display/lib/render/CSSRendererBase" {
 	     * @param scissorRect
 	     */
 	    _iRender(entityCollector: EntityCollector, target?: TextureProxyBase, scissorRect?: Rectangle, surfaceSelector?: number): void;
-	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Rectangle[], cameras: Camera[]): void;
+	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): void;
 	    pCollectRenderables(entityCollector: CollectorBase): void;
 	    /**
 	     * Renders the potentially visible geometry to the back buffer or texture. Only executed if everything is set up.
@@ -8135,279 +8408,6 @@ declare module "awayjs-display/lib/containers/View" {
 	export = View;
 	
 }
-declare module "awayjs-display/lib/controllers/FirstPersonController" {
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FirstPersonController extends ControllerBase {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _walkIncrement;
-	    private _strafeIncrement;
-	    private _wrapPanAngle;
-	    fly: boolean;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	    incrementWalk(val: number): void;
-	    incrementStrafe(val: number): void;
-	}
-	export = FirstPersonController;
-	
-}
-declare module "awayjs-display/lib/controllers/LookAtController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	class LookAtController extends ControllerBase {
-	    _pLookAtPosition: Vector3D;
-	    _pLookAtObject: DisplayObject;
-	    _pOrigin: Vector3D;
-	    private _onLookAtObjectChangedDelegate;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
-	    lookAtPosition: Vector3D;
-	    lookAtObject: DisplayObject;
-	    update(interpolate?: boolean): void;
-	    private onLookAtObjectChanged(event);
-	}
-	export = LookAtController;
-	
-}
-declare module "awayjs-display/lib/controllers/HoverController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away.containers.View
-	 */
-	class HoverController extends LookAtController {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _distance;
-	    private _minPanAngle;
-	    private _maxPanAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _yFactor;
-	    private _wrapPanAngle;
-	    private _upAxis;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Distance between the camera and the specified target. Defaults to 1000.
-	     */
-	    distance: number;
-	    /**
-	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    minPanAngle: number;
-	    /**
-	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    maxPanAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
-	     *
-	     * @see    #distance
-	     */
-	    yFactor: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	}
-	export = HoverController;
-	
-}
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
-	
-}
-declare module "awayjs-display/lib/controllers/SpringController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Uses spring physics to animate the target object towards a position that is
-	 * defined as the lookAtTarget object's position plus the vector defined by the
-	 * positionOffset property.
-	 */
-	class SpringController extends LookAtController {
-	    private _velocity;
-	    private _dv;
-	    private _stretch;
-	    private _force;
-	    private _acceleration;
-	    private _desiredPosition;
-	    /**
-	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
-	     * A number between 1 and 20 is recommended.
-	     */
-	    stiffness: number;
-	    /**
-	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
-	     * A number between 1 and 20 is recommended.
-	     */
-	    damping: number;
-	    /**
-	     * Mass of the camera, if over 120 and it'll be very heavy to move.
-	     */
-	    mass: number;
-	    /**
-	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
-	     */
-	    positionOffset: Vector3D;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = SpringController;
-	
-}
-declare module "awayjs-display/lib/display/ContextMode" {
-	class ContextMode {
-	    static AUTO: string;
-	    static WEBGL: string;
-	    static FLASH: string;
-	    static NATIVE: string;
-	}
-	export = ContextMode;
-	
-}
-declare module "awayjs-display/lib/display/IContext" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	/**
-	 *
-	 * @class away.base.IContext
-	 */
-	interface IContext {
-	    container: HTMLElement;
-	    clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): any;
-	    configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): any;
-	    dispose(): any;
-	    present(): any;
-	    setScissorRectangle(rect: Rectangle): any;
-	}
-	export = IContext;
-	
-}
 declare module "awayjs-display/lib/entities/Shape" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import Graphics = require("awayjs-display/lib/base/Graphics");
@@ -8686,7 +8686,7 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	     * stop is specified in pixels. If custom tab stops are not specified
 	     * (<code>null</code>), the default tab stop is 4(average character width).
 	     */
-	    tabStops: number[];
+	    tabStops: Array<number>;
 	    /**
 	     * Indicates the target window where the hyperlink is displayed. If the
 	     * target window is an empty string, the text is displayed in the default
@@ -9739,39 +9739,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	export = TextField;
 	
 }
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
-declare module "awayjs-display/lib/events/ResizeEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class ResizeEvent extends Event {
-	    static RESIZE: string;
-	    private _oldHeight;
-	    private _oldWidth;
-	    constructor(type: string, oldHeight?: number, oldWidth?: number);
-	    oldHeight: number;
-	    oldWidth: number;
-	}
-	export = ResizeEvent;
-	
-}
-declare module "awayjs-display/lib/events/StageEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class StageEvent extends Event {
-	    static CONTEXT_CREATED: string;
-	    static CONTEXT_DISPOSED: string;
-	    static CONTEXT_RECREATED: string;
-	    static VIEWPORT_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = StageEvent;
-	
-}
 declare module "awayjs-display/lib/materials/BasicMaterial" {
 	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
 	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
@@ -9824,6 +9791,31 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	export = DefaultMaterialManager;
 	
 }
+declare module "awayjs-display/lib/events/ResizeEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class ResizeEvent extends Event {
+	    static RESIZE: string;
+	    private _oldHeight;
+	    private _oldWidth;
+	    constructor(type: string, oldHeight?: number, oldWidth?: number);
+	    oldHeight: number;
+	    oldWidth: number;
+	}
+	export = ResizeEvent;
+	
+}
+declare module "awayjs-display/lib/events/StageEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class StageEvent extends Event {
+	    static CONTEXT_CREATED: string;
+	    static CONTEXT_DISPOSED: string;
+	    static CONTEXT_RECREATED: string;
+	    static VIEWPORT_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = StageEvent;
+	
+}
 declare module "awayjs-display/lib/materials/LightSources" {
 	/**
 	 * Enumeration class for defining which lighting types affect the specific material
@@ -9856,6 +9848,14 @@ declare module "awayjs-display/lib/materials/LightSources" {
 	export = LightSources;
 	
 }
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
 declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
 	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
 	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
@@ -9868,6 +9868,139 @@ declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
 	    constructor(pool: IRenderablePool, skyBox: Skybox);
 	}
 	export = CSSSkyboxRenderable;
+	
+}
+declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
+	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
+	 * materials assigned to them.
+	 *
+	 * @class away.render.DefaultRenderer
+	 */
+	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
+	    private _container;
+	    private _context;
+	    private _contextStyle;
+	    private _contextMatrix;
+	    private _activeMaterial;
+	    private _skyboxProjection;
+	    private _transform;
+	    /**
+	     * Creates a new CSSDefaultRenderer object.
+	     */
+	    constructor();
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    pDraw(entityCollector: EntityCollector): void;
+	    /**
+	     * Updates the backbuffer properties.
+	     */
+	    pUpdateBackBuffer(): void;
+	    /**
+	     * Draw the skybox if present.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawSkybox(entityCollector);
+	    /**
+	     * Draw a list of renderables.
+	     * @param renderables The renderables to draw.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawRenderables(item, entityCollector);
+	    dispose(): void;
+	    _iCreateEntityCollector(): CollectorBase;
+	}
+	export = CSSDefaultRenderer;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableMergeSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.RenderableMergeSort
+	 */
+	class RenderableMergeSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.NullSort
+	 */
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableNullSort;
+	
+}
+declare module "awayjs-display/lib/text/TextFormatAlign" {
+	/**
+	 * The TextFormatAlign class provides values for text alignment in the
+	 * TextFormat class.
+	 */
+	class TextFormatAlign {
+	    /**
+	     * Constant; centers the text in the text field. Use the syntax
+	     * <code>TextFormatAlign.CENTER</code>.
+	     */
+	    CENTER: string;
+	    /**
+	     * Constant; justifies text within the text field. Use the syntax
+	     * <code>TextFormatAlign.JUSTIFY</code>.
+	     */
+	    JUSTIFY: string;
+	    /**
+	     * Constant; aligns text to the left within the text field. Use the syntax
+	     * <code>TextFormatAlign.LEFT</code>.
+	     */
+	    LEFT: string;
+	    /**
+	     * Constant; aligns text to the right within the text field. Use the syntax
+	     * <code>TextFormatAlign.RIGHT</code>.
+	     */
+	    RIGHT: string;
+	}
+	export = TextFormatAlign;
+	
+}
+declare module "awayjs-display/lib/utils/Cast" {
+	import BitmapData = require("awayjs-core/lib/base/BitmapData");
+	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
+	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	/**
+	 * Helper class for casting assets to usable objects
+	 */
+	class Cast {
+	    private static _colorNames;
+	    private static _hexChars;
+	    private static _notClasses;
+	    private static _classes;
+	    static string(data: any): string;
+	    static byteArray(data: any): ByteArray;
+	    private static isHex(str);
+	    static tryColor(data: any): number;
+	    static color(data: any): number;
+	    static tryClass(name: string): any;
+	    static bitmapData(data: any): BitmapData;
+	    static bitmapTexture(data: any): BitmapTexture;
+	}
+	export = Cast;
 	
 }
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
@@ -10171,126 +10304,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	export = PrimitiveTorusPrefab;
 	
 }
-declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
-	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
-	 * materials assigned to them.
-	 *
-	 * @class away.render.DefaultRenderer
-	 */
-	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
-	    private _container;
-	    private _context;
-	    private _contextStyle;
-	    private _contextMatrix;
-	    private _activeMaterial;
-	    private _skyboxProjection;
-	    private _transform;
-	    /**
-	     * Creates a new CSSDefaultRenderer object.
-	     */
-	    constructor();
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    pDraw(entityCollector: EntityCollector): void;
-	    /**
-	     * Updates the backbuffer properties.
-	     */
-	    pUpdateBackBuffer(): void;
-	    /**
-	     * Draw the skybox if present.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawSkybox(entityCollector);
-	    /**
-	     * Draw a list of renderables.
-	     * @param renderables The renderables to draw.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawRenderables(item, entityCollector);
-	    dispose(): void;
-	    _iCreateEntityCollector(): CollectorBase;
-	}
-	export = CSSDefaultRenderer;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
-	
-}
-declare module "awayjs-display/lib/text/TextFormatAlign" {
-	/**
-	 * The TextFormatAlign class provides values for text alignment in the
-	 * TextFormat class.
-	 */
-	class TextFormatAlign {
-	    /**
-	     * Constant; centers the text in the text field. Use the syntax
-	     * <code>TextFormatAlign.CENTER</code>.
-	     */
-	    CENTER: string;
-	    /**
-	     * Constant; justifies text within the text field. Use the syntax
-	     * <code>TextFormatAlign.JUSTIFY</code>.
-	     */
-	    JUSTIFY: string;
-	    /**
-	     * Constant; aligns text to the left within the text field. Use the syntax
-	     * <code>TextFormatAlign.LEFT</code>.
-	     */
-	    LEFT: string;
-	    /**
-	     * Constant; aligns text to the right within the text field. Use the syntax
-	     * <code>TextFormatAlign.RIGHT</code>.
-	     */
-	    RIGHT: string;
-	}
-	export = TextFormatAlign;
-	
-}
-declare module "awayjs-display/lib/utils/Cast" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-	/**
-	 * Helper class for casting assets to usable objects
-	 */
-	class Cast {
-	    private static _colorNames;
-	    private static _hexChars;
-	    private static _notClasses;
-	    private static _classes;
-	    static string(data: any): string;
-	    static byteArray(data: any): ByteArray;
-	    private static isHex(str);
-	    static tryColor(data: any): number;
-	    static color(data: any): number;
-	    static tryClass(name: string): any;
-	    static bitmapData(data: any): BitmapData;
-	    static bitmapTexture(data: any): BitmapTexture;
-	}
-	export = Cast;
-	
-}
 declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	/**
@@ -10309,7 +10322,7 @@ declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	    /**
 	     * The lights used for shading.
 	     */
-	    lights: any[];
+	    lights: Array<any>;
 	    /**
 	     * Remove configuration change listeners on the lights.
 	     */
@@ -10367,7 +10380,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	    removeEventListener(type: string, listener: Function): void;
 	    dispatchEvent(event: Event): void;
 	    hasEventListener(type: string): boolean;
-	    _iNearPlaneDistances: number[];
+	    _iNearPlaneDistances: Array<number>;
 	}
 	export = CascadeShadowMapper;
 	
