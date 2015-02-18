@@ -132,8 +132,8 @@ declare module "awayjs-display/lib/base/Geometry" {
 	    /**
 	     * A collection of TriangleSubGeometry objects, each of which contain geometrical data such as vertices, normals, etc.
 	     */
-	    subGeometries: SubGeometryBase[];
-	    getSubGeometries(): SubGeometryBase[];
+	    subGeometries: Array<SubGeometryBase>;
+	    getSubGeometries(): Array<SubGeometryBase>;
 	    /**
 	     * Creates a new Geometry object.
 	     */
@@ -341,27 +341,27 @@ declare module "awayjs-display/lib/base/LineSubGeometry" {
 	    /**
 	     *
 	     */
-	    vertices: number[];
+	    vertices: Array<number>;
 	    /**
 	     *
 	     */
-	    startPositions: number[];
+	    startPositions: Array<number>;
 	    /**
 	     *
 	     */
-	    endPositions: number[];
+	    endPositions: Array<number>;
 	    /**
 	     *
 	     */
-	    thickness: number[];
+	    thickness: Array<number>;
 	    /**
 	     *
 	     */
-	    startColors: number[];
+	    startColors: Array<number>;
 	    /**
 	     *
 	     */
-	    endColors: number[];
+	    endColors: Array<number>;
 	    /**
 	     * The total amount of segments in the TriangleSubGeometry.
 	     */
@@ -370,19 +370,19 @@ declare module "awayjs-display/lib/base/LineSubGeometry" {
 	     *
 	     */
 	    constructor();
-	    getBoundingPositions(): number[];
+	    getBoundingPositions(): Array<number>;
 	    /**
 	     *
 	     */
-	    updatePositions(startValues: number[], endValues: number[]): void;
+	    updatePositions(startValues: Array<number>, endValues: Array<number>): void;
 	    /**
 	     * Updates the thickness.
 	     */
-	    updateThickness(values: number[]): void;
+	    updateThickness(values: Array<number>): void;
 	    /**
 	     *
 	     */
-	    updateColors(startValues: number[], endValues: number[]): void;
+	    updateColors(startValues: Array<number>, endValues: Array<number>): void;
 	    /**
 	     *
 	     */
@@ -452,6 +452,193 @@ declare module "awayjs-display/lib/base/LineSubMesh" {
 	export = LineSubMesh;
 	
 }
+declare module "awayjs-display/lib/base/CurveSubGeometry" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	/**
+	 * @class away.base.CurveSubGeometry
+	 */
+	class CurveSubGeometry extends SubGeometryBase {
+	    static POSITION_DATA: string;
+	    static CURVE_DATA: string;
+	    static UV_DATA: string;
+	    static POSITION_FORMAT: string;
+	    static CURVE_FORMAT: string;
+	    static UV_FORMAT: string;
+	    private _positionsDirty;
+	    private _curvesDirty;
+	    private _faceNormalsDirty;
+	    private _faceTangentsDirty;
+	    private _vertexNormalsDirty;
+	    private _vertexTangentsDirty;
+	    private _uvsDirty;
+	    private _secondaryUVsDirty;
+	    private _jointIndicesDirty;
+	    private _jointWeightsDirty;
+	    private _positions;
+	    private _curves;
+	    private _uvs;
+	    private _useCondensedIndices;
+	    private _condensedJointIndices;
+	    private _condensedIndexLookUp;
+	    private _concatenateArrays;
+	    private _autoDeriveNormals;
+	    private _useFaceWeights;
+	    private _autoDeriveUVs;
+	    private _faceNormals;
+	    private _faceTangents;
+	    private _faceWeights;
+	    private _scaleU;
+	    private _scaleV;
+	    private _positionsUpdated;
+	    private _curvesUpdated;
+	    private _tangentsUpdated;
+	    private _uvsUpdated;
+	    private _secondaryUVsUpdated;
+	    /**
+	     *
+	     */
+	    scaleU: number;
+	    /**
+	     *
+	     */
+	    scaleV: number;
+	    /**
+	     * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
+	     * by condensing the number of joint index values required per mesh. Only applicable to
+	     * skeleton animations that utilise more than one mesh object. Defaults to false.
+	     */
+	    useCondensedIndices: boolean;
+	    _pUpdateStrideOffset(): void;
+	    /**
+	     * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
+	     * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
+	     * in cases where UV data is explicitly defined or the material does not require UV data.
+	     */
+	    autoDeriveUVs: boolean;
+	    /**
+	     * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
+	     * explicitly.
+	     */
+	    autoDeriveNormals: boolean;
+	    /**
+	     *
+	     */
+	    vertices: Array<number>;
+	    /**
+	     *
+	     */
+	    positions: Array<number>;
+	    /**
+	     *
+	     */
+	    curves: Array<number>;
+	    /**
+	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
+	     */
+	    faceNormals: Array<number>;
+	    /**
+	     *
+	     */
+	    uvs: Array<number>;
+	    /**
+	     * Indicates whether or not to take the size of faces into account when auto-deriving vertex normals and tangents.
+	     */
+	    useFaceWeights: boolean;
+	    condensedIndexLookUp: Array<number>;
+	    /**
+	     *
+	     */
+	    constructor(concatenatedArrays: boolean);
+	    getBoundingPositions(): Array<number>;
+	    /**
+	     *
+	     */
+	    updatePositions(values: Array<number>): void;
+	    /**
+	     * Updates the vertex normals based on the geometry.
+	     */
+	    updateCurves(values: Array<number>): void;
+	    /**
+	     * Updates the uvs based on the geometry.
+	     */
+	    updateUVs(values: Array<number>): void;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     * Updates the face indices of the CurveSubGeometry.
+	     *
+	     * @param indices The face indices to upload.
+	     */
+	    updateIndices(indices: Array<number>): void;
+	    /**
+	     * Clones the current object
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): CurveSubGeometry;
+	    scaleUV(scaleU?: number, scaleV?: number): void;
+	    /**
+	     * Scales the geometry.
+	     * @param scale The amount by which to scale.
+	     */
+	    scale(scale: number): void;
+	    applyTransformation(transform: Matrix3D): void;
+	    /**
+	     * Updates the normals for each face.
+	     */
+	    private updateFaceNormals();
+	    _pNotifyVerticesUpdate(): void;
+	    private notifyPositionsUpdate();
+	    private notifyCurvesUpdate();
+	    private notifyUVsUpdate();
+	}
+	export = CurveSubGeometry;
+	
+}
+declare module "awayjs-display/lib/base/CurveSubMesh" {
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
+	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * CurveSubMesh wraps a CurveSubGeometry as a scene graph instantiation. A CurveSubMesh is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.CurveSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.CurveSubMesh
+	 */
+	class CurveSubMesh extends SubMeshBase implements ISubMesh {
+	    private _subGeometry;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
+	     */
+	    subGeometry: CurveSubGeometry;
+	    /**
+	     * Creates a new CurveSubMesh object
+	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
+	     * @param parentMesh The Mesh object to which this CurveSubMesh belongs.
+	     * @param material An optional material used to render this CurveSubMesh.
+	     */
+	    constructor(subGeometry: CurveSubGeometry, parentMesh: Mesh, material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	}
+	export = CurveSubMesh;
+	
+}
 declare module "awayjs-display/lib/prefabs/PrefabBase" {
 	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -459,7 +646,7 @@ declare module "awayjs-display/lib/prefabs/PrefabBase" {
 	 * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
 	 */
 	class PrefabBase extends NamedAssetBase {
-	    _pObjects: DisplayObject[];
+	    _pObjects: Array<DisplayObject>;
 	    /**
 	     * Creates a new PrefabBase object.
 	     */
@@ -657,7 +844,7 @@ declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
 	    /**
 	     * @inheritDoc
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
 	    classifyToPlane(plane: Plane3D): number;
 	    _pUpdate(): void;
@@ -730,7 +917,7 @@ declare module "awayjs-display/lib/bounds/BoundingSphere" {
 	    private _prefab;
 	    constructor(entity: IEntity);
 	    nullify(): void;
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
 	    classifyToPlane(plane: Plane3D): number;
 	    _pUpdate(): void;
@@ -746,7 +933,7 @@ declare module "awayjs-display/lib/bounds/NullBounds" {
 	    private _alwaysIn;
 	    constructor(alwaysIn?: boolean);
 	    clone(): BoundingVolumeBase;
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    classifyToPlane(plane: Plane3D): number;
 	}
 	export = NullBounds;
@@ -942,7 +1129,7 @@ declare module "awayjs-display/lib/render/IRenderer" {
 	     */
 	    _iCreateEntityCollector(): CollectorBase;
 	    _iRender(entityCollector: CollectorBase, target?: TextureProxyBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Rectangle[], cameras: Camera[]): any;
+	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
 	}
 	export = IRenderer;
 	
@@ -977,7 +1164,7 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    /**
 	     *
 	     */
-	    cullPlanes: Plane3D[];
+	    cullPlanes: Array<Plane3D>;
 	    /**
 	     *
 	     */
@@ -1042,7 +1229,7 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	    private _explicitDebugVisible;
 	    _pImplicitDebugVisible: boolean;
 	    _iParent: NodeBase;
-	    _pChildNodes: NodeBase[];
+	    _pChildNodes: Array<NodeBase>;
 	    _pNumChildNodes: number;
 	    _pDebugEntity: IEntity;
 	    _iNumEntities: number;
@@ -1072,7 +1259,7 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	     * @returns {boolean}
 	     * @internal
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    /**
 	     *
 	     * @param rayPosition
@@ -1288,7 +1475,7 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	     * @param numPlanes
 	     * @returns {boolean}
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    /**
 	     * @inheritDoc
 	     */
@@ -1524,6 +1711,7 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 declare module "awayjs-display/lib/pool/IRendererPool" {
 	import LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
 	import TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
+	import CurveSubMesh = require("awayjs-display/lib/base/CurveSubMesh");
 	import Billboard = require("awayjs-display/lib/entities/Billboard");
 	import LineSegment = require("awayjs-display/lib/entities/LineSegment");
 	/**
@@ -1553,6 +1741,11 @@ declare module "awayjs-display/lib/pool/IRendererPool" {
 	     * @param triangleSubMesh
 	     */
 	    applyTriangleSubMesh(triangleSubMesh: TriangleSubMesh): any;
+	    /**
+	     *
+	     * @param curveSubMesh
+	     */
+	    applyCurveSubMesh(curveSubMesh: CurveSubMesh): any;
 	}
 	export = IRendererPool;
 	
@@ -1762,82 +1955,82 @@ declare module "awayjs-display/lib/base/TriangleSubGeometry" {
 	    /**
 	     *
 	     */
-	    vertices: number[];
+	    vertices: Array<number>;
 	    /**
 	     *
 	     */
-	    positions: number[];
+	    positions: Array<number>;
 	    /**
 	     *
 	     */
-	    vertexNormals: number[];
+	    vertexNormals: Array<number>;
 	    /**
 	     *
 	     */
-	    vertexTangents: number[];
+	    vertexTangents: Array<number>;
 	    /**
 	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
 	     */
-	    faceNormals: number[];
+	    faceNormals: Array<number>;
 	    /**
 	     * The raw data of the face tangets, in the same order as the faces are listed in the index list.
 	     */
-	    faceTangents: number[];
+	    faceTangents: Array<number>;
 	    /**
 	     *
 	     */
-	    uvs: number[];
+	    uvs: Array<number>;
 	    /**
 	     *
 	     */
-	    secondaryUVs: number[];
+	    secondaryUVs: Array<number>;
 	    /**
 	     *
 	     */
-	    jointIndices: number[];
+	    jointIndices: Array<number>;
 	    /**
 	     *
 	     */
-	    jointWeights: number[];
+	    jointWeights: Array<number>;
 	    /**
 	     * Indicates whether or not to take the size of faces into account when auto-deriving vertex normals and tangents.
 	     */
 	    useFaceWeights: boolean;
 	    numCondensedJoints: number;
-	    condensedIndexLookUp: number[];
+	    condensedIndexLookUp: Array<number>;
 	    /**
 	     *
 	     */
 	    constructor(concatenatedArrays: boolean);
-	    getBoundingPositions(): number[];
+	    getBoundingPositions(): Array<number>;
 	    /**
 	     *
 	     */
-	    updatePositions(values: number[]): void;
+	    updatePositions(values: Array<number>): void;
 	    /**
 	     * Updates the vertex normals based on the geometry.
 	     */
-	    updateVertexNormals(values: number[]): void;
+	    updateVertexNormals(values: Array<number>): void;
 	    /**
 	     * Updates the vertex tangents based on the geometry.
 	     */
-	    updateVertexTangents(values: number[]): void;
+	    updateVertexTangents(values: Array<number>): void;
 	    /**
 	     * Updates the uvs based on the geometry.
 	     */
-	    updateUVs(values: number[]): void;
+	    updateUVs(values: Array<number>): void;
 	    /**
 	     * Updates the secondary uvs based on the geometry.
 	     */
-	    updateSecondaryUVs(values: number[]): void;
+	    updateSecondaryUVs(values: Array<number>): void;
 	    /**
 	     * Updates the joint indices
 	     */
-	    updateJointIndices(values: number[]): void;
+	    updateJointIndices(values: Array<number>): void;
 	    /**
 	     * Updates the joint weights.
 	     */
-	    updateJointWeights(values: number[]): void;
+	    updateJointWeights(values: Array<number>): void;
 	    /**
 	     *
 	     */
@@ -1847,7 +2040,7 @@ declare module "awayjs-display/lib/base/TriangleSubGeometry" {
 	     *
 	     * @param indices The face indices to upload.
 	     */
-	    updateIndices(indices: number[]): void;
+	    updateIndices(indices: Array<number>): void;
 	    /**
 	     * Clones the current object
 	     * @return An exact duplicate of the current object.
@@ -1936,7 +2129,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
 	     * material.
 	     */
-	    subMeshes: ISubMesh[];
+	    subMeshes: Array<ISubMesh>;
 	    /**
 	     *
 	     */
@@ -2052,7 +2245,7 @@ declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	    constructor(entity: any);
 	    boundsPrimitive: IEntity;
 	    nullify(): void;
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	    clone(): BoundingVolumeBase;
 	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
 	    classifyToPlane(plane: Plane3D): number;
@@ -2550,7 +2743,7 @@ declare module "awayjs-display/lib/entities/Camera" {
 	    constructor(projection?: IProjection);
 	    assetType: string;
 	    private onProjectionMatrixChanged(event);
-	    frustumPlanes: Plane3D[];
+	    frustumPlanes: Array<Plane3D>;
 	    private updateFrustum();
 	    /**
 	     * @protected
@@ -2749,7 +2942,7 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	 */
 	class EntityCollector extends CollectorBase {
 	    _pSkybox: Skybox;
-	    _pLights: LightBase[];
+	    _pLights: Array<LightBase>;
 	    private _directionalLights;
 	    private _pointLights;
 	    private _lightProbes;
@@ -2760,19 +2953,19 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	    /**
 	     *
 	     */
-	    directionalLights: DirectionalLight[];
+	    directionalLights: Array<DirectionalLight>;
 	    /**
 	     *
 	     */
-	    lightProbes: LightProbe[];
+	    lightProbes: Array<LightProbe>;
 	    /**
 	     *
 	     */
-	    lights: LightBase[];
+	    lights: Array<LightBase>;
 	    /**
 	     *
 	     */
-	    pointLights: PointLight[];
+	    pointLights: Array<PointLight>;
 	    /**
 	     *
 	     */
@@ -2941,12 +3134,12 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	import TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
 	class DirectionalShadowMapper extends ShadowMapperBase {
 	    _pOverallDepthCamera: Camera;
-	    _pLocalFrustum: number[];
+	    _pLocalFrustum: Array<number>;
 	    _pLightOffset: number;
 	    _pMatrix: Matrix3D;
 	    _pOverallDepthProjection: FreeMatrixProjection;
 	    _pSnap: number;
-	    _pCullPlanes: Plane3D[];
+	    _pCullPlanes: Array<Plane3D>;
 	    _pMinZ: number;
 	    _pMaxZ: number;
 	    constructor();
@@ -2957,7 +3150,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	    pDrawDepthMap(target: TextureProxyBase, scene: Scene, renderer: IRenderer): void;
 	    pUpdateCullPlanes(viewCamera: Camera): void;
 	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: number[], matrix: Matrix3D): void;
+	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
 	}
 	export = DirectionalShadowMapper;
 	
@@ -3026,7 +3219,7 @@ declare module "awayjs-display/lib/partition/SkyboxNode" {
 	     * @param numPlanes
 	     * @returns {boolean}
 	     */
-	    isInFrustum(planes: Plane3D[], numPlanes: number): boolean;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
 	}
 	export = SkyboxNode;
 	
@@ -3269,7 +3462,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *              list.
 	     */
 	    addChildAt(child: DisplayObject, index: number): DisplayObject;
-	    addChildren(...childarray: DisplayObject[]): void;
+	    addChildren(...childarray: Array<DisplayObject>): void;
 	    /**
 	     *
 	     */
@@ -3344,7 +3537,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *         children(or grandchildren, and so on) of this
 	     *         DisplayObjectContainer instance.
 	     */
-	    getObjectsUnderPoint(point: Point): DisplayObject[];
+	    getObjectsUnderPoint(point: Point): Array<DisplayObject>;
 	    /**
 	     * Removes the specified <code>child</code> DisplayObject instance from the
 	     * child list of the DisplayObjectContainer instance. The <code>parent</code>
@@ -3976,7 +4169,7 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     * @param parserClasses A Vector of parser classes to enable.
 	     * @see away.parsers.Parsers
 	     */
-	    static enableParsers(parserClasses: Object[]): void;
+	    static enableParsers(parserClasses: Array<Object>): void;
 	    private removeListeners(dispatcher);
 	    private onAssetComplete(event);
 	    /**
@@ -4471,7 +4664,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pPickingCollisionVO: PickingCollisionVO;
 	    _boundsType: string;
 	    _pPickingCollider: IPickingCollider;
-	    _pRenderables: IRenderable[];
+	    _pRenderables: Array<IRenderable>;
 	    private _entityNodes;
 	    _iSourcePrefab: PrefabBase;
 	    /**
@@ -5517,13 +5710,13 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	    _pNumCastingPointLights: number;
 	    _pNumCastingDirectionalLights: number;
 	    _pNumLightProbes: number;
-	    _pAllPickedLights: LightBase[];
-	    _pPointLights: PointLight[];
-	    _pCastingPointLights: PointLight[];
-	    _pDirectionalLights: DirectionalLight[];
-	    _pCastingDirectionalLights: DirectionalLight[];
-	    _pLightProbes: LightProbe[];
-	    _pLightProbeWeights: number[];
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
 	    /**
 	     * Creates a new LightPickerBase object.
 	     */
@@ -5559,31 +5752,31 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	    /**
 	     * The collected point lights to be used for shading.
 	     */
-	    pointLights: PointLight[];
+	    pointLights: Array<PointLight>;
 	    /**
 	     * The collected directional lights to be used for shading.
 	     */
-	    directionalLights: DirectionalLight[];
+	    directionalLights: Array<DirectionalLight>;
 	    /**
 	     * The collected point lights that cast shadows to be used for shading.
 	     */
-	    castingPointLights: PointLight[];
+	    castingPointLights: Array<PointLight>;
 	    /**
 	     * The collected directional lights that cast shadows to be used for shading.
 	     */
-	    castingDirectionalLights: DirectionalLight[];
+	    castingDirectionalLights: Array<DirectionalLight>;
 	    /**
 	     * The collected light probes to be used for shading.
 	     */
-	    lightProbes: LightProbe[];
+	    lightProbes: Array<LightProbe>;
 	    /**
 	     * The weights for each light probe, defining their influence on the object.
 	     */
-	    lightProbeWeights: number[];
+	    lightProbeWeights: Array<number>;
 	    /**
 	     * A collection of all the collected lights.
 	     */
-	    allPickedLights: LightBase[];
+	    allPickedLights: Array<LightBase>;
 	    /**
 	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
 	     */
@@ -5679,7 +5872,7 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     *
 	     * @private
 	     */
-	    iOwners: IRenderableOwner[];
+	    iOwners: Array<IRenderableOwner>;
 	    animator: IAnimator;
 	    /**
 	     *
@@ -5757,7 +5950,7 @@ declare module "awayjs-display/lib/base/IRenderObjectOwner" {
 	    blendMode: string;
 	    lightPicker: LightPickerBase;
 	    animationSet: IAnimationSet;
-	    iOwners: IRenderableOwner[];
+	    iOwners: Array<IRenderableOwner>;
 	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
 	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
 	    /**
@@ -6012,7 +6205,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     *
 	     * @private
 	     */
-	    iOwners: IRenderableOwner[];
+	    iOwners: Array<IRenderableOwner>;
 	    /**
 	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	     *
@@ -6134,8 +6327,8 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	class SubGeometryBase extends NamedAssetBase {
 	    static VERTEX_DATA: string;
 	    _pStrideOffsetDirty: boolean;
-	    _pIndices: number[];
-	    _pVertices: number[];
+	    _pIndices: Array<number>;
+	    _pVertices: Array<number>;
 	    private _numIndices;
 	    private _numTriangles;
 	    _pNumVertices: number;
@@ -6153,11 +6346,11 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	    /**
 	     * The raw index data that define the faces.
 	     */
-	    indices: number[];
+	    indices: Array<number>;
 	    /**
 	     *
 	     */
-	    vertices: number[];
+	    vertices: Array<number>;
 	    /**
 	     * The total amount of triangles in the TriangleSubGeometry.
 	     */
@@ -6185,7 +6378,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	     *
 	     * @param indices The face indices to upload.
 	     */
-	    updateIndices(indices: number[]): void;
+	    updateIndices(indices: Array<number>): void;
 	    /**
 	     * @protected
 	     */
@@ -6208,7 +6401,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	     */
 	    scale(scale: number): void;
 	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    getBoundingPositions(): number[];
+	    getBoundingPositions(): Array<number>;
 	    private notifyIndicesUpdate();
 	    _pNotifyVerticesUpdate(): void;
 	}
@@ -6681,7 +6874,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     *                            a <code>focalPointRatio</code> set to 0.75:
 	     * @throws ArgumentError If the <code>type</code> parameter is not valid.
 	     */
-	    beginGradientFill(type: GradientType, colors: number[], alphas: number[], ratios: number[], matrix?: Matrix, spreadMethod?: string, interpolationMethod?: string, focalPointRatio?: number): void;
+	    beginGradientFill(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: string, interpolationMethod?: string, focalPointRatio?: number): void;
 	    /**
 	     * Specifies a shader fill used by subsequent calls to other Graphics methods
 	     * (such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
@@ -6873,7 +7066,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     * sub-paths are rendered during this operation. </p>
 	     *
 	     */
-	    drawGraphicsData(graphicsData: IGraphicsData[]): void;
+	    drawGraphicsData(graphicsData: Array<IGraphicsData>): void;
 	    /**
 	     * Submits a series of commands for drawing. The <code>drawPath()</code>
 	     * method uses vector arrays to consolidate individual <code>moveTo()</code>,
@@ -6919,7 +7112,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     * @param winding Specifies the winding rule using a value defined in the
 	     *                GraphicsPathWinding class.
 	     */
-	    drawPath(commands: number[], data: number[], winding: GraphicsPathWinding): void;
+	    drawPath(commands: Array<number>, data: Array<number>, winding: GraphicsPathWinding): void;
 	    /**
 	     * Draws a rectangle. Set the line style, fill, or both before you call the
 	     * <code>drawRect()</code> method, by calling the <code>linestyle()</code>,
@@ -6983,7 +7176,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     *                parameter can be set to any value defined by the
 	     *                TriangleCulling class.
 	     */
-	    drawTriangles(vertices: number[], indices?: number[], uvtData?: number[], culling?: TriangleCulling): void;
+	    drawTriangles(vertices: Array<number>, indices?: Array<number>, uvtData?: Array<number>, culling?: TriangleCulling): void;
 	    /**
 	     * Applies a fill to the lines and curves that were added since the last call
 	     * to the <code>beginFill()</code>, <code>beginGradientFill()</code>, or
@@ -7096,7 +7289,7 @@ declare module "awayjs-display/lib/base/Graphics" {
 	     *                            image shows a gradient with a
 	     *                            <code>focalPointRatio</code> of -0.75:
 	     */
-	    lineGradientStyle(type: GradientType, colors: number[], alphas: number[], ratios: number[], matrix?: Matrix, spreadMethod?: SpreadMethod, interpolationMethod?: InterpolationMethod, focalPointRatio?: number): void;
+	    lineGradientStyle(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: SpreadMethod, interpolationMethod?: InterpolationMethod, focalPointRatio?: number): void;
 	    /**
 	     * Specifies a shader to use for the line stroke when drawing lines.
 	     *
@@ -7724,7 +7917,7 @@ declare module "awayjs-display/lib/render/CSSRendererBase" {
 	     * @param scissorRect
 	     */
 	    _iRender(entityCollector: EntityCollector, target?: TextureProxyBase, scissorRect?: Rectangle, surfaceSelector?: number): void;
-	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Rectangle[], cameras: Camera[]): void;
+	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): void;
 	    pCollectRenderables(entityCollector: CollectorBase): void;
 	    /**
 	     * Renders the potentially visible geometry to the back buffer or texture. Only executed if everything is set up.
@@ -8686,7 +8879,7 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	     * stop is specified in pixels. If custom tab stops are not specified
 	     * (<code>null</code>), the default tab stop is 4(average character width).
 	     */
-	    tabStops: number[];
+	    tabStops: Array<number>;
 	    /**
 	     * Indicates the target window where the hyperlink is displayed. If the
 	     * target window is an empty string, the text is displayed in the default
@@ -9783,6 +9976,7 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	 * using material methods to define their appearance.
 	 */
 	class BasicMaterial extends MaterialBase implements IRenderObjectOwner {
+	    private _preserveAlpha;
 	    /**
 	     * Creates a new BasicMaterial object.
 	     *
@@ -9793,6 +9987,10 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	     */
 	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
 	    constructor(color?: number, alpha?: number);
+	    /**
+	     * Indicates whether alpha should be preserved - defaults to false
+	     */
+	    preserveAlpha: boolean;
 	    /**
 	     *
 	     * @param renderer
@@ -9822,6 +10020,43 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	    private static createDefaultLineMaterial();
 	}
 	export = DefaultMaterialManager;
+	
+}
+declare module "awayjs-display/lib/materials/CurveMaterial" {
+	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	/**
+	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
+	 * using material methods to define their appearance.
+	 */
+	class CurveMaterial extends MaterialBase implements IRenderObjectOwner {
+	    private _preserveAlpha;
+	    /**
+	     * Creates a new BasicMaterial object.
+	     *
+	     * @param texture The texture used for the material's albedo color.
+	     * @param smooth Indicates whether the texture should be filtered when sampled. Defaults to true.
+	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
+	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
+	     */
+	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(color?: number, alpha?: number);
+	    /**
+	     * Indicates whether alpha should be preserved - defaults to false
+	     */
+	    preserveAlpha: boolean;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	}
+	export = CurveMaterial;
 	
 }
 declare module "awayjs-display/lib/materials/LightSources" {
@@ -10309,7 +10544,7 @@ declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	    /**
 	     * The lights used for shading.
 	     */
-	    lights: any[];
+	    lights: Array<any>;
 	    /**
 	     * Remove configuration change listeners on the lights.
 	     */
@@ -10367,7 +10602,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	    removeEventListener(type: string, listener: Function): void;
 	    dispatchEvent(event: Event): void;
 	    hasEventListener(type: string): boolean;
-	    _iNearPlaneDistances: number[];
+	    _iNearPlaneDistances: Array<number>;
 	}
 	export = CascadeShadowMapper;
 	
