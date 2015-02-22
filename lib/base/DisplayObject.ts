@@ -215,6 +215,10 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	private _listenToScaleChanged:boolean;
 	private _zOffset:number = 0;
 
+	public _width:number;
+	public _height:number;
+	public _depth:number;
+
 	public _pScaleX:number = 1;
 	public _pScaleY:number = 1;
 	public _pScaleZ:number = 1;
@@ -222,6 +226,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	private _y:number = 0;
 	private _z:number = 0;
 	private _pivot:Vector3D = new Vector3D();
+	private _pivotScale:Vector3D = new Vector3D();
 	private _orientationMatrix:Matrix3D = new Matrix3D();
 	private _pivotZero:boolean = true;
 	private _pivotDirty:boolean = true;
@@ -382,20 +387,17 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	public get depth():number
 	{
-		if (this._boxBoundsInvalid)
-			this._pUpdateBoxBounds();
-
-		return this._pBoxBounds.depth*this._pScaleZ;
+		return this.getBox().depth*this._pScaleZ;
 	}
 
 	public set depth(val:number)
 	{
-		var scaleZ:number = val/this.getBox().depth;
-
-		if (this._pScaleZ == scaleZ)
+		if (this._depth == val)
 			return;
 
-		this._pScaleZ = scaleZ;
+		this._depth = val;
+
+		this._pScaleZ = val/this.getBox().depth;
 
 		this.invalidateScale();
 	}
@@ -519,20 +521,17 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	public get height():number
 	{
-		if (this._boxBoundsInvalid)
-			this._pUpdateBoxBounds();
-
-		return this._pBoxBounds.height*this._pScaleY;
+		return this.getBox().height*this._pScaleY;
 	}
 
 	public set height(val:number)
 	{
-		var scaleY:number = val/this.getBox().height;
-
-		if (this._pScaleY == scaleY)
+		if (this._height == val)
 			return;
 
-		this._pScaleY = scaleY;
+		this._height = val;
+
+		this._pScaleY = val/this.getBox().height;
 
 		this.invalidateScale();
 	}
@@ -961,6 +960,9 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 
 	public set scaleX(val:number)
 	{
+		//remove absolute width
+		this._width = null;
+
 		if (this._pScaleX == val)
 			return;
 
@@ -984,6 +986,9 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 
 	public set scaleY(val:number)
 	{
+		//remove absolute height
+		this._height = null;
+
 		if (this._pScaleY == val)
 			return;
 
@@ -1008,6 +1013,9 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 
 	public set scaleZ(val:number)
 	{
+		//remove absolute depth
+		this._depth = null;
+
 		if (this._pScaleZ == val)
 			return;
 
@@ -1031,8 +1039,7 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	{
 		if (this._scenePositionDirty) {
 			if (!this._pivotZero && this.alignmentMode == AlignmentMode.PIVOT_POINT) {
-				var pivotScale:Vector3D = new Vector3D(this._pivot.x/this._pScaleX, this._pivot.y/this._pScaleY, this._pivot.z/this._pScaleZ)
-					this._scenePosition = this.sceneTransform.transformVector(pivotScale);
+				this._scenePosition = this.sceneTransform.transformVector(this._pivotScale);
 				//this._scenePosition.decrementBy(new Vector3D(this._pivot.x*this._pScaleX, this._pivot.y*this._pScaleY, this._pivot.z*this._pScaleZ));
 			} else {
 				this.sceneTransform.copyColumnTo(3, this._scenePosition);
@@ -1178,20 +1185,17 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 	 */
 	public get width():number
 	{
-		if (this._boxBoundsInvalid)
-			this._pUpdateBoxBounds();
-
-		return this._pBoxBounds.width*this._pScaleX;
+		return this.getBox().width*this._pScaleX;
 	}
 
 	public set width(val:number)
 	{
-		var scaleX:number = val/this.getBox().width;
-
-		if (this._pScaleX == scaleX)
+		if (this._width == val)
 			return;
 
-		this._pScaleX = scaleX;
+		this._width = val;
+
+		this._pScaleX = val/this.getBox().width;
 
 		this.invalidateScale();
 	}
@@ -1435,8 +1439,27 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 			this._iSourcePrefab._iValidate();
 
 		//TODO targetCoordinateSpace
-		if (this._boxBoundsInvalid)
+		if (this._boxBoundsInvalid) {
 			this._pUpdateBoxBounds();
+
+			if (this._width != null) {
+				this._pScaleX = this._width/this._pBoxBounds.width;
+				this.invalidateScale();
+			}
+
+
+			if (this._height != null) {
+				this._pScaleY = this._height/this._pBoxBounds.height;
+				this.invalidateScale();
+			}
+
+
+			if (this._depth != null) {
+				this._pScaleZ = this._depth/this._pBoxBounds.depth;
+				this.invalidateScale();
+			}
+		}
+
 
 		return this._pBoxBounds;
 	}
@@ -1446,8 +1469,10 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
 
-		if (this._sphereBoundsInvalid)
+		if (this._sphereBoundsInvalid) {
 			this._pUpdateSphereBounds();
+		}
+
 
 		return this._pSphereBounds;
 	}
@@ -2053,7 +2078,10 @@ class DisplayObject extends NamedAssetBase implements IBitmapDrawable
 		this._matrix3D.recompose(this._transformComponents);
 
 		if (!this._pivotZero) {
-			this._matrix3D.prependTranslation(-this._pivot.x/this._pScaleX, -this._pivot.y/this._pScaleY, -this._pivot.z/this._pScaleZ);
+			this._pivotScale.x = this._pivot.x/this._pScaleX;
+			this._pivotScale.y = this._pivot.y/this._pScaleY;
+			this._pivotScale.z = this._pivot.z/this._pScaleZ;
+			this._matrix3D.prependTranslation(-this._pivotScale.x, -this._pivotScale.y, -this._pivotScale.z);
 			if (this.alignmentMode != AlignmentMode.PIVOT_POINT)
 				this._matrix3D.appendTranslation(this._pivot.x, this._pivot.y, this._pivot.z);
 		}
