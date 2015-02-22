@@ -22,9 +22,7 @@ class CurveSubGeometry extends SubGeometryBase
 	private _positionsDirty:boolean = true;
 	private _curvesDirty:boolean = true;
 	private _faceNormalsDirty:boolean = true;
-	private _faceTangentsDirty:boolean = true;
-	private _vertexNormalsDirty:boolean = true;
-	private _vertexTangentsDirty:boolean = true;
+    private _vertexNormalsDirty:boolean = true;
 	private _uvsDirty:boolean = true;
 	private _secondaryUVsDirty:boolean = true;
 	private _jointIndicesDirty:boolean = true;
@@ -46,7 +44,6 @@ class CurveSubGeometry extends SubGeometryBase
     private _autoDeriveUVs:boolean = false;
 
 	private _faceNormals:Array<number>;
-	private _faceTangents:Array<number>;
 	private _faceWeights:Array<number>;
 
 	private _scaleU:number = 1;
@@ -54,7 +51,6 @@ class CurveSubGeometry extends SubGeometryBase
 
 	private _positionsUpdated:SubGeometryEvent;
 	private _curvesUpdated:SubGeometryEvent;
-	private _tangentsUpdated:SubGeometryEvent;
 	private _uvsUpdated:SubGeometryEvent;
 	private _secondaryUVsUpdated:SubGeometryEvent;
 
@@ -149,15 +145,15 @@ class CurveSubGeometry extends SubGeometryBase
 	 */
 	public get autoDeriveUVs():boolean
 	{
-		return false;//this._autoDeriveUVs;
+		return this._autoDeriveUVs;
 	}
 
 	public set autoDeriveUVs(value:boolean)
 	{
-		//if (this._autoDeriveUVs == value)
+		if (this._autoDeriveUVs == value)
 			return;
 
-		//this._autoDeriveUVs = value;
+		this._autoDeriveUVs = value;
 
 		if (value)
 			this.notifyUVsUpdate();
@@ -355,8 +351,7 @@ class CurveSubGeometry extends SubGeometryBase
 		if (true) {
 			if ((this._curves == null || values == null) && (this._curves != null || values != null)) {
 				if (this._concatenateArrays)
-                    true; //"do nothing";
-					//this._pNotifyCurvesUpdate();
+					this._pNotifyVerticesUpdate();
 				else
 					this._pStrideOffsetDirty = true;
 			}
@@ -477,7 +472,6 @@ class CurveSubGeometry extends SubGeometryBase
 
 		this._faceNormals = null;
 		this._faceWeights = null;
-		this._faceTangents = null;
 	}
 
 	/**
