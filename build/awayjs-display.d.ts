@@ -4641,6 +4641,9 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _listenToRotationChanged;
 	    private _listenToScaleChanged;
 	    private _zOffset;
+	    _width: number;
+	    _height: number;
+	    _depth: number;
 	    _pScaleX: number;
 	    _pScaleY: number;
 	    _pScaleZ: number;
@@ -4648,6 +4651,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _y;
 	    private _z;
 	    private _pivot;
+	    private _pivotScale;
 	    private _orientationMatrix;
 	    private _pivotZero;
 	    private _pivotDirty;
