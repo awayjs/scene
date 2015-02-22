@@ -468,9 +468,7 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    private _positionsDirty;
 	    private _curvesDirty;
 	    private _faceNormalsDirty;
-	    private _faceTangentsDirty;
 	    private _vertexNormalsDirty;
-	    private _vertexTangentsDirty;
 	    private _uvsDirty;
 	    private _secondaryUVsDirty;
 	    private _jointIndicesDirty;
@@ -486,13 +484,11 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    private _useFaceWeights;
 	    private _autoDeriveUVs;
 	    private _faceNormals;
-	    private _faceTangents;
 	    private _faceWeights;
 	    private _scaleU;
 	    private _scaleV;
 	    private _positionsUpdated;
 	    private _curvesUpdated;
-	    private _tangentsUpdated;
 	    private _uvsUpdated;
 	    private _secondaryUVsUpdated;
 	    /**
@@ -8328,252 +8324,6 @@ declare module "awayjs-display/lib/containers/View" {
 	export = View;
 	
 }
-declare module "awayjs-display/lib/controllers/FirstPersonController" {
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FirstPersonController extends ControllerBase {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _walkIncrement;
-	    private _strafeIncrement;
-	    private _wrapPanAngle;
-	    fly: boolean;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	    incrementWalk(val: number): void;
-	    incrementStrafe(val: number): void;
-	}
-	export = FirstPersonController;
-	
-}
-declare module "awayjs-display/lib/controllers/LookAtController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	class LookAtController extends ControllerBase {
-	    _pLookAtPosition: Vector3D;
-	    _pLookAtObject: DisplayObject;
-	    _pOrigin: Vector3D;
-	    private _onLookAtObjectChangedDelegate;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
-	    lookAtPosition: Vector3D;
-	    lookAtObject: DisplayObject;
-	    update(interpolate?: boolean): void;
-	    private onLookAtObjectChanged(event);
-	}
-	export = LookAtController;
-	
-}
-declare module "awayjs-display/lib/controllers/HoverController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away.containers.View
-	 */
-	class HoverController extends LookAtController {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _distance;
-	    private _minPanAngle;
-	    private _maxPanAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _yFactor;
-	    private _wrapPanAngle;
-	    private _upAxis;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Distance between the camera and the specified target. Defaults to 1000.
-	     */
-	    distance: number;
-	    /**
-	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    minPanAngle: number;
-	    /**
-	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    maxPanAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
-	     *
-	     * @see    #distance
-	     */
-	    yFactor: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	}
-	export = HoverController;
-	
-}
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
-	
-}
-declare module "awayjs-display/lib/controllers/SpringController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Uses spring physics to animate the target object towards a position that is
-	 * defined as the lookAtTarget object's position plus the vector defined by the
-	 * positionOffset property.
-	 */
-	class SpringController extends LookAtController {
-	    private _velocity;
-	    private _dv;
-	    private _stretch;
-	    private _force;
-	    private _acceleration;
-	    private _desiredPosition;
-	    /**
-	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
-	     * A number between 1 and 20 is recommended.
-	     */
-	    stiffness: number;
-	    /**
-	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
-	     * A number between 1 and 20 is recommended.
-	     */
-	    damping: number;
-	    /**
-	     * Mass of the camera, if over 120 and it'll be very heavy to move.
-	     */
-	    mass: number;
-	    /**
-	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
-	     */
-	    positionOffset: Vector3D;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = SpringController;
-	
-}
 declare module "awayjs-display/lib/display/ContextMode" {
 	class ContextMode {
 	    static AUTO: string;
@@ -8601,36 +8351,557 @@ declare module "awayjs-display/lib/display/IContext" {
 	export = IContext;
 	
 }
-declare module "awayjs-display/lib/entities/Shape" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Graphics = require("awayjs-display/lib/base/Graphics");
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
+declare module "awayjs-display/lib/events/ResizeEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class ResizeEvent extends Event {
+	    static RESIZE: string;
+	    private _oldHeight;
+	    private _oldWidth;
+	    constructor(type: string, oldHeight?: number, oldWidth?: number);
+	    oldHeight: number;
+	    oldWidth: number;
+	}
+	export = ResizeEvent;
+	
+}
+declare module "awayjs-display/lib/events/StageEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class StageEvent extends Event {
+	    static CONTEXT_CREATED: string;
+	    static CONTEXT_DISPOSED: string;
+	    static CONTEXT_RECREATED: string;
+	    static VIEWPORT_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = StageEvent;
+	
+}
+declare module "awayjs-display/lib/materials/BasicMaterial" {
+	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
 	/**
-	 * This class is used to create lightweight shapes using the ActionScript
-	 * drawing application program interface(API). The Shape class includes a
-	 * <code>graphics</code> property, which lets you access methods from the
-	 * Graphics class.
-	 *
-	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
-	 * includes other features not available to the Shape class. For example, a
-	 * Sprite object is a display object container, whereas a Shape object is not
-	 * (and cannot contain child display objects). For this reason, Shape objects
-	 * consume less memory than Sprite objects that contain the same graphics.
-	 * However, a Sprite object supports user input events, while a Shape object
-	 * does not.</p>
+	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
+	 * using material methods to define their appearance.
 	 */
-	class Shape extends DisplayObject {
-	    private _graphics;
+	class BasicMaterial extends MaterialBase implements IRenderObjectOwner {
+	    private _preserveAlpha;
 	    /**
-	     * Specifies the Graphics object belonging to this Shape object, where vector
-	     * drawing commands can occur.
+	     * Creates a new BasicMaterial object.
+	     *
+	     * @param texture The texture used for the material's albedo color.
+	     * @param smooth Indicates whether the texture should be filtered when sampled. Defaults to true.
+	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
+	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
 	     */
-	    graphics: Graphics;
+	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(color?: number, alpha?: number);
 	    /**
-	     * Creates a new Shape object.
+	     * Indicates whether alpha should be preserved - defaults to false
+	     */
+	    preserveAlpha: boolean;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	}
+	export = BasicMaterial;
+	
+}
+declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
+	import BitmapData = require("awayjs-core/lib/base/BitmapData");
+	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	class DefaultMaterialManager {
+	    private static _defaultBitmapData;
+	    private static _defaultTriangleMaterial;
+	    private static _defaultLineMaterial;
+	    private static _defaultTexture;
+	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
+	    static getDefaultTexture(renderableOwner?: IRenderableOwner): BitmapTexture;
+	    private static createDefaultTexture();
+	    static createCheckeredBitmapData(): BitmapData;
+	    private static createDefaultTriangleMaterial();
+	    private static createDefaultLineMaterial();
+	}
+	export = DefaultMaterialManager;
+	
+}
+declare module "awayjs-display/lib/materials/CurveMaterial" {
+	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	/**
+	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
+	 * using material methods to define their appearance.
+	 */
+	class CurveMaterial extends MaterialBase implements IRenderObjectOwner {
+	    private _preserveAlpha;
+	    /**
+	     * Creates a new BasicMaterial object.
+	     *
+	     * @param texture The texture used for the material's albedo color.
+	     * @param smooth Indicates whether the texture should be filtered when sampled. Defaults to true.
+	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
+	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
+	     */
+	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(color?: number, alpha?: number);
+	    /**
+	     * Indicates whether alpha should be preserved - defaults to false
+	     */
+	    preserveAlpha: boolean;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	}
+	export = CurveMaterial;
+	
+}
+declare module "awayjs-display/lib/materials/LightSources" {
+	/**
+	 * Enumeration class for defining which lighting types affect the specific material
+	 * lighting component (diffuse and specular). This can be useful if, for example, you
+	 * want to use light probes for diffuse global lighting, but want specular reflections from
+	 * traditional light sources without those affecting the diffuse light.
+	 *
+	 * @see away.materials.ColorMaterial.diffuseLightSources
+	 * @see away.materials.ColorMaterial.specularLightSources
+	 * @see away.materials.TextureMaterial.diffuseLightSources
+	 * @see away.materials.TextureMaterial.specularLightSources
+	 */
+	class LightSources {
+	    /**
+	     * Defines normal lights are to be used as the source for the lighting
+	     * component.
+	     */
+	    static LIGHTS: number;
+	    /**
+	     * Defines that global lighting probes are to be used as the source for the
+	     * lighting component.
+	     */
+	    static PROBES: number;
+	    /**
+	     * Defines that both normal and global lighting probes  are to be used as the
+	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
+	     */
+	    static ALL: number;
+	}
+	export = LightSources;
+	
+}
+declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
+	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import Skybox = require("awayjs-display/lib/entities/Skybox");
+	/**
+	 * @class away.pool.CSSSkyboxRenderable
+	 */
+	class CSSSkyboxRenderable extends CSSRenderableBase {
+	    static id: string;
+	    constructor(pool: IRenderablePool, skyBox: Skybox);
+	}
+	export = CSSSkyboxRenderable;
+	
+}
+declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
+	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
+	 * materials assigned to them.
+	 *
+	 * @class away.render.DefaultRenderer
+	 */
+	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
+	    private _container;
+	    private _context;
+	    private _contextStyle;
+	    private _contextMatrix;
+	    private _activeMaterial;
+	    private _skyboxProjection;
+	    private _transform;
+	    /**
+	     * Creates a new CSSDefaultRenderer object.
 	     */
 	    constructor();
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    pDraw(entityCollector: EntityCollector): void;
+	    /**
+	     * Updates the backbuffer properties.
+	     */
+	    pUpdateBackBuffer(): void;
+	    /**
+	     * Draw the skybox if present.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawSkybox(entityCollector);
+	    /**
+	     * Draw a list of renderables.
+	     * @param renderables The renderables to draw.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawRenderables(item, entityCollector);
+	    dispose(): void;
+	    _iCreateEntityCollector(): CollectorBase;
 	}
-	export = Shape;
+	export = CSSDefaultRenderer;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A Capsule primitive mesh.
+	 */
+	class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset {
+	    private _radius;
+	    private _height;
+	    private _segmentsW;
+	    private _segmentsH;
+	    private _yUp;
+	    private _numVertices;
+	    /**
+	     * The radius of the capsule.
+	     */
+	    radius: number;
+	    /**
+	     * The height of the capsule.
+	     */
+	    height: number;
+	    /**
+	     * Defines the number of horizontal segments that make up the capsule. Defaults to 16.
+	     */
+	    segmentsW: number;
+	    /**
+	     * Defines the number of vertical segments that make up the capsule. Defaults to 15. Must be uneven.
+	     */
+	    segmentsH: number;
+	    /**
+	     * Defines whether the capsule poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    yUp: boolean;
+	    /**
+	     * Creates a new Capsule object.
+	     * @param radius The radius of the capsule.
+	     * @param height The height of the capsule.
+	     * @param segmentsW Defines the number of horizontal segments that make up the capsule. Defaults to 16.
+	     * @param segmentsH Defines the number of vertical segments that make up the capsule. Defaults to 15. Must be uneven value.
+	     * @param yUp Defines whether the capsule poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	}
+	export = PrimitiveCapsulePrefab;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A Cylinder primitive mesh.
+	 */
+	class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset {
+	    _pBottomRadius: number;
+	    _pSegmentsW: number;
+	    _pSegmentsH: number;
+	    private _topRadius;
+	    private _height;
+	    private _topClosed;
+	    private _bottomClosed;
+	    private _surfaceClosed;
+	    private _yUp;
+	    private _numVertices;
+	    /**
+	     * The radius of the top end of the cylinder.
+	     */
+	    topRadius: number;
+	    /**
+	     * The radius of the bottom end of the cylinder.
+	     */
+	    bottomRadius: number;
+	    /**
+	     * The radius of the top end of the cylinder.
+	     */
+	    height: number;
+	    /**
+	     * Defines the number of horizontal segments that make up the cylinder. Defaults to 16.
+	     */
+	    segmentsW: number;
+	    setSegmentsW(value: number): void;
+	    /**
+	     * Defines the number of vertical segments that make up the cylinder. Defaults to 1.
+	     */
+	    segmentsH: number;
+	    setSegmentsH(value: number): void;
+	    /**
+	     * Defines whether the top end of the cylinder is closed (true) or open.
+	     */
+	    topClosed: boolean;
+	    /**
+	     * Defines whether the bottom end of the cylinder is closed (true) or open.
+	     */
+	    bottomClosed: boolean;
+	    /**
+	     * Defines whether the cylinder poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    yUp: boolean;
+	    /**
+	     * Creates a new Cylinder object.
+	     * @param topRadius The radius of the top end of the cylinder.
+	     * @param bottomRadius The radius of the bottom end of the cylinder
+	     * @param height The radius of the bottom end of the cylinder
+	     * @param segmentsW Defines the number of horizontal segments that make up the cylinder. Defaults to 16.
+	     * @param segmentsH Defines the number of vertical segments that make up the cylinder. Defaults to 1.
+	     * @param topClosed Defines whether the top end of the cylinder is closed (true) or open.
+	     * @param bottomClosed Defines whether the bottom end of the cylinder is closed (true) or open.
+	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean);
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	}
+	export = PrimitiveCylinderPrefab;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
+	/**
+	 * A UV Cone primitive mesh.
+	 */
+	class PrimitiveConePrefab extends PrimitiveCylinderPrefab implements IAsset {
+	    /**
+	     * The radius of the bottom end of the cone.
+	     */
+	    radius: number;
+	    /**
+	     * Creates a new Cone object.
+	     * @param radius The radius of the bottom end of the cone
+	     * @param height The height of the cone
+	     * @param segmentsW Defines the number of horizontal segments that make up the cone. Defaults to 16.
+	     * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
+	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
+	}
+	export = PrimitiveConePrefab;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A Plane primitive mesh.
+	 */
+	class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset {
+	    private _segmentsW;
+	    private _segmentsH;
+	    private _yUp;
+	    private _width;
+	    private _height;
+	    private _doubleSided;
+	    /**
+	     * Creates a new Plane object.
+	     * @param width The width of the plane.
+	     * @param height The height of the plane.
+	     * @param segmentsW The number of segments that make up the plane along the X-axis.
+	     * @param segmentsH The number of segments that make up the plane along the Y or Z-axis.
+	     * @param yUp Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false).
+	     * @param doubleSided Defines whether the plane will be visible from both sides, with correct vertex normals.
+	     */
+	    constructor(width?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, doubleSided?: boolean);
+	    /**
+	     * The number of segments that make up the plane along the X-axis. Defaults to 1.
+	     */
+	    segmentsW: number;
+	    /**
+	     * The number of segments that make up the plane along the Y or Z-axis, depending on whether yUp is true or
+	     * false, respectively. Defaults to 1.
+	     */
+	    segmentsH: number;
+	    /**
+	     *  Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false). Defaults to true.
+	     */
+	    yUp: boolean;
+	    /**
+	     * Defines whether the plane will be visible from both sides, with correct vertex normals (as opposed to bothSides on Material). Defaults to false.
+	     */
+	    doubleSided: boolean;
+	    /**
+	     * The width of the plane.
+	     */
+	    width: number;
+	    /**
+	     * The height of the plane.
+	     */
+	    height: number;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	}
+	export = PrimitivePlanePrefab;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
+	/**
+	 * A UV RegularPolygon primitive mesh.
+	 */
+	class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab implements IAsset {
+	    /**
+	     * The radius of the regular polygon.
+	     */
+	    radius: number;
+	    /**
+	     * The number of sides of the regular polygon.
+	     */
+	    sides: number;
+	    /**
+	     * The number of subdivisions from the edge to the center of the regular polygon.
+	     */
+	    subdivisions: number;
+	    /**
+	     * Creates a new RegularPolygon disc object.
+	     * @param radius The radius of the regular polygon
+	     * @param sides Defines the number of sides of the regular polygon.
+	     * @param yUp Defines whether the regular polygon should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(radius?: number, sides?: number, yUp?: boolean);
+	}
+	export = PrimitivePolygonPrefab;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A UV Cylinder primitive mesh.
+	 */
+	class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset {
+	    private _radius;
+	    private _tubeRadius;
+	    private _segmentsR;
+	    private _segmentsT;
+	    private _yUp;
+	    private _numVertices;
+	    /**
+	     * The radius of the torus.
+	     */
+	    radius: number;
+	    /**
+	     * The radius of the inner tube of the torus.
+	     */
+	    tubeRadius: number;
+	    /**
+	     * Defines the number of horizontal segments that make up the torus. Defaults to 16.
+	     */
+	    segmentsR: number;
+	    /**
+	     * Defines the number of vertical segments that make up the torus. Defaults to 8.
+	     */
+	    segmentsT: number;
+	    /**
+	     * Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    yUp: boolean;
+	    /**
+	     * Creates a new <code>Torus</code> object.
+	     * @param radius The radius of the torus.
+	     * @param tuebRadius The radius of the inner tube of the torus.
+	     * @param segmentsR Defines the number of horizontal segments that make up the torus.
+	     * @param segmentsT Defines the number of vertical segments that make up the torus.
+	     * @param yUp Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(radius?: number, tubeRadius?: number, segmentsR?: number, segmentsT?: number, yUp?: boolean);
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	}
+	export = PrimitiveTorusPrefab;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableMergeSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.RenderableMergeSort
+	 */
+	class RenderableMergeSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.NullSort
+	 */
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableNullSort;
 	
 }
 declare module "awayjs-display/lib/text/AntiAliasType" {
@@ -8956,6 +9227,36 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	export = TextFormat;
 	
 }
+declare module "awayjs-display/lib/text/TextFormatAlign" {
+	/**
+	 * The TextFormatAlign class provides values for text alignment in the
+	 * TextFormat class.
+	 */
+	class TextFormatAlign {
+	    /**
+	     * Constant; centers the text in the text field. Use the syntax
+	     * <code>TextFormatAlign.CENTER</code>.
+	     */
+	    CENTER: string;
+	    /**
+	     * Constant; justifies text within the text field. Use the syntax
+	     * <code>TextFormatAlign.JUSTIFY</code>.
+	     */
+	    JUSTIFY: string;
+	    /**
+	     * Constant; aligns text to the left within the text field. Use the syntax
+	     * <code>TextFormatAlign.LEFT</code>.
+	     */
+	    LEFT: string;
+	    /**
+	     * Constant; aligns text to the right within the text field. Use the syntax
+	     * <code>TextFormatAlign.RIGHT</code>.
+	     */
+	    RIGHT: string;
+	}
+	export = TextFormatAlign;
+	
+}
 declare module "awayjs-display/lib/text/TextInteractionMode" {
 	/**
 	 * A class that defines the Interactive mode of a text field object.
@@ -9044,6 +9345,308 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	    constructor(x?: number, width?: number, height?: number, ascent?: number, descent?: number, leading?: number);
 	}
 	export = TextLineMetrics;
+	
+}
+declare module "awayjs-display/lib/utils/Cast" {
+	import BitmapData = require("awayjs-core/lib/base/BitmapData");
+	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
+	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	/**
+	 * Helper class for casting assets to usable objects
+	 */
+	class Cast {
+	    private static _colorNames;
+	    private static _hexChars;
+	    private static _notClasses;
+	    private static _classes;
+	    static string(data: any): string;
+	    static byteArray(data: any): ByteArray;
+	    private static isHex(str);
+	    static tryColor(data: any): number;
+	    static color(data: any): number;
+	    static tryClass(name: string): any;
+	    static bitmapData(data: any): BitmapData;
+	    static bitmapTexture(data: any): BitmapTexture;
+	}
+	export = Cast;
+	
+}
+declare module "awayjs-display/lib/controllers/FirstPersonController" {
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FirstPersonController extends ControllerBase {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _walkIncrement;
+	    private _strafeIncrement;
+	    private _wrapPanAngle;
+	    fly: boolean;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	    incrementWalk(val: number): void;
+	    incrementStrafe(val: number): void;
+	}
+	export = FirstPersonController;
+	
+}
+declare module "awayjs-display/lib/controllers/LookAtController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	class LookAtController extends ControllerBase {
+	    _pLookAtPosition: Vector3D;
+	    _pLookAtObject: DisplayObject;
+	    _pOrigin: Vector3D;
+	    private _onLookAtObjectChangedDelegate;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
+	    lookAtPosition: Vector3D;
+	    lookAtObject: DisplayObject;
+	    update(interpolate?: boolean): void;
+	    private onLookAtObjectChanged(event);
+	}
+	export = LookAtController;
+	
+}
+declare module "awayjs-display/lib/controllers/HoverController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away.containers.View
+	 */
+	class HoverController extends LookAtController {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _distance;
+	    private _minPanAngle;
+	    private _maxPanAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _yFactor;
+	    private _wrapPanAngle;
+	    private _upAxis;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Distance between the camera and the specified target. Defaults to 1000.
+	     */
+	    distance: number;
+	    /**
+	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    minPanAngle: number;
+	    /**
+	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    maxPanAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
+	     *
+	     * @see    #distance
+	     */
+	    yFactor: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	}
+	export = HoverController;
+	
+}
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
+	
+}
+declare module "awayjs-display/lib/controllers/SpringController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Uses spring physics to animate the target object towards a position that is
+	 * defined as the lookAtTarget object's position plus the vector defined by the
+	 * positionOffset property.
+	 */
+	class SpringController extends LookAtController {
+	    private _velocity;
+	    private _dv;
+	    private _stretch;
+	    private _force;
+	    private _acceleration;
+	    private _desiredPosition;
+	    /**
+	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
+	     * A number between 1 and 20 is recommended.
+	     */
+	    stiffness: number;
+	    /**
+	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
+	     * A number between 1 and 20 is recommended.
+	     */
+	    damping: number;
+	    /**
+	     * Mass of the camera, if over 120 and it'll be very heavy to move.
+	     */
+	    mass: number;
+	    /**
+	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
+	     */
+	    positionOffset: Vector3D;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = SpringController;
+	
+}
+declare module "awayjs-display/lib/entities/Shape" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import Graphics = require("awayjs-display/lib/base/Graphics");
+	/**
+	 * This class is used to create lightweight shapes using the ActionScript
+	 * drawing application program interface(API). The Shape class includes a
+	 * <code>graphics</code> property, which lets you access methods from the
+	 * Graphics class.
+	 *
+	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
+	 * includes other features not available to the Shape class. For example, a
+	 * Sprite object is a display object container, whereas a Shape object is not
+	 * (and cannot contain child display objects). For this reason, Shape objects
+	 * consume less memory than Sprite objects that contain the same graphics.
+	 * However, a Sprite object supports user input events, while a Shape object
+	 * does not.</p>
+	 */
+	class Shape extends DisplayObject {
+	    private _graphics;
+	    /**
+	     * Specifies the Graphics object belonging to this Shape object, where vector
+	     * drawing commands can occur.
+	     */
+	    graphics: Graphics;
+	    /**
+	     * Creates a new Shape object.
+	     */
+	    constructor();
+	}
+	export = Shape;
 	
 }
 declare module "awayjs-display/lib/entities/TextField" {
@@ -9930,613 +10533,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	    static isFontCompatible(fontName: string, fontStyle: string): boolean;
 	}
 	export = TextField;
-	
-}
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
-declare module "awayjs-display/lib/events/ResizeEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class ResizeEvent extends Event {
-	    static RESIZE: string;
-	    private _oldHeight;
-	    private _oldWidth;
-	    constructor(type: string, oldHeight?: number, oldWidth?: number);
-	    oldHeight: number;
-	    oldWidth: number;
-	}
-	export = ResizeEvent;
-	
-}
-declare module "awayjs-display/lib/events/StageEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class StageEvent extends Event {
-	    static CONTEXT_CREATED: string;
-	    static CONTEXT_DISPOSED: string;
-	    static CONTEXT_RECREATED: string;
-	    static VIEWPORT_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = StageEvent;
-	
-}
-declare module "awayjs-display/lib/materials/BasicMaterial" {
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
-	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
-	/**
-	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
-	 * using material methods to define their appearance.
-	 */
-	class BasicMaterial extends MaterialBase implements IRenderObjectOwner {
-	    private _preserveAlpha;
-	    /**
-	     * Creates a new BasicMaterial object.
-	     *
-	     * @param texture The texture used for the material's albedo color.
-	     * @param smooth Indicates whether the texture should be filtered when sampled. Defaults to true.
-	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
-	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
-	     */
-	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
-	    constructor(color?: number, alpha?: number);
-	    /**
-	     * Indicates whether alpha should be preserved - defaults to false
-	     */
-	    preserveAlpha: boolean;
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
-	}
-	export = BasicMaterial;
-	
-}
-declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	class DefaultMaterialManager {
-	    private static _defaultBitmapData;
-	    private static _defaultTriangleMaterial;
-	    private static _defaultLineMaterial;
-	    private static _defaultTexture;
-	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
-	    static getDefaultTexture(renderableOwner?: IRenderableOwner): BitmapTexture;
-	    private static createDefaultTexture();
-	    static createCheckeredBitmapData(): BitmapData;
-	    private static createDefaultTriangleMaterial();
-	    private static createDefaultLineMaterial();
-	}
-	export = DefaultMaterialManager;
-	
-}
-declare module "awayjs-display/lib/materials/CurveMaterial" {
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
-	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
-	/**
-	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
-	 * using material methods to define their appearance.
-	 */
-	class CurveMaterial extends MaterialBase implements IRenderObjectOwner {
-	    private _preserveAlpha;
-	    /**
-	     * Creates a new BasicMaterial object.
-	     *
-	     * @param texture The texture used for the material's albedo color.
-	     * @param smooth Indicates whether the texture should be filtered when sampled. Defaults to true.
-	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
-	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
-	     */
-	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
-	    constructor(color?: number, alpha?: number);
-	    /**
-	     * Indicates whether alpha should be preserved - defaults to false
-	     */
-	    preserveAlpha: boolean;
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
-	}
-	export = CurveMaterial;
-	
-}
-declare module "awayjs-display/lib/materials/LightSources" {
-	/**
-	 * Enumeration class for defining which lighting types affect the specific material
-	 * lighting component (diffuse and specular). This can be useful if, for example, you
-	 * want to use light probes for diffuse global lighting, but want specular reflections from
-	 * traditional light sources without those affecting the diffuse light.
-	 *
-	 * @see away.materials.ColorMaterial.diffuseLightSources
-	 * @see away.materials.ColorMaterial.specularLightSources
-	 * @see away.materials.TextureMaterial.diffuseLightSources
-	 * @see away.materials.TextureMaterial.specularLightSources
-	 */
-	class LightSources {
-	    /**
-	     * Defines normal lights are to be used as the source for the lighting
-	     * component.
-	     */
-	    static LIGHTS: number;
-	    /**
-	     * Defines that global lighting probes are to be used as the source for the
-	     * lighting component.
-	     */
-	    static PROBES: number;
-	    /**
-	     * Defines that both normal and global lighting probes  are to be used as the
-	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
-	     */
-	    static ALL: number;
-	}
-	export = LightSources;
-	
-}
-declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
-	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import Skybox = require("awayjs-display/lib/entities/Skybox");
-	/**
-	 * @class away.pool.CSSSkyboxRenderable
-	 */
-	class CSSSkyboxRenderable extends CSSRenderableBase {
-	    static id: string;
-	    constructor(pool: IRenderablePool, skyBox: Skybox);
-	}
-	export = CSSSkyboxRenderable;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A Capsule primitive mesh.
-	 */
-	class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset {
-	    private _radius;
-	    private _height;
-	    private _segmentsW;
-	    private _segmentsH;
-	    private _yUp;
-	    private _numVertices;
-	    /**
-	     * The radius of the capsule.
-	     */
-	    radius: number;
-	    /**
-	     * The height of the capsule.
-	     */
-	    height: number;
-	    /**
-	     * Defines the number of horizontal segments that make up the capsule. Defaults to 16.
-	     */
-	    segmentsW: number;
-	    /**
-	     * Defines the number of vertical segments that make up the capsule. Defaults to 15. Must be uneven.
-	     */
-	    segmentsH: number;
-	    /**
-	     * Defines whether the capsule poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    yUp: boolean;
-	    /**
-	     * Creates a new Capsule object.
-	     * @param radius The radius of the capsule.
-	     * @param height The height of the capsule.
-	     * @param segmentsW Defines the number of horizontal segments that make up the capsule. Defaults to 16.
-	     * @param segmentsH Defines the number of vertical segments that make up the capsule. Defaults to 15. Must be uneven value.
-	     * @param yUp Defines whether the capsule poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	}
-	export = PrimitiveCapsulePrefab;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A Cylinder primitive mesh.
-	 */
-	class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset {
-	    _pBottomRadius: number;
-	    _pSegmentsW: number;
-	    _pSegmentsH: number;
-	    private _topRadius;
-	    private _height;
-	    private _topClosed;
-	    private _bottomClosed;
-	    private _surfaceClosed;
-	    private _yUp;
-	    private _numVertices;
-	    /**
-	     * The radius of the top end of the cylinder.
-	     */
-	    topRadius: number;
-	    /**
-	     * The radius of the bottom end of the cylinder.
-	     */
-	    bottomRadius: number;
-	    /**
-	     * The radius of the top end of the cylinder.
-	     */
-	    height: number;
-	    /**
-	     * Defines the number of horizontal segments that make up the cylinder. Defaults to 16.
-	     */
-	    segmentsW: number;
-	    setSegmentsW(value: number): void;
-	    /**
-	     * Defines the number of vertical segments that make up the cylinder. Defaults to 1.
-	     */
-	    segmentsH: number;
-	    setSegmentsH(value: number): void;
-	    /**
-	     * Defines whether the top end of the cylinder is closed (true) or open.
-	     */
-	    topClosed: boolean;
-	    /**
-	     * Defines whether the bottom end of the cylinder is closed (true) or open.
-	     */
-	    bottomClosed: boolean;
-	    /**
-	     * Defines whether the cylinder poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    yUp: boolean;
-	    /**
-	     * Creates a new Cylinder object.
-	     * @param topRadius The radius of the top end of the cylinder.
-	     * @param bottomRadius The radius of the bottom end of the cylinder
-	     * @param height The radius of the bottom end of the cylinder
-	     * @param segmentsW Defines the number of horizontal segments that make up the cylinder. Defaults to 16.
-	     * @param segmentsH Defines the number of vertical segments that make up the cylinder. Defaults to 1.
-	     * @param topClosed Defines whether the top end of the cylinder is closed (true) or open.
-	     * @param bottomClosed Defines whether the bottom end of the cylinder is closed (true) or open.
-	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    constructor(topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean);
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	}
-	export = PrimitiveCylinderPrefab;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
-	/**
-	 * A UV Cone primitive mesh.
-	 */
-	class PrimitiveConePrefab extends PrimitiveCylinderPrefab implements IAsset {
-	    /**
-	     * The radius of the bottom end of the cone.
-	     */
-	    radius: number;
-	    /**
-	     * Creates a new Cone object.
-	     * @param radius The radius of the bottom end of the cone
-	     * @param height The height of the cone
-	     * @param segmentsW Defines the number of horizontal segments that make up the cone. Defaults to 16.
-	     * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
-	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
-	}
-	export = PrimitiveConePrefab;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A Plane primitive mesh.
-	 */
-	class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset {
-	    private _segmentsW;
-	    private _segmentsH;
-	    private _yUp;
-	    private _width;
-	    private _height;
-	    private _doubleSided;
-	    /**
-	     * Creates a new Plane object.
-	     * @param width The width of the plane.
-	     * @param height The height of the plane.
-	     * @param segmentsW The number of segments that make up the plane along the X-axis.
-	     * @param segmentsH The number of segments that make up the plane along the Y or Z-axis.
-	     * @param yUp Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false).
-	     * @param doubleSided Defines whether the plane will be visible from both sides, with correct vertex normals.
-	     */
-	    constructor(width?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, doubleSided?: boolean);
-	    /**
-	     * The number of segments that make up the plane along the X-axis. Defaults to 1.
-	     */
-	    segmentsW: number;
-	    /**
-	     * The number of segments that make up the plane along the Y or Z-axis, depending on whether yUp is true or
-	     * false, respectively. Defaults to 1.
-	     */
-	    segmentsH: number;
-	    /**
-	     *  Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false). Defaults to true.
-	     */
-	    yUp: boolean;
-	    /**
-	     * Defines whether the plane will be visible from both sides, with correct vertex normals (as opposed to bothSides on Material). Defaults to false.
-	     */
-	    doubleSided: boolean;
-	    /**
-	     * The width of the plane.
-	     */
-	    width: number;
-	    /**
-	     * The height of the plane.
-	     */
-	    height: number;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	}
-	export = PrimitivePlanePrefab;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
-	/**
-	 * A UV RegularPolygon primitive mesh.
-	 */
-	class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab implements IAsset {
-	    /**
-	     * The radius of the regular polygon.
-	     */
-	    radius: number;
-	    /**
-	     * The number of sides of the regular polygon.
-	     */
-	    sides: number;
-	    /**
-	     * The number of subdivisions from the edge to the center of the regular polygon.
-	     */
-	    subdivisions: number;
-	    /**
-	     * Creates a new RegularPolygon disc object.
-	     * @param radius The radius of the regular polygon
-	     * @param sides Defines the number of sides of the regular polygon.
-	     * @param yUp Defines whether the regular polygon should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    constructor(radius?: number, sides?: number, yUp?: boolean);
-	}
-	export = PrimitivePolygonPrefab;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A UV Cylinder primitive mesh.
-	 */
-	class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset {
-	    private _radius;
-	    private _tubeRadius;
-	    private _segmentsR;
-	    private _segmentsT;
-	    private _yUp;
-	    private _numVertices;
-	    /**
-	     * The radius of the torus.
-	     */
-	    radius: number;
-	    /**
-	     * The radius of the inner tube of the torus.
-	     */
-	    tubeRadius: number;
-	    /**
-	     * Defines the number of horizontal segments that make up the torus. Defaults to 16.
-	     */
-	    segmentsR: number;
-	    /**
-	     * Defines the number of vertical segments that make up the torus. Defaults to 8.
-	     */
-	    segmentsT: number;
-	    /**
-	     * Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    yUp: boolean;
-	    /**
-	     * Creates a new <code>Torus</code> object.
-	     * @param radius The radius of the torus.
-	     * @param tuebRadius The radius of the inner tube of the torus.
-	     * @param segmentsR Defines the number of horizontal segments that make up the torus.
-	     * @param segmentsT Defines the number of vertical segments that make up the torus.
-	     * @param yUp Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    constructor(radius?: number, tubeRadius?: number, segmentsR?: number, segmentsT?: number, yUp?: boolean);
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	}
-	export = PrimitiveTorusPrefab;
-	
-}
-declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
-	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
-	 * materials assigned to them.
-	 *
-	 * @class away.render.DefaultRenderer
-	 */
-	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
-	    private _container;
-	    private _context;
-	    private _contextStyle;
-	    private _contextMatrix;
-	    private _activeMaterial;
-	    private _skyboxProjection;
-	    private _transform;
-	    /**
-	     * Creates a new CSSDefaultRenderer object.
-	     */
-	    constructor();
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    pDraw(entityCollector: EntityCollector): void;
-	    /**
-	     * Updates the backbuffer properties.
-	     */
-	    pUpdateBackBuffer(): void;
-	    /**
-	     * Draw the skybox if present.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawSkybox(entityCollector);
-	    /**
-	     * Draw a list of renderables.
-	     * @param renderables The renderables to draw.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawRenderables(item, entityCollector);
-	    dispose(): void;
-	    _iCreateEntityCollector(): CollectorBase;
-	}
-	export = CSSDefaultRenderer;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableNullSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.NullSort
-	 */
-	class RenderableNullSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableNullSort;
-	
-}
-declare module "awayjs-display/lib/text/TextFormatAlign" {
-	/**
-	 * The TextFormatAlign class provides values for text alignment in the
-	 * TextFormat class.
-	 */
-	class TextFormatAlign {
-	    /**
-	     * Constant; centers the text in the text field. Use the syntax
-	     * <code>TextFormatAlign.CENTER</code>.
-	     */
-	    CENTER: string;
-	    /**
-	     * Constant; justifies text within the text field. Use the syntax
-	     * <code>TextFormatAlign.JUSTIFY</code>.
-	     */
-	    JUSTIFY: string;
-	    /**
-	     * Constant; aligns text to the left within the text field. Use the syntax
-	     * <code>TextFormatAlign.LEFT</code>.
-	     */
-	    LEFT: string;
-	    /**
-	     * Constant; aligns text to the right within the text field. Use the syntax
-	     * <code>TextFormatAlign.RIGHT</code>.
-	     */
-	    RIGHT: string;
-	}
-	export = TextFormatAlign;
-	
-}
-declare module "awayjs-display/lib/utils/Cast" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-	/**
-	 * Helper class for casting assets to usable objects
-	 */
-	class Cast {
-	    private static _colorNames;
-	    private static _hexChars;
-	    private static _notClasses;
-	    private static _classes;
-	    static string(data: any): string;
-	    static byteArray(data: any): ByteArray;
-	    private static isHex(str);
-	    static tryColor(data: any): number;
-	    static color(data: any): number;
-	    static tryClass(name: string): any;
-	    static bitmapData(data: any): BitmapData;
-	    static bitmapTexture(data: any): BitmapTexture;
-	}
-	export = Cast;
 	
 }
 declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {

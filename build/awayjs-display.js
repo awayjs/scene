@@ -128,9 +128,7 @@ var CurveSubGeometry = (function (_super) {
         this._positionsDirty = true;
         this._curvesDirty = true;
         this._faceNormalsDirty = true;
-        this._faceTangentsDirty = true;
         this._vertexNormalsDirty = true;
-        this._vertexTangentsDirty = true;
         this._uvsDirty = true;
         this._secondaryUVsDirty = true;
         this._jointIndicesDirty = true;
@@ -221,12 +219,12 @@ var CurveSubGeometry = (function (_super) {
          * in cases where UV data is explicitly defined or the material does not require UV data.
          */
         get: function () {
-            return false; //this._autoDeriveUVs;
+            return this._autoDeriveUVs;
         },
         set: function (value) {
-            //if (this._autoDeriveUVs == value)
-            return;
-            //this._autoDeriveUVs = value;
+            if (this._autoDeriveUVs == value)
+                return;
+            this._autoDeriveUVs = value;
             if (value)
                 this.notifyUVsUpdate();
         },
@@ -387,7 +385,7 @@ var CurveSubGeometry = (function (_super) {
         if (true) {
             if ((this._curves == null || values == null) && (this._curves != null || values != null)) {
                 if (this._concatenateArrays)
-                    true; //"do nothing";
+                    this._pNotifyVerticesUpdate();
                 else
                     this._pStrideOffsetDirty = true;
             }
@@ -480,7 +478,6 @@ var CurveSubGeometry = (function (_super) {
         this._uvs = null;
         this._faceNormals = null;
         this._faceWeights = null;
-        this._faceTangents = null;
     };
     /**
      * Updates the face indices of the CurveSubGeometry.
