@@ -1877,8 +1877,9 @@ var DisplayObject = (function (_super) {
         if (targetCoordinateSpace === void 0) { targetCoordinateSpace = null; }
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
-        if (this._sphereBoundsInvalid)
+        if (this._sphereBoundsInvalid) {
             this._pUpdateSphereBounds();
+        }
         return this._pSphereBounds;
     };
     /**
@@ -18678,7 +18679,75 @@ var AntiAliasType = (function () {
 module.exports = AntiAliasType;
 
 
-},{}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
+},{}],"awayjs-display/lib/text/Font":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetType = require("awayjs-core/lib/library/AssetType");
+var FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
+/**
+ * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+ *
+ *
+ * @see away.base.TriangleSubGeometry
+ * @see away.entities.Mesh
+ *
+ * @class away.base.SubMeshBase
+ */
+var Font = (function (_super) {
+    __extends(Font, _super);
+    //TODO test shader picking
+    //		public get shaderPickingDetails():boolean
+    //		{
+    //
+    //			return this.sourceEntity.shaderPickingDetails;
+    //		}
+    /**
+     * Creates a new TesselatedFont object
+     */
+    function Font() {
+        _super.call(this);
+        this._font_styles = new Array();
+    }
+    Object.defineProperty(Font.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return AssetType.FONT;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    Font.prototype.dispose = function () {
+    };
+    /**
+     *Get a font-table for a specific name, or create one if it does not exists.
+     */
+    Font.prototype.get_font_table = function (style_name) {
+        var len = this._font_styles.length;
+        for (var i = 0; i < len; ++i) {
+            if (this._font_styles[i].name == style_name)
+                return this._font_styles[i];
+        }
+        var font_style = new FontTable();
+        font_style.name = style_name;
+        this._font_styles.push(font_style);
+        return font_style;
+    };
+    return Font;
+})(NamedAssetBase);
+module.exports = Font;
+
+
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable"}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
 /**
  * The GridFitType class defines values for grid fitting in the TextField class.
  */
@@ -18716,7 +18785,73 @@ var GridFitType = (function () {
 module.exports = GridFitType;
 
 
-},{}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
+},{}],"awayjs-display/lib/text/TesselatedFontTable":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+/**
+ * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+ *
+ *
+ * @see away.base.TriangleSubGeometry
+ * @see away.entities.Mesh
+ *
+ * @class away.base.SubMeshBase
+ */
+var TesselatedFontTable = (function (_super) {
+    __extends(TesselatedFontTable, _super);
+    //TODO test shader picking
+    //		public get shaderPickingDetails():boolean
+    //		{
+    //
+    //			return this.sourceEntity.shaderPickingDetails;
+    //		}
+    /**
+     * Creates a new TesselatedFont object
+     */
+    function TesselatedFontTable() {
+        _super.call(this);
+        this._font_chars = new Array();
+        this._font_chars_dic = new Object();
+    }
+    /**
+     *
+     */
+    TesselatedFontTable.prototype.dispose = function () {
+    };
+    TesselatedFontTable.prototype.get_font_chars = function () {
+        return this._font_chars;
+    };
+    TesselatedFontTable.prototype.get_font_em_size = function () {
+        return this._font_em_size;
+    };
+    TesselatedFontTable.prototype.set_font_em_size = function (font_em_size) {
+        this._font_em_size = font_em_size;
+    };
+    /**
+     *
+     */
+    TesselatedFontTable.prototype.get_subgeo_for_char = function (char) {
+        return this._font_chars_dic[char];
+    };
+    /**
+     *
+     */
+    TesselatedFontTable.prototype.set_subgeo_for_char = function (char, subgeo) {
+        subgeo.name = char;
+        this._font_chars.push(subgeo);
+        this._font_chars_dic[char] = subgeo;
+    };
+    return TesselatedFontTable;
+})(NamedAssetBase);
+module.exports = TesselatedFontTable;
+
+
+},{"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 /**
  * The TextFieldAutoSize class is an enumeration of constant values used in
  * setting the <code>autoSize</code> property of the TextField class.
