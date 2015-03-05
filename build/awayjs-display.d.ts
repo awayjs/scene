@@ -8601,14 +8601,6 @@ declare module "awayjs-display/lib/display/IContext" {
 	export = IContext;
 	
 }
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
 declare module "awayjs-display/lib/entities/Shape" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import Graphics = require("awayjs-display/lib/base/Graphics");
@@ -9940,6 +9932,14 @@ declare module "awayjs-display/lib/entities/TextField" {
 	export = TextField;
 	
 }
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
 declare module "awayjs-display/lib/events/ResizeEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class ResizeEvent extends Event {
@@ -10103,59 +10103,6 @@ declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
 	    constructor(pool: IRenderablePool, skyBox: Skybox);
 	}
 	export = CSSSkyboxRenderable;
-	
-}
-declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
-	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
-	 * materials assigned to them.
-	 *
-	 * @class away.render.DefaultRenderer
-	 */
-	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
-	    private _container;
-	    private _context;
-	    private _contextStyle;
-	    private _contextMatrix;
-	    private _activeMaterial;
-	    private _skyboxProjection;
-	    private _transform;
-	    /**
-	     * Creates a new CSSDefaultRenderer object.
-	     */
-	    constructor();
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    pDraw(entityCollector: EntityCollector): void;
-	    /**
-	     * Updates the backbuffer properties.
-	     */
-	    pUpdateBackBuffer(): void;
-	    /**
-	     * Draw the skybox if present.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawSkybox(entityCollector);
-	    /**
-	     * Draw a list of renderables.
-	     * @param renderables The renderables to draw.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawRenderables(item, entityCollector);
-	    dispose(): void;
-	    _iCreateEntityCollector(): CollectorBase;
-	}
-	export = CSSDefaultRenderer;
 	
 }
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
@@ -10459,6 +10406,85 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	export = PrimitiveTorusPrefab;
 	
 }
+declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
+	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
+	 * materials assigned to them.
+	 *
+	 * @class away.render.DefaultRenderer
+	 */
+	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
+	    private _container;
+	    private _context;
+	    private _contextStyle;
+	    private _contextMatrix;
+	    private _activeMaterial;
+	    private _skyboxProjection;
+	    private _transform;
+	    /**
+	     * Creates a new CSSDefaultRenderer object.
+	     */
+	    constructor();
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    pDraw(entityCollector: EntityCollector): void;
+	    /**
+	     * Updates the backbuffer properties.
+	     */
+	    pUpdateBackBuffer(): void;
+	    /**
+	     * Draw the skybox if present.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawSkybox(entityCollector);
+	    /**
+	     * Draw a list of renderables.
+	     * @param renderables The renderables to draw.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawRenderables(item, entityCollector);
+	    dispose(): void;
+	    _iCreateEntityCollector(): CollectorBase;
+	}
+	export = CSSDefaultRenderer;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableMergeSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.RenderableMergeSort
+	 */
+	class RenderableMergeSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.NullSort
+	 */
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableNullSort;
+	
+}
 declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
@@ -10562,32 +10588,6 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	    RIGHT: string;
 	}
 	export = TextFormatAlign;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableNullSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.NullSort
-	 */
-	class RenderableNullSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableNullSort;
 	
 }
 declare module "awayjs-display/lib/utils/Cast" {
