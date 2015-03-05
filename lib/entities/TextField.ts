@@ -8,7 +8,13 @@ import TextFieldType				= require("awayjs-display/lib/text/TextFieldType");
 import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
+import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import Geometry						= require("awayjs-display/lib/base/Geometry");
+import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import CurveSubGeometry					= require("awayjs-display/lib/base/CurveSubGeometry");
 
+import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
+import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -88,7 +94,7 @@ import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-class TextField extends DisplayObject
+class TextField extends Mesh
 {
 	private _bottomScrollV:number;
 	private _caretIndex:number;
@@ -687,7 +693,7 @@ class TextField extends DisplayObject
 	 */
 	constructor()
 	{
-		super();
+		super(new Geometry());
 	}
 
 	/**
@@ -699,7 +705,68 @@ class TextField extends DisplayObject
 	 * 
 	 * @param newText The string to append to the existing text.
 	 */
-	public appendText(newText:string)
+	public appendText(newText:string, newFormat:TextFormat) {
+
+		var indices:Array<number> = new Array<number>();
+		var positions:Array<number> = new Array<number>();
+		var curveData:Array<number> = new Array<number>();
+		var uvs:Array<number> = new Array<number>();
+
+		var char_scale:number=newFormat.size/newFormat.font_table.get_font_em_size();
+		var tri_idx_offset:number=0;
+		var tri_cnt:number=0;
+		var x_offset:number=0;
+		var y_offset:number=0;
+		for (var i = 0; i < newText.length; i++) {
+			var this_subGeom:CurveSubGeometry = <CurveSubGeometry> newFormat.font_table.get_subgeo_for_char(newText.charCodeAt(i).toString());
+			if (this_subGeom != null) {
+				tri_cnt=0;
+				var indices2:Array<number> = this_subGeom.indices;
+				var positions2:Array<number> = this_subGeom.positions;
+				var curveData2:Array<number> = this_subGeom.curves;
+				for (var v = 0; v < indices2.length; v++) {
+					indices.push(indices2[v]+tri_idx_offset);
+					tri_cnt++;
+				}
+				tri_idx_offset+=tri_cnt;
+				for (v = 0; v < positions2.length/3; v++) {
+					positions.push((positions2[v*3]*char_scale)+x_offset);
+					positions.push((positions2[v*3+1]*char_scale*-1)+y_offset);
+					positions.push(positions2[v*3+2]);
+					curveData.push(curveData2[v*2]);
+					curveData.push(curveData2[v*2+1]);
+					uvs.push(0.0);
+					uvs.push(0.0);
+				}
+				x_offset+=newFormat.font_table.get_font_em_size()*char_scale;
+				//xcount+=newFormat.font_table.get_font_em_size();
+				console.log(x_offset);
+				//matrix.appendScale(0.1,0.1,0.1);
+			}
+		}
+		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
+		curve_sub_geom.updateIndices(indices);
+		curve_sub_geom.updatePositions(positions);
+		curve_sub_geom.updateCurves(curveData);
+		curve_sub_geom.updateUVs(uvs);
+		this.geometry.addSubGeometry(curve_sub_geom);
+		this.subMeshes[0].material=newFormat.material;
+
+	}
+
+	/**
+	 * *tells the Textfield that a paragraph is defined completly.
+	 * e.g. the textfield will start a new line for future added text.
+	 */
+	public closeParagraph()
+	{
+		//TODO
+	}
+	/**
+	 * *tells the Textfield that a paragraph is defined completly.
+	 * e.g. the textfield will start a new line for future added text.
+	 */
+	public construct_geometry()
 	{
 		//TODO
 	}

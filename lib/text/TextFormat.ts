@@ -1,3 +1,11 @@
+
+import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+
+
+import IAsset						= require("awayjs-core/lib/library/IAsset");
+import AssetType					= require("awayjs-core/lib/library/AssetType");
+import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You
@@ -24,7 +32,7 @@
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-class TextFormat
+class TextFormat extends NamedAssetBase implements IAsset
 {
 
 	/**
@@ -70,12 +78,29 @@ class TextFormat
 	 */
 	public color:boolean;
 
+
 	/**
-	 * The name of the font for text in this text format, as a string. The
-	 * default value is <code>null</code>, which means that Flash Player uses
-	 * Times New Roman font for the text.
+	 * The material to use for texturing geometry generated for this text-format. this material will be used by the  TextField
 	 */
-	public font:string;
+	public material:MaterialBase;
+
+	/**
+	 * The name of the font for text in this text format, as a string.
+	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
+	 * The font-name can be used to get a Font-object from the AssetLibrary.
+	 * A Font object provides a list of Font-table, corresponding to font-table names.
+	 */
+	public font_name:string;
+	/**
+	 * The name of the font-style for text in this text format, as a string.
+	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
+	 * The font-style can be used to get a Font-table, from a Font-object.
+	 */
+	public font_style:string;
+	/**
+	 * The font-table that provides the subgeos for the chars
+	 */
+	public font_table:TesselatedFontTable;
 
 	/**
 	 * Indicates the indentation from the left margin to the first character in
@@ -158,7 +183,7 @@ class TextFormat
 	 * <code>null</code>, you can get or set this property, but the property will
 	 * have no effect.
 	 */
-	public target:string;
+	public link_target:string;
 
 	/**
 	 * Indicates whether the text that uses this text format is underlined
@@ -220,20 +245,29 @@ class TextFormat
 	 * @param leading     A number that indicates the amount of leading vertical
 	 *                    space between lines.
 	 */
-	constructor(font:string = "Times New Roman", size:number = 12, color:number /*int*/ = 0x000000, bold:boolean = false, italic:boolean = false, underline:boolean = false, url:string = "", target:string = "", align:string = "left", leftMargin:number = 0, rightMargin:number = 0, indent:number = 0, leading:number = 0)
+	constructor(font:string = "Times New Roman", size:number = 12, color:number /*int*/ = 0x000000, bold:boolean = false, italic:boolean = false, underline:boolean = false, url:string = "", link_target:string = "", align:string = "left", leftMargin:number = 0, rightMargin:number = 0, indent:number = 0, leading:number = 0)
 	{
-		this.font = font;
+		super();
+		this.font_name = font;
 		this.size = size;
 		this.bold = bold;
 		this.italic = italic;
 		this.underline = underline;
 		this.url = url;
-		this.target = target;
+		this.link_target = link_target;
 		this.align = align;
 		this.leftMargin = leftMargin;
 		this.rightMargin = rightMargin;
 		this.indent = indent;
 		this.leading = leading;
+	}
+
+	/**
+	 *
+	 */
+	public get assetType():string
+	{
+		return AssetType.TEXTFORMAT;
 	}
 }
 

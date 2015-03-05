@@ -182,7 +182,7 @@ class SubGeometryBase extends NamedAssetBase
 
 	public applyTransformation(transform:Matrix3D)
 	{
-
+	console.log("apply");
 	}
 
 	/**
