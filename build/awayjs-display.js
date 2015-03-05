@@ -4796,6 +4796,7 @@ var SubGeometryBase = (function (_super) {
         throw new AbstractMethodError();
     };
     SubGeometryBase.prototype.applyTransformation = function (transform) {
+        console.log("apply");
     };
     /**
      * Scales the geometry.
@@ -11073,7 +11074,9 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+var Mesh = require("awayjs-display/lib/entities/Mesh");
+var Geometry = require("awayjs-display/lib/base/Geometry");
+var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -11164,7 +11167,7 @@ var TextField = (function (_super) {
      * <p>The default size for a text field is 100 x 100 pixels.</p>
      */
     function TextField() {
-        _super.call(this);
+        _super.call(this, new Geometry());
         this._text = "";
     }
     Object.defineProperty(TextField.prototype, "bottomScrollV", {
@@ -11324,7 +11327,62 @@ var TextField = (function (_super) {
      *
      * @param newText The string to append to the existing text.
      */
-    TextField.prototype.appendText = function (newText) {
+    TextField.prototype.appendText = function (newText, newFormat) {
+        var indices = new Array();
+        var positions = new Array();
+        var curveData = new Array();
+        var uvs = new Array();
+        var char_scale = newFormat.size / newFormat.font_table.get_font_em_size();
+        var tri_idx_offset = 0;
+        var tri_cnt = 0;
+        var x_offset = 0;
+        var y_offset = 0;
+        for (var i = 0; i < newText.length; i++) {
+            var this_subGeom = newFormat.font_table.get_subgeo_for_char(newText.charCodeAt(i).toString());
+            if (this_subGeom != null) {
+                tri_cnt = 0;
+                var indices2 = this_subGeom.indices;
+                var positions2 = this_subGeom.positions;
+                var curveData2 = this_subGeom.curves;
+                for (var v = 0; v < indices2.length; v++) {
+                    indices.push(indices2[v] + tri_idx_offset);
+                    tri_cnt++;
+                }
+                tri_idx_offset += tri_cnt;
+                for (v = 0; v < positions2.length / 3; v++) {
+                    positions.push((positions2[v * 3] * char_scale) + x_offset);
+                    positions.push((positions2[v * 3 + 1] * char_scale * -1) + y_offset);
+                    positions.push(positions2[v * 3 + 2]);
+                    curveData.push(curveData2[v * 2]);
+                    curveData.push(curveData2[v * 2 + 1]);
+                    uvs.push(0.0);
+                    uvs.push(0.0);
+                }
+                x_offset += newFormat.font_table.get_font_em_size() * char_scale;
+                //xcount+=newFormat.font_table.get_font_em_size();
+                console.log(x_offset);
+            }
+        }
+        var curve_sub_geom = new CurveSubGeometry(true);
+        curve_sub_geom.updateIndices(indices);
+        curve_sub_geom.updatePositions(positions);
+        curve_sub_geom.updateCurves(curveData);
+        curve_sub_geom.updateUVs(uvs);
+        this.geometry.addSubGeometry(curve_sub_geom);
+        this.subMeshes[0].material = newFormat.material;
+    };
+    /**
+     * *tells the Textfield that a paragraph is defined completly.
+     * e.g. the textfield will start a new line for future added text.
+     */
+    TextField.prototype.closeParagraph = function () {
+        //TODO
+    };
+    /**
+     * *tells the Textfield that a paragraph is defined completly.
+     * e.g. the textfield will start a new line for future added text.
+     */
+    TextField.prototype.construct_geometry = function () {
         //TODO
     };
     /**
@@ -11633,11 +11691,11 @@ var TextField = (function (_super) {
         return false;
     };
     return TextField;
-})(DisplayObject);
+})(Mesh);
 module.exports = TextField;
 
 
-},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -18943,6 +19001,14 @@ module.exports = TextFormatAlign;
 
 
 },{}],"awayjs-display/lib/text/TextFormat":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetType = require("awayjs-core/lib/library/AssetType");
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You
@@ -18969,7 +19035,8 @@ module.exports = TextFormatAlign;
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-var TextFormat = (function () {
+var TextFormat = (function (_super) {
+    __extends(TextFormat, _super);
     /**
      * Creates a TextFormat object with the specified properties. You can then
      * change the properties of the TextFormat object to change the formatting of
@@ -19009,7 +19076,7 @@ var TextFormat = (function () {
      * @param leading     A number that indicates the amount of leading vertical
      *                    space between lines.
      */
-    function TextFormat(font, size, color, bold, italic, underline, url, target, align, leftMargin, rightMargin, indent, leading) {
+    function TextFormat(font, size, color, bold, italic, underline, url, link_target, align, leftMargin, rightMargin, indent, leading) {
         if (font === void 0) { font = "Times New Roman"; }
         if (size === void 0) { size = 12; }
         if (color === void 0) { color = 0x000000; }
@@ -19017,37 +19084,48 @@ var TextFormat = (function () {
         if (italic === void 0) { italic = false; }
         if (underline === void 0) { underline = false; }
         if (url === void 0) { url = ""; }
-        if (target === void 0) { target = ""; }
+        if (link_target === void 0) { link_target = ""; }
         if (align === void 0) { align = "left"; }
         if (leftMargin === void 0) { leftMargin = 0; }
         if (rightMargin === void 0) { rightMargin = 0; }
         if (indent === void 0) { indent = 0; }
         if (leading === void 0) { leading = 0; }
+        _super.call(this);
         /**
          * Specifies custom tab stops as an array of non-negative integers. Each tab
          * stop is specified in pixels. If custom tab stops are not specified
          * (<code>null</code>), the default tab stop is 4(average character width).
          */
         this.tabStops = new Array();
-        this.font = font;
+        this.font_name = font;
         this.size = size;
         this.bold = bold;
         this.italic = italic;
         this.underline = underline;
         this.url = url;
-        this.target = target;
+        this.link_target = link_target;
         this.align = align;
         this.leftMargin = leftMargin;
         this.rightMargin = rightMargin;
         this.indent = indent;
         this.leading = leading;
     }
+    Object.defineProperty(TextFormat.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return AssetType.TEXTFORMAT;
+        },
+        enumerable: true,
+        configurable: true
+    });
     return TextFormat;
-})();
+})(NamedAssetBase);
 module.exports = TextFormat;
 
 
-},{}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
 /**
  * A class that defines the Interactive mode of a text field object.
  *

@@ -7521,813 +7521,6 @@ declare module "awayjs-display/lib/base/PixelSnapping" {
 	export = PixelSnapping;
 	
 }
-declare module "awayjs-display/lib/pick/IPicker" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import View = require("awayjs-display/lib/containers/View");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	/**
-	 * Provides an interface for picking objects that can pick 3d objects from a view or scene.
-	 *
-	 * @interface away.pick.IPicker
-	 */
-	interface IPicker {
-	    /**
-	     * Gets the collision object from the screen coordinates of the picking ray.
-	     *
-	     * @param x The x coordinate of the picking ray in screen-space.
-	     * @param y The y coordinate of the picking ray in screen-space.
-	     * @param view The view on which the picking object acts.
-	     */
-	    getViewCollision(x: number, y: number, view: View): PickingCollisionVO;
-	    /**
-	     * Gets the collision object from the scene position and direction of the picking ray.
-	     *
-	     * @param position The position of the picking ray in scene-space.
-	     * @param direction The direction of the picking ray in scene-space.
-	     * @param scene The scene on which the picking object acts.
-	     */
-	    getSceneCollision(position: Vector3D, direction: Vector3D, scene: Scene): PickingCollisionVO;
-	    /**
-	     * Determines whether the picker takes account of the mouseEnabled properties of entities. Defaults to true.
-	     */
-	    onlyMouseEnabled: boolean;
-	    /**
-	     * Disposes memory used by the IPicker object
-	     */
-	    dispose(): any;
-	}
-	export = IPicker;
-	
-}
-declare module "awayjs-display/lib/traverse/RaycastCollector" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
-	 * considered intersecting with the defined ray.
-	 *
-	 * @see away.partition.Partition
-	 * @see away.entities.IEntity
-	 *
-	 * @class away.traverse.RaycastCollector
-	 */
-	class RaycastCollector extends CollectorBase {
-	    private _rayPosition;
-	    private _rayDirection;
-	    _iCollectionMark: number;
-	    /**
-	     * Provides the starting position of the ray.
-	     */
-	    rayPosition: Vector3D;
-	    /**
-	     * Provides the direction vector of the ray.
-	     */
-	    rayDirection: Vector3D;
-	    /**
-	     * Creates a new RaycastCollector object.
-	     */
-	    constructor();
-	    /**
-	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
-	     *
-	     * @param node The Partition3DNode object to frustum-test.
-	     */
-	    enterNode(node: NodeBase): boolean;
-	}
-	export = RaycastCollector;
-	
-}
-declare module "awayjs-display/lib/pick/RaycastPicker" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import View = require("awayjs-display/lib/containers/View");
-	import IPicker = require("awayjs-display/lib/pick/IPicker");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	/**
-	 * Picks a 3d object from a view or scene by 3D raycast calculations.
-	 * Performs an initial coarse boundary calculation to return a subset of entities whose bounding volumes intersect with the specified ray,
-	 * then triggers an optional picking collider on individual entity objects to further determine the precise values of the picking ray collision.
-	 *
-	 * @class away.pick.RaycastPicker
-	 */
-	class RaycastPicker implements IPicker {
-	    private _findClosestCollision;
-	    private _raycastCollector;
-	    private _ignoredEntities;
-	    private _onlyMouseEnabled;
-	    private _entities;
-	    private _numEntities;
-	    private _hasCollisions;
-	    /**
-	     * @inheritDoc
-	     */
-	    onlyMouseEnabled: boolean;
-	    /**
-	     * Creates a new <code>RaycastPicker</code> object.
-	     *
-	     * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
-	     * or simply returns the first collision encountered. Defaults to false.
-	     */
-	    constructor(findClosestCollision?: boolean);
-	    /**
-	     * @inheritDoc
-	     */
-	    getViewCollision(x: number, y: number, view: View): PickingCollisionVO;
-	    /**
-	     * @inheritDoc
-	     */
-	    getSceneCollision(rayPosition: Vector3D, rayDirection: Vector3D, scene: Scene): PickingCollisionVO;
-	    setIgnoreList(entities: any): void;
-	    private isIgnored(entity);
-	    private sortOnNearT(entity1, entity2);
-	    private getPickingCollisionVO(collector);
-	    private updateLocalPosition(pickingCollisionVO);
-	    dispose(): void;
-	}
-	export = RaycastPicker;
-	
-}
-declare module "awayjs-display/lib/pool/CSSRenderableBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * @class away.pool.RenderableListItem
-	 */
-	class CSSRenderableBase implements IRenderable {
-	    /**
-	     *
-	     */
-	    private _pool;
-	    /**
-	     *
-	     */
-	    next: CSSRenderableBase;
-	    /**
-	     *
-	     */
-	    materialId: number;
-	    /**
-	     *
-	     */
-	    renderOrderId: number;
-	    /**
-	     *
-	     */
-	    zIndex: number;
-	    /**
-	     *
-	     */
-	    cascaded: boolean;
-	    /**
-	     *
-	     */
-	    renderSceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    sourceEntity: IEntity;
-	    /**
-	     *
-	     */
-	    renderObjectId: number;
-	    /**
-	     *
-	     */
-	    renderableOwner: IRenderableOwner;
-	    /**
-	     *
-	     */
-	    htmlElement: HTMLElement;
-	    /**
-	     *
-	     * @param sourceEntity
-	     * @param material
-	     * @param animator
-	     */
-	    constructor(pool: IRenderablePool, sourceEntity: IEntity, renderableOwner: IRenderableOwner);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     *
-	     */
-	    invalidateGeometry(): void;
-	    /**
-	     *
-	     */
-	    invalidateIndexData(): void;
-	    /**
-	     *
-	     */
-	    invalidateVertexData(dataType: string): void;
-	}
-	export = CSSRenderableBase;
-	
-}
-declare module "awayjs-display/lib/pool/CSSBillboardRenderable" {
-	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import Billboard = require("awayjs-display/lib/entities/Billboard");
-	/**
-	 * @class away.pool.RenderableListItem
-	 */
-	class CSSBillboardRenderable extends CSSRenderableBase {
-	    static id: string;
-	    constructor(pool: IRenderablePool, billboard: Billboard);
-	}
-	export = CSSBillboardRenderable;
-	
-}
-declare module "awayjs-display/lib/pool/CSSLineSegmentRenderable" {
-	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import LineSegment = require("awayjs-display/lib/entities/LineSegment");
-	/**
-	 * @class away.pool.RenderableListItem
-	 */
-	class CSSLineSegmentRenderable extends CSSRenderableBase {
-	    static id: string;
-	    constructor(pool: IRenderablePool, lineSegment: LineSegment);
-	}
-	export = CSSLineSegmentRenderable;
-	
-}
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
-	
-}
-declare module "awayjs-display/lib/events/RendererEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class RendererEvent extends Event {
-	    static VIEWPORT_UPDATED: string;
-	    static SCISSOR_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = RendererEvent;
-	
-}
-declare module "awayjs-display/lib/materials/CSSMaterialBase" {
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
-	/**
-	 * MaterialBase forms an abstract base class for any material.
-	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
-	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
-	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
-	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
-	 *
-	 * Away3D provides default materials trough SinglePassMaterialBase and MultiPassMaterialBase, which use modular
-	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
-	 * shaders, or entire new material frameworks.
-	 */
-	class CSSMaterialBase extends MaterialBase {
-	    private _imageElement;
-	    private _imageStyle;
-	    imageElement: HTMLImageElement;
-	    imageStyle: MSStyleCSSProperties;
-	    /**
-	     * The texture object to use for the albedo colour.
-	     */
-	    texture: Texture2DBase;
-	    /**
-	     * Creates a new MaterialBase object.
-	     */
-	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean);
-	}
-	export = CSSMaterialBase;
-	
-}
-declare module "awayjs-display/lib/render/CSSRendererBase" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-	import LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
-	import TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
-	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	import CSSEntityCollector = require("awayjs-display/lib/traverse/CSSEntityCollector");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Billboard = require("awayjs-display/lib/entities/Billboard");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import Skybox = require("awayjs-display/lib/entities/Skybox");
-	import TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
-	/**
-	 * RendererBase forms an abstract base class for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.RendererBase
-	 */
-	class CSSRendererBase extends EventDispatcher {
-	    private _billboardRenderablePool;
-	    private _lineSegmentRenderablePool;
-	    _pCamera: Camera;
-	    _iEntryPoint: Vector3D;
-	    _pCameraForward: Vector3D;
-	    private _backgroundR;
-	    private _backgroundG;
-	    private _backgroundB;
-	    private _backgroundAlpha;
-	    private _shareContext;
-	    _pBackBufferInvalid: boolean;
-	    _depthTextureInvalid: boolean;
-	    _renderableHead: CSSRenderableBase;
-	    _width: number;
-	    _height: number;
-	    private _viewPort;
-	    private _viewportDirty;
-	    private _scissorRect;
-	    private _scissorDirty;
-	    private _localPos;
-	    private _globalPos;
-	    private _scissorUpdated;
-	    private _viewPortUpdated;
-	    /**
-	     * A viewPort rectangle equivalent of the StageGL size and position.
-	     */
-	    viewPort: Rectangle;
-	    /**
-	     * A scissor rectangle equivalent of the view size and position.
-	     */
-	    scissorRect: Rectangle;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    renderableSorter: IEntitySorter;
-	    /**
-	     * Creates a new RendererBase object.
-	     */
-	    constructor(renderToTexture?: boolean, forceSoftware?: boolean, profile?: string);
-	    /**
-	     * The background color's red component, used when clearing.
-	     *
-	     * @private
-	     */
-	    _iBackgroundR: number;
-	    /**
-	     * The background color's green component, used when clearing.
-	     *
-	     * @private
-	     */
-	    _iBackgroundG: number;
-	    /**
-	     * The background color's blue component, used when clearing.
-	     *
-	     * @private
-	     */
-	    _iBackgroundB: number;
-	    shareContext: boolean;
-	    /**
-	     * Disposes the resources used by the RendererBase.
-	     */
-	    dispose(): void;
-	    render(entityCollector: CollectorBase): void;
-	    /**
-	     * Renders the potentially visible geometry to the back buffer or texture.
-	     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
-	     * @param scissorRect
-	     */
-	    _iRender(entityCollector: EntityCollector, target?: TextureProxyBase, scissorRect?: Rectangle, surfaceSelector?: number): void;
-	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): void;
-	    pCollectRenderables(entityCollector: CollectorBase): void;
-	    /**
-	     * Renders the potentially visible geometry to the back buffer or texture. Only executed if everything is set up.
-	     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
-	     * @param scissorRect
-	     */
-	    pExecuteRender(entityCollector: CSSEntityCollector, scissorRect?: Rectangle): void;
-	    /**
-	     * Performs the actual drawing of dom objects to the target.
-	     *
-	     * @param entityCollector The EntityCollector object containing the potentially visible dom objects.
-	     */
-	    pDraw(entityCollector: CSSEntityCollector): void;
-	    _iBackgroundAlpha: number;
-	    /**
-	     *
-	     * @param billboard
-	     */
-	    applyBillboard(billboard: Billboard): void;
-	    /**
-	     *
-	     * @param lineSubMesh
-	     */
-	    applyLineSubMesh(lineSubMesh: LineSubMesh): void;
-	    /**
-	     *
-	     * @param skybox
-	     */
-	    applySkybox(skybox: Skybox): void;
-	    /**
-	     *
-	     * @param triangleSubMesh
-	     */
-	    applyTriangleSubMesh(triangleSubMesh: TriangleSubMesh): void;
-	    /**
-	     *
-	     * @param renderable
-	     * @private
-	     */
-	    private _applyRenderable(renderable);
-	    /**
-	     * @private
-	     */
-	    private notifyScissorUpdate();
-	    /**
-	     * @private
-	     */
-	    private notifyViewportUpdate();
-	    /**
-	     *
-	     */
-	    updateGlobalPos(): void;
-	    _iCreateEntityCollector(): CollectorBase;
-	}
-	export = CSSRendererBase;
-	
-}
-declare module "awayjs-display/lib/events/MouseEvent" {
-	import Point = require("awayjs-core/lib/geom/Point");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Event = require("awayjs-core/lib/events/Event");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import View = require("awayjs-display/lib/containers/View");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
-	 * TODO: we don't have screenZ data, tho this should be easy to implement
-	 */
-	class MouseEvent extends Event {
-	    _iAllowedToPropagate: boolean;
-	    _iParentEvent: MouseEvent;
-	    /**
-	     * Defines the value of the type property of a mouseOver3d event object.
-	     */
-	    static MOUSE_OVER: string;
-	    /**
-	     * Defines the value of the type property of a mouseOut3d event object.
-	     */
-	    static MOUSE_OUT: string;
-	    /**
-	     * Defines the value of the type property of a mouseUp3d event object.
-	     */
-	    static MOUSE_UP: string;
-	    /**
-	     * Defines the value of the type property of a mouseDown3d event object.
-	     */
-	    static MOUSE_DOWN: string;
-	    /**
-	     * Defines the value of the type property of a mouseMove3d event object.
-	     */
-	    static MOUSE_MOVE: string;
-	    /**
-	     * Defines the value of the type property of a rollOver3d event object.
-	     */
-	    /**
-	     * Defines the value of the type property of a rollOut3d event object.
-	     */
-	    /**
-	     * Defines the value of the type property of a click3d event object.
-	     */
-	    static CLICK: string;
-	    /**
-	     * Defines the value of the type property of a doubleClick3d event object.
-	     */
-	    static DOUBLE_CLICK: string;
-	    /**
-	     * Defines the value of the type property of a mouseWheel3d event object.
-	     */
-	    static MOUSE_WHEEL: string;
-	    /**
-	     * The horizontal coordinate at which the event occurred in view coordinates.
-	     */
-	    screenX: number;
-	    /**
-	     * The vertical coordinate at which the event occurred in view coordinates.
-	     */
-	    screenY: number;
-	    /**
-	     * The view object inside which the event took place.
-	     */
-	    view: View;
-	    /**
-	     * The 3d object inside which the event took place.
-	     */
-	    object: DisplayObject;
-	    /**
-	     * The renderable owner inside which the event took place.
-	     */
-	    renderableOwner: IRenderableOwner;
-	    /**
-	     * The material of the 3d element inside which the event took place.
-	     */
-	    material: MaterialBase;
-	    /**
-	     * The uv coordinate inside the draw primitive where the event took place.
-	     */
-	    uv: Point;
-	    /**
-	     * The index of the face where the event took place.
-	     */
-	    index: number;
-	    /**
-	     * The index of the subGeometry where the event took place.
-	     */
-	    subGeometryIndex: number;
-	    /**
-	     * The position in object space where the event took place
-	     */
-	    localPosition: Vector3D;
-	    /**
-	     * The normal in object space where the event took place
-	     */
-	    localNormal: Vector3D;
-	    /**
-	     * Indicates whether the Control key is active (true) or inactive (false).
-	     */
-	    ctrlKey: boolean;
-	    /**
-	     * Indicates whether the Alt key is active (true) or inactive (false).
-	     */
-	    altKey: boolean;
-	    /**
-	     * Indicates whether the Shift key is active (true) or inactive (false).
-	     */
-	    shiftKey: boolean;
-	    /**
-	     * Indicates how many lines should be scrolled for each unit the user rotates the mouse wheel.
-	     */
-	    delta: number;
-	    /**
-	     * Create a new MouseEvent object.
-	     * @param type The type of the MouseEvent.
-	     */
-	    constructor(type: string);
-	    /**
-	     * @inheritDoc
-	     */
-	    bubbles: boolean;
-	    /**
-	     * @inheritDoc
-	     */
-	    stopPropagation(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    stopImmediatePropagation(): void;
-	    /**
-	     * Creates a copy of the MouseEvent object and sets the value of each property to match that of the original.
-	     */
-	    clone(): Event;
-	    /**
-	     * The position in scene space where the event took place
-	     */
-	    scenePosition: Vector3D;
-	    /**
-	     * The normal in scene space where the event took place
-	     */
-	    sceneNormal: Vector3D;
-	}
-	export = MouseEvent;
-	
-}
-declare module "awayjs-display/lib/managers/MouseManager" {
-	import View = require("awayjs-display/lib/containers/View");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	/**
-	 * MouseManager enforces a singleton pattern and is not intended to be instanced.
-	 * it provides a manager class for detecting mouse hits on scene objects and sending out mouse events.
-	 */
-	class MouseManager {
-	    private static _instance;
-	    private _viewLookup;
-	    _iActiveDiv: HTMLDivElement;
-	    _iUpdateDirty: boolean;
-	    _iCollidingObject: PickingCollisionVO;
-	    private _nullVector;
-	    private _previousCollidingObject;
-	    private _queuedEvents;
-	    private _mouseMoveEvent;
-	    private _mouseUp;
-	    private _mouseClick;
-	    private _mouseOut;
-	    private _mouseDown;
-	    private _mouseMove;
-	    private _mouseOver;
-	    private _mouseWheel;
-	    private _mouseDoubleClick;
-	    private onClickDelegate;
-	    private onDoubleClickDelegate;
-	    private onMouseDownDelegate;
-	    private onMouseMoveDelegate;
-	    private onMouseUpDelegate;
-	    private onMouseWheelDelegate;
-	    private onMouseOverDelegate;
-	    private onMouseOutDelegate;
-	    /**
-	     * Creates a new <code>MouseManager</code> object.
-	     */
-	    constructor();
-	    static getInstance(): MouseManager;
-	    fireMouseEvents(forceMouseMove: boolean): void;
-	    registerView(view: View): void;
-	    unregisterView(view: View): void;
-	    private queueDispatch(event, sourceEvent, collider?);
-	    private onMouseMove(event);
-	    private onMouseOut(event);
-	    private onMouseOver(event);
-	    private onClick(event);
-	    private onDoubleClick(event);
-	    private onMouseDown(event);
-	    private onMouseUp(event);
-	    private onMouseWheel(event);
-	    private updateColliders(event);
-	}
-	export = MouseManager;
-	
-}
-declare module "awayjs-display/lib/containers/View" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import IPicker = require("awayjs-display/lib/pick/IPicker");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	class View {
-	    _pScene: Scene;
-	    _pCamera: Camera;
-	    _pEntityCollector: CollectorBase;
-	    _pRenderer: IRenderer;
-	    private _aspectRatio;
-	    private _width;
-	    private _height;
-	    private _time;
-	    private _deltaTime;
-	    private _backgroundColor;
-	    private _backgroundAlpha;
-	    private _viewportDirty;
-	    private _scissorDirty;
-	    private _onScenePartitionChangedDelegate;
-	    private _onProjectionChangedDelegate;
-	    private _onViewportUpdatedDelegate;
-	    private _onScissorUpdatedDelegate;
-	    private _mouseManager;
-	    private _mousePicker;
-	    private _htmlElement;
-	    private _shareContext;
-	    _pMouseX: number;
-	    _pMouseY: number;
-	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
-	    /**
-	     *
-	     * @param e
-	     */
-	    private onScenePartitionChanged(event);
-	    layeredView: boolean;
-	    mouseX: number;
-	    mouseY: number;
-	    /**
-	     *
-	     */
-	    htmlElement: HTMLDivElement;
-	    /**
-	     *
-	     */
-	    renderer: IRenderer;
-	    /**
-	     *
-	     */
-	    shareContext: boolean;
-	    /**
-	     *
-	     */
-	    backgroundColor: number;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    /**
-	     *
-	     * @param value
-	     */
-	    backgroundAlpha: number;
-	    /**
-	     *
-	     * @returns {Camera3D}
-	     */
-	    /**
-	     * Set camera that's used to render the scene for this viewport
-	     */
-	    camera: Camera;
-	    /**
-	     *
-	     * @returns {away.containers.Scene3D}
-	     */
-	    /**
-	     * Set the scene that's used to render for this viewport
-	     */
-	    scene: Scene;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    deltaTime: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    mousePicker: IPicker;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    visible: boolean;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    renderedFacesCount: number;
-	    /**
-	     * Renders the view.
-	     */
-	    render(): void;
-	    /**
-	     *
-	     */
-	    pUpdateTime(): void;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     *
-	     */
-	    iEntityCollector: CollectorBase;
-	    /**
-	     *
-	     */
-	    private onProjectionChanged(event);
-	    /**
-	     *
-	     */
-	    private onViewportUpdated(event);
-	    /**
-	     *
-	     */
-	    private onScissorUpdated(event);
-	    project(point3d: Vector3D): Vector3D;
-	    unproject(sX: number, sY: number, sZ: number): Vector3D;
-	    getRay(sX: number, sY: number, sZ: number): Vector3D;
-	    forceMouseMove: boolean;
-	    updateCollider(): void;
-	}
-	export = View;
-	
-}
 declare module "awayjs-display/lib/controllers/FirstPersonController" {
 	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -8748,7 +7941,51 @@ declare module "awayjs-display/lib/text/TextFieldType" {
 	export = TextFieldType;
 	
 }
+declare module "awayjs-display/lib/text/TesselatedFontTable" {
+	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	/**
+	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.SubMeshBase
+	 */
+	class TesselatedFontTable extends NamedAssetBase {
+	    private _font_chars;
+	    private _font_chars_dic;
+	    private _font_em_size;
+	    private _charDictDirty;
+	    /**
+	     * Creates a new TesselatedFont object
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    get_font_chars(): Array<SubGeometryBase>;
+	    get_font_em_size(): number;
+	    set_font_em_size(font_em_size: number): void;
+	    /**
+	     *
+	     */
+	    get_subgeo_for_char(char: string): SubGeometryBase;
+	    /**
+	     *
+	     */
+	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
+	}
+	export = TesselatedFontTable;
+	
+}
 declare module "awayjs-display/lib/text/TextFormat" {
+	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import TesselatedFontTable = require("awayjs-display/lib/text/TesselatedFontTable");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
 	 * The TextFormat class represents character formatting information. Use the
 	 * TextFormat class to create specific text formatting for text fields. You
@@ -8775,7 +8012,7 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	 * <p>The default formatting for each property is also described in each
 	 * property description.</p>
 	 */
-	class TextFormat {
+	class TextFormat extends NamedAssetBase implements IAsset {
 	    /**
 	     * Indicates the alignment of the paragraph. Valid values are TextFormatAlign
 	     * constants.
@@ -8815,11 +8052,26 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	     */
 	    color: boolean;
 	    /**
-	     * The name of the font for text in this text format, as a string. The
-	     * default value is <code>null</code>, which means that Flash Player uses
-	     * Times New Roman font for the text.
+	     * The material to use for texturing geometry generated for this text-format. this material will be used by the  TextField
 	     */
-	    font: string;
+	    material: MaterialBase;
+	    /**
+	     * The name of the font for text in this text format, as a string.
+	     * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
+	     * The font-name can be used to get a Font-object from the AssetLibrary.
+	     * A Font object provides a list of Font-table, corresponding to font-table names.
+	     */
+	    font_name: string;
+	    /**
+	     * The name of the font-style for text in this text format, as a string.
+	     * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
+	     * The font-style can be used to get a Font-table, from a Font-object.
+	     */
+	    font_style: string;
+	    /**
+	     * The font-table that provides the subgeos for the chars
+	     */
+	    font_table: TesselatedFontTable;
 	    /**
 	     * Indicates the indentation from the left margin to the first character in
 	     * the paragraph. The default value is <code>null</code>, which indicates
@@ -8892,7 +8144,7 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	     * <code>null</code>, you can get or set this property, but the property will
 	     * have no effect.
 	     */
-	    target: string;
+	    link_target: string;
 	    /**
 	     * Indicates whether the text that uses this text format is underlined
 	     * (<code>true</code>) or not(<code>false</code>). This underlining is
@@ -8951,7 +8203,11 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	     * @param leading     A number that indicates the amount of leading vertical
 	     *                    space between lines.
 	     */
-	    constructor(font?: string, size?: number, color?: number, bold?: boolean, italic?: boolean, underline?: boolean, url?: string, target?: string, align?: string, leftMargin?: number, rightMargin?: number, indent?: number, leading?: number);
+	    constructor(font?: string, size?: number, color?: number, bold?: boolean, italic?: boolean, underline?: boolean, url?: string, link_target?: string, align?: string, leftMargin?: number, rightMargin?: number, indent?: number, leading?: number);
+	    /**
+	     *
+	     */
+	    assetType: string;
 	}
 	export = TextFormat;
 	
@@ -9056,6 +8312,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	import TextFormat = require("awayjs-display/lib/text/TextFormat");
 	import TextInteractionMode = require("awayjs-display/lib/text/TextInteractionMode");
 	import TextLineMetrics = require("awayjs-display/lib/text/TextLineMetrics");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	/**
 	 * The TextField class is used to create display objects for text display and
 	 * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -9135,7 +8392,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	 *                                  to SELECTION mode using context menu
 	 *                                  options
 	 */
-	class TextField extends DisplayObject {
+	class TextField extends Mesh {
 	    private _bottomScrollV;
 	    private _caretIndex;
 	    private _length;
@@ -9656,7 +8913,17 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     *
 	     * @param newText The string to append to the existing text.
 	     */
-	    appendText(newText: string): void;
+	    appendText(newText: string, newFormat: TextFormat): void;
+	    /**
+	     * *tells the Textfield that a paragraph is defined completly.
+	     * e.g. the textfield will start a new line for future added text.
+	     */
+	    closeParagraph(): void;
+	    /**
+	     * *tells the Textfield that a paragraph is defined completly.
+	     * e.g. the textfield will start a new line for future added text.
+	     */
+	    construct_geometry(): void;
 	    /**
 	     * Returns a rectangle that is the bounding box of the character.
 	     *
@@ -9940,6 +9207,813 @@ declare module "awayjs-display/lib/errors/CastError" {
 	export = CastError;
 	
 }
+declare module "awayjs-display/lib/pick/IPicker" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import View = require("awayjs-display/lib/containers/View");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	/**
+	 * Provides an interface for picking objects that can pick 3d objects from a view or scene.
+	 *
+	 * @interface away.pick.IPicker
+	 */
+	interface IPicker {
+	    /**
+	     * Gets the collision object from the screen coordinates of the picking ray.
+	     *
+	     * @param x The x coordinate of the picking ray in screen-space.
+	     * @param y The y coordinate of the picking ray in screen-space.
+	     * @param view The view on which the picking object acts.
+	     */
+	    getViewCollision(x: number, y: number, view: View): PickingCollisionVO;
+	    /**
+	     * Gets the collision object from the scene position and direction of the picking ray.
+	     *
+	     * @param position The position of the picking ray in scene-space.
+	     * @param direction The direction of the picking ray in scene-space.
+	     * @param scene The scene on which the picking object acts.
+	     */
+	    getSceneCollision(position: Vector3D, direction: Vector3D, scene: Scene): PickingCollisionVO;
+	    /**
+	     * Determines whether the picker takes account of the mouseEnabled properties of entities. Defaults to true.
+	     */
+	    onlyMouseEnabled: boolean;
+	    /**
+	     * Disposes memory used by the IPicker object
+	     */
+	    dispose(): any;
+	}
+	export = IPicker;
+	
+}
+declare module "awayjs-display/lib/traverse/RaycastCollector" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
+	 * considered intersecting with the defined ray.
+	 *
+	 * @see away.partition.Partition
+	 * @see away.entities.IEntity
+	 *
+	 * @class away.traverse.RaycastCollector
+	 */
+	class RaycastCollector extends CollectorBase {
+	    private _rayPosition;
+	    private _rayDirection;
+	    _iCollectionMark: number;
+	    /**
+	     * Provides the starting position of the ray.
+	     */
+	    rayPosition: Vector3D;
+	    /**
+	     * Provides the direction vector of the ray.
+	     */
+	    rayDirection: Vector3D;
+	    /**
+	     * Creates a new RaycastCollector object.
+	     */
+	    constructor();
+	    /**
+	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	     *
+	     * @param node The Partition3DNode object to frustum-test.
+	     */
+	    enterNode(node: NodeBase): boolean;
+	}
+	export = RaycastCollector;
+	
+}
+declare module "awayjs-display/lib/pick/RaycastPicker" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import View = require("awayjs-display/lib/containers/View");
+	import IPicker = require("awayjs-display/lib/pick/IPicker");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	/**
+	 * Picks a 3d object from a view or scene by 3D raycast calculations.
+	 * Performs an initial coarse boundary calculation to return a subset of entities whose bounding volumes intersect with the specified ray,
+	 * then triggers an optional picking collider on individual entity objects to further determine the precise values of the picking ray collision.
+	 *
+	 * @class away.pick.RaycastPicker
+	 */
+	class RaycastPicker implements IPicker {
+	    private _findClosestCollision;
+	    private _raycastCollector;
+	    private _ignoredEntities;
+	    private _onlyMouseEnabled;
+	    private _entities;
+	    private _numEntities;
+	    private _hasCollisions;
+	    /**
+	     * @inheritDoc
+	     */
+	    onlyMouseEnabled: boolean;
+	    /**
+	     * Creates a new <code>RaycastPicker</code> object.
+	     *
+	     * @param findClosestCollision Determines whether the picker searches for the closest bounds collision along the ray,
+	     * or simply returns the first collision encountered. Defaults to false.
+	     */
+	    constructor(findClosestCollision?: boolean);
+	    /**
+	     * @inheritDoc
+	     */
+	    getViewCollision(x: number, y: number, view: View): PickingCollisionVO;
+	    /**
+	     * @inheritDoc
+	     */
+	    getSceneCollision(rayPosition: Vector3D, rayDirection: Vector3D, scene: Scene): PickingCollisionVO;
+	    setIgnoreList(entities: any): void;
+	    private isIgnored(entity);
+	    private sortOnNearT(entity1, entity2);
+	    private getPickingCollisionVO(collector);
+	    private updateLocalPosition(pickingCollisionVO);
+	    dispose(): void;
+	}
+	export = RaycastPicker;
+	
+}
+declare module "awayjs-display/lib/pool/CSSRenderableBase" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * @class away.pool.RenderableListItem
+	 */
+	class CSSRenderableBase implements IRenderable {
+	    /**
+	     *
+	     */
+	    private _pool;
+	    /**
+	     *
+	     */
+	    next: CSSRenderableBase;
+	    /**
+	     *
+	     */
+	    materialId: number;
+	    /**
+	     *
+	     */
+	    renderOrderId: number;
+	    /**
+	     *
+	     */
+	    zIndex: number;
+	    /**
+	     *
+	     */
+	    cascaded: boolean;
+	    /**
+	     *
+	     */
+	    renderSceneTransform: Matrix3D;
+	    /**
+	     *
+	     */
+	    sourceEntity: IEntity;
+	    /**
+	     *
+	     */
+	    renderObjectId: number;
+	    /**
+	     *
+	     */
+	    renderableOwner: IRenderableOwner;
+	    /**
+	     *
+	     */
+	    htmlElement: HTMLElement;
+	    /**
+	     *
+	     * @param sourceEntity
+	     * @param material
+	     * @param animator
+	     */
+	    constructor(pool: IRenderablePool, sourceEntity: IEntity, renderableOwner: IRenderableOwner);
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     *
+	     */
+	    invalidateGeometry(): void;
+	    /**
+	     *
+	     */
+	    invalidateIndexData(): void;
+	    /**
+	     *
+	     */
+	    invalidateVertexData(dataType: string): void;
+	}
+	export = CSSRenderableBase;
+	
+}
+declare module "awayjs-display/lib/pool/CSSBillboardRenderable" {
+	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import Billboard = require("awayjs-display/lib/entities/Billboard");
+	/**
+	 * @class away.pool.RenderableListItem
+	 */
+	class CSSBillboardRenderable extends CSSRenderableBase {
+	    static id: string;
+	    constructor(pool: IRenderablePool, billboard: Billboard);
+	}
+	export = CSSBillboardRenderable;
+	
+}
+declare module "awayjs-display/lib/pool/CSSLineSegmentRenderable" {
+	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import LineSegment = require("awayjs-display/lib/entities/LineSegment");
+	/**
+	 * @class away.pool.RenderableListItem
+	 */
+	class CSSLineSegmentRenderable extends CSSRenderableBase {
+	    static id: string;
+	    constructor(pool: IRenderablePool, lineSegment: LineSegment);
+	}
+	export = CSSLineSegmentRenderable;
+	
+}
+declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.CSSEntityCollector
+	 */
+	class CSSEntityCollector extends CollectorBase {
+	    constructor();
+	}
+	export = CSSEntityCollector;
+	
+}
+declare module "awayjs-display/lib/events/RendererEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class RendererEvent extends Event {
+	    static VIEWPORT_UPDATED: string;
+	    static SCISSOR_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = RendererEvent;
+	
+}
+declare module "awayjs-display/lib/materials/CSSMaterialBase" {
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	/**
+	 * MaterialBase forms an abstract base class for any material.
+	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
+	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
+	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
+	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
+	 *
+	 * Away3D provides default materials trough SinglePassMaterialBase and MultiPassMaterialBase, which use modular
+	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
+	 * shaders, or entire new material frameworks.
+	 */
+	class CSSMaterialBase extends MaterialBase {
+	    private _imageElement;
+	    private _imageStyle;
+	    imageElement: HTMLImageElement;
+	    imageStyle: MSStyleCSSProperties;
+	    /**
+	     * The texture object to use for the albedo colour.
+	     */
+	    texture: Texture2DBase;
+	    /**
+	     * Creates a new MaterialBase object.
+	     */
+	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean);
+	}
+	export = CSSMaterialBase;
+	
+}
+declare module "awayjs-display/lib/render/CSSRendererBase" {
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+	import LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
+	import TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
+	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	import CSSEntityCollector = require("awayjs-display/lib/traverse/CSSEntityCollector");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Billboard = require("awayjs-display/lib/entities/Billboard");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Skybox = require("awayjs-display/lib/entities/Skybox");
+	import TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
+	/**
+	 * RendererBase forms an abstract base class for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.RendererBase
+	 */
+	class CSSRendererBase extends EventDispatcher {
+	    private _billboardRenderablePool;
+	    private _lineSegmentRenderablePool;
+	    _pCamera: Camera;
+	    _iEntryPoint: Vector3D;
+	    _pCameraForward: Vector3D;
+	    private _backgroundR;
+	    private _backgroundG;
+	    private _backgroundB;
+	    private _backgroundAlpha;
+	    private _shareContext;
+	    _pBackBufferInvalid: boolean;
+	    _depthTextureInvalid: boolean;
+	    _renderableHead: CSSRenderableBase;
+	    _width: number;
+	    _height: number;
+	    private _viewPort;
+	    private _viewportDirty;
+	    private _scissorRect;
+	    private _scissorDirty;
+	    private _localPos;
+	    private _globalPos;
+	    private _scissorUpdated;
+	    private _viewPortUpdated;
+	    /**
+	     * A viewPort rectangle equivalent of the StageGL size and position.
+	     */
+	    viewPort: Rectangle;
+	    /**
+	     * A scissor rectangle equivalent of the view size and position.
+	     */
+	    scissorRect: Rectangle;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    renderableSorter: IEntitySorter;
+	    /**
+	     * Creates a new RendererBase object.
+	     */
+	    constructor(renderToTexture?: boolean, forceSoftware?: boolean, profile?: string);
+	    /**
+	     * The background color's red component, used when clearing.
+	     *
+	     * @private
+	     */
+	    _iBackgroundR: number;
+	    /**
+	     * The background color's green component, used when clearing.
+	     *
+	     * @private
+	     */
+	    _iBackgroundG: number;
+	    /**
+	     * The background color's blue component, used when clearing.
+	     *
+	     * @private
+	     */
+	    _iBackgroundB: number;
+	    shareContext: boolean;
+	    /**
+	     * Disposes the resources used by the RendererBase.
+	     */
+	    dispose(): void;
+	    render(entityCollector: CollectorBase): void;
+	    /**
+	     * Renders the potentially visible geometry to the back buffer or texture.
+	     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
+	     * @param scissorRect
+	     */
+	    _iRender(entityCollector: EntityCollector, target?: TextureProxyBase, scissorRect?: Rectangle, surfaceSelector?: number): void;
+	    _iRenderCascades(entityCollector: CollectorBase, target: TextureProxyBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): void;
+	    pCollectRenderables(entityCollector: CollectorBase): void;
+	    /**
+	     * Renders the potentially visible geometry to the back buffer or texture. Only executed if everything is set up.
+	     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
+	     * @param scissorRect
+	     */
+	    pExecuteRender(entityCollector: CSSEntityCollector, scissorRect?: Rectangle): void;
+	    /**
+	     * Performs the actual drawing of dom objects to the target.
+	     *
+	     * @param entityCollector The EntityCollector object containing the potentially visible dom objects.
+	     */
+	    pDraw(entityCollector: CSSEntityCollector): void;
+	    _iBackgroundAlpha: number;
+	    /**
+	     *
+	     * @param billboard
+	     */
+	    applyBillboard(billboard: Billboard): void;
+	    /**
+	     *
+	     * @param lineSubMesh
+	     */
+	    applyLineSubMesh(lineSubMesh: LineSubMesh): void;
+	    /**
+	     *
+	     * @param skybox
+	     */
+	    applySkybox(skybox: Skybox): void;
+	    /**
+	     *
+	     * @param triangleSubMesh
+	     */
+	    applyTriangleSubMesh(triangleSubMesh: TriangleSubMesh): void;
+	    /**
+	     *
+	     * @param renderable
+	     * @private
+	     */
+	    private _applyRenderable(renderable);
+	    /**
+	     * @private
+	     */
+	    private notifyScissorUpdate();
+	    /**
+	     * @private
+	     */
+	    private notifyViewportUpdate();
+	    /**
+	     *
+	     */
+	    updateGlobalPos(): void;
+	    _iCreateEntityCollector(): CollectorBase;
+	}
+	export = CSSRendererBase;
+	
+}
+declare module "awayjs-display/lib/managers/MouseManager" {
+	import View = require("awayjs-display/lib/containers/View");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	/**
+	 * MouseManager enforces a singleton pattern and is not intended to be instanced.
+	 * it provides a manager class for detecting mouse hits on scene objects and sending out mouse events.
+	 */
+	class MouseManager {
+	    private static _instance;
+	    private _viewLookup;
+	    _iActiveDiv: HTMLDivElement;
+	    _iUpdateDirty: boolean;
+	    _iCollidingObject: PickingCollisionVO;
+	    private _nullVector;
+	    private _previousCollidingObject;
+	    private _queuedEvents;
+	    private _mouseMoveEvent;
+	    private _mouseUp;
+	    private _mouseClick;
+	    private _mouseOut;
+	    private _mouseDown;
+	    private _mouseMove;
+	    private _mouseOver;
+	    private _mouseWheel;
+	    private _mouseDoubleClick;
+	    private onClickDelegate;
+	    private onDoubleClickDelegate;
+	    private onMouseDownDelegate;
+	    private onMouseMoveDelegate;
+	    private onMouseUpDelegate;
+	    private onMouseWheelDelegate;
+	    private onMouseOverDelegate;
+	    private onMouseOutDelegate;
+	    /**
+	     * Creates a new <code>MouseManager</code> object.
+	     */
+	    constructor();
+	    static getInstance(): MouseManager;
+	    fireMouseEvents(forceMouseMove: boolean): void;
+	    registerView(view: View): void;
+	    unregisterView(view: View): void;
+	    private queueDispatch(event, sourceEvent, collider?);
+	    private onMouseMove(event);
+	    private onMouseOut(event);
+	    private onMouseOver(event);
+	    private onClick(event);
+	    private onDoubleClick(event);
+	    private onMouseDown(event);
+	    private onMouseUp(event);
+	    private onMouseWheel(event);
+	    private updateColliders(event);
+	}
+	export = MouseManager;
+	
+}
+declare module "awayjs-display/lib/containers/View" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import IPicker = require("awayjs-display/lib/pick/IPicker");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	class View {
+	    _pScene: Scene;
+	    _pCamera: Camera;
+	    _pEntityCollector: CollectorBase;
+	    _pRenderer: IRenderer;
+	    private _aspectRatio;
+	    private _width;
+	    private _height;
+	    private _time;
+	    private _deltaTime;
+	    private _backgroundColor;
+	    private _backgroundAlpha;
+	    private _viewportDirty;
+	    private _scissorDirty;
+	    private _onScenePartitionChangedDelegate;
+	    private _onProjectionChangedDelegate;
+	    private _onViewportUpdatedDelegate;
+	    private _onScissorUpdatedDelegate;
+	    private _mouseManager;
+	    private _mousePicker;
+	    private _htmlElement;
+	    private _shareContext;
+	    _pMouseX: number;
+	    _pMouseY: number;
+	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
+	    /**
+	     *
+	     * @param e
+	     */
+	    private onScenePartitionChanged(event);
+	    layeredView: boolean;
+	    mouseX: number;
+	    mouseY: number;
+	    /**
+	     *
+	     */
+	    htmlElement: HTMLDivElement;
+	    /**
+	     *
+	     */
+	    renderer: IRenderer;
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    backgroundColor: number;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    /**
+	     *
+	     * @param value
+	     */
+	    backgroundAlpha: number;
+	    /**
+	     *
+	     * @returns {Camera3D}
+	     */
+	    /**
+	     * Set camera that's used to render the scene for this viewport
+	     */
+	    camera: Camera;
+	    /**
+	     *
+	     * @returns {away.containers.Scene3D}
+	     */
+	    /**
+	     * Set the scene that's used to render for this viewport
+	     */
+	    scene: Scene;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    deltaTime: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    mousePicker: IPicker;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    visible: boolean;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    renderedFacesCount: number;
+	    /**
+	     * Renders the view.
+	     */
+	    render(): void;
+	    /**
+	     *
+	     */
+	    pUpdateTime(): void;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     *
+	     */
+	    iEntityCollector: CollectorBase;
+	    /**
+	     *
+	     */
+	    private onProjectionChanged(event);
+	    /**
+	     *
+	     */
+	    private onViewportUpdated(event);
+	    /**
+	     *
+	     */
+	    private onScissorUpdated(event);
+	    project(point3d: Vector3D): Vector3D;
+	    unproject(sX: number, sY: number, sZ: number): Vector3D;
+	    getRay(sX: number, sY: number, sZ: number): Vector3D;
+	    forceMouseMove: boolean;
+	    updateCollider(): void;
+	}
+	export = View;
+	
+}
+declare module "awayjs-display/lib/events/MouseEvent" {
+	import Point = require("awayjs-core/lib/geom/Point");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Event = require("awayjs-core/lib/events/Event");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import View = require("awayjs-display/lib/containers/View");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
+	 * TODO: we don't have screenZ data, tho this should be easy to implement
+	 */
+	class MouseEvent extends Event {
+	    _iAllowedToPropagate: boolean;
+	    _iParentEvent: MouseEvent;
+	    /**
+	     * Defines the value of the type property of a mouseOver3d event object.
+	     */
+	    static MOUSE_OVER: string;
+	    /**
+	     * Defines the value of the type property of a mouseOut3d event object.
+	     */
+	    static MOUSE_OUT: string;
+	    /**
+	     * Defines the value of the type property of a mouseUp3d event object.
+	     */
+	    static MOUSE_UP: string;
+	    /**
+	     * Defines the value of the type property of a mouseDown3d event object.
+	     */
+	    static MOUSE_DOWN: string;
+	    /**
+	     * Defines the value of the type property of a mouseMove3d event object.
+	     */
+	    static MOUSE_MOVE: string;
+	    /**
+	     * Defines the value of the type property of a rollOver3d event object.
+	     */
+	    /**
+	     * Defines the value of the type property of a rollOut3d event object.
+	     */
+	    /**
+	     * Defines the value of the type property of a click3d event object.
+	     */
+	    static CLICK: string;
+	    /**
+	     * Defines the value of the type property of a doubleClick3d event object.
+	     */
+	    static DOUBLE_CLICK: string;
+	    /**
+	     * Defines the value of the type property of a mouseWheel3d event object.
+	     */
+	    static MOUSE_WHEEL: string;
+	    /**
+	     * The horizontal coordinate at which the event occurred in view coordinates.
+	     */
+	    screenX: number;
+	    /**
+	     * The vertical coordinate at which the event occurred in view coordinates.
+	     */
+	    screenY: number;
+	    /**
+	     * The view object inside which the event took place.
+	     */
+	    view: View;
+	    /**
+	     * The 3d object inside which the event took place.
+	     */
+	    object: DisplayObject;
+	    /**
+	     * The renderable owner inside which the event took place.
+	     */
+	    renderableOwner: IRenderableOwner;
+	    /**
+	     * The material of the 3d element inside which the event took place.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * The uv coordinate inside the draw primitive where the event took place.
+	     */
+	    uv: Point;
+	    /**
+	     * The index of the face where the event took place.
+	     */
+	    index: number;
+	    /**
+	     * The index of the subGeometry where the event took place.
+	     */
+	    subGeometryIndex: number;
+	    /**
+	     * The position in object space where the event took place
+	     */
+	    localPosition: Vector3D;
+	    /**
+	     * The normal in object space where the event took place
+	     */
+	    localNormal: Vector3D;
+	    /**
+	     * Indicates whether the Control key is active (true) or inactive (false).
+	     */
+	    ctrlKey: boolean;
+	    /**
+	     * Indicates whether the Alt key is active (true) or inactive (false).
+	     */
+	    altKey: boolean;
+	    /**
+	     * Indicates whether the Shift key is active (true) or inactive (false).
+	     */
+	    shiftKey: boolean;
+	    /**
+	     * Indicates how many lines should be scrolled for each unit the user rotates the mouse wheel.
+	     */
+	    delta: number;
+	    /**
+	     * Create a new MouseEvent object.
+	     * @param type The type of the MouseEvent.
+	     */
+	    constructor(type: string);
+	    /**
+	     * @inheritDoc
+	     */
+	    bubbles: boolean;
+	    /**
+	     * @inheritDoc
+	     */
+	    stopPropagation(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    stopImmediatePropagation(): void;
+	    /**
+	     * Creates a copy of the MouseEvent object and sets the value of each property to match that of the original.
+	     */
+	    clone(): Event;
+	    /**
+	     * The position in scene space where the event took place
+	     */
+	    scenePosition: Vector3D;
+	    /**
+	     * The normal in scene space where the event took place
+	     */
+	    sceneNormal: Vector3D;
+	}
+	export = MouseEvent;
+	
+}
 declare module "awayjs-display/lib/events/ResizeEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class ResizeEvent extends Event {
@@ -10103,6 +10177,85 @@ declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
 	    constructor(pool: IRenderablePool, skyBox: Skybox);
 	}
 	export = CSSSkyboxRenderable;
+	
+}
+declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
+	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
+	 * materials assigned to them.
+	 *
+	 * @class away.render.DefaultRenderer
+	 */
+	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
+	    private _container;
+	    private _context;
+	    private _contextStyle;
+	    private _contextMatrix;
+	    private _activeMaterial;
+	    private _skyboxProjection;
+	    private _transform;
+	    /**
+	     * Creates a new CSSDefaultRenderer object.
+	     */
+	    constructor();
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    pDraw(entityCollector: EntityCollector): void;
+	    /**
+	     * Updates the backbuffer properties.
+	     */
+	    pUpdateBackBuffer(): void;
+	    /**
+	     * Draw the skybox if present.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawSkybox(entityCollector);
+	    /**
+	     * Draw a list of renderables.
+	     * @param renderables The renderables to draw.
+	     * @param entityCollector The EntityCollector containing all potentially visible information.
+	     */
+	    private drawRenderables(item, entityCollector);
+	    dispose(): void;
+	    _iCreateEntityCollector(): CollectorBase;
+	}
+	export = CSSDefaultRenderer;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableMergeSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.RenderableMergeSort
+	 */
+	class RenderableMergeSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.NullSort
+	 */
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableNullSort;
 	
 }
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
@@ -10404,125 +10557,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
-	
-}
-declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
-	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
-	 * materials assigned to them.
-	 *
-	 * @class away.render.DefaultRenderer
-	 */
-	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
-	    private _container;
-	    private _context;
-	    private _contextStyle;
-	    private _contextMatrix;
-	    private _activeMaterial;
-	    private _skyboxProjection;
-	    private _transform;
-	    /**
-	     * Creates a new CSSDefaultRenderer object.
-	     */
-	    constructor();
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    pDraw(entityCollector: EntityCollector): void;
-	    /**
-	     * Updates the backbuffer properties.
-	     */
-	    pUpdateBackBuffer(): void;
-	    /**
-	     * Draw the skybox if present.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawSkybox(entityCollector);
-	    /**
-	     * Draw a list of renderables.
-	     * @param renderables The renderables to draw.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawRenderables(item, entityCollector);
-	    dispose(): void;
-	    _iCreateEntityCollector(): CollectorBase;
-	}
-	export = CSSDefaultRenderer;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableNullSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.NullSort
-	 */
-	class RenderableNullSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableNullSort;
-	
-}
-declare module "awayjs-display/lib/text/TesselatedFontTable" {
-	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.SubMeshBase
-	 */
-	class TesselatedFontTable extends NamedAssetBase {
-	    private _font_chars;
-	    private _font_chars_dic;
-	    private _font_em_size;
-	    private _charDictDirty;
-	    /**
-	     * Creates a new TesselatedFont object
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    get_font_chars(): Array<SubGeometryBase>;
-	    get_font_em_size(): number;
-	    set_font_em_size(font_em_size: number): void;
-	    /**
-	     *
-	     */
-	    get_subgeo_for_char(char: string): SubGeometryBase;
-	    /**
-	     *
-	     */
-	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
-	}
-	export = TesselatedFontTable;
 	
 }
 declare module "awayjs-display/lib/text/Font" {
