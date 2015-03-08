@@ -68,110 +68,40 @@ declare module "awayjs-display/lib/animators/IAnimationSet" {
 	export = IAnimationSet;
 	
 }
-declare module "awayjs-display/lib/events/GeometryEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+declare module "awayjs-display/lib/bounds/BoundsType" {
 	/**
-	* Dispatched to notify changes in a geometry object's state.
-	*
-	* @class away.events.GeometryEvent
-	* @see away3d.core.base.Geometry
-	*/
-	class GeometryEvent extends Event {
+	 *
+	 */
+	class BoundsType {
 	    /**
-	     * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
+	     *
 	     */
-	    static SUB_GEOMETRY_ADDED: string;
+	    static SPHERE: string;
 	    /**
-	     * Dispatched when a TriangleSubGeometry was removed from the dispatching Geometry.
+	     *
 	     */
-	    static SUB_GEOMETRY_REMOVED: string;
-	    static BOUNDS_INVALID: string;
-	    private _subGeometry;
+	    static AXIS_ALIGNED_BOX: string;
 	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param subGeometry An optional TriangleSubGeometry object that is the subject of this event.
+	     *
 	     */
-	    constructor(type: string, subGeometry?: SubGeometryBase);
-	    /**
-	     * The TriangleSubGeometry object that is the subject of this event, if appropriate.
-	     */
-	    subGeometry: SubGeometryBase;
-	    /**
-	     * Clones the event.
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): Event;
+	    static NULL: string;
 	}
-	export = GeometryEvent;
+	export = BoundsType;
 	
 }
-declare module "awayjs-display/lib/base/Geometry" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+declare module "awayjs-display/lib/events/CameraEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	import Camera = require("awayjs-display/lib/entities/Camera");
 	/**
-	 *
-	 * Geometry is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
-	 * normals, uvs, etc. It also contains a reference to an animation class, which defines how the geometry moves.
-	 * A Geometry object is assigned to a Mesh, a scene graph occurence of the geometry, which in turn assigns
-	 * the SubGeometries to its respective TriangleSubMesh objects.
-	 *
-	 *
-	 *
-	 * @see away.core.base.SubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class Geometry
+	 * @class away.events.CameraEvent
 	 */
-	class Geometry extends NamedAssetBase implements IAsset {
-	    private _subGeometries;
-	    assetType: string;
-	    /**
-	     * A collection of TriangleSubGeometry objects, each of which contain geometrical data such as vertices, normals, etc.
-	     */
-	    subGeometries: Array<SubGeometryBase>;
-	    getSubGeometries(): Array<SubGeometryBase>;
-	    /**
-	     * Creates a new Geometry object.
-	     */
-	    constructor();
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Adds a new TriangleSubGeometry object to the list.
-	     * @param subGeometry The TriangleSubGeometry object to be added.
-	     */
-	    addSubGeometry(subGeometry: SubGeometryBase): void;
-	    /**
-	     * Removes a new TriangleSubGeometry object from the list.
-	     * @param subGeometry The TriangleSubGeometry object to be removed.
-	     */
-	    removeSubGeometry(subGeometry: SubGeometryBase): void;
-	    /**
-	     * Clones the geometry.
-	     * @return An exact duplicate of the current Geometry object.
-	     */
-	    clone(): Geometry;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    /**
-	     * Clears all resources used by the Geometry object, including SubGeometries.
-	     */
-	    dispose(): void;
-	    /**
-	     * Scales the uv coordinates (tiling)
-	     * @param scaleU The amount by which to scale on the u axis. Default is 1;
-	     * @param scaleV The amount by which to scale on the v axis. Default is 1;
-	     */
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    iInvalidateBounds(subGeom: SubGeometryBase): void;
+	class CameraEvent extends Event {
+	    static PROJECTION_CHANGED: string;
+	    private _camera;
+	    constructor(type: string, camera: Camera);
+	    camera: Camera;
 	}
-	export = Geometry;
+	export = CameraEvent;
 	
 }
 declare module "awayjs-display/lib/pool/IRenderObject" {
@@ -200,219 +130,226 @@ declare module "awayjs-display/lib/pool/IRenderObject" {
 	export = IRenderObject;
 	
 }
-declare module "awayjs-display/lib/bounds/BoundsType" {
+declare module "awayjs-display/lib/base/ISubMesh" {
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	/**
+	 * ISubMesh is an interface for object SubMesh that is used to
+	 * apply a material to a SubGeometry class
 	 *
+	 * @class away.base.ISubMesh
 	 */
-	class BoundsType {
-	    /**
-	     *
-	     */
-	    static SPHERE: string;
-	    /**
-	     *
-	     */
-	    static AXIS_ALIGNED_BOX: string;
-	    /**
-	     *
-	     */
-	    static NULL: string;
+	interface ISubMesh extends IRenderableOwner {
+	    subGeometry: SubGeometryBase;
+	    parentMesh: Mesh;
+	    material: MaterialBase;
+	    _iIndex: number;
+	    _iInvalidateRenderableGeometry(): any;
+	    _iGetExplicitMaterial(): MaterialBase;
 	}
-	export = BoundsType;
+	export = ISubMesh;
 	
 }
-declare module "awayjs-display/lib/pool/IRenderable" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+declare module "awayjs-display/lib/base/SubMeshBase" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
-	 * IRenderable is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
+	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
 	 *
-	 * @class away.render.IRenderable
-	 */
-	interface IRenderable {
-	    /**
-	     *
-	     */
-	    next: IRenderable;
-	    /**
-	     *
-	     */
-	    sourceEntity: IEntity;
-	    /**
-	     *
-	     */
-	    renderObjectId: number;
-	    /**
-	     *
-	     */
-	    renderOrderId: number;
-	    /**
-	     *
-	     */
-	    zIndex: number;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidateGeometry(): any;
-	    /**
-	     *
-	     */
-	    invalidateIndexData(): any;
-	    /**
-	     *
-	     */
-	    invalidateVertexData(dataType: string): any;
-	}
-	export = IRenderable;
-	
-}
-declare module "awayjs-display/lib/events/SubGeometryEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	/**
-	 * Dispatched to notify changes in a sub geometry object's state.
 	 *
-	 * @class away.events.SubGeometryEvent
-	 * @see away.core.base.Geometry
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.SubMeshBase
 	 */
-	class SubGeometryEvent extends Event {
+	class SubMeshBase extends NamedAssetBase {
+	    _pParentMesh: Mesh;
+	    _uvTransform: UVTransform;
+	    _iIndex: number;
+	    _material: MaterialBase;
+	    private _renderables;
 	    /**
-	     * Dispatched when a TriangleSubGeometry's index data has been updated.
+	     * The animator object that provides the state for the TriangleSubMesh's animation.
 	     */
-	    static INDICES_UPDATED: string;
+	    animator: IAnimator;
 	    /**
-	     * Dispatched when a TriangleSubGeometry's vertex data has been updated.
+	     * The material used to render the current TriangleSubMesh. If set to null, its parent Mesh's material will be used instead.
 	     */
-	    static VERTICES_UPDATED: string;
-	    private _dataType;
+	    material: MaterialBase;
 	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param dataType An optional data type of the vertex data being updated.
+	     * The scene transform object that transforms from model to world space.
 	     */
-	    constructor(type: string, dataType?: string);
+	    sceneTransform: Matrix3D;
 	    /**
-	     * The data type of the vertex data.
+	     * The entity that that initially provided the IRenderable to the render pipeline (ie: the owning Mesh object).
 	     */
-	    dataType: string;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): Event;
-	}
-	export = SubGeometryEvent;
-	
-}
-declare module "awayjs-display/lib/base/LineSubGeometry" {
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	/**
-	 * @class LineSubGeometry
-	 */
-	class LineSubGeometry extends SubGeometryBase {
-	    static VERTEX_DATA: string;
-	    static START_POSITION_DATA: string;
-	    static END_POSITION_DATA: string;
-	    static THICKNESS_DATA: string;
-	    static COLOR_DATA: string;
-	    static POSITION_FORMAT: string;
-	    static COLOR_FORMAT: string;
-	    static THICKNESS_FORMAT: string;
-	    private _positionsDirty;
-	    private _boundingPositionDirty;
-	    private _thicknessDirty;
-	    private _colorsDirty;
-	    private _startPositions;
-	    private _endPositions;
-	    private _boundingPositions;
-	    private _thickness;
-	    private _startColors;
-	    private _endColors;
-	    private _numSegments;
-	    private _positionsUpdated;
-	    private _thicknessUpdated;
-	    private _colorUpdated;
-	    _pUpdateStrideOffset(): void;
+	    parentMesh: Mesh;
 	    /**
 	     *
 	     */
-	    vertices: Array<number>;
+	    uvTransform: UVTransform;
 	    /**
-	     *
-	     */
-	    startPositions: Array<number>;
-	    /**
-	     *
-	     */
-	    endPositions: Array<number>;
-	    /**
-	     *
-	     */
-	    thickness: Array<number>;
-	    /**
-	     *
-	     */
-	    startColors: Array<number>;
-	    /**
-	     *
-	     */
-	    endColors: Array<number>;
-	    /**
-	     * The total amount of segments in the TriangleSubGeometry.
-	     */
-	    numSegments: number;
-	    /**
-	     *
+	     * Creates a new SubMeshBase object
 	     */
 	    constructor();
-	    getBoundingPositions(): Array<number>;
-	    /**
-	     *
-	     */
-	    updatePositions(startValues: Array<number>, endValues: Array<number>): void;
-	    /**
-	     * Updates the thickness.
-	     */
-	    updateThickness(values: Array<number>): void;
-	    /**
-	     *
-	     */
-	    updateColors(startValues: Array<number>, endValues: Array<number>): void;
 	    /**
 	     *
 	     */
 	    dispose(): void;
 	    /**
-	     * @protected
-	     */
-	    pInvalidateBounds(): void;
-	    /**
-	     * The Geometry object that 'owns' this TriangleSubGeometry object.
 	     *
-	     * @private
+	     * @param camera
+	     * @returns {away.geom.Matrix3D}
 	     */
-	    parentGeometry: Geometry;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): LineSubGeometry;
-	    _pNotifyVerticesUpdate(): void;
-	    private notifyPositionsUpdate();
-	    private notifyThicknessUpdate();
-	    private notifyColorsUpdate();
+	    getRenderSceneTransform(camera: Camera): Matrix3D;
+	    _iAddRenderable(renderable: IRenderable): IRenderable;
+	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	    _iInvalidateRenderableGeometry(): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	    _iGetExplicitMaterial(): MaterialBase;
 	}
-	export = LineSubGeometry;
+	export = SubMeshBase;
+	
+}
+declare module "awayjs-display/lib/base/ISubMeshClass" {
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	/**
+	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
+	 * apply a material to a SubGeometry class
+	 *
+	 * @class away.base.ISubMeshClass
+	 */
+	interface ISubMeshClass {
+	    /**
+	     *
+	     */
+	    new (subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
+	}
+	export = ISubMeshClass;
+	
+}
+declare module "awayjs-display/lib/base/TriangleSubMesh" {
+	import TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * TriangleSubMesh wraps a TriangleSubGeometry as a scene graph instantiation. A TriangleSubMesh is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.TriangleSubMesh
+	 */
+	class TriangleSubMesh extends SubMeshBase implements ISubMesh {
+	    private _subGeometry;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
+	     */
+	    subGeometry: TriangleSubGeometry;
+	    /**
+	     * Creates a new TriangleSubMesh object
+	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
+	     * @param parentMesh The Mesh object to which this TriangleSubMesh belongs.
+	     * @param material An optional material used to render this TriangleSubMesh.
+	     */
+	    constructor(subGeometry: TriangleSubGeometry, parentMesh: Mesh, material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	}
+	export = TriangleSubMesh;
+	
+}
+declare module "awayjs-display/lib/base/CurveSubMesh" {
+	import CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * CurveSubMesh wraps a CurveSubGeometry as a scene graph instantiation. A CurveSubMesh is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.CurveSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.CurveSubMesh
+	 */
+	class CurveSubMesh extends SubMeshBase implements ISubMesh {
+	    private _subGeometry;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
+	     */
+	    subGeometry: CurveSubGeometry;
+	    /**
+	     * Creates a new CurveSubMesh object
+	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
+	     * @param parentMesh The Mesh object to which this CurveSubMesh belongs.
+	     * @param material An optional material used to render this CurveSubMesh.
+	     */
+	    constructor(subGeometry: CurveSubGeometry, parentMesh: Mesh, material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	}
+	export = CurveSubMesh;
+	
+}
+declare module "awayjs-display/lib/pool/SubMeshPool" {
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import ISubMeshClass = require("awayjs-display/lib/base/ISubMeshClass");
+	/**
+	 * @class away.pool.SubMeshPool
+	 */
+	class SubMeshPool {
+	    private static subMeshClassPool;
+	    /**
+	     *
+	     * @param subMeshClass
+	     */
+	    static addSubMeshClass(subMeshClass: ISubMeshClass, subGeometryType: string): string;
+	    /**
+	     *
+	     * @param subGeometry
+	     */
+	    static getSubMeshClass(subGeometry: SubGeometryBase): ISubMeshClass;
+	    static defaultSubMeshTypes: string[];
+	}
+	export = SubMeshPool;
 	
 }
 declare module "awayjs-display/lib/base/LineSubMesh" {
+	import LineSubGeometry = require("awayjs-core/lib/data/LineSubGeometry");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
 	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
@@ -452,487 +389,301 @@ declare module "awayjs-display/lib/base/LineSubMesh" {
 	export = LineSubMesh;
 	
 }
-declare module "awayjs-display/lib/base/CurveSubGeometry" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	/**
-	 * @class away.base.CurveSubGeometry
-	 */
-	class CurveSubGeometry extends SubGeometryBase {
-	    static POSITION_DATA: string;
-	    static CURVE_DATA: string;
-	    static UV_DATA: string;
-	    static POSITION_FORMAT: string;
-	    static CURVE_FORMAT: string;
-	    static UV_FORMAT: string;
-	    private _positionsDirty;
-	    private _curvesDirty;
-	    private _faceNormalsDirty;
-	    private _vertexNormalsDirty;
-	    private _uvsDirty;
-	    private _secondaryUVsDirty;
-	    private _jointIndicesDirty;
-	    private _jointWeightsDirty;
-	    private _positions;
-	    private _curves;
-	    private _uvs;
-	    private _useCondensedIndices;
-	    private _condensedJointIndices;
-	    private _condensedIndexLookUp;
-	    private _concatenateArrays;
-	    private _autoDeriveNormals;
-	    private _useFaceWeights;
-	    private _autoDeriveUVs;
-	    private _faceNormals;
-	    private _faceWeights;
-	    private _scaleU;
-	    private _scaleV;
-	    private _positionsUpdated;
-	    private _curvesUpdated;
-	    private _uvsUpdated;
-	    private _secondaryUVsUpdated;
-	    /**
-	     *
-	     */
-	    scaleU: number;
-	    /**
-	     *
-	     */
-	    scaleV: number;
-	    /**
-	     * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
-	     * by condensing the number of joint index values required per mesh. Only applicable to
-	     * skeleton animations that utilise more than one mesh object. Defaults to false.
-	     */
-	    useCondensedIndices: boolean;
-	    _pUpdateStrideOffset(): void;
-	    /**
-	     * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-	     * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-	     * in cases where UV data is explicitly defined or the material does not require UV data.
-	     */
-	    autoDeriveUVs: boolean;
-	    /**
-	     * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
-	     * explicitly.
-	     */
-	    autoDeriveNormals: boolean;
-	    /**
-	     *
-	     */
-	    vertices: Array<number>;
-	    /**
-	     *
-	     */
-	    positions: Array<number>;
-	    /**
-	     *
-	     */
-	    curves: Array<number>;
-	    /**
-	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
-	     */
-	    faceNormals: Array<number>;
-	    /**
-	     *
-	     */
-	    uvs: Array<number>;
-	    /**
-	     * Indicates whether or not to take the size of faces into account when auto-deriving vertex normals and tangents.
-	     */
-	    useFaceWeights: boolean;
-	    condensedIndexLookUp: Array<number>;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedArrays: boolean);
-	    getBoundingPositions(): Array<number>;
-	    /**
-	     *
-	     */
-	    updatePositions(values: Array<number>): void;
-	    /**
-	     * Updates the vertex normals based on the geometry.
-	     */
-	    updateCurves(values: Array<number>): void;
-	    /**
-	     * Updates the uvs based on the geometry.
-	     */
-	    updateUVs(values: Array<number>): void;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Updates the face indices of the CurveSubGeometry.
-	     *
-	     * @param indices The face indices to upload.
-	     */
-	    updateIndices(indices: Array<number>): void;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): CurveSubGeometry;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Updates the normals for each face.
-	     */
-	    private updateFaceNormals();
-	    _pNotifyVerticesUpdate(): void;
-	    private notifyPositionsUpdate();
-	    private notifyCurvesUpdate();
-	    private notifyUVsUpdate();
+declare module "awayjs-display/lib/events/MaterialEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class MaterialEvent extends Event {
+	    static SIZE_CHANGED: string;
+	    constructor(type: string);
 	}
-	export = CurveSubGeometry;
+	export = MaterialEvent;
 	
 }
-declare module "awayjs-display/lib/base/CurveSubMesh" {
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+declare module "awayjs-display/lib/entities/Billboard" {
+	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import Partition = require("awayjs-display/lib/partition/Partition");
 	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
-	 * CurveSubMesh wraps a CurveSubGeometry as a scene graph instantiation. A CurveSubMesh is owned by a Mesh object.
+	 * The Billboard class represents display objects that represent bitmap images.
+	 * These can be images that you load with the <code>flash.Assets</code> or
+	 * <code>flash.display.Loader</code> classes, or they can be images that you
+	 * create with the <code>Billboard()</code> constructor.
 	 *
+	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
+	 * object that contains a reference to a BitmapData object. After you create a
+	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
+	 * method of the parent DisplayObjectContainer instance to place the bitmap on
+	 * the display list.</p>
 	 *
-	 * @see away.base.CurveSubGeometry
-	 * @see away.entities.Mesh
+	 * <p>A Billboard object can share its BitmapData reference among several Billboard
+	 * objects, independent of translation or rotation properties. Because you can
+	 * create multiple Billboard objects that reference the same BitmapData object,
+	 * multiple display objects can use the same complex BitmapData object without
+	 * incurring the memory overhead of a BitmapData object for each display
+	 * object instance.</p>
 	 *
-	 * @class away.base.CurveSubMesh
+	 * <p>A BitmapData object can be drawn to the screen by a Billboard object in one
+	 * of two ways: by using the default hardware renderer with a single hardware surface,
+	 * or by using the slower software renderer when 3D acceleration is not available.</p>
+	 *
+	 * <p>If you would prefer to perform a batch rendering command, rather than using a
+	 * single surface for each Billboard object, you can also draw to the screen using the
+	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
+	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
+	 * objects.</code></p>
+	 *
+	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
+	 * class, so it cannot dispatch mouse events. However, you can use the
+	 * <code>addEventListener()</code> method of the display object container that
+	 * contains the Billboard object.</p>
 	 */
-	class CurveSubMesh extends SubMeshBase implements ISubMesh {
-	    private _subGeometry;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
-	     */
-	    subGeometry: CurveSubGeometry;
-	    /**
-	     * Creates a new CurveSubMesh object
-	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
-	     * @param parentMesh The Mesh object to which this CurveSubMesh belongs.
-	     * @param material An optional material used to render this CurveSubMesh.
-	     */
-	    constructor(subGeometry: CurveSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	}
-	export = CurveSubMesh;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrefabBase" {
-	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
-	 */
-	class PrefabBase extends NamedAssetBase {
-	    _pObjects: Array<DisplayObject>;
-	    /**
-	     * Creates a new PrefabBase object.
-	     */
-	    constructor();
-	    /**
-	     * Returns a display object generated from this prefab
-	     */
-	    getNewObject(): DisplayObject;
-	    _pCreateObject(): DisplayObject;
-	    _iValidate(): void;
-	}
-	export = PrefabBase;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
-	/**
-	 * PrimitivePrefabBase is an abstract base class for polytope prefabs, which are simple pre-built geometric shapes
-	 */
-	class PrimitivePrefabBase extends PrefabBase {
-	    _geomDirty: boolean;
-	    _uvDirty: boolean;
+	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
+	    private _animator;
+	    private _billboardWidth;
+	    private _billboardHeight;
 	    private _material;
-	    private _geometry;
-	    private _subGeometry;
-	    private _geometryType;
-	    private _geometryTypeDirty;
+	    private _uvTransform;
+	    private onSizeChangedDelegate;
+	    /**
+	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
 	    /**
 	     *
 	     */
 	    assetType: string;
 	    /**
+	     * The BitmapData object being referenced.
+	     */
+	    bitmapData: BitmapData;
+	    /**
 	     *
 	     */
-	    geometryType: string;
-	    geometry: Geometry;
+	    billboardHeight: number;
 	    /**
-	     * The material with which to render the primitive.
+	     *
+	     */
+	    billboardWidth: number;
+	    /**
+	     *
 	     */
 	    material: MaterialBase;
 	    /**
-	     * Creates a new PrimitivePrefabBase object.
+	     * Controls whether or not the Billboard object is snapped to the nearest pixel.
+	     * This value is ignored in the native and HTML5 targets.
+	     * The PixelSnapping class includes possible values:
+	     * <ul>
+	     *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
+	     *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
+	     * the nearest pixel, independent of transformation.</li>
+	     *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
+	     * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
+	     * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
+	     * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
+	     * When targeting Flash Player, this value allows the image to be drawn as fast
+	     * as possible using the internal vector renderer.</li>
+	     * </ul>
+	     */
+	    pixelSnapping: string;
+	    /**
+	     * Controls whether or not the bitmap is smoothed when scaled. If
+	     * <code>true</code>, the bitmap is smoothed when scaled. If
+	     * <code>false</code>, the bitmap is not smoothed when scaled.
+	     */
+	    smoothing: boolean;
+	    /**
 	     *
-	     * @param material The material with which to render the object
 	     */
-	    constructor(material?: MaterialBase, geometryType?: string);
+	    uvTransform: UVTransform;
+	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
 	    /**
-	     * Builds the primitive's geometry when invalid. This method should not be called directly. The calling should
-	     * be triggered by the invalidateGeometry method (and in turn by updateGeometry).
+	     * @protected
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pUpdateBoxBounds(): void;
 	    /**
-	     * Builds the primitive's uv coordinates when invalid. This method should not be called directly. The calling
-	     * should be triggered by the invalidateUVs method (and in turn by updateUVs).
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * Invalidates the primitive's geometry type, causing it to be updated when requested.
-	     */
-	    invalidateGeometryType(): void;
-	    /**
-	     * Invalidates the primitive's geometry, causing it to be updated when requested.
-	     */
-	    _pInvalidateGeometry(): void;
-	    /**
-	     * Invalidates the primitive's uv coordinates, causing them to be updated when requested.
-	     */
-	    _pInvalidateUVs(): void;
-	    /**
-	     * Updates the subgeometry when invalid.
-	     */
-	    private updateGeometryType();
-	    /**
-	     * Updates the geometry when invalid.
-	     */
-	    private updateGeometry();
-	    /**
-	     * Updates the uv coordinates when invalid.
-	     */
-	    private updateUVs();
-	    _iValidate(): void;
-	    _pCreateObject(): DisplayObject;
-	}
-	export = PrimitivePrefabBase;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A Cube primitive prefab.
-	 */
-	class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset {
-	    private _width;
-	    private _height;
-	    private _depth;
-	    private _tile6;
-	    private _segmentsW;
-	    private _segmentsH;
-	    private _segmentsD;
-	    /**
-	     * Creates a new Cube object.
-	     * @param width The size of the cube along its X-axis.
-	     * @param height The size of the cube along its Y-axis.
-	     * @param depth The size of the cube along its Z-axis.
-	     * @param segmentsW The number of segments that make up the cube along the X-axis.
-	     * @param segmentsH The number of segments that make up the cube along the Y-axis.
-	     * @param segmentsD The number of segments that make up the cube along the Z-axis.
-	     * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
-	     */
-	    constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
-	    /**
-	     * The size of the cube along its X-axis.
-	     */
-	    width: number;
-	    /**
-	     * The size of the cube along its Y-axis.
-	     */
-	    height: number;
-	    /**
-	     * The size of the cube along its Z-axis.
-	     */
-	    depth: number;
-	    /**
-	     * The type of uv mapping to use. When false, the entire image is mapped on each face.
-	     * When true, a texture will be subdivided in a 3x2 grid, each used for a single face.
-	     * Reading the tiles from left to right, top to bottom they represent the faces of the
-	     * cube in the following order: bottom, top, back, left, front, right. This creates
-	     * several shared edges (between the top, front, left and right faces) which simplifies
-	     * texture painting.
-	     */
-	    tile6: boolean;
-	    /**
-	     * The number of segments that make up the cube along the X-axis. Defaults to 1.
-	     */
-	    segmentsW: number;
-	    /**
-	     * The number of segments that make up the cube along the Y-axis. Defaults to 1.
-	     */
-	    segmentsH: number;
-	    /**
-	     * The number of segments that make up the cube along the Z-axis. Defaults to 1.
-	     */
-	    segmentsD: number;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	}
-	export = PrimitiveCubePrefab;
-	
-}
-declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
-	 * This is useful for most meshes.
-	 */
-	class AxisAlignedBoundingBox extends BoundingVolumeBase {
-	    private _box;
-	    private _x;
-	    private _y;
-	    private _z;
-	    private _width;
-	    private _height;
-	    private _depth;
-	    private _centerX;
-	    private _centerY;
-	    private _centerZ;
-	    private _halfExtentsX;
-	    private _halfExtentsY;
-	    private _halfExtentsZ;
-	    private _prefab;
-	    /**
-	     * Creates a new <code>AxisAlignedBoundingBox</code> object.
-	     */
-	    constructor(entity: IEntity);
-	    /**
-	     * @inheritDoc
-	     */
-	    nullify(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
-	}
-	export = AxisAlignedBoundingBox;
-	
-}
-declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A UV Sphere primitive mesh.
-	 */
-	class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset {
-	    private _radius;
-	    private _segmentsW;
-	    private _segmentsH;
-	    private _yUp;
-	    /**
-	     * The radius of the sphere.
-	     */
-	    radius: number;
-	    /**
-	     * Defines the number of horizontal segments that make up the sphere. Defaults to 16.
-	     */
-	    segmentsW: number;
-	    /**
-	     * Defines the number of vertical segments that make up the sphere. Defaults to 12.
-	     */
-	    segmentsH: number;
-	    /**
-	     * Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    yUp: boolean;
-	    /**
-	     * Creates a new Sphere object.
+	     * //TODO
 	     *
-	     * @param radius The radius of the sphere.
-	     * @param segmentsW Defines the number of horizontal segments that make up the sphere.
-	     * @param segmentsH Defines the number of vertical segments that make up the sphere.
-	     * @param yUp Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
 	     */
-	    constructor(radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
 	    /**
-	     * @inheritDoc
+	     * @private
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    private onSizeChanged(event);
+	    _iCollectRenderables(rendererPool: IRendererPool): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
 	}
-	export = PrimitiveSpherePrefab;
+	export = Billboard;
 	
 }
-declare module "awayjs-display/lib/bounds/BoundingSphere" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+declare module "awayjs-display/lib/entities/LineSegment" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	class BoundingSphere extends BoundingVolumeBase {
-	    private _sphere;
-	    private _radius;
-	    private _centerX;
-	    private _centerY;
-	    private _centerZ;
-	    private _prefab;
-	    constructor(entity: IEntity);
-	    nullify(): void;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * A Line Segment primitive.
+	 */
+	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
+	    private _animator;
+	    private _material;
+	    private _uvTransform;
+	    _startPosition: Vector3D;
+	    _endPosition: Vector3D;
+	    _halfThickness: number;
+	    /**
+	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    startPostion: Vector3D;
+	    startPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    endPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    /**
+	     *
+	     */
+	    thickness: number;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     * Create a line segment
+	     *
+	     * @param startPosition Start position of the line segment
+	     * @param endPosition Ending position of the line segment
+	     * @param thickness Thickness of the line
+	     */
+	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
+	    dispose(): void;
+	    /**
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    _pUpdateSphereBounds(): void;
+	    /**
+	     * @private
+	     */
+	    private notifyRenderableUpdate();
+	    _iCollectRenderables(rendererPool: IRendererPool): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
 	}
-	export = BoundingSphere;
+	export = LineSegment;
 	
 }
-declare module "awayjs-display/lib/bounds/NullBounds" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	class NullBounds extends BoundingVolumeBase {
-	    private _alwaysIn;
-	    constructor(alwaysIn?: boolean);
-	    clone(): BoundingVolumeBase;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    classifyToPlane(plane: Plane3D): number;
+declare module "awayjs-display/lib/pool/IRendererPool" {
+	import LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
+	import TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
+	import CurveSubMesh = require("awayjs-display/lib/base/CurveSubMesh");
+	import Billboard = require("awayjs-display/lib/entities/Billboard");
+	import LineSegment = require("awayjs-display/lib/entities/LineSegment");
+	/**
+	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderer
+	 */
+	interface IRendererPool {
+	    /**
+	     *
+	     * @param billboard
+	     */
+	    applyBillboard(billboard: Billboard): any;
+	    /**
+	     *
+	     * @param triangleSubMesh
+	     */
+	    applyLineSegment(lineSegment: LineSegment): any;
+	    /**
+	     *
+	     * @param triangleSubMesh
+	     */
+	    applyLineSubMesh(lineSubMesh: LineSubMesh): any;
+	    /**
+	     *
+	     * @param triangleSubMesh
+	     */
+	    applyTriangleSubMesh(triangleSubMesh: TriangleSubMesh): any;
+	    /**
+	     *
+	     * @param curveSubMesh
+	     */
+	    applyCurveSubMesh(curveSubMesh: CurveSubMesh): any;
 	}
-	export = NullBounds;
+	export = IRendererPool;
+	
+}
+declare module "awayjs-display/lib/base/IRenderableOwner" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	/**
+	 * IRenderableOwner provides an interface for objects that can use materials.
+	 *
+	 * @interface away.base.IRenderableOwner
+	 */
+	interface IRenderableOwner extends IAsset {
+	    /**
+	     * The animation used by the material owner to assemble the vertex code.
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     *
+	     * @param renderable
+	     * @private
+	     */
+	    _iAddRenderable(renderable: IRenderable): IRenderable;
+	    /**
+	     *
+	     * @param renderable
+	     * @private
+	     */
+	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	    /**
+	     *
+	     * @param renderer
+	     * @private
+	     */
+	    _iCollectRenderable(rendererPool: IRendererPool): any;
+	}
+	export = IRenderableOwner;
 	
 }
 declare module "awayjs-display/lib/events/SceneEvent" {
@@ -1303,83 +1054,6 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	export = NodeBase;
 	
 }
-declare module "awayjs-display/lib/pick/PickingCollisionVO" {
-	import Point = require("awayjs-core/lib/geom/Point");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	/**
-	 * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects
-	 *
-	 * @see away.base.DisplayObject#pickingCollisionVO
-	 * @see away.core.pick.IPickingCollider
-	 *
-	 * @class away.pick.PickingCollisionVO
-	 */
-	class PickingCollisionVO {
-	    /**
-	     * The display object to which this collision object belongs.
-	     */
-	    displayObject: DisplayObject;
-	    /**
-	     * The local position of the collision on the entity's surface.
-	     */
-	    localPosition: Vector3D;
-	    /**
-	     * The local normal vector at the position of the collision.
-	     */
-	    localNormal: Vector3D;
-	    /**
-	     * The uv coordinate at the position of the collision.
-	     */
-	    uv: Point;
-	    /**
-	     * The index of the face where the event took pl ace.
-	     */
-	    index: number;
-	    /**
-	     * The index of the subGeometry where the event took place.
-	     */
-	    /**
-	     * The starting position of the colliding ray in local coordinates.
-	     */
-	    localRayPosition: Vector3D;
-	    /**
-	     * The direction of the colliding ray in local coordinates.
-	     */
-	    localRayDirection: Vector3D;
-	    /**
-	     * The starting position of the colliding ray in scene coordinates.
-	     */
-	    rayPosition: Vector3D;
-	    /**
-	     * The direction of the colliding ray in scene coordinates.
-	     */
-	    rayDirection: Vector3D;
-	    /**
-	     * Determines if the ray position is contained within the entity bounds.
-	     *
-	     * @see away3d.entities.Entity#bounds
-	     */
-	    rayOriginIsInsideBounds: boolean;
-	    /**
-	     * The distance along the ray from the starting position to the calculated intersection entry point with the entity.
-	     */
-	    rayEntryDistance: number;
-	    /**
-	     * The material ownwer associated with a collision.
-	     */
-	    renderableOwner: IRenderableOwner;
-	    /**
-	     * Creates a new <code>PickingCollisionVO</code> object.
-	     *
-	     * @param entity The entity to which this collision object belongs.
-	     */
-	    constructor(displayObject: DisplayObject);
-	}
-	export = PickingCollisionVO;
-	
-}
 declare module "awayjs-display/lib/pool/IEntityNodeClass" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
@@ -1439,32 +1113,30 @@ declare module "awayjs-display/lib/pool/EntityNodePool" {
 	export = EntityNodePool;
 	
 }
-declare module "awayjs-display/lib/partition/EntityNode" {
+declare module "awayjs-display/lib/partition/SkyboxNode" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import Partition = require("awayjs-display/lib/partition/Partition");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
 	/**
-	 * @class away.partition.EntityNode
+	 * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
+	 *
+	 * @class away.partition.SkyboxNode
 	 */
-	class EntityNode extends NodeBase {
+	class SkyboxNode extends EntityNode {
 	    static id: string;
-	    private _pool;
-	    private _entity;
-	    private _partition;
-	    private _bounds;
-	    _iUpdateQueueNext: EntityNode;
-	    constructor(pool: EntityNodePool, entity: IEntity, partition: Partition);
-	    entity: IEntity;
-	    removeFromParent(): void;
+	    private _skyBox;
 	    /**
-	     *
-	     * @returns {boolean}
+	     * Creates a new SkyboxNode object.
+	     * @param skyBox The Skybox to be contained in the node.
 	     */
-	    isCastingShadow(): boolean;
+	    constructor(pool: EntityNodePool, skyBox: IEntity, partition: Partition);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
 	    /**
 	     *
 	     * @param planes
@@ -1472,1318 +1144,8 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	     * @returns {boolean}
 	     */
 	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    isIntersectingRay(rayPosition: Vector3D, rayDirection: Vector3D): boolean;
-	    /**
-	     *
-	     * @protected
-	     */
-	    _pCreateDebugEntity(): IEntity;
-	    invalidatePartition(): void;
-	    updateBounds(): void;
 	}
-	export = EntityNode;
-	
-}
-declare module "awayjs-display/lib/events/MaterialEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class MaterialEvent extends Event {
-	    static SIZE_CHANGED: string;
-	    constructor(type: string);
-	}
-	export = MaterialEvent;
-	
-}
-declare module "awayjs-display/lib/entities/Billboard" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * The Billboard class represents display objects that represent bitmap images.
-	 * These can be images that you load with the <code>flash.Assets</code> or
-	 * <code>flash.display.Loader</code> classes, or they can be images that you
-	 * create with the <code>Billboard()</code> constructor.
-	 *
-	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
-	 * object that contains a reference to a BitmapData object. After you create a
-	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
-	 * method of the parent DisplayObjectContainer instance to place the bitmap on
-	 * the display list.</p>
-	 *
-	 * <p>A Billboard object can share its BitmapData reference among several Billboard
-	 * objects, independent of translation or rotation properties. Because you can
-	 * create multiple Billboard objects that reference the same BitmapData object,
-	 * multiple display objects can use the same complex BitmapData object without
-	 * incurring the memory overhead of a BitmapData object for each display
-	 * object instance.</p>
-	 *
-	 * <p>A BitmapData object can be drawn to the screen by a Billboard object in one
-	 * of two ways: by using the default hardware renderer with a single hardware surface,
-	 * or by using the slower software renderer when 3D acceleration is not available.</p>
-	 *
-	 * <p>If you would prefer to perform a batch rendering command, rather than using a
-	 * single surface for each Billboard object, you can also draw to the screen using the
-	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
-	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
-	 * objects.</code></p>
-	 *
-	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
-	 * class, so it cannot dispatch mouse events. However, you can use the
-	 * <code>addEventListener()</code> method of the display object container that
-	 * contains the Billboard object.</p>
-	 */
-	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
-	    private _animator;
-	    private _billboardWidth;
-	    private _billboardHeight;
-	    private _material;
-	    private _uvTransform;
-	    private onSizeChangedDelegate;
-	    /**
-	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The BitmapData object being referenced.
-	     */
-	    bitmapData: BitmapData;
-	    /**
-	     *
-	     */
-	    billboardHeight: number;
-	    /**
-	     *
-	     */
-	    billboardWidth: number;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     * Controls whether or not the Billboard object is snapped to the nearest pixel.
-	     * This value is ignored in the native and HTML5 targets.
-	     * The PixelSnapping class includes possible values:
-	     * <ul>
-	     *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
-	     *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
-	     * the nearest pixel, independent of transformation.</li>
-	     *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
-	     * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
-	     * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
-	     * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
-	     * When targeting Flash Player, this value allows the image to be drawn as fast
-	     * as possible using the internal vector renderer.</li>
-	     * </ul>
-	     */
-	    pixelSnapping: string;
-	    /**
-	     * Controls whether or not the bitmap is smoothed when scaled. If
-	     * <code>true</code>, the bitmap is smoothed when scaled. If
-	     * <code>false</code>, the bitmap is not smoothed when scaled.
-	     */
-	    smoothing: boolean;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
-	    /**
-	     * @private
-	     */
-	    private onSizeChanged(event);
-	    _iCollectRenderables(rendererPool: IRendererPool): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = Billboard;
-	
-}
-declare module "awayjs-display/lib/entities/LineSegment" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * A Line Segment primitive.
-	 */
-	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
-	    private _animator;
-	    private _material;
-	    private _uvTransform;
-	    _startPosition: Vector3D;
-	    _endPosition: Vector3D;
-	    _halfThickness: number;
-	    /**
-	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    startPostion: Vector3D;
-	    startPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    endPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     *
-	     */
-	    thickness: number;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     * Create a line segment
-	     *
-	     * @param startPosition Start position of the line segment
-	     * @param endPosition Ending position of the line segment
-	     * @param thickness Thickness of the line
-	     */
-	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
-	    dispose(): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    _pUpdateSphereBounds(): void;
-	    /**
-	     * @private
-	     */
-	    private notifyRenderableUpdate();
-	    _iCollectRenderables(rendererPool: IRendererPool): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = LineSegment;
-	
-}
-declare module "awayjs-display/lib/pool/IRendererPool" {
-	import LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
-	import TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
-	import CurveSubMesh = require("awayjs-display/lib/base/CurveSubMesh");
-	import Billboard = require("awayjs-display/lib/entities/Billboard");
-	import LineSegment = require("awayjs-display/lib/entities/LineSegment");
-	/**
-	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderer
-	 */
-	interface IRendererPool {
-	    /**
-	     *
-	     * @param billboard
-	     */
-	    applyBillboard(billboard: Billboard): any;
-	    /**
-	     *
-	     * @param triangleSubMesh
-	     */
-	    applyLineSegment(lineSegment: LineSegment): any;
-	    /**
-	     *
-	     * @param triangleSubMesh
-	     */
-	    applyLineSubMesh(lineSubMesh: LineSubMesh): any;
-	    /**
-	     *
-	     * @param triangleSubMesh
-	     */
-	    applyTriangleSubMesh(triangleSubMesh: TriangleSubMesh): any;
-	    /**
-	     *
-	     * @param curveSubMesh
-	     */
-	    applyCurveSubMesh(curveSubMesh: CurveSubMesh): any;
-	}
-	export = IRendererPool;
-	
-}
-declare module "awayjs-display/lib/base/SubMeshBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.SubMeshBase
-	 */
-	class SubMeshBase extends NamedAssetBase {
-	    _pParentMesh: Mesh;
-	    _uvTransform: UVTransform;
-	    _iIndex: number;
-	    _material: MaterialBase;
-	    private _renderables;
-	    /**
-	     * The animator object that provides the state for the TriangleSubMesh's animation.
-	     */
-	    animator: IAnimator;
-	    /**
-	     * The material used to render the current TriangleSubMesh. If set to null, its parent Mesh's material will be used instead.
-	     */
-	    material: MaterialBase;
-	    /**
-	     * The scene transform object that transforms from model to world space.
-	     */
-	    sceneTransform: Matrix3D;
-	    /**
-	     * The entity that that initially provided the IRenderable to the render pipeline (ie: the owning Mesh object).
-	     */
-	    parentMesh: Mesh;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     * Creates a new SubMeshBase object
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     *
-	     * @param camera
-	     * @returns {away.geom.Matrix3D}
-	     */
-	    getRenderSceneTransform(camera: Camera): Matrix3D;
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
-	    _iInvalidateRenderableGeometry(): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	    _iGetExplicitMaterial(): MaterialBase;
-	}
-	export = SubMeshBase;
-	
-}
-declare module "awayjs-display/lib/base/TriangleSubMesh" {
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * TriangleSubMesh wraps a TriangleSubGeometry as a scene graph instantiation. A TriangleSubMesh is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.TriangleSubMesh
-	 */
-	class TriangleSubMesh extends SubMeshBase implements ISubMesh {
-	    private _subGeometry;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
-	     */
-	    subGeometry: TriangleSubGeometry;
-	    /**
-	     * Creates a new TriangleSubMesh object
-	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
-	     * @param parentMesh The Mesh object to which this TriangleSubMesh belongs.
-	     * @param material An optional material used to render this TriangleSubMesh.
-	     */
-	    constructor(subGeometry: TriangleSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	}
-	export = TriangleSubMesh;
-	
-}
-declare module "awayjs-display/lib/base/TriangleSubGeometry" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	/**
-	 * @class away.base.TriangleSubGeometry
-	 */
-	class TriangleSubGeometry extends SubGeometryBase {
-	    static POSITION_DATA: string;
-	    static NORMAL_DATA: string;
-	    static TANGENT_DATA: string;
-	    static UV_DATA: string;
-	    static SECONDARY_UV_DATA: string;
-	    static JOINT_INDEX_DATA: string;
-	    static JOINT_WEIGHT_DATA: string;
-	    static POSITION_FORMAT: string;
-	    static NORMAL_FORMAT: string;
-	    static TANGENT_FORMAT: string;
-	    static UV_FORMAT: string;
-	    static SECONDARY_UV_FORMAT: string;
-	    private _positionsDirty;
-	    private _faceNormalsDirty;
-	    private _faceTangentsDirty;
-	    private _vertexNormalsDirty;
-	    private _vertexTangentsDirty;
-	    private _uvsDirty;
-	    private _secondaryUVsDirty;
-	    private _jointIndicesDirty;
-	    private _jointWeightsDirty;
-	    private _positions;
-	    private _vertexNormals;
-	    private _vertexTangents;
-	    private _uvs;
-	    private _secondaryUVs;
-	    private _jointIndices;
-	    private _jointWeights;
-	    private _useCondensedIndices;
-	    private _condensedJointIndices;
-	    private _condensedIndexLookUp;
-	    private _numCondensedJoints;
-	    private _jointsPerVertex;
-	    private _concatenateArrays;
-	    private _autoDeriveNormals;
-	    private _autoDeriveTangents;
-	    private _autoDeriveUVs;
-	    private _useFaceWeights;
-	    private _faceNormals;
-	    private _faceTangents;
-	    private _faceWeights;
-	    private _scaleU;
-	    private _scaleV;
-	    private _positionsUpdated;
-	    private _normalsUpdated;
-	    private _tangentsUpdated;
-	    private _uvsUpdated;
-	    private _secondaryUVsUpdated;
-	    private _jointIndicesUpdated;
-	    private _jointWeightsUpdated;
-	    /**
-	     *
-	     */
-	    scaleU: number;
-	    /**
-	     *
-	     */
-	    scaleV: number;
-	    /**
-	     * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
-	     * by condensing the number of joint index values required per mesh. Only applicable to
-	     * skeleton animations that utilise more than one mesh object. Defaults to false.
-	     */
-	    useCondensedIndices: boolean;
-	    _pUpdateStrideOffset(): void;
-	    /**
-	     *
-	     */
-	    jointsPerVertex: number;
-	    /**
-	     * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-	     * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-	     * in cases where UV data is explicitly defined or the material does not require UV data.
-	     */
-	    autoDeriveUVs: boolean;
-	    /**
-	     * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
-	     * explicitly.
-	     */
-	    autoDeriveNormals: boolean;
-	    /**
-	     * True if the vertex tangents should be derived from the geometry, false if the vertex normals are set
-	     * explicitly.
-	     */
-	    autoDeriveTangents: boolean;
-	    /**
-	     *
-	     */
-	    vertices: Array<number>;
-	    /**
-	     *
-	     */
-	    positions: Array<number>;
-	    /**
-	     *
-	     */
-	    vertexNormals: Array<number>;
-	    /**
-	     *
-	     */
-	    vertexTangents: Array<number>;
-	    /**
-	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
-	     */
-	    faceNormals: Array<number>;
-	    /**
-	     * The raw data of the face tangets, in the same order as the faces are listed in the index list.
-	     */
-	    faceTangents: Array<number>;
-	    /**
-	     *
-	     */
-	    uvs: Array<number>;
-	    /**
-	     *
-	     */
-	    secondaryUVs: Array<number>;
-	    /**
-	     *
-	     */
-	    jointIndices: Array<number>;
-	    /**
-	     *
-	     */
-	    jointWeights: Array<number>;
-	    /**
-	     * Indicates whether or not to take the size of faces into account when auto-deriving vertex normals and tangents.
-	     */
-	    useFaceWeights: boolean;
-	    numCondensedJoints: number;
-	    condensedIndexLookUp: Array<number>;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedArrays: boolean);
-	    getBoundingPositions(): Array<number>;
-	    /**
-	     *
-	     */
-	    updatePositions(values: Array<number>): void;
-	    /**
-	     * Updates the vertex normals based on the geometry.
-	     */
-	    updateVertexNormals(values: Array<number>): void;
-	    /**
-	     * Updates the vertex tangents based on the geometry.
-	     */
-	    updateVertexTangents(values: Array<number>): void;
-	    /**
-	     * Updates the uvs based on the geometry.
-	     */
-	    updateUVs(values: Array<number>): void;
-	    /**
-	     * Updates the secondary uvs based on the geometry.
-	     */
-	    updateSecondaryUVs(values: Array<number>): void;
-	    /**
-	     * Updates the joint indices
-	     */
-	    updateJointIndices(values: Array<number>): void;
-	    /**
-	     * Updates the joint weights.
-	     */
-	    updateJointWeights(values: Array<number>): void;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Updates the face indices of the TriangleSubGeometry.
-	     *
-	     * @param indices The face indices to upload.
-	     */
-	    updateIndices(indices: Array<number>): void;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): TriangleSubGeometry;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Updates the tangents for each face.
-	     */
-	    private updateFaceTangents();
-	    /**
-	     * Updates the normals for each face.
-	     */
-	    private updateFaceNormals();
-	    _pNotifyVerticesUpdate(): void;
-	    private notifyPositionsUpdate();
-	    private notifyNormalsUpdate();
-	    private notifyTangentsUpdate();
-	    private notifyUVsUpdate();
-	    private notifySecondaryUVsUpdate();
-	    private notifyJointIndicesUpdate();
-	    private notifyJointWeightsUpdate();
-	}
-	export = TriangleSubGeometry;
-	
-}
-declare module "awayjs-display/lib/entities/Mesh" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
-	 * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
-	 * of the geometry to be assigned different materials.
-	 */
-	class Mesh extends DisplayObjectContainer implements IEntity {
-	    private _uvTransform;
-	    private _subMeshes;
-	    private _geometry;
-	    private _material;
-	    private _animator;
-	    private _castsShadows;
-	    private _shareAnimationGeometry;
-	    private _onGeometryBoundsInvalidDelegate;
-	    private _onSubGeometryAddedDelegate;
-	    private _onSubGeometryRemovedDelegate;
-	    /**
-	     * Defines the animator of the mesh. Act on the mesh's geometry.  Default value is <code>null</code>.
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
-	     */
-	    castsShadows: boolean;
-	    /**
-	     * The geometry used by the mesh that provides it with its shape.
-	     */
-	    geometry: Geometry;
-	    /**
-	     * The material with which to render the Mesh.
-	     */
-	    material: MaterialBase;
-	    /**
-	     * Indicates whether or not the mesh share the same animation geometry.
-	     */
-	    shareAnimationGeometry: boolean;
-	    /**
-	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
-	     * material.
-	     */
-	    subMeshes: Array<ISubMesh>;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     * Create a new Mesh object.
-	     *
-	     * @param geometry                    The geometry used by the mesh that provides it with its shape.
-	     * @param material    [optional]        The material with which to render the Mesh.
-	     */
-	    constructor(geometry: Geometry, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    bakeTransformations(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    dispose(): void;
-	    /**
-	     * Disposes mesh including the animator and children. This is a merely a convenience method.
-	     * @return
-	     */
-	    disposeWithAnimatorAndChildren(): void;
-	    /**
-	     * Clones this Mesh instance along with all it's children, while re-using the same
-	     * material, geometry and animation set. The returned result will be a copy of this mesh,
-	     * containing copies of all of it's children.
-	     *
-	     * Properties that are re-used (i.e. not cloned) by the new copy include name,
-	     * geometry, and material. Properties that are cloned or created anew for the copy
-	     * include subMeshes, children of the mesh, and the animator.
-	     *
-	     * If you want to copy just the mesh, reusing it's geometry and material while not
-	     * cloning it's children, the simplest way is to create a new mesh manually:
-	     *
-	     * <code>
-	     * var clone : Mesh = new Mesh(original.geometry, original.material);
-	     * </code>
-	     */
-	    clone(): DisplayObject;
-	    /**
-	     * //TODO
-	     *
-	     * @param subGeometry
-	     * @returns {SubMeshBase}
-	     */
-	    getSubMeshFromSubGeometry(subGeometry: SubGeometryBase): ISubMesh;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    _pUpdateSphereBounds(): void;
-	    /**
-	     * //TODO
-	     *
-	     * @private
-	     */
-	    private onGeometryBoundsInvalid(event);
-	    /**
-	     * Called when a SubGeometry was added to the Geometry.
-	     *
-	     * @private
-	     */
-	    private onSubGeometryAdded(event);
-	    /**
-	     * Called when a SubGeometry was removed from the Geometry.
-	     *
-	     * @private
-	     */
-	    private onSubGeometryRemoved(event);
-	    /**
-	     * Adds a SubMeshBase wrapping a SubGeometry.
-	     *
-	     * @param subGeometry
-	     */
-	    private addSubMesh(subGeometry);
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    _iCollectRenderables(rendererPool: IRendererPool): void;
-	    _iInvalidateRenderableGeometries(): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = Mesh;
-	
-}
-declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	class BoundingVolumeBase {
-	    _pEntity: IEntity;
-	    _pBoundsPrimitive: Mesh;
-	    _pInvalidated: boolean;
-	    constructor(entity: any);
-	    boundsPrimitive: IEntity;
-	    nullify(): void;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    clone(): BoundingVolumeBase;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    invalidate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
-	}
-	export = BoundingVolumeBase;
-	
-}
-declare module "awayjs-display/lib/base/Transform" {
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * The Transform class provides access to color adjustment properties and two-
-	 * or three-dimensional transformation objects that can be applied to a
-	 * display object. During the transformation, the color or the orientation and
-	 * position of a display object is adjusted(offset) from the current values
-	 * or coordinates to new values or coordinates. The Transform class also
-	 * collects data about color and two-dimensional matrix transformations that
-	 * are applied to a display object and all of its parent objects. You can
-	 * access these combined transformations through the
-	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
-	 * properties.
-	 *
-	 * <p>To apply color transformations: create a ColorTransform object, set the
-	 * color adjustments using the object's methods and properties, and then
-	 * assign the <code>colorTransformation</code> property of the
-	 * <code>transform</code> property of the display object to the new
-	 * ColorTransformation object.</p>
-	 *
-	 * <p>To apply two-dimensional transformations: create a Matrix object, set
-	 * the matrix's two-dimensional transformation, and then assign the
-	 * <code>transform.matrix</code> property of the display object to the new
-	 * Matrix object.</p>
-	 *
-	 * <p>To apply three-dimensional transformations: start with a
-	 * three-dimensional display object. A three-dimensional display object has a
-	 * <code>z</code> property value other than zero. You do not need to create
-	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
-	 * is created automatically when you assign a <code>z</code> value to a
-	 * display object. You can access the display object's Matrix3D object through
-	 * the display object's <code>transform</code> property. Using the methods of
-	 * the Matrix3D class, you can add to or modify the existing transformation
-	 * settings. Also, you can create a custom Matrix3D object, set the custom
-	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
-	 * object to the display object using the <code>transform.matrix</code>
-	 * property.</p>
-	 *
-	 * <p>To modify a perspective projection of the stage or root object: use the
-	 * <code>transform.matrix</code> property of the root display object to gain
-	 * access to the PerspectiveProjection object. Or, apply different perspective
-	 * projection properties to a display object by setting the perspective
-	 * projection properties of the display object's parent. The child display
-	 * object inherits the new properties. Specifically, create a
-	 * PerspectiveProjection object and set its properties, then assign the
-	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
-	 * property of the parent display object's <code>transform</code> property.
-	 * The specified projection transformation then applies to all the display
-	 * object's three-dimensional children.</p>
-	 *
-	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
-	 * perspective transformations, do not assign both to a display object at the
-	 * same time. Use the PerspectiveProjection object for focal length and
-	 * projection center changes. For more control over the perspective
-	 * transformation, create a perspective projection Matrix3D object.</p>
-	 */
-	class Transform {
-	    private _displayObject;
-	    private _concatenatedColorTransform;
-	    private _concatenatedMatrix;
-	    private _pixelBounds;
-	    _position: Vector3D;
-	    /**
-	     *
-	     */
-	    backVector: Vector3D;
-	    /**
-	     * A ColorTransform object containing values that universally adjust the
-	     * colors in the display object.
-	     *
-	     * @throws TypeError The colorTransform is null when being set
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * A ColorTransform object representing the combined color transformations
-	     * applied to the display object and all of its parent objects, back to the
-	     * root level. If different color transformations have been applied at
-	     * different levels, all of those transformations are concatenated into one
-	     * ColorTransform object for this property.
-	     */
-	    concatenatedColorTransform: ColorTransform;
-	    /**
-	     * A Matrix object representing the combined transformation matrixes of the
-	     * display object and all of its parent objects, back to the root level. If
-	     * different transformation matrixes have been applied at different levels,
-	     * all of those matrixes are concatenated into one matrix for this property.
-	     * Also, for resizeable SWF content running in the browser, this property
-	     * factors in the difference between stage coordinates and window coordinates
-	     * due to window resizing. Thus, the property converts local coordinates to
-	     * window coordinates, which may not be the same coordinate space as that of
-	     * the Stage.
-	     */
-	    concatenatedMatrix: Matrix;
-	    /**
-	     *
-	     */
-	    downVector: Vector3D;
-	    /**
-	     *
-	     */
-	    forwardVector: Vector3D;
-	    /**
-	     *
-	     */
-	    leftVector: Vector3D;
-	    /**
-	     * A Matrix object containing values that alter the scaling, rotation, and
-	     * translation of the display object.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     *
-	     * @throws TypeError The matrix is null when being set
-	     */
-	    matrix: Matrix;
-	    /**
-	     * Provides access to the Matrix3D object of a three-dimensional display
-	     * object. The Matrix3D object represents a transformation matrix that
-	     * determines the display object's position and orientation. A Matrix3D
-	     * object can also perform perspective projection.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     */
-	    matrix3D: Matrix3D;
-	    /**
-	     * Provides access to the PerspectiveProjection object of a three-dimensional
-	     * display object. The PerspectiveProjection object can be used to modify the
-	     * perspective transformation of the stage or to assign a perspective
-	     * transformation to all the three-dimensional children of a display object.
-	     *
-	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
-	     * a default PerspectiveProjection object is assigned to the root object.</p>
-	     */
-	    perspectiveProjection: PerspectiveProjection;
-	    /**
-	     * A Rectangle object that defines the bounding rectangle of the display
-	     * object on the stage.
-	     */
-	    pixelBounds: Rectangle;
-	    /**
-	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    position: Vector3D;
-	    /**
-	     *
-	     */
-	    rightVector: Vector3D;
-	    /**
-	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    rotation: Vector3D;
-	    /**
-	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    scale: Vector3D;
-	    /**
-	     *
-	     */
-	    upVector: Vector3D;
-	    constructor(displayObject: DisplayObject);
-	    /**
-	     * Returns a Matrix3D object, which can transform the space of a specified
-	     * display object in relation to the current display object's space. You can
-	     * use the <code>getRelativeMatrix3D()</code> method to move one
-	     * three-dimensional display object relative to another three-dimensional
-	     * display object.
-	     *
-	     * @param relativeTo The display object relative to which the transformation
-	     *                   occurs. To get a Matrix3D object relative to the stage,
-	     *                   set the parameter to the <code>root</code> or
-	     *                   <code>stage</code> object. To get the world-relative
-	     *                   matrix of the display object, set the parameter to a
-	     *                   display object that has a perspective transformation
-	     *                   applied to it.
-	     * @return A Matrix3D object that can be used to transform the space from the
-	     *         <code>relativeTo</code> display object to the current display
-	     *         object space.
-	     */
-	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
-	    /**
-	     * Moves the 3d object forwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveForward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveBackward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveLeft(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveRight(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveUp(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveDown(distance: number): void;
-	}
-	export = Transform;
-	
-}
-declare module "awayjs-display/lib/controllers/ControllerBase" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class ControllerBase {
-	    _pAutoUpdate: boolean;
-	    _pTargetObject: DisplayObject;
-	    constructor(targetObject?: DisplayObject);
-	    pNotifyUpdate(): void;
-	    targetObject: DisplayObject;
-	    autoUpdate: boolean;
-	    update(interpolate?: boolean): void;
-	}
-	export = ControllerBase;
-	
-}
-declare module "awayjs-display/lib/pick/IPickingCollider" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
-	 * Used with the <code>RaycastPicker</code> picking object.
-	 *
-	 * @see away.entities.Entity#pickingCollider
-	 * @see away.pick.RaycastPicker
-	 *
-	 * @interface away.pick.IPickingCollider
-	 */
-	interface IPickingCollider {
-	    /**
-	     * Sets the position and direction of a picking ray in local coordinates to the entity.
-	     *
-	     * @param localDirection The position vector in local coordinates
-	     * @param localPosition The direction vector in local coordinates
-	     */
-	    setLocalRay(localPosition: Vector3D, localDirection: Vector3D): any;
-	    /**
-	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
-	     *
-	     * @param entity The entity instance to be tested.
-	     * @param pickingCollisionVO The collision object used to store the collision results
-	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
-	     */
-	    testBillboardCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    /**
-	     * Tests a <code>Mesh</code> object for a collision with the picking ray.
-	     *
-	     * @param entity The entity instance to be tested.
-	     * @param pickingCollisionVO The collision object used to store the collision results
-	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
-	     * @param findClosest
-	     */
-	    testMeshCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number, findClosest: boolean): boolean;
-	}
-	export = IPickingCollider;
-	
-}
-declare module "awayjs-display/lib/entities/IEntity" {
-	import Box = require("awayjs-core/lib/geom/Box");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Transform = require("awayjs-display/lib/base/Transform");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	interface IEntity extends IAsset {
-	    x: number;
-	    y: number;
-	    z: number;
-	    rotationX: number;
-	    rotationY: number;
-	    rotationZ: number;
-	    scaleX: number;
-	    scaleY: number;
-	    scaleZ: number;
-	    /**
-	     *
-	     */
-	    debugVisible: boolean;
-	    /**
-	     *
-	     */
-	    boundsType: string;
-	    /**
-	     *
-	     */
-	    castsShadows: boolean;
-	    /**
-	     *
-	     */
-	    inverseSceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    pickingCollider: IPickingCollider;
-	    /**
-	     *
-	     */
-	    transform: Transform;
-	    /**
-	     *
-	     */
-	    scene: Scene;
-	    /**
-	     *
-	     */
-	    scenePosition: Vector3D;
-	    /**
-	     *
-	     */
-	    sceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    zOffset: number;
-	    /**
-	     *
-	     * @param targetCoordinateSpace
-	     */
-	    getBox(targetCoordinateSpace?: DisplayObject): Box;
-	    /**
-	     *
-	     * @param targetCoordinateSpace
-	     */
-	    getSphere(targetCoordinateSpace?: DisplayObject): Sphere;
-	    /**
-	     *
-	     *
-	     * @param target
-	     * @param upAxis
-	     */
-	    lookAt(target: Vector3D, upAxis?: Vector3D): any;
-	    /**
-	     * @internal
-	     */
-	    _iPickingCollisionVO: PickingCollisionVO;
-	    /**
-	     * @internal
-	     */
-	    _iController: ControllerBase;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedPartition: Partition;
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iIsMouseEnabled(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iIsVisible(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iInternalUpdate(): any;
-	    /**
-	     *
-	     * @param entityNode
-	     * @private
-	     */
-	    _iAddEntityNode(entityNode: EntityNode): EntityNode;
-	    /**
-	     *
-	     * @param entityNode
-	     * @private
-	     */
-	    _iRemoveEntityNode(entityNode: EntityNode): EntityNode;
-	    /**
-	     * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
-	     * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
-	     * return the scene transform.
-	     */
-	    getRenderSceneTransform(camera: Camera): Matrix3D;
-	    /**
-	     *
-	     * @param renderer
-	     * @private
-	     */
-	    _iCollectRenderables(rendererPool: IRendererPool): any;
-	}
-	export = IEntity;
-	
-}
-declare module "awayjs-display/lib/events/CameraEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	/**
-	 * @class away.events.CameraEvent
-	 */
-	class CameraEvent extends Event {
-	    static PROJECTION_CHANGED: string;
-	    private _camera;
-	    constructor(type: string, camera: Camera);
-	    camera: Camera;
-	}
-	export = CameraEvent;
-	
-}
-declare module "awayjs-display/lib/partition/CameraNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
-	/**
-	 * @class away.partition.CameraNode
-	 */
-	class CameraNode extends EntityNode {
-	    static id: string;
-	    constructor(pool: EntityNodePool, camera: IEntity, partition: Partition);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
-	}
-	export = CameraNode;
-	
-}
-declare module "awayjs-display/lib/entities/Camera" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IProjection = require("awayjs-core/lib/projections/IProjection");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	class Camera extends DisplayObjectContainer implements IEntity {
-	    private _viewProjection;
-	    private _viewProjectionDirty;
-	    private _projection;
-	    private _frustumPlanes;
-	    private _frustumPlanesDirty;
-	    private _onProjectionMatrixChangedDelegate;
-	    constructor(projection?: IProjection);
-	    assetType: string;
-	    private onProjectionMatrixChanged(event);
-	    frustumPlanes: Array<Plane3D>;
-	    private updateFrustum();
-	    /**
-	     * @protected
-	     */
-	    pInvalidateSceneTransform(): void;
-	    /**
-	     *
-	     */
-	    projection: IProjection;
-	    /**
-	     *
-	     */
-	    viewProjection: Matrix3D;
-	    /**
-	     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
-	     *
-	     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
-	     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
-	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-	     * @return The ray from the camera to the scene space position of the given screen coordinates.
-	     */
-	    getRay(nX: number, nY: number, sZ: number): Vector3D;
-	    /**
-	     * Calculates the normalised position in screen space of the given scene position.
-	     *
-	     * @param point3d the position vector of the scene coordinates to be projected.
-	     * @return The normalised screen position of the given scene coordinates.
-	     */
-	    project(point3d: Vector3D): Vector3D;
-	    /**
-	     * Calculates the scene position of the given normalized coordinates in screen space.
-	     *
-	     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
-	     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
-	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-	     * @return The scene position of the given screen coordinates.
-	     */
-	    unproject(nX: number, nY: number, sZ: number): Vector3D;
-	    _iCollectRenderables(rendererPool: IRendererPool): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = Camera;
+	export = SkyboxNode;
 	
 }
 declare module "awayjs-display/lib/events/LightEvent" {
@@ -2794,6 +1156,102 @@ declare module "awayjs-display/lib/events/LightEvent" {
 	    clone(): Event;
 	}
 	export = LightEvent;
+	
+}
+declare module "awayjs-display/lib/partition/DirectionalLightNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+	/**
+	 * @class away.partition.DirectionalLightNode
+	 */
+	class DirectionalLightNode extends EntityNode {
+	    static id: string;
+	    private _directionalLight;
+	    /**
+	     *
+	     * @param directionalLight
+	     */
+	    constructor(pool: EntityNodePool, directionalLight: IEntity, partition: Partition);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	    /**
+	     *
+	     * @returns {boolean}
+	     */
+	    isCastingShadow(): boolean;
+	}
+	export = DirectionalLightNode;
+	
+}
+declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import FreeMatrixProjection = require("awayjs-core/lib/projections/FreeMatrixProjection");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import IRenderer = require("awayjs-display/lib/render/IRenderer");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	import TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
+	class DirectionalShadowMapper extends ShadowMapperBase {
+	    _pOverallDepthCamera: Camera;
+	    _pLocalFrustum: Array<number>;
+	    _pLightOffset: number;
+	    _pMatrix: Matrix3D;
+	    _pOverallDepthProjection: FreeMatrixProjection;
+	    _pSnap: number;
+	    _pCullPlanes: Array<Plane3D>;
+	    _pMinZ: number;
+	    _pMaxZ: number;
+	    constructor();
+	    snap: number;
+	    lightOffset: number;
+	    iDepthProjection: Matrix3D;
+	    depth: number;
+	    pDrawDepthMap(target: TextureProxyBase, scene: Scene, renderer: IRenderer): void;
+	    pUpdateCullPlanes(viewCamera: Camera): void;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
+	}
+	export = DirectionalShadowMapper;
+	
+}
+declare module "awayjs-display/lib/entities/DirectionalLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class DirectionalLight extends LightBase implements IEntity {
+	    private _direction;
+	    private _tmpLookAt;
+	    private _sceneDirection;
+	    private _pAabbPoints;
+	    private _projAABBPoints;
+	    constructor(xDir?: number, yDir?: number, zDir?: number);
+	    sceneDirection: Vector3D;
+	    direction: Vector3D;
+	    pUpdateSceneTransform(): void;
+	    pCreateShadowMapper(): DirectionalShadowMapper;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    _iCollectRenderables(rendererPool: IRendererPool): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	}
+	export = DirectionalLight;
 	
 }
 declare module "awayjs-display/lib/partition/LightProbeNode" {
@@ -3089,126 +1547,952 @@ declare module "awayjs-display/lib/base/LightBase" {
 	export = LightBase;
 	
 }
-declare module "awayjs-display/lib/partition/DirectionalLightNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
+	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import PointLight = require("awayjs-display/lib/entities/PointLight");
+	/**
+	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
+	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
+	 * extended to provide more application-specific dynamic selection of lights.
+	 *
+	 * @see StaticLightPicker
+	 */
+	class LightPickerBase extends NamedAssetBase implements IAsset {
+	    _pNumPointLights: number;
+	    _pNumDirectionalLights: number;
+	    _pNumCastingPointLights: number;
+	    _pNumCastingDirectionalLights: number;
+	    _pNumLightProbes: number;
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
+	    /**
+	     * Creates a new LightPickerBase object.
+	     */
+	    constructor();
+	    /**
+	     * Disposes resources used by the light picker.
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    assetType: string;
+	    /**
+	     * The maximum amount of directional lights that will be provided.
+	     */
+	    numDirectionalLights: number;
+	    /**
+	     * The maximum amount of point lights that will be provided.
+	     */
+	    numPointLights: number;
+	    /**
+	     * The maximum amount of directional lights that cast shadows.
+	     */
+	    numCastingDirectionalLights: number;
+	    /**
+	     * The amount of point lights that cast shadows.
+	     */
+	    numCastingPointLights: number;
+	    /**
+	     * The maximum amount of light probes that will be provided.
+	     */
+	    numLightProbes: number;
+	    /**
+	     * The collected point lights to be used for shading.
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights to be used for shading.
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected point lights that cast shadows to be used for shading.
+	     */
+	    castingPointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights that cast shadows to be used for shading.
+	     */
+	    castingDirectionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected light probes to be used for shading.
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     * The weights for each light probe, defining their influence on the object.
+	     */
+	    lightProbeWeights: Array<number>;
+	    /**
+	     * A collection of all the collected lights.
+	     */
+	    allPickedLights: Array<LightBase>;
+	    /**
+	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
+	     */
+	    collectLights(renderable: IRenderable): void;
+	    /**
+	     * Updates the weights for the light probes, based on the renderable's position relative to them.
+	     * @param renderable The renderble for which to calculate the light probes' influence.
+	     */
+	    private updateProbeWeights(renderable);
+	}
+	export = LightPickerBase;
+	
+}
+declare module "awayjs-display/lib/entities/Skybox" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import CubeTextureBase = require("awayjs-core/lib/textures/CubeTextureBase");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
 	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
+	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
+	 * the sky box is always as large as possible without being clipped.
+	 */
+	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderObjectOwner {
+	    private _cubeMap;
+	    _pAlphaThreshold: number;
+	    private _animationSet;
+	    _pLightPicker: LightPickerBase;
+	    _pBlendMode: string;
+	    private _renderObjects;
+	    private _renderables;
+	    private _uvTransform;
+	    private _owners;
+	    private _mipmap;
+	    private _smooth;
+	    private _material;
+	    private _animator;
+	    /**
+	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	     * invisible or entirely opaque, often used with textures for foliage, etc.
+	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	     */
+	    alphaThreshold: number;
+	    /**
+	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
+	     */
+	    mipmap: boolean;
+	    /**
+	     * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
+	     */
+	    smooth: boolean;
+	    /**
+	     * The light picker used by the material to provide lights to the material if it supports lighting.
+	     *
+	     * @see LightPickerBase
+	     * @see StaticLightPicker
+	     */
+	    lightPicker: LightPickerBase;
+	    /**
+	     *
+	     */
+	    animationSet: IAnimationSet;
+	    /**
+	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	     * <ul>
+	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	     * <li>BlendMode.MULTIPLY</li>
+	     * <li>BlendMode.ADD</li>
+	     * <li>BlendMode.ALPHA</li>
+	     * </ul>
+	     */
+	    blendMode: string;
+	    _pInvalidateRenderObject(): void;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    _pIinvalidatePasses(): void;
+	    /**
+	     * A list of the IRenderableOwners that use this material
+	     *
+	     * @private
+	     */
+	    iOwners: Array<IRenderableOwner>;
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	    * The cube texture to use as the skybox.
+	    */
+	    cubeMap: CubeTextureBase;
+	    /**
+	     * Create a new Skybox object.
+	     *
+	     * @param material	The material with which to render the Skybox.
+	     */
+	    constructor(cubeMap?: CubeTextureBase);
+	    assetType: string;
+	    castsShadows: boolean;
+	    /**
+	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
+	     * could be used by other materials and will not be disposed.
+	     */
+	    dispose(): void;
+	    _iCollectRenderables(rendererPool: IRendererPool): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
+	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
+	    _iAddRenderable(renderable: IRenderable): IRenderable;
+	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = Skybox;
+	
+}
+declare module "awayjs-display/lib/pool/IRenderablePool" {
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Skybox = require("awayjs-display/lib/entities/Skybox");
+	/**
+	 * IRenderPass provides an abstract base class for material shader passes. A material pass constitutes at least
+	 * a render call per required renderable.
+	 */
+	interface IRenderablePool {
+	    getMaterialRenderObject(material: MaterialBase): IRenderObject;
+	    getSkyboxRenderObject(skybox: Skybox): IRenderObject;
+	    disposeItem(renderableOwner: IRenderableOwner): any;
+	}
+	export = IRenderablePool;
+	
+}
+declare module "awayjs-display/lib/base/IRenderObjectOwner" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * IRenderObjectOwner provides an interface for objects that can use materials.
+	 *
+	 * @interface away.base.IRenderObjectOwner
+	 */
+	interface IRenderObjectOwner extends IAsset {
+	    alphaThreshold: number;
+	    mipmap: boolean;
+	    smooth: boolean;
+	    blendMode: string;
+	    lightPicker: LightPickerBase;
+	    animationSet: IAnimationSet;
+	    iOwners: Array<IRenderableOwner>;
+	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
+	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	}
+	export = IRenderObjectOwner;
+	
+}
+declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
+	/**
+	 * Dispatched to notify changes in a sub geometry object's state.
+	 *
+	 * @class away.events.RenderableOwnerEvent
+	 * @see away.core.base.Geometry
+	 */
+	class RenderableOwnerEvent extends Event {
+	    /**
+	     * Dispatched when a Renderable owners's render object owner has been updated.
+	     */
+	    static RENDER_OBJECT_OWNER_UPDATED: string;
+	    private _renderObjectOwner;
+	    /**
+	     * Create a new GeometryEvent
+	     * @param type The event type.
+	     * @param dataType An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, renderObjectOwner: IRenderObjectOwner);
+	    /**
+	     * The renderobject owner of the renderable owner.
+	     */
+	    renderObjectOwner: IRenderObjectOwner;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): Event;
+	}
+	export = RenderableOwnerEvent;
+	
+}
+declare module "awayjs-display/lib/materials/MaterialBase" {
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * MaterialBase forms an abstract base class for any material.
+	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
+	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
+	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
+	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
+	 *
+	 * Away3D provides default materials trough SinglePassMaterialBase and TriangleMaterial, which use modular
+	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
+	 * shaders, or entire new material frameworks.
+	 */
+	class MaterialBase extends NamedAssetBase implements IRenderObjectOwner {
+	    private _colorTransform;
+	    private _alphaBlending;
+	    private _alpha;
+	    private _sizeChanged;
+	    private _renderObjects;
+	    _pAlphaThreshold: number;
+	    _pAnimateUVs: boolean;
+	    private _enableLightFallOff;
+	    private _specularLightSources;
+	    private _diffuseLightSources;
+	    /**
+	     * An object to contain any extra data.
+	     */
+	    extra: Object;
+	    /**
+	     * A value that can be used by materials that only work with a given type of renderer. The renderer can test the
+	     * classification to choose which render path to use. For example, a deferred material could set this value so
+	     * that the deferred renderer knows not to take the forward rendering path.
+	     *
+	     * @private
+	     */
+	    _iClassification: string;
+	    /**
+	     * An id for this material used to sort the renderables by shader program, which reduces Program state changes.
+	     *
+	     * @private
+	     */
+	    _iMaterialId: number;
+	    _iBaseScreenPassIndex: number;
+	    private _bothSides;
+	    private _animationSet;
+	    /**
+	     * A list of material owners, renderables or custom Entities.
+	     */
+	    private _owners;
+	    private _alphaPremultiplied;
+	    _pBlendMode: string;
+	    private _mipmap;
+	    private _smooth;
+	    private _repeat;
+	    private _color;
+	    _pTexture: Texture2DBase;
+	    _pLightPicker: LightPickerBase;
+	    _pHeight: number;
+	    _pWidth: number;
+	    private _onLightChangeDelegate;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * Creates a new MaterialBase object.
+	     */
+	    constructor();
+	    /**
+	     * The alpha of the surface.
+	     */
+	    alpha: number;
+	    /**
+	     * The ColorTransform object to transform the colour of the material with. Defaults to null.
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
+	     * example when using textures of foliage, consider using alphaThreshold instead.
+	     */
+	    alphaBlending: boolean;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    animationSet: IAnimationSet;
+	    /**
+	     * The light picker used by the material to provide lights to the material if it supports lighting.
+	     *
+	     * @see LightPickerBase
+	     * @see StaticLightPicker
+	     */
+	    lightPicker: LightPickerBase;
+	    /**
+	     * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	     */
+	    mipmap: boolean;
+	    /**
+	     * Indicates whether or not any used textures should use smoothing. Defaults to true.
+	     */
+	    smooth: boolean;
+	    /**
+	     * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
+	     * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
+	     */
+	    repeat: boolean;
+	    /**
+	     * The diffuse reflectivity color of the surface.
+	     */
+	    color: number;
+	    /**
+	     * The texture object to use for the albedo colour.
+	     */
+	    texture: Texture2DBase;
+	    /**
+	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
+	     */
+	    animateUVs: boolean;
+	    /**
+	     * Whether or not to use fallOff and radius properties for lights. This can be used to improve performance and
+	     * compatibility for constrained mode.
+	     */
+	    enableLightFallOff: boolean;
+	    /**
+	     * Define which light source types to use for diffuse reflections. This allows choosing between regular lights
+	     * and/or light probes for diffuse reflections.
+	     *
+	     * @see away3d.materials.LightSources
+	     */
+	    diffuseLightSources: number;
+	    /**
+	     * Define which light source types to use for specular reflections. This allows choosing between regular lights
+	     * and/or light probes for specular reflections.
+	     *
+	     * @see away3d.materials.LightSources
+	     */
+	    specularLightSources: number;
+	    /**
+	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
+	     * could be used by other materials and will not be disposed.
+	     */
+	    dispose(): void;
+	    /**
+	     * Defines whether or not the material should cull triangles facing away from the camera.
+	     */
+	    bothSides: boolean;
+	    /**
+	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	     * <ul>
+	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	     * <li>BlendMode.MULTIPLY</li>
+	     * <li>BlendMode.ADD</li>
+	     * <li>BlendMode.ALPHA</li>
+	     * </ul>
+	     */
+	    blendMode: string;
+	    /**
+	     * Indicates whether visible textures (or other pixels) used by this material have
+	     * already been premultiplied. Toggle this if you are seeing black halos around your
+	     * blended alpha edges.
+	     */
+	    alphaPremultiplied: boolean;
+	    /**
+	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	     * invisible or entirely opaque, often used with textures for foliage, etc.
+	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	     */
+	    alphaThreshold: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     * Mark an IRenderableOwner as owner of this material.
+	     * Assures we're not using the same material across renderables with different animations, since the
+	     * Programs depend on animation. This method needs to be called when a material is assigned.
+	     *
+	     * @param owner The IRenderableOwner that had this material assigned
+	     *
+	     * @internal
+	     */
+	    iAddOwner(owner: IRenderableOwner): void;
+	    /**
+	     * Removes an IRenderableOwner as owner.
+	     * @param owner
+	     *
+	     * @internal
+	     */
+	    iRemoveOwner(owner: IRenderableOwner): void;
+	    /**
+	     * A list of the IRenderableOwners that use this material
+	     *
+	     * @private
+	     */
+	    iOwners: Array<IRenderableOwner>;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    _pInvalidatePasses(): void;
+	    private invalidateAnimation();
+	    _pInvalidateRenderObject(): void;
+	    /**
+	     * Called when the light picker's configuration changed.
+	     */
+	    private onLightsChange(event);
+	    _pNotifySizeChanged(): void;
+	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
+	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	}
+	export = MaterialBase;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrefabBase" {
+	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
+	 */
+	class PrefabBase extends NamedAssetBase {
+	    _pObjects: Array<DisplayObject>;
+	    /**
+	     * Creates a new PrefabBase object.
+	     */
+	    constructor();
+	    /**
+	     * Returns a display object generated from this prefab
+	     */
+	    getNewObject(): DisplayObject;
+	    _pCreateObject(): DisplayObject;
+	    _iValidate(): void;
+	}
+	export = PrefabBase;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import Geometry = require("awayjs-core/lib/data/Geometry");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
+	/**
+	 * PrimitivePrefabBase is an abstract base class for polytope prefabs, which are simple pre-built geometric shapes
+	 */
+	class PrimitivePrefabBase extends PrefabBase {
+	    _geomDirty: boolean;
+	    _uvDirty: boolean;
+	    private _material;
+	    private _geometry;
+	    private _subGeometry;
+	    private _geometryType;
+	    private _geometryTypeDirty;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    geometryType: string;
+	    geometry: Geometry;
+	    /**
+	     * The material with which to render the primitive.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * Creates a new PrimitivePrefabBase object.
+	     *
+	     * @param material The material with which to render the object
+	     */
+	    constructor(material?: MaterialBase, geometryType?: string);
+	    /**
+	     * Builds the primitive's geometry when invalid. This method should not be called directly. The calling should
+	     * be triggered by the invalidateGeometry method (and in turn by updateGeometry).
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * Builds the primitive's uv coordinates when invalid. This method should not be called directly. The calling
+	     * should be triggered by the invalidateUVs method (and in turn by updateUVs).
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * Invalidates the primitive's geometry type, causing it to be updated when requested.
+	     */
+	    invalidateGeometryType(): void;
+	    /**
+	     * Invalidates the primitive's geometry, causing it to be updated when requested.
+	     */
+	    _pInvalidateGeometry(): void;
+	    /**
+	     * Invalidates the primitive's uv coordinates, causing them to be updated when requested.
+	     */
+	    _pInvalidateUVs(): void;
+	    /**
+	     * Updates the subgeometry when invalid.
+	     */
+	    private updateGeometryType();
+	    /**
+	     * Updates the geometry when invalid.
+	     */
+	    private updateGeometry();
+	    /**
+	     * Updates the uv coordinates when invalid.
+	     */
+	    private updateUVs();
+	    _iValidate(): void;
+	    _pCreateObject(): DisplayObject;
+	}
+	export = PrimitivePrefabBase;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A Cube primitive prefab.
+	 */
+	class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset {
+	    private _width;
+	    private _height;
+	    private _depth;
+	    private _tile6;
+	    private _segmentsW;
+	    private _segmentsH;
+	    private _segmentsD;
+	    /**
+	     * Creates a new Cube object.
+	     * @param width The size of the cube along its X-axis.
+	     * @param height The size of the cube along its Y-axis.
+	     * @param depth The size of the cube along its Z-axis.
+	     * @param segmentsW The number of segments that make up the cube along the X-axis.
+	     * @param segmentsH The number of segments that make up the cube along the Y-axis.
+	     * @param segmentsD The number of segments that make up the cube along the Z-axis.
+	     * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
+	     */
+	    constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
+	    /**
+	     * The size of the cube along its X-axis.
+	     */
+	    width: number;
+	    /**
+	     * The size of the cube along its Y-axis.
+	     */
+	    height: number;
+	    /**
+	     * The size of the cube along its Z-axis.
+	     */
+	    depth: number;
+	    /**
+	     * The type of uv mapping to use. When false, the entire image is mapped on each face.
+	     * When true, a texture will be subdivided in a 3x2 grid, each used for a single face.
+	     * Reading the tiles from left to right, top to bottom they represent the faces of the
+	     * cube in the following order: bottom, top, back, left, front, right. This creates
+	     * several shared edges (between the top, front, left and right faces) which simplifies
+	     * texture painting.
+	     */
+	    tile6: boolean;
+	    /**
+	     * The number of segments that make up the cube along the X-axis. Defaults to 1.
+	     */
+	    segmentsW: number;
+	    /**
+	     * The number of segments that make up the cube along the Y-axis. Defaults to 1.
+	     */
+	    segmentsH: number;
+	    /**
+	     * The number of segments that make up the cube along the Z-axis. Defaults to 1.
+	     */
+	    segmentsD: number;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	}
+	export = PrimitiveCubePrefab;
+	
+}
+declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	/**
+	 * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
+	 * This is useful for most meshes.
+	 */
+	class AxisAlignedBoundingBox extends BoundingVolumeBase {
+	    private _box;
+	    private _x;
+	    private _y;
+	    private _z;
+	    private _width;
+	    private _height;
+	    private _depth;
+	    private _centerX;
+	    private _centerY;
+	    private _centerZ;
+	    private _halfExtentsX;
+	    private _halfExtentsY;
+	    private _halfExtentsZ;
+	    private _prefab;
+	    /**
+	     * Creates a new <code>AxisAlignedBoundingBox</code> object.
+	     */
+	    constructor(entity: IEntity);
+	    /**
+	     * @inheritDoc
+	     */
+	    nullify(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
+	}
+	export = AxisAlignedBoundingBox;
+	
+}
+declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A UV Sphere primitive mesh.
+	 */
+	class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset {
+	    private _radius;
+	    private _segmentsW;
+	    private _segmentsH;
+	    private _yUp;
+	    /**
+	     * The radius of the sphere.
+	     */
+	    radius: number;
+	    /**
+	     * Defines the number of horizontal segments that make up the sphere. Defaults to 16.
+	     */
+	    segmentsW: number;
+	    /**
+	     * Defines the number of vertical segments that make up the sphere. Defaults to 12.
+	     */
+	    segmentsH: number;
+	    /**
+	     * Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    yUp: boolean;
+	    /**
+	     * Creates a new Sphere object.
+	     *
+	     * @param radius The radius of the sphere.
+	     * @param segmentsW Defines the number of horizontal segments that make up the sphere.
+	     * @param segmentsH Defines the number of vertical segments that make up the sphere.
+	     * @param yUp Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	}
+	export = PrimitiveSpherePrefab;
+	
+}
+declare module "awayjs-display/lib/bounds/BoundingSphere" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	class BoundingSphere extends BoundingVolumeBase {
+	    private _sphere;
+	    private _radius;
+	    private _centerX;
+	    private _centerY;
+	    private _centerZ;
+	    private _prefab;
+	    constructor(entity: IEntity);
+	    nullify(): void;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
+	}
+	export = BoundingSphere;
+	
+}
+declare module "awayjs-display/lib/bounds/NullBounds" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	class NullBounds extends BoundingVolumeBase {
+	    private _alwaysIn;
+	    constructor(alwaysIn?: boolean);
+	    clone(): BoundingVolumeBase;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    classifyToPlane(plane: Plane3D): number;
+	}
+	export = NullBounds;
+	
+}
+declare module "awayjs-display/lib/pick/PickingCollisionVO" {
+	import Point = require("awayjs-core/lib/geom/Point");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	/**
+	 * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects
+	 *
+	 * @see away.base.DisplayObject#pickingCollisionVO
+	 * @see away.core.pick.IPickingCollider
+	 *
+	 * @class away.pick.PickingCollisionVO
+	 */
+	class PickingCollisionVO {
+	    /**
+	     * The display object to which this collision object belongs.
+	     */
+	    displayObject: DisplayObject;
+	    /**
+	     * The local position of the collision on the entity's surface.
+	     */
+	    localPosition: Vector3D;
+	    /**
+	     * The local normal vector at the position of the collision.
+	     */
+	    localNormal: Vector3D;
+	    /**
+	     * The uv coordinate at the position of the collision.
+	     */
+	    uv: Point;
+	    /**
+	     * The index of the face where the event took pl ace.
+	     */
+	    index: number;
+	    /**
+	     * The index of the subGeometry where the event took place.
+	     */
+	    /**
+	     * The starting position of the colliding ray in local coordinates.
+	     */
+	    localRayPosition: Vector3D;
+	    /**
+	     * The direction of the colliding ray in local coordinates.
+	     */
+	    localRayDirection: Vector3D;
+	    /**
+	     * The starting position of the colliding ray in scene coordinates.
+	     */
+	    rayPosition: Vector3D;
+	    /**
+	     * The direction of the colliding ray in scene coordinates.
+	     */
+	    rayDirection: Vector3D;
+	    /**
+	     * Determines if the ray position is contained within the entity bounds.
+	     *
+	     * @see away3d.entities.Entity#bounds
+	     */
+	    rayOriginIsInsideBounds: boolean;
+	    /**
+	     * The distance along the ray from the starting position to the calculated intersection entry point with the entity.
+	     */
+	    rayEntryDistance: number;
+	    /**
+	     * The material ownwer associated with a collision.
+	     */
+	    renderableOwner: IRenderableOwner;
+	    /**
+	     * Creates a new <code>PickingCollisionVO</code> object.
+	     *
+	     * @param entity The entity to which this collision object belongs.
+	     */
+	    constructor(displayObject: DisplayObject);
+	}
+	export = PickingCollisionVO;
+	
+}
+declare module "awayjs-display/lib/partition/EntityNode" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
 	/**
-	 * @class away.partition.DirectionalLightNode
+	 * @class away.partition.EntityNode
 	 */
-	class DirectionalLightNode extends EntityNode {
+	class EntityNode extends NodeBase {
 	    static id: string;
-	    private _directionalLight;
-	    /**
-	     *
-	     * @param directionalLight
-	     */
-	    constructor(pool: EntityNodePool, directionalLight: IEntity, partition: Partition);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
+	    private _pool;
+	    private _entity;
+	    private _partition;
+	    private _bounds;
+	    _iUpdateQueueNext: EntityNode;
+	    constructor(pool: EntityNodePool, entity: IEntity, partition: Partition);
+	    entity: IEntity;
+	    removeFromParent(): void;
 	    /**
 	     *
 	     * @returns {boolean}
 	     */
 	    isCastingShadow(): boolean;
-	}
-	export = DirectionalLightNode;
-	
-}
-declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import FreeMatrixProjection = require("awayjs-core/lib/projections/FreeMatrixProjection");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	import TextureProxyBase = require("awayjs-core/lib/textures/TextureProxyBase");
-	class DirectionalShadowMapper extends ShadowMapperBase {
-	    _pOverallDepthCamera: Camera;
-	    _pLocalFrustum: Array<number>;
-	    _pLightOffset: number;
-	    _pMatrix: Matrix3D;
-	    _pOverallDepthProjection: FreeMatrixProjection;
-	    _pSnap: number;
-	    _pCullPlanes: Array<Plane3D>;
-	    _pMinZ: number;
-	    _pMaxZ: number;
-	    constructor();
-	    snap: number;
-	    lightOffset: number;
-	    iDepthProjection: Matrix3D;
-	    depth: number;
-	    pDrawDepthMap(target: TextureProxyBase, scene: Scene, renderer: IRenderer): void;
-	    pUpdateCullPlanes(viewCamera: Camera): void;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
-	}
-	export = DirectionalShadowMapper;
-	
-}
-declare module "awayjs-display/lib/entities/DirectionalLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class DirectionalLight extends LightBase implements IEntity {
-	    private _direction;
-	    private _tmpLookAt;
-	    private _sceneDirection;
-	    private _pAabbPoints;
-	    private _projAABBPoints;
-	    constructor(xDir?: number, yDir?: number, zDir?: number);
-	    sceneDirection: Vector3D;
-	    direction: Vector3D;
-	    pUpdateSceneTransform(): void;
-	    pCreateShadowMapper(): DirectionalShadowMapper;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    _iCollectRenderables(rendererPool: IRendererPool): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	}
-	export = DirectionalLight;
-	
-}
-declare module "awayjs-display/lib/partition/SkyboxNode" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
-	/**
-	 * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
-	 *
-	 * @class away.partition.SkyboxNode
-	 */
-	class SkyboxNode extends EntityNode {
-	    static id: string;
-	    private _skyBox;
-	    /**
-	     * Creates a new SkyboxNode object.
-	     * @param skyBox The Skybox to be contained in the node.
-	     */
-	    constructor(pool: EntityNodePool, skyBox: IEntity, partition: Partition);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
 	    /**
 	     *
 	     * @param planes
@@ -3216,8 +2500,109 @@ declare module "awayjs-display/lib/partition/SkyboxNode" {
 	     * @returns {boolean}
 	     */
 	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    isIntersectingRay(rayPosition: Vector3D, rayDirection: Vector3D): boolean;
+	    /**
+	     *
+	     * @protected
+	     */
+	    _pCreateDebugEntity(): IEntity;
+	    invalidatePartition(): void;
+	    updateBounds(): void;
 	}
-	export = SkyboxNode;
+	export = EntityNode;
+	
+}
+declare module "awayjs-display/lib/partition/CameraNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+	/**
+	 * @class away.partition.CameraNode
+	 */
+	class CameraNode extends EntityNode {
+	    static id: string;
+	    constructor(pool: EntityNodePool, camera: IEntity, partition: Partition);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	}
+	export = CameraNode;
+	
+}
+declare module "awayjs-display/lib/entities/Camera" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IProjection = require("awayjs-core/lib/projections/IProjection");
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	class Camera extends DisplayObjectContainer implements IEntity {
+	    private _viewProjection;
+	    private _viewProjectionDirty;
+	    private _projection;
+	    private _frustumPlanes;
+	    private _frustumPlanesDirty;
+	    private _onProjectionMatrixChangedDelegate;
+	    constructor(projection?: IProjection);
+	    assetType: string;
+	    private onProjectionMatrixChanged(event);
+	    frustumPlanes: Array<Plane3D>;
+	    private updateFrustum();
+	    /**
+	     * @protected
+	     */
+	    pInvalidateSceneTransform(): void;
+	    /**
+	     *
+	     */
+	    projection: IProjection;
+	    /**
+	     *
+	     */
+	    viewProjection: Matrix3D;
+	    /**
+	     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
+	     *
+	     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
+	     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
+	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+	     * @return The ray from the camera to the scene space position of the given screen coordinates.
+	     */
+	    getRay(nX: number, nY: number, sZ: number): Vector3D;
+	    /**
+	     * Calculates the normalised position in screen space of the given scene position.
+	     *
+	     * @param point3d the position vector of the scene coordinates to be projected.
+	     * @return The normalised screen position of the given scene coordinates.
+	     */
+	    project(point3d: Vector3D): Vector3D;
+	    /**
+	     * Calculates the scene position of the given normalized coordinates in screen space.
+	     *
+	     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
+	     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
+	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+	     * @return The scene position of the given screen coordinates.
+	     */
+	    unproject(nX: number, nY: number, sZ: number): Vector3D;
+	    _iCollectRenderables(rendererPool: IRendererPool): void;
+	    _iCollectRenderable(rendererPool: IRendererPool): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = Camera;
 	
 }
 declare module "awayjs-display/lib/partition/NullNode" {
@@ -3668,6 +3053,20 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    private removeChildInternal(child);
 	}
 	export = DisplayObjectContainer;
+	
+}
+declare module "awayjs-display/lib/controllers/ControllerBase" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class ControllerBase {
+	    _pAutoUpdate: boolean;
+	    _pTargetObject: DisplayObject;
+	    constructor(targetObject?: DisplayObject);
+	    pNotifyUpdate(): void;
+	    targetObject: DisplayObject;
+	    autoUpdate: boolean;
+	    update(interpolate?: boolean): void;
+	}
+	export = ControllerBase;
 	
 }
 declare module "awayjs-display/lib/base/AlignmentMode" {
@@ -4426,6 +3825,280 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 	export = IBitmapDrawable;
 	
 }
+declare module "awayjs-display/lib/base/Transform" {
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * The Transform class provides access to color adjustment properties and two-
+	 * or three-dimensional transformation objects that can be applied to a
+	 * display object. During the transformation, the color or the orientation and
+	 * position of a display object is adjusted(offset) from the current values
+	 * or coordinates to new values or coordinates. The Transform class also
+	 * collects data about color and two-dimensional matrix transformations that
+	 * are applied to a display object and all of its parent objects. You can
+	 * access these combined transformations through the
+	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
+	 * properties.
+	 *
+	 * <p>To apply color transformations: create a ColorTransform object, set the
+	 * color adjustments using the object's methods and properties, and then
+	 * assign the <code>colorTransformation</code> property of the
+	 * <code>transform</code> property of the display object to the new
+	 * ColorTransformation object.</p>
+	 *
+	 * <p>To apply two-dimensional transformations: create a Matrix object, set
+	 * the matrix's two-dimensional transformation, and then assign the
+	 * <code>transform.matrix</code> property of the display object to the new
+	 * Matrix object.</p>
+	 *
+	 * <p>To apply three-dimensional transformations: start with a
+	 * three-dimensional display object. A three-dimensional display object has a
+	 * <code>z</code> property value other than zero. You do not need to create
+	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
+	 * is created automatically when you assign a <code>z</code> value to a
+	 * display object. You can access the display object's Matrix3D object through
+	 * the display object's <code>transform</code> property. Using the methods of
+	 * the Matrix3D class, you can add to or modify the existing transformation
+	 * settings. Also, you can create a custom Matrix3D object, set the custom
+	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
+	 * object to the display object using the <code>transform.matrix</code>
+	 * property.</p>
+	 *
+	 * <p>To modify a perspective projection of the stage or root object: use the
+	 * <code>transform.matrix</code> property of the root display object to gain
+	 * access to the PerspectiveProjection object. Or, apply different perspective
+	 * projection properties to a display object by setting the perspective
+	 * projection properties of the display object's parent. The child display
+	 * object inherits the new properties. Specifically, create a
+	 * PerspectiveProjection object and set its properties, then assign the
+	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
+	 * property of the parent display object's <code>transform</code> property.
+	 * The specified projection transformation then applies to all the display
+	 * object's three-dimensional children.</p>
+	 *
+	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
+	 * perspective transformations, do not assign both to a display object at the
+	 * same time. Use the PerspectiveProjection object for focal length and
+	 * projection center changes. For more control over the perspective
+	 * transformation, create a perspective projection Matrix3D object.</p>
+	 */
+	class Transform {
+	    private _displayObject;
+	    private _concatenatedColorTransform;
+	    private _concatenatedMatrix;
+	    private _pixelBounds;
+	    _position: Vector3D;
+	    /**
+	     *
+	     */
+	    backVector: Vector3D;
+	    /**
+	     * A ColorTransform object containing values that universally adjust the
+	     * colors in the display object.
+	     *
+	     * @throws TypeError The colorTransform is null when being set
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * A ColorTransform object representing the combined color transformations
+	     * applied to the display object and all of its parent objects, back to the
+	     * root level. If different color transformations have been applied at
+	     * different levels, all of those transformations are concatenated into one
+	     * ColorTransform object for this property.
+	     */
+	    concatenatedColorTransform: ColorTransform;
+	    /**
+	     * A Matrix object representing the combined transformation matrixes of the
+	     * display object and all of its parent objects, back to the root level. If
+	     * different transformation matrixes have been applied at different levels,
+	     * all of those matrixes are concatenated into one matrix for this property.
+	     * Also, for resizeable SWF content running in the browser, this property
+	     * factors in the difference between stage coordinates and window coordinates
+	     * due to window resizing. Thus, the property converts local coordinates to
+	     * window coordinates, which may not be the same coordinate space as that of
+	     * the Stage.
+	     */
+	    concatenatedMatrix: Matrix;
+	    /**
+	     *
+	     */
+	    downVector: Vector3D;
+	    /**
+	     *
+	     */
+	    forwardVector: Vector3D;
+	    /**
+	     *
+	     */
+	    leftVector: Vector3D;
+	    /**
+	     * A Matrix object containing values that alter the scaling, rotation, and
+	     * translation of the display object.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     *
+	     * @throws TypeError The matrix is null when being set
+	     */
+	    matrix: Matrix;
+	    /**
+	     * Provides access to the Matrix3D object of a three-dimensional display
+	     * object. The Matrix3D object represents a transformation matrix that
+	     * determines the display object's position and orientation. A Matrix3D
+	     * object can also perform perspective projection.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     */
+	    matrix3D: Matrix3D;
+	    /**
+	     * Provides access to the PerspectiveProjection object of a three-dimensional
+	     * display object. The PerspectiveProjection object can be used to modify the
+	     * perspective transformation of the stage or to assign a perspective
+	     * transformation to all the three-dimensional children of a display object.
+	     *
+	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
+	     * a default PerspectiveProjection object is assigned to the root object.</p>
+	     */
+	    perspectiveProjection: PerspectiveProjection;
+	    /**
+	     * A Rectangle object that defines the bounding rectangle of the display
+	     * object on the stage.
+	     */
+	    pixelBounds: Rectangle;
+	    /**
+	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    position: Vector3D;
+	    /**
+	     *
+	     */
+	    rightVector: Vector3D;
+	    /**
+	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    rotation: Vector3D;
+	    /**
+	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    scale: Vector3D;
+	    /**
+	     *
+	     */
+	    upVector: Vector3D;
+	    constructor(displayObject: DisplayObject);
+	    /**
+	     * Returns a Matrix3D object, which can transform the space of a specified
+	     * display object in relation to the current display object's space. You can
+	     * use the <code>getRelativeMatrix3D()</code> method to move one
+	     * three-dimensional display object relative to another three-dimensional
+	     * display object.
+	     *
+	     * @param relativeTo The display object relative to which the transformation
+	     *                   occurs. To get a Matrix3D object relative to the stage,
+	     *                   set the parameter to the <code>root</code> or
+	     *                   <code>stage</code> object. To get the world-relative
+	     *                   matrix of the display object, set the parameter to a
+	     *                   display object that has a perspective transformation
+	     *                   applied to it.
+	     * @return A Matrix3D object that can be used to transform the space from the
+	     *         <code>relativeTo</code> display object to the current display
+	     *         object space.
+	     */
+	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
+	    /**
+	     * Moves the 3d object forwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveForward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveBackward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveLeft(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveRight(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveUp(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveDown(distance: number): void;
+	}
+	export = Transform;
+	
+}
+declare module "awayjs-display/lib/pick/IPickingCollider" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
+	 * Used with the <code>RaycastPicker</code> picking object.
+	 *
+	 * @see away.entities.Entity#pickingCollider
+	 * @see away.pick.RaycastPicker
+	 *
+	 * @interface away.pick.IPickingCollider
+	 */
+	interface IPickingCollider {
+	    /**
+	     * Sets the position and direction of a picking ray in local coordinates to the entity.
+	     *
+	     * @param localDirection The position vector in local coordinates
+	     * @param localPosition The direction vector in local coordinates
+	     */
+	    setLocalRay(localPosition: Vector3D, localDirection: Vector3D): any;
+	    /**
+	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
+	     *
+	     * @param entity The entity instance to be tested.
+	     * @param pickingCollisionVO The collision object used to store the collision results
+	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	     */
+	    testBillboardCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    /**
+	     * Tests a <code>Mesh</code> object for a collision with the picking ray.
+	     *
+	     * @param entity The entity instance to be tested.
+	     * @param pickingCollisionVO The collision object used to store the collision results
+	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	     * @param findClosest
+	     */
+	    testMeshCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number, findClosest: boolean): boolean;
+	}
+	export = IPickingCollider;
+	
+}
 declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -4443,7 +4116,7 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	
 }
 declare module "awayjs-display/lib/base/DisplayObject" {
-	import BlendMode = require("awayjs-core/lib/base/BlendMode");
+	import BlendMode = require("awayjs-core/lib/data/BlendMode");
 	import Box = require("awayjs-core/lib/geom/Box");
 	import Sphere = require("awayjs-core/lib/geom/Sphere");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
@@ -5689,729 +5362,387 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	export = DisplayObject;
 	
 }
-declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
-	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
+declare module "awayjs-display/lib/entities/Mesh" {
+	import Geometry = require("awayjs-core/lib/data/Geometry");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
-	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
-	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
-	 * extended to provide more application-specific dynamic selection of lights.
-	 *
-	 * @see StaticLightPicker
+	 * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
+	 * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
+	 * of the geometry to be assigned different materials.
 	 */
-	class LightPickerBase extends NamedAssetBase implements IAsset {
-	    _pNumPointLights: number;
-	    _pNumDirectionalLights: number;
-	    _pNumCastingPointLights: number;
-	    _pNumCastingDirectionalLights: number;
-	    _pNumLightProbes: number;
-	    _pAllPickedLights: Array<LightBase>;
-	    _pPointLights: Array<PointLight>;
-	    _pCastingPointLights: Array<PointLight>;
-	    _pDirectionalLights: Array<DirectionalLight>;
-	    _pCastingDirectionalLights: Array<DirectionalLight>;
-	    _pLightProbes: Array<LightProbe>;
-	    _pLightProbeWeights: Array<number>;
+	class Mesh extends DisplayObjectContainer implements IEntity {
+	    private _uvTransform;
+	    private _subMeshes;
+	    private _geometry;
+	    private _material;
+	    private _animator;
+	    private _castsShadows;
+	    private _shareAnimationGeometry;
+	    private _onGeometryBoundsInvalidDelegate;
+	    private _onSubGeometryAddedDelegate;
+	    private _onSubGeometryRemovedDelegate;
 	    /**
-	     * Creates a new LightPickerBase object.
+	     * Defines the animator of the mesh. Act on the mesh's geometry.  Default value is <code>null</code>.
 	     */
-	    constructor();
+	    animator: IAnimator;
 	    /**
-	     * Disposes resources used by the light picker.
+	     *
 	     */
-	    dispose(): void;
+	    assetType: string;
+	    /**
+	     * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
+	     */
+	    castsShadows: boolean;
+	    /**
+	     * The geometry used by the mesh that provides it with its shape.
+	     */
+	    geometry: Geometry;
+	    /**
+	     * The material with which to render the Mesh.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * Indicates whether or not the mesh share the same animation geometry.
+	     */
+	    shareAnimationGeometry: boolean;
+	    /**
+	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
+	     * material.
+	     */
+	    subMeshes: Array<ISubMesh>;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     * Create a new Mesh object.
+	     *
+	     * @param geometry                    The geometry used by the mesh that provides it with its shape.
+	     * @param material    [optional]        The material with which to render the Mesh.
+	     */
+	    constructor(geometry: Geometry, material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    bakeTransformations(): void;
 	    /**
 	     * @inheritDoc
 	     */
-	    assetType: string;
-	    /**
-	     * The maximum amount of directional lights that will be provided.
-	     */
-	    numDirectionalLights: number;
-	    /**
-	     * The maximum amount of point lights that will be provided.
-	     */
-	    numPointLights: number;
-	    /**
-	     * The maximum amount of directional lights that cast shadows.
-	     */
-	    numCastingDirectionalLights: number;
-	    /**
-	     * The amount of point lights that cast shadows.
-	     */
-	    numCastingPointLights: number;
-	    /**
-	     * The maximum amount of light probes that will be provided.
-	     */
-	    numLightProbes: number;
-	    /**
-	     * The collected point lights to be used for shading.
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights to be used for shading.
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected point lights that cast shadows to be used for shading.
-	     */
-	    castingPointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights that cast shadows to be used for shading.
-	     */
-	    castingDirectionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected light probes to be used for shading.
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     * The weights for each light probe, defining their influence on the object.
-	     */
-	    lightProbeWeights: Array<number>;
-	    /**
-	     * A collection of all the collected lights.
-	     */
-	    allPickedLights: Array<LightBase>;
-	    /**
-	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
-	     */
-	    collectLights(renderable: IRenderable): void;
-	    /**
-	     * Updates the weights for the light probes, based on the renderable's position relative to them.
-	     * @param renderable The renderble for which to calculate the light probes' influence.
-	     */
-	    private updateProbeWeights(renderable);
-	}
-	export = LightPickerBase;
-	
-}
-declare module "awayjs-display/lib/entities/Skybox" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import CubeTextureBase = require("awayjs-core/lib/textures/CubeTextureBase");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
-	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
-	 * the sky box is always as large as possible without being clipped.
-	 */
-	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderObjectOwner {
-	    private _cubeMap;
-	    _pAlphaThreshold: number;
-	    private _animationSet;
-	    _pLightPicker: LightPickerBase;
-	    _pBlendMode: string;
-	    private _renderObjects;
-	    private _renderables;
-	    private _uvTransform;
-	    private _owners;
-	    private _mipmap;
-	    private _smooth;
-	    private _material;
-	    private _animator;
-	    /**
-	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	     * invisible or entirely opaque, often used with textures for foliage, etc.
-	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	     */
-	    alphaThreshold: number;
-	    /**
-	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
-	     */
-	    mipmap: boolean;
-	    /**
-	     * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
-	     */
-	    smooth: boolean;
-	    /**
-	     * The light picker used by the material to provide lights to the material if it supports lighting.
-	     *
-	     * @see LightPickerBase
-	     * @see StaticLightPicker
-	     */
-	    lightPicker: LightPickerBase;
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
-	     * <ul>
-	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-	     * <li>BlendMode.MULTIPLY</li>
-	     * <li>BlendMode.ADD</li>
-	     * <li>BlendMode.ALPHA</li>
-	     * </ul>
-	     */
-	    blendMode: string;
-	    _pInvalidateRenderObject(): void;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    _pIinvalidatePasses(): void;
-	    /**
-	     * A list of the IRenderableOwners that use this material
-	     *
-	     * @private
-	     */
-	    iOwners: Array<IRenderableOwner>;
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	    * The cube texture to use as the skybox.
-	    */
-	    cubeMap: CubeTextureBase;
-	    /**
-	     * Create a new Skybox object.
-	     *
-	     * @param material	The material with which to render the Skybox.
-	     */
-	    constructor(cubeMap?: CubeTextureBase);
-	    assetType: string;
-	    castsShadows: boolean;
-	    /**
-	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	     * could be used by other materials and will not be disposed.
-	     */
 	    dispose(): void;
-	    _iCollectRenderables(rendererPool: IRendererPool): void;
-	    _iCollectRenderable(rendererPool: IRendererPool): void;
-	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
-	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	    /**
+	     * Disposes mesh including the animator and children. This is a merely a convenience method.
+	     * @return
+	     */
+	    disposeWithAnimatorAndChildren(): void;
+	    /**
+	     * Clones this Mesh instance along with all it's children, while re-using the same
+	     * material, geometry and animation set. The returned result will be a copy of this mesh,
+	     * containing copies of all of it's children.
+	     *
+	     * Properties that are re-used (i.e. not cloned) by the new copy include name,
+	     * geometry, and material. Properties that are cloned or created anew for the copy
+	     * include subMeshes, children of the mesh, and the animator.
+	     *
+	     * If you want to copy just the mesh, reusing it's geometry and material while not
+	     * cloning it's children, the simplest way is to create a new mesh manually:
+	     *
+	     * <code>
+	     * var clone : Mesh = new Mesh(original.geometry, original.material);
+	     * </code>
+	     */
+	    clone(): DisplayObject;
+	    /**
+	     * //TODO
+	     *
+	     * @param subGeometry
+	     * @returns {SubMeshBase}
+	     */
+	    getSubMeshFromSubGeometry(subGeometry: SubGeometryBase): ISubMesh;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    _pUpdateSphereBounds(): void;
+	    /**
+	     * //TODO
+	     *
+	     * @private
+	     */
+	    private onGeometryBoundsInvalid(event);
+	    /**
+	     * Called when a SubGeometry was added to the Geometry.
+	     *
+	     * @private
+	     */
+	    private onSubGeometryAdded(event);
+	    /**
+	     * Called when a SubGeometry was removed from the Geometry.
+	     *
+	     * @private
+	     */
+	    private onSubGeometryRemoved(event);
+	    /**
+	     * Adds a SubMeshBase wrapping a SubGeometry.
+	     *
+	     * @param subGeometry
+	     */
+	    private addSubMesh(subGeometry);
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
 	    /**
 	     *
 	     * @param renderer
 	     *
 	     * @internal
 	     */
-	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	    _iCollectRenderables(rendererPool: IRendererPool): void;
+	    _iInvalidateRenderableGeometries(): void;
 	    _pRegisterEntity(partition: Partition): void;
 	    _pUnregisterEntity(partition: Partition): void;
 	}
-	export = Skybox;
+	export = Mesh;
 	
 }
-declare module "awayjs-display/lib/pool/IRenderablePool" {
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Skybox = require("awayjs-display/lib/entities/Skybox");
-	/**
-	 * IRenderPass provides an abstract base class for material shader passes. A material pass constitutes at least
-	 * a render call per required renderable.
-	 */
-	interface IRenderablePool {
-	    getMaterialRenderObject(material: MaterialBase): IRenderObject;
-	    getSkyboxRenderObject(skybox: Skybox): IRenderObject;
-	    disposeItem(renderableOwner: IRenderableOwner): any;
-	}
-	export = IRenderablePool;
-	
-}
-declare module "awayjs-display/lib/base/IRenderObjectOwner" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * IRenderObjectOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderObjectOwner
-	 */
-	interface IRenderObjectOwner extends IAsset {
-	    alphaThreshold: number;
-	    mipmap: boolean;
-	    smooth: boolean;
-	    blendMode: string;
-	    lightPicker: LightPickerBase;
-	    animationSet: IAnimationSet;
-	    iOwners: Array<IRenderableOwner>;
-	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
-	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
-	}
-	export = IRenderObjectOwner;
-	
-}
-declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
-	/**
-	 * Dispatched to notify changes in a sub geometry object's state.
-	 *
-	 * @class away.events.RenderableOwnerEvent
-	 * @see away.core.base.Geometry
-	 */
-	class RenderableOwnerEvent extends Event {
-	    /**
-	     * Dispatched when a Renderable owners's render object owner has been updated.
-	     */
-	    static RENDER_OBJECT_OWNER_UPDATED: string;
-	    private _renderObjectOwner;
-	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param dataType An optional data type of the vertex data being updated.
-	     */
-	    constructor(type: string, renderObjectOwner: IRenderObjectOwner);
-	    /**
-	     * The renderobject owner of the renderable owner.
-	     */
-	    renderObjectOwner: IRenderObjectOwner;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): Event;
-	}
-	export = RenderableOwnerEvent;
-	
-}
-declare module "awayjs-display/lib/materials/MaterialBase" {
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * MaterialBase forms an abstract base class for any material.
-	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
-	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
-	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
-	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
-	 *
-	 * Away3D provides default materials trough SinglePassMaterialBase and TriangleMaterial, which use modular
-	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
-	 * shaders, or entire new material frameworks.
-	 */
-	class MaterialBase extends NamedAssetBase implements IRenderObjectOwner {
-	    private _colorTransform;
-	    private _alphaBlending;
-	    private _alpha;
-	    private _sizeChanged;
-	    private _renderObjects;
-	    _pAlphaThreshold: number;
-	    _pAnimateUVs: boolean;
-	    private _enableLightFallOff;
-	    private _specularLightSources;
-	    private _diffuseLightSources;
-	    /**
-	     * An object to contain any extra data.
-	     */
-	    extra: Object;
-	    /**
-	     * A value that can be used by materials that only work with a given type of renderer. The renderer can test the
-	     * classification to choose which render path to use. For example, a deferred material could set this value so
-	     * that the deferred renderer knows not to take the forward rendering path.
-	     *
-	     * @private
-	     */
-	    _iClassification: string;
-	    /**
-	     * An id for this material used to sort the renderables by shader program, which reduces Program state changes.
-	     *
-	     * @private
-	     */
-	    _iMaterialId: number;
-	    _iBaseScreenPassIndex: number;
-	    private _bothSides;
-	    private _animationSet;
-	    /**
-	     * A list of material owners, renderables or custom Entities.
-	     */
-	    private _owners;
-	    private _alphaPremultiplied;
-	    _pBlendMode: string;
-	    private _mipmap;
-	    private _smooth;
-	    private _repeat;
-	    private _color;
-	    _pTexture: Texture2DBase;
-	    _pLightPicker: LightPickerBase;
-	    _pHeight: number;
-	    _pWidth: number;
-	    private _onLightChangeDelegate;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * Creates a new MaterialBase object.
-	     */
-	    constructor();
-	    /**
-	     * The alpha of the surface.
-	     */
-	    alpha: number;
-	    /**
-	     * The ColorTransform object to transform the colour of the material with. Defaults to null.
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
-	     * example when using textures of foliage, consider using alphaThreshold instead.
-	     */
-	    alphaBlending: boolean;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     * The light picker used by the material to provide lights to the material if it supports lighting.
-	     *
-	     * @see LightPickerBase
-	     * @see StaticLightPicker
-	     */
-	    lightPicker: LightPickerBase;
-	    /**
-	     * Indicates whether or not any used textures should use mipmapping. Defaults to true.
-	     */
-	    mipmap: boolean;
-	    /**
-	     * Indicates whether or not any used textures should use smoothing. Defaults to true.
-	     */
-	    smooth: boolean;
-	    /**
-	     * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
-	     * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
-	     */
-	    repeat: boolean;
-	    /**
-	     * The diffuse reflectivity color of the surface.
-	     */
-	    color: number;
-	    /**
-	     * The texture object to use for the albedo colour.
-	     */
-	    texture: Texture2DBase;
-	    /**
-	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
-	     */
-	    animateUVs: boolean;
-	    /**
-	     * Whether or not to use fallOff and radius properties for lights. This can be used to improve performance and
-	     * compatibility for constrained mode.
-	     */
-	    enableLightFallOff: boolean;
-	    /**
-	     * Define which light source types to use for diffuse reflections. This allows choosing between regular lights
-	     * and/or light probes for diffuse reflections.
-	     *
-	     * @see away3d.materials.LightSources
-	     */
-	    diffuseLightSources: number;
-	    /**
-	     * Define which light source types to use for specular reflections. This allows choosing between regular lights
-	     * and/or light probes for specular reflections.
-	     *
-	     * @see away3d.materials.LightSources
-	     */
-	    specularLightSources: number;
-	    /**
-	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	     * could be used by other materials and will not be disposed.
-	     */
-	    dispose(): void;
-	    /**
-	     * Defines whether or not the material should cull triangles facing away from the camera.
-	     */
-	    bothSides: boolean;
-	    /**
-	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
-	     * <ul>
-	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-	     * <li>BlendMode.MULTIPLY</li>
-	     * <li>BlendMode.ADD</li>
-	     * <li>BlendMode.ALPHA</li>
-	     * </ul>
-	     */
-	    blendMode: string;
-	    /**
-	     * Indicates whether visible textures (or other pixels) used by this material have
-	     * already been premultiplied. Toggle this if you are seeing black halos around your
-	     * blended alpha edges.
-	     */
-	    alphaPremultiplied: boolean;
-	    /**
-	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	     * invisible or entirely opaque, often used with textures for foliage, etc.
-	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	     */
-	    alphaThreshold: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     * Mark an IRenderableOwner as owner of this material.
-	     * Assures we're not using the same material across renderables with different animations, since the
-	     * Programs depend on animation. This method needs to be called when a material is assigned.
-	     *
-	     * @param owner The IRenderableOwner that had this material assigned
-	     *
-	     * @internal
-	     */
-	    iAddOwner(owner: IRenderableOwner): void;
-	    /**
-	     * Removes an IRenderableOwner as owner.
-	     * @param owner
-	     *
-	     * @internal
-	     */
-	    iRemoveOwner(owner: IRenderableOwner): void;
-	    /**
-	     * A list of the IRenderableOwners that use this material
-	     *
-	     * @private
-	     */
-	    iOwners: Array<IRenderableOwner>;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    _pInvalidatePasses(): void;
-	    private invalidateAnimation();
-	    _pInvalidateRenderObject(): void;
-	    /**
-	     * Called when the light picker's configuration changed.
-	     */
-	    private onLightsChange(event);
-	    _pNotifySizeChanged(): void;
-	    _iAddRenderObject(renderObject: IRenderObject): IRenderObject;
-	    _iRemoveRenderObject(renderObject: IRenderObject): IRenderObject;
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
-	}
-	export = MaterialBase;
-	
-}
-declare module "awayjs-display/lib/base/IRenderableOwner" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
-	/**
-	 * IRenderableOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderableOwner
-	 */
-	interface IRenderableOwner extends IAsset {
-	    /**
-	     * The animation used by the material owner to assemble the vertex code.
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     *
-	     * @param renderable
-	     * @private
-	     */
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    /**
-	     *
-	     * @param renderable
-	     * @private
-	     */
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
-	    /**
-	     *
-	     * @param renderer
-	     * @private
-	     */
-	    _iCollectRenderable(rendererPool: IRendererPool): any;
-	}
-	export = IRenderableOwner;
-	
-}
-declare module "awayjs-display/lib/base/ISubMesh" {
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * ISubMesh is an interface for object SubMesh that is used to
-	 * apply a material to a SubGeometry class
-	 *
-	 * @class away.base.ISubMesh
-	 */
-	interface ISubMesh extends IRenderableOwner {
-	    subGeometry: SubGeometryBase;
-	    parentMesh: Mesh;
-	    material: MaterialBase;
-	    _iIndex: number;
-	    _iInvalidateRenderableGeometry(): any;
-	    _iGetExplicitMaterial(): MaterialBase;
+	class BoundingVolumeBase {
+	    _pEntity: IEntity;
+	    _pBoundsPrimitive: Mesh;
+	    _pInvalidated: boolean;
+	    constructor(entity: any);
+	    boundsPrimitive: IEntity;
+	    nullify(): void;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    clone(): BoundingVolumeBase;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    invalidate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
 	}
-	export = ISubMesh;
+	export = BoundingVolumeBase;
 	
 }
-declare module "awayjs-display/lib/base/ISubMeshClass" {
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
-	 * apply a material to a SubGeometry class
-	 *
-	 * @class away.base.ISubMeshClass
-	 */
-	interface ISubMeshClass {
-	    /**
-	     *
-	     */
-	    new (subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
-	}
-	export = ISubMeshClass;
-	
-}
-declare module "awayjs-display/lib/base/SubGeometryBase" {
-	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+declare module "awayjs-display/lib/entities/IEntity" {
+	import Box = require("awayjs-core/lib/geom/Box");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import ISubMeshClass = require("awayjs-display/lib/base/ISubMeshClass");
-	/**
-	 * @class away.base.TriangleSubGeometry
-	 */
-	class SubGeometryBase extends NamedAssetBase {
-	    static VERTEX_DATA: string;
-	    _pStrideOffsetDirty: boolean;
-	    _pIndices: Array<number>;
-	    _pVertices: Array<number>;
-	    private _numIndices;
-	    private _numTriangles;
-	    _pNumVertices: number;
-	    _pConcatenateArrays: boolean;
-	    private _indicesUpdated;
-	    _pStride: Object;
-	    _pOffset: Object;
-	    _pUpdateStrideOffset(): void;
-	    _pSubMeshClass: ISubMeshClass;
-	    subMeshClass: ISubMeshClass;
+	import Sphere = require("awayjs-core/lib/geom/Sphere");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import Transform = require("awayjs-display/lib/base/Transform");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
+	interface IEntity extends IAsset {
+	    x: number;
+	    y: number;
+	    z: number;
+	    rotationX: number;
+	    rotationY: number;
+	    rotationZ: number;
+	    scaleX: number;
+	    scaleY: number;
+	    scaleZ: number;
 	    /**
 	     *
 	     */
-	    concatenateArrays: boolean;
-	    /**
-	     * The raw index data that define the faces.
-	     */
-	    indices: Array<number>;
+	    debugVisible: boolean;
 	    /**
 	     *
 	     */
-	    vertices: Array<number>;
-	    /**
-	     * The total amount of triangles in the TriangleSubGeometry.
-	     */
-	    numTriangles: number;
-	    numVertices: number;
+	    boundsType: string;
 	    /**
 	     *
 	     */
-	    constructor(concatenatedArrays: boolean);
+	    castsShadows: boolean;
 	    /**
 	     *
 	     */
-	    getStride(dataType: string): any;
+	    inverseSceneTransform: Matrix3D;
 	    /**
 	     *
 	     */
-	    getOffset(dataType: string): any;
-	    updateVertices(): void;
+	    pickingCollider: IPickingCollider;
 	    /**
 	     *
 	     */
-	    dispose(): void;
+	    transform: Transform;
 	    /**
-	     * Updates the face indices of the TriangleSubGeometry.
 	     *
-	     * @param indices The face indices to upload.
 	     */
-	    updateIndices(indices: Array<number>): void;
+	    scene: Scene;
 	    /**
-	     * @protected
-	     */
-	    pInvalidateBounds(): void;
-	    /**
-	     * The Geometry object that 'owns' this TriangleSubGeometry object.
 	     *
+	     */
+	    scenePosition: Vector3D;
+	    /**
+	     *
+	     */
+	    sceneTransform: Matrix3D;
+	    /**
+	     *
+	     */
+	    zOffset: number;
+	    /**
+	     *
+	     * @param targetCoordinateSpace
+	     */
+	    getBox(targetCoordinateSpace?: DisplayObject): Box;
+	    /**
+	     *
+	     * @param targetCoordinateSpace
+	     */
+	    getSphere(targetCoordinateSpace?: DisplayObject): Sphere;
+	    /**
+	     *
+	     *
+	     * @param target
+	     * @param upAxis
+	     */
+	    lookAt(target: Vector3D, upAxis?: Vector3D): any;
+	    /**
+	     * @internal
+	     */
+	    _iPickingCollisionVO: PickingCollisionVO;
+	    /**
+	     * @internal
+	     */
+	    _iController: ControllerBase;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedPartition: Partition;
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iIsMouseEnabled(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iIsVisible(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iInternalUpdate(): any;
+	    /**
+	     *
+	     * @param entityNode
 	     * @private
 	     */
-	    parentGeometry: Geometry;
+	    _iAddEntityNode(entityNode: EntityNode): EntityNode;
 	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
+	     *
+	     * @param entityNode
+	     * @private
 	     */
-	    clone(): SubGeometryBase;
-	    applyTransformation(transform: Matrix3D): void;
+	    _iRemoveEntityNode(entityNode: EntityNode): EntityNode;
 	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
+	     * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
+	     * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
+	     * return the scene transform.
 	     */
-	    scale(scale: number): void;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    getBoundingPositions(): Array<number>;
-	    private notifyIndicesUpdate();
-	    _pNotifyVerticesUpdate(): void;
+	    getRenderSceneTransform(camera: Camera): Matrix3D;
+	    /**
+	     *
+	     * @param renderer
+	     * @private
+	     */
+	    _iCollectRenderables(rendererPool: IRendererPool): any;
 	}
-	export = SubGeometryBase;
+	export = IEntity;
+	
+}
+declare module "awayjs-display/lib/pool/IRenderable" {
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * IRenderable is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderable
+	 */
+	interface IRenderable {
+	    /**
+	     *
+	     */
+	    next: IRenderable;
+	    /**
+	     *
+	     */
+	    sourceEntity: IEntity;
+	    /**
+	     *
+	     */
+	    renderObjectId: number;
+	    /**
+	     *
+	     */
+	    renderOrderId: number;
+	    /**
+	     *
+	     */
+	    zIndex: number;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidateGeometry(): any;
+	    /**
+	     *
+	     */
+	    invalidateIndexData(): any;
+	    /**
+	     *
+	     */
+	    invalidateVertexData(dataType: string): any;
+	}
+	export = IRenderable;
 	
 }
 declare module "awayjs-display/lib/animators/IAnimator" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	/**
@@ -6452,1319 +5783,6 @@ declare module "awayjs-display/lib/animators/IAnimator" {
 	    getRenderableSubGeometry(renderable: IRenderable, sourceSubGeometry: SubGeometryBase): SubGeometryBase;
 	}
 	export = IAnimator;
-	
-}
-declare module "awayjs-display/lib/base/CapsStyle" {
-	/**
-	 * The CapsStyle class is an enumeration of constant values that specify the
-	 * caps style to use in drawing lines. The constants are provided for use as
-	 * values in the <code>caps</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
-	 * following three types of caps:
-	 */
-	class CapsStyle {
-	    /**
-	     * Used to specify round caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	    /**
-	     * Used to specify no caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static NONE: string;
-	    /**
-	     * Used to specify square caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static SQUARE: string;
-	}
-	export = CapsStyle;
-	
-}
-declare module "awayjs-display/lib/base/GradientType" {
-	/**
-	 * The GradientType class provides values for the <code>type</code> parameter
-	 * in the <code>beginGradientFill()</code> and
-	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
-	 * class.
-	 */
-	class GradientType {
-	    /**
-	     * Value used to specify a linear gradient fill.
-	     */
-	    static LINEAR: string;
-	    /**
-	     * Value used to specify a radial gradient fill.
-	     */
-	    static RADIAL: string;
-	}
-	export = GradientType;
-	
-}
-declare module "awayjs-display/lib/base/GraphicsPathWinding" {
-	/**
-	 * The GraphicsPathWinding class provides values for the
-	 * <code>flash.display.GraphicsPath.winding</code> property and the
-	 * <code>flash.display.Graphics.drawPath()</code> method to determine the
-	 * direction to draw a path. A clockwise path is positively wound, and a
-	 * counter-clockwise path is negatively wound:
-	 *
-	 * <p> When paths intersect or overlap, the winding direction determines the
-	 * rules for filling the areas created by the intersection or overlap:</p>
-	 */
-	class GraphicsPathWinding {
-	    static EVEN_ODD: string;
-	    static NON_ZERO: string;
-	}
-	export = GraphicsPathWinding;
-	
-}
-declare module "awayjs-display/lib/base/IGraphicsData" {
-	/**
-	 * This interface is used to define objects that can be used as parameters in the
-	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
-	 * the implementor classes of this interface to create and manage drawing property
-	 * data, and to reuse the same data for different instances. Then, use the methods of
-	 * the Graphics class to render the drawing objects.
-	 *
-	 * @see away.base.Graphics.drawGraphicsData()
-	 * @see away.base.Graphics.readGraphicsData()
-	 */
-	interface IGraphicsData {
-	}
-	export = IGraphicsData;
-	
-}
-declare module "awayjs-display/lib/base/InterpolationMethod" {
-	/**
-	 * The InterpolationMethod class provides values for the
-	 * <code>interpolationMethod</code> parameter in the
-	 * <code>Graphics.beginGradientFill()</code> and
-	 * <code>Graphics.lineGradientStyle()</code> methods. This parameter
-	 * determines the RGB space to use when rendering the gradient.
-	 */
-	class InterpolationMethod {
-	    /**
-	     * Specifies that the RGB interpolation method should be used. This means
-	     * that the gradient is rendered with exponential sRGB(standard RGB) space.
-	     * The sRGB space is a W3C-endorsed standard that defines a non-linear
-	     * conversion between red, green, and blue component values and the actual
-	     * intensity of the visible component color.
-	     *
-	     * <p>For example, consider a simple linear gradient between two colors(with
-	     * the <code>spreadMethod</code> parameter set to
-	     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
-	     * affect the appearance as follows: </p>
-	     */
-	    static LINEAR_RGB: string;
-	    /**
-	     * Specifies that the RGB interpolation method should be used. This means
-	     * that the gradient is rendered with exponential sRGB(standard RGB) space.
-	     * The sRGB space is a W3C-endorsed standard that defines a non-linear
-	     * conversion between red, green, and blue component values and the actual
-	     * intensity of the visible component color.
-	     *
-	     * <p>For example, consider a simple linear gradient between two colors(with
-	     * the <code>spreadMethod</code> parameter set to
-	     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
-	     * affect the appearance as follows: </p>
-	     */
-	    static RGB: string;
-	}
-	export = InterpolationMethod;
-	
-}
-declare module "awayjs-display/lib/base/JointStyle" {
-	/**
-	 * The JointStyle class is an enumeration of constant values that specify the
-	 * joint style to use in drawing lines. These constants are provided for use
-	 * as values in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
-	 * three types of joints: miter, round, and bevel, as the following example
-	 * shows:
-	 */
-	class JointStyle {
-	    /**
-	     * Specifies beveled joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static BEVEL: string;
-	    /**
-	     * Specifies mitered joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static MITER: string;
-	    /**
-	     * Specifies round joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	}
-	export = JointStyle;
-	
-}
-declare module "awayjs-display/lib/base/LineScaleMode" {
-	/**
-	 * The LineScaleMode class provides values for the <code>scaleMode</code>
-	 * parameter in the <code>Graphics.lineStyle()</code> method.
-	 */
-	class LineScaleMode {
-	    /**
-	     * With this setting used as the <code>scaleMode</code> parameter of the
-	     * <code>lineStyle()</code> method, the thickness of the line scales
-	     * <i>only</i> vertically. For example, consider the following circles, drawn
-	     * with a one-pixel line, and each with the <code>scaleMode</code> parameter
-	     * set to <code>LineScaleMode.VERTICAL</code>. The circle on the left is
-	     * scaled only vertically, and the circle on the right is scaled both
-	     * vertically and horizontally.
-	     */
-	    static HORIZONTAL: string;
-	    /**
-	     * With this setting used as the <code>scaleMode</code> parameter of the
-	     * <code>lineStyle()</code> method, the thickness of the line never scales.
-	     */
-	    static NONE: string;
-	    /**
-	     * With this setting used as the <code>scaleMode</code> parameter of the
-	     * <code>lineStyle()</code> method, the thickness of the line always scales
-	     * when the object is scaled(the default).
-	     */
-	    static NORMAL: string;
-	    /**
-	     * With this setting used as the <code>scaleMode</code> parameter of the
-	     * <code>lineStyle()</code> method, the thickness of the line scales
-	     * <i>only</i> horizontally. For example, consider the following circles,
-	     * drawn with a one-pixel line, and each with the <code>scaleMode</code>
-	     * parameter set to <code>LineScaleMode.HORIZONTAL</code>. The circle on the
-	     * left is scaled only horizontally, and the circle on the right is scaled
-	     * both vertically and horizontally.
-	     */
-	    static VERTICAL: string;
-	}
-	export = LineScaleMode;
-	
-}
-declare module "awayjs-display/lib/base/TriangleCulling" {
-	/**
-	 * Defines codes for culling algorithms that determine which triangles not to
-	 * render when drawing triangle paths.
-	 *
-	 * <p> The terms <code>POSITIVE</code> and <code>NEGATIVE</code> refer to the
-	 * sign of a triangle's normal along the z-axis. The normal is a 3D vector
-	 * that is perpendicular to the surface of the triangle. </p>
-	 *
-	 * <p> A triangle whose vertices 0, 1, and 2 are arranged in a clockwise order
-	 * has a positive normal value. That is, its normal points in a positive
-	 * z-axis direction, away from the current view point. When the
-	 * <code>TriangleCulling.POSITIVE</code> algorithm is used, triangles with
-	 * positive normals are not rendered. Another term for this is backface
-	 * culling. </p>
-	 *
-	 * <p> A triangle whose vertices are arranged in a counter-clockwise order has
-	 * a negative normal value. That is, its normal points in a negative z-axis
-	 * direction, toward the current view point. When the
-	 * <code>TriangleCulling.NEGATIVE</code> algorithm is used, triangles with
-	 * negative normals will not be rendered. </p>
-	 */
-	class TriangleCulling {
-	    /**
-	     * Specifies culling of all triangles facing toward the current view point.
-	     */
-	    static NEGATIVE: string;
-	    /**
-	     * Specifies no culling. All triangles in the path are rendered.
-	     */
-	    static NONE: string;
-	    /**
-	     * Specifies culling of all triangles facing away from the current view
-	     * point. This is also known as backface culling.
-	     */
-	    static POSITIVE: string;
-	}
-	export = TriangleCulling;
-	
-}
-declare module "awayjs-display/lib/base/SpreadMethod" {
-	/**
-	 * The SpreadMethod class provides values for the <code>spreadMethod</code>
-	 * parameter in the <code>beginGradientFill()</code> and
-	 * <code>lineGradientStyle()</code> methods of the Graphics class.
-	 *
-	 * <p>The following example shows the same gradient fill using various spread
-	 * methods:</p>
-	 */
-	class SpreadMethod {
-	    /**
-	     * Specifies that the gradient use the <i>pad</i> spread method.
-	     */
-	    static PAD: string;
-	    /**
-	     * Specifies that the gradient use the <i>reflect</i> spread method.
-	     */
-	    static REFLECT: string;
-	    /**
-	     * Specifies that the gradient use the <i>repeat</i> spread method.
-	     */
-	    static REPEAT: string;
-	}
-	export = SpreadMethod;
-	
-}
-declare module "awayjs-display/lib/base/Graphics" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import CapsStyle = require("awayjs-display/lib/base/CapsStyle");
-	import GradientType = require("awayjs-display/lib/base/GradientType");
-	import GraphicsPathWinding = require("awayjs-display/lib/base/GraphicsPathWinding");
-	import IGraphicsData = require("awayjs-display/lib/base/IGraphicsData");
-	import InterpolationMethod = require("awayjs-display/lib/base/InterpolationMethod");
-	import JointStyle = require("awayjs-display/lib/base/JointStyle");
-	import LineScaleMode = require("awayjs-display/lib/base/LineScaleMode");
-	import TriangleCulling = require("awayjs-display/lib/base/TriangleCulling");
-	import SpreadMethod = require("awayjs-display/lib/base/SpreadMethod");
-	/**
-	 * The Graphics class contains a set of methods that you can use to create a
-	 * vector shape. Display objects that support drawing include Sprite and Shape
-	 * objects. Each of these classes includes a <code>graphics</code> property
-	 * that is a Graphics object. The following are among those helper functions
-	 * provided for ease of use: <code>drawRect()</code>,
-	 * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
-	 * <code>drawEllipse()</code>.
-	 *
-	 * <p>You cannot create a Graphics object directly from ActionScript code. If
-	 * you call <code>new Graphics()</code>, an exception is thrown.</p>
-	 *
-	 * <p>The Graphics class is final; it cannot be subclassed.</p>
-	 */
-	class Graphics {
-	    /**
-	     * Fills a drawing area with a bitmap image. The bitmap can be repeated or
-	     * tiled to fill the area. The fill remains in effect until you call the
-	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
-	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
-	     * method. Calling the <code>clear()</code> method clears the fill.
-	     *
-	     * <p>The application renders the fill whenever three or more points are
-	     * drawn, or when the <code>endFill()</code> method is called. </p>
-	     *
-	     * @param bitmap A transparent or opaque bitmap image that contains the bits
-	     *               to be displayed.
-	     * @param matrix A matrix object(of the flash.geom.Matrix class), which you
-	     *               can use to define transformations on the bitmap. For
-	     *               example, you can use the following matrix to rotate a bitmap
-	     *               by 45 degrees(pi/4 radians):
-	     * @param repeat If <code>true</code>, the bitmap image repeats in a tiled
-	     *               pattern. If <code>false</code>, the bitmap image does not
-	     *               repeat, and the edges of the bitmap are used for any fill
-	     *               area that extends beyond the bitmap.
-	     *
-	     *               <p>For example, consider the following bitmap(a 20 x
-	     *               20-pixel checkerboard pattern):</p>
-	     *
-	     *               <p>When <code>repeat</code> is set to <code>true</code>(as
-	     *               in the following example), the bitmap fill repeats the
-	     *               bitmap:</p>
-	     *
-	     *               <p>When <code>repeat</code> is set to <code>false</code>,
-	     *               the bitmap fill uses the edge pixels for the fill area
-	     *               outside the bitmap:</p>
-	     * @param smooth If <code>false</code>, upscaled bitmap images are rendered
-	     *               by using a nearest-neighbor algorithm and look pixelated. If
-	     *               <code>true</code>, upscaled bitmap images are rendered by
-	     *               using a bilinear algorithm. Rendering by using the nearest
-	     *               neighbor algorithm is faster.
-	     */
-	    beginBitmapFill(bitmap: BitmapData, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
-	    /**
-	     * Specifies a simple one-color fill that subsequent calls to other Graphics
-	     * methods(such as <code>lineTo()</code> or <code>drawCircle()</code>) use
-	     * when drawing. The fill remains in effect until you call the
-	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
-	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
-	     * method. Calling the <code>clear()</code> method clears the fill.
-	     *
-	     * <p>The application renders the fill whenever three or more points are
-	     * drawn, or when the <code>endFill()</code> method is called.</p>
-	     *
-	     * @param color The color of the fill(0xRRGGBB).
-	     * @param alpha The alpha value of the fill(0.0 to 1.0).
-	     */
-	    beginFill(color: number, alpha?: number): void;
-	    /**
-	     * Specifies a gradient fill used by subsequent calls to other Graphics
-	     * methods(such as <code>lineTo()</code> or <code>drawCircle()</code>) for
-	     * the object. The fill remains in effect until you call the
-	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
-	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
-	     * method. Calling the <code>clear()</code> method clears the fill.
-	     *
-	     * <p>The application renders the fill whenever three or more points are
-	     * drawn, or when the <code>endFill()</code> method is called. </p>
-	     *
-	     * @param type                A value from the GradientType class that
-	     *                            specifies which gradient type to use:
-	     *                            <code>GradientType.LINEAR</code> or
-	     *                            <code>GradientType.RADIAL</code>.
-	     * @param colors              An array of RGB hexadecimal color values used
-	     *                            in the gradient; for example, red is 0xFF0000,
-	     *                            blue is 0x0000FF, and so on. You can specify
-	     *                            up to 15 colors. For each color, specify a
-	     *                            corresponding value in the alphas and ratios
-	     *                            parameters.
-	     * @param alphas              An array of alpha values for the corresponding
-	     *                            colors in the colors array; valid values are 0
-	     *                            to 1. If the value is less than 0, the default
-	     *                            is 0. If the value is greater than 1, the
-	     *                            default is 1.
-	     * @param ratios              An array of color distribution ratios; valid
-	     *                            values are 0-255. This value defines the
-	     *                            percentage of the width where the color is
-	     *                            sampled at 100%. The value 0 represents the
-	     *                            left position in the gradient box, and 255
-	     *                            represents the right position in the gradient
-	     *                            box.
-	     * @param matrix              A transformation matrix as defined by the
-	     *                            flash.geom.Matrix class. The flash.geom.Matrix
-	     *                            class includes a
-	     *                            <code>createGradientBox()</code> method, which
-	     *                            lets you conveniently set up the matrix for use
-	     *                            with the <code>beginGradientFill()</code>
-	     *                            method.
-	     * @param spreadMethod        A value from the SpreadMethod class that
-	     *                            specifies which spread method to use, either:
-	     *                            <code>SpreadMethod.PAD</code>,
-	     *                            <code>SpreadMethod.REFLECT</code>, or
-	     *                            <code>SpreadMethod.REPEAT</code>.
-	     *
-	     *                            <p>For example, consider a simple linear
-	     *                            gradient between two colors:</p>
-	     *
-	     *                            <p>This example uses
-	     *                            <code>SpreadMethod.PAD</code> for the spread
-	     *                            method, and the gradient fill looks like the
-	     *                            following:</p>
-	     *
-	     *                            <p>If you use <code>SpreadMethod.REFLECT</code>
-	     *                            for the spread method, the gradient fill looks
-	     *                            like the following:</p>
-	     *
-	     *                            <p>If you use <code>SpreadMethod.REPEAT</code>
-	     *                            for the spread method, the gradient fill looks
-	     *                            like the following:</p>
-	     * @param interpolationMethod A value from the InterpolationMethod class that
-	     *                            specifies which value to use:
-	     *                            <code>InterpolationMethod.LINEAR_RGB</code> or
-	     *                            <code>InterpolationMethod.RGB</code>
-	     *
-	     *                            <p>For example, consider a simple linear
-	     *                            gradient between two colors(with the
-	     *                            <code>spreadMethod</code> parameter set to
-	     *                            <code>SpreadMethod.REFLECT</code>). The
-	     *                            different interpolation methods affect the
-	     *                            appearance as follows: </p>
-	     * @param focalPointRatio     A number that controls the location of the
-	     *                            focal point of the gradient. 0 means that the
-	     *                            focal point is in the center. 1 means that the
-	     *                            focal point is at one border of the gradient
-	     *                            circle. -1 means that the focal point is at the
-	     *                            other border of the gradient circle. A value
-	     *                            less than -1 or greater than 1 is rounded to -1
-	     *                            or 1. For example, the following example shows
-	     *                            a <code>focalPointRatio</code> set to 0.75:
-	     * @throws ArgumentError If the <code>type</code> parameter is not valid.
-	     */
-	    beginGradientFill(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: string, interpolationMethod?: string, focalPointRatio?: number): void;
-	    /**
-	     * Specifies a shader fill used by subsequent calls to other Graphics methods
-	     * (such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
-	     * object. The fill remains in effect until you call the
-	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
-	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
-	     * method. Calling the <code>clear()</code> method clears the fill.
-	     *
-	     * <p>The application renders the fill whenever three or more points are
-	     * drawn, or when the <code>endFill()</code> method is called.</p>
-	     *
-	     * <p>Shader fills are not supported under GPU rendering; filled areas will
-	     * be colored cyan.</p>
-	     *
-	     * @param shader The shader to use for the fill. This Shader instance is not
-	     *               required to specify an image input. However, if an image
-	     *               input is specified in the shader, the input must be provided
-	     *               manually. To specify the input, set the <code>input</code>
-	     *               property of the corresponding ShaderInput property of the
-	     *               <code>Shader.data</code> property.
-	     *
-	     *               <p>When you pass a Shader instance as an argument the shader
-	     *               is copied internally. The drawing fill operation uses that
-	     *               internal copy, not a reference to the original shader. Any
-	     *               changes made to the shader, such as changing a parameter
-	     *               value, input, or bytecode, are not applied to the copied
-	     *               shader that's used for the fill.</p>
-	     * @param matrix A matrix object(of the flash.geom.Matrix class), which you
-	     *               can use to define transformations on the shader. For
-	     *               example, you can use the following matrix to rotate a shader
-	     *               by 45 degrees(pi/4 radians):
-	     *
-	     *               <p>The coordinates received in the shader are based on the
-	     *               matrix that is specified for the <code>matrix</code>
-	     *               parameter. For a default(<code>null</code>) matrix, the
-	     *               coordinates in the shader are local pixel coordinates which
-	     *               can be used to sample an input.</p>
-	     * @throws ArgumentError When the shader output type is not compatible with
-	     *                       this operation(the shader must specify a
-	     *                       <code>pixel3</code> or <code>pixel4</code> output).
-	     * @throws ArgumentError When the shader specifies an image input that isn't
-	     *                       provided.
-	     * @throws ArgumentError When a ByteArray or Vector.<Number> instance is used
-	     *                       as an input and the <code>width</code> and
-	     *                       <code>height</code> properties aren't specified for
-	     *                       the ShaderInput, or the specified values don't match
-	     *                       the amount of data in the input object. See the
-	     *                       <code>ShaderInput.input</code> property for more
-	     *                       information.
-	     */
-	    /**
-	     * Clears the graphics that were drawn to this Graphics object, and resets
-	     * fill and line style settings.
-	     *
-	     */
-	    clear(): void;
-	    /**
-	     * Copies all of drawing commands from the source Graphics object into the
-	     * calling Graphics object.
-	     *
-	     * @param sourceGraphics The Graphics object from which to copy the drawing
-	     *                       commands.
-	     */
-	    copyFrom(sourceGraphics: Graphics): void;
-	    /**
-	     * Draws a cubic Bezier curve from the current drawing position to the
-	     * specified anchor point. Cubic Bezier curves consist of two anchor points
-	     * and two control points. The curve interpolates the two anchor points and
-	     * curves toward the two control points.
-	     *
-	     * The four points you use to draw a cubic Bezier curve with the
-	     * <code>cubicCurveTo()</code> method are as follows:
-	     *
-	     * <ul>
-	     *   <li>The current drawing position is the first anchor point. </li>
-	     *   <li>The anchorX and anchorY parameters specify the second anchor point.
-	     *   </li>
-	     *   <li>The <code>controlX1</code> and <code>controlY1</code> parameters
-	     *   specify the first control point.</li>
-	     *   <li>The <code>controlX2</code> and <code>controlY2</code> parameters
-	     *   specify the second control point.</li>
-	     * </ul>
-	     *
-	     * If you call the <code>cubicCurveTo()</code> method before calling the
-	     * <code>moveTo()</code> method, your curve starts at position (0, 0).
-	     *
-	     * If the <code>cubicCurveTo()</code> method succeeds, the Flash runtime sets
-	     * the current drawing position to (<code>anchorX</code>,
-	     * <code>anchorY</code>). If the <code>cubicCurveTo()</code> method fails,
-	     * the current drawing position remains unchanged.
-	     *
-	     * If your movie clip contains content created with the Flash drawing tools,
-	     * the results of calls to the <code>cubicCurveTo()</code> method are drawn
-	     * underneath that content.
-	     *
-	     * @param controlX1 Specifies the horizontal position of the first control
-	     *                  point relative to the registration point of the parent
-	     *                  display object.
-	     * @param controlY1 Specifies the vertical position of the first control
-	     *                  point relative to the registration point of the parent
-	     *                  display object.
-	     * @param controlX2 Specifies the horizontal position of the second control
-	     *                  point relative to the registration point of the parent
-	     *                  display object.
-	     * @param controlY2 Specifies the vertical position of the second control
-	     *                  point relative to the registration point of the parent
-	     *                  display object.
-	     * @param anchorX   Specifies the horizontal position of the anchor point
-	     *                  relative to the registration point of the parent display
-	     *                  object.
-	     * @param anchorY   Specifies the vertical position of the anchor point
-	     *                  relative to the registration point of the parent display
-	     *                  object.
-	     */
-	    cubicCurveTo(controlX1: number, controlY1: number, controlX2: number, controlY2: number, anchorX: number, anchorY: number): void;
-	    /**
-	     * Draws a curve using the current line style from the current drawing
-	     * position to(anchorX, anchorY) and using the control point that
-	     * (<code>controlX</code>, <code>controlY</code>) specifies. The current
-	     * drawing position is then set to(<code>anchorX</code>,
-	     * <code>anchorY</code>). If the movie clip in which you are drawing contains
-	     * content created with the Flash drawing tools, calls to the
-	     * <code>curveTo()</code> method are drawn underneath this content. If you
-	     * call the <code>curveTo()</code> method before any calls to the
-	     * <code>moveTo()</code> method, the default of the current drawing position
-	     * is(0, 0). If any of the parameters are missing, this method fails and the
-	     * current drawing position is not changed.
-	     *
-	     * <p>The curve drawn is a quadratic Bezier curve. Quadratic Bezier curves
-	     * consist of two anchor points and one control point. The curve interpolates
-	     * the two anchor points and curves toward the control point. </p>
-	     *
-	     * @param controlX A number that specifies the horizontal position of the
-	     *                 control point relative to the registration point of the
-	     *                 parent display object.
-	     * @param controlY A number that specifies the vertical position of the
-	     *                 control point relative to the registration point of the
-	     *                 parent display object.
-	     * @param anchorX  A number that specifies the horizontal position of the
-	     *                 next anchor point relative to the registration point of
-	     *                 the parent display object.
-	     * @param anchorY  A number that specifies the vertical position of the next
-	     *                 anchor point relative to the registration point of the
-	     *                 parent display object.
-	     */
-	    curveTo(controlX: number, controlY: number, anchorX: number, anchorY: number): void;
-	    /**
-	     * Draws a circle. Set the line style, fill, or both before you call the
-	     * <code>drawCircle()</code> method, by calling the <code>linestyle()</code>,
-	     * <code>lineGradientStyle()</code>, <code>beginFill()</code>,
-	     * <code>beginGradientFill()</code>, or <code>beginBitmapFill()</code>
-	     * method.
-	     *
-	     * @param x      The <i>x</i> location of the center of the circle relative
-	     *               to the registration point of the parent display object(in
-	     *               pixels).
-	     * @param y      The <i>y</i> location of the center of the circle relative
-	     *               to the registration point of the parent display object(in
-	     *               pixels).
-	     * @param radius The radius of the circle(in pixels).
-	     */
-	    drawCircle(x: number, y: number, radius: number): void;
-	    /**
-	     * Draws an ellipse. Set the line style, fill, or both before you call the
-	     * <code>drawEllipse()</code> method, by calling the
-	     * <code>linestyle()</code>, <code>lineGradientStyle()</code>,
-	     * <code>beginFill()</code>, <code>beginGradientFill()</code>, or
-	     * <code>beginBitmapFill()</code> method.
-	     *
-	     * @param x      The <i>x</i> location of the top-left of the bounding-box of
-	     *               the ellipse relative to the registration point of the parent
-	     *               display object(in pixels).
-	     * @param y      The <i>y</i> location of the top left of the bounding-box of
-	     *               the ellipse relative to the registration point of the parent
-	     *               display object(in pixels).
-	     * @param width  The width of the ellipse(in pixels).
-	     * @param height The height of the ellipse(in pixels).
-	     */
-	    drawEllipse(x: number, y: number, width: number, height: number): void;
-	    /**
-	     * Submits a series of IGraphicsData instances for drawing. This method
-	     * accepts a Vector containing objects including paths, fills, and strokes
-	     * that implement the IGraphicsData interface. A Vector of IGraphicsData
-	     * instances can refer to a part of a shape, or a complex fully defined set
-	     * of data for rendering a complete shape.
-	     *
-	     * <p> Graphics paths can contain other graphics paths. If the
-	     * <code>graphicsData</code> Vector includes a path, that path and all its
-	     * sub-paths are rendered during this operation. </p>
-	     *
-	     */
-	    drawGraphicsData(graphicsData: Array<IGraphicsData>): void;
-	    /**
-	     * Submits a series of commands for drawing. The <code>drawPath()</code>
-	     * method uses vector arrays to consolidate individual <code>moveTo()</code>,
-	     * <code>lineTo()</code>, and <code>curveTo()</code> drawing commands into a
-	     * single call. The <code>drawPath()</code> method parameters combine drawing
-	     * commands with x- and y-coordinate value pairs and a drawing direction. The
-	     * drawing commands are values from the GraphicsPathCommand class. The x- and
-	     * y-coordinate value pairs are Numbers in an array where each pair defines a
-	     * coordinate location. The drawing direction is a value from the
-	     * GraphicsPathWinding class.
-	     *
-	     * <p> Generally, drawings render faster with <code>drawPath()</code> than
-	     * with a series of individual <code>lineTo()</code> and
-	     * <code>curveTo()</code> methods. </p>
-	     *
-	     * <p> The <code>drawPath()</code> method uses a uses a floating computation
-	     * so rotation and scaling of shapes is more accurate and gives better
-	     * results. However, curves submitted using the <code>drawPath()</code>
-	     * method can have small sub-pixel alignment errors when used in conjunction
-	     * with the <code>lineTo()</code> and <code>curveTo()</code> methods. </p>
-	     *
-	     * <p> The <code>drawPath()</code> method also uses slightly different rules
-	     * for filling and drawing lines. They are: </p>
-	     *
-	     * <ul>
-	     *   <li>When a fill is applied to rendering a path:
-	     * <ul>
-	     *   <li>A sub-path of less than 3 points is not rendered.(But note that the
-	     * stroke rendering will still occur, consistent with the rules for strokes
-	     * below.)</li>
-	     *   <li>A sub-path that isn't closed(the end point is not equal to the
-	     * begin point) is implicitly closed.</li>
-	     * </ul>
-	     * </li>
-	     *   <li>When a stroke is applied to rendering a path:
-	     * <ul>
-	     *   <li>The sub-paths can be composed of any number of points.</li>
-	     *   <li>The sub-path is never implicitly closed.</li>
-	     * </ul>
-	     * </li>
-	     * </ul>
-	     *
-	     * @param winding Specifies the winding rule using a value defined in the
-	     *                GraphicsPathWinding class.
-	     */
-	    drawPath(commands: Array<number>, data: Array<number>, winding: GraphicsPathWinding): void;
-	    /**
-	     * Draws a rectangle. Set the line style, fill, or both before you call the
-	     * <code>drawRect()</code> method, by calling the <code>linestyle()</code>,
-	     * <code>lineGradientStyle()</code>, <code>beginFill()</code>,
-	     * <code>beginGradientFill()</code>, or <code>beginBitmapFill()</code>
-	     * method.
-	     *
-	     * @param x      A number indicating the horizontal position relative to the
-	     *               registration point of the parent display object(in pixels).
-	     * @param y      A number indicating the vertical position relative to the
-	     *               registration point of the parent display object(in pixels).
-	     * @param width  The width of the rectangle(in pixels).
-	     * @param height The height of the rectangle(in pixels).
-	     * @throws ArgumentError If the <code>width</code> or <code>height</code>
-	     *                       parameters are not a number
-	     *                      (<code>Number.NaN</code>).
-	     */
-	    drawRect(x: number, y: number, width: number, height: number): void;
-	    /**
-	     * Draws a rounded rectangle. Set the line style, fill, or both before you
-	     * call the <code>drawRoundRect()</code> method, by calling the
-	     * <code>linestyle()</code>, <code>lineGradientStyle()</code>,
-	     * <code>beginFill()</code>, <code>beginGradientFill()</code>, or
-	     * <code>beginBitmapFill()</code> method.
-	     *
-	     * @param x             A number indicating the horizontal position relative
-	     *                      to the registration point of the parent display
-	     *                      object(in pixels).
-	     * @param y             A number indicating the vertical position relative to
-	     *                      the registration point of the parent display object
-	     *                     (in pixels).
-	     * @param width         The width of the round rectangle(in pixels).
-	     * @param height        The height of the round rectangle(in pixels).
-	     * @param ellipseWidth  The width of the ellipse used to draw the rounded
-	     *                      corners(in pixels).
-	     * @param ellipseHeight The height of the ellipse used to draw the rounded
-	     *                      corners(in pixels). Optional; if no value is
-	     *                      specified, the default value matches that provided
-	     *                      for the <code>ellipseWidth</code> parameter.
-	     * @throws ArgumentError If the <code>width</code>, <code>height</code>,
-	     *                       <code>ellipseWidth</code> or
-	     *                       <code>ellipseHeight</code> parameters are not a
-	     *                       number(<code>Number.NaN</code>).
-	     */
-	    drawRoundRect(x: number, y: number, width: number, height: number, ellipseWidth: number, ellipseHeight?: number): void;
-	    /**
-	     * Renders a set of triangles, typically to distort bitmaps and give them a
-	     * three-dimensional appearance. The <code>drawTriangles()</code> method maps
-	     * either the current fill, or a bitmap fill, to the triangle faces using a
-	     * set of(u,v) coordinates.
-	     *
-	     * <p> Any type of fill can be used, but if the fill has a transform matrix
-	     * that transform matrix is ignored. </p>
-	     *
-	     * <p> A <code>uvtData</code> parameter improves texture mapping when a
-	     * bitmap fill is used. </p>
-	     *
-	     * @param culling Specifies whether to render triangles that face in a
-	     *                specified direction. This parameter prevents the rendering
-	     *                of triangles that cannot be seen in the current view. This
-	     *                parameter can be set to any value defined by the
-	     *                TriangleCulling class.
-	     */
-	    drawTriangles(vertices: Array<number>, indices?: Array<number>, uvtData?: Array<number>, culling?: TriangleCulling): void;
-	    /**
-	     * Applies a fill to the lines and curves that were added since the last call
-	     * to the <code>beginFill()</code>, <code>beginGradientFill()</code>, or
-	     * <code>beginBitmapFill()</code> method. Flash uses the fill that was
-	     * specified in the previous call to the <code>beginFill()</code>,
-	     * <code>beginGradientFill()</code>, or <code>beginBitmapFill()</code>
-	     * method. If the current drawing position does not equal the previous
-	     * position specified in a <code>moveTo()</code> method and a fill is
-	     * defined, the path is closed with a line and then filled.
-	     *
-	     */
-	    endFill(): void;
-	    /**
-	     * Specifies a bitmap to use for the line stroke when drawing lines.
-	     *
-	     * <p>The bitmap line style is used for subsequent calls to Graphics methods
-	     * such as the <code>lineTo()</code> method or the <code>drawCircle()</code>
-	     * method. The line style remains in effect until you call the
-	     * <code>lineStyle()</code> or <code>lineGradientStyle()</code> methods, or
-	     * the <code>lineBitmapStyle()</code> method again with different parameters.
-	     * </p>
-	     *
-	     * <p>You can call the <code>lineBitmapStyle()</code> method in the middle of
-	     * drawing a path to specify different styles for different line segments
-	     * within a path. </p>
-	     *
-	     * <p>Call the <code>lineStyle()</code> method before you call the
-	     * <code>lineBitmapStyle()</code> method to enable a stroke, or else the
-	     * value of the line style is <code>undefined</code>.</p>
-	     *
-	     * <p>Calls to the <code>clear()</code> method set the line style back to
-	     * <code>undefined</code>. </p>
-	     *
-	     * @param bitmap The bitmap to use for the line stroke.
-	     * @param matrix An optional transformation matrix as defined by the
-	     *               flash.geom.Matrix class. The matrix can be used to scale or
-	     *               otherwise manipulate the bitmap before applying it to the
-	     *               line style.
-	     * @param repeat Whether to repeat the bitmap in a tiled fashion.
-	     * @param smooth Whether smoothing should be applied to the bitmap.
-	     */
-	    lineBitmapStyle(bitmap: BitmapData, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
-	    /**
-	     * Specifies a gradient to use for the stroke when drawing lines.
-	     *
-	     * <p>The gradient line style is used for subsequent calls to Graphics
-	     * methods such as the <code>lineTo()</code> methods or the
-	     * <code>drawCircle()</code> method. The line style remains in effect until
-	     * you call the <code>lineStyle()</code> or <code>lineBitmapStyle()</code>
-	     * methods, or the <code>lineGradientStyle()</code> method again with
-	     * different parameters. </p>
-	     *
-	     * <p>You can call the <code>lineGradientStyle()</code> method in the middle
-	     * of drawing a path to specify different styles for different line segments
-	     * within a path. </p>
-	     *
-	     * <p>Call the <code>lineStyle()</code> method before you call the
-	     * <code>lineGradientStyle()</code> method to enable a stroke, or else the
-	     * value of the line style is <code>undefined</code>.</p>
-	     *
-	     * <p>Calls to the <code>clear()</code> method set the line style back to
-	     * <code>undefined</code>. </p>
-	     *
-	     * @param type                A value from the GradientType class that
-	     *                            specifies which gradient type to use, either
-	     *                            GradientType.LINEAR or GradientType.RADIAL.
-	     * @param colors              An array of RGB hexadecimal color values used
-	     *                            in the gradient; for example, red is 0xFF0000,
-	     *                            blue is 0x0000FF, and so on. You can specify
-	     *                            up to 15 colors. For each color, specify a
-	     *                            corresponding value in the alphas and ratios
-	     *                            parameters.
-	     * @param alphas              An array of alpha values for the corresponding
-	     *                            colors in the colors array; valid values are 0
-	     *                            to 1. If the value is less than 0, the default
-	     *                            is 0. If the value is greater than 1, the
-	     *                            default is 1.
-	     * @param ratios              An array of color distribution ratios; valid
-	     *                            values are 0-255. This value defines the
-	     *                            percentage of the width where the color is
-	     *                            sampled at 100%. The value 0 represents the
-	     *                            left position in the gradient box, and 255
-	     *                            represents the right position in the gradient
-	     *                            box.
-	     * @param matrix              A transformation matrix as defined by the
-	     *                            flash.geom.Matrix class. The flash.geom.Matrix
-	     *                            class includes a
-	     *                            <code>createGradientBox()</code> method, which
-	     *                            lets you conveniently set up the matrix for use
-	     *                            with the <code>lineGradientStyle()</code>
-	     *                            method.
-	     * @param spreadMethod        A value from the SpreadMethod class that
-	     *                            specifies which spread method to use:
-	     * @param interpolationMethod A value from the InterpolationMethod class that
-	     *                            specifies which value to use. For example,
-	     *                            consider a simple linear gradient between two
-	     *                            colors(with the <code>spreadMethod</code>
-	     *                            parameter set to
-	     *                            <code>SpreadMethod.REFLECT</code>). The
-	     *                            different interpolation methods affect the
-	     *                            appearance as follows:
-	     * @param focalPointRatio     A number that controls the location of the
-	     *                            focal point of the gradient. The value 0 means
-	     *                            the focal point is in the center. The value 1
-	     *                            means the focal point is at one border of the
-	     *                            gradient circle. The value -1 means that the
-	     *                            focal point is at the other border of the
-	     *                            gradient circle. Values less than -1 or greater
-	     *                            than 1 are rounded to -1 or 1. The following
-	     *                            image shows a gradient with a
-	     *                            <code>focalPointRatio</code> of -0.75:
-	     */
-	    lineGradientStyle(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: SpreadMethod, interpolationMethod?: InterpolationMethod, focalPointRatio?: number): void;
-	    /**
-	     * Specifies a shader to use for the line stroke when drawing lines.
-	     *
-	     * <p>The shader line style is used for subsequent calls to Graphics methods
-	     * such as the <code>lineTo()</code> method or the <code>drawCircle()</code>
-	     * method. The line style remains in effect until you call the
-	     * <code>lineStyle()</code> or <code>lineGradientStyle()</code> methods, or
-	     * the <code>lineBitmapStyle()</code> method again with different parameters.
-	     * </p>
-	     *
-	     * <p>You can call the <code>lineShaderStyle()</code> method in the middle of
-	     * drawing a path to specify different styles for different line segments
-	     * within a path. </p>
-	     *
-	     * <p>Call the <code>lineStyle()</code> method before you call the
-	     * <code>lineShaderStyle()</code> method to enable a stroke, or else the
-	     * value of the line style is <code>undefined</code>.</p>
-	     *
-	     * <p>Calls to the <code>clear()</code> method set the line style back to
-	     * <code>undefined</code>. </p>
-	     *
-	     * @param shader The shader to use for the line stroke.
-	     * @param matrix An optional transformation matrix as defined by the
-	     *               flash.geom.Matrix class. The matrix can be used to scale or
-	     *               otherwise manipulate the bitmap before applying it to the
-	     *               line style.
-	     */
-	    /**
-	     * Specifies a line style used for subsequent calls to Graphics methods such
-	     * as the <code>lineTo()</code> method or the <code>drawCircle()</code>
-	     * method. The line style remains in effect until you call the
-	     * <code>lineGradientStyle()</code> method, the
-	     * <code>lineBitmapStyle()</code> method, or the <code>lineStyle()</code>
-	     * method with different parameters.
-	     *
-	     * <p>You can call the <code>lineStyle()</code> method in the middle of
-	     * drawing a path to specify different styles for different line segments
-	     * within the path.</p>
-	     *
-	     * <p><b>Note: </b>Calls to the <code>clear()</code> method set the line
-	     * style back to <code>undefined</code>.</p>
-	     *
-	     * <p><b>Note: </b>Flash Lite 4 supports only the first three parameters
-	     * (<code>thickness</code>, <code>color</code>, and <code>alpha</code>).</p>
-	     *
-	     * @param thickness    An integer that indicates the thickness of the line in
-	     *                     points; valid values are 0-255. If a number is not
-	     *                     specified, or if the parameter is undefined, a line is
-	     *                     not drawn. If a value of less than 0 is passed, the
-	     *                     default is 0. The value 0 indicates hairline
-	     *                     thickness; the maximum thickness is 255. If a value
-	     *                     greater than 255 is passed, the default is 255.
-	     * @param color        A hexadecimal color value of the line; for example,
-	     *                     red is 0xFF0000, blue is 0x0000FF, and so on. If a
-	     *                     value is not indicated, the default is 0x000000
-	     *                    (black). Optional.
-	     * @param alpha        A number that indicates the alpha value of the color
-	     *                     of the line; valid values are 0 to 1. If a value is
-	     *                     not indicated, the default is 1(solid). If the value
-	     *                     is less than 0, the default is 0. If the value is
-	     *                     greater than 1, the default is 1.
-	     * @param pixelHinting(Not supported in Flash Lite 4) A Boolean value that
-	     *                     specifies whether to hint strokes to full pixels. This
-	     *                     affects both the position of anchors of a curve and
-	     *                     the line stroke size itself. With
-	     *                     <code>pixelHinting</code> set to <code>true</code>,
-	     *                     line widths are adjusted to full pixel widths. With
-	     *                     <code>pixelHinting</code> set to <code>false</code>,
-	     *                     disjoints can appear for curves and straight lines.
-	     *                     For example, the following illustrations show how
-	     *                     Flash Player or Adobe AIR renders two rounded
-	     *                     rectangles that are identical, except that the
-	     *                     <code>pixelHinting</code> parameter used in the
-	     *                     <code>lineStyle()</code> method is set differently
-	     *                    (the images are scaled by 200%, to emphasize the
-	     *                     difference):
-	     *
-	     *                     <p>If a value is not supplied, the line does not use
-	     *                     pixel hinting.</p>
-	     * @param scaleMode   (Not supported in Flash Lite 4) A value from the
-	     *                     LineScaleMode class that specifies which scale mode to
-	     *                     use:
-	     *                     <ul>
-	     *                       <li> <code>LineScaleMode.NORMAL</code> - Always
-	     *                     scale the line thickness when the object is scaled
-	     *                    (the default). </li>
-	     *                       <li> <code>LineScaleMode.NONE</code> - Never scale
-	     *                     the line thickness. </li>
-	     *                       <li> <code>LineScaleMode.VERTICAL</code> - Do not
-	     *                     scale the line thickness if the object is scaled
-	     *                     vertically <i>only</i>. For example, consider the
-	     *                     following circles, drawn with a one-pixel line, and
-	     *                     each with the <code>scaleMode</code> parameter set to
-	     *                     <code>LineScaleMode.VERTICAL</code>. The circle on the
-	     *                     left is scaled vertically only, and the circle on the
-	     *                     right is scaled both vertically and horizontally:
-	     *                     </li>
-	     *                       <li> <code>LineScaleMode.HORIZONTAL</code> - Do not
-	     *                     scale the line thickness if the object is scaled
-	     *                     horizontally <i>only</i>. For example, consider the
-	     *                     following circles, drawn with a one-pixel line, and
-	     *                     each with the <code>scaleMode</code> parameter set to
-	     *                     <code>LineScaleMode.HORIZONTAL</code>. The circle on
-	     *                     the left is scaled horizontally only, and the circle
-	     *                     on the right is scaled both vertically and
-	     *                     horizontally:   </li>
-	     *                     </ul>
-	     * @param caps        (Not supported in Flash Lite 4) A value from the
-	     *                     CapsStyle class that specifies the type of caps at the
-	     *                     end of lines. Valid values are:
-	     *                     <code>CapsStyle.NONE</code>,
-	     *                     <code>CapsStyle.ROUND</code>, and
-	     *                     <code>CapsStyle.SQUARE</code>. If a value is not
-	     *                     indicated, Flash uses round caps.
-	     *
-	     *                     <p>For example, the following illustrations show the
-	     *                     different <code>capsStyle</code> settings. For each
-	     *                     setting, the illustration shows a blue line with a
-	     *                     thickness of 30(for which the <code>capsStyle</code>
-	     *                     applies), and a superimposed black line with a
-	     *                     thickness of 1(for which no <code>capsStyle</code>
-	     *                     applies): </p>
-	     * @param joints      (Not supported in Flash Lite 4) A value from the
-	     *                     JointStyle class that specifies the type of joint
-	     *                     appearance used at angles. Valid values are:
-	     *                     <code>JointStyle.BEVEL</code>,
-	     *                     <code>JointStyle.MITER</code>, and
-	     *                     <code>JointStyle.ROUND</code>. If a value is not
-	     *                     indicated, Flash uses round joints.
-	     *
-	     *                     <p>For example, the following illustrations show the
-	     *                     different <code>joints</code> settings. For each
-	     *                     setting, the illustration shows an angled blue line
-	     *                     with a thickness of 30(for which the
-	     *                     <code>jointStyle</code> applies), and a superimposed
-	     *                     angled black line with a thickness of 1(for which no
-	     *                     <code>jointStyle</code> applies): </p>
-	     *
-	     *                     <p><b>Note:</b> For <code>joints</code> set to
-	     *                     <code>JointStyle.MITER</code>, you can use the
-	     *                     <code>miterLimit</code> parameter to limit the length
-	     *                     of the miter.</p>
-	     * @param miterLimit  (Not supported in Flash Lite 4) A number that
-	     *                     indicates the limit at which a miter is cut off. Valid
-	     *                     values range from 1 to 255(and values outside that
-	     *                     range are rounded to 1 or 255). This value is only
-	     *                     used if the <code>jointStyle</code> is set to
-	     *                     <code>"miter"</code>. The <code>miterLimit</code>
-	     *                     value represents the length that a miter can extend
-	     *                     beyond the point at which the lines meet to form a
-	     *                     joint. The value expresses a factor of the line
-	     *                     <code>thickness</code>. For example, with a
-	     *                     <code>miterLimit</code> factor of 2.5 and a
-	     *                     <code>thickness</code> of 10 pixels, the miter is cut
-	     *                     off at 25 pixels.
-	     *
-	     *                     <p>For example, consider the following angled lines,
-	     *                     each drawn with a <code>thickness</code> of 20, but
-	     *                     with <code>miterLimit</code> set to 1, 2, and 4.
-	     *                     Superimposed are black reference lines showing the
-	     *                     meeting points of the joints:</p>
-	     *
-	     *                     <p>Notice that a given <code>miterLimit</code> value
-	     *                     has a specific maximum angle for which the miter is
-	     *                     cut off. The following table lists some examples:</p>
-	     */
-	    lineStyle(thickness?: number, color?: number, alpha?: number, pixelHinting?: boolean, scaleMode?: LineScaleMode, caps?: CapsStyle, joints?: JointStyle, miterLimit?: number): void;
-	    /**
-	     * Draws a line using the current line style from the current drawing
-	     * position to(<code>x</code>, <code>y</code>); the current drawing position
-	     * is then set to(<code>x</code>, <code>y</code>). If the display object in
-	     * which you are drawing contains content that was created with the Flash
-	     * drawing tools, calls to the <code>lineTo()</code> method are drawn
-	     * underneath the content. If you call <code>lineTo()</code> before any calls
-	     * to the <code>moveTo()</code> method, the default position for the current
-	     * drawing is(<i>0, 0</i>). If any of the parameters are missing, this
-	     * method fails and the current drawing position is not changed.
-	     *
-	     * @param x A number that indicates the horizontal position relative to the
-	     *          registration point of the parent display object(in pixels).
-	     * @param y A number that indicates the vertical position relative to the
-	     *          registration point of the parent display object(in pixels).
-	     */
-	    lineTo(x: number, y: number): void;
-	    /**
-	     * Moves the current drawing position to(<code>x</code>, <code>y</code>). If
-	     * any of the parameters are missing, this method fails and the current
-	     * drawing position is not changed.
-	     *
-	     * @param x A number that indicates the horizontal position relative to the
-	     *          registration point of the parent display object(in pixels).
-	     * @param y A number that indicates the vertical position relative to the
-	     *          registration point of the parent display object(in pixels).
-	     */
-	    moveTo(x: number, y: number): void;
-	}
-	export = Graphics;
-	
-}
-declare module "awayjs-display/lib/base/PixelSnapping" {
-	/**
-	 * The PixelSnapping class is an enumeration of constant values for setting
-	 * the pixel snapping options by using the <code>pixelSnapping</code> property
-	 * of a Bitmap object.
-	 */
-	class PixelSnapping {
-	    /**
-	     * A constant value used in the <code>pixelSnapping</code> property of a
-	     * Bitmap object to specify that the bitmap image is always snapped to the
-	     * nearest pixel, independent of any transformation.
-	     */
-	    static ALWAYS: string;
-	    /**
-	     * A constant value used in the <code>pixelSnapping</code> property of a
-	     * Bitmap object to specify that the bitmap image is snapped to the nearest
-	     * pixel if it is drawn with no rotation or skew and it is drawn at a scale
-	     * factor of 99.9% to 100.1%. If these conditions are satisfied, the image is
-	     * drawn at 100% scale, snapped to the nearest pixel. Internally, this
-	     * setting allows the image to be drawn as fast as possible by using the
-	     * vector renderer.
-	     */
-	    static AUTO: string;
-	    /**
-	     * A constant value used in the <code>pixelSnapping</code> property of a
-	     * Bitmap object to specify that no pixel snapping occurs.
-	     */
-	    static NEVER: string;
-	}
-	export = PixelSnapping;
-	
-}
-declare module "awayjs-display/lib/controllers/FirstPersonController" {
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FirstPersonController extends ControllerBase {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _walkIncrement;
-	    private _strafeIncrement;
-	    private _wrapPanAngle;
-	    fly: boolean;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	    incrementWalk(val: number): void;
-	    incrementStrafe(val: number): void;
-	}
-	export = FirstPersonController;
-	
-}
-declare module "awayjs-display/lib/controllers/LookAtController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	class LookAtController extends ControllerBase {
-	    _pLookAtPosition: Vector3D;
-	    _pLookAtObject: DisplayObject;
-	    _pOrigin: Vector3D;
-	    private _onLookAtObjectChangedDelegate;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
-	    lookAtPosition: Vector3D;
-	    lookAtObject: DisplayObject;
-	    update(interpolate?: boolean): void;
-	    private onLookAtObjectChanged(event);
-	}
-	export = LookAtController;
-	
-}
-declare module "awayjs-display/lib/controllers/HoverController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away.containers.View
-	 */
-	class HoverController extends LookAtController {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _distance;
-	    private _minPanAngle;
-	    private _maxPanAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _yFactor;
-	    private _wrapPanAngle;
-	    private _upAxis;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Distance between the camera and the specified target. Defaults to 1000.
-	     */
-	    distance: number;
-	    /**
-	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    minPanAngle: number;
-	    /**
-	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    maxPanAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
-	     *
-	     * @see    #distance
-	     */
-	    yFactor: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	}
-	export = HoverController;
-	
-}
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
-	
-}
-declare module "awayjs-display/lib/controllers/SpringController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Uses spring physics to animate the target object towards a position that is
-	 * defined as the lookAtTarget object's position plus the vector defined by the
-	 * positionOffset property.
-	 */
-	class SpringController extends LookAtController {
-	    private _velocity;
-	    private _dv;
-	    private _stretch;
-	    private _force;
-	    private _acceleration;
-	    private _desiredPosition;
-	    /**
-	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
-	     * A number between 1 and 20 is recommended.
-	     */
-	    stiffness: number;
-	    /**
-	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
-	     * A number between 1 and 20 is recommended.
-	     */
-	    damping: number;
-	    /**
-	     * Mass of the camera, if over 120 and it'll be very heavy to move.
-	     */
-	    mass: number;
-	    /**
-	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
-	     */
-	    positionOffset: Vector3D;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = SpringController;
 	
 }
 declare module "awayjs-display/lib/pick/IPicker" {
@@ -8574,36 +6592,1322 @@ declare module "awayjs-display/lib/containers/View" {
 	export = View;
 	
 }
-declare module "awayjs-display/lib/display/ContextMode" {
-	class ContextMode {
-	    static AUTO: string;
-	    static WEBGL: string;
-	    static FLASH: string;
-	    static NATIVE: string;
+declare module "awayjs-display/lib/controllers/FirstPersonController" {
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FirstPersonController extends ControllerBase {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _walkIncrement;
+	    private _strafeIncrement;
+	    private _wrapPanAngle;
+	    fly: boolean;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	    incrementWalk(val: number): void;
+	    incrementStrafe(val: number): void;
 	}
-	export = ContextMode;
+	export = FirstPersonController;
 	
 }
-declare module "awayjs-display/lib/display/IContext" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	/**
-	 *
-	 * @class away.base.IContext
-	 */
-	interface IContext {
-	    container: HTMLElement;
-	    clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): any;
-	    configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): any;
-	    dispose(): any;
-	    present(): any;
-	    setScissorRectangle(rect: Rectangle): any;
+declare module "awayjs-display/lib/controllers/LookAtController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	class LookAtController extends ControllerBase {
+	    _pLookAtPosition: Vector3D;
+	    _pLookAtObject: DisplayObject;
+	    _pOrigin: Vector3D;
+	    private _onLookAtObjectChangedDelegate;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
+	    lookAtPosition: Vector3D;
+	    lookAtObject: DisplayObject;
+	    update(interpolate?: boolean): void;
+	    private onLookAtObjectChanged(event);
 	}
-	export = IContext;
+	export = LookAtController;
+	
+}
+declare module "awayjs-display/lib/controllers/HoverController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away.containers.View
+	 */
+	class HoverController extends LookAtController {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _distance;
+	    private _minPanAngle;
+	    private _maxPanAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _yFactor;
+	    private _wrapPanAngle;
+	    private _upAxis;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Distance between the camera and the specified target. Defaults to 1000.
+	     */
+	    distance: number;
+	    /**
+	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    minPanAngle: number;
+	    /**
+	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    maxPanAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
+	     *
+	     * @see    #distance
+	     */
+	    yFactor: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	}
+	export = HoverController;
+	
+}
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
+	
+}
+declare module "awayjs-display/lib/controllers/SpringController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Uses spring physics to animate the target object towards a position that is
+	 * defined as the lookAtTarget object's position plus the vector defined by the
+	 * positionOffset property.
+	 */
+	class SpringController extends LookAtController {
+	    private _velocity;
+	    private _dv;
+	    private _stretch;
+	    private _force;
+	    private _acceleration;
+	    private _desiredPosition;
+	    /**
+	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
+	     * A number between 1 and 20 is recommended.
+	     */
+	    stiffness: number;
+	    /**
+	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
+	     * A number between 1 and 20 is recommended.
+	     */
+	    damping: number;
+	    /**
+	     * Mass of the camera, if over 120 and it'll be very heavy to move.
+	     */
+	    mass: number;
+	    /**
+	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
+	     */
+	    positionOffset: Vector3D;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = SpringController;
+	
+}
+declare module "awayjs-display/lib/draw/CapsStyle" {
+	/**
+	 * The CapsStyle class is an enumeration of constant values that specify the
+	 * caps style to use in drawing lines. The constants are provided for use as
+	 * values in the <code>caps</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
+	 * following three types of caps:
+	 */
+	class CapsStyle {
+	    /**
+	     * Used to specify round caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	    /**
+	     * Used to specify no caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static NONE: string;
+	    /**
+	     * Used to specify square caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static SQUARE: string;
+	}
+	export = CapsStyle;
+	
+}
+declare module "awayjs-display/lib/draw/GradientType" {
+	/**
+	 * The GradientType class provides values for the <code>type</code> parameter
+	 * in the <code>beginGradientFill()</code> and
+	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
+	 * class.
+	 */
+	class GradientType {
+	    /**
+	     * Value used to specify a linear gradient fill.
+	     */
+	    static LINEAR: string;
+	    /**
+	     * Value used to specify a radial gradient fill.
+	     */
+	    static RADIAL: string;
+	}
+	export = GradientType;
+	
+}
+declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
+	/**
+	 * The GraphicsPathWinding class provides values for the
+	 * <code>flash.display.GraphicsPath.winding</code> property and the
+	 * <code>flash.display.Graphics.drawPath()</code> method to determine the
+	 * direction to draw a path. A clockwise path is positively wound, and a
+	 * counter-clockwise path is negatively wound:
+	 *
+	 * <p> When paths intersect or overlap, the winding direction determines the
+	 * rules for filling the areas created by the intersection or overlap:</p>
+	 */
+	class GraphicsPathWinding {
+	    static EVEN_ODD: string;
+	    static NON_ZERO: string;
+	}
+	export = GraphicsPathWinding;
+	
+}
+declare module "awayjs-display/lib/draw/IGraphicsData" {
+	/**
+	 * This interface is used to define objects that can be used as parameters in the
+	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
+	 * the implementor classes of this interface to create and manage drawing property
+	 * data, and to reuse the same data for different instances. Then, use the methods of
+	 * the Graphics class to render the drawing objects.
+	 *
+	 * @see away.base.Graphics.drawGraphicsData()
+	 * @see away.base.Graphics.readGraphicsData()
+	 */
+	interface IGraphicsData {
+	}
+	export = IGraphicsData;
+	
+}
+declare module "awayjs-display/lib/draw/InterpolationMethod" {
+	/**
+	 * The InterpolationMethod class provides values for the
+	 * <code>interpolationMethod</code> parameter in the
+	 * <code>Graphics.beginGradientFill()</code> and
+	 * <code>Graphics.lineGradientStyle()</code> methods. This parameter
+	 * determines the RGB space to use when rendering the gradient.
+	 */
+	class InterpolationMethod {
+	    /**
+	     * Specifies that the RGB interpolation method should be used. This means
+	     * that the gradient is rendered with exponential sRGB(standard RGB) space.
+	     * The sRGB space is a W3C-endorsed standard that defines a non-linear
+	     * conversion between red, green, and blue component values and the actual
+	     * intensity of the visible component color.
+	     *
+	     * <p>For example, consider a simple linear gradient between two colors(with
+	     * the <code>spreadMethod</code> parameter set to
+	     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
+	     * affect the appearance as follows: </p>
+	     */
+	    static LINEAR_RGB: string;
+	    /**
+	     * Specifies that the RGB interpolation method should be used. This means
+	     * that the gradient is rendered with exponential sRGB(standard RGB) space.
+	     * The sRGB space is a W3C-endorsed standard that defines a non-linear
+	     * conversion between red, green, and blue component values and the actual
+	     * intensity of the visible component color.
+	     *
+	     * <p>For example, consider a simple linear gradient between two colors(with
+	     * the <code>spreadMethod</code> parameter set to
+	     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
+	     * affect the appearance as follows: </p>
+	     */
+	    static RGB: string;
+	}
+	export = InterpolationMethod;
+	
+}
+declare module "awayjs-display/lib/draw/JointStyle" {
+	/**
+	 * The JointStyle class is an enumeration of constant values that specify the
+	 * joint style to use in drawing lines. These constants are provided for use
+	 * as values in the <code>joints</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
+	 * three types of joints: miter, round, and bevel, as the following example
+	 * shows:
+	 */
+	class JointStyle {
+	    /**
+	     * Specifies beveled joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static BEVEL: string;
+	    /**
+	     * Specifies mitered joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static MITER: string;
+	    /**
+	     * Specifies round joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	}
+	export = JointStyle;
+	
+}
+declare module "awayjs-display/lib/draw/LineScaleMode" {
+	/**
+	 * The LineScaleMode class provides values for the <code>scaleMode</code>
+	 * parameter in the <code>Graphics.lineStyle()</code> method.
+	 */
+	class LineScaleMode {
+	    /**
+	     * With this setting used as the <code>scaleMode</code> parameter of the
+	     * <code>lineStyle()</code> method, the thickness of the line scales
+	     * <i>only</i> vertically. For example, consider the following circles, drawn
+	     * with a one-pixel line, and each with the <code>scaleMode</code> parameter
+	     * set to <code>LineScaleMode.VERTICAL</code>. The circle on the left is
+	     * scaled only vertically, and the circle on the right is scaled both
+	     * vertically and horizontally.
+	     */
+	    static HORIZONTAL: string;
+	    /**
+	     * With this setting used as the <code>scaleMode</code> parameter of the
+	     * <code>lineStyle()</code> method, the thickness of the line never scales.
+	     */
+	    static NONE: string;
+	    /**
+	     * With this setting used as the <code>scaleMode</code> parameter of the
+	     * <code>lineStyle()</code> method, the thickness of the line always scales
+	     * when the object is scaled(the default).
+	     */
+	    static NORMAL: string;
+	    /**
+	     * With this setting used as the <code>scaleMode</code> parameter of the
+	     * <code>lineStyle()</code> method, the thickness of the line scales
+	     * <i>only</i> horizontally. For example, consider the following circles,
+	     * drawn with a one-pixel line, and each with the <code>scaleMode</code>
+	     * parameter set to <code>LineScaleMode.HORIZONTAL</code>. The circle on the
+	     * left is scaled only horizontally, and the circle on the right is scaled
+	     * both vertically and horizontally.
+	     */
+	    static VERTICAL: string;
+	}
+	export = LineScaleMode;
+	
+}
+declare module "awayjs-display/lib/draw/TriangleCulling" {
+	/**
+	 * Defines codes for culling algorithms that determine which triangles not to
+	 * render when drawing triangle paths.
+	 *
+	 * <p> The terms <code>POSITIVE</code> and <code>NEGATIVE</code> refer to the
+	 * sign of a triangle's normal along the z-axis. The normal is a 3D vector
+	 * that is perpendicular to the surface of the triangle. </p>
+	 *
+	 * <p> A triangle whose vertices 0, 1, and 2 are arranged in a clockwise order
+	 * has a positive normal value. That is, its normal points in a positive
+	 * z-axis direction, away from the current view point. When the
+	 * <code>TriangleCulling.POSITIVE</code> algorithm is used, triangles with
+	 * positive normals are not rendered. Another term for this is backface
+	 * culling. </p>
+	 *
+	 * <p> A triangle whose vertices are arranged in a counter-clockwise order has
+	 * a negative normal value. That is, its normal points in a negative z-axis
+	 * direction, toward the current view point. When the
+	 * <code>TriangleCulling.NEGATIVE</code> algorithm is used, triangles with
+	 * negative normals will not be rendered. </p>
+	 */
+	class TriangleCulling {
+	    /**
+	     * Specifies culling of all triangles facing toward the current view point.
+	     */
+	    static NEGATIVE: string;
+	    /**
+	     * Specifies no culling. All triangles in the path are rendered.
+	     */
+	    static NONE: string;
+	    /**
+	     * Specifies culling of all triangles facing away from the current view
+	     * point. This is also known as backface culling.
+	     */
+	    static POSITIVE: string;
+	}
+	export = TriangleCulling;
+	
+}
+declare module "awayjs-display/lib/draw/SpreadMethod" {
+	/**
+	 * The SpreadMethod class provides values for the <code>spreadMethod</code>
+	 * parameter in the <code>beginGradientFill()</code> and
+	 * <code>lineGradientStyle()</code> methods of the Graphics class.
+	 *
+	 * <p>The following example shows the same gradient fill using various spread
+	 * methods:</p>
+	 */
+	class SpreadMethod {
+	    /**
+	     * Specifies that the gradient use the <i>pad</i> spread method.
+	     */
+	    static PAD: string;
+	    /**
+	     * Specifies that the gradient use the <i>reflect</i> spread method.
+	     */
+	    static REFLECT: string;
+	    /**
+	     * Specifies that the gradient use the <i>repeat</i> spread method.
+	     */
+	    static REPEAT: string;
+	}
+	export = SpreadMethod;
+	
+}
+declare module "awayjs-display/lib/draw/Graphics" {
+	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import CapsStyle = require("awayjs-display/lib/draw/CapsStyle");
+	import GradientType = require("awayjs-display/lib/draw/GradientType");
+	import GraphicsPathWinding = require("awayjs-display/lib/draw/GraphicsPathWinding");
+	import IGraphicsData = require("awayjs-display/lib/draw/IGraphicsData");
+	import InterpolationMethod = require("awayjs-display/lib/draw/InterpolationMethod");
+	import JointStyle = require("awayjs-display/lib/draw/JointStyle");
+	import LineScaleMode = require("awayjs-display/lib/draw/LineScaleMode");
+	import TriangleCulling = require("awayjs-display/lib/draw/TriangleCulling");
+	import SpreadMethod = require("awayjs-display/lib/draw/SpreadMethod");
+	/**
+	 * The Graphics class contains a set of methods that you can use to create a
+	 * vector shape. Display objects that support drawing include Sprite and Shape
+	 * objects. Each of these classes includes a <code>graphics</code> property
+	 * that is a Graphics object. The following are among those helper functions
+	 * provided for ease of use: <code>drawRect()</code>,
+	 * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
+	 * <code>drawEllipse()</code>.
+	 *
+	 * <p>You cannot create a Graphics object directly from ActionScript code. If
+	 * you call <code>new Graphics()</code>, an exception is thrown.</p>
+	 *
+	 * <p>The Graphics class is final; it cannot be subclassed.</p>
+	 */
+	class Graphics {
+	    /**
+	     * Fills a drawing area with a bitmap image. The bitmap can be repeated or
+	     * tiled to fill the area. The fill remains in effect until you call the
+	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
+	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
+	     * method. Calling the <code>clear()</code> method clears the fill.
+	     *
+	     * <p>The application renders the fill whenever three or more points are
+	     * drawn, or when the <code>endFill()</code> method is called. </p>
+	     *
+	     * @param bitmap A transparent or opaque bitmap image that contains the bits
+	     *               to be displayed.
+	     * @param matrix A matrix object(of the flash.geom.Matrix class), which you
+	     *               can use to define transformations on the bitmap. For
+	     *               example, you can use the following matrix to rotate a bitmap
+	     *               by 45 degrees(pi/4 radians):
+	     * @param repeat If <code>true</code>, the bitmap image repeats in a tiled
+	     *               pattern. If <code>false</code>, the bitmap image does not
+	     *               repeat, and the edges of the bitmap are used for any fill
+	     *               area that extends beyond the bitmap.
+	     *
+	     *               <p>For example, consider the following bitmap(a 20 x
+	     *               20-pixel checkerboard pattern):</p>
+	     *
+	     *               <p>When <code>repeat</code> is set to <code>true</code>(as
+	     *               in the following example), the bitmap fill repeats the
+	     *               bitmap:</p>
+	     *
+	     *               <p>When <code>repeat</code> is set to <code>false</code>,
+	     *               the bitmap fill uses the edge pixels for the fill area
+	     *               outside the bitmap:</p>
+	     * @param smooth If <code>false</code>, upscaled bitmap images are rendered
+	     *               by using a nearest-neighbor algorithm and look pixelated. If
+	     *               <code>true</code>, upscaled bitmap images are rendered by
+	     *               using a bilinear algorithm. Rendering by using the nearest
+	     *               neighbor algorithm is faster.
+	     */
+	    beginBitmapFill(bitmap: BitmapData, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
+	    /**
+	     * Specifies a simple one-color fill that subsequent calls to other Graphics
+	     * methods(such as <code>lineTo()</code> or <code>drawCircle()</code>) use
+	     * when drawing. The fill remains in effect until you call the
+	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
+	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
+	     * method. Calling the <code>clear()</code> method clears the fill.
+	     *
+	     * <p>The application renders the fill whenever three or more points are
+	     * drawn, or when the <code>endFill()</code> method is called.</p>
+	     *
+	     * @param color The color of the fill(0xRRGGBB).
+	     * @param alpha The alpha value of the fill(0.0 to 1.0).
+	     */
+	    beginFill(color: number, alpha?: number): void;
+	    /**
+	     * Specifies a gradient fill used by subsequent calls to other Graphics
+	     * methods(such as <code>lineTo()</code> or <code>drawCircle()</code>) for
+	     * the object. The fill remains in effect until you call the
+	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
+	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
+	     * method. Calling the <code>clear()</code> method clears the fill.
+	     *
+	     * <p>The application renders the fill whenever three or more points are
+	     * drawn, or when the <code>endFill()</code> method is called. </p>
+	     *
+	     * @param type                A value from the GradientType class that
+	     *                            specifies which gradient type to use:
+	     *                            <code>GradientType.LINEAR</code> or
+	     *                            <code>GradientType.RADIAL</code>.
+	     * @param colors              An array of RGB hexadecimal color values used
+	     *                            in the gradient; for example, red is 0xFF0000,
+	     *                            blue is 0x0000FF, and so on. You can specify
+	     *                            up to 15 colors. For each color, specify a
+	     *                            corresponding value in the alphas and ratios
+	     *                            parameters.
+	     * @param alphas              An array of alpha values for the corresponding
+	     *                            colors in the colors array; valid values are 0
+	     *                            to 1. If the value is less than 0, the default
+	     *                            is 0. If the value is greater than 1, the
+	     *                            default is 1.
+	     * @param ratios              An array of color distribution ratios; valid
+	     *                            values are 0-255. This value defines the
+	     *                            percentage of the width where the color is
+	     *                            sampled at 100%. The value 0 represents the
+	     *                            left position in the gradient box, and 255
+	     *                            represents the right position in the gradient
+	     *                            box.
+	     * @param matrix              A transformation matrix as defined by the
+	     *                            flash.geom.Matrix class. The flash.geom.Matrix
+	     *                            class includes a
+	     *                            <code>createGradientBox()</code> method, which
+	     *                            lets you conveniently set up the matrix for use
+	     *                            with the <code>beginGradientFill()</code>
+	     *                            method.
+	     * @param spreadMethod        A value from the SpreadMethod class that
+	     *                            specifies which spread method to use, either:
+	     *                            <code>SpreadMethod.PAD</code>,
+	     *                            <code>SpreadMethod.REFLECT</code>, or
+	     *                            <code>SpreadMethod.REPEAT</code>.
+	     *
+	     *                            <p>For example, consider a simple linear
+	     *                            gradient between two colors:</p>
+	     *
+	     *                            <p>This example uses
+	     *                            <code>SpreadMethod.PAD</code> for the spread
+	     *                            method, and the gradient fill looks like the
+	     *                            following:</p>
+	     *
+	     *                            <p>If you use <code>SpreadMethod.REFLECT</code>
+	     *                            for the spread method, the gradient fill looks
+	     *                            like the following:</p>
+	     *
+	     *                            <p>If you use <code>SpreadMethod.REPEAT</code>
+	     *                            for the spread method, the gradient fill looks
+	     *                            like the following:</p>
+	     * @param interpolationMethod A value from the InterpolationMethod class that
+	     *                            specifies which value to use:
+	     *                            <code>InterpolationMethod.LINEAR_RGB</code> or
+	     *                            <code>InterpolationMethod.RGB</code>
+	     *
+	     *                            <p>For example, consider a simple linear
+	     *                            gradient between two colors(with the
+	     *                            <code>spreadMethod</code> parameter set to
+	     *                            <code>SpreadMethod.REFLECT</code>). The
+	     *                            different interpolation methods affect the
+	     *                            appearance as follows: </p>
+	     * @param focalPointRatio     A number that controls the location of the
+	     *                            focal point of the gradient. 0 means that the
+	     *                            focal point is in the center. 1 means that the
+	     *                            focal point is at one border of the gradient
+	     *                            circle. -1 means that the focal point is at the
+	     *                            other border of the gradient circle. A value
+	     *                            less than -1 or greater than 1 is rounded to -1
+	     *                            or 1. For example, the following example shows
+	     *                            a <code>focalPointRatio</code> set to 0.75:
+	     * @throws ArgumentError If the <code>type</code> parameter is not valid.
+	     */
+	    beginGradientFill(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: string, interpolationMethod?: string, focalPointRatio?: number): void;
+	    /**
+	     * Specifies a shader fill used by subsequent calls to other Graphics methods
+	     * (such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
+	     * object. The fill remains in effect until you call the
+	     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
+	     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
+	     * method. Calling the <code>clear()</code> method clears the fill.
+	     *
+	     * <p>The application renders the fill whenever three or more points are
+	     * drawn, or when the <code>endFill()</code> method is called.</p>
+	     *
+	     * <p>Shader fills are not supported under GPU rendering; filled areas will
+	     * be colored cyan.</p>
+	     *
+	     * @param shader The shader to use for the fill. This Shader instance is not
+	     *               required to specify an image input. However, if an image
+	     *               input is specified in the shader, the input must be provided
+	     *               manually. To specify the input, set the <code>input</code>
+	     *               property of the corresponding ShaderInput property of the
+	     *               <code>Shader.data</code> property.
+	     *
+	     *               <p>When you pass a Shader instance as an argument the shader
+	     *               is copied internally. The drawing fill operation uses that
+	     *               internal copy, not a reference to the original shader. Any
+	     *               changes made to the shader, such as changing a parameter
+	     *               value, input, or bytecode, are not applied to the copied
+	     *               shader that's used for the fill.</p>
+	     * @param matrix A matrix object(of the flash.geom.Matrix class), which you
+	     *               can use to define transformations on the shader. For
+	     *               example, you can use the following matrix to rotate a shader
+	     *               by 45 degrees(pi/4 radians):
+	     *
+	     *               <p>The coordinates received in the shader are based on the
+	     *               matrix that is specified for the <code>matrix</code>
+	     *               parameter. For a default(<code>null</code>) matrix, the
+	     *               coordinates in the shader are local pixel coordinates which
+	     *               can be used to sample an input.</p>
+	     * @throws ArgumentError When the shader output type is not compatible with
+	     *                       this operation(the shader must specify a
+	     *                       <code>pixel3</code> or <code>pixel4</code> output).
+	     * @throws ArgumentError When the shader specifies an image input that isn't
+	     *                       provided.
+	     * @throws ArgumentError When a ByteArray or Vector.<Number> instance is used
+	     *                       as an input and the <code>width</code> and
+	     *                       <code>height</code> properties aren't specified for
+	     *                       the ShaderInput, or the specified values don't match
+	     *                       the amount of data in the input object. See the
+	     *                       <code>ShaderInput.input</code> property for more
+	     *                       information.
+	     */
+	    /**
+	     * Clears the graphics that were drawn to this Graphics object, and resets
+	     * fill and line style settings.
+	     *
+	     */
+	    clear(): void;
+	    /**
+	     * Copies all of drawing commands from the source Graphics object into the
+	     * calling Graphics object.
+	     *
+	     * @param sourceGraphics The Graphics object from which to copy the drawing
+	     *                       commands.
+	     */
+	    copyFrom(sourceGraphics: Graphics): void;
+	    /**
+	     * Draws a cubic Bezier curve from the current drawing position to the
+	     * specified anchor point. Cubic Bezier curves consist of two anchor points
+	     * and two control points. The curve interpolates the two anchor points and
+	     * curves toward the two control points.
+	     *
+	     * The four points you use to draw a cubic Bezier curve with the
+	     * <code>cubicCurveTo()</code> method are as follows:
+	     *
+	     * <ul>
+	     *   <li>The current drawing position is the first anchor point. </li>
+	     *   <li>The anchorX and anchorY parameters specify the second anchor point.
+	     *   </li>
+	     *   <li>The <code>controlX1</code> and <code>controlY1</code> parameters
+	     *   specify the first control point.</li>
+	     *   <li>The <code>controlX2</code> and <code>controlY2</code> parameters
+	     *   specify the second control point.</li>
+	     * </ul>
+	     *
+	     * If you call the <code>cubicCurveTo()</code> method before calling the
+	     * <code>moveTo()</code> method, your curve starts at position (0, 0).
+	     *
+	     * If the <code>cubicCurveTo()</code> method succeeds, the Flash runtime sets
+	     * the current drawing position to (<code>anchorX</code>,
+	     * <code>anchorY</code>). If the <code>cubicCurveTo()</code> method fails,
+	     * the current drawing position remains unchanged.
+	     *
+	     * If your movie clip contains content created with the Flash drawing tools,
+	     * the results of calls to the <code>cubicCurveTo()</code> method are drawn
+	     * underneath that content.
+	     *
+	     * @param controlX1 Specifies the horizontal position of the first control
+	     *                  point relative to the registration point of the parent
+	     *                  display object.
+	     * @param controlY1 Specifies the vertical position of the first control
+	     *                  point relative to the registration point of the parent
+	     *                  display object.
+	     * @param controlX2 Specifies the horizontal position of the second control
+	     *                  point relative to the registration point of the parent
+	     *                  display object.
+	     * @param controlY2 Specifies the vertical position of the second control
+	     *                  point relative to the registration point of the parent
+	     *                  display object.
+	     * @param anchorX   Specifies the horizontal position of the anchor point
+	     *                  relative to the registration point of the parent display
+	     *                  object.
+	     * @param anchorY   Specifies the vertical position of the anchor point
+	     *                  relative to the registration point of the parent display
+	     *                  object.
+	     */
+	    cubicCurveTo(controlX1: number, controlY1: number, controlX2: number, controlY2: number, anchorX: number, anchorY: number): void;
+	    /**
+	     * Draws a curve using the current line style from the current drawing
+	     * position to(anchorX, anchorY) and using the control point that
+	     * (<code>controlX</code>, <code>controlY</code>) specifies. The current
+	     * drawing position is then set to(<code>anchorX</code>,
+	     * <code>anchorY</code>). If the movie clip in which you are drawing contains
+	     * content created with the Flash drawing tools, calls to the
+	     * <code>curveTo()</code> method are drawn underneath this content. If you
+	     * call the <code>curveTo()</code> method before any calls to the
+	     * <code>moveTo()</code> method, the default of the current drawing position
+	     * is(0, 0). If any of the parameters are missing, this method fails and the
+	     * current drawing position is not changed.
+	     *
+	     * <p>The curve drawn is a quadratic Bezier curve. Quadratic Bezier curves
+	     * consist of two anchor points and one control point. The curve interpolates
+	     * the two anchor points and curves toward the control point. </p>
+	     *
+	     * @param controlX A number that specifies the horizontal position of the
+	     *                 control point relative to the registration point of the
+	     *                 parent display object.
+	     * @param controlY A number that specifies the vertical position of the
+	     *                 control point relative to the registration point of the
+	     *                 parent display object.
+	     * @param anchorX  A number that specifies the horizontal position of the
+	     *                 next anchor point relative to the registration point of
+	     *                 the parent display object.
+	     * @param anchorY  A number that specifies the vertical position of the next
+	     *                 anchor point relative to the registration point of the
+	     *                 parent display object.
+	     */
+	    curveTo(controlX: number, controlY: number, anchorX: number, anchorY: number): void;
+	    /**
+	     * Draws a circle. Set the line style, fill, or both before you call the
+	     * <code>drawCircle()</code> method, by calling the <code>linestyle()</code>,
+	     * <code>lineGradientStyle()</code>, <code>beginFill()</code>,
+	     * <code>beginGradientFill()</code>, or <code>beginBitmapFill()</code>
+	     * method.
+	     *
+	     * @param x      The <i>x</i> location of the center of the circle relative
+	     *               to the registration point of the parent display object(in
+	     *               pixels).
+	     * @param y      The <i>y</i> location of the center of the circle relative
+	     *               to the registration point of the parent display object(in
+	     *               pixels).
+	     * @param radius The radius of the circle(in pixels).
+	     */
+	    drawCircle(x: number, y: number, radius: number): void;
+	    /**
+	     * Draws an ellipse. Set the line style, fill, or both before you call the
+	     * <code>drawEllipse()</code> method, by calling the
+	     * <code>linestyle()</code>, <code>lineGradientStyle()</code>,
+	     * <code>beginFill()</code>, <code>beginGradientFill()</code>, or
+	     * <code>beginBitmapFill()</code> method.
+	     *
+	     * @param x      The <i>x</i> location of the top-left of the bounding-box of
+	     *               the ellipse relative to the registration point of the parent
+	     *               display object(in pixels).
+	     * @param y      The <i>y</i> location of the top left of the bounding-box of
+	     *               the ellipse relative to the registration point of the parent
+	     *               display object(in pixels).
+	     * @param width  The width of the ellipse(in pixels).
+	     * @param height The height of the ellipse(in pixels).
+	     */
+	    drawEllipse(x: number, y: number, width: number, height: number): void;
+	    /**
+	     * Submits a series of IGraphicsData instances for drawing. This method
+	     * accepts a Vector containing objects including paths, fills, and strokes
+	     * that implement the IGraphicsData interface. A Vector of IGraphicsData
+	     * instances can refer to a part of a shape, or a complex fully defined set
+	     * of data for rendering a complete shape.
+	     *
+	     * <p> Graphics paths can contain other graphics paths. If the
+	     * <code>graphicsData</code> Vector includes a path, that path and all its
+	     * sub-paths are rendered during this operation. </p>
+	     *
+	     */
+	    drawGraphicsData(graphicsData: Array<IGraphicsData>): void;
+	    /**
+	     * Submits a series of commands for drawing. The <code>drawPath()</code>
+	     * method uses vector arrays to consolidate individual <code>moveTo()</code>,
+	     * <code>lineTo()</code>, and <code>curveTo()</code> drawing commands into a
+	     * single call. The <code>drawPath()</code> method parameters combine drawing
+	     * commands with x- and y-coordinate value pairs and a drawing direction. The
+	     * drawing commands are values from the GraphicsPathCommand class. The x- and
+	     * y-coordinate value pairs are Numbers in an array where each pair defines a
+	     * coordinate location. The drawing direction is a value from the
+	     * GraphicsPathWinding class.
+	     *
+	     * <p> Generally, drawings render faster with <code>drawPath()</code> than
+	     * with a series of individual <code>lineTo()</code> and
+	     * <code>curveTo()</code> methods. </p>
+	     *
+	     * <p> The <code>drawPath()</code> method uses a uses a floating computation
+	     * so rotation and scaling of shapes is more accurate and gives better
+	     * results. However, curves submitted using the <code>drawPath()</code>
+	     * method can have small sub-pixel alignment errors when used in conjunction
+	     * with the <code>lineTo()</code> and <code>curveTo()</code> methods. </p>
+	     *
+	     * <p> The <code>drawPath()</code> method also uses slightly different rules
+	     * for filling and drawing lines. They are: </p>
+	     *
+	     * <ul>
+	     *   <li>When a fill is applied to rendering a path:
+	     * <ul>
+	     *   <li>A sub-path of less than 3 points is not rendered.(But note that the
+	     * stroke rendering will still occur, consistent with the rules for strokes
+	     * below.)</li>
+	     *   <li>A sub-path that isn't closed(the end point is not equal to the
+	     * begin point) is implicitly closed.</li>
+	     * </ul>
+	     * </li>
+	     *   <li>When a stroke is applied to rendering a path:
+	     * <ul>
+	     *   <li>The sub-paths can be composed of any number of points.</li>
+	     *   <li>The sub-path is never implicitly closed.</li>
+	     * </ul>
+	     * </li>
+	     * </ul>
+	     *
+	     * @param winding Specifies the winding rule using a value defined in the
+	     *                GraphicsPathWinding class.
+	     */
+	    drawPath(commands: Array<number>, data: Array<number>, winding: GraphicsPathWinding): void;
+	    /**
+	     * Draws a rectangle. Set the line style, fill, or both before you call the
+	     * <code>drawRect()</code> method, by calling the <code>linestyle()</code>,
+	     * <code>lineGradientStyle()</code>, <code>beginFill()</code>,
+	     * <code>beginGradientFill()</code>, or <code>beginBitmapFill()</code>
+	     * method.
+	     *
+	     * @param x      A number indicating the horizontal position relative to the
+	     *               registration point of the parent display object(in pixels).
+	     * @param y      A number indicating the vertical position relative to the
+	     *               registration point of the parent display object(in pixels).
+	     * @param width  The width of the rectangle(in pixels).
+	     * @param height The height of the rectangle(in pixels).
+	     * @throws ArgumentError If the <code>width</code> or <code>height</code>
+	     *                       parameters are not a number
+	     *                      (<code>Number.NaN</code>).
+	     */
+	    drawRect(x: number, y: number, width: number, height: number): void;
+	    /**
+	     * Draws a rounded rectangle. Set the line style, fill, or both before you
+	     * call the <code>drawRoundRect()</code> method, by calling the
+	     * <code>linestyle()</code>, <code>lineGradientStyle()</code>,
+	     * <code>beginFill()</code>, <code>beginGradientFill()</code>, or
+	     * <code>beginBitmapFill()</code> method.
+	     *
+	     * @param x             A number indicating the horizontal position relative
+	     *                      to the registration point of the parent display
+	     *                      object(in pixels).
+	     * @param y             A number indicating the vertical position relative to
+	     *                      the registration point of the parent display object
+	     *                     (in pixels).
+	     * @param width         The width of the round rectangle(in pixels).
+	     * @param height        The height of the round rectangle(in pixels).
+	     * @param ellipseWidth  The width of the ellipse used to draw the rounded
+	     *                      corners(in pixels).
+	     * @param ellipseHeight The height of the ellipse used to draw the rounded
+	     *                      corners(in pixels). Optional; if no value is
+	     *                      specified, the default value matches that provided
+	     *                      for the <code>ellipseWidth</code> parameter.
+	     * @throws ArgumentError If the <code>width</code>, <code>height</code>,
+	     *                       <code>ellipseWidth</code> or
+	     *                       <code>ellipseHeight</code> parameters are not a
+	     *                       number(<code>Number.NaN</code>).
+	     */
+	    drawRoundRect(x: number, y: number, width: number, height: number, ellipseWidth: number, ellipseHeight?: number): void;
+	    /**
+	     * Renders a set of triangles, typically to distort bitmaps and give them a
+	     * three-dimensional appearance. The <code>drawTriangles()</code> method maps
+	     * either the current fill, or a bitmap fill, to the triangle faces using a
+	     * set of(u,v) coordinates.
+	     *
+	     * <p> Any type of fill can be used, but if the fill has a transform matrix
+	     * that transform matrix is ignored. </p>
+	     *
+	     * <p> A <code>uvtData</code> parameter improves texture mapping when a
+	     * bitmap fill is used. </p>
+	     *
+	     * @param culling Specifies whether to render triangles that face in a
+	     *                specified direction. This parameter prevents the rendering
+	     *                of triangles that cannot be seen in the current view. This
+	     *                parameter can be set to any value defined by the
+	     *                TriangleCulling class.
+	     */
+	    drawTriangles(vertices: Array<number>, indices?: Array<number>, uvtData?: Array<number>, culling?: TriangleCulling): void;
+	    /**
+	     * Applies a fill to the lines and curves that were added since the last call
+	     * to the <code>beginFill()</code>, <code>beginGradientFill()</code>, or
+	     * <code>beginBitmapFill()</code> method. Flash uses the fill that was
+	     * specified in the previous call to the <code>beginFill()</code>,
+	     * <code>beginGradientFill()</code>, or <code>beginBitmapFill()</code>
+	     * method. If the current drawing position does not equal the previous
+	     * position specified in a <code>moveTo()</code> method and a fill is
+	     * defined, the path is closed with a line and then filled.
+	     *
+	     */
+	    endFill(): void;
+	    /**
+	     * Specifies a bitmap to use for the line stroke when drawing lines.
+	     *
+	     * <p>The bitmap line style is used for subsequent calls to Graphics methods
+	     * such as the <code>lineTo()</code> method or the <code>drawCircle()</code>
+	     * method. The line style remains in effect until you call the
+	     * <code>lineStyle()</code> or <code>lineGradientStyle()</code> methods, or
+	     * the <code>lineBitmapStyle()</code> method again with different parameters.
+	     * </p>
+	     *
+	     * <p>You can call the <code>lineBitmapStyle()</code> method in the middle of
+	     * drawing a path to specify different styles for different line segments
+	     * within a path. </p>
+	     *
+	     * <p>Call the <code>lineStyle()</code> method before you call the
+	     * <code>lineBitmapStyle()</code> method to enable a stroke, or else the
+	     * value of the line style is <code>undefined</code>.</p>
+	     *
+	     * <p>Calls to the <code>clear()</code> method set the line style back to
+	     * <code>undefined</code>. </p>
+	     *
+	     * @param bitmap The bitmap to use for the line stroke.
+	     * @param matrix An optional transformation matrix as defined by the
+	     *               flash.geom.Matrix class. The matrix can be used to scale or
+	     *               otherwise manipulate the bitmap before applying it to the
+	     *               line style.
+	     * @param repeat Whether to repeat the bitmap in a tiled fashion.
+	     * @param smooth Whether smoothing should be applied to the bitmap.
+	     */
+	    lineBitmapStyle(bitmap: BitmapData, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
+	    /**
+	     * Specifies a gradient to use for the stroke when drawing lines.
+	     *
+	     * <p>The gradient line style is used for subsequent calls to Graphics
+	     * methods such as the <code>lineTo()</code> methods or the
+	     * <code>drawCircle()</code> method. The line style remains in effect until
+	     * you call the <code>lineStyle()</code> or <code>lineBitmapStyle()</code>
+	     * methods, or the <code>lineGradientStyle()</code> method again with
+	     * different parameters. </p>
+	     *
+	     * <p>You can call the <code>lineGradientStyle()</code> method in the middle
+	     * of drawing a path to specify different styles for different line segments
+	     * within a path. </p>
+	     *
+	     * <p>Call the <code>lineStyle()</code> method before you call the
+	     * <code>lineGradientStyle()</code> method to enable a stroke, or else the
+	     * value of the line style is <code>undefined</code>.</p>
+	     *
+	     * <p>Calls to the <code>clear()</code> method set the line style back to
+	     * <code>undefined</code>. </p>
+	     *
+	     * @param type                A value from the GradientType class that
+	     *                            specifies which gradient type to use, either
+	     *                            GradientType.LINEAR or GradientType.RADIAL.
+	     * @param colors              An array of RGB hexadecimal color values used
+	     *                            in the gradient; for example, red is 0xFF0000,
+	     *                            blue is 0x0000FF, and so on. You can specify
+	     *                            up to 15 colors. For each color, specify a
+	     *                            corresponding value in the alphas and ratios
+	     *                            parameters.
+	     * @param alphas              An array of alpha values for the corresponding
+	     *                            colors in the colors array; valid values are 0
+	     *                            to 1. If the value is less than 0, the default
+	     *                            is 0. If the value is greater than 1, the
+	     *                            default is 1.
+	     * @param ratios              An array of color distribution ratios; valid
+	     *                            values are 0-255. This value defines the
+	     *                            percentage of the width where the color is
+	     *                            sampled at 100%. The value 0 represents the
+	     *                            left position in the gradient box, and 255
+	     *                            represents the right position in the gradient
+	     *                            box.
+	     * @param matrix              A transformation matrix as defined by the
+	     *                            flash.geom.Matrix class. The flash.geom.Matrix
+	     *                            class includes a
+	     *                            <code>createGradientBox()</code> method, which
+	     *                            lets you conveniently set up the matrix for use
+	     *                            with the <code>lineGradientStyle()</code>
+	     *                            method.
+	     * @param spreadMethod        A value from the SpreadMethod class that
+	     *                            specifies which spread method to use:
+	     * @param interpolationMethod A value from the InterpolationMethod class that
+	     *                            specifies which value to use. For example,
+	     *                            consider a simple linear gradient between two
+	     *                            colors(with the <code>spreadMethod</code>
+	     *                            parameter set to
+	     *                            <code>SpreadMethod.REFLECT</code>). The
+	     *                            different interpolation methods affect the
+	     *                            appearance as follows:
+	     * @param focalPointRatio     A number that controls the location of the
+	     *                            focal point of the gradient. The value 0 means
+	     *                            the focal point is in the center. The value 1
+	     *                            means the focal point is at one border of the
+	     *                            gradient circle. The value -1 means that the
+	     *                            focal point is at the other border of the
+	     *                            gradient circle. Values less than -1 or greater
+	     *                            than 1 are rounded to -1 or 1. The following
+	     *                            image shows a gradient with a
+	     *                            <code>focalPointRatio</code> of -0.75:
+	     */
+	    lineGradientStyle(type: GradientType, colors: Array<number>, alphas: Array<number>, ratios: Array<number>, matrix?: Matrix, spreadMethod?: SpreadMethod, interpolationMethod?: InterpolationMethod, focalPointRatio?: number): void;
+	    /**
+	     * Specifies a shader to use for the line stroke when drawing lines.
+	     *
+	     * <p>The shader line style is used for subsequent calls to Graphics methods
+	     * such as the <code>lineTo()</code> method or the <code>drawCircle()</code>
+	     * method. The line style remains in effect until you call the
+	     * <code>lineStyle()</code> or <code>lineGradientStyle()</code> methods, or
+	     * the <code>lineBitmapStyle()</code> method again with different parameters.
+	     * </p>
+	     *
+	     * <p>You can call the <code>lineShaderStyle()</code> method in the middle of
+	     * drawing a path to specify different styles for different line segments
+	     * within a path. </p>
+	     *
+	     * <p>Call the <code>lineStyle()</code> method before you call the
+	     * <code>lineShaderStyle()</code> method to enable a stroke, or else the
+	     * value of the line style is <code>undefined</code>.</p>
+	     *
+	     * <p>Calls to the <code>clear()</code> method set the line style back to
+	     * <code>undefined</code>. </p>
+	     *
+	     * @param shader The shader to use for the line stroke.
+	     * @param matrix An optional transformation matrix as defined by the
+	     *               flash.geom.Matrix class. The matrix can be used to scale or
+	     *               otherwise manipulate the bitmap before applying it to the
+	     *               line style.
+	     */
+	    /**
+	     * Specifies a line style used for subsequent calls to Graphics methods such
+	     * as the <code>lineTo()</code> method or the <code>drawCircle()</code>
+	     * method. The line style remains in effect until you call the
+	     * <code>lineGradientStyle()</code> method, the
+	     * <code>lineBitmapStyle()</code> method, or the <code>lineStyle()</code>
+	     * method with different parameters.
+	     *
+	     * <p>You can call the <code>lineStyle()</code> method in the middle of
+	     * drawing a path to specify different styles for different line segments
+	     * within the path.</p>
+	     *
+	     * <p><b>Note: </b>Calls to the <code>clear()</code> method set the line
+	     * style back to <code>undefined</code>.</p>
+	     *
+	     * <p><b>Note: </b>Flash Lite 4 supports only the first three parameters
+	     * (<code>thickness</code>, <code>color</code>, and <code>alpha</code>).</p>
+	     *
+	     * @param thickness    An integer that indicates the thickness of the line in
+	     *                     points; valid values are 0-255. If a number is not
+	     *                     specified, or if the parameter is undefined, a line is
+	     *                     not drawn. If a value of less than 0 is passed, the
+	     *                     default is 0. The value 0 indicates hairline
+	     *                     thickness; the maximum thickness is 255. If a value
+	     *                     greater than 255 is passed, the default is 255.
+	     * @param color        A hexadecimal color value of the line; for example,
+	     *                     red is 0xFF0000, blue is 0x0000FF, and so on. If a
+	     *                     value is not indicated, the default is 0x000000
+	     *                    (black). Optional.
+	     * @param alpha        A number that indicates the alpha value of the color
+	     *                     of the line; valid values are 0 to 1. If a value is
+	     *                     not indicated, the default is 1(solid). If the value
+	     *                     is less than 0, the default is 0. If the value is
+	     *                     greater than 1, the default is 1.
+	     * @param pixelHinting(Not supported in Flash Lite 4) A Boolean value that
+	     *                     specifies whether to hint strokes to full pixels. This
+	     *                     affects both the position of anchors of a curve and
+	     *                     the line stroke size itself. With
+	     *                     <code>pixelHinting</code> set to <code>true</code>,
+	     *                     line widths are adjusted to full pixel widths. With
+	     *                     <code>pixelHinting</code> set to <code>false</code>,
+	     *                     disjoints can appear for curves and straight lines.
+	     *                     For example, the following illustrations show how
+	     *                     Flash Player or Adobe AIR renders two rounded
+	     *                     rectangles that are identical, except that the
+	     *                     <code>pixelHinting</code> parameter used in the
+	     *                     <code>lineStyle()</code> method is set differently
+	     *                    (the images are scaled by 200%, to emphasize the
+	     *                     difference):
+	     *
+	     *                     <p>If a value is not supplied, the line does not use
+	     *                     pixel hinting.</p>
+	     * @param scaleMode   (Not supported in Flash Lite 4) A value from the
+	     *                     LineScaleMode class that specifies which scale mode to
+	     *                     use:
+	     *                     <ul>
+	     *                       <li> <code>LineScaleMode.NORMAL</code> - Always
+	     *                     scale the line thickness when the object is scaled
+	     *                    (the default). </li>
+	     *                       <li> <code>LineScaleMode.NONE</code> - Never scale
+	     *                     the line thickness. </li>
+	     *                       <li> <code>LineScaleMode.VERTICAL</code> - Do not
+	     *                     scale the line thickness if the object is scaled
+	     *                     vertically <i>only</i>. For example, consider the
+	     *                     following circles, drawn with a one-pixel line, and
+	     *                     each with the <code>scaleMode</code> parameter set to
+	     *                     <code>LineScaleMode.VERTICAL</code>. The circle on the
+	     *                     left is scaled vertically only, and the circle on the
+	     *                     right is scaled both vertically and horizontally:
+	     *                     </li>
+	     *                       <li> <code>LineScaleMode.HORIZONTAL</code> - Do not
+	     *                     scale the line thickness if the object is scaled
+	     *                     horizontally <i>only</i>. For example, consider the
+	     *                     following circles, drawn with a one-pixel line, and
+	     *                     each with the <code>scaleMode</code> parameter set to
+	     *                     <code>LineScaleMode.HORIZONTAL</code>. The circle on
+	     *                     the left is scaled horizontally only, and the circle
+	     *                     on the right is scaled both vertically and
+	     *                     horizontally:   </li>
+	     *                     </ul>
+	     * @param caps        (Not supported in Flash Lite 4) A value from the
+	     *                     CapsStyle class that specifies the type of caps at the
+	     *                     end of lines. Valid values are:
+	     *                     <code>CapsStyle.NONE</code>,
+	     *                     <code>CapsStyle.ROUND</code>, and
+	     *                     <code>CapsStyle.SQUARE</code>. If a value is not
+	     *                     indicated, Flash uses round caps.
+	     *
+	     *                     <p>For example, the following illustrations show the
+	     *                     different <code>capsStyle</code> settings. For each
+	     *                     setting, the illustration shows a blue line with a
+	     *                     thickness of 30(for which the <code>capsStyle</code>
+	     *                     applies), and a superimposed black line with a
+	     *                     thickness of 1(for which no <code>capsStyle</code>
+	     *                     applies): </p>
+	     * @param joints      (Not supported in Flash Lite 4) A value from the
+	     *                     JointStyle class that specifies the type of joint
+	     *                     appearance used at angles. Valid values are:
+	     *                     <code>JointStyle.BEVEL</code>,
+	     *                     <code>JointStyle.MITER</code>, and
+	     *                     <code>JointStyle.ROUND</code>. If a value is not
+	     *                     indicated, Flash uses round joints.
+	     *
+	     *                     <p>For example, the following illustrations show the
+	     *                     different <code>joints</code> settings. For each
+	     *                     setting, the illustration shows an angled blue line
+	     *                     with a thickness of 30(for which the
+	     *                     <code>jointStyle</code> applies), and a superimposed
+	     *                     angled black line with a thickness of 1(for which no
+	     *                     <code>jointStyle</code> applies): </p>
+	     *
+	     *                     <p><b>Note:</b> For <code>joints</code> set to
+	     *                     <code>JointStyle.MITER</code>, you can use the
+	     *                     <code>miterLimit</code> parameter to limit the length
+	     *                     of the miter.</p>
+	     * @param miterLimit  (Not supported in Flash Lite 4) A number that
+	     *                     indicates the limit at which a miter is cut off. Valid
+	     *                     values range from 1 to 255(and values outside that
+	     *                     range are rounded to 1 or 255). This value is only
+	     *                     used if the <code>jointStyle</code> is set to
+	     *                     <code>"miter"</code>. The <code>miterLimit</code>
+	     *                     value represents the length that a miter can extend
+	     *                     beyond the point at which the lines meet to form a
+	     *                     joint. The value expresses a factor of the line
+	     *                     <code>thickness</code>. For example, with a
+	     *                     <code>miterLimit</code> factor of 2.5 and a
+	     *                     <code>thickness</code> of 10 pixels, the miter is cut
+	     *                     off at 25 pixels.
+	     *
+	     *                     <p>For example, consider the following angled lines,
+	     *                     each drawn with a <code>thickness</code> of 20, but
+	     *                     with <code>miterLimit</code> set to 1, 2, and 4.
+	     *                     Superimposed are black reference lines showing the
+	     *                     meeting points of the joints:</p>
+	     *
+	     *                     <p>Notice that a given <code>miterLimit</code> value
+	     *                     has a specific maximum angle for which the miter is
+	     *                     cut off. The following table lists some examples:</p>
+	     */
+	    lineStyle(thickness?: number, color?: number, alpha?: number, pixelHinting?: boolean, scaleMode?: LineScaleMode, caps?: CapsStyle, joints?: JointStyle, miterLimit?: number): void;
+	    /**
+	     * Draws a line using the current line style from the current drawing
+	     * position to(<code>x</code>, <code>y</code>); the current drawing position
+	     * is then set to(<code>x</code>, <code>y</code>). If the display object in
+	     * which you are drawing contains content that was created with the Flash
+	     * drawing tools, calls to the <code>lineTo()</code> method are drawn
+	     * underneath the content. If you call <code>lineTo()</code> before any calls
+	     * to the <code>moveTo()</code> method, the default position for the current
+	     * drawing is(<i>0, 0</i>). If any of the parameters are missing, this
+	     * method fails and the current drawing position is not changed.
+	     *
+	     * @param x A number that indicates the horizontal position relative to the
+	     *          registration point of the parent display object(in pixels).
+	     * @param y A number that indicates the vertical position relative to the
+	     *          registration point of the parent display object(in pixels).
+	     */
+	    lineTo(x: number, y: number): void;
+	    /**
+	     * Moves the current drawing position to(<code>x</code>, <code>y</code>). If
+	     * any of the parameters are missing, this method fails and the current
+	     * drawing position is not changed.
+	     *
+	     * @param x A number that indicates the horizontal position relative to the
+	     *          registration point of the parent display object(in pixels).
+	     * @param y A number that indicates the vertical position relative to the
+	     *          registration point of the parent display object(in pixels).
+	     */
+	    moveTo(x: number, y: number): void;
+	}
+	export = Graphics;
+	
+}
+declare module "awayjs-display/lib/draw/PixelSnapping" {
+	/**
+	 * The PixelSnapping class is an enumeration of constant values for setting
+	 * the pixel snapping options by using the <code>pixelSnapping</code> property
+	 * of a Bitmap object.
+	 */
+	class PixelSnapping {
+	    /**
+	     * A constant value used in the <code>pixelSnapping</code> property of a
+	     * Bitmap object to specify that the bitmap image is always snapped to the
+	     * nearest pixel, independent of any transformation.
+	     */
+	    static ALWAYS: string;
+	    /**
+	     * A constant value used in the <code>pixelSnapping</code> property of a
+	     * Bitmap object to specify that the bitmap image is snapped to the nearest
+	     * pixel if it is drawn with no rotation or skew and it is drawn at a scale
+	     * factor of 99.9% to 100.1%. If these conditions are satisfied, the image is
+	     * drawn at 100% scale, snapped to the nearest pixel. Internally, this
+	     * setting allows the image to be drawn as fast as possible by using the
+	     * vector renderer.
+	     */
+	    static AUTO: string;
+	    /**
+	     * A constant value used in the <code>pixelSnapping</code> property of a
+	     * Bitmap object to specify that no pixel snapping occurs.
+	     */
+	    static NEVER: string;
+	}
+	export = PixelSnapping;
 	
 }
 declare module "awayjs-display/lib/entities/Shape" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Graphics = require("awayjs-display/lib/base/Graphics");
+	import Graphics = require("awayjs-display/lib/draw/Graphics");
 	/**
 	 * This class is used to create lightweight shapes using the ActionScript
 	 * drawing application program interface(API). The Shape class includes a
@@ -8750,7 +8054,7 @@ declare module "awayjs-display/lib/text/TextFieldType" {
 }
 declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	/**
 	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
 	 *
@@ -10027,18 +9331,6 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	export = ResizeEvent;
 	
 }
-declare module "awayjs-display/lib/events/StageEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class StageEvent extends Event {
-	    static CONTEXT_CREATED: string;
-	    static CONTEXT_DISPOSED: string;
-	    static CONTEXT_RECREATED: string;
-	    static VIEWPORT_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = StageEvent;
-	
-}
 declare module "awayjs-display/lib/materials/BasicMaterial" {
 	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
 	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
@@ -10077,7 +9369,7 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	
 }
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
+	import BitmapData = require("awayjs-core/lib/data/BitmapData");
 	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -10181,7 +9473,7 @@ declare module "awayjs-display/lib/pool/CSSSkyboxRenderable" {
 }
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Capsule primitive mesh.
@@ -10236,7 +9528,7 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 }
 declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Cylinder primitive mesh.
@@ -10336,7 +9628,7 @@ declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
 }
 declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Plane primitive mesh.
@@ -10427,7 +9719,7 @@ declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
 }
 declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A UV Cylinder primitive mesh.
@@ -10478,32 +9770,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableNullSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.NullSort
-	 */
-	class RenderableNullSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableNullSort;
 	
 }
 declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
@@ -10557,6 +9823,32 @@ declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
 	    _iCreateEntityCollector(): CollectorBase;
 	}
 	export = CSSDefaultRenderer;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableMergeSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.RenderableMergeSort
+	 */
+	class RenderableMergeSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.NullSort
+	 */
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableNullSort;
 	
 }
 declare module "awayjs-display/lib/text/Font" {
@@ -10625,7 +9917,7 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	
 }
 declare module "awayjs-display/lib/utils/Cast" {
-	import BitmapData = require("awayjs-core/lib/base/BitmapData");
+	import BitmapData = require("awayjs-core/lib/data/BitmapData");
 	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
 	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
 	/**
