@@ -1,4 +1,4 @@
-import BlendMode					= require("awayjs-core/lib/base/BlendMode");
+import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import AssetType					= require("awayjs-core/lib/library/AssetType");
 import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");

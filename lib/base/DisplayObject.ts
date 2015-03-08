@@ -1,4 +1,4 @@
-import BlendMode					= require("awayjs-core/lib/base/BlendMode");
+import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import Box							= require("awayjs-core/lib/geom/Box");
 import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import MathConsts					= require("awayjs-core/lib/geom/MathConsts");

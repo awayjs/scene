@@ -1,4 +1,4 @@
-import BitmapData					= require("awayjs-core/lib/base/BitmapData");
+import BitmapData					= require("awayjs-core/lib/data/BitmapData");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import AssetType					= require("awayjs-core/lib/library/AssetType");

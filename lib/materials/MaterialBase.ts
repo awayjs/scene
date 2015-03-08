@@ -1,4 +1,4 @@
-import BlendMode					= require("awayjs-core/lib/base/BlendMode");
+import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");

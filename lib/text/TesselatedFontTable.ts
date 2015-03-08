@@ -3,7 +3,7 @@ import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
 
 
 import IAsset						= require("awayjs-core/lib/library/IAsset");
-import SubGeometryBase						= require("awayjs-display/lib/base/SubGeometryBase");
+import SubGeometryBase						= require("awayjs-core/lib/data/SubGeometryBase");
 
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
