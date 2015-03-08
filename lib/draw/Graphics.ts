@@ -1,15 +1,15 @@
-import BitmapData				= require("awayjs-core/lib/base/BitmapData");
+import BitmapData				= require("awayjs-core/lib/data/BitmapData");
 import Matrix					= require("awayjs-core/lib/geom/Matrix");
 
-import CapsStyle				= require("awayjs-display/lib/base/CapsStyle");
-import GradientType				= require("awayjs-display/lib/base/GradientType");
-import GraphicsPathWinding		= require("awayjs-display/lib/base/GraphicsPathWinding");
-import IGraphicsData			= require("awayjs-display/lib/base/IGraphicsData");
-import InterpolationMethod		= require("awayjs-display/lib/base/InterpolationMethod");
-import JointStyle				= require("awayjs-display/lib/base/JointStyle");
-import LineScaleMode			= require("awayjs-display/lib/base/LineScaleMode");
-import TriangleCulling			= require("awayjs-display/lib/base/TriangleCulling");
-import SpreadMethod				= require("awayjs-display/lib/base/SpreadMethod");
+import CapsStyle				= require("awayjs-display/lib/draw/CapsStyle");
+import GradientType				= require("awayjs-display/lib/draw/GradientType");
+import GraphicsPathWinding		= require("awayjs-display/lib/draw/GraphicsPathWinding");
+import IGraphicsData			= require("awayjs-display/lib/draw/IGraphicsData");
+import InterpolationMethod		= require("awayjs-display/lib/draw/InterpolationMethod");
+import JointStyle				= require("awayjs-display/lib/draw/JointStyle");
+import LineScaleMode			= require("awayjs-display/lib/draw/LineScaleMode");
+import TriangleCulling			= require("awayjs-display/lib/draw/TriangleCulling");
+import SpreadMethod				= require("awayjs-display/lib/draw/SpreadMethod");
 
 /**
  * The Graphics class contains a set of methods that you can use to create a
