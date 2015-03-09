@@ -12,9 +12,11 @@ import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import Geometry						= require("awayjs-core/lib/data/Geometry");
 import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
 import CurveSubGeometry					= require("awayjs-core/lib/data/CurveSubGeometry");
+import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
+import AssetType					= require("awayjs-core/lib/library/AssetType");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -595,8 +597,20 @@ class TextField extends Mesh
 	{
 		if (this._text == value)
 			return;
-
 		this._text = value;
+		this.reConstruct();
+	}
+	public get textFormat():TextFormat
+	{
+		return this._textFormat;
+	}
+
+	public set textFormat(value:TextFormat)
+	{
+		if (this._textFormat == value)
+			return;
+		this._textFormat = value;
+		this.reConstruct();
 	}
 
 	/**
@@ -696,6 +710,89 @@ class TextField extends Mesh
 		super(new Geometry());
 	}
 
+	public get assetType():string
+	{
+		return AssetType.TEXTFIELD;
+	}
+	/**
+	 * Reconstructs the Geometry for this Text-field.
+	 */
+	public reConstruct() {
+
+		for (var i:number=this.geometry.subGeometries.length-1; i>=0; i--)
+			this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
+
+		if(this._textFormat==null){
+			return;
+		}
+		if(this._text==""){
+			return;
+		}
+		var indices:Array<number> = new Array<number>();
+		var positions:Array<number> = new Array<number>();
+		var curveData:Array<number> = new Array<number>();
+		var uvs:Array<number> = new Array<number>();
+
+		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
+		var tri_idx_offset:number=0;
+		var tri_cnt:number=0;
+		var x_offset:number=0;
+		var y_offset:number=0;
+		var prev_char:TesselatedFontChar = null;
+		for (var i = 0; i < this.text.length; i++) {
+
+			var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
+			if(this_char!= null) {
+				var this_subGeom:CurveSubGeometry = this_char.subgeom;
+				if (this_subGeom != null) {
+					tri_cnt = 0;
+					var indices2:Array<number> = this_subGeom.indices;
+					var positions2:Array<number> = this_subGeom.positions;
+					var curveData2:Array<number> = this_subGeom.curves;
+					for (var v = 0; v < indices2.length; v++) {
+						indices.push(indices2[v] + tri_idx_offset);
+						tri_cnt++;
+					}
+					tri_idx_offset += tri_cnt;
+					for (v = 0; v < positions2.length / 3; v++) {
+						positions.push((positions2[v * 3] * char_scale) + x_offset);
+						positions.push((positions2[v * 3 + 1] * char_scale * -1) + y_offset);
+						positions.push(positions2[v * 3 + 2]);
+						curveData.push(curveData2[v * 2]);
+						curveData.push(curveData2[v * 2 + 1]);
+						uvs.push(this._textFormat.uv_values[0]);
+						uvs.push(this._textFormat.uv_values[1]);
+					}
+					// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+					var kerning_value:number=0;
+					if(prev_char!=null){
+						for(var k:number=0; k<prev_char.kerningCharCodes.length;k++){
+							if(prev_char.kerningCharCodes[k]==this._text.charCodeAt(i)){
+								kerning_value=prev_char.kerningValues[k];
+								break;
+							}
+						}
+					}
+					x_offset += ((this_char.char_width+kerning_value) * char_scale) + this._textFormat.letterSpacing;
+				}
+				else {
+					// if no char-geometry was found, we insert a "space"
+					x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+				}
+			}
+			else {
+				// if no char-geometry was found, we insert a "space"
+				x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+			}
+		}
+		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
+		curve_sub_geom.updateIndices(indices);
+		curve_sub_geom.updatePositions(positions);
+		curve_sub_geom.updateCurves(curveData);
+		curve_sub_geom.updateUVs(uvs);
+		this.geometry.addSubGeometry(curve_sub_geom);
+		this.subMeshes[0].material=this._textFormat.material;
+	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
 	 * end of the text of the text field. This method is more efficient than an
@@ -705,53 +802,8 @@ class TextField extends Mesh
 	 * 
 	 * @param newText The string to append to the existing text.
 	 */
-	public appendText(newText:string, newFormat:TextFormat) {
-
-		var indices:Array<number> = new Array<number>();
-		var positions:Array<number> = new Array<number>();
-		var curveData:Array<number> = new Array<number>();
-		var uvs:Array<number> = new Array<number>();
-
-		var char_scale:number=newFormat.size/newFormat.font_table.get_font_em_size();
-		var tri_idx_offset:number=0;
-		var tri_cnt:number=0;
-		var x_offset:number=0;
-		var y_offset:number=0;
-		for (var i = 0; i < newText.length; i++) {
-			var this_subGeom:CurveSubGeometry = <CurveSubGeometry> newFormat.font_table.get_subgeo_for_char(newText.charCodeAt(i).toString());
-			if (this_subGeom != null) {
-				tri_cnt=0;
-				var indices2:Array<number> = this_subGeom.indices;
-				var positions2:Array<number> = this_subGeom.positions;
-				var curveData2:Array<number> = this_subGeom.curves;
-				for (var v = 0; v < indices2.length; v++) {
-					indices.push(indices2[v]+tri_idx_offset);
-					tri_cnt++;
-				}
-				tri_idx_offset+=tri_cnt;
-				for (v = 0; v < positions2.length/3; v++) {
-					positions.push((positions2[v*3]*char_scale)+x_offset);
-					positions.push((positions2[v*3+1]*char_scale*-1)+y_offset);
-					positions.push(positions2[v*3+2]);
-					curveData.push(curveData2[v*2]);
-					curveData.push(curveData2[v*2+1]);
-					uvs.push(0.0);
-					uvs.push(0.0);
-				}
-				x_offset+=newFormat.font_table.get_font_em_size()*char_scale;
-				//xcount+=newFormat.font_table.get_font_em_size();
-				console.log(x_offset);
-				//matrix.appendScale(0.1,0.1,0.1);
-			}
-		}
-		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
-		curve_sub_geom.updateIndices(indices);
-		curve_sub_geom.updatePositions(positions);
-		curve_sub_geom.updateCurves(curveData);
-		curve_sub_geom.updateUVs(uvs);
-		this.geometry.addSubGeometry(curve_sub_geom);
-		this.subMeshes[0].material=newFormat.material;
-
+	public appendText(newText:string) {
+		this._text+=newText;
 	}
 
 	/**
@@ -759,14 +811,6 @@ class TextField extends Mesh
 	 * e.g. the textfield will start a new line for future added text.
 	 */
 	public closeParagraph()
-	{
-		//TODO
-	}
-	/**
-	 * *tells the Textfield that a paragraph is defined completly.
-	 * e.g. the textfield will start a new line for future added text.
-	 */
-	public construct_geometry()
 	{
 		//TODO
 	}

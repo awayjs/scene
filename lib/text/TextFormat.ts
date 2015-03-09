@@ -43,7 +43,9 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * @throws ArgumentError The <code>align</code> specified is not a member of
 	 *                       flash.text.TextFormatAlign.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public align:string;
+
 
 	/**
 	 * Indicates the block indentation in pixels. Block indentation is applied to
@@ -53,6 +55,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * TextFormat object does not specify block indentation(block indentation is
 	 * 0).
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public blockIndent:number;
 
 	/**
@@ -60,6 +63,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * <code>null</code>, which means no boldface is used. If the value is
 	 * <code>true</code>, then the text is boldface.
 	 */
+	//todo: this is not used when working with tesselated-font-table, because this is property need a own  tesselated-font-table.
 	public bold:boolean;
 
 	/**
@@ -68,6 +72,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * paragraph, a bullet symbol is displayed. The default value is
 	 * <code>null</code>, which means no bulleted list is used.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro does not output this directly)
 	public bullet:boolean;
 
 	/**
@@ -76,6 +81,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * default value is <code>null</code>, which means that Flash Player uses the
 	 * color black(0x000000).
 	 */
+	//todo: not used with in tesselated-font-table because color must be defined my material + uv-values
 	public color:boolean;
 
 
@@ -83,6 +89,12 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * The material to use for texturing geometry generated for this text-format. this material will be used by the  TextField
 	 */
 	public material:MaterialBase;
+
+	/**
+	 * The uv-values of the colors in textureatlas.
+	 * The lenght migth be 4 in future to support bitmap-fills and gradients, but for now it will should always be 2
+	 */
+	public uv_values:Array<number>;
 
 	/**
 	 * The name of the font for text in this text format, as a string.
@@ -107,12 +119,14 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * the paragraph. The default value is <code>null</code>, which indicates
 	 * that no indentation is used.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public indent:number;
 
 	/**
 	 * Indicates whether text in this text format is italicized. The default
 	 * value is <code>null</code>, which means no italics are used.
 	 */
+	//todo: this is not used when working with tesselated-font-table, because this is property need a own tesselated-font-table.
 	public italic:boolean;
 
 	/**
@@ -128,6 +142,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * <p>The default value is <code>null</code>, which means that kerning is not
 	 * enabled.</p>
 	 */
+	//todo: kerning values are not yet stored with Font-table. soon to come. (also: flash-pro only outputs very few kerning pairs per font-table)
 	public kerning:boolean;
 
 	/**
@@ -135,12 +150,14 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * <i>leading</i>) between lines. The default value is <code>null</code>,
 	 * which indicates that the amount of leading used is 0.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public leading:number;
 
 	/**
 	 * The left margin of the paragraph, in pixels. The default value is
 	 * <code>null</code>, which indicates that the left margin is 0 pixels.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public leftMargin:number;
 
 	/**
@@ -156,6 +173,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * The right margin of the paragraph, in pixels. The default value is
 	 * <code>null</code>, which indicates that the right margin is 0 pixels.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public rightMargin:number;
 
 	/**
@@ -169,6 +187,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * stop is specified in pixels. If custom tab stops are not specified
 	 * (<code>null</code>), the default tab stop is 4(average character width).
 	 */
+	//todo: not used with in tesselated-font-table yet
 	public tabStops:Array<number /*int*/> = new Array<number>();
 
 	/**
@@ -183,6 +202,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * <code>null</code>, you can get or set this property, but the property will
 	 * have no effect.
 	 */
+	//todo: not used with in tesselated-font-table yet
 	public link_target:string;
 
 	/**
@@ -193,6 +213,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * default value is <code>null</code>, which indicates that underlining is
 	 * not used.
 	 */
+	//todo: not used with in tesselated-font-table yet
 	public underline:boolean;
 
 	/**
@@ -204,6 +225,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 * <p><b>Note:</b> The text with the assigned text format must be set with
 	 * the <code>htmlText</code> property for the hyperlink to work.</p>
 	 */
+	//todo: not used with in tesselated-font-table yet
 	public url:string;
 
 	/**
