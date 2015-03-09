@@ -7905,6 +7905,84 @@ declare module "awayjs-display/lib/draw/PixelSnapping" {
 	export = PixelSnapping;
 	
 }
+declare module "awayjs-display/lib/events/ResizeEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class ResizeEvent extends Event {
+	    static RESIZE: string;
+	    private _oldHeight;
+	    private _oldWidth;
+	    constructor(type: string, oldHeight?: number, oldWidth?: number);
+	    oldHeight: number;
+	    oldWidth: number;
+	}
+	export = ResizeEvent;
+	
+}
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
+declare module "awayjs-display/lib/materials/BasicMaterial" {
+	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
+	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	/**
+	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
+	 * using material methods to define their appearance.
+	 */
+	class BasicMaterial extends MaterialBase implements IRenderObjectOwner {
+	    private _preserveAlpha;
+	    /**
+	     * Creates a new BasicMaterial object.
+	     *
+	     * @param texture The texture used for the material's albedo color.
+	     * @param smooth Indicates whether the texture should be filtered when sampled. Defaults to true.
+	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
+	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
+	     */
+	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(color?: number, alpha?: number);
+	    /**
+	     * Indicates whether alpha should be preserved - defaults to false
+	     */
+	    preserveAlpha: boolean;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
+	}
+	export = BasicMaterial;
+	
+}
+declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
+	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	class DefaultMaterialManager {
+	    private static _defaultBitmapData;
+	    private static _defaultTriangleMaterial;
+	    private static _defaultLineMaterial;
+	    private static _defaultTexture;
+	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
+	    static getDefaultTexture(renderableOwner?: IRenderableOwner): BitmapTexture;
+	    private static createDefaultTexture();
+	    static createCheckeredBitmapData(): BitmapData;
+	    private static createDefaultTriangleMaterial();
+	    private static createDefaultLineMaterial();
+	}
+	export = DefaultMaterialManager;
+	
+}
 declare module "awayjs-display/lib/entities/Shape" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import Graphics = require("awayjs-display/lib/draw/Graphics");
@@ -8052,9 +8130,60 @@ declare module "awayjs-display/lib/text/TextFieldType" {
 	export = TextFieldType;
 	
 }
+declare module "awayjs-display/lib/text/TesselatedFontChar" {
+	import CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
+	/**
+	 * The TextFormat class represents character formatting information. Use the
+	 * TextFormat class to create specific text formatting for text fields. You
+	 * can apply text formatting to both static and dynamic text fields. The
+	 * properties of the TextFormat class apply to device and embedded fonts.
+	 * However, for embedded fonts, bold and italic text actually require specific
+	 * fonts. If you want to display bold or italic text with an embedded font,
+	 * you need to embed the bold and italic variations of that font.
+	 *
+	 * <p> You must use the constructor <code>new TextFormat()</code> to create a
+	 * TextFormat object before setting its properties. When you apply a
+	 * TextFormat object to a text field using the
+	 * <code>TextField.defaultTextFormat</code> property or the
+	 * <code>TextField.setTextFormat()</code> method, only its defined properties
+	 * are applied. Use the <code>TextField.defaultTextFormat</code> property to
+	 * apply formatting BEFORE you add text to the <code>TextField</code>, and the
+	 * <code>setTextFormat()</code> method to add formatting AFTER you add text to
+	 * the <code>TextField</code>. The TextFormat properties are <code>null</code>
+	 * by default because if you don't provide values for the properties, Flash
+	 * Player uses its own default formatting. The default formatting that Flash
+	 * Player uses for each property(if property's value is <code>null</code>) is
+	 * as follows:</p>
+	 *
+	 * <p>The default formatting for each property is also described in each
+	 * property description.</p>
+	 */
+	class TesselatedFontChar {
+	    /**
+	     * The width of the char
+	     */
+	    char_width: number;
+	    /**
+	     * SubGeometry for this char
+	     */
+	    subgeom: CurveSubGeometry;
+	    /**
+	     * the char_codes that this geom has kerning set for
+	     */
+	    kerningCharCodes: Array<number>;
+	    /**
+	     * the kerning values per char_code
+	     */
+	    kerningValues: Array<number>;
+	    constructor(subgeom: CurveSubGeometry);
+	}
+	export = TesselatedFontChar;
+	
+}
 declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
 	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
 	/**
 	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
 	 *
@@ -8077,13 +8206,13 @@ declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	     *
 	     */
 	    dispose(): void;
-	    get_font_chars(): Array<SubGeometryBase>;
+	    get_font_chars(): Array<TesselatedFontChar>;
 	    get_font_em_size(): number;
 	    set_font_em_size(font_em_size: number): void;
 	    /**
 	     *
 	     */
-	    get_subgeo_for_char(char: string): SubGeometryBase;
+	    get_subgeo_for_char(char: string): TesselatedFontChar;
 	    /**
 	     *
 	     */
@@ -8166,6 +8295,11 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	     * The material to use for texturing geometry generated for this text-format. this material will be used by the  TextField
 	     */
 	    material: MaterialBase;
+	    /**
+	     * The uv-values of the colors in textureatlas.
+	     * The lenght migth be 4 in future to support bitmap-fills and gradients, but for now it will should always be 2
+	     */
+	    uv_values: Array<number>;
 	    /**
 	     * The name of the font for text in this text format, as a string.
 	     * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
@@ -8939,6 +9073,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * property.</p>
 	     */
 	    text: string;
+	    textFormat: TextFormat;
 	    /**
 	     * The color of the text in a text field, in hexadecimal format. The
 	     * hexadecimal color system uses six digits to represent color values. Each
@@ -9015,6 +9150,11 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * <p>The default size for a text field is 100 x 100 pixels.</p>
 	     */
 	    constructor();
+	    assetType: string;
+	    /**
+	     * Reconstructs the Geometry for this Text-field.
+	     */
+	    reConstruct(): void;
 	    /**
 	     * Appends the string specified by the <code>newText</code> parameter to the
 	     * end of the text of the text field. This method is more efficient than an
@@ -9024,17 +9164,12 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     *
 	     * @param newText The string to append to the existing text.
 	     */
-	    appendText(newText: string, newFormat: TextFormat): void;
+	    appendText(newText: string): void;
 	    /**
 	     * *tells the Textfield that a paragraph is defined completly.
 	     * e.g. the textfield will start a new line for future added text.
 	     */
 	    closeParagraph(): void;
-	    /**
-	     * *tells the Textfield that a paragraph is defined completly.
-	     * e.g. the textfield will start a new line for future added text.
-	     */
-	    construct_geometry(): void;
 	    /**
 	     * Returns a rectangle that is the bounding box of the character.
 	     *
@@ -9308,84 +9443,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	    static isFontCompatible(fontName: string, fontStyle: string): boolean;
 	}
 	export = TextField;
-	
-}
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
-declare module "awayjs-display/lib/events/ResizeEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class ResizeEvent extends Event {
-	    static RESIZE: string;
-	    private _oldHeight;
-	    private _oldWidth;
-	    constructor(type: string, oldHeight?: number, oldWidth?: number);
-	    oldHeight: number;
-	    oldWidth: number;
-	}
-	export = ResizeEvent;
-	
-}
-declare module "awayjs-display/lib/materials/BasicMaterial" {
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
-	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
-	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
-	/**
-	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
-	 * using material methods to define their appearance.
-	 */
-	class BasicMaterial extends MaterialBase implements IRenderObjectOwner {
-	    private _preserveAlpha;
-	    /**
-	     * Creates a new BasicMaterial object.
-	     *
-	     * @param texture The texture used for the material's albedo color.
-	     * @param smooth Indicates whether the texture should be filtered when sampled. Defaults to true.
-	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
-	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
-	     */
-	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
-	    constructor(color?: number, alpha?: number);
-	    /**
-	     * Indicates whether alpha should be preserved - defaults to false
-	     */
-	    preserveAlpha: boolean;
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    getRenderObject(renderablePool: IRenderablePool): IRenderObject;
-	}
-	export = BasicMaterial;
-	
-}
-declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
-	import BitmapData = require("awayjs-core/lib/data/BitmapData");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	class DefaultMaterialManager {
-	    private static _defaultBitmapData;
-	    private static _defaultTriangleMaterial;
-	    private static _defaultLineMaterial;
-	    private static _defaultTexture;
-	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
-	    static getDefaultTexture(renderableOwner?: IRenderableOwner): BitmapTexture;
-	    private static createDefaultTexture();
-	    static createCheckeredBitmapData(): BitmapData;
-	    private static createDefaultTriangleMaterial();
-	    private static createDefaultLineMaterial();
-	}
-	export = DefaultMaterialManager;
 	
 }
 declare module "awayjs-display/lib/materials/CurveMaterial" {
@@ -9851,6 +9908,30 @@ declare module "awayjs-display/lib/sort/RenderableNullSort" {
 	export = RenderableNullSort;
 	
 }
+declare module "awayjs-display/lib/utils/Cast" {
+	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
+	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	/**
+	 * Helper class for casting assets to usable objects
+	 */
+	class Cast {
+	    private static _colorNames;
+	    private static _hexChars;
+	    private static _notClasses;
+	    private static _classes;
+	    static string(data: any): string;
+	    static byteArray(data: any): ByteArray;
+	    private static isHex(str);
+	    static tryColor(data: any): number;
+	    static color(data: any): number;
+	    static tryClass(name: string): any;
+	    static bitmapData(data: any): BitmapData;
+	    static bitmapTexture(data: any): BitmapTexture;
+	}
+	export = Cast;
+	
+}
 declare module "awayjs-display/lib/text/Font" {
 	import NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -9914,30 +9995,6 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	    RIGHT: string;
 	}
 	export = TextFormatAlign;
-	
-}
-declare module "awayjs-display/lib/utils/Cast" {
-	import BitmapData = require("awayjs-core/lib/data/BitmapData");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-	/**
-	 * Helper class for casting assets to usable objects
-	 */
-	class Cast {
-	    private static _colorNames;
-	    private static _hexChars;
-	    private static _notClasses;
-	    private static _classes;
-	    static string(data: any): string;
-	    static byteArray(data: any): ByteArray;
-	    private static isHex(str);
-	    static tryColor(data: any): number;
-	    static color(data: any): number;
-	    static tryClass(name: string): any;
-	    static bitmapData(data: any): BitmapData;
-	    static bitmapTexture(data: any): BitmapTexture;
-	}
-	export = Cast;
 	
 }
 declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {

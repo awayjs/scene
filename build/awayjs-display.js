@@ -8636,6 +8636,7 @@ var __extends = this.__extends || function (d, b) {
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
+var AssetType = require("awayjs-core/lib/library/AssetType");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -8838,6 +8839,20 @@ var TextField = (function (_super) {
             if (this._text == value)
                 return;
             this._text = value;
+            this.reConstruct();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textFormat", {
+        get: function () {
+            return this._textFormat;
+        },
+        set: function (value) {
+            if (this._textFormat == value)
+                return;
+            this._textFormat = value;
+            this.reConstruct();
         },
         enumerable: true,
         configurable: true
@@ -8877,6 +8892,88 @@ var TextField = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(TextField.prototype, "assetType", {
+        get: function () {
+            return AssetType.TEXTFIELD;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Reconstructs the Geometry for this Text-field.
+     */
+    TextField.prototype.reConstruct = function () {
+        for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
+            this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
+        if (this._textFormat == null) {
+            return;
+        }
+        if (this._text == "") {
+            return;
+        }
+        var indices = new Array();
+        var positions = new Array();
+        var curveData = new Array();
+        var uvs = new Array();
+        var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+        var tri_idx_offset = 0;
+        var tri_cnt = 0;
+        var x_offset = 0;
+        var y_offset = 0;
+        var prev_char = null;
+        for (var i = 0; i < this.text.length; i++) {
+            var this_char = this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
+            if (this_char != null) {
+                var this_subGeom = this_char.subgeom;
+                if (this_subGeom != null) {
+                    tri_cnt = 0;
+                    var indices2 = this_subGeom.indices;
+                    var positions2 = this_subGeom.positions;
+                    var curveData2 = this_subGeom.curves;
+                    for (var v = 0; v < indices2.length; v++) {
+                        indices.push(indices2[v] + tri_idx_offset);
+                        tri_cnt++;
+                    }
+                    tri_idx_offset += tri_cnt;
+                    for (v = 0; v < positions2.length / 3; v++) {
+                        positions.push((positions2[v * 3] * char_scale) + x_offset);
+                        positions.push((positions2[v * 3 + 1] * char_scale * -1) + y_offset);
+                        positions.push(positions2[v * 3 + 2]);
+                        curveData.push(curveData2[v * 2]);
+                        curveData.push(curveData2[v * 2 + 1]);
+                        uvs.push(this._textFormat.uv_values[0]);
+                        uvs.push(this._textFormat.uv_values[1]);
+                    }
+                    // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                    var kerning_value = 0;
+                    if (prev_char != null) {
+                        for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                            if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                kerning_value = prev_char.kerningValues[k];
+                                break;
+                            }
+                        }
+                    }
+                    x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                }
+                else {
+                    // if no char-geometry was found, we insert a "space"
+                    x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                }
+            }
+            else {
+                // if no char-geometry was found, we insert a "space"
+                x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+            }
+        }
+        var curve_sub_geom = new CurveSubGeometry(true);
+        curve_sub_geom.updateIndices(indices);
+        curve_sub_geom.updatePositions(positions);
+        curve_sub_geom.updateCurves(curveData);
+        curve_sub_geom.updateUVs(uvs);
+        this.geometry.addSubGeometry(curve_sub_geom);
+        this.subMeshes[0].material = this._textFormat.material;
+    };
     /**
      * Appends the string specified by the <code>newText</code> parameter to the
      * end of the text of the text field. This method is more efficient than an
@@ -8886,62 +8983,14 @@ var TextField = (function (_super) {
      *
      * @param newText The string to append to the existing text.
      */
-    TextField.prototype.appendText = function (newText, newFormat) {
-        var indices = new Array();
-        var positions = new Array();
-        var curveData = new Array();
-        var uvs = new Array();
-        var char_scale = newFormat.size / newFormat.font_table.get_font_em_size();
-        var tri_idx_offset = 0;
-        var tri_cnt = 0;
-        var x_offset = 0;
-        var y_offset = 0;
-        for (var i = 0; i < newText.length; i++) {
-            var this_subGeom = newFormat.font_table.get_subgeo_for_char(newText.charCodeAt(i).toString());
-            if (this_subGeom != null) {
-                tri_cnt = 0;
-                var indices2 = this_subGeom.indices;
-                var positions2 = this_subGeom.positions;
-                var curveData2 = this_subGeom.curves;
-                for (var v = 0; v < indices2.length; v++) {
-                    indices.push(indices2[v] + tri_idx_offset);
-                    tri_cnt++;
-                }
-                tri_idx_offset += tri_cnt;
-                for (v = 0; v < positions2.length / 3; v++) {
-                    positions.push((positions2[v * 3] * char_scale) + x_offset);
-                    positions.push((positions2[v * 3 + 1] * char_scale * -1) + y_offset);
-                    positions.push(positions2[v * 3 + 2]);
-                    curveData.push(curveData2[v * 2]);
-                    curveData.push(curveData2[v * 2 + 1]);
-                    uvs.push(0.0);
-                    uvs.push(0.0);
-                }
-                x_offset += newFormat.font_table.get_font_em_size() * char_scale;
-                //xcount+=newFormat.font_table.get_font_em_size();
-                console.log(x_offset);
-            }
-        }
-        var curve_sub_geom = new CurveSubGeometry(true);
-        curve_sub_geom.updateIndices(indices);
-        curve_sub_geom.updatePositions(positions);
-        curve_sub_geom.updateCurves(curveData);
-        curve_sub_geom.updateUVs(uvs);
-        this.geometry.addSubGeometry(curve_sub_geom);
-        this.subMeshes[0].material = newFormat.material;
+    TextField.prototype.appendText = function (newText) {
+        this._text += newText;
     };
     /**
      * *tells the Textfield that a paragraph is defined completly.
      * e.g. the textfield will start a new line for future added text.
      */
     TextField.prototype.closeParagraph = function () {
-        //TODO
-    };
-    /**
-     * *tells the Textfield that a paragraph is defined completly.
-     * e.g. the textfield will start a new line for future added text.
-     */
-    TextField.prototype.construct_geometry = function () {
         //TODO
     };
     /**
@@ -9254,7 +9303,7 @@ var TextField = (function (_super) {
 module.exports = TextField;
 
 
-},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16301,6 +16350,58 @@ var GridFitType = (function () {
 module.exports = GridFitType;
 
 
+},{}],"awayjs-display/lib/text/TesselatedFontChar":[function(require,module,exports){
+/**
+ * The TextFormat class represents character formatting information. Use the
+ * TextFormat class to create specific text formatting for text fields. You
+ * can apply text formatting to both static and dynamic text fields. The
+ * properties of the TextFormat class apply to device and embedded fonts.
+ * However, for embedded fonts, bold and italic text actually require specific
+ * fonts. If you want to display bold or italic text with an embedded font,
+ * you need to embed the bold and italic variations of that font.
+ *
+ * <p> You must use the constructor <code>new TextFormat()</code> to create a
+ * TextFormat object before setting its properties. When you apply a
+ * TextFormat object to a text field using the
+ * <code>TextField.defaultTextFormat</code> property or the
+ * <code>TextField.setTextFormat()</code> method, only its defined properties
+ * are applied. Use the <code>TextField.defaultTextFormat</code> property to
+ * apply formatting BEFORE you add text to the <code>TextField</code>, and the
+ * <code>setTextFormat()</code> method to add formatting AFTER you add text to
+ * the <code>TextField</code>. The TextFormat properties are <code>null</code>
+ * by default because if you don't provide values for the properties, Flash
+ * Player uses its own default formatting. The default formatting that Flash
+ * Player uses for each property(if property's value is <code>null</code>) is
+ * as follows:</p>
+ *
+ * <p>The default formatting for each property is also described in each
+ * property description.</p>
+ */
+var TesselatedFontChar = (function () {
+    function TesselatedFontChar(subgeom) {
+        /**
+         * the char_codes that this geom has kerning set for
+         */
+        this.kerningCharCodes = new Array();
+        /**
+         * the kerning values per char_code
+         */
+        this.kerningValues = new Array();
+        this.char_width = 0;
+        this.subgeom = subgeom;
+        if (this.subgeom != null) {
+            var positions2 = this.subgeom.positions;
+            for (var v = 0; v < positions2.length / 3; v++) {
+                if (positions2[v * 3] > this.char_width)
+                    this.char_width = positions2[v * 3];
+            }
+        }
+    }
+    return TesselatedFontChar;
+})();
+module.exports = TesselatedFontChar;
+
+
 },{}],"awayjs-display/lib/text/TesselatedFontTable":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -16309,6 +16410,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
  *
@@ -16358,16 +16460,17 @@ var TesselatedFontTable = (function (_super) {
      *
      */
     TesselatedFontTable.prototype.set_subgeo_for_char = function (char, subgeo) {
+        var tesselated_font_char = new TesselatedFontChar(subgeo);
         subgeo.name = char;
-        this._font_chars.push(subgeo);
-        this._font_chars_dic[char] = subgeo;
+        this._font_chars.push(tesselated_font_char);
+        this._font_chars_dic[char] = tesselated_font_char;
     };
     return TesselatedFontTable;
 })(NamedAssetBase);
 module.exports = TesselatedFontTable;
 
 
-},{"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
+},{"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar"}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 /**
  * The TextFieldAutoSize class is an enumeration of constant values used in
  * setting the <code>autoSize</code> property of the TextField class.
@@ -16554,6 +16657,7 @@ var TextFormat = (function (_super) {
          * stop is specified in pixels. If custom tab stops are not specified
          * (<code>null</code>), the default tab stop is 4(average character width).
          */
+        //todo: not used with in tesselated-font-table yet
         this.tabStops = new Array();
         this.font_name = font;
         this.size = size;
