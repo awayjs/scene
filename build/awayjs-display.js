@@ -1877,8 +1877,9 @@ var DisplayObject = (function (_super) {
         if (targetCoordinateSpace === void 0) { targetCoordinateSpace = null; }
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
-        if (this._sphereBoundsInvalid)
+        if (this._sphereBoundsInvalid) {
             this._pUpdateSphereBounds();
+        }
         return this._pSphereBounds;
     };
     /**
