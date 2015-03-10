@@ -175,6 +175,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _pSceneTransform:Matrix3D = new Matrix3D();
 	public _pSceneTransformDirty:boolean = true;
 	public _pIsEntity:boolean;
+    public _iMaskID:number = -1;
 
 	private _explicitPartition:Partition;
 	public _pImplicitPartition:Partition;

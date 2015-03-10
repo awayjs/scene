@@ -304,6 +304,7 @@ var DisplayObject = (function (_super) {
         this._sphereBoundsInvalid = true;
         this._pSceneTransform = new Matrix3D();
         this._pSceneTransformDirty = true;
+        this._iMaskID = -1;
         this._matrix3D = new Matrix3D();
         this._matrix3DDirty = true;
         this._inverseSceneTransform = new Matrix3D();
