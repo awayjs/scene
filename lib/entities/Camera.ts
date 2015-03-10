@@ -1,7 +1,6 @@
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import ProjectionEvent				= require("awayjs-core/lib/events/ProjectionEvent");
 import IProjection					= require("awayjs-core/lib/projections/IProjection");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
@@ -18,6 +17,8 @@ import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 
 class Camera extends DisplayObjectContainer implements IEntity
 {
+	public static assetType:string = "[asset Camera]";
+
 	private _viewProjection:Matrix3D = new Matrix3D();
 	private _viewProjectionDirty:Boolean = true;
 	private _projection:IProjection;
@@ -50,7 +51,7 @@ class Camera extends DisplayObjectContainer implements IEntity
 	//@override
 	public get assetType():string
 	{
-		return AssetType.CAMERA;
+		return Camera.assetType;
 	}
 
 	private onProjectionMatrixChanged(event:ProjectionEvent)

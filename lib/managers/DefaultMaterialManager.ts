@@ -1,8 +1,8 @@
 import BitmapData					= require("awayjs-core/lib/data/BitmapData");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import BitmapTexture				= require("awayjs-core/lib/textures/BitmapTexture");
 
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import BasicMaterial				= require("awayjs-display/lib/materials/BasicMaterial");
 
@@ -15,7 +15,7 @@ class DefaultMaterialManager
 
 	public static getDefaultMaterial(renderableOwner:IRenderableOwner = null):MaterialBase
 	{
-		if (renderableOwner != null && renderableOwner.assetType == AssetType.LINE_SUB_MESH) {
+		if (renderableOwner != null && renderableOwner.isAsset(LineSubMesh)) {
 			if (!DefaultMaterialManager._defaultLineMaterial)
 				DefaultMaterialManager.createDefaultLineMaterial();
 

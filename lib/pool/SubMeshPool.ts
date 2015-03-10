@@ -19,11 +19,9 @@ class SubMeshPool
 	 *
 	 * @param subMeshClass
 	 */
-	public static addSubMeshClass(subMeshClass:ISubMeshClass, subGeometryType:string):string
+	public static registerSubMeshClass(subMeshClass:ISubMeshClass)
 	{
-		SubMeshPool.subMeshClassPool[subGeometryType] = subMeshClass;
-
-		return subGeometryType;
+		SubMeshPool.subMeshClassPool[subMeshClass.geometryType] = subMeshClass;
 	}
 
 	/**
@@ -32,13 +30,17 @@ class SubMeshPool
 	 */
 	public static getSubMeshClass(subGeometry:SubGeometryBase):ISubMeshClass
 	{
-		return SubMeshPool.subMeshClassPool[subGeometry.subGeometryType];
+		return SubMeshPool.subMeshClassPool[subGeometry.assetType];
 	}
 
-	public static defaultSubMeshTypes =
-		[SubMeshPool.addSubMeshClass(LineSubMesh, LineSubGeometry.SUB_GEOMETRY_TYPE),
-		SubMeshPool.addSubMeshClass(TriangleSubMesh, TriangleSubGeometry.SUB_GEOMETRY_TYPE),
-		SubMeshPool.addSubMeshClass(CurveSubMesh, CurveSubGeometry.SUB_GEOMETRY_TYPE)];
+	public static main = SubMeshPool.addDefaults();
+
+	public static addDefaults()
+	{
+		SubMeshPool.registerSubMeshClass(LineSubMesh);
+		SubMeshPool.registerSubMeshClass(TriangleSubMesh);
+		SubMeshPool.registerSubMeshClass(CurveSubMesh);
+	}
 }
 
 export = SubMeshPool;

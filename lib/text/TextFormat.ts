@@ -1,9 +1,6 @@
-
-import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
-
-
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
+
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 /**
@@ -32,8 +29,9 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-class TextFormat extends NamedAssetBase implements IAsset
+class TextFormat extends AssetBase implements IAsset
 {
+	public static assetType:string = "[asset TextFormat]";
 
 	/**
 	 * Indicates the alignment of the paragraph. Valid values are TextFormatAlign
@@ -289,7 +287,7 @@ class TextFormat extends NamedAssetBase implements IAsset
 	 */
 	public get assetType():string
 	{
-		return AssetType.TEXTFORMAT;
+		return TextFormat.assetType;
 	}
 }
 

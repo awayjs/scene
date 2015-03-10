@@ -12,7 +12,7 @@ import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 import RenderTexture				= require("awayjs-core/lib/textures/RenderTexture");
-import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
+import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
 
 class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher
 {
@@ -160,7 +160,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 			matrix = this._depthLenses[i].matrix;
 
 			this._nearPlaneDistances[i] = projectionNear + this._splitRatios[i]*projectionRange;
-			this._depthCameras[i].transform = this._pOverallDepthCamera.transform;
+			this._depthCameras[i].transform.matrix3D = this._pOverallDepthCamera.transform.matrix3D;
 
 			this.updateProjectionPartition(matrix, this._splitRatios[i], this._texOffsetsX[i], this._texOffsetsY[i]);
 

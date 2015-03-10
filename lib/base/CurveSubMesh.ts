@@ -1,5 +1,4 @@
 import CurveSubGeometry			= require("awayjs-core/lib/data/CurveSubGeometry");
-import AssetType				= require("awayjs-core/lib/library/AssetType");
 
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
@@ -19,6 +18,10 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  */
 class CurveSubMesh extends SubMeshBase implements ISubMesh
 {
+	public static assetType:string = "[asset CurveSubMesh]";
+
+	public static geometryType:string = CurveSubGeometry.assetType;
+
 	private _subGeometry:CurveSubGeometry;
 
 	/**
@@ -26,7 +29,7 @@ class CurveSubMesh extends SubMeshBase implements ISubMesh
 	 */
 	public get assetType():string
 	{
-		return AssetType.CURVE_SUB_MESH;
+		return CurveSubMesh.assetType;
 	}
 
 	/**

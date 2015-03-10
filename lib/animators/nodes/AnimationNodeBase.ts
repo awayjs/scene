@@ -1,12 +1,13 @@
-import AssetType				= require("awayjs-core/lib/library/AssetType");
 import IAsset					= require("awayjs-core/lib/library/IAsset");
-import NamedAssetBase			= require("awayjs-core/lib/library/NamedAssetBase");
+import AssetBase				= require("awayjs-core/lib/library/AssetBase");
 
 /**
  * Provides an abstract base class for nodes in an animation blend tree.
  */
-class AnimationNodeBase extends NamedAssetBase implements IAsset
+class AnimationNodeBase extends AssetBase implements IAsset
 {
+	public static assetType:string = "[asset AnimationNodeBase]";
+
 	public _pStateClass:any;
 
 	public get stateClass():any
@@ -34,7 +35,7 @@ class AnimationNodeBase extends NamedAssetBase implements IAsset
 	 */
 	public get assetType():string
 	{
-		return AssetType.ANIMATION_NODE;
+		return AnimationNodeBase.assetType;
 	}
 }
 

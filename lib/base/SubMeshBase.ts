@@ -1,7 +1,7 @@
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
-import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
@@ -19,7 +19,7 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  *
  * @class away.base.SubMeshBase
  */
-class SubMeshBase extends NamedAssetBase
+class SubMeshBase extends AssetBase
 {
 	public _pParentMesh:Mesh;
 	public _uvTransform:UVTransform;

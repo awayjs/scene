@@ -1,10 +1,7 @@
-
-import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
-
-
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
-import FontTable						= require("awayjs-display/lib/text/TesselatedFontTable");
+
+import FontTable					= require("awayjs-display/lib/text/TesselatedFontTable");
 
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
@@ -15,8 +12,10 @@ import FontTable						= require("awayjs-display/lib/text/TesselatedFontTable");
  *
  * @class away.base.SubMeshBase
  */
-class Font extends NamedAssetBase implements IAsset
+class Font extends AssetBase implements IAsset
 {
+	public static assetType:string = "[asset Font]";
+
 	private _font_styles:Array<FontTable> = new Array<FontTable>();
 
 	//TODO test shader picking
@@ -39,7 +38,7 @@ class Font extends NamedAssetBase implements IAsset
 	 */
 	public get assetType():string
 	{
-		return AssetType.FONT;
+		return Font.assetType;
 	}
 	/**
 	 *

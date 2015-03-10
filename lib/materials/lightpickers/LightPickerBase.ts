@@ -1,6 +1,5 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
-import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
@@ -17,8 +16,10 @@ import PointLight					= require("awayjs-display/lib/entities/PointLight");
  *
  * @see StaticLightPicker
  */
-class LightPickerBase extends NamedAssetBase implements IAsset
+class LightPickerBase extends AssetBase implements IAsset
 {
+	public static assetType:string = "[asset LightPicker]";
+
 	public _pNumPointLights:number = 0;
 	public _pNumDirectionalLights:number = 0;
 	public _pNumCastingPointLights:number = 0;
@@ -53,7 +54,7 @@ class LightPickerBase extends NamedAssetBase implements IAsset
 	 */
 	public get assetType():string
 	{
-		return AssetType.LIGHT_PICKER;
+		return LightPickerBase.assetType;
 	}
 
 	/**

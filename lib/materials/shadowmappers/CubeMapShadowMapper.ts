@@ -8,7 +8,7 @@ import PointLight					= require("awayjs-display/lib/entities/PointLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import RenderTexture				= require("awayjs-core/lib/textures/RenderTexture");
-import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
+import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
 
 class CubeMapShadowMapper extends ShadowMapperBase
 {
@@ -55,7 +55,7 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pCreateDepthTexture():TextureProxyBase
+	public pCreateDepthTexture():TextureBase
 	{
 		throw new PartialImplementationError();
 		/*

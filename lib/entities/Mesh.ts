@@ -4,7 +4,6 @@ import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
 import GeometryEvent				= require("awayjs-core/lib/events/GeometryEvent");
 import Box							= require("awayjs-core/lib/geom/Box");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
@@ -26,6 +25,8 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class Mesh extends DisplayObjectContainer implements IEntity
 {
+	public static assetType:string = "[asset Mesh]";
+
 	private _uvTransform:UVTransform;
 
 	private _subMeshes:Array<ISubMesh>;
@@ -79,7 +80,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public get assetType():string
 	{
-		return AssetType.MESH;
+		return Mesh.assetType;
 	}
 
 	/**

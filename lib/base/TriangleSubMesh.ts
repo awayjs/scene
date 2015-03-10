@@ -1,5 +1,4 @@
 import TriangleSubGeometry		= require("awayjs-core/lib/data/TriangleSubGeometry");
-import AssetType				= require("awayjs-core/lib/library/AssetType");
 
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
@@ -19,6 +18,10 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  */
 class TriangleSubMesh extends SubMeshBase implements ISubMesh
 {
+	public static assetType:string = "[asset TriangleSubMesh]";
+
+	public static geometryType:string = TriangleSubGeometry.assetType;
+
 	private _subGeometry:TriangleSubGeometry;
 
 	/**
@@ -26,7 +29,7 @@ class TriangleSubMesh extends SubMeshBase implements ISubMesh
 	 */
 	public get assetType():string
 	{
-		return AssetType.TRIANGLE_SUB_MESH;
+		return TriangleSubMesh.assetType;
 	}
 
 	/**

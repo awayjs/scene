@@ -1,5 +1,5 @@
 
-import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 
 import IAsset						= require("awayjs-core/lib/library/IAsset");
@@ -16,7 +16,7 @@ import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontCha
  *
  * @class away.base.SubMeshBase
  */
-class TesselatedFontTable extends NamedAssetBase
+class TesselatedFontTable extends AssetBase
 {
 	private _font_chars:Array<TesselatedFontChar>;
 	private _font_chars_dic:Object;

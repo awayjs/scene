@@ -1,4 +1,6 @@
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
@@ -11,12 +13,9 @@ import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import Geometry						= require("awayjs-core/lib/data/Geometry");
 import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
-import CurveSubGeometry					= require("awayjs-core/lib/data/CurveSubGeometry");
+import CurveSubGeometry				= require("awayjs-core/lib/data/CurveSubGeometry");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 
-import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
-import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -98,6 +97,8 @@ import AssetType					= require("awayjs-core/lib/library/AssetType");
  */
 class TextField extends Mesh
 {
+	public static assetType:string = "[asset TextField]";
+
 	private _bottomScrollV:number;
 	private _caretIndex:number;
 	private _length:number;
@@ -188,6 +189,15 @@ class TextField extends Mesh
 	 *                       of flash.text.TextFieldAutoSize.
 	 */
 	public autoSize:TextFieldAutoSize;
+
+	/**
+	 *
+	 * @returns {string}
+	 */
+	public get assetType():string
+	{
+		return TextField.assetType;
+	}
 
 	/**
 	 * Specifies whether the text field has a background fill. If
@@ -597,6 +607,7 @@ class TextField extends Mesh
 	{
 		if (this._text == value)
 			return;
+
 		this._text = value;
 		this.reConstruct();
 	}
@@ -710,10 +721,6 @@ class TextField extends Mesh
 		super(new Geometry());
 	}
 
-	public get assetType():string
-	{
-		return AssetType.TEXTFIELD;
-	}
 	/**
 	 * Reconstructs the Geometry for this Text-field.
 	 */
@@ -799,7 +806,7 @@ class TextField extends Mesh
 	 * addition assignment(<code>+=</code>) on a <code>text</code> property
 	 * (such as <code>someTextField.text += moreText</code>), particularly for a
 	 * text field that contains a significant amount of content.
-	 * 
+	 *
 	 * @param newText The string to append to the existing text.
 	 */
 	public appendText(newText:string) {

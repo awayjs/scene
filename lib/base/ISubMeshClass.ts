@@ -11,6 +11,8 @@ import Mesh						= require("awayjs-display/lib/entities/Mesh");
  */
 interface ISubMeshClass
 {
+	geometryType:string;
+
 	/**
 	 *
 	 */

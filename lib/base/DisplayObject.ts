@@ -7,7 +7,7 @@ import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import Point						= require("awayjs-core/lib/geom/Point");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -157,7 +157,7 @@ import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-class DisplayObject extends NamedAssetBase implements IBitmapDrawable
+class DisplayObject extends AssetBase implements IBitmapDrawable
 {
 	private _loaderInfo:LoaderInfo;
 	private _mouseX:number;
