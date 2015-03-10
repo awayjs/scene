@@ -13,8 +13,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 /**
  * Provides an abstract base class for nodes in an animation blend tree.
  */
@@ -43,17 +42,18 @@ var AnimationNodeBase = (function (_super) {
          * @inheritDoc
          */
         get: function () {
-            return AssetType.ANIMATION_NODE;
+            return AnimationNodeBase.assetType;
         },
         enumerable: true,
         configurable: true
     });
+    AnimationNodeBase.assetType = "[asset AnimationNodeBase]";
     return AnimationNodeBase;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = AnimationNodeBase;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/base/AlignmentMode":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/AlignmentMode":[function(require,module,exports){
 /**
  *
  */
@@ -80,7 +80,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
+var CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
 var SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 /**
  * CurveSubMesh wraps a CurveSubGeometry as a scene graph instantiation. A CurveSubMesh is owned by a Mesh object.
@@ -111,7 +111,7 @@ var CurveSubMesh = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.CURVE_SUB_MESH;
+            return CurveSubMesh.assetType;
         },
         enumerable: true,
         configurable: true
@@ -135,12 +135,14 @@ var CurveSubMesh = (function (_super) {
     CurveSubMesh.prototype._iCollectRenderable = function (rendererPool) {
         rendererPool.applyCurveSubMesh(this);
     };
+    CurveSubMesh.assetType = "[asset CurveSubMesh]";
+    CurveSubMesh.geometryType = CurveSubGeometry.assetType;
     return CurveSubMesh;
 })(SubMeshBase);
 module.exports = CurveSubMesh;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/SubMeshBase":"awayjs-display/lib/base/SubMeshBase"}],"awayjs-display/lib/base/DisplayObject":[function(require,module,exports){
+},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-display/lib/base/SubMeshBase":"awayjs-display/lib/base/SubMeshBase"}],"awayjs-display/lib/base/DisplayObject":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -154,7 +156,7 @@ var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Point = require("awayjs-core/lib/geom/Point");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
@@ -1964,11 +1966,11 @@ var DisplayObject = (function (_super) {
             this._pSphereBounds = new Sphere();
     };
     return DisplayObject;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = DisplayObject;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 
 
 
@@ -1999,7 +2001,6 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var LightEvent = require("awayjs-display/lib/events/LightEvent");
@@ -2131,7 +2132,7 @@ var LightBase = (function (_super) {
     Object.defineProperty(LightBase.prototype, "assetType", {
         //@override
         get: function () {
-            return AssetType.LIGHT;
+            return LightBase.assetType;
         },
         enumerable: true,
         configurable: true
@@ -2157,19 +2158,20 @@ var LightBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    LightBase.assetType = "[asset Light]";
     return LightBase;
 })(DisplayObjectContainer);
 module.exports = LightBase;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/LightEvent":"awayjs-display/lib/events/LightEvent"}],"awayjs-display/lib/base/LineSubMesh":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/LightEvent":"awayjs-display/lib/events/LightEvent"}],"awayjs-display/lib/base/LineSubMesh":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
+var LineSubGeometry = require("awayjs-core/lib/data/LineSubGeometry");
 var SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 /**
  * LineSubMesh wraps a LineSubGeometry as a scene graph instantiation. A LineSubMesh is owned by a Mesh object.
@@ -2200,7 +2202,7 @@ var LineSubMesh = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.LINE_SUB_MESH;
+            return LineSubMesh.assetType;
         },
         enumerable: true,
         configurable: true
@@ -2225,12 +2227,14 @@ var LineSubMesh = (function (_super) {
     LineSubMesh.prototype._iCollectRenderable = function (rendererPool) {
         rendererPool.applyLineSubMesh(this);
     };
+    LineSubMesh.assetType = "[asset LineSubMesh]";
+    LineSubMesh.geometryType = LineSubGeometry.assetType;
     return LineSubMesh;
 })(SubMeshBase);
 module.exports = LineSubMesh;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/SubMeshBase":"awayjs-display/lib/base/SubMeshBase"}],"awayjs-display/lib/base/LoaderInfo":[function(require,module,exports){
+},{"awayjs-core/lib/data/LineSubGeometry":undefined,"awayjs-display/lib/base/SubMeshBase":"awayjs-display/lib/base/SubMeshBase"}],"awayjs-display/lib/base/LoaderInfo":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2511,7 +2515,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
  *
@@ -2636,11 +2640,11 @@ var SubMeshBase = (function (_super) {
         return this._material;
     };
     return SubMeshBase;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = SubMeshBase;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -2960,7 +2964,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
+var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 /**
  * TriangleSubMesh wraps a TriangleSubGeometry as a scene graph instantiation. A TriangleSubMesh is owned by a Mesh object.
@@ -2991,7 +2995,7 @@ var TriangleSubMesh = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.TRIANGLE_SUB_MESH;
+            return TriangleSubMesh.assetType;
         },
         enumerable: true,
         configurable: true
@@ -3015,12 +3019,14 @@ var TriangleSubMesh = (function (_super) {
     TriangleSubMesh.prototype._iCollectRenderable = function (rendererPool) {
         rendererPool.applyTriangleSubMesh(this);
     };
+    TriangleSubMesh.assetType = "[asset TriangleSubMesh]";
+    TriangleSubMesh.geometryType = TriangleSubGeometry.assetType;
     return TriangleSubMesh;
 })(SubMeshBase);
 module.exports = TriangleSubMesh;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/SubMeshBase":"awayjs-display/lib/base/SubMeshBase"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
+},{"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-display/lib/base/SubMeshBase":"awayjs-display/lib/base/SubMeshBase"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3353,7 +3359,6 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var ArgumentError = require("awayjs-core/lib/errors/ArgumentError");
 var Error = require("awayjs-core/lib/errors/Error");
 var RangeError = require("awayjs-core/lib/errors/RangeError");
@@ -3401,7 +3406,7 @@ var DisplayObjectContainer = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.CONTAINER;
+            return DisplayObjectContainer.assetType;
         },
         enumerable: true,
         configurable: true
@@ -3819,12 +3824,13 @@ var DisplayObjectContainer = (function (_super) {
         this._children.splice(this.getChildIndex(child), 1);
         return child;
     };
+    DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
     return DisplayObjectContainer;
 })(DisplayObject);
 module.exports = DisplayObjectContainer;
 
 
-},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
+},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -6898,7 +6904,6 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
@@ -6966,7 +6971,7 @@ var Billboard = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.BILLBOARD;
+            return Billboard.assetType;
         },
         enumerable: true,
         configurable: true
@@ -7075,12 +7080,13 @@ var Billboard = (function (_super) {
     Billboard.prototype._pUnregisterEntity = function (partition) {
         partition._iUnregisterEntity(this);
     };
+    Billboard.assetType = "[asset Billboard]";
     return Billboard;
 })(DisplayObject);
 module.exports = Billboard;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
+},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7089,7 +7095,6 @@ var __extends = this.__extends || function (d, b) {
 };
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Plane3D = require("awayjs-core/lib/geom/Plane3D");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var ProjectionEvent = require("awayjs-core/lib/events/ProjectionEvent");
 var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
@@ -7118,7 +7123,7 @@ var Camera = (function (_super) {
     Object.defineProperty(Camera.prototype, "assetType", {
         //@override
         get: function () {
-            return AssetType.CAMERA;
+            return Camera.assetType;
         },
         enumerable: true,
         configurable: true
@@ -7318,12 +7323,13 @@ var Camera = (function (_super) {
     Camera.prototype._pUnregisterEntity = function (partition) {
         partition._iUnregisterCamera(this);
     };
+    Camera.assetType = "[asset Camera]";
     return Camera;
 })(DisplayObjectContainer);
 module.exports = Camera;
 
 
-},{"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent"}],"awayjs-display/lib/entities/DirectionalLight":[function(require,module,exports){
+},{"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent"}],"awayjs-display/lib/entities/DirectionalLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7556,7 +7562,6 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 /**
@@ -7597,7 +7602,7 @@ var LineSegment = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.LINE_SEGMENT;
+            return LineSegment.assetType;
         },
         enumerable: true,
         configurable: true
@@ -7736,12 +7741,13 @@ var LineSegment = (function (_super) {
     LineSegment.prototype._pUnregisterEntity = function (partition) {
         partition._iUnregisterEntity(this);
     };
+    LineSegment.assetType = "[asset LineSegment]";
     return LineSegment;
 })(DisplayObject);
 module.exports = LineSegment;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
+},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7750,7 +7756,6 @@ var __extends = this.__extends || function (d, b) {
 };
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var GeometryEvent = require("awayjs-core/lib/events/GeometryEvent");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var SubMeshPool = require("awayjs-display/lib/pool/SubMeshPool");
@@ -7818,7 +7823,7 @@ var Mesh = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.MESH;
+            return Mesh.assetType;
         },
         enumerable: true,
         configurable: true
@@ -8190,12 +8195,13 @@ var Mesh = (function (_super) {
     Mesh.prototype._pUnregisterEntity = function (partition) {
         partition._iUnregisterEntity(this);
     };
+    Mesh.assetType = "[asset Mesh]";
     return Mesh;
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/events/GeometryEvent":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/events/GeometryEvent":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -8362,7 +8368,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var BlendMode = require("awayjs-core/lib/data/BlendMode");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 /**
@@ -8556,7 +8561,7 @@ var Skybox = (function (_super) {
     });
     Object.defineProperty(Skybox.prototype, "assetType", {
         get: function () {
-            return AssetType.SKYBOX;
+            return Skybox.assetType;
         },
         enumerable: true,
         configurable: true
@@ -8621,12 +8626,13 @@ var Skybox = (function (_super) {
     Skybox.prototype._pUnregisterEntity = function (partition) {
         partition._iUnregisterSkybox(this);
     };
+    Skybox.assetType = "[asset Skybox]";
     return Skybox;
 })(DisplayObject);
 module.exports = Skybox;
 
 
-},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -8636,7 +8642,6 @@ var __extends = this.__extends || function (d, b) {
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -8730,6 +8735,17 @@ var TextField = (function (_super) {
         _super.call(this, new Geometry());
         this._text = "";
     }
+    Object.defineProperty(TextField.prototype, "assetType", {
+        /**
+         *
+         * @returns {string}
+         */
+        get: function () {
+            return TextField.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(TextField.prototype, "bottomScrollV", {
         /**
          * An integer(1-based index) that indicates the bottommost line that is
@@ -8888,13 +8904,6 @@ var TextField = (function (_super) {
          */
         get: function () {
             return this._textWidth;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "assetType", {
-        get: function () {
-            return AssetType.TEXTFIELD;
         },
         enumerable: true,
         configurable: true
@@ -9298,12 +9307,13 @@ var TextField = (function (_super) {
     TextField.isFontCompatible = function (fontName, fontStyle) {
         return false;
     };
+    TextField.assetType = "[asset TextField]";
     return TextField;
 })(Mesh);
 module.exports = TextField;
 
 
-},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9706,15 +9716,15 @@ module.exports = SceneEvent;
 
 },{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
 var BitmapData = require("awayjs-core/lib/data/BitmapData");
-var AssetType = require("awayjs-core/lib/library/AssetType");
 var BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
 var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
 var DefaultMaterialManager = (function () {
     function DefaultMaterialManager() {
     }
     DefaultMaterialManager.getDefaultMaterial = function (renderableOwner) {
         if (renderableOwner === void 0) { renderableOwner = null; }
-        if (renderableOwner != null && renderableOwner.assetType == AssetType.LINE_SUB_MESH) {
+        if (renderableOwner != null && renderableOwner.isAsset(LineSubMesh)) {
             if (!DefaultMaterialManager._defaultLineMaterial)
                 DefaultMaterialManager.createDefaultLineMaterial();
             return DefaultMaterialManager._defaultLineMaterial;
@@ -9766,7 +9776,7 @@ var DefaultMaterialManager = (function () {
 module.exports = DefaultMaterialManager;
 
 
-},{"awayjs-core/lib/data/BitmapData":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/textures/BitmapTexture":undefined,"awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial"}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
+},{"awayjs-core/lib/data/BitmapData":undefined,"awayjs-core/lib/textures/BitmapTexture":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial"}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayMouseEvent = require("awayjs-display/lib/events/MouseEvent");
 /**
@@ -10245,8 +10255,7 @@ var BlendMode = require("awayjs-core/lib/data/BlendMode");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var Event = require("awayjs-core/lib/events/Event");
-var AssetType = require("awayjs-core/lib/library/AssetType");
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
 var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
 /**
@@ -10301,8 +10310,7 @@ var MaterialBase = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.MATERIAL;
-            ;
+            return MaterialBase.assetType;
         },
         enumerable: true,
         configurable: true
@@ -10765,20 +10773,20 @@ var MaterialBase = (function (_super) {
     MaterialBase.prototype.getRenderObject = function (renderablePool) {
         throw new AbstractMethodError();
     };
+    MaterialBase.assetType = "[asset Material]";
     return MaterialBase;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = MaterialBase;
 
 
-},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
+},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 /**
  * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
  * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
@@ -10809,7 +10817,7 @@ var LightPickerBase = (function (_super) {
          * @inheritDoc
          */
         get: function () {
-            return AssetType.LIGHT_PICKER;
+            return LightPickerBase.assetType;
         },
         enumerable: true,
         configurable: true
@@ -10969,12 +10977,13 @@ var LightPickerBase = (function (_super) {
         for (i = 0; i < this._pNumLightProbes; ++i)
             this._pLightProbeWeights[i] *= total;
     };
+    LightPickerBase.assetType = "[asset LightPicker]";
     return LightPickerBase;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = LightPickerBase;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/StaticLightPicker":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/StaticLightPicker":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11236,7 +11245,7 @@ var CascadeShadowMapper = (function (_super) {
         for (var i = 0; i < this._numCascades; ++i) {
             matrix = this._depthLenses[i].matrix;
             this._nearPlaneDistances[i] = projectionNear + this._splitRatios[i] * projectionRange;
-            this._depthCameras[i].transform = this._pOverallDepthCamera.transform;
+            this._depthCameras[i].transform.matrix3D = this._pOverallDepthCamera.transform.matrix3D;
             this.updateProjectionPartition(matrix, this._splitRatios[i], this._texOffsetsX[i], this._texOffsetsY[i]);
             this._depthLenses[i].matrix = matrix;
         }
@@ -12840,9 +12849,6 @@ module.exports = EntityNodePool;
 
 
 },{}],"awayjs-display/lib/pool/SubMeshPool":[function(require,module,exports){
-var LineSubGeometry = require("awayjs-core/lib/data/LineSubGeometry");
-var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
-var CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
 var TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
 var CurveSubMesh = require("awayjs-display/lib/base/CurveSubMesh");
@@ -12856,32 +12862,36 @@ var SubMeshPool = (function () {
      *
      * @param subMeshClass
      */
-    SubMeshPool.addSubMeshClass = function (subMeshClass, subGeometryType) {
-        SubMeshPool.subMeshClassPool[subGeometryType] = subMeshClass;
-        return subGeometryType;
+    SubMeshPool.registerSubMeshClass = function (subMeshClass) {
+        SubMeshPool.subMeshClassPool[subMeshClass.geometryType] = subMeshClass;
     };
     /**
      *
      * @param subGeometry
      */
     SubMeshPool.getSubMeshClass = function (subGeometry) {
-        return SubMeshPool.subMeshClassPool[subGeometry.subGeometryType];
+        return SubMeshPool.subMeshClassPool[subGeometry.assetType];
+    };
+    SubMeshPool.addDefaults = function () {
+        SubMeshPool.registerSubMeshClass(LineSubMesh);
+        SubMeshPool.registerSubMeshClass(TriangleSubMesh);
+        SubMeshPool.registerSubMeshClass(CurveSubMesh);
     };
     SubMeshPool.subMeshClassPool = new Object();
-    SubMeshPool.defaultSubMeshTypes = [SubMeshPool.addSubMeshClass(LineSubMesh, LineSubGeometry.SUB_GEOMETRY_TYPE), SubMeshPool.addSubMeshClass(TriangleSubMesh, TriangleSubGeometry.SUB_GEOMETRY_TYPE), SubMeshPool.addSubMeshClass(CurveSubMesh, CurveSubGeometry.SUB_GEOMETRY_TYPE)];
+    SubMeshPool.main = SubMeshPool.addDefaults();
     return SubMeshPool;
 })();
 module.exports = SubMeshPool;
 
 
-},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/LineSubGeometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-display/lib/base/CurveSubMesh":"awayjs-display/lib/base/CurveSubMesh","awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/base/TriangleSubMesh":"awayjs-display/lib/base/TriangleSubMesh"}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
+},{"awayjs-display/lib/base/CurveSubMesh":"awayjs-display/lib/base/CurveSubMesh","awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/base/TriangleSubMesh":"awayjs-display/lib/base/TriangleSubMesh"}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 /**
  * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
@@ -12919,11 +12929,11 @@ var PrefabBase = (function (_super) {
         // To be overridden when necessary
     };
     return PrefabBase;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = PrefabBase;
 
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14766,11 +14776,10 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetType = require("awayjs-core/lib/library/AssetType");
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var LineSubGeometry = require("awayjs-core/lib/data/LineSubGeometry");
+var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
 /**
@@ -14799,7 +14808,7 @@ var PrimitivePrefabBase = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.PRIMITIVE_PREFAB;
+            return PrimitivePrefabBase.assetType;
         },
         enumerable: true,
         configurable: true
@@ -14927,12 +14936,13 @@ var PrimitivePrefabBase = (function (_super) {
         mesh._iSourcePrefab = this;
         return mesh;
     };
+    PrimitivePrefabBase.assetType = "[asset PrimitivePrefab]";
     return PrimitivePrefabBase;
 })(PrefabBase);
 module.exports = PrimitivePrefabBase;
 
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/LineSubGeometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetType":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
+},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/LineSubGeometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16251,8 +16261,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-var AssetType = require("awayjs-core/lib/library/AssetType");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
@@ -16283,7 +16292,7 @@ var Font = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.FONT;
+            return Font.assetType;
         },
         enumerable: true,
         configurable: true
@@ -16307,12 +16316,13 @@ var Font = (function (_super) {
         this._font_styles.push(font_style);
         return font_style;
     };
+    Font.assetType = "[asset Font]";
     return Font;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = Font;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable"}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable"}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
 /**
  * The GridFitType class defines values for grid fitting in the TextField class.
  */
@@ -16409,7 +16419,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
@@ -16466,11 +16476,11 @@ var TesselatedFontTable = (function (_super) {
         this._font_chars_dic[char] = tesselated_font_char;
     };
     return TesselatedFontTable;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = TesselatedFontTable;
 
 
-},{"awayjs-core/lib/library/NamedAssetBase":undefined,"awayjs-display/lib/text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar"}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar"}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 /**
  * The TextFieldAutoSize class is an enumeration of constant values used in
  * setting the <code>autoSize</code> property of the TextField class.
@@ -16568,8 +16578,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NamedAssetBase = require("awayjs-core/lib/library/NamedAssetBase");
-var AssetType = require("awayjs-core/lib/library/AssetType");
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You
@@ -16677,17 +16686,18 @@ var TextFormat = (function (_super) {
          *
          */
         get: function () {
-            return AssetType.TEXTFORMAT;
+            return TextFormat.assetType;
         },
         enumerable: true,
         configurable: true
     });
+    TextFormat.assetType = "[asset TextFormat]";
     return TextFormat;
-})(NamedAssetBase);
+})(AssetBase);
 module.exports = TextFormat;
 
 
-},{"awayjs-core/lib/library/AssetType":undefined,"awayjs-core/lib/library/NamedAssetBase":undefined}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
 /**
  * A class that defines the Interactive mode of a text field object.
  *
