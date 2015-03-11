@@ -305,6 +305,7 @@ var DisplayObject = (function (_super) {
         this._pSceneTransform = new Matrix3D();
         this._pSceneTransformDirty = true;
         this._iMaskID = -1;
+        this._iMasks = null;
         this._matrix3D = new Matrix3D();
         this._matrix3DDirty = true;
         this._inverseSceneTransform = new Matrix3D();
@@ -1171,6 +1172,8 @@ var DisplayObject = (function (_super) {
         clone.pivot = this.pivot;
         clone._iMatrix3D = this._iMatrix3D;
         clone.name = name;
+        clone._iMaskID = this._iMaskID;
+        clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
         // todo: implement for all subtypes
         return clone;
     };
@@ -7994,6 +7997,8 @@ var Mesh = (function (_super) {
         //this is of course no proper cloning
         //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
         clone.extra = this.extra;
+        clone._iMasks = this._iMasks;
+        clone._iMaskID = this._iMaskID;
         var len = this._subMeshes.length;
         for (var i = 0; i < len; ++i)
             clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
