@@ -9406,6 +9406,19 @@ declare module "awayjs-display/lib/errors/CastError" {
 	export = CastError;
 	
 }
+declare module "awayjs-display/lib/events/ResizeEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class ResizeEvent extends Event {
+	    static RESIZE: string;
+	    private _oldHeight;
+	    private _oldWidth;
+	    constructor(type: string, oldHeight?: number, oldWidth?: number);
+	    oldHeight: number;
+	    oldWidth: number;
+	}
+	export = ResizeEvent;
+	
+}
 declare module "awayjs-display/lib/materials/BasicMaterial" {
 	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
 	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
@@ -9461,19 +9474,6 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	    private static createDefaultLineMaterial();
 	}
 	export = DefaultMaterialManager;
-	
-}
-declare module "awayjs-display/lib/events/ResizeEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class ResizeEvent extends Event {
-	    static RESIZE: string;
-	    private _oldHeight;
-	    private _oldWidth;
-	    constructor(type: string, oldHeight?: number, oldWidth?: number);
-	    oldHeight: number;
-	    oldWidth: number;
-	}
-	export = ResizeEvent;
 	
 }
 declare module "awayjs-display/lib/materials/CurveMaterial" {
