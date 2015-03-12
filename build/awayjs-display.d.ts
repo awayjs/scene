@@ -9612,6 +9612,32 @@ declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
 	export = CSSDefaultRenderer;
 	
 }
+declare module "awayjs-display/lib/sort/RenderableMergeSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.RenderableMergeSort
+	 */
+	class RenderableMergeSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableMergeSort;
+	
+}
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	/**
+	 * @class away.sort.NullSort
+	 */
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = RenderableNullSort;
+	
+}
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
@@ -9911,32 +9937,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
-	
-}
-declare module "awayjs-display/lib/sort/RenderableNullSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.NullSort
-	 */
-	class RenderableNullSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableNullSort;
 	
 }
 declare module "awayjs-display/lib/text/Font" {
