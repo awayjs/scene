@@ -169,6 +169,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _pSphereBounds:Sphere;
 	private _sphereBoundsInvalid:boolean = true;
 	private _debugVisible:boolean;
+	public _pName:string;
 
 	public _pScene:Scene;
 	public _pParent:DisplayObjectContainer;
@@ -715,7 +716,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 *                               on an object that was placed on the timeline
 	 *                               in the Flash authoring tool.
 	 */
-	public name:string;
+	public get name() :string
+    {
+        return this._pName;
+    }
+
+    public set name(value : string)
+    {
+        this._pName = value;
+    }
 
 	/**
 	 *

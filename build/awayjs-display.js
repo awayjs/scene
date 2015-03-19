@@ -663,6 +663,27 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DisplayObject.prototype, "name", {
+        /**
+         * Indicates the instance name of the DisplayObject. The object can be
+         * identified in the child list of its parent display object container by
+         * calling the <code>getChildByName()</code> method of the display object
+         * container.
+         *
+         * @throws IllegalOperationError If you are attempting to set this property
+         *                               on an object that was placed on the timeline
+         *                               in the Flash authoring tool.
+         */
+        get: function () {
+            return this._pName;
+        },
+        set: function (value) {
+            console.log("setting name");
+            this._pName = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObject.prototype, "parent", {
         /**
          * Indicates the DisplayObjectContainer object that contains this display

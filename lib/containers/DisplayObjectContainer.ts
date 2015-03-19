@@ -487,6 +487,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		//TODO
 	}
 
+
 	/**
 	 * @protected
 	 */
