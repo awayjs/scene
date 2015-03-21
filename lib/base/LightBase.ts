@@ -1,4 +1,3 @@
-import AssetType				= require("awayjs-core/lib/library/AssetType");
 import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
 import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
 
@@ -10,6 +9,8 @@ import ShadowMapperBase			= require("awayjs-display/lib/materials/shadowmappers/
 
 class LightBase extends DisplayObjectContainer
 {
+	public static assetType:string = "[asset Light]";
+
 	private _color:number = 0xffffff;
 	private _colorR:number = 1;
 	private _colorG:number = 1;
@@ -156,7 +157,7 @@ class LightBase extends DisplayObjectContainer
 	//@override
 	public get assetType():string
 	{
-		return AssetType.LIGHT;
+		return LightBase.assetType;
 	}
 
 	private updateSpecular()

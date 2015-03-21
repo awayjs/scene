@@ -1,8 +1,8 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
+import LineSubGeometry			= require("awayjs-core/lib/data/LineSubGeometry");
+import SubGeometryBase			= require("awayjs-core/lib/data/SubGeometryBase");
+import TriangleSubGeometry		= require("awayjs-core/lib/data/TriangleSubGeometry");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**

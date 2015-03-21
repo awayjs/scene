@@ -1,5 +1,5 @@
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import Graphics						= require("awayjs-display/lib/base/Graphics");
+import Graphics						= require("awayjs-display/lib/draw/Graphics");
 
 /**
  * This class is used to create lightweight shapes using the ActionScript

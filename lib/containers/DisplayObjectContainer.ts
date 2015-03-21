@@ -1,5 +1,4 @@
 import Point						= require("awayjs-core/lib/geom/Point");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import ArgumentError				= require("awayjs-core/lib/errors/ArgumentError");
 import Error						= require("awayjs-core/lib/errors/Error");
@@ -32,6 +31,8 @@ import Scene						= require("awayjs-display/lib/containers/Scene");
  */
 class DisplayObjectContainer extends DisplayObject implements IAsset
 {
+	public static assetType:string = "[asset DisplayObjectContainer]";
+
 	private _mouseChildren:boolean = true;
 	private _children:Array<DisplayObject> = new Array<DisplayObject>();
 	public _iIsRoot:boolean;
@@ -41,7 +42,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public get assetType():string
 	{
-		return AssetType.CONTAINER;
+		return DisplayObjectContainer.assetType;
 	}
 
 	/**

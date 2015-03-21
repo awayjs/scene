@@ -1,20 +1,20 @@
-﻿import Box							= require("awayjs-core/lib/geom/Box");
+﻿import Geometry						= require("awayjs-core/lib/data/Geometry");
+import TriangleSubGeometry			= require("awayjs-core/lib/data/TriangleSubGeometry");
+import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
+import GeometryEvent				= require("awayjs-core/lib/events/GeometryEvent");
+import Box							= require("awayjs-core/lib/geom/Box");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import Geometry						= require("awayjs-display/lib/base/Geometry");
 import ISubMesh						= require("awayjs-display/lib/base/ISubMesh");
 import ISubMeshClass				= require("awayjs-display/lib/base/ISubMeshClass");
-import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeometry");
-import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Partition					= require("awayjs-display/lib/partition/Partition");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
-import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
+import SubMeshPool					= require("awayjs-display/lib/pool/SubMeshPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
@@ -25,6 +25,8 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class Mesh extends DisplayObjectContainer implements IEntity
 {
+	public static assetType:string = "[asset Mesh]";
+
 	private _uvTransform:UVTransform;
 
 	private _subMeshes:Array<ISubMesh>;
@@ -78,7 +80,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public get assetType():string
 	{
-		return AssetType.MESH;
+		return Mesh.assetType;
 	}
 
 	/**
@@ -498,7 +500,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	private addSubMesh(subGeometry:SubGeometryBase)
 	{
-		var SubMeshClass:ISubMeshClass = subGeometry.subMeshClass;
+		var SubMeshClass:ISubMeshClass = SubMeshPool.getSubMeshClass(subGeometry);
 
 		var subMesh:ISubMesh = new SubMeshClass(subGeometry, this, null);
 		var len:number = this._subMeshes.length;

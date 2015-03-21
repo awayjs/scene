@@ -1,4 +1,6 @@
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
@@ -8,6 +10,11 @@ import TextFieldType				= require("awayjs-display/lib/text/TextFieldType");
 import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
+import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import Geometry						= require("awayjs-core/lib/data/Geometry");
+import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
+import CurveSubGeometry				= require("awayjs-core/lib/data/CurveSubGeometry");
+import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -88,8 +95,10 @@ import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-class TextField extends DisplayObject
+class TextField extends Mesh
 {
+	public static assetType:string = "[asset TextField]";
+
 	private _bottomScrollV:number;
 	private _caretIndex:number;
 	private _length:number;
@@ -180,6 +189,15 @@ class TextField extends DisplayObject
 	 *                       of flash.text.TextFieldAutoSize.
 	 */
 	public autoSize:TextFieldAutoSize;
+
+	/**
+	 *
+	 * @returns {string}
+	 */
+	public get assetType():string
+	{
+		return TextField.assetType;
+	}
 
 	/**
 	 * Specifies whether the text field has a background fill. If
@@ -591,6 +609,19 @@ class TextField extends DisplayObject
 			return;
 
 		this._text = value;
+		this.reConstruct();
+	}
+	public get textFormat():TextFormat
+	{
+		return this._textFormat;
+	}
+
+	public set textFormat(value:TextFormat)
+	{
+		if (this._textFormat == value)
+			return;
+		this._textFormat = value;
+		this.reConstruct();
 	}
 
 	/**
@@ -687,19 +718,106 @@ class TextField extends DisplayObject
 	 */
 	constructor()
 	{
-		super();
+		super(new Geometry());
 	}
 
+	/**
+	 * Reconstructs the Geometry for this Text-field.
+	 */
+	public reConstruct() {
+
+		for (var i:number=this.geometry.subGeometries.length-1; i>=0; i--)
+			this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
+
+		if(this._textFormat==null){
+			return;
+		}
+		if(this._text==""){
+			return;
+		}
+		var indices:Array<number> = new Array<number>();
+		var positions:Array<number> = new Array<number>();
+		var curveData:Array<number> = new Array<number>();
+		var uvs:Array<number> = new Array<number>();
+
+		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
+		var tri_idx_offset:number=0;
+		var tri_cnt:number=0;
+		var x_offset:number=0;
+		var y_offset:number=0;
+		var prev_char:TesselatedFontChar = null;
+		for (var i = 0; i < this.text.length; i++) {
+
+			var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
+			if(this_char!= null) {
+				var this_subGeom:CurveSubGeometry = this_char.subgeom;
+				if (this_subGeom != null) {
+					tri_cnt = 0;
+					var indices2:Array<number> = this_subGeom.indices;
+					var positions2:Array<number> = this_subGeom.positions;
+					var curveData2:Array<number> = this_subGeom.curves;
+					for (var v = 0; v < indices2.length; v++) {
+						indices.push(indices2[v] + tri_idx_offset);
+						tri_cnt++;
+					}
+					tri_idx_offset += tri_cnt;
+					for (v = 0; v < positions2.length / 3; v++) {
+						positions.push((positions2[v * 3] * char_scale) + x_offset);
+						positions.push((positions2[v * 3 + 1] * char_scale * -1) + y_offset);
+						positions.push(positions2[v * 3 + 2]);
+						curveData.push(curveData2[v * 2]);
+						curveData.push(curveData2[v * 2 + 1]);
+						uvs.push(this._textFormat.uv_values[0]);
+						uvs.push(this._textFormat.uv_values[1]);
+					}
+					// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+					var kerning_value:number=0;
+					if(prev_char!=null){
+						for(var k:number=0; k<prev_char.kerningCharCodes.length;k++){
+							if(prev_char.kerningCharCodes[k]==this._text.charCodeAt(i)){
+								kerning_value=prev_char.kerningValues[k];
+								break;
+							}
+						}
+					}
+					x_offset += ((this_char.char_width+kerning_value) * char_scale) + this._textFormat.letterSpacing;
+				}
+				else {
+					// if no char-geometry was found, we insert a "space"
+					x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+				}
+			}
+			else {
+				// if no char-geometry was found, we insert a "space"
+				x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+			}
+		}
+		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
+		curve_sub_geom.updateIndices(indices);
+		curve_sub_geom.updatePositions(positions);
+		curve_sub_geom.updateCurves(curveData);
+		curve_sub_geom.updateUVs(uvs);
+		this.geometry.addSubGeometry(curve_sub_geom);
+		this.subMeshes[0].material=this._textFormat.material;
+	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
 	 * end of the text of the text field. This method is more efficient than an
 	 * addition assignment(<code>+=</code>) on a <code>text</code> property
 	 * (such as <code>someTextField.text += moreText</code>), particularly for a
 	 * text field that contains a significant amount of content.
-	 * 
+	 *
 	 * @param newText The string to append to the existing text.
 	 */
-	public appendText(newText:string)
+	public appendText(newText:string) {
+		this._text+=newText;
+	}
+
+	/**
+	 * *tells the Textfield that a paragraph is defined completly.
+	 * e.g. the textfield will start a new line for future added text.
+	 */
+	public closeParagraph()
 	{
 		//TODO
 	}

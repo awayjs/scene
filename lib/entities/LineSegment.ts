@@ -1,7 +1,6 @@
 ﻿import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
@@ -19,6 +18,8 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 {
+	public static assetType:string = "[asset LineSegment]";
+
 	private _animator:IAnimator;
 	private _material:MaterialBase;
 	private _uvTransform:UVTransform;
@@ -41,7 +42,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	 */
 	public get assetType():string
 	{
-		return AssetType.LINE_SEGMENT;
+		return LineSegment.assetType;
 	}
 
 	/**

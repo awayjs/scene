@@ -9,7 +9,7 @@ import Camera						= require("awayjs-display/lib/entities/Camera");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 import RenderTexture				= require("awayjs-core/lib/textures/RenderTexture");
-import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
+import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
 
 class DirectionalShadowMapper extends ShadowMapperBase
 {
@@ -69,7 +69,7 @@ class DirectionalShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(target:TextureProxyBase, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(target:TextureBase, scene:Scene, renderer:IRenderer)
 	{
 		this._pCasterCollector.camera = this._pOverallDepthCamera;
 		this._pCasterCollector.cullPlanes = this._pCullPlanes;

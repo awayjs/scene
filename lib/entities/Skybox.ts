@@ -1,6 +1,5 @@
-import BlendMode					= require("awayjs-core/lib/base/BlendMode");
+import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
@@ -26,6 +25,8 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderObjectOwner
 {
+	public static assetType:string = "[asset Skybox]";
+
 	private _cubeMap:CubeTextureBase;
 	public _pAlphaThreshold:number = 0;
 	private _animationSet:IAnimationSet;
@@ -229,7 +230,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 	public get assetType():string
 	{
-		return AssetType.SKYBOX;
+		return Skybox.assetType;
 	}
 
 	public get castsShadows():boolean

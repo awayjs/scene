@@ -1,9 +1,9 @@
-import AssetType				= require("awayjs-core/lib/library/AssetType");
+import LineSubGeometry			= require("awayjs-core/lib/data/LineSubGeometry");
 
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
 import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
+import SubMeshPool				= require("awayjs-display/lib/pool/SubMeshPool");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 
@@ -18,6 +18,10 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  */
 class LineSubMesh extends SubMeshBase implements ISubMesh
 {
+	public static assetType:string = "[asset LineSubMesh]";
+
+	public static geometryType:string = LineSubGeometry.assetType;
+
 	private _subGeometry:LineSubGeometry;
 
 	/**
@@ -25,7 +29,7 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 	 */
 	public get assetType():string
 	{
-		return AssetType.LINE_SUB_MESH;
+		return LineSubMesh.assetType;
 	}
 
 	/**

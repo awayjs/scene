@@ -1,11 +1,10 @@
-import AssetType				= require("awayjs-core/lib/library/AssetType");
+import Geometry					= require("awayjs-core/lib/data/Geometry");
+import SubGeometryBase			= require("awayjs-core/lib/data/SubGeometryBase");
+import TriangleSubGeometry		= require("awayjs-core/lib/data/TriangleSubGeometry");
+import LineSubGeometry			= require("awayjs-core/lib/data/LineSubGeometry");
 import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
 
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
-import Geometry					= require("awayjs-display/lib/base/Geometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
@@ -15,6 +14,8 @@ import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
  */
 class PrimitivePrefabBase extends PrefabBase
 {
+	public static assetType:string = "[asset PrimitivePrefab]";
+
 	public _geomDirty:boolean = true;
 	public _uvDirty:boolean = true;
 
@@ -30,7 +31,7 @@ class PrimitivePrefabBase extends PrefabBase
 	 */
 	public get assetType():string
 	{
-		return AssetType.PRIMITIVE_PREFAB;
+		return PrimitivePrefabBase.assetType;
 	}
 
 	/**

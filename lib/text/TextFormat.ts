@@ -1,3 +1,8 @@
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
+import IAsset						= require("awayjs-core/lib/library/IAsset");
+
+import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You
@@ -24,8 +29,9 @@
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-class TextFormat
+class TextFormat extends AssetBase implements IAsset
 {
+	public static assetType:string = "[asset TextFormat]";
 
 	/**
 	 * Indicates the alignment of the paragraph. Valid values are TextFormatAlign
@@ -35,7 +41,9 @@ class TextFormat
 	 * @throws ArgumentError The <code>align</code> specified is not a member of
 	 *                       flash.text.TextFormatAlign.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public align:string;
+
 
 	/**
 	 * Indicates the block indentation in pixels. Block indentation is applied to
@@ -45,6 +53,7 @@ class TextFormat
 	 * TextFormat object does not specify block indentation(block indentation is
 	 * 0).
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public blockIndent:number;
 
 	/**
@@ -52,6 +61,7 @@ class TextFormat
 	 * <code>null</code>, which means no boldface is used. If the value is
 	 * <code>true</code>, then the text is boldface.
 	 */
+	//todo: this is not used when working with tesselated-font-table, because this is property need a own  tesselated-font-table.
 	public bold:boolean;
 
 	/**
@@ -60,6 +70,7 @@ class TextFormat
 	 * paragraph, a bullet symbol is displayed. The default value is
 	 * <code>null</code>, which means no bulleted list is used.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro does not output this directly)
 	public bullet:boolean;
 
 	/**
@@ -68,26 +79,52 @@ class TextFormat
 	 * default value is <code>null</code>, which means that Flash Player uses the
 	 * color black(0x000000).
 	 */
+	//todo: not used with in tesselated-font-table because color must be defined my material + uv-values
 	public color:boolean;
 
+
 	/**
-	 * The name of the font for text in this text format, as a string. The
-	 * default value is <code>null</code>, which means that Flash Player uses
-	 * Times New Roman font for the text.
+	 * The material to use for texturing geometry generated for this text-format. this material will be used by the  TextField
 	 */
-	public font:string;
+	public material:MaterialBase;
+
+	/**
+	 * The uv-values of the colors in textureatlas.
+	 * The lenght migth be 4 in future to support bitmap-fills and gradients, but for now it will should always be 2
+	 */
+	public uv_values:Array<number>;
+
+	/**
+	 * The name of the font for text in this text format, as a string.
+	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
+	 * The font-name can be used to get a Font-object from the AssetLibrary.
+	 * A Font object provides a list of Font-table, corresponding to font-table names.
+	 */
+	public font_name:string;
+	/**
+	 * The name of the font-style for text in this text format, as a string.
+	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
+	 * The font-style can be used to get a Font-table, from a Font-object.
+	 */
+	public font_style:string;
+	/**
+	 * The font-table that provides the subgeos for the chars
+	 */
+	public font_table:TesselatedFontTable;
 
 	/**
 	 * Indicates the indentation from the left margin to the first character in
 	 * the paragraph. The default value is <code>null</code>, which indicates
 	 * that no indentation is used.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public indent:number;
 
 	/**
 	 * Indicates whether text in this text format is italicized. The default
 	 * value is <code>null</code>, which means no italics are used.
 	 */
+	//todo: this is not used when working with tesselated-font-table, because this is property need a own tesselated-font-table.
 	public italic:boolean;
 
 	/**
@@ -103,6 +140,7 @@ class TextFormat
 	 * <p>The default value is <code>null</code>, which means that kerning is not
 	 * enabled.</p>
 	 */
+	//todo: kerning values are not yet stored with Font-table. soon to come. (also: flash-pro only outputs very few kerning pairs per font-table)
 	public kerning:boolean;
 
 	/**
@@ -110,12 +148,14 @@ class TextFormat
 	 * <i>leading</i>) between lines. The default value is <code>null</code>,
 	 * which indicates that the amount of leading used is 0.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public leading:number;
 
 	/**
 	 * The left margin of the paragraph, in pixels. The default value is
 	 * <code>null</code>, which indicates that the left margin is 0 pixels.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public leftMargin:number;
 
 	/**
@@ -131,6 +171,7 @@ class TextFormat
 	 * The right margin of the paragraph, in pixels. The default value is
 	 * <code>null</code>, which indicates that the right margin is 0 pixels.
 	 */
+	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
 	public rightMargin:number;
 
 	/**
@@ -144,6 +185,7 @@ class TextFormat
 	 * stop is specified in pixels. If custom tab stops are not specified
 	 * (<code>null</code>), the default tab stop is 4(average character width).
 	 */
+	//todo: not used with in tesselated-font-table yet
 	public tabStops:Array<number /*int*/> = new Array<number>();
 
 	/**
@@ -158,7 +200,8 @@ class TextFormat
 	 * <code>null</code>, you can get or set this property, but the property will
 	 * have no effect.
 	 */
-	public target:string;
+	//todo: not used with in tesselated-font-table yet
+	public link_target:string;
 
 	/**
 	 * Indicates whether the text that uses this text format is underlined
@@ -168,6 +211,7 @@ class TextFormat
 	 * default value is <code>null</code>, which indicates that underlining is
 	 * not used.
 	 */
+	//todo: not used with in tesselated-font-table yet
 	public underline:boolean;
 
 	/**
@@ -179,6 +223,7 @@ class TextFormat
 	 * <p><b>Note:</b> The text with the assigned text format must be set with
 	 * the <code>htmlText</code> property for the hyperlink to work.</p>
 	 */
+	//todo: not used with in tesselated-font-table yet
 	public url:string;
 
 	/**
@@ -220,20 +265,29 @@ class TextFormat
 	 * @param leading     A number that indicates the amount of leading vertical
 	 *                    space between lines.
 	 */
-	constructor(font:string = "Times New Roman", size:number = 12, color:number /*int*/ = 0x000000, bold:boolean = false, italic:boolean = false, underline:boolean = false, url:string = "", target:string = "", align:string = "left", leftMargin:number = 0, rightMargin:number = 0, indent:number = 0, leading:number = 0)
+	constructor(font:string = "Times New Roman", size:number = 12, color:number /*int*/ = 0x000000, bold:boolean = false, italic:boolean = false, underline:boolean = false, url:string = "", link_target:string = "", align:string = "left", leftMargin:number = 0, rightMargin:number = 0, indent:number = 0, leading:number = 0)
 	{
-		this.font = font;
+		super();
+		this.font_name = font;
 		this.size = size;
 		this.bold = bold;
 		this.italic = italic;
 		this.underline = underline;
 		this.url = url;
-		this.target = target;
+		this.link_target = link_target;
 		this.align = align;
 		this.leftMargin = leftMargin;
 		this.rightMargin = rightMargin;
 		this.indent = indent;
 		this.leading = leading;
+	}
+
+	/**
+	 *
+	 */
+	public get assetType():string
+	{
+		return TextFormat.assetType;
 	}
 }
 

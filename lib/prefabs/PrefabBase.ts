@@ -1,4 +1,4 @@
-import NamedAssetBase			= require("awayjs-core/lib/library/NamedAssetBase");
+import AssetBase				= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
 
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
@@ -6,7 +6,7 @@ import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
 /**
  * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
  */
-class PrefabBase extends NamedAssetBase
+class PrefabBase extends AssetBase
 {
 	public _pObjects:Array<DisplayObject> = new Array<DisplayObject>();
 

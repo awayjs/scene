@@ -22,7 +22,7 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
 import RendererEvent				= require("awayjs-display/lib/events/RendererEvent");
 import CSSMaterialBase				= require("awayjs-display/lib/materials/CSSMaterialBase");
-import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
+import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
 
 /**
  * RendererBase forms an abstract base class for classes that are used in the rendering pipeline to render the
@@ -285,7 +285,7 @@ class CSSRendererBase extends EventDispatcher
 	 * @param entityCollector The EntityCollector object containing the potentially visible geometry.
 	 * @param scissorRect
 	 */
-	public _iRender(entityCollector:EntityCollector, target:TextureProxyBase = null, scissorRect:Rectangle = null, surfaceSelector:number = 0)
+	public _iRender(entityCollector:EntityCollector, target:TextureBase = null, scissorRect:Rectangle = null, surfaceSelector:number = 0)
 	{
 		if (!entityCollector.entityHead)
 			return;
@@ -293,7 +293,7 @@ class CSSRendererBase extends EventDispatcher
 		this.pExecuteRender(entityCollector, scissorRect);
 	}
 
-	public _iRenderCascades(entityCollector:CollectorBase, target:TextureProxyBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
+	public _iRenderCascades(entityCollector:CollectorBase, target:TextureBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
 	{
 
 	}

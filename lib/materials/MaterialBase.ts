@@ -1,11 +1,10 @@
-import BlendMode					= require("awayjs-core/lib/base/BlendMode");
+import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Event						= require("awayjs-core/lib/events/Event");
-import AssetType					= require("awayjs-core/lib/library/AssetType");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
-import NamedAssetBase				= require("awayjs-core/lib/library/NamedAssetBase");
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import Texture2DBase				= require("awayjs-core/lib/textures/Texture2DBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
@@ -32,8 +31,10 @@ import IRenderer					= require("awayjs-display/lib/render/IRenderer");
  * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
  * shaders, or entire new material frameworks.
  */
-class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
+class MaterialBase extends AssetBase implements IRenderObjectOwner
 {
+	public static assetType:string = "[asset Material]";
+
 	private _colorTransform:ColorTransform;
 	private _alphaBlending:boolean = false;
 	private _alpha:number = 1;
@@ -102,7 +103,7 @@ class MaterialBase extends NamedAssetBase implements IRenderObjectOwner
 	 */
 	public get assetType():string
 	{
-		return AssetType.MATERIAL;;
+		return MaterialBase.assetType;
 	}
 
 	/**

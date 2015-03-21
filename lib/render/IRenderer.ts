@@ -5,7 +5,7 @@ import IEntitySorter				= require("awayjs-display/lib/sort/IEntitySorter");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
-import TextureProxyBase				= require("awayjs-core/lib/textures/TextureProxyBase");
+import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
 
 /**
  * IRenderer is an interface for classes that are used in the rendering pipeline to render the
@@ -91,9 +91,9 @@ interface IRenderer extends IEventDispatcher
 	 */
 	_iCreateEntityCollector():CollectorBase;
 
-	_iRender(entityCollector:CollectorBase, target?:TextureProxyBase, scissorRect?:Rectangle, surfaceSelector?:number);
+	_iRender(entityCollector:CollectorBase, target?:TextureBase, scissorRect?:Rectangle, surfaceSelector?:number);
 
-	_iRenderCascades(entityCollector:CollectorBase, target:TextureProxyBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
+	_iRenderCascades(entityCollector:CollectorBase, target:TextureBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
 }
 
 export = IRenderer;
