@@ -115,6 +115,11 @@ interface IEntity extends IAsset
 	 */
 	_iAssignedPartition:Partition;
 
+    /**
+     * @internal
+     */
+    _iMaskID:number;
+
 	/**
 	 * //TODO
 	 *

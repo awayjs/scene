@@ -175,6 +175,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _pSceneTransform:Matrix3D = new Matrix3D();
 	public _pSceneTransformDirty:boolean = true;
 	public _pIsEntity:boolean;
+    public _iMaskID:number = -1;
+    public _iMasks:DisplayObject[] = null;
 
 	private _explicitPartition:Partition;
 	public _pImplicitPartition:Partition;
@@ -1356,6 +1358,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		clone.pivot = this.pivot;
 		clone._iMatrix3D = this._iMatrix3D;
 		clone.name = name;
+        clone._iMaskID = this._iMaskID;
+        clone._iMasks = this._iMasks? this._iMasks.concat() : null;
 
 		// todo: implement for all subtypes
 		return clone;

@@ -28,7 +28,6 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	public _endPosition:Vector3D;
 	public _halfThickness:number;
 
-
 	/**
 	 * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
 	 */

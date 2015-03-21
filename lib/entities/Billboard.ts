@@ -60,6 +60,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 	private onSizeChangedDelegate:(event:MaterialEvent) => void;
 
+
 	/**
 	 * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
 	 */
