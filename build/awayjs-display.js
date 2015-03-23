@@ -678,7 +678,6 @@ var DisplayObject = (function (_super) {
             return this._pName;
         },
         set: function (value) {
-            console.log("setting name");
             this._pName = value;
         },
         enumerable: true,

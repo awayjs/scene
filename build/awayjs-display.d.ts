@@ -6765,27 +6765,6 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	
 }
 
-declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
-	import BitmapData = require("awayjs-core/lib/data/BitmapData");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	class DefaultMaterialManager {
-	    private static _defaultBitmapData;
-	    private static _defaultTriangleMaterial;
-	    private static _defaultLineMaterial;
-	    private static _defaultTexture;
-	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
-	    static getDefaultTexture(renderableOwner?: IRenderableOwner): BitmapTexture;
-	    private static createDefaultTexture();
-	    static createCheckeredBitmapData(): BitmapData;
-	    private static createDefaultTriangleMaterial();
-	    private static createDefaultLineMaterial();
-	}
-	export = DefaultMaterialManager;
-	
-}
-
 declare module "awayjs-display/lib/events/SceneEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -6809,6 +6788,27 @@ declare module "awayjs-display/lib/events/SceneEvent" {
 	    constructor(type: string, displayObject: DisplayObject);
 	}
 	export = SceneEvent;
+	
+}
+
+declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
+	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	class DefaultMaterialManager {
+	    private static _defaultBitmapData;
+	    private static _defaultTriangleMaterial;
+	    private static _defaultLineMaterial;
+	    private static _defaultTexture;
+	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
+	    static getDefaultTexture(renderableOwner?: IRenderableOwner): BitmapTexture;
+	    private static createDefaultTexture();
+	    static createCheckeredBitmapData(): BitmapData;
+	    private static createDefaultTriangleMaterial();
+	    private static createDefaultLineMaterial();
+	}
+	export = DefaultMaterialManager;
 	
 }
 
@@ -7485,6 +7485,22 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	
 }
 
+declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
+	    private _coverageRatio;
+	    constructor(coverageRatio?: number);
+	    /**
+	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
+	     */
+	    coverageRatio: number;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	}
+	export = NearDirectionalShadowMapper;
+	
+}
+
 declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import LightBase = require("awayjs-display/lib/base/LightBase");
@@ -7517,22 +7533,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	    _pSetDepthMapSize(value: any): void;
 	}
 	export = ShadowMapperBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
-	    private _coverageRatio;
-	    constructor(coverageRatio?: number);
-	    /**
-	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
-	     */
-	    coverageRatio: number;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	}
-	export = NearDirectionalShadowMapper;
 	
 }
 
@@ -7641,6 +7641,37 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	
 }
 
+declare module "awayjs-display/lib/partition/LightProbeNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+	/**
+	 * @class away.partition.LightProbeNode
+	 */
+	class LightProbeNode extends EntityNode {
+	    static id: string;
+	    private _lightProbe;
+	    /**
+	     *
+	     * @param lightProbe
+	     */
+	    constructor(pool: EntityNodePool, lightProbe: IEntity, partition: Partition);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	    /**
+	     *
+	     * @returns {boolean}
+	     */
+	    isCastingShadow(): boolean;
+	}
+	export = LightProbeNode;
+	
+}
+
 declare module "awayjs-display/lib/partition/NodeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -7730,37 +7761,6 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	    _pCreateDebugEntity(): IEntity;
 	}
 	export = NodeBase;
-	
-}
-
-declare module "awayjs-display/lib/partition/LightProbeNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
-	/**
-	 * @class away.partition.LightProbeNode
-	 */
-	class LightProbeNode extends EntityNode {
-	    static id: string;
-	    private _lightProbe;
-	    /**
-	     *
-	     * @param lightProbe
-	     */
-	    constructor(pool: EntityNodePool, lightProbe: IEntity, partition: Partition);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
-	    /**
-	     *
-	     * @returns {boolean}
-	     */
-	    isCastingShadow(): boolean;
-	}
-	export = LightProbeNode;
 	
 }
 
@@ -7964,6 +7964,49 @@ declare module "awayjs-display/lib/pick/IPicker" {
 	
 }
 
+declare module "awayjs-display/lib/pick/IPickingCollider" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
+	 * Used with the <code>RaycastPicker</code> picking object.
+	 *
+	 * @see away.entities.Entity#pickingCollider
+	 * @see away.pick.RaycastPicker
+	 *
+	 * @interface away.pick.IPickingCollider
+	 */
+	interface IPickingCollider {
+	    /**
+	     * Sets the position and direction of a picking ray in local coordinates to the entity.
+	     *
+	     * @param localDirection The position vector in local coordinates
+	     * @param localPosition The direction vector in local coordinates
+	     */
+	    setLocalRay(localPosition: Vector3D, localDirection: Vector3D): any;
+	    /**
+	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
+	     *
+	     * @param entity The entity instance to be tested.
+	     * @param pickingCollisionVO The collision object used to store the collision results
+	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	     */
+	    testBillboardCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    /**
+	     * Tests a <code>Mesh</code> object for a collision with the picking ray.
+	     *
+	     * @param entity The entity instance to be tested.
+	     * @param pickingCollisionVO The collision object used to store the collision results
+	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	     * @param findClosest
+	     */
+	    testMeshCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number, findClosest: boolean): boolean;
+	}
+	export = IPickingCollider;
+	
+}
+
 declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -8039,49 +8082,6 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	    constructor(displayObject: DisplayObject);
 	}
 	export = PickingCollisionVO;
-	
-}
-
-declare module "awayjs-display/lib/pick/IPickingCollider" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
-	 * Used with the <code>RaycastPicker</code> picking object.
-	 *
-	 * @see away.entities.Entity#pickingCollider
-	 * @see away.pick.RaycastPicker
-	 *
-	 * @interface away.pick.IPickingCollider
-	 */
-	interface IPickingCollider {
-	    /**
-	     * Sets the position and direction of a picking ray in local coordinates to the entity.
-	     *
-	     * @param localDirection The position vector in local coordinates
-	     * @param localPosition The direction vector in local coordinates
-	     */
-	    setLocalRay(localPosition: Vector3D, localDirection: Vector3D): any;
-	    /**
-	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
-	     *
-	     * @param entity The entity instance to be tested.
-	     * @param pickingCollisionVO The collision object used to store the collision results
-	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
-	     */
-	    testBillboardCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    /**
-	     * Tests a <code>Mesh</code> object for a collision with the picking ray.
-	     *
-	     * @param entity The entity instance to be tested.
-	     * @param pickingCollisionVO The collision object used to store the collision results
-	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
-	     * @param findClosest
-	     */
-	    testMeshCollision(entity: IEntity, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number, findClosest: boolean): boolean;
-	}
-	export = IPickingCollider;
 	
 }
 
