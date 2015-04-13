@@ -5341,6 +5341,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * </code>
 	     */
 	    clone(): DisplayObject;
+	    _iCopyToMesh(clone: Mesh): void;
 	    /**
 	     * //TODO
 	     *
@@ -6489,6 +6490,8 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     *                       of <code>flash.text.FontStyle</code>.
 	     */
 	    static isFontCompatible(fontName: string, fontStyle: string): boolean;
+	    clone(): DisplayObject;
+	    _iCopyToTextField(clone: TextField): void;
 	}
 	export = TextField;
 	

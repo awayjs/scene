@@ -7941,7 +7941,13 @@ var Mesh = (function (_super) {
      * </code>
      */
     Mesh.prototype.clone = function () {
-        var clone = new Mesh(this._geometry, this._material);
+        var clone = new Mesh(null, null);
+        this._iCopyToMesh(clone);
+        return clone;
+    };
+    Mesh.prototype._iCopyToMesh = function (clone) {
+        clone.geometry = this._geometry;
+        clone.material = this._material;
         clone._iMatrix3D = this._iMatrix3D;
         clone.pivot = this.pivot;
         clone.partition = this.partition;
@@ -7967,7 +7973,6 @@ var Mesh = (function (_super) {
         }
         if (this._animator)
             clone.animator = this._animator.clone();
-        return clone;
     };
     /**
      * //TODO
@@ -9265,6 +9270,17 @@ var TextField = (function (_super) {
      */
     TextField.isFontCompatible = function (fontName, fontStyle) {
         return false;
+    };
+    TextField.prototype.clone = function () {
+        var clone = new TextField();
+        this._iCopyToTextField(clone);
+        return clone;
+    };
+    TextField.prototype._iCopyToTextField = function (clone) {
+        this._iCopyToMesh(clone);
+        clone.textFormat = clone.textFormat;
+        clone.textColor = clone.textColor;
+        clone.text = clone.text;
     };
     TextField.assetType = "[asset TextField]";
     return TextField;
