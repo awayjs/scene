@@ -283,43 +283,50 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public clone():DisplayObject
 	{
-		var clone:Mesh = new Mesh(this._geometry, this._material);
+		var clone:Mesh = new Mesh(null, null);
 
-		clone._iMatrix3D = this._iMatrix3D;
-		clone.pivot = this.pivot;
-		clone.partition = this.partition;
-		clone.boundsType = this.boundsType;
-
-
-		clone.name = this.name;
-		clone.castsShadows = this.castsShadows;
-		clone.shareAnimationGeometry = this.shareAnimationGeometry;
-		clone.mouseEnabled = this.mouseEnabled;
-		clone.mouseChildren = this.mouseChildren;
-		//this is of course no proper cloning
-		//maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
-		clone.extra = this.extra;
-		clone._iMasks = this._iMasks;
-		clone._iMaskID = this._iMaskID;
-
-		var len:number = this._subMeshes.length;
-		for (var i:number = 0; i < len; ++i)
-			clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
-
-
-		len = this.numChildren;
-		var obj:any;
-
-		for (i = 0; i < len; ++i) {
-			obj = this.getChildAt(i).clone();
-			clone.addChild(<DisplayObjectContainer> obj);
-		}
-
-		if (this._animator)
-			clone.animator = this._animator.clone();
+        this._iCopyToMesh(clone);
 
 		return clone;
 	}
+
+    public _iCopyToMesh(clone:Mesh):void
+    {
+        clone.geometry = this._geometry;
+        clone.material = this._material;
+        clone._iMatrix3D = this._iMatrix3D;
+        clone.pivot = this.pivot;
+        clone.partition = this.partition;
+        clone.boundsType = this.boundsType;
+
+
+        clone.name = this.name;
+        clone.castsShadows = this.castsShadows;
+        clone.shareAnimationGeometry = this.shareAnimationGeometry;
+        clone.mouseEnabled = this.mouseEnabled;
+        clone.mouseChildren = this.mouseChildren;
+        //this is of course no proper cloning
+        //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
+        clone.extra = this.extra;
+        clone._iMasks = this._iMasks;
+        clone._iMaskID = this._iMaskID;
+
+        var len:number = this._subMeshes.length;
+        for (var i:number = 0; i < len; ++i)
+            clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
+
+
+        len = this.numChildren;
+        var obj:any;
+
+        for (i = 0; i < len; ++i) {
+            obj = this.getChildAt(i).clone();
+            clone.addChild(<DisplayObjectContainer> obj);
+        }
+
+        if (this._animator)
+            clone.animator = this._animator.clone();
+    }
 
 	/**
 	 * //TODO

@@ -1160,6 +1160,21 @@ class TextField extends Mesh
 	{
 		return false;
 	}
+
+    public clone() : DisplayObject
+    {
+        var clone = new TextField();
+        this._iCopyToTextField(clone);
+        return clone;
+    }
+
+    public _iCopyToTextField(clone:TextField):void
+    {
+        this._iCopyToMesh(clone);
+        clone.textFormat = clone.textFormat;
+        clone.textColor = clone.textColor;
+        clone.text = clone.text;
+    }
 }
 
 export = TextField;
