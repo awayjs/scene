@@ -172,12 +172,12 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		this.onSizeChangedDelegate = (event:MaterialEvent) => this.onSizeChanged(event);
 
 		this.material = material;
-
-		this._billboardWidth = material.width;
 		this._billboardHeight = material.height;
 
 		//default bounds type
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
+
+		this._billboardWidth = material.width;
 	}
 
 	/**
@@ -191,6 +191,11 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		this._pBoxBounds.height = this._billboardHeight;
 	}
 
+	public clone():DisplayObject
+	{
+		var clone:Billboard = new Billboard(this.material);
+		return clone;
+	}
 	/**
 	 * //TODO
 	 *
