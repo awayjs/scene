@@ -4866,6 +4866,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	     * @protected
 	     */
 	    _pUpdateBoxBounds(): void;
+	    clone(): DisplayObject;
 	    /**
 	     * //TODO
 	     *
