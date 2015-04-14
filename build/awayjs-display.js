@@ -8910,7 +8910,7 @@ var TextField = (function (_super) {
                     tri_idx_offset += tri_cnt;
                     for (v = 0; v < positions2.length / 3; v++) {
                         positions.push((positions2[v * 3] * char_scale) + x_offset);
-                        positions.push((positions2[v * 3 + 1] * char_scale * -1) + y_offset);
+                        positions.push((positions2[v * 3 + 1] * char_scale) + y_offset);
                         positions.push(positions2[v * 3 + 2]);
                         curveData.push(curveData2[v * 2]);
                         curveData.push(curveData2[v * 2 + 1]);
