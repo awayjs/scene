@@ -1,11 +1,11 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Event						= require("awayjs-core/lib/events/Event");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
-import Texture2DBase				= require("awayjs-core/lib/textures/Texture2DBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -18,6 +18,8 @@ import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
+import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
 
 /**
@@ -36,6 +38,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	public static assetType:string = "[asset Material]";
 
 	private _colorTransform:ColorTransform;
+	private _frameRect:Rectangle;
 	private _alphaBlending:boolean = false;
 	private _alpha:number = 1;
 	
@@ -88,7 +91,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	private _smooth:boolean = true;
 	private _repeat:boolean = false;
 	private _color:number = 0xFFFFFF;
-	public _pTexture:Texture2DBase;
+	public _pTexture:TextureBase;
 
 	public _pLightPicker:LightPickerBase;
 
@@ -183,7 +186,12 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 
 		this._pInvalidateRenderObject();
 	}
-	
+
+	public get frameRect():Rectangle
+	{
+		return this._frameRect;
+	}
+
 	/**
 	 *
 	 */
@@ -304,12 +312,12 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	/**
 	 * The texture object to use for the albedo colour.
 	 */
-	public get texture():Texture2DBase
+	public get texture():TextureBase
 	{
 		return this._pTexture;
 	}
 
-	public set texture(value:Texture2DBase)
+	public set texture(value:TextureBase)
 	{
 		if (this._pTexture == value)
 			return;
@@ -318,8 +326,18 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 
 		this._pInvalidatePasses();
 
-		this._pHeight = this._pTexture.height;
-		this._pWidth = this._pTexture.width;
+		if (this._pTexture.isAsset(Single2DTexture)) {
+			var single2DTexture:Single2DTexture = <Single2DTexture> this._pTexture;
+			this._frameRect = single2DTexture.sampler2D.frameRect;
+
+			this._pHeight = single2DTexture.sampler2D.rect.height;
+			this._pWidth = single2DTexture.sampler2D.rect.width;
+		} else {
+			this._frameRect = null;
+			this._pHeight = 1;
+			this._pWidth = 1;
+		}
+
 
 		this._pNotifySizeChanged();
 	}

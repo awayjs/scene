@@ -9,7 +9,6 @@ import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import RaycastPicker				= require("awayjs-display/lib/pick/RaycastPicker");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
-import CSSRendererBase				= require("awayjs-display/lib/render/CSSRendererBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");

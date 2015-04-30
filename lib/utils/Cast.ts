@@ -1,9 +1,9 @@
-import BitmapData				= require("awayjs-core/lib/data/BitmapData");
+import Image2D					= require("awayjs-core/lib/data/Image2D");
+import Sampler2D				= require("awayjs-core/lib/data/Sampler2D");
 import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
 
 import CastError				= require("awayjs-display/lib/errors/CastError");
-import BitmapTexture			= require("awayjs-core/lib/textures/BitmapTexture");
-import ImageTexture				= require("awayjs-core/lib/textures/ImageTexture");
+import Single2DTexture			= require("awayjs-display/lib/textures/Single2DTexture");
 
 /**
  * Helper class for casting assets to usable objects
@@ -256,7 +256,7 @@ class Cast
 		return name;
 	}
 
-	public static bitmapData(data:any):BitmapData
+	public static image2D(data:any):Image2D
 	{
 		if (data == null)
 			return null;
@@ -272,33 +272,19 @@ class Cast
 			}
 		}
 
-		if (data instanceof BitmapData)
+		if (data instanceof Image2D)
 			return data;
 
-		if (data instanceof ImageTexture)
-			data = (<ImageTexture> data).htmlImageElement;
+		if (data instanceof Single2DTexture)
+			data = (<Single2DTexture> data).sampler2D;
 
-		if (data instanceof HTMLImageElement) {
-			var imageElement:HTMLImageElement = <HTMLImageElement> data;
-			var bitmapData:BitmapData = new BitmapData(imageElement.width, imageElement.height, true, 0x0);
-			bitmapData.draw(imageElement)
-			return bitmapData;
-		}
+		if (data instanceof Sampler2D)
+			return (<Sampler2D> data).image2D;
 
-		//            if (data is DisplayObject) {
-		//                var ds:DisplayObject = data as DisplayObject;
-		//                var bmd:BitmapData = new BitmapData(ds.width, ds.height, true, 0x00FFFFFF);
-		//                var mat:Matrix = ds.transform.matrix.clone();
-		//                mat.tx = 0;
-		//                mat.ty = 0;
-		//                bmd.draw(ds, mat, ds.transform.colorTransform, ds.blendMode, bmd.rect, true);
-		//                return bmd;
-		//            }
-
-		throw new CastError("Can't cast to BitmapData: " + data);
+		throw new CastError("Can't cast to BitmapImage2D: " + data);
 	}
 
-	public static bitmapTexture(data:any):BitmapTexture
+	public static bitmapTexture(data:any):Single2DTexture
 	{
 		if (data == null)
 			return null;
@@ -314,16 +300,16 @@ class Cast
 			}
 		}
 
-		if (data instanceof BitmapTexture)
+		if (data instanceof Single2DTexture)
 			return data;
 
 		try {
-			var bmd:BitmapData = Cast.bitmapData(data);
-			return new BitmapTexture(bmd);
+			var bmd:Image2D = Cast.image2D(data);
+			return new Single2DTexture(bmd);
 		} catch (e /*CastError*/) {
 		}
 
-		throw new CastError("Can't cast to BitmapTexture: " + data);
+		throw new CastError("Can't cast to Single2DTexture: " + data);
 	}
 }
 

@@ -1,3 +1,4 @@
+import ImageCube					= require("awayjs-core/lib/data/ImageCube");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import PartialImplementationError	= require("awayjs-core/lib/errors/PartialImplementationError");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
@@ -7,8 +8,7 @@ import Camera						= require("awayjs-display/lib/entities/Camera");
 import PointLight					= require("awayjs-display/lib/entities/PointLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
-import RenderTexture				= require("awayjs-core/lib/textures/RenderTexture");
-import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
+import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
 
 class CubeMapShadowMapper extends ShadowMapperBase
 {
@@ -55,12 +55,9 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pCreateDepthTexture():TextureBase
+	public pCreateDepthTexture():SingleCubeTexture
 	{
-		throw new PartialImplementationError();
-		/*
-		 return new RenderCubeTexture( this._depthMapSize );
-		 */
+		 return new SingleCubeTexture(new ImageCube(this._pDepthMapSize));
 	}
 
 	//@override
@@ -79,14 +76,14 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(target:RenderTexture, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(target:SingleCubeTexture, scene:Scene, renderer:IRenderer)
 	{
 		for (var i:number = 0; i < 6; ++i) {
 			if (this._needsRender[i]) {
 				this._pCasterCollector.camera = this._depthCameras[i];
 				this._pCasterCollector.clear();
 				scene.traversePartitions(this._pCasterCollector);
-				renderer._iRender(this._pCasterCollector, target, null, i)
+				renderer._iRender(this._pCasterCollector, target.samplerCube.imageCube, null, i)
 			}
 		}
 	}

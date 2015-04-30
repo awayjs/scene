@@ -1,17 +1,17 @@
-import BitmapData					= require("awayjs-core/lib/data/BitmapData");
-import BitmapTexture				= require("awayjs-core/lib/textures/BitmapTexture");
+import BitmapImage2D				= require("awayjs-core/lib/data/BitmapImage2D");
 
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import BasicMaterial				= require("awayjs-display/lib/materials/BasicMaterial");
+import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
 class DefaultMaterialManager
 {
-	private static _defaultBitmapData:BitmapData;
+	private static _defaultBitmapImage2D:BitmapImage2D;
 	private static _defaultTriangleMaterial:BasicMaterial;
 	private static _defaultLineMaterial:BasicMaterial;
-	private static _defaultTexture:BitmapTexture;
+	private static _defaultTexture:Single2DTexture;
 
 	public static getDefaultMaterial(renderableOwner:IRenderableOwner = null):MaterialBase
 	{
@@ -28,7 +28,7 @@ class DefaultMaterialManager
 		}
 	}
 
-	public static getDefaultTexture(renderableOwner:IRenderableOwner = null):BitmapTexture
+	public static getDefaultTexture(renderableOwner:IRenderableOwner = null):Single2DTexture
 	{
 		if (!DefaultMaterialManager._defaultTexture)
 			DefaultMaterialManager.createDefaultTexture();
@@ -38,14 +38,14 @@ class DefaultMaterialManager
 
 	private static createDefaultTexture()
 	{
-		DefaultMaterialManager._defaultBitmapData = DefaultMaterialManager.createCheckeredBitmapData();
-		DefaultMaterialManager._defaultTexture = new BitmapTexture(DefaultMaterialManager._defaultBitmapData);
+		DefaultMaterialManager._defaultBitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
+		DefaultMaterialManager._defaultTexture = new Single2DTexture(DefaultMaterialManager._defaultBitmapImage2D);
 		DefaultMaterialManager._defaultTexture.name = "defaultTexture";
 	}
 
-	public static createCheckeredBitmapData():BitmapData
+	public static createCheckeredBitmapImage2D():BitmapImage2D
 	{
-		var b:BitmapData = new BitmapData(8, 8, false, 0x000000);
+		var b:BitmapImage2D = new BitmapImage2D(8, 8, false, 0x000000);
 
 		//create chekerboard
 		var i:number, j:number;

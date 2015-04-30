@@ -1,3 +1,4 @@
+import Image2D						= require("awayjs-core/lib/data/Image2D");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
@@ -8,8 +9,7 @@ import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-import RenderTexture				= require("awayjs-core/lib/textures/RenderTexture");
-import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
+import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
 class DirectionalShadowMapper extends ShadowMapperBase
 {
@@ -68,14 +68,34 @@ class DirectionalShadowMapper extends ShadowMapperBase
 		return this._pMaxZ - this._pMinZ;
 	}
 
+	public iSetDepthMap(depthMap:Single2DTexture)
+	{
+		if (this._depthMap == depthMap)
+			return;
+
+		super.iSetDepthMap(depthMap);
+
+		if (this._depthMap) {
+			this._explicitDepthMap = true;
+			this._pDepthMapSize = depthMap.width;
+		} else {
+			this._explicitDepthMap = false;
+		}
+	}
+
+	public pCreateDepthTexture():Single2DTexture
+	{
+		return new Single2DTexture(new Image2D(this._pDepthMapSize, this._pDepthMapSize));
+	}
+
 	//@override
-	public pDrawDepthMap(target:TextureBase, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(target:Single2DTexture, scene:Scene, renderer:IRenderer)
 	{
 		this._pCasterCollector.camera = this._pOverallDepthCamera;
 		this._pCasterCollector.cullPlanes = this._pCullPlanes;
 		this._pCasterCollector.clear();
 		scene.traversePartitions(this._pCasterCollector);
-		renderer._iRender(this._pCasterCollector, target);
+		renderer._iRender(this._pCasterCollector, target.sampler2D.image2D);
 	}
 
 	//@protected

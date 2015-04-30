@@ -11,8 +11,7 @@ import Scene						= require("awayjs-display/lib/containers/Scene");
 import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-import RenderTexture				= require("awayjs-core/lib/textures/RenderTexture");
-import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
+import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
 class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher
 {
@@ -119,7 +118,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 		this.dispatchEvent(new Event(Event.CHANGE));
 	}
 
-	public pDrawDepthMap(target:RenderTexture, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(target:Single2DTexture, scene:Scene, renderer:IRenderer)
 	{
 		if (this._pScissorRectsInvalid)
 			this.updateScissorRects();
@@ -129,7 +128,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 		this._pCasterCollector.clear();
 		scene.traversePartitions(this._pCasterCollector);
 
-		renderer._iRenderCascades(this._pCasterCollector, target, this._numCascades, this._pScissorRects, this._depthCameras);
+		renderer._iRenderCascades(this._pCasterCollector, target.sampler2D.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
 	}
 
 	private updateScissorRects()

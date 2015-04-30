@@ -1,3 +1,4 @@
+import ImageCube					= require("awayjs-core/lib/data/ImageCube");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import Error						= require("awayjs-core/lib/errors/Error");
@@ -10,14 +11,13 @@ import LightProbeNode				= require("awayjs-display/lib/partition/LightProbeNode"
 import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");
 
 class LightProbe extends LightBase implements IEntity
 {
-	private _diffuseMap:CubeTextureBase;
-	private _specularMap:CubeTextureBase;
+	private _diffuseMap:ImageCube;
+	private _specularMap:ImageCube;
 
-	constructor(diffuseMap:CubeTextureBase, specularMap:CubeTextureBase = null)
+	constructor(diffuseMap:ImageCube, specularMap:ImageCube = null)
 	{
 		super();
 
@@ -30,22 +30,22 @@ class LightProbe extends LightBase implements IEntity
 		this._boundsType = BoundsType.NULL;
 	}
 
-	public get diffuseMap():CubeTextureBase
+	public get diffuseMap():ImageCube
 	{
 		return this._diffuseMap;
 	}
 
-	public set diffuseMap(value:CubeTextureBase)
+	public set diffuseMap(value:ImageCube)
 	{
 		this._diffuseMap = value;
 	}
 
-	public get specularMap():CubeTextureBase
+	public get specularMap():ImageCube
 	{
 		return this._specularMap;
 	}
 
-	public set specularMap(value:CubeTextureBase)
+	public set specularMap(value:ImageCube)
 	{
 		this._specularMap = value;
 	}

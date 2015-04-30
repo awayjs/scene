@@ -1,5 +1,6 @@
-import BitmapData					= require("awayjs-core/lib/data/BitmapData");
+import Image2D						= require("awayjs-core/lib/data/Image2D");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -20,19 +21,19 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  * create with the <code>Billboard()</code> constructor.
  *
  * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
- * object that contains a reference to a BitmapData object. After you create a
+ * object that contains a reference to a Image2D object. After you create a
  * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
  * method of the parent DisplayObjectContainer instance to place the bitmap on
  * the display list.</p>
  *
- * <p>A Billboard object can share its BitmapData reference among several Billboard
+ * <p>A Billboard object can share its Image2D reference among several Billboard
  * objects, independent of translation or rotation properties. Because you can
- * create multiple Billboard objects that reference the same BitmapData object,
- * multiple display objects can use the same complex BitmapData object without
- * incurring the memory overhead of a BitmapData object for each display
+ * create multiple Billboard objects that reference the same Image2D object,
+ * multiple display objects can use the same complex Image2D object without
+ * incurring the memory overhead of a Image2D object for each display
  * object instance.</p>
  *
- * <p>A BitmapData object can be drawn to the screen by a Billboard object in one
+ * <p>A Image2D object can be drawn to the screen by a Billboard object in one
  * of two ways: by using the default hardware renderer with a single hardware surface,
  * or by using the slower software renderer when 3D acceleration is not available.</p>
  *
@@ -55,6 +56,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	private _animator:IAnimator;
 	private _billboardWidth:number;
 	private _billboardHeight:number;
+	private _billboardRect:Rectangle;
 	private _material:MaterialBase;
 	private _uvTransform:UVTransform;
 
@@ -78,9 +80,17 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	}
 
 	/**
-	 * The BitmapData object being referenced.
+	 * The Image2D object being referenced.
 	 */
-	public bitmapData:BitmapData; //TODO
+	public image2D:Image2D; //TODO
+
+	/**
+	 *
+	 */
+	public get billboardRect():Rectangle
+	{
+		return this._billboardRect;
+	}
 
 	/**
 	 *
@@ -174,6 +184,8 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		this.material = material;
 		this._billboardHeight = material.height;
 
+		this._billboardRect = this._material.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
+
 		//default bounds type
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 
@@ -187,8 +199,8 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	{
 		super._pUpdateBoxBounds();
 
-		this._pBoxBounds.width = this._billboardWidth;
-		this._pBoxBounds.height = this._billboardHeight;
+		this._pBoxBounds.width = this._billboardRect.width;
+		this._pBoxBounds.height = this._billboardRect.height;
 	}
 
 	public clone():DisplayObject
@@ -217,6 +229,8 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	{
 		this._billboardWidth = this._material.width;
 		this._billboardHeight = this._material.height;
+
+		this._billboardRect = this._material.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
 
 		this._pInvalidateBounds();
 

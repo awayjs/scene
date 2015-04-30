@@ -4,7 +4,6 @@ import Scene						= require("awayjs-display/lib/containers/Scene");
 import EntityListItem				= require("awayjs-display/lib/pool/EntityListItem");
 import EntityListItemPool			= require("awayjs-display/lib/pool/EntityListItemPool");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 

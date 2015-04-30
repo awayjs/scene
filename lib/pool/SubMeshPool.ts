@@ -13,33 +13,33 @@ import CurveSubMesh					= require("awayjs-display/lib/base/CurveSubMesh");
  */
 class SubMeshPool
 {
-	private static subMeshClassPool:Object = new Object();
+	private static classPool:Object = new Object();
 
 	/**
 	 *
 	 * @param subMeshClass
 	 */
-	public static registerSubMeshClass(subMeshClass:ISubMeshClass)
+	public static registerClass(subMeshClass:ISubMeshClass)
 	{
-		SubMeshPool.subMeshClassPool[subMeshClass.geometryType] = subMeshClass;
+		SubMeshPool.classPool[subMeshClass.assetClass.assetType] = subMeshClass;
 	}
 
 	/**
 	 *
 	 * @param subGeometry
 	 */
-	public static getSubMeshClass(subGeometry:SubGeometryBase):ISubMeshClass
+	public static getClass(subGeometry:SubGeometryBase):ISubMeshClass
 	{
-		return SubMeshPool.subMeshClassPool[subGeometry.assetType];
+		return SubMeshPool.classPool[subGeometry.assetType];
 	}
 
-	public static main = SubMeshPool.addDefaults();
+	private static main = SubMeshPool.addDefaults();
 
-	public static addDefaults()
+	private static addDefaults()
 	{
-		SubMeshPool.registerSubMeshClass(LineSubMesh);
-		SubMeshPool.registerSubMeshClass(TriangleSubMesh);
-		SubMeshPool.registerSubMeshClass(CurveSubMesh);
+		SubMeshPool.registerClass(LineSubMesh);
+		SubMeshPool.registerClass(TriangleSubMesh);
+		SubMeshPool.registerClass(CurveSubMesh);
 	}
 }
 

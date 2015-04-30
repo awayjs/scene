@@ -509,7 +509,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	private addSubMesh(subGeometry:SubGeometryBase)
 	{
-		var SubMeshClass:ISubMeshClass = SubMeshPool.getSubMeshClass(subGeometry);
+		var SubMeshClass:ISubMeshClass = SubMeshPool.getClass(subGeometry);
 
 		var subMesh:ISubMesh = new SubMeshClass(subGeometry, this, null);
 		var len:number = this._subMeshes.length;

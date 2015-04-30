@@ -6,18 +6,17 @@ import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import EntityCollector				= require("awayjs-display/lib/traverse/EntityCollector");
 import ShadowCasterCollector		= require("awayjs-display/lib/traverse/ShadowCasterCollector");
 import Camera						= require("awayjs-display/lib/entities/Camera");
-import RenderTexture				= require("awayjs-core/lib/textures/RenderTexture");
-import TextureBase					= require("awayjs-core/lib/textures/TextureBase");
+import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 class ShadowMapperBase
 {
 
 	public _pCasterCollector:ShadowCasterCollector;
 
-	private _depthMap:TextureBase;
+	public _depthMap:TextureBase;
 	public _pDepthMapSize:number = 2048;
 	public _pLight:LightBase;
-	private _explicitDepthMap:boolean;
+	public _explicitDepthMap:boolean;
 	private _autoUpdateShadows:boolean = true;
 	public _iShadowsInvalid:boolean;
 
@@ -48,20 +47,10 @@ class ShadowMapperBase
 
 	public iSetDepthMap(depthMap:TextureBase)
 	{
-		if (this._depthMap == depthMap)
-			return;
-
 		if (this._depthMap && !this._explicitDepthMap)
 			this._depthMap.dispose();
 
 		this._depthMap = depthMap;
-
-		if (this._depthMap) {
-			this._explicitDepthMap = true;
-			this._pDepthMapSize = this._depthMap.size;
-		} else {
-			this._explicitDepthMap = false;
-		}
 	}
 
 	public get light():LightBase
@@ -107,7 +96,7 @@ class ShadowMapperBase
 
 	public pCreateDepthTexture():TextureBase
 	{
-		return new RenderTexture(this._pDepthMapSize, this._pDepthMapSize);
+		throw new AbstractMethodError();
 	}
 
 	public iRenderDepthMap(entityCollector:EntityCollector, renderer:IRenderer)

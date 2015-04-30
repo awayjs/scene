@@ -1,6 +1,8 @@
+import SubGeometryBase			= require("awayjs-core/lib/data/SubGeometryBase");
+import IWrapperClass			= require("awayjs-core/lib/library/IWrapperClass");
+
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
-import SubGeometryBase			= require("awayjs-core/lib/data/SubGeometryBase");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 
 /**
@@ -9,10 +11,8 @@ import Mesh						= require("awayjs-display/lib/entities/Mesh");
  *
  * @class away.base.ISubMeshClass
  */
-interface ISubMeshClass
+interface ISubMeshClass extends IWrapperClass
 {
-	geometryType:string;
-
 	/**
 	 *
 	 */

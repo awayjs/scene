@@ -1,6 +1,5 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
-import CubeTextureBase				= require("awayjs-core/lib/textures/CubeTextureBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -17,6 +16,7 @@ import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
@@ -27,7 +27,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 {
 	public static assetType:string = "[asset Skybox]";
 
-	private _cubeMap:CubeTextureBase;
+	private _cubeMap:SingleCubeTexture;
 	public _pAlphaThreshold:number = 0;
 	private _animationSet:IAnimationSet;
 	public _pLightPicker:LightPickerBase;
@@ -197,14 +197,15 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	/**
 	* The cube texture to use as the skybox.
 	*/
-	public get cubeMap():CubeTextureBase
+	public get cubeMap():SingleCubeTexture
 	{
 		return this._cubeMap;
 	}
 
-	public set cubeMap(value:CubeTextureBase)
+	public set cubeMap(value:SingleCubeTexture)
 	{
-		if (value && this._cubeMap && (value.format != this._cubeMap.format))
+		//if (value && this._cubeMap && (value.format != this._cubeMap.format))
+		if (value && this._cubeMap)
 			this._pInvalidateRenderObject();
 
 		this._cubeMap = value;
@@ -215,7 +216,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	 *
 	 * @param material	The material with which to render the Skybox.
 	 */
-	constructor(cubeMap:CubeTextureBase = null)
+	constructor(cubeMap:SingleCubeTexture = null)
 	{
 		super();
 

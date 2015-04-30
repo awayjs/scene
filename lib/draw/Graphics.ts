@@ -1,4 +1,4 @@
-import BitmapData				= require("awayjs-core/lib/data/BitmapData");
+import BitmapImage2D			= require("awayjs-core/lib/data/BitmapImage2D");
 import Matrix					= require("awayjs-core/lib/geom/Matrix");
 
 import CapsStyle				= require("awayjs-display/lib/draw/CapsStyle");
@@ -64,7 +64,7 @@ class Graphics
 	 *               using a bilinear algorithm. Rendering by using the nearest
 	 *               neighbor algorithm is faster.
 	 */
-	public beginBitmapFill(bitmap:BitmapData, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false)
+	public beginBitmapFill(bitmap:BitmapImage2D, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false)
 	{
 
 	}
@@ -574,7 +574,7 @@ class Graphics
 	 * @param repeat Whether to repeat the bitmap in a tiled fashion.
 	 * @param smooth Whether smoothing should be applied to the bitmap.
 	 */
-	public lineBitmapStyle(bitmap:BitmapData, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false)
+	public lineBitmapStyle(bitmap:BitmapImage2D, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false)
 	{
 
 	}
