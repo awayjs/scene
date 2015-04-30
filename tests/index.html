@@ -22,17 +22,16 @@
             var harness = new AppHarness();
 
             //---------------------------------------------------------------------------
-            // Test - Entities
+            // Test - Textures
             //---------------------------------------------------------------------------
 
-            harness.addSeperator( 'Entities' );
-            harness.addTest( 'Entities.BillboardEntityTest'    ,  'tests.entities.BillboardEntityTest'  , 'entities/BillboardEntityTest.js'    , 'entities/BillboardEntityTest.ts'  );
-            harness.addTest( 'Entities.LayoutTest'    ,  'tests.entities.LayoutTest'  , 'entities/LayoutTest.js'    , 'entities/LayoutTest.ts'  );
+            harness.addSeperator( 'Textures' );
+            harness.addTest( 'Textures.Single2DTextureTest'    ,  'tests.textures.Single2DTextureTest'  , 'textures/Single2DTextureTest.js'    , 'textures/Single2DTextureTest.ts'  );
 
 
             //---------------------------------------------------------------------------
             // Load a default
-            harness.load( 'tests.entities.BillboardEntityTest', 'entities/BillboardEntityTest.js'     , 'entities/BillboardEntityTest.ts'  );
+            harness.load( 'tests.textures.Single2DTextureTest', 'textures/Single2DTextureTest.js'     , 'textures/Single2DTextureTest.ts'  );
             harness.start(); // Start
 
         }
