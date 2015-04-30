@@ -138,6 +138,7 @@ declare module "awayjs-display/lib/base/AlignmentMode" {
 
 declare module "awayjs-display/lib/base/CurveSubMesh" {
 	import CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
@@ -154,7 +155,7 @@ declare module "awayjs-display/lib/base/CurveSubMesh" {
 	 */
 	class CurveSubMesh extends SubMeshBase implements ISubMesh {
 	    static assetType: string;
-	    static geometryType: string;
+	    static assetClass: IAssetClass;
 	    private _subGeometry;
 	    /**
 	     *
@@ -1549,9 +1550,10 @@ declare module "awayjs-display/lib/base/ISubMesh" {
 }
 
 declare module "awayjs-display/lib/base/ISubMeshClass" {
+	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
+	import IWrapperClass = require("awayjs-core/lib/library/IWrapperClass");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	/**
 	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
@@ -1559,8 +1561,7 @@ declare module "awayjs-display/lib/base/ISubMeshClass" {
 	 *
 	 * @class away.base.ISubMeshClass
 	 */
-	interface ISubMeshClass {
-	    geometryType: string;
+	interface ISubMeshClass extends IWrapperClass {
 	    /**
 	     *
 	     */
@@ -1618,6 +1619,7 @@ declare module "awayjs-display/lib/base/LightBase" {
 
 declare module "awayjs-display/lib/base/LineSubMesh" {
 	import LineSubGeometry = require("awayjs-core/lib/data/LineSubGeometry");
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
@@ -1634,7 +1636,7 @@ declare module "awayjs-display/lib/base/LineSubMesh" {
 	 */
 	class LineSubMesh extends SubMeshBase implements ISubMesh {
 	    static assetType: string;
-	    static geometryType: string;
+	    static assetClass: IAssetClass;
 	    private _subGeometry;
 	    /**
 	     *
@@ -2194,6 +2196,7 @@ declare module "awayjs-display/lib/base/Transform" {
 
 declare module "awayjs-display/lib/base/TriangleSubMesh" {
 	import TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
@@ -2210,7 +2213,7 @@ declare module "awayjs-display/lib/base/TriangleSubMesh" {
 	 */
 	class TriangleSubMesh extends SubMeshBase implements ISubMesh {
 	    static assetType: string;
-	    static geometryType: string;
+	    static assetClass: IAssetClass;
 	    private _subGeometry;
 	    /**
 	     *
@@ -3731,7 +3734,7 @@ declare module "awayjs-display/lib/draw/GradientType" {
 }
 
 declare module "awayjs-display/lib/draw/Graphics" {
-	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import CapsStyle = require("awayjs-display/lib/draw/CapsStyle");
 	import GradientType = require("awayjs-display/lib/draw/GradientType");
@@ -3794,7 +3797,7 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	     *               using a bilinear algorithm. Rendering by using the nearest
 	     *               neighbor algorithm is faster.
 	     */
-	    beginBitmapFill(bitmap: BitmapData, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
+	    beginBitmapFill(bitmap: BitmapImage2D, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
 	    /**
 	     * Specifies a simple one-color fill that subsequent calls to other Graphics
 	     * methods(such as <code>lineTo()</code> or <code>drawCircle()</code>) use
@@ -4237,7 +4240,7 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	     * @param repeat Whether to repeat the bitmap in a tiled fashion.
 	     * @param smooth Whether smoothing should be applied to the bitmap.
 	     */
-	    lineBitmapStyle(bitmap: BitmapData, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
+	    lineBitmapStyle(bitmap: BitmapImage2D, matrix?: Matrix, repeat?: boolean, smooth?: boolean): void;
 	    /**
 	     * Specifies a gradient to use for the stroke when drawing lines.
 	     *
@@ -4759,7 +4762,8 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 }
 
 declare module "awayjs-display/lib/entities/Billboard" {
-	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -4775,19 +4779,19 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	 * create with the <code>Billboard()</code> constructor.
 	 *
 	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
-	 * object that contains a reference to a BitmapData object. After you create a
+	 * object that contains a reference to a Image2D object. After you create a
 	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
 	 * method of the parent DisplayObjectContainer instance to place the bitmap on
 	 * the display list.</p>
 	 *
-	 * <p>A Billboard object can share its BitmapData reference among several Billboard
+	 * <p>A Billboard object can share its Image2D reference among several Billboard
 	 * objects, independent of translation or rotation properties. Because you can
-	 * create multiple Billboard objects that reference the same BitmapData object,
-	 * multiple display objects can use the same complex BitmapData object without
-	 * incurring the memory overhead of a BitmapData object for each display
+	 * create multiple Billboard objects that reference the same Image2D object,
+	 * multiple display objects can use the same complex Image2D object without
+	 * incurring the memory overhead of a Image2D object for each display
 	 * object instance.</p>
 	 *
-	 * <p>A BitmapData object can be drawn to the screen by a Billboard object in one
+	 * <p>A Image2D object can be drawn to the screen by a Billboard object in one
 	 * of two ways: by using the default hardware renderer with a single hardware surface,
 	 * or by using the slower software renderer when 3D acceleration is not available.</p>
 	 *
@@ -4807,6 +4811,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    private _animator;
 	    private _billboardWidth;
 	    private _billboardHeight;
+	    private _billboardRect;
 	    private _material;
 	    private _uvTransform;
 	    private onSizeChangedDelegate;
@@ -4819,9 +4824,13 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	     */
 	    assetType: string;
 	    /**
-	     * The BitmapData object being referenced.
+	     * The Image2D object being referenced.
 	     */
-	    bitmapData: BitmapData;
+	    image2D: Image2D;
+	    /**
+	     *
+	     */
+	    billboardRect: Rectangle;
 	    /**
 	     *
 	     */
@@ -5144,19 +5153,19 @@ declare module "awayjs-display/lib/entities/IEntity" {
 }
 
 declare module "awayjs-display/lib/entities/LightProbe" {
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import Partition = require("awayjs-display/lib/partition/Partition");
 	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import CubeTextureBase = require("awayjs-core/lib/textures/CubeTextureBase");
 	class LightProbe extends LightBase implements IEntity {
 	    private _diffuseMap;
 	    private _specularMap;
-	    constructor(diffuseMap: CubeTextureBase, specularMap?: CubeTextureBase);
-	    diffuseMap: CubeTextureBase;
-	    specularMap: CubeTextureBase;
+	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
+	    diffuseMap: ImageCube;
+	    specularMap: ImageCube;
 	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
 	    _iCollectRenderables(rendererPool: IRendererPool): void;
 	    _pRegisterEntity(partition: Partition): void;
@@ -5468,7 +5477,6 @@ declare module "awayjs-display/lib/entities/Shape" {
 
 declare module "awayjs-display/lib/entities/Skybox" {
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import CubeTextureBase = require("awayjs-core/lib/textures/CubeTextureBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -5481,6 +5489,7 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	import IRendererPool = require("awayjs-display/lib/pool/IRendererPool");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 	/**
 	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
 	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
@@ -5558,13 +5567,13 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    /**
 	    * The cube texture to use as the skybox.
 	    */
-	    cubeMap: CubeTextureBase;
+	    cubeMap: SingleCubeTexture;
 	    /**
 	     * Create a new Skybox object.
 	     *
 	     * @param material	The material with which to render the Skybox.
 	     */
-	    constructor(cubeMap?: CubeTextureBase);
+	    constructor(cubeMap?: SingleCubeTexture);
 	    assetType: string;
 	    castsShadows: boolean;
 	    /**
@@ -6796,19 +6805,19 @@ declare module "awayjs-display/lib/events/SceneEvent" {
 }
 
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
-	import BitmapData = require("awayjs-core/lib/data/BitmapData");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 	class DefaultMaterialManager {
-	    private static _defaultBitmapData;
+	    private static _defaultBitmapImage2D;
 	    private static _defaultTriangleMaterial;
 	    private static _defaultLineMaterial;
 	    private static _defaultTexture;
 	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
-	    static getDefaultTexture(renderableOwner?: IRenderableOwner): BitmapTexture;
+	    static getDefaultTexture(renderableOwner?: IRenderableOwner): Single2DTexture;
 	    private static createDefaultTexture();
-	    static createCheckeredBitmapData(): BitmapData;
+	    static createCheckeredBitmapImage2D(): BitmapImage2D;
 	    private static createDefaultTriangleMaterial();
 	    private static createDefaultLineMaterial();
 	}
@@ -6873,11 +6882,12 @@ declare module "awayjs-display/lib/managers/MouseManager" {
 }
 
 declare module "awayjs-display/lib/materials/BasicMaterial" {
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+	import Image2D = require("awayjs-core/lib/data/Image2D");
 	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
 	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
 	 * using material methods to define their appearance.
@@ -6892,7 +6902,8 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
 	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
 	     */
-	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(texture?: Image2D, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(texture?: TextureBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
 	    constructor(color?: number, alpha?: number);
 	    /**
 	     * Indicates whether alpha should be preserved - defaults to false
@@ -6910,44 +6921,12 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	
 }
 
-declare module "awayjs-display/lib/materials/CSSMaterialBase" {
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
-	/**
-	 * MaterialBase forms an abstract base class for any material.
-	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
-	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
-	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
-	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
-	 *
-	 * Away3D provides default materials trough SinglePassMaterialBase and MultiPassMaterialBase, which use modular
-	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
-	 * shaders, or entire new material frameworks.
-	 */
-	class CSSMaterialBase extends MaterialBase {
-	    private _imageElement;
-	    private _imageStyle;
-	    imageElement: HTMLImageElement;
-	    imageStyle: MSStyleCSSProperties;
-	    /**
-	     * The texture object to use for the albedo colour.
-	     */
-	    texture: Texture2DBase;
-	    /**
-	     * Creates a new MaterialBase object.
-	     */
-	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean);
-	}
-	export = CSSMaterialBase;
-	
-}
-
 declare module "awayjs-display/lib/materials/CurveMaterial" {
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
 	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
 	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
 	 * using material methods to define their appearance.
@@ -6962,7 +6941,7 @@ declare module "awayjs-display/lib/materials/CurveMaterial" {
 	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
 	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
 	     */
-	    constructor(texture?: Texture2DBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(texture?: TextureBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
 	    constructor(color?: number, alpha?: number);
 	    /**
 	     * Indicates whether alpha should be preserved - defaults to false
@@ -7015,14 +6994,15 @@ declare module "awayjs-display/lib/materials/LightSources" {
 
 declare module "awayjs-display/lib/materials/MaterialBase" {
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
 	import IRenderObjectOwner = require("awayjs-display/lib/base/IRenderObjectOwner");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IRenderObject = require("awayjs-display/lib/pool/IRenderObject");
 	import IRenderablePool = require("awayjs-display/lib/pool/IRenderablePool");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * MaterialBase forms an abstract base class for any material.
 	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
@@ -7037,6 +7017,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	class MaterialBase extends AssetBase implements IRenderObjectOwner {
 	    static assetType: string;
 	    private _colorTransform;
+	    private _frameRect;
 	    private _alphaBlending;
 	    private _alpha;
 	    private _sizeChanged;
@@ -7077,7 +7058,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    private _smooth;
 	    private _repeat;
 	    private _color;
-	    _pTexture: Texture2DBase;
+	    _pTexture: TextureBase;
 	    _pLightPicker: LightPickerBase;
 	    _pHeight: number;
 	    _pWidth: number;
@@ -7103,6 +7084,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     * example when using textures of foliage, consider using alphaThreshold instead.
 	     */
 	    alphaBlending: boolean;
+	    frameRect: Rectangle;
 	    /**
 	     *
 	     */
@@ -7138,7 +7120,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    /**
 	     * The texture object to use for the albedo colour.
 	     */
-	    texture: Texture2DBase;
+	    texture: TextureBase;
 	    /**
 	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
 	     */
@@ -7400,7 +7382,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	import IRenderer = require("awayjs-display/lib/render/IRenderer");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	import RenderTexture = require("awayjs-core/lib/textures/RenderTexture");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 	class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher {
 	    _pScissorRects: Rectangle[];
 	    private _pScissorRectsInvalid;
@@ -7420,7 +7402,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	    _pSetDepthMapSize(value: number): void;
 	    private invalidateScissorRects();
 	    numCascades: number;
-	    pDrawDepthMap(target: RenderTexture, scene: Scene, renderer: IRenderer): void;
+	    pDrawDepthMap(target: Single2DTexture, scene: Scene, renderer: IRenderer): void;
 	    private updateScissorRects();
 	    pUpdateDepthProjection(viewCamera: Camera): void;
 	    private updateProjectionPartition(matrix, splitRatio, texOffsetX, texOffsetY);
@@ -7439,8 +7421,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" 
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import RenderTexture = require("awayjs-core/lib/textures/RenderTexture");
-	import TextureBase = require("awayjs-core/lib/textures/TextureBase");
+	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 	class CubeMapShadowMapper extends ShadowMapperBase {
 	    private _depthCameras;
 	    private _projections;
@@ -7448,9 +7429,9 @@ declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" 
 	    constructor();
 	    private initCameras();
 	    private addCamera(rotationX, rotationY, rotationZ);
-	    pCreateDepthTexture(): TextureBase;
+	    pCreateDepthTexture(): SingleCubeTexture;
 	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pDrawDepthMap(target: RenderTexture, scene: Scene, renderer: IRenderer): void;
+	    pDrawDepthMap(target: SingleCubeTexture, scene: Scene, renderer: IRenderer): void;
 	}
 	export = CubeMapShadowMapper;
 	
@@ -7464,7 +7445,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	import IRenderer = require("awayjs-display/lib/render/IRenderer");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	import TextureBase = require("awayjs-core/lib/textures/TextureBase");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 	class DirectionalShadowMapper extends ShadowMapperBase {
 	    _pOverallDepthCamera: Camera;
 	    _pLocalFrustum: Array<number>;
@@ -7480,7 +7461,9 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	    lightOffset: number;
 	    iDepthProjection: Matrix3D;
 	    depth: number;
-	    pDrawDepthMap(target: TextureBase, scene: Scene, renderer: IRenderer): void;
+	    iSetDepthMap(depthMap: Single2DTexture): void;
+	    pCreateDepthTexture(): Single2DTexture;
+	    pDrawDepthMap(target: Single2DTexture, scene: Scene, renderer: IRenderer): void;
 	    pUpdateCullPlanes(viewCamera: Camera): void;
 	    pUpdateDepthProjection(viewCamera: Camera): void;
 	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
@@ -7512,13 +7495,13 @@ declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
 	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
 	import Camera = require("awayjs-display/lib/entities/Camera");
-	import TextureBase = require("awayjs-core/lib/textures/TextureBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class ShadowMapperBase {
 	    _pCasterCollector: ShadowCasterCollector;
-	    private _depthMap;
+	    _depthMap: TextureBase;
 	    _pDepthMapSize: number;
 	    _pLight: LightBase;
-	    private _explicitDepthMap;
+	    _explicitDepthMap: boolean;
 	    private _autoUpdateShadows;
 	    _iShadowsInvalid: boolean;
 	    constructor();
@@ -8512,6 +8495,27 @@ declare module "awayjs-display/lib/pool/IRendererPool" {
 	
 }
 
+declare module "awayjs-display/lib/pool/ITextureObject" {
+	/**
+	 * ITextureObject is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a texture
+	 *
+	 * @class away.pool.ITextureObject
+	 */
+	interface ITextureObject {
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidate(): any;
+	}
+	export = ITextureObject;
+	
+}
+
 declare module "awayjs-display/lib/pool/SubMeshPool" {
 	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
 	import ISubMeshClass = require("awayjs-display/lib/base/ISubMeshClass");
@@ -8519,19 +8523,19 @@ declare module "awayjs-display/lib/pool/SubMeshPool" {
 	 * @class away.pool.SubMeshPool
 	 */
 	class SubMeshPool {
-	    private static subMeshClassPool;
+	    private static classPool;
 	    /**
 	     *
 	     * @param subMeshClass
 	     */
-	    static registerSubMeshClass(subMeshClass: ISubMeshClass): void;
+	    static registerClass(subMeshClass: ISubMeshClass): void;
 	    /**
 	     *
 	     * @param subGeometry
 	     */
-	    static getSubMeshClass(subGeometry: SubGeometryBase): ISubMeshClass;
-	    static main: void;
-	    static addDefaults(): void;
+	    static getClass(subGeometry: SubGeometryBase): ISubMeshClass;
+	    private static main;
+	    private static addDefaults();
 	}
 	export = SubMeshPool;
 	
@@ -9067,233 +9071,13 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	
 }
 
-declare module "awayjs-display/lib/render/CSSDefaultRenderer" {
-	import CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
-	import IRenderer = require("awayjs-display/lib/render/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
-	 * materials assigned to them.
-	 *
-	 * @class away.render.DefaultRenderer
-	 */
-	class CSSDefaultRenderer extends CSSRendererBase implements IRenderer {
-	    private _container;
-	    private _context;
-	    private _contextStyle;
-	    private _contextMatrix;
-	    private _activeMaterial;
-	    private _skyboxProjection;
-	    private _transform;
-	    /**
-	     * Creates a new CSSDefaultRenderer object.
-	     */
-	    constructor();
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    pDraw(entityCollector: EntityCollector): void;
-	    /**
-	     * Updates the backbuffer properties.
-	     */
-	    pUpdateBackBuffer(): void;
-	    /**
-	     * Draw the skybox if present.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawSkybox(entityCollector);
-	    /**
-	     * Draw a list of renderables.
-	     * @param renderables The renderables to draw.
-	     * @param entityCollector The EntityCollector containing all potentially visible information.
-	     */
-	    private drawRenderables(item, entityCollector);
-	    dispose(): void;
-	    _iCreateEntityCollector(): CollectorBase;
-	}
-	export = CSSDefaultRenderer;
-	
-}
-
-declare module "awayjs-display/lib/render/CSSRendererBase" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-	import LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
-	import TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
-	import CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	import CSSEntityCollector = require("awayjs-display/lib/traverse/CSSEntityCollector");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Billboard = require("awayjs-display/lib/entities/Billboard");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import Skybox = require("awayjs-display/lib/entities/Skybox");
-	import TextureBase = require("awayjs-core/lib/textures/TextureBase");
-	/**
-	 * RendererBase forms an abstract base class for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.RendererBase
-	 */
-	class CSSRendererBase extends EventDispatcher {
-	    private _billboardRenderablePool;
-	    private _lineSegmentRenderablePool;
-	    _pCamera: Camera;
-	    _iEntryPoint: Vector3D;
-	    _pCameraForward: Vector3D;
-	    private _backgroundR;
-	    private _backgroundG;
-	    private _backgroundB;
-	    private _backgroundAlpha;
-	    private _shareContext;
-	    _pBackBufferInvalid: boolean;
-	    _depthTextureInvalid: boolean;
-	    _renderableHead: CSSRenderableBase;
-	    _width: number;
-	    _height: number;
-	    private _viewPort;
-	    private _viewportDirty;
-	    private _scissorRect;
-	    private _scissorDirty;
-	    private _localPos;
-	    private _globalPos;
-	    private _scissorUpdated;
-	    private _viewPortUpdated;
-	    /**
-	     * A viewPort rectangle equivalent of the StageGL size and position.
-	     */
-	    viewPort: Rectangle;
-	    /**
-	     * A scissor rectangle equivalent of the view size and position.
-	     */
-	    scissorRect: Rectangle;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    renderableSorter: IEntitySorter;
-	    /**
-	     * Creates a new RendererBase object.
-	     */
-	    constructor(renderToTexture?: boolean, forceSoftware?: boolean, profile?: string);
-	    /**
-	     * The background color's red component, used when clearing.
-	     *
-	     * @private
-	     */
-	    _iBackgroundR: number;
-	    /**
-	     * The background color's green component, used when clearing.
-	     *
-	     * @private
-	     */
-	    _iBackgroundG: number;
-	    /**
-	     * The background color's blue component, used when clearing.
-	     *
-	     * @private
-	     */
-	    _iBackgroundB: number;
-	    shareContext: boolean;
-	    /**
-	     * Disposes the resources used by the RendererBase.
-	     */
-	    dispose(): void;
-	    render(entityCollector: CollectorBase): void;
-	    /**
-	     * Renders the potentially visible geometry to the back buffer or texture.
-	     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
-	     * @param scissorRect
-	     */
-	    _iRender(entityCollector: EntityCollector, target?: TextureBase, scissorRect?: Rectangle, surfaceSelector?: number): void;
-	    _iRenderCascades(entityCollector: CollectorBase, target: TextureBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): void;
-	    pCollectRenderables(entityCollector: CollectorBase): void;
-	    /**
-	     * Renders the potentially visible geometry to the back buffer or texture. Only executed if everything is set up.
-	     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
-	     * @param scissorRect
-	     */
-	    pExecuteRender(entityCollector: CSSEntityCollector, scissorRect?: Rectangle): void;
-	    /**
-	     * Performs the actual drawing of dom objects to the target.
-	     *
-	     * @param entityCollector The EntityCollector object containing the potentially visible dom objects.
-	     */
-	    pDraw(entityCollector: CSSEntityCollector): void;
-	    _iBackgroundAlpha: number;
-	    /**
-	     *
-	     * @param billboard
-	     */
-	    applyBillboard(billboard: Billboard): void;
-	    /**
-	     *
-	     * @param lineSubMesh
-	     */
-	    applyLineSubMesh(lineSubMesh: LineSubMesh): void;
-	    /**
-	     *
-	     * @param skybox
-	     */
-	    applySkybox(skybox: Skybox): void;
-	    /**
-	     *
-	     * @param triangleSubMesh
-	     */
-	    applyTriangleSubMesh(triangleSubMesh: TriangleSubMesh): void;
-	    /**
-	     *
-	     * @param renderable
-	     * @private
-	     */
-	    private _applyRenderable(renderable);
-	    /**
-	     * @private
-	     */
-	    private notifyScissorUpdate();
-	    /**
-	     * @private
-	     */
-	    private notifyViewportUpdate();
-	    /**
-	     *
-	     */
-	    updateGlobalPos(): void;
-	    _iCreateEntityCollector(): CollectorBase;
-	}
-	export = CSSRendererBase;
-	
-}
-
 declare module "awayjs-display/lib/render/IRenderer" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
 	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import Camera = require("awayjs-display/lib/entities/Camera");
-	import TextureBase = require("awayjs-core/lib/textures/TextureBase");
 	/**
 	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
 	 * contents of a partition
@@ -9362,8 +9146,8 @@ declare module "awayjs-display/lib/render/IRenderer" {
 	     * @internal
 	     */
 	    _iCreateEntityCollector(): CollectorBase;
-	    _iRender(entityCollector: CollectorBase, target?: TextureBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(entityCollector: CollectorBase, target: TextureBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
+	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
+	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
 	}
 	export = IRenderer;
 	
@@ -10020,6 +9804,92 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	
 }
 
+declare module "awayjs-display/lib/textures/Single2DTexture" {
+	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class Single2DTexture extends TextureBase {
+	    static assetType: string;
+	    private _sampler2D;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {Image2D}
+	     */
+	    sampler2D: Sampler2D;
+	    constructor(source: Sampler2D);
+	    constructor(source: Image2D);
+	}
+	export = Single2DTexture;
+	
+}
+
+declare module "awayjs-display/lib/textures/SingleCubeTexture" {
+	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class SingleCubeTexture extends TextureBase {
+	    static assetType: string;
+	    private _samplerCube;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {BitmapData}
+	     */
+	    samplerCube: SamplerCube;
+	    constructor(source: SamplerCube);
+	    constructor(source: ImageCube);
+	}
+	export = SingleCubeTexture;
+	
+}
+
+declare module "awayjs-display/lib/textures/TextureBase" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import ITextureObject = require("awayjs-display/lib/pool/ITextureObject");
+	/**
+	 *
+	 */
+	class TextureBase extends AssetBase implements IAsset {
+	    private _textureObject;
+	    _width: number;
+	    _height: number;
+	    width: number;
+	    height: number;
+	    /**
+	     *
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    invalidateContent(): void;
+	    /**
+	     *
+	     * @private
+	     */
+	    invalidateSize(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    dispose(): void;
+	    _iAddTextureObject(textureObject: ITextureObject): ITextureObject;
+	    _iRemoveTextureObject(textureObject: ITextureObject): ITextureObject;
+	    _setSize(width: number, height: number): void;
+	}
+	export = TextureBase;
+	
+}
+
 declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	/**
@@ -10244,9 +10114,9 @@ declare module "awayjs-display/lib/traverse/ShadowCasterCollector" {
 }
 
 declare module "awayjs-display/lib/utils/Cast" {
-	import BitmapData = require("awayjs-core/lib/data/BitmapData");
+	import Image2D = require("awayjs-core/lib/data/Image2D");
 	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 	/**
 	 * Helper class for casting assets to usable objects
 	 */
@@ -10261,8 +10131,8 @@ declare module "awayjs-display/lib/utils/Cast" {
 	    static tryColor(data: any): number;
 	    static color(data: any): number;
 	    static tryClass(name: string): any;
-	    static bitmapData(data: any): BitmapData;
-	    static bitmapTexture(data: any): BitmapTexture;
+	    static image2D(data: any): Image2D;
+	    static bitmapTexture(data: any): Single2DTexture;
 	}
 	export = Cast;
 	

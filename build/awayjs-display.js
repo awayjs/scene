@@ -130,7 +130,7 @@ var CurveSubMesh = (function (_super) {
         rendererPool.applyCurveSubMesh(this);
     };
     CurveSubMesh.assetType = "[asset CurveSubMesh]";
-    CurveSubMesh.geometryType = CurveSubGeometry.assetType;
+    CurveSubMesh.assetClass = CurveSubGeometry;
     return CurveSubMesh;
 })(SubMeshBase);
 module.exports = CurveSubMesh;
@@ -2229,7 +2229,7 @@ var LineSubMesh = (function (_super) {
         rendererPool.applyLineSubMesh(this);
     };
     LineSubMesh.assetType = "[asset LineSubMesh]";
-    LineSubMesh.geometryType = LineSubGeometry.assetType;
+    LineSubMesh.assetClass = LineSubGeometry;
     return LineSubMesh;
 })(SubMeshBase);
 module.exports = LineSubMesh;
@@ -3016,7 +3016,7 @@ var TriangleSubMesh = (function (_super) {
         rendererPool.applyTriangleSubMesh(this);
     };
     TriangleSubMesh.assetType = "[asset TriangleSubMesh]";
-    TriangleSubMesh.geometryType = TriangleSubGeometry.assetType;
+    TriangleSubMesh.assetClass = TriangleSubGeometry;
     return TriangleSubMesh;
 })(SubMeshBase);
 module.exports = TriangleSubMesh;
@@ -6872,6 +6872,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var Rectangle = require("awayjs-core/lib/geom/Rectangle");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
@@ -6882,19 +6883,19 @@ var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
  * create with the <code>Billboard()</code> constructor.
  *
  * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
- * object that contains a reference to a BitmapData object. After you create a
+ * object that contains a reference to a Image2D object. After you create a
  * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
  * method of the parent DisplayObjectContainer instance to place the bitmap on
  * the display list.</p>
  *
- * <p>A Billboard object can share its BitmapData reference among several Billboard
+ * <p>A Billboard object can share its Image2D reference among several Billboard
  * objects, independent of translation or rotation properties. Because you can
- * create multiple Billboard objects that reference the same BitmapData object,
- * multiple display objects can use the same complex BitmapData object without
- * incurring the memory overhead of a BitmapData object for each display
+ * create multiple Billboard objects that reference the same Image2D object,
+ * multiple display objects can use the same complex Image2D object without
+ * incurring the memory overhead of a Image2D object for each display
  * object instance.</p>
  *
- * <p>A BitmapData object can be drawn to the screen by a Billboard object in one
+ * <p>A Image2D object can be drawn to the screen by a Billboard object in one
  * of two ways: by using the default hardware renderer with a single hardware surface,
  * or by using the slower software renderer when 3D acceleration is not available.</p>
  *
@@ -6920,6 +6921,7 @@ var Billboard = (function (_super) {
         this.onSizeChangedDelegate = function (event) { return _this.onSizeChanged(event); };
         this.material = material;
         this._billboardHeight = material.height;
+        this._billboardRect = this._material.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
         //default bounds type
         this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
         this._billboardWidth = material.width;
@@ -6940,6 +6942,16 @@ var Billboard = (function (_super) {
          */
         get: function () {
             return Billboard.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Billboard.prototype, "billboardRect", {
+        /**
+         *
+         */
+        get: function () {
+            return this._billboardRect;
         },
         enumerable: true,
         configurable: true
@@ -7005,8 +7017,8 @@ var Billboard = (function (_super) {
      */
     Billboard.prototype._pUpdateBoxBounds = function () {
         _super.prototype._pUpdateBoxBounds.call(this);
-        this._pBoxBounds.width = this._billboardWidth;
-        this._pBoxBounds.height = this._billboardHeight;
+        this._pBoxBounds.width = this._billboardRect.width;
+        this._pBoxBounds.height = this._billboardRect.height;
     };
     Billboard.prototype.clone = function () {
         var clone = new Billboard(this.material);
@@ -7030,6 +7042,7 @@ var Billboard = (function (_super) {
     Billboard.prototype.onSizeChanged = function (event) {
         this._billboardWidth = this._material.width;
         this._billboardHeight = this._material.height;
+        this._billboardRect = this._material.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
         this._pInvalidateBounds();
         var len = this._pRenderables.length;
         for (var i = 0; i < len; i++)
@@ -7057,7 +7070,7 @@ var Billboard = (function (_super) {
 })(DisplayObject);
 module.exports = Billboard;
 
-},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -8121,7 +8134,7 @@ var Mesh = (function (_super) {
      * @param subGeometry
      */
     Mesh.prototype.addSubMesh = function (subGeometry) {
-        var SubMeshClass = SubMeshPool.getSubMeshClass(subGeometry);
+        var SubMeshClass = SubMeshPool.getClass(subGeometry);
         var subMesh = new SubMeshClass(subGeometry, this, null);
         var len = this._subMeshes.length;
         subMesh._iIndex = len;
@@ -8521,7 +8534,8 @@ var Skybox = (function (_super) {
             return this._cubeMap;
         },
         set: function (value) {
-            if (value && this._cubeMap && (value.format != this._cubeMap.format))
+            //if (value && this._cubeMap && (value.format != this._cubeMap.format))
+            if (value && this._cubeMap)
                 this._pInvalidateRenderObject();
             this._cubeMap = value;
         },
@@ -9683,10 +9697,10 @@ var SceneEvent = (function (_super) {
 module.exports = SceneEvent;
 
 },{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
-var BitmapData = require("awayjs-core/lib/data/BitmapData");
-var BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
+var BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
 var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
+var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 var DefaultMaterialManager = (function () {
     function DefaultMaterialManager() {
     }
@@ -9710,12 +9724,12 @@ var DefaultMaterialManager = (function () {
         return DefaultMaterialManager._defaultTexture;
     };
     DefaultMaterialManager.createDefaultTexture = function () {
-        DefaultMaterialManager._defaultBitmapData = DefaultMaterialManager.createCheckeredBitmapData();
-        DefaultMaterialManager._defaultTexture = new BitmapTexture(DefaultMaterialManager._defaultBitmapData);
+        DefaultMaterialManager._defaultBitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
+        DefaultMaterialManager._defaultTexture = new Single2DTexture(DefaultMaterialManager._defaultBitmapImage2D);
         DefaultMaterialManager._defaultTexture.name = "defaultTexture";
     };
-    DefaultMaterialManager.createCheckeredBitmapData = function () {
-        var b = new BitmapData(8, 8, false, 0x000000);
+    DefaultMaterialManager.createCheckeredBitmapImage2D = function () {
+        var b = new BitmapImage2D(8, 8, false, 0x000000);
         //create chekerboard
         var i, j;
         for (i = 0; i < 8; i++) {
@@ -9743,7 +9757,7 @@ var DefaultMaterialManager = (function () {
 })();
 module.exports = DefaultMaterialManager;
 
-},{"awayjs-core/lib/data/BitmapData":undefined,"awayjs-core/lib/textures/BitmapTexture":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial"}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
+},{"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayMouseEvent = require("awayjs-display/lib/events/MouseEvent");
 /**
@@ -9969,8 +9983,10 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
+var Image2D = require("awayjs-core/lib/data/Image2D");
 var MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+var TextureBase = require("awayjs-display/lib/textures/TextureBase");
 /**
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
  * using material methods to define their appearance.
@@ -9984,7 +10000,9 @@ var BasicMaterial = (function (_super) {
         if (mipmap === void 0) { mipmap = false; }
         _super.call(this);
         this._preserveAlpha = false;
-        if (textureColor instanceof Texture2DBase) {
+        if (textureColor instanceof Image2D)
+            textureColor = new Single2DTexture(textureColor);
+        if (textureColor instanceof TextureBase) {
             this.texture = textureColor;
             this.smooth = (smoothAlpha == null) ? true : false;
             this.repeat = repeat;
@@ -10024,7 +10042,7 @@ var BasicMaterial = (function (_super) {
 })(MaterialBase);
 module.exports = BasicMaterial;
 
-},{"awayjs-core/lib/textures/Texture2DBase":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase"}],"awayjs-display/lib/materials/CSSMaterialBase":[function(require,module,exports){
+},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/materials/CurveMaterial":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -10032,93 +10050,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-var ImageTexture = require("awayjs-core/lib/textures/ImageTexture");
-/**
- * MaterialBase forms an abstract base class for any material.
- * A material consists of several passes, each of which constitutes at least one render call. Several passes could
- * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
- * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
- * subsurface scattering, or rendering a depth map for specialized self-shadowing).
- *
- * Away3D provides default materials trough SinglePassMaterialBase and MultiPassMaterialBase, which use modular
- * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
- * shaders, or entire new material frameworks.
- */
-var CSSMaterialBase = (function (_super) {
-    __extends(CSSMaterialBase, _super);
-    /**
-     * Creates a new MaterialBase object.
-     */
-    function CSSMaterialBase(texture, smooth, repeat) {
-        if (texture === void 0) { texture = null; }
-        if (smooth === void 0) { smooth = true; }
-        if (repeat === void 0) { repeat = false; }
-        _super.call(this);
-        this._iMaterialId = Number(this.id);
-        this.texture = texture;
-        this.smooth = smooth;
-        this.repeat = repeat;
-    }
-    Object.defineProperty(CSSMaterialBase.prototype, "imageElement", {
-        get: function () {
-            return this._imageElement;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSMaterialBase.prototype, "imageStyle", {
-        get: function () {
-            return this._imageStyle;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSMaterialBase.prototype, "texture", {
-        /**
-         * The texture object to use for the albedo colour.
-         */
-        get: function () {
-            return this._pTexture;
-        },
-        set: function (value) {
-            if (this._pTexture == value)
-                return;
-            this._pTexture = value;
-            if (value instanceof ImageTexture) {
-                this._imageElement = value.htmlImageElement;
-                var node = document.createElement("style");
-                node.type = "text/css";
-                document.getElementsByTagName("head")[0].appendChild(node);
-                var sheet = document.styleSheets[document.styleSheets.length - 1];
-                sheet.insertRule(".material" + this.id + "{ }", 0);
-                var style = sheet.cssRules[0].style;
-                style.backgroundImage = "url(" + this._imageElement.src + ")";
-                style.backgroundSize = "100% 100%";
-                style.position = "absolute";
-                style.width = this._imageElement.width + "px";
-                style.height = this._imageElement.height + "px";
-                style.transformOrigin = style["-webkit-transform-origin"] = style["-moz-transform-origin"] = style["-o-transform-origin"] = style["-ms-transform-origin"] = "0% 0%";
-                this._pHeight = this._imageElement.height;
-                this._pWidth = this._imageElement.width;
-                this._pNotifySizeChanged();
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return CSSMaterialBase;
-})(MaterialBase);
-module.exports = CSSMaterialBase;
-
-},{"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase"}],"awayjs-display/lib/materials/CurveMaterial":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Texture2DBase = require("awayjs-core/lib/textures/Texture2DBase");
-var MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+var TextureBase = require("awayjs-display/lib/textures/TextureBase");
 /**
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
  * using material methods to define their appearance.
@@ -10132,7 +10064,7 @@ var CurveMaterial = (function (_super) {
         if (mipmap === void 0) { mipmap = false; }
         _super.call(this);
         this._preserveAlpha = false;
-        if (textureColor instanceof Texture2DBase) {
+        if (textureColor instanceof TextureBase) {
             this.texture = textureColor;
             this.smooth = (smoothAlpha == null) ? true : false;
             this.repeat = repeat;
@@ -10172,7 +10104,7 @@ var CurveMaterial = (function (_super) {
 })(MaterialBase);
 module.exports = CurveMaterial;
 
-},{"awayjs-core/lib/textures/Texture2DBase":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase"}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
+},{"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
 /**
  * Enumeration class for defining which lighting types affect the specific material
  * lighting component (diffuse and specular). This can be useful if, for example, you
@@ -10220,6 +10152,7 @@ var Event = require("awayjs-core/lib/events/Event");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
 var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
+var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 /**
  * MaterialBase forms an abstract base class for any material.
  * A material consists of several passes, each of which constitutes at least one render call. Several passes could
@@ -10327,6 +10260,13 @@ var MaterialBase = (function (_super) {
                 return;
             this._alphaBlending = value;
             this._pInvalidateRenderObject();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MaterialBase.prototype, "frameRect", {
+        get: function () {
+            return this._frameRect;
         },
         enumerable: true,
         configurable: true
@@ -10451,8 +10391,17 @@ var MaterialBase = (function (_super) {
                 return;
             this._pTexture = value;
             this._pInvalidatePasses();
-            this._pHeight = this._pTexture.height;
-            this._pWidth = this._pTexture.width;
+            if (this._pTexture.isAsset(Single2DTexture)) {
+                var single2DTexture = this._pTexture;
+                this._frameRect = single2DTexture.sampler2D.frameRect;
+                this._pHeight = single2DTexture.sampler2D.rect.height;
+                this._pWidth = single2DTexture.sampler2D.rect.width;
+            }
+            else {
+                this._frameRect = null;
+                this._pHeight = 1;
+                this._pWidth = 1;
+            }
             this._pNotifySizeChanged();
         },
         enumerable: true,
@@ -10740,7 +10689,7 @@ var MaterialBase = (function (_super) {
 })(AssetBase);
 module.exports = MaterialBase;
 
-},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
+},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11182,7 +11131,7 @@ var CascadeShadowMapper = (function (_super) {
         this._pCasterCollector.camera = this._pOverallDepthCamera;
         this._pCasterCollector.clear();
         scene.traversePartitions(this._pCasterCollector);
-        renderer._iRenderCascades(this._pCasterCollector, target, this._numCascades, this._pScissorRects, this._depthCameras);
+        renderer._iRenderCascades(this._pCasterCollector, target.sampler2D.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
     };
     CascadeShadowMapper.prototype.updateScissorRects = function () {
         var half = this._pDepthMapSize * .5;
@@ -11305,9 +11254,10 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var PartialImplementationError = require("awayjs-core/lib/errors/PartialImplementationError");
+var ImageCube = require("awayjs-core/lib/data/ImageCube");
 var Camera = require("awayjs-display/lib/entities/Camera");
 var ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 var CubeMapShadowMapper = (function (_super) {
     __extends(CubeMapShadowMapper, _super);
     function CubeMapShadowMapper() {
@@ -11341,10 +11291,7 @@ var CubeMapShadowMapper = (function (_super) {
     };
     //@override
     CubeMapShadowMapper.prototype.pCreateDepthTexture = function () {
-        throw new PartialImplementationError();
-        /*
-         return new RenderCubeTexture( this._depthMapSize );
-         */
+        return new SingleCubeTexture(new ImageCube(this._pDepthMapSize));
     };
     //@override
     CubeMapShadowMapper.prototype.pUpdateDepthProjection = function (viewCamera) {
@@ -11364,7 +11311,7 @@ var CubeMapShadowMapper = (function (_super) {
                 this._pCasterCollector.camera = this._depthCameras[i];
                 this._pCasterCollector.clear();
                 scene.traversePartitions(this._pCasterCollector);
-                renderer._iRender(this._pCasterCollector, target, null, i);
+                renderer._iRender(this._pCasterCollector, target.samplerCube.imageCube, null, i);
             }
         }
     };
@@ -11372,17 +11319,19 @@ var CubeMapShadowMapper = (function (_super) {
 })(ShadowMapperBase);
 module.exports = CubeMapShadowMapper;
 
-},{"awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase"}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/data/ImageCube":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var Image2D = require("awayjs-core/lib/data/Image2D");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var FreeMatrixProjection = require("awayjs-core/lib/projections/FreeMatrixProjection");
 var Camera = require("awayjs-display/lib/entities/Camera");
 var ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 var DirectionalShadowMapper = (function (_super) {
     __extends(DirectionalShadowMapper, _super);
     function DirectionalShadowMapper() {
@@ -11431,13 +11380,28 @@ var DirectionalShadowMapper = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    DirectionalShadowMapper.prototype.iSetDepthMap = function (depthMap) {
+        if (this._depthMap == depthMap)
+            return;
+        _super.prototype.iSetDepthMap.call(this, depthMap);
+        if (this._depthMap) {
+            this._explicitDepthMap = true;
+            this._pDepthMapSize = depthMap.width;
+        }
+        else {
+            this._explicitDepthMap = false;
+        }
+    };
+    DirectionalShadowMapper.prototype.pCreateDepthTexture = function () {
+        return new Single2DTexture(new Image2D(this._pDepthMapSize, this._pDepthMapSize));
+    };
     //@override
     DirectionalShadowMapper.prototype.pDrawDepthMap = function (target, scene, renderer) {
         this._pCasterCollector.camera = this._pOverallDepthCamera;
         this._pCasterCollector.cullPlanes = this._pCullPlanes;
         this._pCasterCollector.clear();
         scene.traversePartitions(this._pCasterCollector);
-        renderer._iRender(this._pCasterCollector, target);
+        renderer._iRender(this._pCasterCollector, target.sampler2D.image2D);
     };
     //@protected
     DirectionalShadowMapper.prototype.pUpdateCullPlanes = function (viewCamera) {
@@ -11536,7 +11500,7 @@ var DirectionalShadowMapper = (function (_super) {
 })(ShadowMapperBase);
 module.exports = DirectionalShadowMapper;
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase"}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11585,7 +11549,6 @@ module.exports = NearDirectionalShadowMapper;
 },{"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":[function(require,module,exports){
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
-var RenderTexture = require("awayjs-core/lib/textures/RenderTexture");
 var ShadowMapperBase = (function () {
     function ShadowMapperBase() {
         this._pDepthMapSize = 2048;
@@ -11609,18 +11572,9 @@ var ShadowMapperBase = (function () {
         this._iShadowsInvalid = true;
     };
     ShadowMapperBase.prototype.iSetDepthMap = function (depthMap) {
-        if (this._depthMap == depthMap)
-            return;
         if (this._depthMap && !this._explicitDepthMap)
             this._depthMap.dispose();
         this._depthMap = depthMap;
-        if (this._depthMap) {
-            this._explicitDepthMap = true;
-            this._pDepthMapSize = this._depthMap.size;
-        }
-        else {
-            this._explicitDepthMap = false;
-        }
     };
     Object.defineProperty(ShadowMapperBase.prototype, "light", {
         get: function () {
@@ -11660,7 +11614,7 @@ var ShadowMapperBase = (function () {
         this._depthMap = null;
     };
     ShadowMapperBase.prototype.pCreateDepthTexture = function () {
-        return new RenderTexture(this._pDepthMapSize, this._pDepthMapSize);
+        throw new AbstractMethodError();
     };
     ShadowMapperBase.prototype.iRenderDepthMap = function (entityCollector, renderer) {
         this._iShadowsInvalid = false;
@@ -11689,7 +11643,7 @@ var ShadowMapperBase = (function () {
 })();
 module.exports = ShadowMapperBase;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/textures/RenderTexture":undefined,"awayjs-display/lib/traverse/ShadowCasterCollector":"awayjs-display/lib/traverse/ShadowCasterCollector"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/traverse/ShadowCasterCollector":"awayjs-display/lib/traverse/ShadowCasterCollector"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -12770,6 +12724,8 @@ module.exports = EntityNodePool;
 
 },{}],"awayjs-display/lib/pool/IRendererPool":[function(require,module,exports){
 
+},{}],"awayjs-display/lib/pool/ITextureObject":[function(require,module,exports){
+
 },{}],"awayjs-display/lib/pool/SubMeshPool":[function(require,module,exports){
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
 var TriangleSubMesh = require("awayjs-display/lib/base/TriangleSubMesh");
@@ -12784,22 +12740,22 @@ var SubMeshPool = (function () {
      *
      * @param subMeshClass
      */
-    SubMeshPool.registerSubMeshClass = function (subMeshClass) {
-        SubMeshPool.subMeshClassPool[subMeshClass.geometryType] = subMeshClass;
+    SubMeshPool.registerClass = function (subMeshClass) {
+        SubMeshPool.classPool[subMeshClass.assetClass.assetType] = subMeshClass;
     };
     /**
      *
      * @param subGeometry
      */
-    SubMeshPool.getSubMeshClass = function (subGeometry) {
-        return SubMeshPool.subMeshClassPool[subGeometry.assetType];
+    SubMeshPool.getClass = function (subGeometry) {
+        return SubMeshPool.classPool[subGeometry.assetType];
     };
     SubMeshPool.addDefaults = function () {
-        SubMeshPool.registerSubMeshClass(LineSubMesh);
-        SubMeshPool.registerSubMeshClass(TriangleSubMesh);
-        SubMeshPool.registerSubMeshClass(CurveSubMesh);
+        SubMeshPool.registerClass(LineSubMesh);
+        SubMeshPool.registerClass(TriangleSubMesh);
+        SubMeshPool.registerClass(CurveSubMesh);
     };
-    SubMeshPool.subMeshClassPool = new Object();
+    SubMeshPool.classPool = new Object();
     SubMeshPool.main = SubMeshPool.addDefaults();
     return SubMeshPool;
 })();
@@ -15412,557 +15368,7 @@ var PrimitiveTorusPrefab = (function (_super) {
 })(PrimitivePrefabBase);
 module.exports = PrimitiveTorusPrefab;
 
-},{"awayjs-display/lib/prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/render/CSSDefaultRenderer":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-var CoordinateSystem = require("awayjs-core/lib/projections/CoordinateSystem");
-var CSSRendererBase = require("awayjs-display/lib/render/CSSRendererBase");
-var CSSEntityCollector = require("awayjs-display/lib/traverse/CSSEntityCollector");
-/**
- * The DefaultRenderer class provides the default rendering method. It renders the scene graph objects using the
- * materials assigned to them.
- *
- * @class away.render.DefaultRenderer
- */
-var CSSDefaultRenderer = (function (_super) {
-    __extends(CSSDefaultRenderer, _super);
-    /**
-     * Creates a new CSSDefaultRenderer object.
-     */
-    function CSSDefaultRenderer() {
-        _super.call(this);
-        this._contextMatrix = new Matrix3D();
-        this._skyboxProjection = new Matrix3D();
-        this._transform = new Matrix3D();
-        //create container for the renderer
-        this._container = document.createElement("div");
-        this._container.style.overflow = "hidden";
-        this._container.style.position = "absolute";
-        //add container to body
-        document.body.appendChild(this._container);
-        //create conxtext for the renderer
-        this._context = document.createElement("div");
-        this._contextStyle = this._context.style;
-        this._contextStyle.position = "absolute";
-        this._contextStyle.transformStyle = this._contextStyle["-webkit-transform-style"] = this._contextStyle["-moz-transform-style"] = this._contextStyle["-o-transform-style"] = this._contextStyle["-ms-transform-style"] = "preserve-3d";
-        this._contextStyle.transformOrigin = this._contextStyle["-webkit-transform-origin"] = this._contextStyle["-moz-transform-origin"] = this._contextStyle["-o-transform-origin"] = this._contextStyle["-ms-transform-origin"] = "0% 0%";
-        //add context to container
-        this._container.appendChild(this._context);
-    }
-    /**
-     *
-     * @param entityCollector
-     */
-    CSSDefaultRenderer.prototype.render = function (entityCollector) {
-        _super.prototype.render.call(this, entityCollector);
-        if (this._pBackBufferInvalid)
-            this.pUpdateBackBuffer();
-        this._iRender(entityCollector);
-        this._pBackBufferInvalid = false;
-    };
-    /**
-     * @inheritDoc
-     */
-    CSSDefaultRenderer.prototype.pDraw = function (entityCollector) {
-        //			if (entityCollector.skyBox) {
-        //				if (this._activeMaterial)
-        //					this._activeMaterial.iDeactivate(this._pStageGL);
-        //
-        //				this._activeMaterial = null;
-        //
-        //				this._pContext.setDepthTest(false, away.gl.ContextGLCompareMode.ALWAYS);
-        //				this.drawSkybox(entityCollector);
-        //
-        //			}
-        //
-        //			var which:number = target? DefaultRenderer.SCREEN_PASSES : DefaultRenderer.ALL_PASSES;
-        var sheet = document.styleSheets[document.styleSheets.length - 1];
-        for (var i = 0; i < sheet.cssRules.length; i++) {
-            var style = sheet.cssRules[i].style;
-            style.transform = style["-webkit-transform"] = style["-moz-transform"] = style["-o-transform"] = style["-ms-transform"] = (entityCollector.camera.projection.coordinateSystem == CoordinateSystem.RIGHT_HANDED) ? "" : "scale3d(1, -1, 1) translateY(-" + style.height + ")";
-        }
-        this.drawRenderables(this._renderableHead, entityCollector);
-        //			if (this._activeMaterial)
-        //				this._activeMaterial.iDeactivate(this._pStageGL);
-        this._activeMaterial = null;
-    };
-    /**
-     * Updates the backbuffer properties.
-     */
-    CSSDefaultRenderer.prototype.pUpdateBackBuffer = function () {
-        this._container.style.width = this._width + "px";
-        this._container.style.height = this._height + "px";
-        this._container.style.clip = "rect(0px, " + this._width + "px, " + this._height + "px, 0px)";
-        //update context matrix
-        this._contextMatrix.rawData[0] = this._width / 2;
-        this._contextMatrix.rawData[5] = -this._height / 2;
-        this._contextMatrix.rawData[10] = -1; //fix for innaccurate z-sort
-        this._contextMatrix.rawData[12] = this._width / 2;
-        this._contextMatrix.rawData[13] = this._height / 2;
-        //update context tranform
-        this._contextStyle.transform = this._contextStyle["-webkit-transform"] = this._contextStyle["-moz-transform"] = this._contextStyle["-o-transform"] = this._contextStyle["-ms-transform"] = this._contextMatrix.toString();
-        this._pBackBufferInvalid = false;
-    };
-    /**
-     * Draw the skybox if present.
-     * @param entityCollector The EntityCollector containing all potentially visible information.
-     */
-    CSSDefaultRenderer.prototype.drawSkybox = function (entityCollector) {
-        //TODO
-    };
-    /**
-     * Draw a list of renderables.
-     * @param renderables The renderables to draw.
-     * @param entityCollector The EntityCollector containing all potentially visible information.
-     */
-    CSSDefaultRenderer.prototype.drawRenderables = function (item, entityCollector) {
-        var viewProjection = entityCollector.camera.viewProjection.clone();
-        while (item) {
-            //this._activeMaterial = <CSSMaterialBase> item.materialOwner.material;
-            //serialise transform and apply to html element
-            this._transform.copyRawDataFrom(item.renderSceneTransform.rawData);
-            this._transform.append(viewProjection);
-            var style = item.htmlElement.style;
-            style.transform = style["-webkit-transform"] = style["-moz-transform"] = style["-o-transform"] = style["-ms-transform"] = this._transform.toString();
-            style.transformStyle = style["-webkit-transform-style"] = style["-moz-transform-style"] = style["-o-transform-style"] = style["-ms-transform-style"] = "preserve-3d";
-            //check if child requires adding to the view
-            if (!this._context.contains(item.htmlElement))
-                this._context.appendChild(item.htmlElement);
-            item = item.next;
-        }
-        //			var numPasses:number;
-        //			var j:number;
-        //			var camera:away.entities.Camera = entityCollector.camera;
-        //			var item2:away.render.CSSRenderableBase;
-        //
-        //			while (item) {
-        //				this._activeMaterial = item.material;
-        //
-        //				this._activeMaterial.iUpdateMaterial(this._pContext);
-        //
-        //				numPasses = this._activeMaterial._iNumPasses;
-        //
-        //				j = 0;
-        //
-        //				do {
-        //					item2 = item;
-        //
-        //					var rttMask:number = this._activeMaterial.iPassRendersToTexture(j)? 1 : 2;
-        //
-        //					if ((rttMask & which) != 0) {
-        //						this._activeMaterial.iActivatePass(j, this._pStageGL, camera);
-        //
-        //						do {
-        //							this._activeMaterial.iRenderPass(j, item2, this._pStageGL, entityCollector);
-        //
-        //							item2 = item2.next;
-        //
-        //						} while (item2 && item2.material == this._activeMaterial);
-        //
-        //						this._activeMaterial.iDeactivatePass(j, this._pStageGL);
-        //
-        //					} else {
-        //						do {
-        //							item2 = item2.next;
-        //
-        //						} while (item2 && item2.renderable.material == this._activeMaterial);
-        //					}
-        //				} while (++j < numPasses);
-        //
-        //				item = item2;
-        //			}
-    };
-    CSSDefaultRenderer.prototype.dispose = function () {
-        _super.prototype.dispose.call(this);
-        //TODO
-    };
-    CSSDefaultRenderer.prototype._iCreateEntityCollector = function () {
-        return new CSSEntityCollector();
-    };
-    return CSSDefaultRenderer;
-})(CSSRendererBase);
-module.exports = CSSDefaultRenderer;
-
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/projections/CoordinateSystem":undefined,"awayjs-display/lib/render/CSSRendererBase":"awayjs-display/lib/render/CSSRendererBase","awayjs-display/lib/traverse/CSSEntityCollector":"awayjs-display/lib/traverse/CSSEntityCollector"}],"awayjs-display/lib/render/CSSRendererBase":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Point = require("awayjs-core/lib/geom/Point");
-var Rectangle = require("awayjs-core/lib/geom/Rectangle");
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
-var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-var RendererEvent = require("awayjs-display/lib/events/RendererEvent");
-/**
- * RendererBase forms an abstract base class for classes that are used in the rendering pipeline to render the
- * contents of a partition
- *
- * @class away.render.RendererBase
- */
-var CSSRendererBase = (function (_super) {
-    __extends(CSSRendererBase, _super);
-    /**
-     * Creates a new RendererBase object.
-     */
-    function CSSRendererBase(renderToTexture, forceSoftware, profile) {
-        if (renderToTexture === void 0) { renderToTexture = false; }
-        if (forceSoftware === void 0) { forceSoftware = false; }
-        if (profile === void 0) { profile = "baseline"; }
-        _super.call(this);
-        this._backgroundR = 0;
-        this._backgroundG = 0;
-        this._backgroundB = 0;
-        this._backgroundAlpha = 1;
-        this._shareContext = false;
-        this._pBackBufferInvalid = true;
-        this._depthTextureInvalid = true;
-        this._viewPort = new Rectangle();
-        this._scissorRect = new Rectangle();
-        this._localPos = new Point();
-        this._globalPos = new Point();
-        //this._billboardRenderablePool = RenderablePool.getPool(CSSBillboardRenderable);
-        //this._lineSegmentRenderablePool = RenderablePool.getPool(CSSLineSegmentRenderable);
-        this._viewPort = new Rectangle();
-        if (this._width == 0)
-            this.width = window.innerWidth;
-        if (this._height == 0)
-            this.height = window.innerHeight;
-    }
-    Object.defineProperty(CSSRendererBase.prototype, "viewPort", {
-        /**
-         * A viewPort rectangle equivalent of the StageGL size and position.
-         */
-        get: function () {
-            return this._viewPort;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "scissorRect", {
-        /**
-         * A scissor rectangle equivalent of the view size and position.
-         */
-        get: function () {
-            return this._scissorRect;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "x", {
-        /**
-         *
-         */
-        get: function () {
-            return this._localPos.x;
-        },
-        set: function (value) {
-            if (this.x == value)
-                return;
-            this.updateGlobalPos();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "y", {
-        /**
-         *
-         */
-        get: function () {
-            return this._localPos.y;
-        },
-        set: function (value) {
-            if (this.y == value)
-                return;
-            this._globalPos.y = this._localPos.y = value;
-            this.updateGlobalPos();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "width", {
-        /**
-         *
-         */
-        get: function () {
-            return this._width;
-        },
-        set: function (value) {
-            if (this._width == value)
-                return;
-            this._width = value;
-            this._scissorRect.width = value;
-            this._viewPort.width = value;
-            this._pBackBufferInvalid = true;
-            this._depthTextureInvalid = true;
-            this.notifyViewportUpdate();
-            this.notifyScissorUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "height", {
-        /**
-         *
-         */
-        get: function () {
-            return this._height;
-        },
-        set: function (value) {
-            if (this._height == value)
-                return;
-            this._height = value;
-            this._scissorRect.height = value;
-            this._viewPort.height = value;
-            this._pBackBufferInvalid = true;
-            this._depthTextureInvalid = true;
-            this.notifyViewportUpdate();
-            this.notifyScissorUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "_iBackgroundR", {
-        /**
-         * The background color's red component, used when clearing.
-         *
-         * @private
-         */
-        get: function () {
-            return this._backgroundR;
-        },
-        set: function (value) {
-            if (this._backgroundR == value)
-                return;
-            this._backgroundR = value;
-            this._pBackBufferInvalid = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "_iBackgroundG", {
-        /**
-         * The background color's green component, used when clearing.
-         *
-         * @private
-         */
-        get: function () {
-            return this._backgroundG;
-        },
-        set: function (value) {
-            if (this._backgroundG == value)
-                return;
-            this._backgroundG = value;
-            this._pBackBufferInvalid = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "_iBackgroundB", {
-        /**
-         * The background color's blue component, used when clearing.
-         *
-         * @private
-         */
-        get: function () {
-            return this._backgroundB;
-        },
-        set: function (value) {
-            if (this._backgroundB == value)
-                return;
-            this._backgroundB = value;
-            this._pBackBufferInvalid = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CSSRendererBase.prototype, "shareContext", {
-        get: function () {
-            return this._shareContext;
-        },
-        set: function (value) {
-            if (this._shareContext == value)
-                return;
-            this._shareContext = value;
-            this.updateGlobalPos();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Disposes the resources used by the RendererBase.
-     */
-    CSSRendererBase.prototype.dispose = function () {
-        /*
-         if (_backgroundImageRenderer) {
-         _backgroundImageRenderer.dispose();
-         _backgroundImageRenderer = null;
-         }
-         */
-    };
-    CSSRendererBase.prototype.render = function (entityCollector) {
-        this._viewportDirty = false;
-        this._scissorDirty = false;
-    };
-    /**
-     * Renders the potentially visible geometry to the back buffer or texture.
-     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
-     * @param scissorRect
-     */
-    CSSRendererBase.prototype._iRender = function (entityCollector, target, scissorRect, surfaceSelector) {
-        if (target === void 0) { target = null; }
-        if (scissorRect === void 0) { scissorRect = null; }
-        if (surfaceSelector === void 0) { surfaceSelector = 0; }
-        if (!entityCollector.entityHead)
-            return;
-        this.pExecuteRender(entityCollector, scissorRect);
-    };
-    CSSRendererBase.prototype._iRenderCascades = function (entityCollector, target, numCascades, scissorRects, cameras) {
-    };
-    CSSRendererBase.prototype.pCollectRenderables = function (entityCollector) {
-        ////reset head values
-        //this._renderableHead = null;
-        //
-        ////grab entity head
-        //var item:EntityListItem = entityCollector.entityHead;
-        //
-        ////set temp values for entry point and camera forward vector
-        //this._pCamera = entityCollector.camera;
-        //this._iEntryPoint = this._pCamera.scenePosition;
-        //this._pCameraForward = this._pCamera.transform.forwardVector;
-        //
-        ////iterate through all entities
-        //while (item) {
-        //	//item.entity._iCollectRenderables(this);
-        //	item = item.next;
-        //}
-    };
-    /**
-     * Renders the potentially visible geometry to the back buffer or texture. Only executed if everything is set up.
-     * @param entityCollector The EntityCollector object containing the potentially visible geometry.
-     * @param scissorRect
-     */
-    CSSRendererBase.prototype.pExecuteRender = function (entityCollector, scissorRect) {
-        if (scissorRect === void 0) { scissorRect = null; }
-        this.pCollectRenderables(entityCollector);
-        this.pDraw(entityCollector);
-    };
-    /**
-     * Performs the actual drawing of dom objects to the target.
-     *
-     * @param entityCollector The EntityCollector object containing the potentially visible dom objects.
-     */
-    CSSRendererBase.prototype.pDraw = function (entityCollector) {
-        throw new AbstractMethodError();
-    };
-    Object.defineProperty(CSSRendererBase.prototype, "_iBackgroundAlpha", {
-        get: function () {
-            return this._backgroundAlpha;
-        },
-        set: function (value) {
-            if (this._backgroundAlpha == value)
-                return;
-            this._backgroundAlpha = value;
-            this._pBackBufferInvalid = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     * @param billboard
-     */
-    CSSRendererBase.prototype.applyBillboard = function (billboard) {
-        //this._applyRenderable(<CSSRenderableBase> this._billboardRenderablePool.getItem(billboard));
-    };
-    /**
-     *
-     * @param lineSubMesh
-     */
-    CSSRendererBase.prototype.applyLineSubMesh = function (lineSubMesh) {
-        //this._applyRenderable(<CSSRenderableBase> this._billboardRenderablePool.getItem(lineSegment));
-    };
-    /**
-     *
-     * @param skybox
-     */
-    CSSRendererBase.prototype.applySkybox = function (skybox) {
-    };
-    /**
-     *
-     * @param triangleSubMesh
-     */
-    CSSRendererBase.prototype.applyTriangleSubMesh = function (triangleSubMesh) {
-    };
-    /**
-     *
-     * @param renderable
-     * @private
-     */
-    CSSRendererBase.prototype._applyRenderable = function (renderable) {
-        var material; // = <CSSMaterialBase> renderable.renderableOwner.material;
-        var entity = renderable.sourceEntity;
-        var position = entity.scenePosition;
-        if (material) {
-            //set ids for faster referencing
-            renderable.materialId = material._iMaterialId;
-            //				renderable.renderOrderId = material._iRenderOrderId;
-            renderable.cascaded = false;
-            // project onto camera's z-axis
-            position = this._iEntryPoint.subtract(position);
-            renderable.zIndex = entity.zOffset - position.dotProduct(this._pCameraForward);
-            //store reference to scene transform
-            renderable.renderSceneTransform = renderable.sourceEntity.getRenderSceneTransform(this._pCamera);
-            //store reference to next item in list
-            renderable.next = this._renderableHead;
-            this._renderableHead = renderable;
-        }
-    };
-    /**
-     * @private
-     */
-    CSSRendererBase.prototype.notifyScissorUpdate = function () {
-        if (this._scissorDirty)
-            return;
-        this._scissorDirty = true;
-        if (!this._scissorUpdated)
-            this._scissorUpdated = new RendererEvent(RendererEvent.SCISSOR_UPDATED);
-        this.dispatchEvent(this._scissorUpdated);
-    };
-    /**
-     * @private
-     */
-    CSSRendererBase.prototype.notifyViewportUpdate = function () {
-        if (this._viewportDirty)
-            return;
-        this._viewportDirty = true;
-        if (!this._viewPortUpdated)
-            this._viewPortUpdated = new RendererEvent(RendererEvent.VIEWPORT_UPDATED);
-        this.dispatchEvent(this._viewPortUpdated);
-    };
-    /**
-     *
-     */
-    CSSRendererBase.prototype.updateGlobalPos = function () {
-        this._viewPort.x = this._globalPos.x;
-        this._viewPort.y = this._globalPos.y;
-        this.notifyViewportUpdate();
-        this.notifyScissorUpdate();
-    };
-    CSSRendererBase.prototype._iCreateEntityCollector = function () {
-        throw new AbstractMethodError();
-    };
-    return CSSRendererBase;
-})(EventDispatcher);
-module.exports = CSSRendererBase;
-
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/events/RendererEvent":"awayjs-display/lib/events/RendererEvent"}],"awayjs-display/lib/render/IRenderer":[function(require,module,exports){
+},{"awayjs-display/lib/prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/render/IRenderer":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/sort/IEntitySorter":[function(require,module,exports){
 
@@ -16656,7 +16062,191 @@ var TextLineMetrics = (function () {
 })();
 module.exports = TextLineMetrics;
 
-},{}],"awayjs-display/lib/traverse/CSSEntityCollector":[function(require,module,exports){
+},{}],"awayjs-display/lib/textures/Single2DTexture":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Sampler2D = require("awayjs-core/lib/data/Sampler2D");
+var Image2D = require("awayjs-core/lib/data/Image2D");
+var Error = require("awayjs-core/lib/errors/Error");
+var ImageUtils = require("awayjs-core/lib/utils/ImageUtils");
+var TextureBase = require("awayjs-display/lib/textures/TextureBase");
+var Single2DTexture = (function (_super) {
+    __extends(Single2DTexture, _super);
+    function Single2DTexture(source) {
+        _super.call(this);
+        if (source instanceof Image2D)
+            this.sampler2D = new Sampler2D(source);
+        else
+            this.sampler2D = source;
+    }
+    Object.defineProperty(Single2DTexture.prototype, "assetType", {
+        /**
+         *
+         * @returns {string}
+         */
+        get: function () {
+            return Single2DTexture.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Single2DTexture.prototype, "sampler2D", {
+        /**
+         *
+         * @returns {Image2D}
+         */
+        get: function () {
+            return this._sampler2D;
+        },
+        set: function (value) {
+            if (this._sampler2D == value)
+                return;
+            if (!ImageUtils.isImage2DValid(value.image2D))
+                throw new Error("Invalid sampler2DData: Width and height must be power of 2 and cannot exceed 2048");
+            this._sampler2D = value;
+            this._setSize(this._sampler2D.rect.width, this._sampler2D.rect.height);
+            this.invalidateContent();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Single2DTexture.assetType = "[texture Single2DTexture]";
+    return Single2DTexture;
+})(TextureBase);
+module.exports = Single2DTexture;
+
+},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-core/lib/data/Sampler2D":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/utils/ImageUtils":undefined,"awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/SingleCubeTexture":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var SamplerCube = require("awayjs-core/lib/data/SamplerCube");
+var ImageCube = require("awayjs-core/lib/data/ImageCube");
+var TextureBase = require("awayjs-display/lib/textures/TextureBase");
+var SingleCubeTexture = (function (_super) {
+    __extends(SingleCubeTexture, _super);
+    function SingleCubeTexture(source) {
+        _super.call(this);
+        if (source instanceof ImageCube)
+            this.samplerCube = new SamplerCube(source);
+        else
+            this.samplerCube = source;
+    }
+    Object.defineProperty(SingleCubeTexture.prototype, "assetType", {
+        /**
+         *
+         * @returns {string}
+         */
+        get: function () {
+            return SingleCubeTexture.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SingleCubeTexture.prototype, "samplerCube", {
+        /**
+         *
+         * @returns {BitmapData}
+         */
+        get: function () {
+            return this._samplerCube;
+        },
+        set: function (value) {
+            if (this._samplerCube == value)
+                return;
+            this._samplerCube = value;
+            this.invalidateContent();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    SingleCubeTexture.assetType = "[texture SingleCubeTexture]";
+    return SingleCubeTexture;
+})(TextureBase);
+module.exports = SingleCubeTexture;
+
+},{"awayjs-core/lib/data/ImageCube":undefined,"awayjs-core/lib/data/SamplerCube":undefined,"awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/TextureBase":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AssetBase = require("awayjs-core/lib/library/AssetBase");
+/**
+ *
+ */
+var TextureBase = (function (_super) {
+    __extends(TextureBase, _super);
+    /**
+     *
+     */
+    function TextureBase() {
+        _super.call(this);
+        this._textureObject = new Array();
+        this._width = 1;
+        this._height = 1;
+    }
+    Object.defineProperty(TextureBase.prototype, "width", {
+        get: function () {
+            return this._width;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextureBase.prototype, "height", {
+        get: function () {
+            return this._height;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    TextureBase.prototype.invalidateContent = function () {
+        var len = this._textureObject.length;
+        for (var i = 0; i < len; i++)
+            this._textureObject[i].invalidate();
+    };
+    /**
+     *
+     * @private
+     */
+    TextureBase.prototype.invalidateSize = function () {
+        while (this._textureObject.length)
+            this._textureObject[0].dispose();
+    };
+    /**
+     * @inheritDoc
+     */
+    TextureBase.prototype.dispose = function () {
+        while (this._textureObject.length)
+            this._textureObject[0].dispose();
+    };
+    TextureBase.prototype._iAddTextureObject = function (textureObject) {
+        this._textureObject.push(textureObject);
+        return textureObject;
+    };
+    TextureBase.prototype._iRemoveTextureObject = function (textureObject) {
+        this._textureObject.splice(this._textureObject.indexOf(textureObject), 1);
+        return textureObject;
+    };
+    TextureBase.prototype._setSize = function (width, height) {
+        this._width = width;
+        this._height = height;
+    };
+    return TextureBase;
+})(AssetBase);
+module.exports = TextureBase;
+
+},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/traverse/CSSEntityCollector":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -17031,11 +16621,11 @@ var ShadowCasterCollector = (function (_super) {
 module.exports = ShadowCasterCollector;
 
 },{"awayjs-display/lib/traverse/CollectorBase":"awayjs-display/lib/traverse/CollectorBase"}],"awayjs-display/lib/utils/Cast":[function(require,module,exports){
-var BitmapData = require("awayjs-core/lib/data/BitmapData");
+var Image2D = require("awayjs-core/lib/data/Image2D");
+var Sampler2D = require("awayjs-core/lib/data/Sampler2D");
 var ByteArray = require("awayjs-core/lib/utils/ByteArray");
 var CastError = require("awayjs-display/lib/errors/CastError");
-var BitmapTexture = require("awayjs-core/lib/textures/BitmapTexture");
-var ImageTexture = require("awayjs-core/lib/textures/ImageTexture");
+var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 /**
  * Helper class for casting assets to usable objects
  */
@@ -17253,7 +16843,7 @@ var Cast = (function () {
         this._notClasses[name] = true;
         return name;
     };
-    Cast.bitmapData = function (data) {
+    Cast.image2D = function (data) {
         if (data == null)
             return null;
         if (typeof (data) == 'string')
@@ -17266,17 +16856,13 @@ var Cast = (function () {
                 data = new data(0, 0);
             }
         }
-        if (data instanceof BitmapData)
+        if (data instanceof Image2D)
             return data;
-        if (data instanceof ImageTexture)
-            data = data.htmlImageElement;
-        if (data instanceof HTMLImageElement) {
-            var imageElement = data;
-            var bitmapData = new BitmapData(imageElement.width, imageElement.height, true, 0x0);
-            bitmapData.draw(imageElement);
-            return bitmapData;
-        }
-        throw new CastError("Can't cast to BitmapData: " + data);
+        if (data instanceof Single2DTexture)
+            data = data.sampler2D;
+        if (data instanceof Sampler2D)
+            return data.image2D;
+        throw new CastError("Can't cast to BitmapImage2D: " + data);
     };
     Cast.bitmapTexture = function (data) {
         if (data == null)
@@ -17291,15 +16877,15 @@ var Cast = (function () {
                 data = new data(0, 0);
             }
         }
-        if (data instanceof BitmapTexture)
+        if (data instanceof Single2DTexture)
             return data;
         try {
-            var bmd = Cast.bitmapData(data);
-            return new BitmapTexture(bmd);
+            var bmd = Cast.image2D(data);
+            return new Single2DTexture(bmd);
         }
         catch (e) {
         }
-        throw new CastError("Can't cast to BitmapTexture: " + data);
+        throw new CastError("Can't cast to Single2DTexture: " + data);
     };
     Cast._hexChars = "0123456789abcdefABCDEF";
     Cast._notClasses = new Object();
@@ -17308,7 +16894,7 @@ var Cast = (function () {
 })();
 module.exports = Cast;
 
-},{"awayjs-core/lib/data/BitmapData":undefined,"awayjs-core/lib/textures/BitmapTexture":undefined,"awayjs-core/lib/textures/ImageTexture":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/errors/CastError":"awayjs-display/lib/errors/CastError"}]},{},[])
+},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-core/lib/data/Sampler2D":undefined,"awayjs-core/lib/utils/ByteArray":undefined,"awayjs-display/lib/errors/CastError":"awayjs-display/lib/errors/CastError","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}]},{},[])
 
 
 //# sourceMappingURL=awayjs-display.js.map
