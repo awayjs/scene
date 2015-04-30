@@ -6920,6 +6920,7 @@ var Billboard = (function (_super) {
         this._pIsEntity = true;
         this.onSizeChangedDelegate = function (event) { return _this.onSizeChanged(event); };
         this.material = material;
+        this._billboardWidth = material.width;
         this._billboardHeight = material.height;
         this._billboardRect = this._material.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
         //default bounds type
