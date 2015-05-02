@@ -7,7 +7,7 @@ import Scene						= require("awayjs-display/lib/containers/Scene");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import PointLight					= require("awayjs-display/lib/entities/PointLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
 
 class CubeMapShadowMapper extends ShadowMapperBase

@@ -2,7 +2,7 @@ import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodErr
 
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import EntityCollector				= require("awayjs-display/lib/traverse/EntityCollector");
 import ShadowCasterCollector		= require("awayjs-display/lib/traverse/ShadowCasterCollector");
 import Camera						= require("awayjs-display/lib/entities/Camera");

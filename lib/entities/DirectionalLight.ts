@@ -1,12 +1,10 @@
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import Partition					= require("awayjs-display/lib/partition/Partition");
-import DirectionalLightNode			= require("awayjs-display/lib/partition/DirectionalLightNode");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
@@ -139,7 +137,7 @@ class DirectionalLight extends LightBase implements IEntity
 		return target;
 	}
 
-	public _iCollectRenderables(rendererPool:IRendererPool)
+	public _applyRenderer(renderer:IRenderer)
 	{
 		//nothing to do here
 	}

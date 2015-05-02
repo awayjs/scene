@@ -2,7 +2,6 @@ import Image2D						= require("awayjs-core/lib/data/Image2D");
 
 import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
@@ -13,7 +12,18 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
  */
 class BasicMaterial extends MaterialBase implements IRenderObjectOwner
 {
+	public static assetType:string = "[materials BasicMaterial]";
+
     private _preserveAlpha:boolean = false;
+
+	/**
+	 *
+	 */
+	public get assetType():string
+	{
+		return BasicMaterial.assetType;
+	}
+
 	/**
 	 * Creates a new BasicMaterial object.
 	 *
@@ -57,17 +67,6 @@ class BasicMaterial extends MaterialBase implements IRenderObjectOwner
         this._preserveAlpha = value;
         this._pInvalidateRenderObject();
     }
-
-	/**
-	 *
-	 * @param renderer
-	 *
-	 * @internal
-	 */
-	public getRenderObject(renderablePool:IRenderablePool):IRenderObject
-	{
-		return renderablePool.getMaterialRenderObject(this);
-	}
 }
 
 export = BasicMaterial;

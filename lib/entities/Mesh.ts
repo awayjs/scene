@@ -5,6 +5,7 @@ import GeometryEvent				= require("awayjs-core/lib/events/GeometryEvent");
 import Box							= require("awayjs-core/lib/geom/Box");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import ISubMesh						= require("awayjs-display/lib/base/ISubMesh");
@@ -12,8 +13,6 @@ import ISubMeshClass				= require("awayjs-display/lib/base/ISubMeshClass");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Partition					= require("awayjs-display/lib/partition/Partition");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import SubMeshPool					= require("awayjs-display/lib/pool/SubMeshPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -541,7 +540,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 *
 	 * @internal
 	 */
-	public _iCollectRenderables(rendererPool:IRendererPool)
+	public _applyRenderer(renderer:IRenderer)
 	{
 		// Since this getter is invoked every iteration of the render loop, and
 		// the prefab construct could affect the sub-meshes, the prefab is
@@ -551,7 +550,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		var len:number /*uint*/ = this._subMeshes.length;
 		for (var i:number /*uint*/ = 0; i < len; i++)
-			this._subMeshes[i]._iCollectRenderable(rendererPool);
+			renderer._iApplyRenderableOwner(this._subMeshes[i]);
 	}
 
 	public _iInvalidateRenderableGeometries()

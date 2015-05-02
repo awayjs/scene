@@ -3,12 +3,10 @@ import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import Error						= require("awayjs-core/lib/errors/Error");
 
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import Partition					= require("awayjs-display/lib/partition/Partition");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import LightProbeNode				= require("awayjs-display/lib/partition/LightProbeNode");
-import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
@@ -56,7 +54,7 @@ class LightProbe extends LightBase implements IEntity
 		throw new Error("Object projection matrices are not supported for LightProbe objects!");
 	}
 
-	public _iCollectRenderables(rendererPool:IRendererPool)
+	public _applyRenderer(renderer:IRenderer)
 	{
 		//nothing to do here
 	}

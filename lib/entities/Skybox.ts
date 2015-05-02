@@ -1,6 +1,7 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
@@ -9,10 +10,7 @@ import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwne
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import Partition					= require("awayjs-display/lib/partition/Partition");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
-import SkyboxNode					= require("awayjs-display/lib/partition/SkyboxNode");
-import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -261,14 +259,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._renderables = new Array<IRenderable>();
 	}
 
-	public _iCollectRenderables(rendererPool:IRendererPool)
+	public _applyRenderer(renderer:IRenderer)
 	{
 		//skybox do not get collected in the standard entity list
-	}
-
-	public _iCollectRenderable(rendererPool:IRendererPool)
-	{
-
 	}
 
 	public _iAddRenderObject(renderObject:IRenderObject):IRenderObject
@@ -300,17 +293,6 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._renderables.splice(index, 1);
 
 		return renderable;
-	}
-
-	/**
-	 *
-	 * @param renderer
-	 *
-	 * @internal
-	 */
-	public getRenderObject(renderablePool:IRenderablePool)
-	{
-		return renderablePool.getSkyboxRenderObject(this);
 	}
 
 	public _pRegisterEntity(partition:Partition)

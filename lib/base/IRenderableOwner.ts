@@ -1,10 +1,10 @@
 import UVTransform				= require("awayjs-core/lib/geom/UVTransform");
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
+import IRenderer				= require("awayjs-display/lib/IRenderer");
 import IAnimator				= require("awayjs-display/lib/animators/IAnimator");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
-import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
 
 
 /**
@@ -38,13 +38,6 @@ interface IRenderableOwner extends IAsset
 	 * @private
 	 */
 	_iRemoveRenderable(renderable:IRenderable):IRenderable;
-
-	/**
-	 *
-	 * @param renderer
-	 * @private
-	 */
-	_iCollectRenderable(rendererPool:IRendererPool)
 }
 
 export = IRenderableOwner;

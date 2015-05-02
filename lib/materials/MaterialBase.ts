@@ -12,12 +12,10 @@ import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
-import IRenderablePool				= require("awayjs-display/lib/pool/IRenderablePool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
@@ -35,8 +33,6 @@ import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture
  */
 class MaterialBase extends AssetBase implements IRenderObjectOwner
 {
-	public static assetType:string = "[asset Material]";
-
 	private _colorTransform:ColorTransform;
 	private _frameRect:Rectangle;
 	private _alphaBlending:boolean = false;
@@ -99,15 +95,6 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	public _pWidth:number = 1;
 
 	private _onLightChangeDelegate:(event:Event) => void;
-
-
-	/**
-	 *
-	 */
-	public get assetType():string
-	{
-		return MaterialBase.assetType;
-	}
 
 	/**
 	 * Creates a new MaterialBase object.
@@ -654,17 +641,6 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 		this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
 
 		return renderObject;
-	}
-
-	/**
-	 *
-	 * @param renderer
-	 *
-	 * @internal
-	 */
-	public getRenderObject(renderablePool:IRenderablePool):IRenderObject
-	{
-		throw new AbstractMethodError();
 	}
 }
 

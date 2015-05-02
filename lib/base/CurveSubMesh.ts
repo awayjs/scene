@@ -3,7 +3,6 @@ import IAssetClass				= require("awayjs-core/lib/library/IAssetClass");
 
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
-import IRendererPool			= require("awayjs-display/lib/pool/IRendererPool");
 import SubMeshPool				= require("awayjs-display/lib/pool/SubMeshPool");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
@@ -62,11 +61,6 @@ class CurveSubMesh extends SubMeshBase implements ISubMesh
 	public dispose()
 	{
 		super.dispose();
-	}
-
-	public _iCollectRenderable(rendererPool:IRendererPool)
-	{
-		rendererPool.applyCurveSubMesh(this);
 	}
 }
 

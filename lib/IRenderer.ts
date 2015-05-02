@@ -2,6 +2,7 @@ import ImageBase					= require("awayjs-core/lib/data/ImageBase");
 import IEventDispatcher				= require("awayjs-core/lib/events/IEventDispatcher");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 
+import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IEntitySorter				= require("awayjs-display/lib/sort/IEntitySorter");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
@@ -93,7 +94,9 @@ interface IRenderer extends IEventDispatcher
 
 	_iRender(entityCollector:CollectorBase, target?:ImageBase, scissorRect?:Rectangle, surfaceSelector?:number);
 
-	_iRenderCascades(entityCollector:CollectorBase, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>)
+	_iRenderCascades(entityCollector:CollectorBase, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>);
+
+	_iApplyRenderableOwner(renderableOwner:IRenderableOwner);
 }
 
 export = IRenderer;

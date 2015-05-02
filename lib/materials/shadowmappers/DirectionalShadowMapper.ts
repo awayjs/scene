@@ -5,7 +5,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import FreeMatrixProjection			= require("awayjs-core/lib/projections/FreeMatrixProjection");
 
 import Scene						= require("awayjs-display/lib/containers/Scene");
-import IRenderer					= require("awayjs-display/lib/render/IRenderer");
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");

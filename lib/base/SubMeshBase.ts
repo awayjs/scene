@@ -5,7 +5,6 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -146,11 +145,6 @@ class SubMeshBase extends AssetBase
 		var len:number = this._renderables.length;
 		for (var i:number = 0; i < len; i++)
 			this._renderables[i].invalidateGeometry();
-	}
-
-	public _iCollectRenderable(rendererPool:IRendererPool)
-	{
-		throw new AbstractMethodError();
 	}
 
 	public _iGetExplicitMaterial():MaterialBase

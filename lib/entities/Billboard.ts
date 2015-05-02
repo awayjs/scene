@@ -3,13 +3,12 @@ import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import Partition					= require("awayjs-display/lib/partition/Partition");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import IRendererPool				= require("awayjs-display/lib/pool/IRendererPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -241,7 +240,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 			this._pRenderables[i].invalidateGeometry();
 	}
 
-	public _iCollectRenderables(rendererPool:IRendererPool)
+	public _applyRenderer(renderer:IRenderer)
 	{
 		// Since this getter is invoked every iteration of the render loop, and
 		// the prefab construct could affect the sub-meshes, the prefab is
@@ -249,12 +248,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
 
-		this._iCollectRenderable(rendererPool);
-	}
-
-	public _iCollectRenderable(rendererPool:IRendererPool)
-	{
-		rendererPool.applyBillboard(this);
+		renderer._iApplyRenderableOwner(this);
 	}
 
 	public _pRegisterEntity(partition:Partition)
