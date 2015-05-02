@@ -1,4 +1,6 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"awayjs-display/lib/animators/IAnimationSet":[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"awayjs-display/lib/IRenderer":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/animators/IAnimationSet":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/animators/IAnimator":[function(require,module,exports){
 
@@ -125,9 +127,6 @@ var CurveSubMesh = (function (_super) {
      */
     CurveSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-    };
-    CurveSubMesh.prototype._iCollectRenderable = function (rendererPool) {
-        rendererPool.applyCurveSubMesh(this);
     };
     CurveSubMesh.assetType = "[asset CurveSubMesh]";
     CurveSubMesh.assetClass = CurveSubGeometry;
@@ -2225,9 +2224,6 @@ var LineSubMesh = (function (_super) {
         this.material = null;
         _super.prototype.dispose.call(this);
     };
-    LineSubMesh.prototype._iCollectRenderable = function (rendererPool) {
-        rendererPool.applyLineSubMesh(this);
-    };
     LineSubMesh.assetType = "[asset LineSubMesh]";
     LineSubMesh.assetClass = LineSubGeometry;
     return LineSubMesh;
@@ -2512,7 +2508,6 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
@@ -2631,9 +2626,6 @@ var SubMeshBase = (function (_super) {
         for (var i = 0; i < len; i++)
             this._renderables[i].invalidateGeometry();
     };
-    SubMeshBase.prototype._iCollectRenderable = function (rendererPool) {
-        throw new AbstractMethodError();
-    };
     SubMeshBase.prototype._iGetExplicitMaterial = function () {
         return this._material;
     };
@@ -2641,7 +2633,7 @@ var SubMeshBase = (function (_super) {
 })(AssetBase);
 module.exports = SubMeshBase;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -3011,9 +3003,6 @@ var TriangleSubMesh = (function (_super) {
      */
     TriangleSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-    };
-    TriangleSubMesh.prototype._iCollectRenderable = function (rendererPool) {
-        rendererPool.applyTriangleSubMesh(this);
     };
     TriangleSubMesh.assetType = "[asset TriangleSubMesh]";
     TriangleSubMesh.assetClass = TriangleSubGeometry;
@@ -7049,16 +7038,13 @@ var Billboard = (function (_super) {
         for (var i = 0; i < len; i++)
             this._pRenderables[i].invalidateGeometry();
     };
-    Billboard.prototype._iCollectRenderables = function (rendererPool) {
+    Billboard.prototype._applyRenderer = function (renderer) {
         // Since this getter is invoked every iteration of the render loop, and
         // the prefab construct could affect the sub-meshes, the prefab is
         // validated here to give it a chance to rebuild.
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
-        this._iCollectRenderable(rendererPool);
-    };
-    Billboard.prototype._iCollectRenderable = function (rendererPool) {
-        rendererPool.applyBillboard(this);
+        renderer._iApplyRenderableOwner(this);
     };
     Billboard.prototype._pRegisterEntity = function (partition) {
         partition._iRegisterEntity(this);
@@ -7291,15 +7277,12 @@ var Camera = (function (_super) {
     Camera.prototype.unproject = function (nX, nY, sZ) {
         return this.sceneTransform.transformVector(this._projection.unproject(nX, nY, sZ));
     };
-    Camera.prototype._iCollectRenderables = function (rendererPool) {
+    Camera.prototype._applyRenderer = function (renderer) {
         // Since this getter is invoked every iteration of the render loop, and
         // the prefab construct could affect the sub-meshes, the prefab is
         // validated here to give it a chance to rebuild.
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
-        this._iCollectRenderable(rendererPool);
-    };
-    Camera.prototype._iCollectRenderable = function (rendererPool) {
         //nothing to do here
     };
     Camera.prototype._pRegisterEntity = function (partition) {
@@ -7422,7 +7405,7 @@ var DirectionalLight = (function (_super) {
         target.prepend(m);
         return target;
     };
-    DirectionalLight.prototype._iCollectRenderables = function (rendererPool) {
+    DirectionalLight.prototype._applyRenderer = function (renderer) {
         //nothing to do here
     };
     DirectionalLight.prototype._pRegisterEntity = function (partition) {
@@ -7522,7 +7505,7 @@ var LightProbe = (function (_super) {
         if (target === void 0) { target = null; }
         throw new Error("Object projection matrices are not supported for LightProbe objects!");
     };
-    LightProbe.prototype._iCollectRenderables = function (rendererPool) {
+    LightProbe.prototype._applyRenderer = function (renderer) {
         //nothing to do here
     };
     LightProbe.prototype._pRegisterEntity = function (partition) {
@@ -7704,16 +7687,13 @@ var LineSegment = (function (_super) {
         for (var i = 0; i < len; i++)
             this._pRenderables[i].invalidateGeometry();
     };
-    LineSegment.prototype._iCollectRenderables = function (rendererPool) {
+    LineSegment.prototype._applyRenderer = function (renderer) {
         // Since this getter is invoked every iteration of the render loop, and
         // the prefab construct could affect the sub-meshes, the prefab is
         // validated here to give it a chance to rebuild.
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
-        this._iCollectRenderable(rendererPool);
-    };
-    LineSegment.prototype._iCollectRenderable = function (rendererPool) {
-        rendererPool.applyLineSegment(this);
+        renderer._iApplyRenderableOwner(this);
     };
     LineSegment.prototype._pRegisterEntity = function (partition) {
         partition._iRegisterEntity(this);
@@ -8160,7 +8140,7 @@ var Mesh = (function (_super) {
      *
      * @internal
      */
-    Mesh.prototype._iCollectRenderables = function (rendererPool) {
+    Mesh.prototype._applyRenderer = function (renderer) {
         // Since this getter is invoked every iteration of the render loop, and
         // the prefab construct could affect the sub-meshes, the prefab is
         // validated here to give it a chance to rebuild.
@@ -8168,7 +8148,7 @@ var Mesh = (function (_super) {
             this._iSourcePrefab._iValidate();
         var len = this._subMeshes.length;
         for (var i = 0; i < len; i++)
-            this._subMeshes[i]._iCollectRenderable(rendererPool);
+            renderer._iApplyRenderableOwner(this._subMeshes[i]);
     };
     Mesh.prototype._iInvalidateRenderableGeometries = function () {
         var len = this._subMeshes.length;
@@ -8285,7 +8265,7 @@ var PointLight = (function (_super) {
         target.prepend(m);
         return target;
     };
-    PointLight.prototype._iCollectRenderables = function (rendererPool) {
+    PointLight.prototype._applyRenderer = function (renderer) {
         //nothing to do here
     };
     PointLight.prototype._pRegisterEntity = function (partition) {
@@ -8573,10 +8553,8 @@ var Skybox = (function (_super) {
             this._renderables[i].dispose();
         this._renderables = new Array();
     };
-    Skybox.prototype._iCollectRenderables = function (rendererPool) {
+    Skybox.prototype._applyRenderer = function (renderer) {
         //skybox do not get collected in the standard entity list
-    };
-    Skybox.prototype._iCollectRenderable = function (rendererPool) {
     };
     Skybox.prototype._iAddRenderObject = function (renderObject) {
         this._renderObjects.push(renderObject);
@@ -8594,15 +8572,6 @@ var Skybox = (function (_super) {
         var index = this._renderables.indexOf(renderable);
         this._renderables.splice(index, 1);
         return renderable;
-    };
-    /**
-     *
-     * @param renderer
-     *
-     * @internal
-     */
-    Skybox.prototype.getRenderObject = function (renderablePool) {
-        return renderablePool.getSkyboxRenderObject(this);
     };
     Skybox.prototype._pRegisterEntity = function (partition) {
         partition._iRegisterSkybox(this);
@@ -10014,6 +9983,16 @@ var BasicMaterial = (function (_super) {
             this.alpha = (smoothAlpha == null) ? 1 : Number(smoothAlpha);
         }
     }
+    Object.defineProperty(BasicMaterial.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return BasicMaterial.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(BasicMaterial.prototype, "preserveAlpha", {
         /**
          * Indicates whether alpha should be preserved - defaults to false
@@ -10030,82 +10009,12 @@ var BasicMaterial = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    /**
-     *
-     * @param renderer
-     *
-     * @internal
-     */
-    BasicMaterial.prototype.getRenderObject = function (renderablePool) {
-        return renderablePool.getMaterialRenderObject(this);
-    };
+    BasicMaterial.assetType = "[materials BasicMaterial]";
     return BasicMaterial;
 })(MaterialBase);
 module.exports = BasicMaterial;
 
-},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/materials/CurveMaterial":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-var TextureBase = require("awayjs-display/lib/textures/TextureBase");
-/**
- * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
- * using material methods to define their appearance.
- */
-var CurveMaterial = (function (_super) {
-    __extends(CurveMaterial, _super);
-    function CurveMaterial(textureColor, smoothAlpha, repeat, mipmap) {
-        if (textureColor === void 0) { textureColor = null; }
-        if (smoothAlpha === void 0) { smoothAlpha = null; }
-        if (repeat === void 0) { repeat = false; }
-        if (mipmap === void 0) { mipmap = false; }
-        _super.call(this);
-        this._preserveAlpha = false;
-        if (textureColor instanceof TextureBase) {
-            this.texture = textureColor;
-            this.smooth = (smoothAlpha == null) ? true : false;
-            this.repeat = repeat;
-            this.mipmap = mipmap;
-        }
-        else {
-            this.color = textureColor ? Number(textureColor) : 0xCCCCCC;
-            this.alpha = (smoothAlpha == null) ? 1 : Number(smoothAlpha);
-        }
-    }
-    Object.defineProperty(CurveMaterial.prototype, "preserveAlpha", {
-        /**
-         * Indicates whether alpha should be preserved - defaults to false
-         */
-        get: function () {
-            return this._preserveAlpha;
-        },
-        set: function (value) {
-            if (this._preserveAlpha == value)
-                return;
-            this._preserveAlpha = value;
-            this._pInvalidateRenderObject();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     * @param renderer
-     *
-     * @internal
-     */
-    CurveMaterial.prototype.getRenderObject = function (renderablePool) {
-        return renderablePool.getMaterialRenderObject(this);
-    };
-    return CurveMaterial;
-})(MaterialBase);
-module.exports = CurveMaterial;
-
-},{"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
+},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
 /**
  * Enumeration class for defining which lighting types affect the specific material
  * lighting component (diffuse and specular). This can be useful if, for example, you
@@ -10148,7 +10057,6 @@ var __extends = this.__extends || function (d, b) {
 };
 var BlendMode = require("awayjs-core/lib/data/BlendMode");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var Event = require("awayjs-core/lib/events/Event");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
@@ -10201,16 +10109,6 @@ var MaterialBase = (function (_super) {
         this._onLightChangeDelegate = function (event) { return _this.onLightsChange(event); };
         this.alphaPremultiplied = false; //TODO: work out why this is different for WebGL
     }
-    Object.defineProperty(MaterialBase.prototype, "assetType", {
-        /**
-         *
-         */
-        get: function () {
-            return MaterialBase.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(MaterialBase.prototype, "alpha", {
         /**
          * The alpha of the surface.
@@ -10676,21 +10574,11 @@ var MaterialBase = (function (_super) {
         this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
         return renderObject;
     };
-    /**
-     *
-     * @param renderer
-     *
-     * @internal
-     */
-    MaterialBase.prototype.getRenderObject = function (renderablePool) {
-        throw new AbstractMethodError();
-    };
-    MaterialBase.assetType = "[asset Material]";
     return MaterialBase;
 })(AssetBase);
 module.exports = MaterialBase;
 
-},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
+},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -12722,8 +12610,6 @@ module.exports = EntityNodePool;
 },{}],"awayjs-display/lib/pool/IRenderablePool":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/pool/IRenderable":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/pool/IRendererPool":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/pool/ITextureObject":[function(require,module,exports){
 
@@ -15369,9 +15255,7 @@ var PrimitiveTorusPrefab = (function (_super) {
 })(PrimitivePrefabBase);
 module.exports = PrimitiveTorusPrefab;
 
-},{"awayjs-display/lib/prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/render/IRenderer":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/sort/IEntitySorter":[function(require,module,exports){
+},{"awayjs-display/lib/prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/sort/IEntitySorter":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/sort/RenderableMergeSort":[function(require,module,exports){
 /**
