@@ -1987,7 +1987,7 @@ module.exports = DisplayObject;
 
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 
-},{}],"awayjs-display/lib/base/IRenderObjectOwner":[function(require,module,exports){
+},{}],"awayjs-display/lib/base/IRenderOwner":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/base/IRenderableOwner":[function(require,module,exports){
 
@@ -8350,7 +8350,7 @@ var Skybox = (function (_super) {
         _super.call(this);
         this._pAlphaThreshold = 0;
         this._pBlendMode = BlendMode.NORMAL;
-        this._renderObjects = new Array();
+        this._renders = new Array();
         this._renderables = new Array();
         this._mipmap = false;
         this._smooth = true;
@@ -8455,15 +8455,15 @@ var Skybox = (function (_super) {
             if (this._pBlendMode == value)
                 return;
             this._pBlendMode = value;
-            this._pInvalidateRenderObject();
+            this._pInvalidateRender();
         },
         enumerable: true,
         configurable: true
     });
-    Skybox.prototype._pInvalidateRenderObject = function () {
-        var len = this._renderObjects.length;
+    Skybox.prototype._pInvalidateRender = function () {
+        var len = this._renders.length;
         for (var i = 0; i < len; i++)
-            this._renderObjects[i].invalidateRenderObject();
+            this._renders[i].invalidateRender();
     };
     /**
      * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
@@ -8471,9 +8471,9 @@ var Skybox = (function (_super) {
      * @private
      */
     Skybox.prototype._pIinvalidatePasses = function () {
-        var len = this._renderObjects.length;
+        var len = this._renders.length;
         for (var i = 0; i < len; i++)
-            this._renderObjects[i].invalidatePasses();
+            this._renders[i].invalidatePasses();
     };
     Object.defineProperty(Skybox.prototype, "iOwners", {
         /**
@@ -8517,7 +8517,7 @@ var Skybox = (function (_super) {
         set: function (value) {
             //if (value && this._cubeMap && (value.format != this._cubeMap.format))
             if (value && this._cubeMap)
-                this._pInvalidateRenderObject();
+                this._pInvalidateRender();
             this._cubeMap = value;
         },
         enumerable: true,
@@ -8544,10 +8544,10 @@ var Skybox = (function (_super) {
     Skybox.prototype.dispose = function () {
         var i;
         var len;
-        len = this._renderObjects.length;
+        len = this._renders.length;
         for (i = 0; i < len; i++)
-            this._renderObjects[i].dispose();
-        this._renderObjects = new Array();
+            this._renders[i].dispose();
+        this._renders = new Array();
         var len = this._renderables.length;
         for (var i = 0; i < len; i++)
             this._renderables[i].dispose();
@@ -8556,13 +8556,13 @@ var Skybox = (function (_super) {
     Skybox.prototype._applyRenderer = function (renderer) {
         //skybox do not get collected in the standard entity list
     };
-    Skybox.prototype._iAddRenderObject = function (renderObject) {
-        this._renderObjects.push(renderObject);
-        return renderObject;
+    Skybox.prototype._iAddRender = function (render) {
+        this._renders.push(render);
+        return render;
     };
-    Skybox.prototype._iRemoveRenderObject = function (renderObject) {
-        this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
-        return renderObject;
+    Skybox.prototype._iRemoveRender = function (render) {
+        this._renders.splice(this._renders.indexOf(render), 1);
+        return render;
     };
     Skybox.prototype._iAddRenderable = function (renderable) {
         this._renderables.push(renderable);
@@ -9551,16 +9551,16 @@ var RenderableOwnerEvent = (function (_super) {
      * @param type The event type.
      * @param dataType An optional data type of the vertex data being updated.
      */
-    function RenderableOwnerEvent(type, renderObjectOwner) {
+    function RenderableOwnerEvent(type, renderOwner) {
         _super.call(this, type);
-        this._renderObjectOwner = renderObjectOwner;
+        this._renderOwner = renderOwner;
     }
-    Object.defineProperty(RenderableOwnerEvent.prototype, "renderObjectOwner", {
+    Object.defineProperty(RenderableOwnerEvent.prototype, "renderOwner", {
         /**
          * The renderobject owner of the renderable owner.
          */
         get: function () {
-            return this._renderObjectOwner;
+            return this._renderOwner;
         },
         enumerable: true,
         configurable: true
@@ -9571,12 +9571,12 @@ var RenderableOwnerEvent = (function (_super) {
      * @return An exact duplicate of the current object.
      */
     RenderableOwnerEvent.prototype.clone = function () {
-        return new RenderableOwnerEvent(this.type, this._renderObjectOwner);
+        return new RenderableOwnerEvent(this.type, this._renderOwner);
     };
     /**
      * Dispatched when a Renderable owners's render object owner has been updated.
      */
-    RenderableOwnerEvent.RENDER_OBJECT_OWNER_UPDATED = "renderObjectOwnerUpdated";
+    RenderableOwnerEvent.RENDER_OWNER_UPDATED = "renderOwnerUpdated";
     return RenderableOwnerEvent;
 })(Event);
 module.exports = RenderableOwnerEvent;
@@ -10004,7 +10004,7 @@ var BasicMaterial = (function (_super) {
             if (this._preserveAlpha == value)
                 return;
             this._preserveAlpha = value;
-            this._pInvalidateRenderObject();
+            this._pInvalidateRender();
         },
         enumerable: true,
         configurable: true
@@ -10083,7 +10083,7 @@ var MaterialBase = (function (_super) {
         _super.call(this);
         this._alphaBlending = false;
         this._alpha = 1;
-        this._renderObjects = new Array();
+        this._renders = new Array();
         this._pAlphaThreshold = 0;
         this._pAnimateUVs = false;
         this._enableLightFallOff = true;
@@ -10127,7 +10127,7 @@ var MaterialBase = (function (_super) {
             if (this._colorTransform == null)
                 this._colorTransform = new ColorTransform();
             this._colorTransform.alphaMultiplier = value;
-            this._pInvalidateRenderObject();
+            this._pInvalidateRender();
         },
         enumerable: true,
         configurable: true
@@ -10141,7 +10141,7 @@ var MaterialBase = (function (_super) {
         },
         set: function (value) {
             this._colorTransform = value;
-            this._pInvalidateRenderObject();
+            this._pInvalidateRender();
         },
         enumerable: true,
         configurable: true
@@ -10158,7 +10158,7 @@ var MaterialBase = (function (_super) {
             if (this._alphaBlending == value)
                 return;
             this._alphaBlending = value;
-            this._pInvalidateRenderObject();
+            this._pInvalidateRender();
         },
         enumerable: true,
         configurable: true
@@ -10208,7 +10208,7 @@ var MaterialBase = (function (_super) {
             this._pLightPicker = value;
             if (this._pLightPicker)
                 this._pLightPicker.addEventListener(Event.CHANGE, this._onLightChangeDelegate);
-            this._pInvalidateRenderObject();
+            this._pInvalidateRender();
         },
         enumerable: true,
         configurable: true
@@ -10384,10 +10384,10 @@ var MaterialBase = (function (_super) {
     MaterialBase.prototype.dispose = function () {
         var i;
         var len;
-        len = this._renderObjects.length;
+        len = this._renders.length;
         for (i = 0; i < len; i++)
-            this._renderObjects[i].dispose();
-        this._renderObjects = new Array();
+            this._renders[i].dispose();
+        this._renders = new Array();
     };
     Object.defineProperty(MaterialBase.prototype, "bothSides", {
         /**
@@ -10423,7 +10423,7 @@ var MaterialBase = (function (_super) {
             if (this._pBlendMode == value)
                 return;
             this._pBlendMode = value;
-            this._pInvalidateRenderObject();
+            this._pInvalidateRender();
         },
         enumerable: true,
         configurable: true
@@ -10507,7 +10507,7 @@ var MaterialBase = (function (_super) {
                 }
             }
         }
-        owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OBJECT_OWNER_UPDATED, this));
+        owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
     };
     /**
      * Removes an IRenderableOwner as owner.
@@ -10521,7 +10521,7 @@ var MaterialBase = (function (_super) {
             this._animationSet = null;
             this.invalidateAnimation();
         }
-        owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OBJECT_OWNER_UPDATED, this));
+        owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
     };
     Object.defineProperty(MaterialBase.prototype, "iOwners", {
         /**
@@ -10541,38 +10541,38 @@ var MaterialBase = (function (_super) {
      * @private
      */
     MaterialBase.prototype._pInvalidatePasses = function () {
-        var len = this._renderObjects.length;
+        var len = this._renders.length;
         for (var i = 0; i < len; i++)
-            this._renderObjects[i].invalidatePasses();
+            this._renders[i].invalidatePasses();
     };
     MaterialBase.prototype.invalidateAnimation = function () {
-        var len = this._renderObjects.length;
+        var len = this._renders.length;
         for (var i = 0; i < len; i++)
-            this._renderObjects[i].invalidateAnimation();
+            this._renders[i].invalidateAnimation();
     };
-    MaterialBase.prototype._pInvalidateRenderObject = function () {
-        var len = this._renderObjects.length;
+    MaterialBase.prototype._pInvalidateRender = function () {
+        var len = this._renders.length;
         for (var i = 0; i < len; i++)
-            this._renderObjects[i].invalidateRenderObject();
+            this._renders[i].invalidateRender();
     };
     /**
      * Called when the light picker's configuration changed.
      */
     MaterialBase.prototype.onLightsChange = function (event) {
-        this._pInvalidateRenderObject();
+        this._pInvalidateRender();
     };
     MaterialBase.prototype._pNotifySizeChanged = function () {
         if (!this._sizeChanged)
             this._sizeChanged = new MaterialEvent(MaterialEvent.SIZE_CHANGED);
         this.dispatchEvent(this._sizeChanged);
     };
-    MaterialBase.prototype._iAddRenderObject = function (renderObject) {
-        this._renderObjects.push(renderObject);
-        return renderObject;
+    MaterialBase.prototype._iAddRender = function (render) {
+        this._renders.push(render);
+        return render;
     };
-    MaterialBase.prototype._iRemoveRenderObject = function (renderObject) {
-        this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
-        return renderObject;
+    MaterialBase.prototype._iRemoveRender = function (render) {
+        this._renders.splice(this._renders.indexOf(render), 1);
+        return render;
     };
     return MaterialBase;
 })(AssetBase);
@@ -12375,141 +12375,7 @@ var RaycastPicker = (function () {
 })();
 module.exports = RaycastPicker;
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/traverse/RaycastCollector":"awayjs-display/lib/traverse/RaycastCollector"}],"awayjs-display/lib/pool/CSSBillboardRenderable":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-/**
- * @class away.pool.RenderableListItem
- */
-var CSSBillboardRenderable = (function (_super) {
-    __extends(CSSBillboardRenderable, _super);
-    function CSSBillboardRenderable(pool, billboard) {
-        _super.call(this, pool, billboard, billboard);
-        var div = document.createElement("div");
-        div.onmousedown = function (event) { return false; };
-        this.htmlElement = div;
-        var style = div.style;
-        style.position = "absolute";
-        style.transformOrigin = style["-webkit-transform-origin"] = style["-moz-transform-origin"] = style["-o-transform-origin"] = style["-ms-transform-origin"] = "0% 0%";
-        var img = document.createElement("div");
-        div.appendChild(img);
-        img.className = "material" + billboard.material.id;
-    }
-    CSSBillboardRenderable.id = "billboard";
-    return CSSBillboardRenderable;
-})(CSSRenderableBase);
-module.exports = CSSBillboardRenderable;
-
-},{"awayjs-display/lib/pool/CSSRenderableBase":"awayjs-display/lib/pool/CSSRenderableBase"}],"awayjs-display/lib/pool/CSSLineSegmentRenderable":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-/**
- * @class away.pool.RenderableListItem
- */
-var CSSLineSegmentRenderable = (function (_super) {
-    __extends(CSSLineSegmentRenderable, _super);
-    function CSSLineSegmentRenderable(pool, lineSegment) {
-        _super.call(this, pool, lineSegment, lineSegment);
-        var div = document.createElement("div");
-        div.onmousedown = function (event) { return false; };
-        this.htmlElement = div;
-        var style = div.style;
-        style.position = "absolute";
-        style.transformOrigin = style["-webkit-transform-origin"] = style["-moz-transform-origin"] = style["-o-transform-origin"] = style["-ms-transform-origin"] = "0% 0%";
-        var img = document.createElement("div");
-        div.appendChild(img);
-        img.className = "material" + lineSegment.material.id;
-    }
-    CSSLineSegmentRenderable.id = "lineSegment";
-    return CSSLineSegmentRenderable;
-})(CSSRenderableBase);
-module.exports = CSSLineSegmentRenderable;
-
-},{"awayjs-display/lib/pool/CSSRenderableBase":"awayjs-display/lib/pool/CSSRenderableBase"}],"awayjs-display/lib/pool/CSSRenderableBase":[function(require,module,exports){
-/**
- * @class away.pool.RenderableListItem
- */
-var CSSRenderableBase = (function () {
-    /**
-     *
-     * @param sourceEntity
-     * @param material
-     * @param animator
-     */
-    function CSSRenderableBase(pool, sourceEntity, renderableOwner) {
-        //store a reference to the pool for later disposal
-        this._pool = pool;
-        this.sourceEntity = sourceEntity;
-        this.renderableOwner = renderableOwner;
-    }
-    /**
-     *
-     */
-    CSSRenderableBase.prototype.dispose = function () {
-        this._pool.disposeItem(this.renderableOwner);
-    };
-    /**
-     *
-     */
-    CSSRenderableBase.prototype.invalidateGeometry = function () {
-    };
-    /**
-     *
-     */
-    CSSRenderableBase.prototype.invalidateIndexData = function () {
-    };
-    /**
-     *
-     */
-    CSSRenderableBase.prototype.invalidateVertexData = function (dataType) {
-    };
-    return CSSRenderableBase;
-})();
-module.exports = CSSRenderableBase;
-
-},{}],"awayjs-display/lib/pool/CSSSkyboxRenderable":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var CSSRenderableBase = require("awayjs-display/lib/pool/CSSRenderableBase");
-/**
- * @class away.pool.CSSSkyboxRenderable
- */
-var CSSSkyboxRenderable = (function (_super) {
-    __extends(CSSSkyboxRenderable, _super);
-    function CSSSkyboxRenderable(pool, skyBox) {
-        _super.call(this, pool, skyBox, skyBox);
-        var div = document.createElement("div");
-        div.onmousedown = function (event) { return false; };
-        this.htmlElement = div;
-        var style = div.style;
-        var img;
-        //create the six images that make up the skybox
-        style.position = "absolute";
-        style.transformOrigin = style["-webkit-transform-origin"] = style["-moz-transform-origin"] = style["-o-transform-origin"] = style["-ms-transform-origin"] = "0% 0%";
-        img = document.createElement("div");
-        div.appendChild(img);
-        img.className = "material" + skyBox.id;
-    }
-    CSSSkyboxRenderable.id = "skybox";
-    return CSSSkyboxRenderable;
-})(CSSRenderableBase);
-module.exports = CSSSkyboxRenderable;
-
-},{"awayjs-display/lib/pool/CSSRenderableBase":"awayjs-display/lib/pool/CSSRenderableBase"}],"awayjs-display/lib/pool/EntityListItemPool":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/traverse/RaycastCollector":"awayjs-display/lib/traverse/RaycastCollector"}],"awayjs-display/lib/pool/EntityListItemPool":[function(require,module,exports){
 var EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
 /**
  * @class away.pool.EntityListItemPool
@@ -12605,13 +12471,11 @@ module.exports = EntityNodePool;
 
 },{}],"awayjs-display/lib/pool/IEntityNodeClass":[function(require,module,exports){
 
-},{}],"awayjs-display/lib/pool/IRenderObject":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/pool/IRenderablePool":[function(require,module,exports){
-
 },{}],"awayjs-display/lib/pool/IRenderable":[function(require,module,exports){
 
-},{}],"awayjs-display/lib/pool/ITextureObject":[function(require,module,exports){
+},{}],"awayjs-display/lib/pool/IRender":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/pool/ITextureVO":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/pool/SubMeshPool":[function(require,module,exports){
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
@@ -15352,8 +15216,8 @@ var RenderableMergeSort = (function () {
             var aid = head.renderOrderId;
             var bid = headB.renderOrderId;
             if (aid == bid) {
-                var ma = head.renderObjectId;
-                var mb = headB.renderObjectId;
+                var ma = head.renderId;
+                var mb = headB.renderId;
                 if (ma == mb) {
                     if (head.zIndex < headB.zIndex)
                         cmp = 1;
@@ -16074,7 +15938,7 @@ var TextureBase = (function (_super) {
      */
     function TextureBase() {
         _super.call(this);
-        this._textureObject = new Array();
+        this._textureVO = new Array();
         this._width = 1;
         this._height = 1;
     }
@@ -16096,32 +15960,32 @@ var TextureBase = (function (_super) {
      *
      */
     TextureBase.prototype.invalidateContent = function () {
-        var len = this._textureObject.length;
+        var len = this._textureVO.length;
         for (var i = 0; i < len; i++)
-            this._textureObject[i].invalidate();
+            this._textureVO[i].invalidate();
     };
     /**
      *
      * @private
      */
     TextureBase.prototype.invalidateSize = function () {
-        while (this._textureObject.length)
-            this._textureObject[0].dispose();
+        while (this._textureVO.length)
+            this._textureVO[0].dispose();
     };
     /**
      * @inheritDoc
      */
     TextureBase.prototype.dispose = function () {
-        while (this._textureObject.length)
-            this._textureObject[0].dispose();
+        while (this._textureVO.length)
+            this._textureVO[0].dispose();
     };
-    TextureBase.prototype._iAddTextureObject = function (textureObject) {
-        this._textureObject.push(textureObject);
-        return textureObject;
+    TextureBase.prototype._iAddTextureVO = function (textureVO) {
+        this._textureVO.push(textureVO);
+        return textureVO;
     };
-    TextureBase.prototype._iRemoveTextureObject = function (textureObject) {
-        this._textureObject.splice(this._textureObject.indexOf(textureObject), 1);
-        return textureObject;
+    TextureBase.prototype._iRemoveTextureVO = function (textureVO) {
+        this._textureVO.splice(this._textureVO.indexOf(textureVO), 1);
+        return textureVO;
     };
     TextureBase.prototype._setSize = function (width, height) {
         this._width = width;
