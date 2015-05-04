@@ -1,8 +1,7 @@
 import Image2D						= require("awayjs-core/lib/data/Image2D");
 
-import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
+import IRender						= require("awayjs-display/lib/pool/IRender");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
@@ -10,7 +9,7 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
  * using material methods to define their appearance.
  */
-class BasicMaterial extends MaterialBase implements IRenderObjectOwner
+class BasicMaterial extends MaterialBase
 {
 	public static assetType:string = "[materials BasicMaterial]";
 
@@ -65,7 +64,7 @@ class BasicMaterial extends MaterialBase implements IRenderObjectOwner
         if (this._preserveAlpha == value)
             return;
         this._preserveAlpha = value;
-        this._pInvalidateRenderObject();
+        this._pInvalidateRender();
     }
 }
 

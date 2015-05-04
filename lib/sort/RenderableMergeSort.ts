@@ -116,8 +116,8 @@ class RenderableMergeSort implements IEntitySorter
 			var bid:number = headB.renderOrderId;
 
 			if (aid == bid) {
-				var ma:number = head.renderObjectId;
-				var mb:number = headB.renderObjectId;
+				var ma:number = head.renderId;
+				var mb:number = headB.renderId;
 
 				if (ma == mb) {
 					if (head.zIndex < headB.zIndex)

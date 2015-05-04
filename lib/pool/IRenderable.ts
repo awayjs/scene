@@ -21,7 +21,7 @@ interface IRenderable
 	/**
 	 *
 	 */
-	renderObjectId:number;
+	renderId:number;
 
 	/**
 	 *

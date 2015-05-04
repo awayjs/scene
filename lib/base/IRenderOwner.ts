@@ -1,16 +1,16 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
 import IAnimationSet			= require("awayjs-display/lib/animators/IAnimationSet");
-import IRenderObject			= require("awayjs-display/lib/pool/IRenderObject");
+import IRender					= require("awayjs-display/lib/pool/IRender");
 import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
 import LightPickerBase			= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 
 /**
- * IRenderObjectOwner provides an interface for objects that can use materials.
+ * IRenderOwner provides an interface for objects that can use materials.
  *
- * @interface away.base.IRenderObjectOwner
+ * @interface away.base.IRenderOwner
  */
-interface IRenderObjectOwner extends IAsset
+interface IRenderOwner extends IAsset
 {
 	alphaThreshold:number;
 
@@ -26,9 +26,9 @@ interface IRenderObjectOwner extends IAsset
 
 	iOwners:Array<IRenderableOwner>
 
-	_iAddRenderObject(renderObject:IRenderObject):IRenderObject;
+	_iAddRender(render:IRender):IRender;
 
-	_iRemoveRenderObject(renderObject:IRenderObject):IRenderObject;
+	_iRemoveRender(render:IRender):IRender;
 }
 
-export = IRenderObjectOwner;
+export = IRenderOwner;

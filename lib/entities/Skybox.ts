@@ -6,11 +6,11 @@ import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
-import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
+import IRenderOwner					= require("awayjs-display/lib/base/IRenderOwner");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import Partition					= require("awayjs-display/lib/partition/Partition");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
+import IRender						= require("awayjs-display/lib/pool/IRender");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -21,7 +21,7 @@ import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeText
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderObjectOwner
+class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner
 {
 	public static assetType:string = "[asset Skybox]";
 
@@ -30,14 +30,13 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _animationSet:IAnimationSet;
 	public _pLightPicker:LightPickerBase;
 	public _pBlendMode:string = BlendMode.NORMAL;
-	private _renderObjects:Array<IRenderObject> = new Array<IRenderObject>();
+	private _renders:Array<IRender> = new Array<IRender>();
 	private _renderables:Array<IRenderable> = new Array<IRenderable>();
 	private _uvTransform:UVTransform;
 	private _owners:Array<IRenderableOwner>;
 	private _mipmap:boolean = false;
 	private _smooth:boolean = true;
-	
-	private _material:MaterialBase;
+
 	private _animator:IAnimator;
 
 	/**
@@ -142,14 +141,14 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._pBlendMode = value;
 
-		this._pInvalidateRenderObject();
+		this._pInvalidateRender();
 	}
 
-	public _pInvalidateRenderObject()
+	public _pInvalidateRender()
 	{
-		var len:number = this._renderObjects.length;
+		var len:number = this._renders.length;
 		for (var i:number = 0; i < len; i++)
-			this._renderObjects[i].invalidateRenderObject();
+			this._renders[i].invalidateRender();
 	}
 
 	/**
@@ -159,9 +158,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	 */
 	public _pIinvalidatePasses()
 	{
-		var len:number = this._renderObjects.length;
+		var len:number = this._renders.length;
 		for (var i:number = 0; i < len; i++)
-			this._renderObjects[i].invalidatePasses();
+			this._renders[i].invalidatePasses();
 	}
 
 	/**
@@ -204,7 +203,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	{
 		//if (value && this._cubeMap && (value.format != this._cubeMap.format))
 		if (value && this._cubeMap)
-			this._pInvalidateRenderObject();
+			this._pInvalidateRender();
 
 		this._cubeMap = value;
 	}
@@ -246,11 +245,11 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		var i:number;
 		var len:number;
 
-		len = this._renderObjects.length;
+		len = this._renders.length;
 		for (i = 0; i < len; i++)
-			this._renderObjects[i].dispose();
+			this._renders[i].dispose();
 
-		this._renderObjects = new Array<IRenderObject>();
+		this._renders = new Array<IRender>();
 
 		var len:number = this._renderables.length;
 		for (var i:number = 0; i < len; i++)
@@ -264,18 +263,18 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		//skybox do not get collected in the standard entity list
 	}
 
-	public _iAddRenderObject(renderObject:IRenderObject):IRenderObject
+	public _iAddRender(render:IRender):IRender
 	{
-		this._renderObjects.push(renderObject);
+		this._renders.push(render);
 
-		return renderObject;
+		return render;
 	}
 
-	public _iRemoveRenderObject(renderObject:IRenderObject):IRenderObject
+	public _iRemoveRender(render:IRender):IRender
 	{
-		this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
+		this._renders.splice(this._renders.indexOf(render), 1);
 
-		return renderObject;
+		return render;
 	}
 
 	public _iAddRenderable(renderable:IRenderable):IRenderable

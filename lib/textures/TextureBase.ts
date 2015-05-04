@@ -1,14 +1,14 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 import AssetBase				= require("awayjs-core/lib/library/AssetBase");
 
-import ITextureObject			= require("awayjs-display/lib/pool/ITextureObject");
+import ITextureVO			= require("awayjs-display/lib/pool/ITextureVO");
 
 /**
  *
  */
 class TextureBase extends AssetBase implements IAsset
 {
-	private _textureObject:Array<ITextureObject> = new Array<ITextureObject>();
+	private _textureVO:Array<ITextureVO> = new Array<ITextureVO>();
 
 	public _width:number = 1;
 	public _height:number = 1;
@@ -36,9 +36,9 @@ class TextureBase extends AssetBase implements IAsset
 	 */
 	public invalidateContent():void
 	{
-		var len:number = this._textureObject.length;
+		var len:number = this._textureVO.length;
 		for (var i:number = 0; i < len; i++)
-			this._textureObject[i].invalidate();
+			this._textureVO[i].invalidate();
 	}
 
 	/**
@@ -47,8 +47,8 @@ class TextureBase extends AssetBase implements IAsset
 	 */
 	public invalidateSize():void
 	{
-		while (this._textureObject.length)
-			this._textureObject[0].dispose();
+		while (this._textureVO.length)
+			this._textureVO[0].dispose();
 	}
 
 	/**
@@ -56,23 +56,23 @@ class TextureBase extends AssetBase implements IAsset
 	 */
 	public dispose()
 	{
-		while (this._textureObject.length)
-			this._textureObject[0].dispose();
+		while (this._textureVO.length)
+			this._textureVO[0].dispose();
 	}
 
 
-	public _iAddTextureObject(textureObject:ITextureObject):ITextureObject
+	public _iAddTextureVO(textureVO:ITextureVO):ITextureVO
 	{
-		this._textureObject.push(textureObject);
+		this._textureVO.push(textureVO);
 
-		return textureObject;
+		return textureVO;
 	}
 
-	public _iRemoveTextureObject(textureObject:ITextureObject):ITextureObject
+	public _iRemoveTextureVO(textureVO:ITextureVO):ITextureVO
 	{
-		this._textureObject.splice(this._textureObject.indexOf(textureObject), 1);
+		this._textureVO.splice(this._textureVO.indexOf(textureVO), 1);
 
-		return textureObject;
+		return textureVO;
 	}
 
 	public _setSize(width:number, height:number)

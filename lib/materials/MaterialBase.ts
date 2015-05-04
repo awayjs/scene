@@ -9,9 +9,9 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import IRenderObjectOwner			= require("awayjs-display/lib/base/IRenderObjectOwner");
+import IRenderOwner					= require("awayjs-display/lib/base/IRenderOwner");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
-import IRenderObject				= require("awayjs-display/lib/pool/IRenderObject");
+import IRender						= require("awayjs-display/lib/pool/IRender");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
@@ -31,7 +31,7 @@ import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture
  * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
  * shaders, or entire new material frameworks.
  */
-class MaterialBase extends AssetBase implements IRenderObjectOwner
+class MaterialBase extends AssetBase implements IRenderOwner
 {
 	private _colorTransform:ColorTransform;
 	private _frameRect:Rectangle;
@@ -39,7 +39,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	private _alpha:number = 1;
 	
 	private _sizeChanged:MaterialEvent;
-	private _renderObjects:Array<IRenderObject> = new Array<IRenderObject>();
+	private _renders:Array<IRender> = new Array<IRender>();
 
 	public _pAlphaThreshold:number = 0;
 	public _pAnimateUVs:boolean = false;
@@ -137,7 +137,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 
 		this._colorTransform.alphaMultiplier = value;
 
-		this._pInvalidateRenderObject();
+		this._pInvalidateRender();
 	}
 
 	/**
@@ -152,7 +152,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	{
 		this._colorTransform = value;
 
-		this._pInvalidateRenderObject();
+		this._pInvalidateRender();
 	}
 
 	/**
@@ -171,7 +171,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 
 		this._alphaBlending = value;
 
-		this._pInvalidateRenderObject();
+		this._pInvalidateRender();
 	}
 
 	public get frameRect():Rectangle
@@ -220,7 +220,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 		if (this._pLightPicker)
 			this._pLightPicker.addEventListener(Event.CHANGE, this._onLightChangeDelegate);
 
-		this._pInvalidateRenderObject();
+		this._pInvalidateRender();
 	}
 
 	/**
@@ -417,11 +417,11 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 		var i:number;
 		var len:number;
 
-		len = this._renderObjects.length;
+		len = this._renders.length;
 		for (i = 0; i < len; i++)
-			this._renderObjects[i].dispose();
+			this._renders[i].dispose();
 
-		this._renderObjects = new Array<IRenderObject>();
+		this._renders = new Array<IRender>();
 	}
 
 	/**
@@ -464,7 +464,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 
 		this._pBlendMode = value;
 
-		this._pInvalidateRenderObject();
+		this._pInvalidateRender();
 	}
 
 	/**
@@ -555,7 +555,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 			}
 		}
 
-		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OBJECT_OWNER_UPDATED, this));
+		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
 	}
 
 	/**
@@ -574,7 +574,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 			this.invalidateAnimation();
 		}
 
-		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OBJECT_OWNER_UPDATED, this));
+		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
 	}
 
 	/**
@@ -594,23 +594,23 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	 */
 	public _pInvalidatePasses()
 	{
-		var len:number = this._renderObjects.length;
+		var len:number = this._renders.length;
 		for (var i:number = 0; i < len; i++)
-			this._renderObjects[i].invalidatePasses();
+			this._renders[i].invalidatePasses();
 	}
 
 	private invalidateAnimation()
 	{
-		var len:number = this._renderObjects.length;
+		var len:number = this._renders.length;
 		for (var i:number = 0; i < len; i++)
-			this._renderObjects[i].invalidateAnimation();
+			this._renders[i].invalidateAnimation();
 	}
 	
-	public _pInvalidateRenderObject()
+	public _pInvalidateRender()
 	{
-		var len:number = this._renderObjects.length;
+		var len:number = this._renders.length;
 		for (var i:number = 0; i < len; i++)
-			this._renderObjects[i].invalidateRenderObject();
+			this._renders[i].invalidateRender();
 	}
 
 	/**
@@ -618,7 +618,7 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 	 */
 	private onLightsChange(event:Event)
 	{
-		this._pInvalidateRenderObject();
+		this._pInvalidateRender();
 	}
 
 	public _pNotifySizeChanged()
@@ -629,18 +629,18 @@ class MaterialBase extends AssetBase implements IRenderObjectOwner
 		this.dispatchEvent(this._sizeChanged);
 	}
 
-	public _iAddRenderObject(renderObject:IRenderObject):IRenderObject
+	public _iAddRender(render:IRender):IRender
 	{
-		this._renderObjects.push(renderObject);
+		this._renders.push(render);
 
-		return renderObject;
+		return render;
 	}
 
-	public _iRemoveRenderObject(renderObject:IRenderObject):IRenderObject
+	public _iRemoveRender(render:IRender):IRender
 	{
-		this._renderObjects.splice(this._renderObjects.indexOf(renderObject), 1);
+		this._renders.splice(this._renders.indexOf(render), 1);
 
-		return renderObject;
+		return render;
 	}
 }
 
