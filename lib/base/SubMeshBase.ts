@@ -1,6 +1,7 @@
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -22,6 +23,7 @@ class SubMeshBase extends AssetBase
 {
 	public _pParentMesh:Mesh;
 	public _uvTransform:UVTransform;
+	public _colorTransform:ColorTransform;
 
 	public _iIndex:number = 0;
 
@@ -90,7 +92,18 @@ class SubMeshBase extends AssetBase
 	{
 		this._uvTransform = value;
 	}
+	/**
+	 *
+	 */
+	public get colorTransform():ColorTransform
+	{
+		return this._colorTransform;// || this._pParentMesh._colorTransform;
+	}
 
+	public set colorTransform(value:ColorTransform)
+	{
+		this._colorTransform = value;
+	}
 	/**
 	 * Creates a new SubMeshBase object
 	 */

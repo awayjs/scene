@@ -1,4 +1,5 @@
 import UVTransform				= require("awayjs-core/lib/geom/UVTransform");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
 import IRenderer				= require("awayjs-display/lib/IRenderer");
@@ -24,6 +25,10 @@ interface IRenderableOwner extends IAsset
 	 */
 	uvTransform:UVTransform;
 
+	/**
+	 * Color transform of the object to be applied to the final color of the pixel in the fragment shader
+	 */
+	colorTransform:ColorTransform;
 	/**
 	 *
 	 * @param renderable

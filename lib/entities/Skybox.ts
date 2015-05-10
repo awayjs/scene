@@ -1,5 +1,6 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
@@ -33,6 +34,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _renders:Array<IRender> = new Array<IRender>();
 	private _renderables:Array<IRenderable> = new Array<IRenderable>();
 	private _uvTransform:UVTransform;
+	private _colorTransform:ColorTransform;
 	private _owners:Array<IRenderableOwner>;
 	private _mipmap:boolean = false;
 	private _smooth:boolean = true;
@@ -190,7 +192,18 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	{
 		this._uvTransform = value;
 	}
+	/**
+	 *
+	 */
+	public get colorTransform():ColorTransform
+	{
+		return this._colorTransform;// || this._pParentMesh._colorTransform;
+	}
 
+	public set colorTransform(value:ColorTransform)
+	{
+		this._colorTransform = value;
+	}
 	/**
 	* The cube texture to use as the skybox.
 	*/

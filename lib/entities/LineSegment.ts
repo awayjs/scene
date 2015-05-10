@@ -1,5 +1,6 @@
 ﻿import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
@@ -22,6 +23,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	private _animator:IAnimator;
 	private _material:MaterialBase;
 	private _uvTransform:UVTransform;
+	private _colorTransform:ColorTransform;
 
 	public _startPosition:Vector3D;
 	public _endPosition:Vector3D;
@@ -127,6 +129,18 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	public set uvTransform(value:UVTransform)
 	{
 		this._uvTransform = value;
+	}
+	/**
+	 *
+	 */
+	public get colorTransform():ColorTransform
+	{
+		return this._colorTransform;// || this._pParentMesh._colorTransform;
+	}
+
+	public set colorTransform(value:ColorTransform)
+	{
+		this._colorTransform = value;
 	}
 
 	/**

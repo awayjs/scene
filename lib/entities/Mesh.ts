@@ -4,6 +4,7 @@ import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
 import GeometryEvent				= require("awayjs-core/lib/events/GeometryEvent");
 import Box							= require("awayjs-core/lib/geom/Box");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -27,6 +28,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	public static assetType:string = "[asset Mesh]";
 
 	private _uvTransform:UVTransform;
+	private _colorTransform:ColorTransform;
 
 	private _subMeshes:Array<ISubMesh>;
 	private _geometry:Geometry;
@@ -205,6 +207,18 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		this._uvTransform = value;
 	}
 
+	/**
+	 *
+	 */
+	public get colorTransform():ColorTransform
+	{
+		return this._colorTransform;
+	}
+
+	public set colorTransform(value:ColorTransform)
+	{
+		this._colorTransform = value;
+	}
 	/**
 	 * Create a new Mesh object.
 	 *

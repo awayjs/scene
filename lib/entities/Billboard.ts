@@ -2,6 +2,7 @@ import Image2D						= require("awayjs-core/lib/data/Image2D");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -58,6 +59,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	private _billboardRect:Rectangle;
 	private _material:MaterialBase;
 	private _uvTransform:UVTransform;
+	private _colorTransform:ColorTransform;
 
 	private onSizeChangedDelegate:(event:MaterialEvent) => void;
 
@@ -171,7 +173,18 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	{
 		this._uvTransform = value;
 	}
+	/**
+	 *
+	 */
+	public get colorTransform():ColorTransform
+	{
+		return this._colorTransform;// || this._pParentMesh._colorTransform;
+	}
 
+	public set colorTransform(value:ColorTransform)
+	{
+		this._colorTransform = value;
+	}
 	constructor(material:MaterialBase, pixelSnapping:string = "auto", smoothing:boolean = false)
 	{
 		super();

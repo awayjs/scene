@@ -34,6 +34,7 @@ import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture
 class MaterialBase extends AssetBase implements IRenderOwner
 {
 	private _colorTransform:ColorTransform;
+	private _pUseColorTransform:boolean = false;
 	private _frameRect:Rectangle;
 	private _alphaBlending:boolean = false;
 	private _alpha:number = 1;
@@ -344,6 +345,22 @@ class MaterialBase extends AssetBase implements IRenderOwner
 
 		this._pAnimateUVs = value;
 
+		this._pInvalidatePasses();
+	}
+
+	/**
+	 * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
+	 */
+	public get useColorTransform():boolean
+	{
+		return this._pUseColorTransform;
+	}
+
+	public set useColorTransform(value:boolean)
+	{
+		if (this._pUseColorTransform == value)
+			return;
+		this._pUseColorTransform = value;
 		this._pInvalidatePasses();
 	}
 
