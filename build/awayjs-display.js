@@ -2594,6 +2594,19 @@ var SubMeshBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(SubMeshBase.prototype, "colorTransform", {
+        /**
+         *
+         */
+        get: function () {
+            return this._colorTransform; // || this._pParentMesh._colorTransform;
+        },
+        set: function (value) {
+            this._colorTransform = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      *
      */
@@ -7002,6 +7015,19 @@ var Billboard = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Billboard.prototype, "colorTransform", {
+        /**
+         *
+         */
+        get: function () {
+            return this._colorTransform; // || this._pParentMesh._colorTransform;
+        },
+        set: function (value) {
+            this._colorTransform = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * @protected
      */
@@ -7652,6 +7678,19 @@ var LineSegment = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(LineSegment.prototype, "colorTransform", {
+        /**
+         *
+         */
+        get: function () {
+            return this._colorTransform; // || this._pParentMesh._colorTransform;
+        },
+        set: function (value) {
+            this._colorTransform = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     LineSegment.prototype.dispose = function () {
         this._startPosition = null;
         this._endPosition = null;
@@ -7894,6 +7933,19 @@ var Mesh = (function (_super) {
         },
         set: function (value) {
             this._uvTransform = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mesh.prototype, "colorTransform", {
+        /**
+         *
+         */
+        get: function () {
+            return this._colorTransform;
+        },
+        set: function (value) {
+            this._colorTransform = value;
         },
         enumerable: true,
         configurable: true
@@ -8503,6 +8555,19 @@ var Skybox = (function (_super) {
         },
         set: function (value) {
             this._uvTransform = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "colorTransform", {
+        /**
+         *
+         */
+        get: function () {
+            return this._colorTransform; // || this._pParentMesh._colorTransform;
+        },
+        set: function (value) {
+            this._colorTransform = value;
         },
         enumerable: true,
         configurable: true
@@ -10081,6 +10146,7 @@ var MaterialBase = (function (_super) {
     function MaterialBase() {
         var _this = this;
         _super.call(this);
+        this._pUseColorTransform = false;
         this._alphaBlending = false;
         this._alpha = 1;
         this._renders = new Array();
@@ -10317,6 +10383,22 @@ var MaterialBase = (function (_super) {
             if (this._pAnimateUVs == value)
                 return;
             this._pAnimateUVs = value;
+            this._pInvalidatePasses();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MaterialBase.prototype, "useColorTransform", {
+        /**
+         * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
+         */
+        get: function () {
+            return this._pUseColorTransform;
+        },
+        set: function (value) {
+            if (this._pUseColorTransform == value)
+                return;
+            this._pUseColorTransform = value;
             this._pInvalidatePasses();
         },
         enumerable: true,
