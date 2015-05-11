@@ -6875,6 +6875,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var Rectangle = require("awayjs-core/lib/geom/Rectangle");
+var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var MaterialEvent = require("awayjs-display/lib/events/MaterialEvent");
@@ -7020,14 +7021,64 @@ var Billboard = (function (_super) {
          *
          */
         get: function () {
+            // outputs the concaneted color-transform
             return this._colorTransform; // || this._pParentMesh._colorTransform;
         },
         set: function (value) {
-            this._colorTransform = value;
+            // set this on the inheritet colorTransform
+            this.transform.colorTransform = value;
+            // new calculate the concaneted transform
+            this._applyColorTransform();
         },
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Billboard.prototype, "parentColorTransform", {
+        get: function () {
+            return this._parentColorTransform;
+        },
+        set: function (value) {
+            // we will never modify the parentColorTransform directly, so save to set as reference (?)
+            this._parentColorTransform = value;
+            this._applyColorTransform();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Billboard.prototype._applyColorTransform = function () {
+        this._colorTransform = new ColorTransform();
+        if ((this._parentColorTransform) && (this.transform.colorTransform)) {
+            // if this mc has a parent-colortransform applied, we need to concanete the transforms.
+            this._colorTransform.alphaMultiplier = this.transform.colorTransform.alphaMultiplier * this._parentColorTransform.alphaMultiplier;
+            this._colorTransform.redMultiplier = this.transform.colorTransform.redMultiplier * this._parentColorTransform.redMultiplier;
+            this._colorTransform.blueMultiplier = this.transform.colorTransform.blueMultiplier * this._parentColorTransform.blueMultiplier;
+            this._colorTransform.greenMultiplier = this.transform.colorTransform.greenMultiplier * this._parentColorTransform.greenMultiplier;
+            this._colorTransform.alphaOffset = this.transform.colorTransform.alphaOffset + this._parentColorTransform.alphaOffset;
+            this._colorTransform.redOffset = this.transform.colorTransform.redOffset + this._parentColorTransform.redOffset;
+            this._colorTransform.blueOffset = this.transform.colorTransform.blueOffset + this._parentColorTransform.blueOffset;
+            this._colorTransform.greenOffset = this.transform.colorTransform.greenOffset + this._parentColorTransform.greenOffset;
+        }
+        else if (this.transform.colorTransform) {
+            this._colorTransform.alphaMultiplier = this.transform.colorTransform.alphaMultiplier;
+            this._colorTransform.redMultiplier = this.transform.colorTransform.redMultiplier;
+            this._colorTransform.blueMultiplier = this.transform.colorTransform.blueMultiplier;
+            this._colorTransform.greenMultiplier = this.transform.colorTransform.greenMultiplier;
+            this._colorTransform.alphaOffset = this.transform.colorTransform.alphaOffset;
+            this._colorTransform.redOffset = this.transform.colorTransform.redOffset;
+            this._colorTransform.blueOffset = this.transform.colorTransform.blueOffset;
+            this._colorTransform.greenOffset = this.transform.colorTransform.greenOffset;
+        }
+        else if (this._parentColorTransform) {
+            this._colorTransform.alphaMultiplier = this._parentColorTransform.alphaMultiplier;
+            this._colorTransform.redMultiplier = this._parentColorTransform.redMultiplier;
+            this._colorTransform.blueMultiplier = this._parentColorTransform.blueMultiplier;
+            this._colorTransform.greenMultiplier = this._parentColorTransform.greenMultiplier;
+            this._colorTransform.alphaOffset = this._parentColorTransform.alphaOffset;
+            this._colorTransform.redOffset = this._parentColorTransform.redOffset;
+            this._colorTransform.blueOffset = this._parentColorTransform.blueOffset;
+            this._colorTransform.greenOffset = this._parentColorTransform.greenOffset;
+        }
+    };
     /**
      * @protected
      */
@@ -7083,7 +7134,7 @@ var Billboard = (function (_super) {
 })(DisplayObject);
 module.exports = Billboard;
 
-},{"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/MaterialEvent":"awayjs-display/lib/events/MaterialEvent"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7946,6 +7997,10 @@ var Mesh = (function (_super) {
         },
         set: function (value) {
             this._colorTransform = value;
+            var len = this._subMeshes.length;
+            for (var i = 0; i < len; ++i) {
+                this._subMeshes[i].colorTransform = value;
+            }
         },
         enumerable: true,
         configurable: true

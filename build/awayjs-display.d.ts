@@ -4888,6 +4888,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    private _material;
 	    private _uvTransform;
 	    private _colorTransform;
+	    private _parentColorTransform;
 	    private onSizeChangedDelegate;
 	    /**
 	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
@@ -4948,6 +4949,8 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	     *
 	     */
 	    colorTransform: ColorTransform;
+	    parentColorTransform: ColorTransform;
+	    private _applyColorTransform();
 	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
 	    /**
 	     * @protected
@@ -8860,6 +8863,19 @@ declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
 	
 }
 
+declare module "awayjs-display/lib/sort/IEntitySorter" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	/**
+	 * @interface away.sort.IEntitySorter
+	 */
+	interface IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = IEntitySorter;
+	
+}
+
 declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
@@ -8913,19 +8929,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
-	
-}
-
-declare module "awayjs-display/lib/sort/IEntitySorter" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	/**
-	 * @interface away.sort.IEntitySorter
-	 */
-	interface IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = IEntitySorter;
 	
 }
 
