@@ -60,6 +60,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	private _material:MaterialBase;
 	private _uvTransform:UVTransform;
 	private _colorTransform:ColorTransform;
+	private _parentColorTransform:ColorTransform;
 
 	private onSizeChangedDelegate:(event:MaterialEvent) => void;
 
@@ -178,13 +179,67 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	 */
 	public get colorTransform():ColorTransform
 	{
+		// outputs the concaneted color-transform
 		return this._colorTransform;// || this._pParentMesh._colorTransform;
 	}
 
 	public set colorTransform(value:ColorTransform)
 	{
-		this._colorTransform = value;
+		// set this on the inheritet colorTransform
+		this.transform.colorTransform = value;
+		// new calculate the concaneted transform
+		this._applyColorTransform();
+
 	}
+
+	public get parentColorTransform():ColorTransform
+	{
+		return this._parentColorTransform;
+	}
+
+	public set parentColorTransform(value:ColorTransform)
+	{
+		// we will never modify the parentColorTransform directly, so save to set as reference (?)
+		this._parentColorTransform = value;
+		this._applyColorTransform();
+	}
+
+	private _applyColorTransform()
+	{
+		this._colorTransform=new ColorTransform();
+		if ((this._parentColorTransform)&&(this.transform.colorTransform)){
+			// if this mc has a parent-colortransform applied, we need to concanete the transforms.
+			this._colorTransform.alphaMultiplier   = this.transform.colorTransform.alphaMultiplier * this._parentColorTransform.alphaMultiplier;
+			this._colorTransform.redMultiplier     = this.transform.colorTransform.redMultiplier * this._parentColorTransform.redMultiplier;
+			this._colorTransform.blueMultiplier    = this.transform.colorTransform.blueMultiplier * this._parentColorTransform.blueMultiplier;
+			this._colorTransform.greenMultiplier   = this.transform.colorTransform.greenMultiplier * this._parentColorTransform.greenMultiplier;
+			this._colorTransform.alphaOffset       = this.transform.colorTransform.alphaOffset + this._parentColorTransform.alphaOffset;
+			this._colorTransform.redOffset         = this.transform.colorTransform.redOffset + this._parentColorTransform.redOffset;
+			this._colorTransform.blueOffset        = this.transform.colorTransform.blueOffset + this._parentColorTransform.blueOffset;
+			this._colorTransform.greenOffset       = this.transform.colorTransform.greenOffset + this._parentColorTransform.greenOffset;
+		}
+		else if (this.transform.colorTransform){
+			this._colorTransform.alphaMultiplier   = this.transform.colorTransform.alphaMultiplier;
+			this._colorTransform.redMultiplier     = this.transform.colorTransform.redMultiplier;
+			this._colorTransform.blueMultiplier    = this.transform.colorTransform.blueMultiplier;
+			this._colorTransform.greenMultiplier   = this.transform.colorTransform.greenMultiplier;
+			this._colorTransform.alphaOffset       = this.transform.colorTransform.alphaOffset;
+			this._colorTransform.redOffset         = this.transform.colorTransform.redOffset;
+			this._colorTransform.blueOffset        = this.transform.colorTransform.blueOffset;
+			this._colorTransform.greenOffset       = this.transform.colorTransform.greenOffset;
+		}
+		else if (this._parentColorTransform){
+			this._colorTransform.alphaMultiplier   = this._parentColorTransform.alphaMultiplier;
+			this._colorTransform.redMultiplier     = this._parentColorTransform.redMultiplier;
+			this._colorTransform.blueMultiplier    = this._parentColorTransform.blueMultiplier;
+			this._colorTransform.greenMultiplier   = this._parentColorTransform.greenMultiplier;
+			this._colorTransform.alphaOffset       = this._parentColorTransform.alphaOffset;
+			this._colorTransform.redOffset         = this._parentColorTransform.redOffset;
+			this._colorTransform.blueOffset        = this._parentColorTransform.blueOffset;
+			this._colorTransform.greenOffset       = this._parentColorTransform.greenOffset;
+		}
+	}
+
 	constructor(material:MaterialBase, pixelSnapping:string = "auto", smoothing:boolean = false)
 	{
 		super();
