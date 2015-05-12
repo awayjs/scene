@@ -267,6 +267,7 @@ declare module "awayjs-display/lib/base/CurveSubMesh" {
 declare module "awayjs-display/lib/base/DisplayObject" {
 	import BlendMode = require("awayjs-core/lib/data/BlendMode");
 	import Box = require("awayjs-core/lib/geom/Box");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Sphere = require("awayjs-core/lib/geom/Sphere");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Point = require("awayjs-core/lib/geom/Point");
@@ -441,6 +442,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _transform;
 	    private _matrix3D;
 	    private _matrix3DDirty;
+	    _pColorTransform: ColorTransform;
 	    private _inverseSceneTransform;
 	    private _inverseSceneTransformDirty;
 	    private _scenePosition;
@@ -492,6 +494,14 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pRenderables: Array<IRenderable>;
 	    private _entityNodes;
 	    _iSourcePrefab: PrefabBase;
+	    private _globalColorTransformChanged;
+	    private _globalColorTransformDirty;
+	    private _globalColorTransform;
+	    private _onGlobalColorTransformChangedDelegate;
+	    private _onColorTransformChangedDelegate;
+	    private _inheritColorTransform;
+	    inheritColorTransform: boolean;
+	    globalColorTransform: ColorTransform;
 	    /**
 	     *
 	     */
@@ -503,6 +513,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * even though they are invisible.
 	     */
 	    alpha: number;
+	    colorTransform: ColorTransform;
 	    /**
 	     * A value from the BlendMode class that specifies which blend mode to use. A
 	     * bitmap can be drawn internally in two ways. If you have a blend mode
@@ -1510,6 +1521,11 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pInvalidateBounds(): void;
 	    _pUpdateBoxBounds(): void;
 	    _pUpdateSphereBounds(): void;
+	    _updateGlobalColorTransform(): void;
+	    _pSetColorTransform(value: ColorTransform): void;
+	    _invalidateGlobalColorTransform(): void;
+	    private onGlobalColorTransformChanged(event);
+	    private onColorTransformChanged(event);
 	}
 	export = DisplayObject;
 	
@@ -5357,7 +5373,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	class Mesh extends DisplayObjectContainer implements IEntity {
 	    static assetType: string;
 	    private _uvTransform;
-	    private _colorTransform;
 	    private _subMeshes;
 	    private _geometry;
 	    private _material;
@@ -6628,6 +6643,7 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	    static POSITION_CHANGED: string;
 	    static ROTATION_CHANGED: string;
 	    static SCALE_CHANGED: string;
+	    static GLOBAL_COLOR_TRANSFORM_CHANGED: string;
 	    object: DisplayObject;
 	    constructor(type: string, object: DisplayObject);
 	}
@@ -8863,19 +8879,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
 	
 }
 
-declare module "awayjs-display/lib/sort/IEntitySorter" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	/**
-	 * @interface away.sort.IEntitySorter
-	 */
-	interface IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = IEntitySorter;
-	
-}
-
 declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-core/lib/data/SubGeometryBase");
@@ -8929,6 +8932,19 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
+	
+}
+
+declare module "awayjs-display/lib/sort/IEntitySorter" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	/**
+	 * @interface away.sort.IEntitySorter
+	 */
+	interface IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	}
+	export = IEntitySorter;
 	
 }
 

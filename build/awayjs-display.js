@@ -142,6 +142,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var Box = require("awayjs-core/lib/geom/Box");
+var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var Sphere = require("awayjs-core/lib/geom/Sphere");
 var MathConsts = require("awayjs-core/lib/geom/MathConsts");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
@@ -291,6 +292,7 @@ var DisplayObject = (function (_super) {
      * Creates a new <code>DisplayObject</code> instance.
      */
     function DisplayObject() {
+        var _this = this;
         _super.call(this);
         this._boxBoundsInvalid = true;
         this._sphereBoundsInvalid = true;
@@ -334,6 +336,9 @@ var DisplayObject = (function (_super) {
         this._pIgnoreTransform = false;
         this._pRenderables = new Array();
         this._entityNodes = new Array();
+        this._globalColorTransformDirty = false;
+        this._globalColorTransform = new ColorTransform();
+        this._inheritColorTransform = false;
         /**
          *
          */
@@ -348,6 +353,8 @@ var DisplayObject = (function (_super) {
         this.orientationMode = OrientationMode.DEFAULT;
         // Cached vector of transformation components used when
         // recomposing the transform matrix in updateTransform()
+        this._onGlobalColorTransformChangedDelegate = function (event) { return _this.onGlobalColorTransformChanged(event); };
+        this._onColorTransformChangedDelegate = function (event) { return _this.onColorTransformChanged(event); };
         this._transformComponents = new Array(3);
         this._transformComponents[0] = this._pos;
         this._transformComponents[1] = this._rot;
@@ -357,6 +364,57 @@ var DisplayObject = (function (_super) {
         this._matrix3D.identity();
         this._flipY.appendScale(1, -1, 1);
     }
+    Object.defineProperty(DisplayObject.prototype, "inheritColorTransform", {
+        get: function () {
+            return this._inheritColorTransform;
+        },
+        set: function (value) {
+            this._inheritColorTransform = value;
+            this._invalidateGlobalColorTransform();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObject.prototype, "globalColorTransform", {
+        get: function () {
+            if (this._globalColorTransformDirty)
+                this._updateGlobalColorTransform();
+            return this._globalColorTransform;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObject.prototype, "alpha", {
+        /**
+         * Indicates the alpha transparency value of the object specified. Valid
+         * values are 0(fully transparent) to 1(fully opaque). The default value is
+         * 1. Display objects with <code>alpha</code> set to 0 <i>are</i> active,
+         * even though they are invisible.
+         */
+        get: function () {
+            return this._pColorTransform.alphaMultiplier;
+        },
+        set: function (value) {
+            this._pColorTransform.alphaMultiplier = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObject.prototype, "colorTransform", {
+        get: function () {
+            return this._pColorTransform;
+        },
+        set: function (value) {
+            // TS compiler freaking out over Event.CHANGE, using literal strings for now
+            if (this._pColorTransform)
+                this._pColorTransform.removeEventListener("change", this._onColorTransformChangedDelegate);
+            this._pSetColorTransform(value);
+            if (value)
+                value.addEventListener("change", this._onColorTransformChangedDelegate);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObject.prototype, "boundsType", {
         /**
          *
@@ -1684,17 +1742,22 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype.iSetParent = function (value) {
+        if (this._pParent) {
+            this._pParent.removeEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
+        }
         this._pParent = value;
         if (value) {
             this._pUpdateImplicitMouseEnabled(value.mouseChildren);
             this._pUpdateImplicitVisibility(value._iIsVisible());
             this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
+            value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
         }
         else {
             this._pUpdateImplicitMouseEnabled(true);
             this._pUpdateImplicitVisibility(true);
             this._pUpdateImplicitPartition(null, null);
         }
+        this._invalidateGlobalColorTransform();
     };
     /**
      * @protected
@@ -1981,11 +2044,42 @@ var DisplayObject = (function (_super) {
         if (this._pSphereBounds == null)
             this._pSphereBounds = new Sphere();
     };
+    DisplayObject.prototype._updateGlobalColorTransform = function () {
+        if (this._inheritColorTransform && this._pParent) {
+            this._globalColorTransform.copyFrom(this._pParent.globalColorTransform);
+            if (this._pColorTransform)
+                this._globalColorTransform.prepend(this._pColorTransform);
+        }
+        else {
+            if (this._pColorTransform)
+                this._globalColorTransform.copyFrom(this._pColorTransform);
+            else
+                this._globalColorTransform.clear();
+        }
+        this._globalColorTransformDirty = false;
+    };
+    // this method is to bypass that TypeScript can't call super setters.
+    DisplayObject.prototype._pSetColorTransform = function (value) {
+        this._pColorTransform = value;
+        this._invalidateGlobalColorTransform();
+    };
+    DisplayObject.prototype._invalidateGlobalColorTransform = function () {
+        this._globalColorTransformDirty = true;
+        if (!this._globalColorTransformChanged)
+            this._globalColorTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this);
+        this.dispatchEvent(this._globalColorTransformChanged);
+    };
+    DisplayObject.prototype.onGlobalColorTransformChanged = function (event) {
+        this._invalidateGlobalColorTransform();
+    };
+    DisplayObject.prototype.onColorTransformChanged = function (event) {
+        this._invalidateGlobalColorTransform();
+    };
     return DisplayObject;
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/base/IRenderOwner":[function(require,module,exports){
 
@@ -7993,10 +8087,10 @@ var Mesh = (function (_super) {
          *
          */
         get: function () {
-            return this._colorTransform;
+            return this._pColorTransform;
         },
         set: function (value) {
-            this._colorTransform = value;
+            _super.prototype._pSetColorTransform.call(this, value);
             var len = this._subMeshes.length;
             for (var i = 0; i < len; ++i) {
                 this._subMeshes[i].colorTransform = value;
@@ -9461,6 +9555,7 @@ var DisplayObjectEvent = (function (_super) {
     DisplayObjectEvent.POSITION_CHANGED = "positionChanged";
     DisplayObjectEvent.ROTATION_CHANGED = "rotationChanged";
     DisplayObjectEvent.SCALE_CHANGED = "scaleChanged";
+    DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED = "globalColorTransformChanged";
     return DisplayObjectEvent;
 })(Event);
 module.exports = DisplayObjectEvent;

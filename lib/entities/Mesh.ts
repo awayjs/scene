@@ -28,7 +28,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	public static assetType:string = "[asset Mesh]";
 
 	private _uvTransform:UVTransform;
-	private _colorTransform:ColorTransform;
 
 	private _subMeshes:Array<ISubMesh>;
 	private _geometry:Geometry;
@@ -212,12 +211,12 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public get colorTransform():ColorTransform
 	{
-		return this._colorTransform;
+		return this._pColorTransform;
 	}
 
 	public set colorTransform(value:ColorTransform)
 	{
-		this._colorTransform = value;
+		super._pSetColorTransform(value);
 		var len:number = this._subMeshes.length;
 		for (var i:number = 0; i < len; ++i){
 			this._subMeshes[i].colorTransform = value;

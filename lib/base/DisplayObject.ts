@@ -1,5 +1,6 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import Box							= require("awayjs-core/lib/geom/Box");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import MathConsts					= require("awayjs-core/lib/geom/MathConsts");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
@@ -187,6 +188,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	private _transform:Transform;
 	private _matrix3D:Matrix3D = new Matrix3D();
 	private _matrix3DDirty:boolean = true;
+    public _pColorTransform:ColorTransform;
 
 	private _inverseSceneTransform:Matrix3D = new Matrix3D();
 	private _inverseSceneTransformDirty:boolean = true;
@@ -253,6 +255,33 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 	public _iSourcePrefab:PrefabBase;
 
+    private _globalColorTransformChanged:DisplayObjectEvent;
+    private _globalColorTransformDirty:boolean = false;
+    private _globalColorTransform:ColorTransform = new ColorTransform();
+    private _onGlobalColorTransformChangedDelegate:(event:DisplayObjectEvent) => void;
+    private _onColorTransformChangedDelegate:(event:Event) => void;
+    private _inheritColorTransform:boolean = false;
+
+    public get inheritColorTransform():boolean
+    {
+        return this._inheritColorTransform;
+    }
+
+    public set inheritColorTransform(value:boolean)
+    {
+        this._inheritColorTransform = value;
+        this._invalidateGlobalColorTransform();
+    }
+
+
+    public get globalColorTransform():ColorTransform
+    {
+        if (this._globalColorTransformDirty)
+            this._updateGlobalColorTransform();
+
+        return this._globalColorTransform;
+    }
+
 	/**
 	 *
 	 */
@@ -264,7 +293,33 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 * 1. Display objects with <code>alpha</code> set to 0 <i>are</i> active,
 	 * even though they are invisible.
 	 */
-	public alpha:number;
+	public get alpha():number
+    {
+        return this._pColorTransform.alphaMultiplier;
+    }
+
+    public set alpha(value:number)
+    {
+        this._pColorTransform.alphaMultiplier = value;
+    }
+
+    public get colorTransform()
+    {
+        return this._pColorTransform;
+    }
+
+    public set colorTransform(value:ColorTransform)
+    {
+        // TS compiler freaking out over Event.CHANGE, using literal strings for now
+        if (this._pColorTransform)
+            this._pColorTransform.removeEventListener("change", this._onColorTransformChangedDelegate);
+
+
+        this._pSetColorTransform(value);
+
+        if (value)
+            value.addEventListener("change", this._onColorTransformChangedDelegate);
+    }
 
 	/**
 	 * A value from the BlendMode class that specifies which blend mode to use. A
@@ -1318,6 +1373,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		// Cached vector of transformation components used when
 		// recomposing the transform matrix in updateTransform()
 
+        this._onGlobalColorTransformChangedDelegate = (event:DisplayObjectEvent) => this.onGlobalColorTransformChanged(event);
+        this._onColorTransformChangedDelegate = (event:Event) => this.onColorTransformChanged(event);
 		this._transformComponents = new Array<Vector3D>(3);
 
 		this._transformComponents[0] = this._pos;
@@ -1974,17 +2031,24 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public iSetParent(value:DisplayObjectContainer)
 	{
+        if (this._pParent) {
+            this._pParent.removeEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
+        }
+
 		this._pParent = value;
 
-		if (value) {
+        if (value) {
 			this._pUpdateImplicitMouseEnabled(value.mouseChildren);
 			this._pUpdateImplicitVisibility(value._iIsVisible());
 			this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
+            value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
 		} else {
 			this._pUpdateImplicitMouseEnabled(true);
 			this._pUpdateImplicitVisibility(true);
 			this._pUpdateImplicitPartition(null, null);
 		}
+
+        this._invalidateGlobalColorTransform();
 	}
 
 	/**
@@ -2384,6 +2448,49 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._pSphereBounds == null)
 			this._pSphereBounds = new Sphere();
 	}
+
+    _updateGlobalColorTransform()
+    {
+        if (this._inheritColorTransform && this._pParent) {
+            this._globalColorTransform.copyFrom(this._pParent.globalColorTransform);
+            if (this._pColorTransform)
+                this._globalColorTransform.prepend(this._pColorTransform);
+        } else {
+            if (this._pColorTransform)
+                this._globalColorTransform.copyFrom(this._pColorTransform);
+            else
+                this._globalColorTransform.clear();
+        }
+
+        this._globalColorTransformDirty = false;
+    }
+
+    // this method is to bypass that TypeScript can't call super setters.
+    _pSetColorTransform(value:ColorTransform)
+    {
+        this._pColorTransform = value;
+        this._invalidateGlobalColorTransform();
+    }
+
+    _invalidateGlobalColorTransform()
+    {
+        this._globalColorTransformDirty = true;
+
+        if (!this._globalColorTransformChanged)
+            this._globalColorTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this);
+
+        this.dispatchEvent(this._globalColorTransformChanged);
+    }
+
+    private onGlobalColorTransformChanged(event:DisplayObjectEvent)
+    {
+        this._invalidateGlobalColorTransform();
+    }
+
+    private onColorTransformChanged(event:Event)
+    {
+        this._invalidateGlobalColorTransform();
+    }
 }
 
 export = DisplayObject;
