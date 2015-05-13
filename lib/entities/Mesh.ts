@@ -217,12 +217,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	public set colorTransform(value:ColorTransform)
 	{
 		super._pSetColorTransform(value);
-		var len:number = this._subMeshes.length;
-		for (var i:number = 0; i < len; ++i){
-			this._subMeshes[i].colorTransform = value;
-		}
-
-
 	}
 	/**
 	 * Create a new Mesh object.

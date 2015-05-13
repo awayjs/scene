@@ -97,7 +97,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get colorTransform():ColorTransform
 	{
-		return this._colorTransform;// || this._pParentMesh._colorTransform;
+		return this._colorTransform || this._pParentMesh.globalColorTransform;
 	}
 
 	public set colorTransform(value:ColorTransform)
