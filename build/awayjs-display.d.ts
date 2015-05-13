@@ -82,49 +82,30 @@ declare module "awayjs-display/lib/IRenderer" {
 	
 }
 
-declare module "awayjs-display/lib/animators/IAnimationSet" {
+declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	/**
-	 * Provides an interface for data set classes that hold animation data for use in animator classes.
-	 *
-	 * @see away.animators.AnimatorBase
+	 * Provides an abstract base class for nodes in an animation blend tree.
 	 */
-	interface IAnimationSet extends IAsset {
+	class AnimationNodeBase extends AssetBase implements IAsset {
+	    static assetType: string;
+	    _pStateClass: any;
+	    stateClass: any;
 	    /**
-	     * Check to determine whether a state is registered in the animation set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be checked.
+	     * Creates a new <code>AnimationNodeBase</code> object.
 	     */
-	    hasAnimation(name: string): boolean;
+	    constructor();
 	    /**
-	     * Retrieves the animation state object registered in the animation data set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be retrieved.
+	     * @inheritDoc
 	     */
-	    getAnimation(name: string): AnimationNodeBase;
+	    dispose(): void;
 	    /**
-	     * Indicates whether the properties of the animation data contained within the set combined with
-	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
-	     * GPU calls.
+	     * @inheritDoc
 	     */
-	    usesCPU: boolean;
-	    /**
-	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
-	     * is available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    resetGPUCompatibility(): any;
-	    /**
-	     * Called by the animator to void the GPU indicator when register space in the shader
-	     * is no longer available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    cancelGPUCompatibility(): any;
+	    assetType: string;
 	}
-	export = IAnimationSet;
+	export = AnimationNodeBase;
 	
 }
 
@@ -175,33 +156,6 @@ declare module "awayjs-display/lib/animators/IAnimator" {
 	
 }
 
-declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	/**
-	 * Provides an abstract base class for nodes in an animation blend tree.
-	 */
-	class AnimationNodeBase extends AssetBase implements IAsset {
-	    static assetType: string;
-	    _pStateClass: any;
-	    stateClass: any;
-	    /**
-	     * Creates a new <code>AnimationNodeBase</code> object.
-	     */
-	    constructor();
-	    /**
-	     * @inheritDoc
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    assetType: string;
-	}
-	export = AnimationNodeBase;
-	
-}
-
 declare module "awayjs-display/lib/base/AlignmentMode" {
 	/**
 	 *
@@ -217,6 +171,52 @@ declare module "awayjs-display/lib/base/AlignmentMode" {
 	    static PIVOT_POINT: string;
 	}
 	export = AlignmentMode;
+	
+}
+
+declare module "awayjs-display/lib/animators/IAnimationSet" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
+	/**
+	 * Provides an interface for data set classes that hold animation data for use in animator classes.
+	 *
+	 * @see away.animators.AnimatorBase
+	 */
+	interface IAnimationSet extends IAsset {
+	    /**
+	     * Check to determine whether a state is registered in the animation set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be checked.
+	     */
+	    hasAnimation(name: string): boolean;
+	    /**
+	     * Retrieves the animation state object registered in the animation data set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be retrieved.
+	     */
+	    getAnimation(name: string): AnimationNodeBase;
+	    /**
+	     * Indicates whether the properties of the animation data contained within the set combined with
+	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
+	     * GPU calls.
+	     */
+	    usesCPU: boolean;
+	    /**
+	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
+	     * is available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    resetGPUCompatibility(): any;
+	    /**
+	     * Called by the animator to void the GPU indicator when register space in the shader
+	     * is no longer available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    cancelGPUCompatibility(): any;
+	}
+	export = IAnimationSet;
 	
 }
 
@@ -2399,6 +2399,28 @@ declare module "awayjs-display/lib/bounds/BoundingSphere" {
 	
 }
 
+declare module "awayjs-display/lib/bounds/BoundsType" {
+	/**
+	 *
+	 */
+	class BoundsType {
+	    /**
+	     *
+	     */
+	    static SPHERE: string;
+	    /**
+	     *
+	     */
+	    static AXIS_ALIGNED_BOX: string;
+	    /**
+	     *
+	     */
+	    static NULL: string;
+	}
+	export = BoundsType;
+	
+}
+
 declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -2420,28 +2442,6 @@ declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	    _pCreateBoundsPrimitive(): Mesh;
 	}
 	export = BoundingVolumeBase;
-	
-}
-
-declare module "awayjs-display/lib/bounds/BoundsType" {
-	/**
-	 *
-	 */
-	class BoundsType {
-	    /**
-	     *
-	     */
-	    static SPHERE: string;
-	    /**
-	     *
-	     */
-	    static AXIS_ALIGNED_BOX: string;
-	    /**
-	     *
-	     */
-	    static NULL: string;
-	}
-	export = BoundsType;
 	
 }
 
@@ -4706,6 +4706,39 @@ declare module "awayjs-display/lib/draw/JointStyle" {
 	
 }
 
+declare module "awayjs-display/lib/draw/PixelSnapping" {
+	/**
+	 * The PixelSnapping class is an enumeration of constant values for setting
+	 * the pixel snapping options by using the <code>pixelSnapping</code> property
+	 * of a Bitmap object.
+	 */
+	class PixelSnapping {
+	    /**
+	     * A constant value used in the <code>pixelSnapping</code> property of a
+	     * Bitmap object to specify that the bitmap image is always snapped to the
+	     * nearest pixel, independent of any transformation.
+	     */
+	    static ALWAYS: string;
+	    /**
+	     * A constant value used in the <code>pixelSnapping</code> property of a
+	     * Bitmap object to specify that the bitmap image is snapped to the nearest
+	     * pixel if it is drawn with no rotation or skew and it is drawn at a scale
+	     * factor of 99.9% to 100.1%. If these conditions are satisfied, the image is
+	     * drawn at 100% scale, snapped to the nearest pixel. Internally, this
+	     * setting allows the image to be drawn as fast as possible by using the
+	     * vector renderer.
+	     */
+	    static AUTO: string;
+	    /**
+	     * A constant value used in the <code>pixelSnapping</code> property of a
+	     * Bitmap object to specify that no pixel snapping occurs.
+	     */
+	    static NEVER: string;
+	}
+	export = PixelSnapping;
+	
+}
+
 declare module "awayjs-display/lib/draw/LineScaleMode" {
 	/**
 	 * The LineScaleMode class provides values for the <code>scaleMode</code>
@@ -4745,39 +4778,6 @@ declare module "awayjs-display/lib/draw/LineScaleMode" {
 	    static VERTICAL: string;
 	}
 	export = LineScaleMode;
-	
-}
-
-declare module "awayjs-display/lib/draw/PixelSnapping" {
-	/**
-	 * The PixelSnapping class is an enumeration of constant values for setting
-	 * the pixel snapping options by using the <code>pixelSnapping</code> property
-	 * of a Bitmap object.
-	 */
-	class PixelSnapping {
-	    /**
-	     * A constant value used in the <code>pixelSnapping</code> property of a
-	     * Bitmap object to specify that the bitmap image is always snapped to the
-	     * nearest pixel, independent of any transformation.
-	     */
-	    static ALWAYS: string;
-	    /**
-	     * A constant value used in the <code>pixelSnapping</code> property of a
-	     * Bitmap object to specify that the bitmap image is snapped to the nearest
-	     * pixel if it is drawn with no rotation or skew and it is drawn at a scale
-	     * factor of 99.9% to 100.1%. If these conditions are satisfied, the image is
-	     * drawn at 100% scale, snapped to the nearest pixel. Internally, this
-	     * setting allows the image to be drawn as fast as possible by using the
-	     * vector renderer.
-	     */
-	    static AUTO: string;
-	    /**
-	     * A constant value used in the <code>pixelSnapping</code> property of a
-	     * Bitmap object to specify that no pixel snapping occurs.
-	     */
-	    static NEVER: string;
-	}
-	export = PixelSnapping;
 	
 }
 
@@ -7539,41 +7539,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadow
 	
 }
 
-declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class ShadowMapperBase {
-	    _pCasterCollector: ShadowCasterCollector;
-	    _depthMap: TextureBase;
-	    _pDepthMapSize: number;
-	    _pLight: LightBase;
-	    _explicitDepthMap: boolean;
-	    private _autoUpdateShadows;
-	    _iShadowsInvalid: boolean;
-	    constructor();
-	    pCreateCasterCollector(): ShadowCasterCollector;
-	    autoUpdateShadows: boolean;
-	    updateShadows(): void;
-	    iSetDepthMap(depthMap: TextureBase): void;
-	    light: LightBase;
-	    depthMap: TextureBase;
-	    depthMapSize: number;
-	    dispose(): void;
-	    pCreateDepthTexture(): TextureBase;
-	    iRenderDepthMap(entityCollector: EntityCollector, renderer: IRenderer): void;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pDrawDepthMap(target: TextureBase, scene: Scene, renderer: IRenderer): void;
-	    _pSetDepthMapSize(value: any): void;
-	}
-	export = ShadowMapperBase;
-	
-}
-
 declare module "awayjs-display/lib/partition/CameraNode" {
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import Partition = require("awayjs-display/lib/partition/Partition");
@@ -7710,6 +7675,17 @@ declare module "awayjs-display/lib/partition/LightProbeNode" {
 	
 }
 
+declare module "awayjs-display/lib/partition/NullNode" {
+	/**
+	 * @class away.partition.NullNode
+	 */
+	class NullNode {
+	    constructor();
+	}
+	export = NullNode;
+	
+}
+
 declare module "awayjs-display/lib/partition/NodeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -7802,17 +7778,6 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	
 }
 
-declare module "awayjs-display/lib/partition/NullNode" {
-	/**
-	 * @class away.partition.NullNode
-	 */
-	class NullNode {
-	    constructor();
-	}
-	export = NullNode;
-	
-}
-
 declare module "awayjs-display/lib/partition/Partition" {
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
@@ -7892,6 +7857,41 @@ declare module "awayjs-display/lib/partition/Partition" {
 	    _iUnregisterSkybox(skybox: Skybox): void;
 	}
 	export = Partition;
+	
+}
+
+declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class ShadowMapperBase {
+	    _pCasterCollector: ShadowCasterCollector;
+	    _depthMap: TextureBase;
+	    _pDepthMapSize: number;
+	    _pLight: LightBase;
+	    _explicitDepthMap: boolean;
+	    private _autoUpdateShadows;
+	    _iShadowsInvalid: boolean;
+	    constructor();
+	    pCreateCasterCollector(): ShadowCasterCollector;
+	    autoUpdateShadows: boolean;
+	    updateShadows(): void;
+	    iSetDepthMap(depthMap: TextureBase): void;
+	    light: LightBase;
+	    depthMap: TextureBase;
+	    depthMapSize: number;
+	    dispose(): void;
+	    pCreateDepthTexture(): TextureBase;
+	    iRenderDepthMap(entityCollector: EntityCollector, renderer: IRenderer): void;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    pDrawDepthMap(target: TextureBase, scene: Scene, renderer: IRenderer): void;
+	    _pSetDepthMapSize(value: any): void;
+	}
+	export = ShadowMapperBase;
 	
 }
 
