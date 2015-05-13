@@ -2693,7 +2693,7 @@ var SubMeshBase = (function (_super) {
          *
          */
         get: function () {
-            return this._colorTransform; // || this._pParentMesh._colorTransform;
+            return this._colorTransform || this._pParentMesh.globalColorTransform;
         },
         set: function (value) {
             this._colorTransform = value;
@@ -8091,10 +8091,6 @@ var Mesh = (function (_super) {
         },
         set: function (value) {
             _super.prototype._pSetColorTransform.call(this, value);
-            var len = this._subMeshes.length;
-            for (var i = 0; i < len; ++i) {
-                this._subMeshes[i].colorTransform = value;
-            }
         },
         enumerable: true,
         configurable: true
