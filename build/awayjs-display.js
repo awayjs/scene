@@ -8155,8 +8155,8 @@ var Mesh = (function (_super) {
         //this is of course no proper cloning
         //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
         clone.extra = this.extra;
-        clone._iMasks = this._iMasks;
         clone._iMaskID = this._iMaskID;
+        clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
         var len = this._subMeshes.length;
         for (var i = 0; i < len; ++i)
             clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
@@ -8516,6 +8516,16 @@ var Shape = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Shape.prototype.clone = function () {
+        var clone = new Shape();
+        clone.pivot = this.pivot;
+        clone._iMatrix3D = this._iMatrix3D;
+        clone.name = name;
+        clone._iMaskID = this._iMaskID;
+        clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
+        clone._graphics = this._graphics;
+        return clone;
+    };
     return Shape;
 })(DisplayObject);
 module.exports = Shape;

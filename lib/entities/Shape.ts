@@ -35,6 +35,18 @@ class Shape extends DisplayObject
 	{
 		super();
 	}
+
+	public clone():DisplayObject
+	{
+		var clone:Shape = new Shape();
+		clone.pivot = this.pivot;
+		clone._iMatrix3D = this._iMatrix3D;
+		clone.name = name;
+		clone._iMaskID = this._iMaskID;
+		clone._iMasks = this._iMasks? this._iMasks.concat() : null;
+		clone._graphics = this._graphics;
+		return clone;
+	}
 }
 
 export = Shape;

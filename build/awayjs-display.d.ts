@@ -5575,6 +5575,7 @@ declare module "awayjs-display/lib/entities/Shape" {
 	     * Creates a new Shape object.
 	     */
 	    constructor();
+	    clone(): DisplayObject;
 	}
 	export = Shape;
 	
