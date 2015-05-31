@@ -100,10 +100,10 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset
 	 */
 	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
 	{
-		var indices:Array<number> /*uint*/;
-		var positions:Array<number>;
-		var normals:Array<number>;
-		var tangents:Array<number>;
+		var indices:Uint16Array;
+		var positions:Float32Array;
+		var normals:Float32Array;
+		var tangents:Float32Array;
 
 		var i:number;
 		var j:number;
@@ -121,15 +121,15 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset
 			numVertices = (this._segmentsH + 1)*(this._segmentsW + 1);
 
 			if (numVertices == triangleGeometry.numVertices && triangleGeometry.indices != null) {
-				indices = triangleGeometry.indices;
-				positions = triangleGeometry.positions;
-				normals = triangleGeometry.vertexNormals;
-				tangents = triangleGeometry.vertexTangents;
+				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+				positions = triangleGeometry.positions.get(numVertices);
+				normals = triangleGeometry.normals.get(numVertices);
+				tangents = triangleGeometry.tangents.get(numVertices);
 			} else {
-				indices = new Array<number>((this._segmentsH - 1)*this._segmentsW*6);
-				positions = new Array<number>(numVertices*3);
-				normals = new Array<number>(numVertices*3);
-				tangents = new Array<number>(numVertices*3);
+				indices = new Uint16Array((this._segmentsH - 1)*this._segmentsW*6);
+				positions = new Float32Array(numVertices*3);
+				normals = new Float32Array(numVertices*3);
+				tangents = new Float32Array(numVertices*3);
 
 				this._pInvalidateUVs();
 			}
@@ -231,30 +231,19 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset
 				}
 			}
 
-			triangleGeometry.updateIndices(indices);
+			triangleGeometry.setIndices(indices);
 
-			triangleGeometry.updatePositions(positions);
-			triangleGeometry.updateVertexNormals(normals);
-			triangleGeometry.updateVertexTangents(tangents);
+			triangleGeometry.setPositions(positions);
+			triangleGeometry.setNormals(normals);
+			triangleGeometry.setTangents(tangents);
 
 		} else if (geometryType == "lineSubGeometry") {
 
 			var lineGeometry:LineSubGeometry = <LineSubGeometry> target;
 
-			var numSegments:number = (this._segmentsH - 1)*this._segmentsW*2;
-			var startPositions:Array<number>;
-			var endPositions:Array<number>;
-			var thickness:Array<number>;
-
-			if (lineGeometry.indices != null && numSegments == lineGeometry.numSegments) {
-				startPositions = lineGeometry.startPositions;
-				endPositions = lineGeometry.endPositions;
-				thickness = lineGeometry.thickness;
-			} else {
-				startPositions = new Array<number>(numSegments*3);
-				endPositions = new Array<number>(numSegments*3);
-				thickness = new Array<number>(numSegments);
-			}
+			var numSegments:number = this._segmentsH*this._segmentsW*2 + this._segmentsW;
+			var positions:Float32Array = new Float32Array(numSegments*6);
+			var thickness:Float32Array = new Float32Array(numSegments);
 
 			vidx = 0;
 
@@ -280,43 +269,42 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset
 						comp2 = z;
 					}
 
-					if (i > 0 && j > 0) {
+					if (i > 0) {
 						//horizonal lines
-						if (j < this._segmentsH) {
-							endPositions[vidx] = x;
-							endPositions[vidx + 1] = comp1;
-							endPositions[vidx + 2] = comp2;
-
-							thickness[fidx++] = 1;
-
-							vidx += 3;
-						}
-
-						//vertical lines
-						startPositions[vidx] = endPositions[vidx - this._segmentsW*6];
-						startPositions[vidx + 1] = endPositions[vidx + 1 - this._segmentsW*6];
-						startPositions[vidx + 2] = endPositions[vidx + 2 - this._segmentsW*6];
-
-						endPositions[vidx] = x;
-						endPositions[vidx + 1] = comp1;
-						endPositions[vidx + 2] = comp2;
+						positions[vidx++] = x;
+						positions[vidx++] = comp1;
+						positions[vidx++] = comp2;
 
 						thickness[fidx++] = 1;
 
-						vidx += 3;
+						//vertical lines
+						if (j > 0) {
+							var addx:number = (j == 1)? 3 - (6*(this._segmentsW-i) + 12*i) : 3 - this._segmentsW*12;
+							positions[vidx] = positions[vidx++ + addx];
+							positions[vidx] = positions[vidx++ + addx];
+							positions[vidx] = positions[vidx++ + addx];
+
+							positions[vidx++] = x;
+							positions[vidx++] = comp1;
+							positions[vidx++] = comp2;
+
+							thickness[fidx++] = 1;
+						}
+
 					}
 
-					if (i < this._segmentsW && j > 0 && j < this._segmentsH) {
-						startPositions[vidx] = x;
-						startPositions[vidx + 1] = comp1;
-						startPositions[vidx + 2] = comp2;
+					//horizonal lines
+					if (i < this._segmentsW) {
+						positions[vidx++] = x;
+						positions[vidx++] = comp1;
+						positions[vidx++] = comp2;
 					}
 				}
 			}
 
 			// build real data from raw data
-			lineGeometry.updatePositions(startPositions, endPositions);
-			lineGeometry.updateThickness(thickness);
+			lineGeometry.setPositions(positions);
+			lineGeometry.setThickness(thickness);
 		}
 	}
 
@@ -327,7 +315,7 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset
 	{
 		var i:number, j:number;
 		var numVertices:number = (this._segmentsH + 1)*(this._segmentsW + 1);
-		var uvs:Array<number>;
+		var uvs:Float32Array;
 
 
 		if (geometryType == "triangleSubGeometry") {
@@ -337,20 +325,20 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset
 			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
 
 			if (numVertices == triangleGeometry.numVertices && triangleGeometry.uvs != null) {
-				uvs = triangleGeometry.uvs;
+				uvs = triangleGeometry.uvs.get(numVertices);
 			} else {
-				uvs = new Array<number>(numVertices*2);
+				uvs = new Float32Array(numVertices*2);
 			}
 
 			var index:number = 0;
 			for (j = 0; j <= this._segmentsH; ++j) {
 				for (i = 0; i <= this._segmentsW; ++i) {
-					uvs[index++] = ( i/this._segmentsW )*triangleGeometry.scaleU;
-					uvs[index++] = ( j/this._segmentsH )*triangleGeometry.scaleV;
+					uvs[index++] = ( i/this._segmentsW )*this._scaleU;
+					uvs[index++] = ( j/this._segmentsH )*this._scaleV;
 				}
 			}
 
-			triangleGeometry.updateUVs(uvs);
+			triangleGeometry.setUVs(uvs);
 
 		} else if (geometryType == "lineSubGeometry") {
 			//nothing to do here

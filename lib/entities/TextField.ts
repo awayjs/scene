@@ -1,3 +1,7 @@
+import AttributesBuffer				= require("awayjs-core/lib/attributes/AttributesBuffer");
+import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
+import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
+import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
@@ -736,9 +740,7 @@ class TextField extends Mesh
 			return;
 		}
 		var indices:Array<number> = new Array<number>();
-		var positions:Array<number> = new Array<number>();
-		var curveData:Array<number> = new Array<number>();
-		var uvs:Array<number> = new Array<number>();
+		var vertices:Array<number> = new Array<number>();
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
 		var tri_idx_offset:number=0;
@@ -753,22 +755,23 @@ class TextField extends Mesh
 				var this_subGeom:CurveSubGeometry = this_char.subgeom;
 				if (this_subGeom != null) {
 					tri_cnt = 0;
-					var indices2:Array<number> = this_subGeom.indices;
-					var positions2:Array<number> = this_subGeom.positions;
-					var curveData2:Array<number> = this_subGeom.curves;
+					var j:number = 0;
+					var indices2:Uint16Array = this_subGeom.indices.get(this_subGeom.numElements);
+					var positions2:Float32Array = this_subGeom.positions.get(this_subGeom.numVertices);
+					var curveData2:Float32Array = this_subGeom.curves.get(this_subGeom.numVertices);
 					for (var v = 0; v < indices2.length; v++) {
-						indices.push(indices2[v] + tri_idx_offset);
+						indices[v] = indices2[v] + tri_idx_offset;
 						tri_cnt++;
 					}
 					tri_idx_offset += tri_cnt;
-					for (v = 0; v < positions2.length / 3; v++) {
-						positions.push((positions2[v * 3] * char_scale) + x_offset);
-						positions.push((positions2[v * 3 + 1] * char_scale) + y_offset);
-						positions.push(positions2[v * 3 + 2]);
-						curveData.push(curveData2[v * 2]);
-						curveData.push(curveData2[v * 2 + 1]);
-						uvs.push(this._textFormat.uv_values[0]);
-						uvs.push(this._textFormat.uv_values[1]);
+					for (v = 0; v < this_subGeom.numVertices; v++) {
+						vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
+						vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
+						vertices[j++] = positions2[v * 3 + 2];
+						vertices[j++] = curveData2[v * 2];
+						vertices[j++] = curveData2[v * 2 + 1];
+						vertices[j++] = this._textFormat.uv_values[0];
+						vertices[j++] = this._textFormat.uv_values[1];
 					}
 					// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
 					var kerning_value:number=0;
@@ -792,11 +795,15 @@ class TextField extends Mesh
 				x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
 			}
 		}
-		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(true);
-		curve_sub_geom.updateIndices(indices);
-		curve_sub_geom.updatePositions(positions);
-		curve_sub_geom.updateCurves(curveData);
-		curve_sub_geom.updateUVs(uvs);
+		var attributesView:AttributesView = new AttributesView(Float32Array, 7);
+		attributesView.set(vertices);
+		var attributesBuffer:AttributesBuffer = attributesView.buffer;
+		attributesView.dispose();
+		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(attributesBuffer);
+		curve_sub_geom.setIndices(indices);
+		curve_sub_geom.setPositions(new Float3Attributes(attributesBuffer));
+		curve_sub_geom.setCurves(new Float2Attributes(attributesBuffer));
+		curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
 		this.geometry.addSubGeometry(curve_sub_geom);
 		this.subMeshes[0].material=this._textFormat.material;
 	}

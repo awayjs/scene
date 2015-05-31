@@ -56,7 +56,7 @@ class TesselatedFontChar
 		this.char_width=0;
 		this.subgeom = subgeom;
 		if (this.subgeom != null) {
-			var positions2:Array<number> = this.subgeom.positions;
+			var positions2:Float32Array = this.subgeom.positions.get(this.subgeom.numVertices);
 			for (var v:number = 0; v < positions2.length/3; v++) {
 				if(positions2[v*3]>this.char_width)
 					this.char_width=positions2[v*3];

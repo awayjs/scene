@@ -1,3 +1,4 @@
+import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
 import Geometry					= require("awayjs-core/lib/data/Geometry");
 import SubGeometryBase			= require("awayjs-core/lib/data/SubGeometryBase");
 import TriangleSubGeometry		= require("awayjs-core/lib/data/TriangleSubGeometry");
@@ -18,6 +19,8 @@ class PrimitivePrefabBase extends PrefabBase
 
 	public _geomDirty:boolean = true;
 	public _uvDirty:boolean = true;
+	public _scaleU:number = 1;
+	public _scaleV:number = 1;
 
 	private _material:MaterialBase;
 	private _geometry:Geometry;
@@ -78,6 +81,38 @@ class PrimitivePrefabBase extends PrefabBase
 		for (var i:number = 0; i < len; i++)
 			(<Mesh> this._pObjects[i]).material = this._material;
 	}
+
+	public get scaleU():number
+	{
+		return this._scaleU;
+	}
+
+	public set scaleU(value:number)
+	{
+		if (this._scaleU = value)
+			return;
+
+		this._scaleU = value;
+
+		this._pInvalidateUVs();
+	}
+
+
+	public get scaleV():number
+	{
+		return this._scaleV;
+	}
+
+	public set scaleV(value:number)
+	{
+		if (this._scaleV = value)
+			return;
+
+		this._scaleV = value;
+
+		this._pInvalidateUVs();
+	}
+
 
 	/**
 	 * Creates a new PrimitivePrefabBase object.
@@ -147,14 +182,14 @@ class PrimitivePrefabBase extends PrefabBase
 			this._geometry.removeSubGeometry(this._subGeometry);
 
 		if (this._geometryType == "triangleSubGeometry") {
-			var triangleGeometry:TriangleSubGeometry = new TriangleSubGeometry(true);
+			var triangleGeometry:TriangleSubGeometry = new TriangleSubGeometry(new AttributesBuffer());
 			triangleGeometry.autoDeriveNormals = false;
 			triangleGeometry.autoDeriveTangents = false;
 			triangleGeometry.autoDeriveUVs = false;
 			this._geometry.addSubGeometry(triangleGeometry);
 			this._subGeometry = triangleGeometry;
 		} else if (this._geometryType == "lineSubGeometry") {
-			this._geometry.addSubGeometry(this._subGeometry = new LineSubGeometry());
+			this._geometry.addSubGeometry(this._subGeometry = new LineSubGeometry(new AttributesBuffer()));
 		}
 
 		this._geometryTypeDirty = false;

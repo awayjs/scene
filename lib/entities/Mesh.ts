@@ -363,7 +363,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var i:number, j:number, p:number, len:number;
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
 		var subGeom:SubGeometryBase;
-		var boundingPositions:Array<number>;
+		var boundingPositions:Float32Array;
 		var numSubGeoms:number = subGeoms.length;
 		var minX:number, minY:number, minZ:number;
 		var maxX:number, maxY:number, maxZ:number;
@@ -425,7 +425,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var i:number, j:number, p:number, len:number;
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
 		var subGeom:SubGeometryBase;
-		var boundingPositions:Array<number>;
+		var boundingPositions:Float32Array;
 		var numSubGeoms:number = subGeoms.length;
 		var maxRadiusSquared:number = 0;
 		var radiusSquared:number;

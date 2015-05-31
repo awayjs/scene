@@ -142,12 +142,11 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
 	 */
 	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
 	{
-		var indices:Array<number> /*uint*/;
+		var indices:Uint16Array;
 		var x:number, y:number;
 		var numIndices:number;
 		var base:number;
 		var tw:number = this._segmentsW + 1;
-		var numVertices:number;
 
 		var vidx:number, fidx:number; // indices
 
@@ -159,9 +158,9 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
 			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
 
 			var numVertices:number = (this._segmentsH + 1)*tw;
-			var positions:Array<number>;
-			var normals:Array<number>;
-			var tangents:Array<number>;
+			var positions:Float32Array;
+			var normals:Float32Array;
+			var tangents:Float32Array;
 
 			if (this._doubleSided)
 				numVertices *= 2;
@@ -172,21 +171,21 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
 				numIndices *= 2;
 
 			if (triangleGeometry.indices != null && numIndices == triangleGeometry.indices.length) {
-				indices = triangleGeometry.indices;
+				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
 			} else {
-				indices = new Array<number>(numIndices);
+				indices = new Uint16Array(numIndices);
 
 				this._pInvalidateUVs();
 			}
 
 			if (numVertices == triangleGeometry.numVertices) {
-				positions = triangleGeometry.positions;
-				normals = triangleGeometry.vertexNormals;
-				tangents = triangleGeometry.vertexTangents;
+				positions = triangleGeometry.positions.get(numVertices);
+				normals = triangleGeometry.normals.get(numVertices);
+				tangents = triangleGeometry.tangents.get(numVertices);
 			} else {
-				positions = new Array<number>(numVertices*3);
-				normals = new Array<number>(numVertices*3);
-				tangents = new Array<number>(numVertices*3);
+				positions = new Float32Array(numVertices*3);
+				normals = new Float32Array(numVertices*3);
+				tangents = new Float32Array(numVertices*3);
 
 				this._pInvalidateUVs();
 			}
@@ -265,70 +264,57 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
 				}
 			}
 
-			triangleGeometry.updateIndices(indices);
+			triangleGeometry.setIndices(indices);
 
-			triangleGeometry.updatePositions(positions);
-			triangleGeometry.updateVertexNormals(normals);
-			triangleGeometry.updateVertexTangents(tangents);
+			triangleGeometry.setPositions(positions);
+			triangleGeometry.setNormals(normals);
+			triangleGeometry.setTangents(tangents);
 
 		} else if (geometryType == "lineSubGeometry") {
 			var lineGeometry:LineSubGeometry = <LineSubGeometry> target;
 
 			var numSegments:number = (this._segmentsH + 1) + tw;
-			var startPositions:Array<number>;
-			var endPositions:Array<number>;
-			var thickness:Array<number>;
+			var positions:Float32Array;
+			var thickness:Float32Array;
 
 			var hw:number = this._width/2;
 			var hh:number = this._height/2;
 
-
-			if (lineGeometry.indices != null && numSegments == lineGeometry.numSegments) {
-				startPositions = lineGeometry.startPositions;
-				endPositions = lineGeometry.endPositions;
-				thickness = lineGeometry.thickness;
-			} else {
-				startPositions = new Array<number>(numSegments*3);
-				endPositions = new Array<number>(numSegments*3);
-				thickness = new Array<number>(numSegments);
-			}
+			positions = new Float32Array(numSegments*6);
+			thickness = new Float32Array(numSegments);
 
 			fidx = 0;
 
 			vidx = 0;
 
 			for (yi = 0; yi <= this._segmentsH; ++yi) {
-				startPositions[vidx] = -hw;
-				startPositions[vidx + 1] = 0;
-				startPositions[vidx + 2] = yi*this._height - hh;
+				positions[vidx++] = -hw;
+				positions[vidx++] = 0;
+				positions[vidx++] = yi*this._height - hh;
 
-				endPositions[vidx] = hw;
-				endPositions[vidx + 1] = 0;
-				endPositions[vidx + 2] = yi*this._height - hh;
+				positions[vidx++] = hw;
+				positions[vidx++] = 0;
+				positions[vidx++] = yi*this._height - hh;
 
 				thickness[fidx++] = 1;
-
-				vidx += 3;
 			}
 
 
 			for (xi = 0; xi <= this._segmentsW; ++xi) {
-				startPositions[vidx] = xi*this._width - hw;
-				startPositions[vidx + 1] = 0;
-				startPositions[vidx + 2] = -hh;
+				positions[vidx++] = xi*this._width - hw;
+				positions[vidx++] = 0;
+				positions[vidx++] = -hh;
 
-				endPositions[vidx] = xi*this._width - hw;
-				endPositions[vidx + 1] = 0;
-				endPositions[vidx + 2] = hh;
+				positions[vidx++] = xi*this._width - hw;
+				positions[vidx++] = 0;
+				positions[vidx++] = hh;
 
 				thickness[fidx++] = 1;
-
-				vidx += 3;
 			}
 
 			// build real data from raw data
-			lineGeometry.updatePositions(startPositions, endPositions);
-			lineGeometry.updateThickness(thickness);
+			lineGeometry.setPositions(positions);
+			lineGeometry.setThickness(thickness);
 		}
 	}
 
@@ -337,7 +323,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
 	 */
 	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
 	{
-		var uvs:Array<number>;
+		var uvs:Float32Array;
 		var numVertices:number;
 
 		if (geometryType == "triangleSubGeometry") {
@@ -350,9 +336,9 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
 			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
 
 			if (triangleGeometry.uvs && numVertices == triangleGeometry.numVertices) {
-				uvs = triangleGeometry.uvs;
+				uvs = triangleGeometry.uvs.get(numVertices);
 			} else {
-				uvs = new Array<number>(numVertices*2);
+				uvs = new Float32Array(numVertices*2);
 				this._pInvalidateGeometry()
 			}
 
@@ -361,19 +347,19 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
 			for (var yi:number = 0; yi <= this._segmentsH; ++yi) {
 
 				for (var xi:number = 0; xi <= this._segmentsW; ++xi) {
-					uvs[index] = (xi/this._segmentsW)*triangleGeometry.scaleU;
-					uvs[index + 1] = (1 - yi/this._segmentsH)*triangleGeometry.scaleV;
+					uvs[index] = (xi/this._segmentsW)*this._scaleU;
+					uvs[index + 1] = (1 - yi/this._segmentsH)*this._scaleV;
 					index += 2;
 
 					if (this._doubleSided) {
-						uvs[index] = (xi/this._segmentsW)*triangleGeometry.scaleU;
-						uvs[index+1] = (1 - yi/this._segmentsH)*triangleGeometry.scaleV;
+						uvs[index] = (xi/this._segmentsW)*this._scaleU;
+						uvs[index+1] = (1 - yi/this._segmentsH)*this._scaleV;
 						index += 2;
 					}
 				}
 			}
 
-			triangleGeometry.updateUVs(uvs);
+			triangleGeometry.setUVs(uvs);
 
 
 		} else if (geometryType == "lineSubGeometry") {

@@ -113,10 +113,10 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset
 	 */
 	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
 	{
-		var indices:Array<number> /*uint*/;
-		var positions:Array<number>;
-		var normals:Array<number>;
-		var tangents:Array<number>;
+		var indices:Uint16Array;
+		var positions:Float32Array;
+		var normals:Float32Array;
+		var tangents:Float32Array;
 
 		var i:number, j:number;
 		var x:number, y:number, z:number, nx:number, ny:number, nz:number, revolutionAngleR:number, revolutionAngleT:number;
@@ -134,15 +134,15 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset
 
 			// need to initialize raw arrays or can be reused?
 			if (this._numVertices == triangleGeometry.numVertices) {
-				indices = triangleGeometry.indices;
-				positions = triangleGeometry.positions;
-				normals = triangleGeometry.vertexNormals;
-				tangents = triangleGeometry.vertexTangents;
+				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+				positions = triangleGeometry.positions.get(this._numVertices);
+				normals = triangleGeometry.normals.get(this._numVertices);
+				tangents = triangleGeometry.tangents.get(this._numVertices);
 			} else {
-				indices = new Array<number>(numIndices)
-				positions = new Array<number>(this._numVertices*3);
-				normals = new Array<number>(this._numVertices*3);
-				tangents = new Array<number>(this._numVertices*3);
+				indices = new Uint16Array(numIndices);
+				positions = new Float32Array(this._numVertices*3);
+				normals = new Float32Array(this._numVertices*3);
+				tangents = new Float32Array(this._numVertices*3);
 
 				this._pInvalidateUVs();
 			}
@@ -240,11 +240,11 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset
 			}
 
 			// build real data from raw data
-			triangleGeometry.updateIndices(indices);
+			triangleGeometry.setIndices(indices);
 
-			triangleGeometry.updatePositions(positions);
-			triangleGeometry.updateVertexNormals(normals);
-			triangleGeometry.updateVertexTangents(tangents);
+			triangleGeometry.setPositions(positions);
+			triangleGeometry.setNormals(normals);
+			triangleGeometry.setTangents(tangents);
 
 		} else if (geometryType == "lineSubGeometry") {
 			//TODO
@@ -258,7 +258,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset
 	{
 
 		var i:number, j:number;
-		var uvs:Array<number>;
+		var uvs:Float32Array;
 
 
 		if (geometryType == "triangleSubGeometry") {
@@ -267,9 +267,9 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset
 
 			// need to initialize raw array or can be reused?
 			if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-				uvs = triangleGeometry.uvs;
+				uvs = triangleGeometry.uvs.get(this._numVertices);
 			} else {
-				uvs = new Array<number>(this._numVertices*2);
+				uvs = new Float32Array(this._numVertices*2);
 			}
 
 			// current uv component index
@@ -279,13 +279,13 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset
 			for (j = 0; j <= this._segmentsT; ++j) {
 				for (i = 0; i <= this._segmentsR; ++i) {
 					// revolution vertex
-					uvs[index++] = ( i/this._segmentsR )*triangleGeometry.scaleU;
-					uvs[index++] = ( j/this._segmentsT )*triangleGeometry.scaleV;
+					uvs[index++] = ( i/this._segmentsR )*this._scaleU;
+					uvs[index++] = ( j/this._segmentsT )*this._scaleV;
 				}
 			}
 
 			// build real data from raw data
-			triangleGeometry.updateUVs(uvs);
+			triangleGeometry.setUVs(uvs);
 
 		} else if (geometryType == "lineSubGeometry") {
 			//nothing to do here

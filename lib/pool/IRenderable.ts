@@ -42,16 +42,6 @@ interface IRenderable
 	 *
 	 */
 	invalidateGeometry();
-
-	/**
-	 *
-	 */
-	invalidateIndexData();
-
-	/**
-	 *
-	 */
-	invalidateVertexData(dataType:string);
 }
 
 export = IRenderable;

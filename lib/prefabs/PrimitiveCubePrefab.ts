@@ -160,11 +160,11 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 	 */
 	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
 	{
-		var indices:Array<number> /*uint*/;
-		var positions:Array<number>;
-		var normals:Array<number>;
-		var tangents:Array<number>;
-
+		var indices:Uint16Array;
+		var positions:Float32Array;
+		var normals:Float32Array;
+		var tangents:Float32Array;
+		
 		var tl:number, tr:number, bl:number, br:number;
 		var i:number, j:number, inc:number = 0;
 
@@ -190,15 +190,15 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 			numIndices = ((this._segmentsW*this._segmentsH + this._segmentsW*this._segmentsD + this._segmentsH*this._segmentsD)*12);
 
 			if (numVertices == triangleGeometry.numVertices && triangleGeometry.indices != null) {
-				indices = triangleGeometry.indices;
-				positions = triangleGeometry.positions;
-				normals = triangleGeometry.vertexNormals;
-				tangents = triangleGeometry.vertexTangents;
+				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+				positions = triangleGeometry.positions.get(numVertices);
+				normals = triangleGeometry.normals.get(numVertices);
+				tangents = triangleGeometry.tangents.get(numVertices);
 			} else {
-				indices = new Array<number>(numIndices);
-				positions = new Array<number>(numVertices*3);
-				normals = new Array<number>(numVertices*3);
-				tangents = new Array<number>(numVertices*3);
+				indices = new Uint16Array(numIndices);
+				positions = new Float32Array(numVertices*3);
+				normals = new Float32Array(numVertices*3);
+				tangents = new Float32Array(numVertices*3);
 
 				this._pInvalidateUVs();
 			}
@@ -365,29 +365,21 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 				}
 			}
 
-			triangleGeometry.updateIndices(indices);
+			triangleGeometry.setIndices(indices);
 
-			triangleGeometry.updatePositions(positions);
-			triangleGeometry.updateVertexNormals(normals);
-			triangleGeometry.updateVertexTangents(tangents);
+			triangleGeometry.setPositions(positions);
+			triangleGeometry.setNormals(normals);
+			triangleGeometry.setTangents(tangents);
 
 		} else if (geometryType == "lineSubGeometry") {
 			var lineGeometry:LineSubGeometry = <LineSubGeometry> target;
 
 			var numSegments:number = this._segmentsH*4 +  this._segmentsW*4 + this._segmentsD*4;
-			var startPositions:Array<number>;
-			var endPositions:Array<number>;
-			var thickness:Array<number>;
-
-			if (lineGeometry.indices != null && numSegments == lineGeometry.numSegments) {
-				startPositions = lineGeometry.startPositions;
-				endPositions = lineGeometry.endPositions;
-				thickness = lineGeometry.thickness;
-			} else {
-				startPositions = new Array<number>(numSegments*3);
-				endPositions = new Array<number>(numSegments*3);
-				thickness = new Array<number>(numSegments);
-			}
+			var positions:Float32Array;
+			var thickness:Float32Array;
+			
+			positions = new Float32Array(numSegments*6);
+			thickness = new Float32Array(numSegments);
 
 			vidx = 0;
 
@@ -395,167 +387,143 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 
 			//front/back face
 			for (i = 0; i < this._segmentsH; ++i) {
-				startPositions[vidx] = -hw;
-				startPositions[vidx + 1] = i*this._height/this._segmentsH - hh;
-				startPositions[vidx + 2] = -hd;
+				positions[vidx++] = -hw;
+				positions[vidx++] = i*this._height/this._segmentsH - hh;
+				positions[vidx++] = -hd;
 
-				endPositions[vidx] = hw;
-				endPositions[vidx + 1] = i*this._height/this._segmentsH - hh
-				endPositions[vidx + 2] = -hd;
-
-				thickness[fidx++] = 1;
-
-				vidx += 3;
-
-				startPositions[vidx] = -hw;
-				startPositions[vidx + 1] = hh - i*this._height/this._segmentsH;
-				startPositions[vidx + 2] = hd;
-
-				endPositions[vidx] = hw;
-				endPositions[vidx + 1] = hh - i*this._height/this._segmentsH;
-				endPositions[vidx + 2] = hd;
+				positions[vidx++] = hw;
+				positions[vidx++] = i*this._height/this._segmentsH - hh
+				positions[vidx++] = -hd;
 
 				thickness[fidx++] = 1;
 
-				vidx += 3;
+				positions[vidx++] = -hw;
+				positions[vidx++] = hh - i*this._height/this._segmentsH;
+				positions[vidx++] = hd;
+
+				positions[vidx++] = hw;
+				positions[vidx++] = hh - i*this._height/this._segmentsH;
+				positions[vidx++] = hd;
+
+				thickness[fidx++] = 1;
 			}
 
 			for (i = 0; i < this._segmentsW; ++i) {
-				startPositions[vidx] = i*this._width/this._segmentsW - hw;
-				startPositions[vidx + 1] = -hh;
-				startPositions[vidx + 2] = -hd;
+				positions[vidx++] = i*this._width/this._segmentsW - hw;
+				positions[vidx++] = -hh;
+				positions[vidx++] = -hd;
 
-				endPositions[vidx] = i*this._width/this._segmentsW - hw;
-				endPositions[vidx + 1] = hh;
-				endPositions[vidx + 2] = -hd;
-
-				thickness[fidx++] = 1;
-
-				vidx += 3;
-
-				startPositions[vidx] = hw - i*this._width/this._segmentsW;
-				startPositions[vidx + 1] = -hh;
-				startPositions[vidx + 2] = hd;
-
-				endPositions[vidx] = hw - i*this._width/this._segmentsW;
-				endPositions[vidx + 1] = hh;
-				endPositions[vidx + 2] = hd;
+				positions[vidx++] = i*this._width/this._segmentsW - hw;
+				positions[vidx++] = hh;
+				positions[vidx++] = -hd;
 
 				thickness[fidx++] = 1;
 
-				vidx += 3;
+				positions[vidx++] = hw - i*this._width/this._segmentsW;
+				positions[vidx++] = -hh;
+				positions[vidx++] = hd;
+
+				positions[vidx++] = hw - i*this._width/this._segmentsW;
+				positions[vidx++] = hh;
+				positions[vidx++] = hd;
+
+				thickness[fidx++] = 1;
 			}
 
 			//left/right face
 			for (i = 0; i < this._segmentsH; ++i) {
-				startPositions[vidx] = -hw;
-				startPositions[vidx + 1] = i*this._height/this._segmentsH - hh;
-				startPositions[vidx + 2] = -hd;
+				positions[vidx++] = -hw;
+				positions[vidx++] = i*this._height/this._segmentsH - hh;
+				positions[vidx++] = -hd;
 
-				endPositions[vidx] = -hw;
-				endPositions[vidx + 1] = i*this._height/this._segmentsH - hh
-				endPositions[vidx + 2] = hd;
-
-				thickness[fidx++] = 1;
-
-				vidx += 3;
-
-				startPositions[vidx] = hw;
-				startPositions[vidx + 1] = hh - i*this._height/this._segmentsH;
-				startPositions[vidx + 2] = -hd;
-
-				endPositions[vidx] = hw;
-				endPositions[vidx + 1] = hh - i*this._height/this._segmentsH;
-				endPositions[vidx + 2] = hd;
+				positions[vidx++] = -hw;
+				positions[vidx++] = i*this._height/this._segmentsH - hh
+				positions[vidx++] = hd;
 
 				thickness[fidx++] = 1;
 
-				vidx += 3;
+				positions[vidx++] = hw;
+				positions[vidx++] = hh - i*this._height/this._segmentsH;
+				positions[vidx++] = -hd;
+
+				positions[vidx++] = hw;
+				positions[vidx++] = hh - i*this._height/this._segmentsH;
+				positions[vidx++] = hd;
+
+				thickness[fidx++] = 1;
 			}
 
 			for (i = 0; i < this._segmentsD; ++i) {
-				startPositions[vidx] = hw
-				startPositions[vidx + 1] = -hh;
-				startPositions[vidx + 2] = i*this._depth/this._segmentsD - hd;
+				positions[vidx++] = hw
+				positions[vidx++] = -hh;
+				positions[vidx++] = i*this._depth/this._segmentsD - hd;
 
-				endPositions[vidx] = hw;
-				endPositions[vidx + 1] = hh;
-				endPositions[vidx + 2] = i*this._depth/this._segmentsD - hd;
-
-				thickness[fidx++] = 1;
-
-				vidx += 3;
-
-				startPositions[vidx] = -hw;
-				startPositions[vidx + 1] = -hh;
-				startPositions[vidx + 2] = hd - i*this._depth/this._segmentsD;
-
-				endPositions[vidx] = -hw;
-				endPositions[vidx + 1] = hh;
-				endPositions[vidx + 2] = hd - i*this._depth/this._segmentsD;
+				positions[vidx++] = hw;
+				positions[vidx++] = hh;
+				positions[vidx++] = i*this._depth/this._segmentsD - hd;
 
 				thickness[fidx++] = 1;
 
-				vidx += 3;
+				positions[vidx++] = -hw;
+				positions[vidx++] = -hh;
+				positions[vidx++] = hd - i*this._depth/this._segmentsD;
+
+				positions[vidx++] = -hw;
+				positions[vidx++] = hh;
+				positions[vidx++] = hd - i*this._depth/this._segmentsD;
+
+				thickness[fidx++] = 1;
 			}
 
 
 			//top/bottom face
 			for (i = 0; i < this._segmentsD; ++i) {
-				startPositions[vidx] = -hw;
-				startPositions[vidx + 1] = -hh;
-				startPositions[vidx + 2] = hd - i*this._depth/this._segmentsD;
+				positions[vidx++] = -hw;
+				positions[vidx++] = -hh;
+				positions[vidx++] = hd - i*this._depth/this._segmentsD;
 
-				endPositions[vidx] = hw;
-				endPositions[vidx + 1] = -hh;
-				endPositions[vidx + 2] = hd - i*this._depth/this._segmentsD;
-
-				thickness[fidx++] = 1;
-
-				vidx += 3;
-
-				startPositions[vidx] = -hw;
-				startPositions[vidx + 1] = hh;
-				startPositions[vidx + 2] = i*this._depth/this._segmentsD - hd;
-
-				endPositions[vidx] = hw;
-				endPositions[vidx + 1] = hh;
-				endPositions[vidx + 2] = i*this._depth/this._segmentsD - hd;
+				positions[vidx++] = hw;
+				positions[vidx++] = -hh;
+				positions[vidx++] = hd - i*this._depth/this._segmentsD;
 
 				thickness[fidx++] = 1;
 
-				vidx += 3;
+				positions[vidx++] = -hw;
+				positions[vidx++] = hh;
+				positions[vidx++] = i*this._depth/this._segmentsD - hd;
+
+				positions[vidx++] = hw;
+				positions[vidx++] = hh;
+				positions[vidx++] = i*this._depth/this._segmentsD - hd;
+
+				thickness[fidx++] = 1;
 			}
 
 			for (i = 0; i < this._segmentsW; ++i) {
-				startPositions[vidx] = hw - i*this._width/this._segmentsW;
-				startPositions[vidx + 1] = -hh;
-				startPositions[vidx + 2] = -hd;
+				positions[vidx++] = hw - i*this._width/this._segmentsW;
+				positions[vidx++] = -hh;
+				positions[vidx++] = -hd;
 
-				endPositions[vidx] = hw - i*this._width/this._segmentsW;
-				endPositions[vidx + 1] = -hh;
-				endPositions[vidx + 2] = hd;
-
-				thickness[fidx++] = 1;
-
-				vidx += 3;
-
-				startPositions[vidx] = i*this._width/this._segmentsW - hw;
-				startPositions[vidx + 1] = hh;
-				startPositions[vidx + 2] = -hd;
-
-				endPositions[vidx] = i*this._width/this._segmentsW - hw;
-				endPositions[vidx + 1] = hh;
-				endPositions[vidx + 2] = hd;
+				positions[vidx++] = hw - i*this._width/this._segmentsW;
+				positions[vidx++] = -hh;
+				positions[vidx++] = hd;
 
 				thickness[fidx++] = 1;
 
-				vidx += 3;
+				positions[vidx++] = i*this._width/this._segmentsW - hw;
+				positions[vidx++] = hh;
+				positions[vidx++] = -hd;
+
+				positions[vidx++] = i*this._width/this._segmentsW - hw;
+				positions[vidx++] = hh;
+				positions[vidx++] = hd;
+
+				thickness[fidx++] = 1;
 			}
 
 			// build real data from raw data
-			lineGeometry.updatePositions(startPositions, endPositions);
-			lineGeometry.updateThickness(thickness);
+			lineGeometry.setPositions(positions);
+			lineGeometry.setThickness(thickness);
 		}
 	}
 
@@ -565,7 +533,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
 	{
 		var i:number, j:number, index:number;
-		var uvs:Array<number>;
+		var uvs:Float32Array;
 
 		var u_tile_dim:number, v_tile_dim:number;
 		var u_tile_step:number, v_tile_step:number;
@@ -581,9 +549,9 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
 
 			if (numVertices == triangleGeometry.numVertices && triangleGeometry.uvs != null) {
-				uvs = triangleGeometry.uvs;
+				uvs = triangleGeometry.uvs.get(numVertices);
 			} else {
-				uvs = new Array<number>(numVertices*2);
+				uvs = new Float32Array(numVertices*2);
 			}
 
 			if (this._tile6) {
@@ -617,11 +585,11 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 			dv = v_tile_dim/this._segmentsH;
 			for (i = 0; i <= this._segmentsW; i++) {
 				for (j = 0; j <= this._segmentsH; j++) {
-					uvs[index++] = ( tl0u + i*du )*triangleGeometry.scaleU;
-					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*triangleGeometry.scaleV;
+					uvs[index++] = ( tl0u + i*du )*this._scaleU;
+					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
 
-					uvs[index++] = ( tl1u + (u_tile_dim - i*du))*triangleGeometry.scaleU;
-					uvs[index++] = ( tl1v + (v_tile_dim - j*dv))*triangleGeometry.scaleV;
+					uvs[index++] = ( tl1u + (u_tile_dim - i*du))*this._scaleU;
+					uvs[index++] = ( tl1v + (v_tile_dim - j*dv))*this._scaleV;
 				}
 			}
 
@@ -634,11 +602,11 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 			dv = v_tile_dim/this._segmentsD;
 			for (i = 0; i <= this._segmentsW; i++) {
 				for (j = 0; j <= this._segmentsD; j++) {
-					uvs[index++] = ( tl0u + i*du)*triangleGeometry.scaleU;
-					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*triangleGeometry.scaleV;
+					uvs[index++] = ( tl0u + i*du)*this._scaleU;
+					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
 
-					uvs[index++] = ( tl1u + i*du)*triangleGeometry.scaleU;
-					uvs[index++] = ( tl1v + j*dv)*triangleGeometry.scaleV;
+					uvs[index++] = ( tl1u + i*du)*this._scaleU;
+					uvs[index++] = ( tl1v + j*dv)*this._scaleV;
 				}
 			}
 
@@ -651,15 +619,15 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
 			dv = v_tile_dim/this._segmentsH;
 			for (i = 0; i <= this._segmentsD; i++) {
 				for (j = 0; j <= this._segmentsH; j++) {
-					uvs[index++] = ( tl0u + i*du)*triangleGeometry.scaleU;
-					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*triangleGeometry.scaleV;
+					uvs[index++] = ( tl0u + i*du)*this._scaleU;
+					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
 
-					uvs[index++] = ( tl1u + (u_tile_dim - i*du))*triangleGeometry.scaleU;
-					uvs[index++] = ( tl1v + (v_tile_dim - j*dv))*triangleGeometry.scaleV;
+					uvs[index++] = ( tl1u + (u_tile_dim - i*du))*this._scaleU;
+					uvs[index++] = ( tl1v + (v_tile_dim - j*dv))*this._scaleV;
 				}
 			}
 
-			triangleGeometry.updateUVs(uvs);
+			triangleGeometry.setUVs(uvs);
 
 		} else if (geometryType == "lineSubGeometry") {
 			//nothing to do here

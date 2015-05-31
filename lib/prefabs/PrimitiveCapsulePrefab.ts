@@ -117,10 +117,10 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset
 	 */
 	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
 	{
-		var indices:Array<number> /*uint*/;
-		var positions:Array<number>;
-		var normals:Array<number>;
-		var tangents:Array<number>;
+		var indices:Uint16Array;
+		var positions:Float32Array;
+		var normals:Float32Array;
+		var tangents:Float32Array;
 
 		var i:number;
 		var j:number;
@@ -140,15 +140,15 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset
 
 			// need to initialize raw arrays or can be reused?
 			if (this._numVertices == triangleGeometry.numVertices) {
-				indices = triangleGeometry.indices;
-				positions = triangleGeometry.positions;
-				normals = triangleGeometry.vertexNormals;
-				tangents = triangleGeometry.vertexTangents;
+				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+				positions = triangleGeometry.positions.get(this._numVertices);
+				normals = triangleGeometry.normals.get(this._numVertices);
+				tangents = triangleGeometry.tangents.get(this._numVertices);
 			} else {
-				indices = new Array<number>(numIndices)
-				positions = new Array<number>(this._numVertices*3);
-				normals = new Array<number>(this._numVertices*3);
-				tangents = new Array<number>(this._numVertices*3);
+				indices = new Uint16Array(numIndices);
+				positions = new Float32Array(this._numVertices*3);
+				normals = new Float32Array(this._numVertices*3);
+				tangents = new Float32Array(this._numVertices*3);
 
 				this._pInvalidateUVs();
 			}
@@ -244,11 +244,11 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset
 			}
 
 			// build real data from raw data
-			triangleGeometry.updateIndices(indices);
+			triangleGeometry.setIndices(indices);
 
-			triangleGeometry.updatePositions(positions);
-			triangleGeometry.updateVertexNormals(normals);
-			triangleGeometry.updateVertexTangents(tangents);
+			triangleGeometry.setPositions(positions);
+			triangleGeometry.setNormals(normals);
+			triangleGeometry.setTangents(tangents);
 
 		} else if (geometryType == "lineSubGeometry") {
 			//TODO
@@ -261,7 +261,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset
 	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
 	{
 		var i:number, j:number;
-		var uvs:Array<number>;
+		var uvs:Float32Array;
 
 
 		if (geometryType == "triangleSubGeometry") {
@@ -270,9 +270,9 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset
 
 			// need to initialize raw array or can be reused?
 			if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-				uvs = triangleGeometry.uvs;
+				uvs = triangleGeometry.uvs.get(this._numVertices);
 			} else {
-				uvs = new Array<number>(this._numVertices*2);
+				uvs = new Float32Array(this._numVertices*2);
 			}
 
 			// current uv component index
@@ -282,13 +282,13 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset
 			for (j = 0; j <= this._segmentsH; ++j) {
 				for (i = 0; i <= this._segmentsW; ++i) {
 					// revolution vertex
-					uvs[index++] = ( i/this._segmentsW )*triangleGeometry.scaleU;
-					uvs[index++] = ( j/this._segmentsH )*triangleGeometry.scaleV;
+					uvs[index++] = ( i/this._segmentsW )*this._scaleU;
+					uvs[index++] = ( j/this._segmentsH )*this._scaleV;
 				}
 			}
 
 			// build real data from raw data
-			triangleGeometry.updateUVs(uvs);
+			triangleGeometry.setUVs(uvs);
 
 		} else if (geometryType == "lineSubGeometry") {
 			//nothing to do here
