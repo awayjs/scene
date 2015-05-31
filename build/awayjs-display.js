@@ -8811,6 +8811,9 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+var Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
+var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var CurveSubGeometry = require("awayjs-core/lib/data/CurveSubGeometry");
@@ -9093,9 +9096,7 @@ var TextField = (function (_super) {
             return;
         }
         var indices = new Array();
-        var positions = new Array();
-        var curveData = new Array();
-        var uvs = new Array();
+        var vertices = new Array();
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
         var tri_idx_offset = 0;
         var tri_cnt = 0;
@@ -9108,22 +9109,23 @@ var TextField = (function (_super) {
                 var this_subGeom = this_char.subgeom;
                 if (this_subGeom != null) {
                     tri_cnt = 0;
-                    var indices2 = this_subGeom.indices;
-                    var positions2 = this_subGeom.positions;
-                    var curveData2 = this_subGeom.curves;
+                    var j = 0;
+                    var indices2 = this_subGeom.indices.get(this_subGeom.numElements);
+                    var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
+                    var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
                     for (var v = 0; v < indices2.length; v++) {
-                        indices.push(indices2[v] + tri_idx_offset);
+                        indices[v] = indices2[v] + tri_idx_offset;
                         tri_cnt++;
                     }
                     tri_idx_offset += tri_cnt;
-                    for (v = 0; v < positions2.length / 3; v++) {
-                        positions.push((positions2[v * 3] * char_scale) + x_offset);
-                        positions.push((positions2[v * 3 + 1] * char_scale) + y_offset);
-                        positions.push(positions2[v * 3 + 2]);
-                        curveData.push(curveData2[v * 2]);
-                        curveData.push(curveData2[v * 2 + 1]);
-                        uvs.push(this._textFormat.uv_values[0]);
-                        uvs.push(this._textFormat.uv_values[1]);
+                    for (v = 0; v < this_subGeom.numVertices; v++) {
+                        vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
+                        vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
+                        vertices[j++] = positions2[v * 3 + 2];
+                        vertices[j++] = curveData2[v * 2];
+                        vertices[j++] = curveData2[v * 2 + 1];
+                        vertices[j++] = this._textFormat.uv_values[0];
+                        vertices[j++] = this._textFormat.uv_values[1];
                     }
                     // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
                     var kerning_value = 0;
@@ -9147,11 +9149,15 @@ var TextField = (function (_super) {
                 x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
             }
         }
-        var curve_sub_geom = new CurveSubGeometry(true);
-        curve_sub_geom.updateIndices(indices);
-        curve_sub_geom.updatePositions(positions);
-        curve_sub_geom.updateCurves(curveData);
-        curve_sub_geom.updateUVs(uvs);
+        var attributesView = new AttributesView(Float32Array, 7);
+        attributesView.set(vertices);
+        var attributesBuffer = attributesView.buffer;
+        attributesView.dispose();
+        var curve_sub_geom = new CurveSubGeometry(attributesBuffer);
+        curve_sub_geom.setIndices(indices);
+        curve_sub_geom.setPositions(new Float3Attributes(attributesBuffer));
+        curve_sub_geom.setCurves(new Float2Attributes(attributesBuffer));
+        curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
         this.geometry.addSubGeometry(curve_sub_geom);
         this.subMeshes[0].material = this._textFormat.material;
     };
@@ -9495,7 +9501,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/data/CurveSubGeometry":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -12909,7 +12915,7 @@ var PrimitiveCapsulePrefab = (function (_super) {
      * @inheritDoc
      */
     PrimitiveCapsulePrefab.prototype._pBuildGeometry = function (target, geometryType) {
-        var indices /*uint*/;
+        var indices;
         var positions;
         var normals;
         var tangents;
@@ -12927,16 +12933,16 @@ var PrimitiveCapsulePrefab = (function (_super) {
             numIndices = (this._segmentsH - 1) * this._segmentsW * 6; // each level has segmentH quads, each of 2 triangles
             // need to initialize raw arrays or can be reused?
             if (this._numVertices == triangleGeometry.numVertices) {
-                indices = triangleGeometry.indices;
-                positions = triangleGeometry.positions;
-                normals = triangleGeometry.vertexNormals;
-                tangents = triangleGeometry.vertexTangents;
+                indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+                positions = triangleGeometry.positions.get(this._numVertices);
+                normals = triangleGeometry.normals.get(this._numVertices);
+                tangents = triangleGeometry.tangents.get(this._numVertices);
             }
             else {
-                indices = new Array(numIndices);
-                positions = new Array(this._numVertices * 3);
-                normals = new Array(this._numVertices * 3);
-                tangents = new Array(this._numVertices * 3);
+                indices = new Uint16Array(numIndices);
+                positions = new Float32Array(this._numVertices * 3);
+                normals = new Float32Array(this._numVertices * 3);
+                tangents = new Float32Array(this._numVertices * 3);
                 this._pInvalidateUVs();
             }
             for (j = 0; j <= this._segmentsH; ++j) {
@@ -13019,10 +13025,10 @@ var PrimitiveCapsulePrefab = (function (_super) {
                 }
             }
             // build real data from raw data
-            triangleGeometry.updateIndices(indices);
-            triangleGeometry.updatePositions(positions);
-            triangleGeometry.updateVertexNormals(normals);
-            triangleGeometry.updateVertexTangents(tangents);
+            triangleGeometry.setIndices(indices);
+            triangleGeometry.setPositions(positions);
+            triangleGeometry.setNormals(normals);
+            triangleGeometry.setTangents(tangents);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -13037,22 +13043,22 @@ var PrimitiveCapsulePrefab = (function (_super) {
             var triangleGeometry = target;
             // need to initialize raw array or can be reused?
             if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-                uvs = triangleGeometry.uvs;
+                uvs = triangleGeometry.uvs.get(this._numVertices);
             }
             else {
-                uvs = new Array(this._numVertices * 2);
+                uvs = new Float32Array(this._numVertices * 2);
             }
             // current uv component index
             var index = 0;
             for (j = 0; j <= this._segmentsH; ++j) {
                 for (i = 0; i <= this._segmentsW; ++i) {
                     // revolution vertex
-                    uvs[index++] = (i / this._segmentsW) * triangleGeometry.scaleU;
-                    uvs[index++] = (j / this._segmentsH) * triangleGeometry.scaleV;
+                    uvs[index++] = (i / this._segmentsW) * this._scaleU;
+                    uvs[index++] = (j / this._segmentsH) * this._scaleV;
                 }
             }
             // build real data from raw data
-            triangleGeometry.updateUVs(uvs);
+            triangleGeometry.setUVs(uvs);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -13259,7 +13265,7 @@ var PrimitiveCubePrefab = (function (_super) {
      * @inheritDoc
      */
     PrimitiveCubePrefab.prototype._pBuildGeometry = function (target, geometryType) {
-        var indices /*uint*/;
+        var indices;
         var positions;
         var normals;
         var tangents;
@@ -13280,16 +13286,16 @@ var PrimitiveCubePrefab = (function (_super) {
             numVertices = ((this._segmentsW + 1) * (this._segmentsH + 1) + (this._segmentsW + 1) * (this._segmentsD + 1) + (this._segmentsH + 1) * (this._segmentsD + 1)) * 2;
             numIndices = ((this._segmentsW * this._segmentsH + this._segmentsW * this._segmentsD + this._segmentsH * this._segmentsD) * 12);
             if (numVertices == triangleGeometry.numVertices && triangleGeometry.indices != null) {
-                indices = triangleGeometry.indices;
-                positions = triangleGeometry.positions;
-                normals = triangleGeometry.vertexNormals;
-                tangents = triangleGeometry.vertexTangents;
+                indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+                positions = triangleGeometry.positions.get(numVertices);
+                normals = triangleGeometry.normals.get(numVertices);
+                tangents = triangleGeometry.tangents.get(numVertices);
             }
             else {
-                indices = new Array(numIndices);
-                positions = new Array(numVertices * 3);
-                normals = new Array(numVertices * 3);
-                tangents = new Array(numVertices * 3);
+                indices = new Uint16Array(numIndices);
+                positions = new Float32Array(numVertices * 3);
+                normals = new Float32Array(numVertices * 3);
+                tangents = new Float32Array(numVertices * 3);
                 this._pInvalidateUVs();
             }
             vidx = 0;
@@ -13435,140 +13441,119 @@ var PrimitiveCubePrefab = (function (_super) {
                     }
                 }
             }
-            triangleGeometry.updateIndices(indices);
-            triangleGeometry.updatePositions(positions);
-            triangleGeometry.updateVertexNormals(normals);
-            triangleGeometry.updateVertexTangents(tangents);
+            triangleGeometry.setIndices(indices);
+            triangleGeometry.setPositions(positions);
+            triangleGeometry.setNormals(normals);
+            triangleGeometry.setTangents(tangents);
         }
         else if (geometryType == "lineSubGeometry") {
             var lineGeometry = target;
             var numSegments = this._segmentsH * 4 + this._segmentsW * 4 + this._segmentsD * 4;
-            var startPositions;
-            var endPositions;
+            var positions;
             var thickness;
-            if (lineGeometry.indices != null && numSegments == lineGeometry.numSegments) {
-                startPositions = lineGeometry.startPositions;
-                endPositions = lineGeometry.endPositions;
-                thickness = lineGeometry.thickness;
-            }
-            else {
-                startPositions = new Array(numSegments * 3);
-                endPositions = new Array(numSegments * 3);
-                thickness = new Array(numSegments);
-            }
+            positions = new Float32Array(numSegments * 6);
+            thickness = new Float32Array(numSegments);
             vidx = 0;
             fidx = 0;
             for (i = 0; i < this._segmentsH; ++i) {
-                startPositions[vidx] = -hw;
-                startPositions[vidx + 1] = i * this._height / this._segmentsH - hh;
-                startPositions[vidx + 2] = -hd;
-                endPositions[vidx] = hw;
-                endPositions[vidx + 1] = i * this._height / this._segmentsH - hh;
-                endPositions[vidx + 2] = -hd;
+                positions[vidx++] = -hw;
+                positions[vidx++] = i * this._height / this._segmentsH - hh;
+                positions[vidx++] = -hd;
+                positions[vidx++] = hw;
+                positions[vidx++] = i * this._height / this._segmentsH - hh;
+                positions[vidx++] = -hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
-                startPositions[vidx] = -hw;
-                startPositions[vidx + 1] = hh - i * this._height / this._segmentsH;
-                startPositions[vidx + 2] = hd;
-                endPositions[vidx] = hw;
-                endPositions[vidx + 1] = hh - i * this._height / this._segmentsH;
-                endPositions[vidx + 2] = hd;
+                positions[vidx++] = -hw;
+                positions[vidx++] = hh - i * this._height / this._segmentsH;
+                positions[vidx++] = hd;
+                positions[vidx++] = hw;
+                positions[vidx++] = hh - i * this._height / this._segmentsH;
+                positions[vidx++] = hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             for (i = 0; i < this._segmentsW; ++i) {
-                startPositions[vidx] = i * this._width / this._segmentsW - hw;
-                startPositions[vidx + 1] = -hh;
-                startPositions[vidx + 2] = -hd;
-                endPositions[vidx] = i * this._width / this._segmentsW - hw;
-                endPositions[vidx + 1] = hh;
-                endPositions[vidx + 2] = -hd;
+                positions[vidx++] = i * this._width / this._segmentsW - hw;
+                positions[vidx++] = -hh;
+                positions[vidx++] = -hd;
+                positions[vidx++] = i * this._width / this._segmentsW - hw;
+                positions[vidx++] = hh;
+                positions[vidx++] = -hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
-                startPositions[vidx] = hw - i * this._width / this._segmentsW;
-                startPositions[vidx + 1] = -hh;
-                startPositions[vidx + 2] = hd;
-                endPositions[vidx] = hw - i * this._width / this._segmentsW;
-                endPositions[vidx + 1] = hh;
-                endPositions[vidx + 2] = hd;
+                positions[vidx++] = hw - i * this._width / this._segmentsW;
+                positions[vidx++] = -hh;
+                positions[vidx++] = hd;
+                positions[vidx++] = hw - i * this._width / this._segmentsW;
+                positions[vidx++] = hh;
+                positions[vidx++] = hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             for (i = 0; i < this._segmentsH; ++i) {
-                startPositions[vidx] = -hw;
-                startPositions[vidx + 1] = i * this._height / this._segmentsH - hh;
-                startPositions[vidx + 2] = -hd;
-                endPositions[vidx] = -hw;
-                endPositions[vidx + 1] = i * this._height / this._segmentsH - hh;
-                endPositions[vidx + 2] = hd;
+                positions[vidx++] = -hw;
+                positions[vidx++] = i * this._height / this._segmentsH - hh;
+                positions[vidx++] = -hd;
+                positions[vidx++] = -hw;
+                positions[vidx++] = i * this._height / this._segmentsH - hh;
+                positions[vidx++] = hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
-                startPositions[vidx] = hw;
-                startPositions[vidx + 1] = hh - i * this._height / this._segmentsH;
-                startPositions[vidx + 2] = -hd;
-                endPositions[vidx] = hw;
-                endPositions[vidx + 1] = hh - i * this._height / this._segmentsH;
-                endPositions[vidx + 2] = hd;
+                positions[vidx++] = hw;
+                positions[vidx++] = hh - i * this._height / this._segmentsH;
+                positions[vidx++] = -hd;
+                positions[vidx++] = hw;
+                positions[vidx++] = hh - i * this._height / this._segmentsH;
+                positions[vidx++] = hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             for (i = 0; i < this._segmentsD; ++i) {
-                startPositions[vidx] = hw;
-                startPositions[vidx + 1] = -hh;
-                startPositions[vidx + 2] = i * this._depth / this._segmentsD - hd;
-                endPositions[vidx] = hw;
-                endPositions[vidx + 1] = hh;
-                endPositions[vidx + 2] = i * this._depth / this._segmentsD - hd;
+                positions[vidx++] = hw;
+                positions[vidx++] = -hh;
+                positions[vidx++] = i * this._depth / this._segmentsD - hd;
+                positions[vidx++] = hw;
+                positions[vidx++] = hh;
+                positions[vidx++] = i * this._depth / this._segmentsD - hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
-                startPositions[vidx] = -hw;
-                startPositions[vidx + 1] = -hh;
-                startPositions[vidx + 2] = hd - i * this._depth / this._segmentsD;
-                endPositions[vidx] = -hw;
-                endPositions[vidx + 1] = hh;
-                endPositions[vidx + 2] = hd - i * this._depth / this._segmentsD;
+                positions[vidx++] = -hw;
+                positions[vidx++] = -hh;
+                positions[vidx++] = hd - i * this._depth / this._segmentsD;
+                positions[vidx++] = -hw;
+                positions[vidx++] = hh;
+                positions[vidx++] = hd - i * this._depth / this._segmentsD;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             for (i = 0; i < this._segmentsD; ++i) {
-                startPositions[vidx] = -hw;
-                startPositions[vidx + 1] = -hh;
-                startPositions[vidx + 2] = hd - i * this._depth / this._segmentsD;
-                endPositions[vidx] = hw;
-                endPositions[vidx + 1] = -hh;
-                endPositions[vidx + 2] = hd - i * this._depth / this._segmentsD;
+                positions[vidx++] = -hw;
+                positions[vidx++] = -hh;
+                positions[vidx++] = hd - i * this._depth / this._segmentsD;
+                positions[vidx++] = hw;
+                positions[vidx++] = -hh;
+                positions[vidx++] = hd - i * this._depth / this._segmentsD;
                 thickness[fidx++] = 1;
-                vidx += 3;
-                startPositions[vidx] = -hw;
-                startPositions[vidx + 1] = hh;
-                startPositions[vidx + 2] = i * this._depth / this._segmentsD - hd;
-                endPositions[vidx] = hw;
-                endPositions[vidx + 1] = hh;
-                endPositions[vidx + 2] = i * this._depth / this._segmentsD - hd;
+                positions[vidx++] = -hw;
+                positions[vidx++] = hh;
+                positions[vidx++] = i * this._depth / this._segmentsD - hd;
+                positions[vidx++] = hw;
+                positions[vidx++] = hh;
+                positions[vidx++] = i * this._depth / this._segmentsD - hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             for (i = 0; i < this._segmentsW; ++i) {
-                startPositions[vidx] = hw - i * this._width / this._segmentsW;
-                startPositions[vidx + 1] = -hh;
-                startPositions[vidx + 2] = -hd;
-                endPositions[vidx] = hw - i * this._width / this._segmentsW;
-                endPositions[vidx + 1] = -hh;
-                endPositions[vidx + 2] = hd;
+                positions[vidx++] = hw - i * this._width / this._segmentsW;
+                positions[vidx++] = -hh;
+                positions[vidx++] = -hd;
+                positions[vidx++] = hw - i * this._width / this._segmentsW;
+                positions[vidx++] = -hh;
+                positions[vidx++] = hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
-                startPositions[vidx] = i * this._width / this._segmentsW - hw;
-                startPositions[vidx + 1] = hh;
-                startPositions[vidx + 2] = -hd;
-                endPositions[vidx] = i * this._width / this._segmentsW - hw;
-                endPositions[vidx + 1] = hh;
-                endPositions[vidx + 2] = hd;
+                positions[vidx++] = i * this._width / this._segmentsW - hw;
+                positions[vidx++] = hh;
+                positions[vidx++] = -hd;
+                positions[vidx++] = i * this._width / this._segmentsW - hw;
+                positions[vidx++] = hh;
+                positions[vidx++] = hd;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             // build real data from raw data
-            lineGeometry.updatePositions(startPositions, endPositions);
-            lineGeometry.updateThickness(thickness);
+            lineGeometry.setPositions(positions);
+            lineGeometry.setThickness(thickness);
         }
     };
     /**
@@ -13587,10 +13572,10 @@ var PrimitiveCubePrefab = (function (_super) {
             numVertices = ((this._segmentsW + 1) * (this._segmentsH + 1) + (this._segmentsW + 1) * (this._segmentsD + 1) + (this._segmentsH + 1) * (this._segmentsD + 1)) * 2;
             var triangleGeometry = target;
             if (numVertices == triangleGeometry.numVertices && triangleGeometry.uvs != null) {
-                uvs = triangleGeometry.uvs;
+                uvs = triangleGeometry.uvs.get(numVertices);
             }
             else {
-                uvs = new Array(numVertices * 2);
+                uvs = new Float32Array(numVertices * 2);
             }
             if (this._tile6) {
                 u_tile_dim = u_tile_step = 1 / 3;
@@ -13620,10 +13605,10 @@ var PrimitiveCubePrefab = (function (_super) {
             dv = v_tile_dim / this._segmentsH;
             for (i = 0; i <= this._segmentsW; i++) {
                 for (j = 0; j <= this._segmentsH; j++) {
-                    uvs[index++] = (tl0u + i * du) * triangleGeometry.scaleU;
-                    uvs[index++] = (tl0v + (v_tile_dim - j * dv)) * triangleGeometry.scaleV;
-                    uvs[index++] = (tl1u + (u_tile_dim - i * du)) * triangleGeometry.scaleU;
-                    uvs[index++] = (tl1v + (v_tile_dim - j * dv)) * triangleGeometry.scaleV;
+                    uvs[index++] = (tl0u + i * du) * this._scaleU;
+                    uvs[index++] = (tl0v + (v_tile_dim - j * dv)) * this._scaleV;
+                    uvs[index++] = (tl1u + (u_tile_dim - i * du)) * this._scaleU;
+                    uvs[index++] = (tl1v + (v_tile_dim - j * dv)) * this._scaleV;
                 }
             }
             // TOP / BOTTOM
@@ -13635,10 +13620,10 @@ var PrimitiveCubePrefab = (function (_super) {
             dv = v_tile_dim / this._segmentsD;
             for (i = 0; i <= this._segmentsW; i++) {
                 for (j = 0; j <= this._segmentsD; j++) {
-                    uvs[index++] = (tl0u + i * du) * triangleGeometry.scaleU;
-                    uvs[index++] = (tl0v + (v_tile_dim - j * dv)) * triangleGeometry.scaleV;
-                    uvs[index++] = (tl1u + i * du) * triangleGeometry.scaleU;
-                    uvs[index++] = (tl1v + j * dv) * triangleGeometry.scaleV;
+                    uvs[index++] = (tl0u + i * du) * this._scaleU;
+                    uvs[index++] = (tl0v + (v_tile_dim - j * dv)) * this._scaleV;
+                    uvs[index++] = (tl1u + i * du) * this._scaleU;
+                    uvs[index++] = (tl1v + j * dv) * this._scaleV;
                 }
             }
             // LEFT / RIGHT
@@ -13650,13 +13635,13 @@ var PrimitiveCubePrefab = (function (_super) {
             dv = v_tile_dim / this._segmentsH;
             for (i = 0; i <= this._segmentsD; i++) {
                 for (j = 0; j <= this._segmentsH; j++) {
-                    uvs[index++] = (tl0u + i * du) * triangleGeometry.scaleU;
-                    uvs[index++] = (tl0v + (v_tile_dim - j * dv)) * triangleGeometry.scaleV;
-                    uvs[index++] = (tl1u + (u_tile_dim - i * du)) * triangleGeometry.scaleU;
-                    uvs[index++] = (tl1v + (v_tile_dim - j * dv)) * triangleGeometry.scaleV;
+                    uvs[index++] = (tl0u + i * du) * this._scaleU;
+                    uvs[index++] = (tl0v + (v_tile_dim - j * dv)) * this._scaleV;
+                    uvs[index++] = (tl1u + (u_tile_dim - i * du)) * this._scaleU;
+                    uvs[index++] = (tl1v + (v_tile_dim - j * dv)) * this._scaleV;
                 }
             }
-            triangleGeometry.updateUVs(uvs);
+            triangleGeometry.setUVs(uvs);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -13835,7 +13820,7 @@ var PrimitiveCylinderPrefab = (function (_super) {
      * @inheritDoc
      */
     PrimitiveCylinderPrefab.prototype._pBuildGeometry = function (target, geometryType) {
-        var indices /*uint*/;
+        var indices;
         var positions;
         var normals;
         var tangents;
@@ -13880,16 +13865,16 @@ var PrimitiveCylinderPrefab = (function (_super) {
             }
             // need to initialize raw arrays or can be reused?
             if (this._numVertices == triangleGeometry.numVertices) {
-                indices = triangleGeometry.indices;
-                positions = triangleGeometry.positions;
-                normals = triangleGeometry.vertexNormals;
-                tangents = triangleGeometry.vertexTangents;
+                indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+                positions = triangleGeometry.positions.get(this._numVertices);
+                normals = triangleGeometry.normals.get(this._numVertices);
+                tangents = triangleGeometry.tangents.get(this._numVertices);
             }
             else {
-                indices = new Array(numIndices);
-                positions = new Array(this._numVertices * 3);
-                normals = new Array(this._numVertices * 3);
-                tangents = new Array(this._numVertices * 3);
+                indices = new Uint16Array(numIndices);
+                positions = new Float32Array(this._numVertices * 3);
+                normals = new Float32Array(this._numVertices * 3);
+                tangents = new Float32Array(this._numVertices * 3);
                 this._pInvalidateUVs();
             }
             vidx = 0;
@@ -14112,32 +14097,22 @@ var PrimitiveCylinderPrefab = (function (_super) {
                 }
             }
             // build real data from raw data
-            triangleGeometry.updateIndices(indices);
-            triangleGeometry.updatePositions(positions);
-            triangleGeometry.updateVertexNormals(normals);
-            triangleGeometry.updateVertexTangents(tangents);
+            triangleGeometry.setIndices(indices);
+            triangleGeometry.setPositions(positions);
+            triangleGeometry.setNormals(normals);
+            triangleGeometry.setTangents(tangents);
         }
         else if (geometryType == "lineSubGeometry") {
             var lineGeometry = target;
-            var numSegments = (this._pSegmentsH + 1) * (this._pSegmentsW) + this._pSegmentsW;
-            var startPositions;
-            var endPositions;
-            var thickness;
-            if (lineGeometry.indices != null && numSegments == lineGeometry.numSegments) {
-                startPositions = lineGeometry.startPositions;
-                endPositions = lineGeometry.endPositions;
-                thickness = lineGeometry.thickness;
-            }
-            else {
-                startPositions = new Array(numSegments * 3);
-                endPositions = new Array(numSegments * 3);
-                thickness = new Array(numSegments);
-            }
+            var numSegments = this._pSegmentsH * this._pSegmentsW * 2 + this._pSegmentsW;
+            var positions = new Float32Array(numSegments * 6);
+            var thickness = new Float32Array(numSegments);
             vidx = 0;
             fidx = 0;
+            var _radius = 50;
             for (j = 0; j <= this._pSegmentsH; ++j) {
                 radius = this._topRadius - ((j / this._pSegmentsH) * (this._topRadius - this._pBottomRadius));
-                z = this._height * (j / this._pSegmentsH - 0.5);
+                z = -(this._height / 2) + (j / this._pSegmentsH * this._height);
                 for (i = 0; i <= this._pSegmentsW; ++i) {
                     // revolution vertex
                     revolutionAngle = i * revolutionAngleDelta;
@@ -14152,31 +14127,34 @@ var PrimitiveCylinderPrefab = (function (_super) {
                         comp2 = z;
                     }
                     if (i > 0) {
-                        endPositions[vidx] = x;
-                        endPositions[vidx + 1] = comp1;
-                        endPositions[vidx + 2] = comp2;
+                        //horizonal lines
+                        positions[vidx++] = x;
+                        positions[vidx++] = comp1;
+                        positions[vidx++] = comp2;
                         thickness[fidx++] = 1;
-                        vidx += 3;
                         //vertical lines
-                        startPositions[vidx] = endPositions[vidx - this._pSegmentsW * 6];
-                        startPositions[vidx + 1] = endPositions[vidx + 1 - this._pSegmentsW * 6];
-                        startPositions[vidx + 2] = endPositions[vidx + 2 - this._pSegmentsW * 6];
-                        endPositions[vidx] = x;
-                        endPositions[vidx + 1] = comp1;
-                        endPositions[vidx + 2] = comp2;
-                        thickness[fidx++] = 1;
-                        vidx += 3;
+                        if (j > 0) {
+                            var addx = (j == 1) ? 3 - (6 * (this._pSegmentsW - i) + 12 * i) : 3 - this._pSegmentsW * 12;
+                            positions[vidx] = positions[vidx++ + addx];
+                            positions[vidx] = positions[vidx++ + addx];
+                            positions[vidx] = positions[vidx++ + addx];
+                            positions[vidx++] = x;
+                            positions[vidx++] = comp1;
+                            positions[vidx++] = comp2;
+                            thickness[fidx++] = 1;
+                        }
                     }
+                    //horizonal lines
                     if (i < this._pSegmentsW) {
-                        startPositions[vidx] = x;
-                        startPositions[vidx + 1] = comp1;
-                        startPositions[vidx + 2] = comp2;
+                        positions[vidx++] = x;
+                        positions[vidx++] = comp1;
+                        positions[vidx++] = comp2;
                     }
                 }
             }
             // build real data from raw data
-            lineGeometry.updatePositions(startPositions, endPositions);
-            lineGeometry.updateThickness(thickness);
+            lineGeometry.setPositions(positions);
+            lineGeometry.setThickness(thickness);
         }
     };
     /**
@@ -14193,10 +14171,10 @@ var PrimitiveCylinderPrefab = (function (_super) {
             var triangleGeometry = target;
             // need to initialize raw array or can be reused?
             if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-                uvs = triangleGeometry.uvs;
+                uvs = triangleGeometry.uvs.get(this._numVertices);
             }
             else {
-                uvs = new Array(this._numVertices * 2);
+                uvs = new Float32Array(this._numVertices * 2);
             }
             // evaluate revolution steps
             var revolutionAngleDelta = 2 * Math.PI / this._pSegmentsW;
@@ -14204,26 +14182,26 @@ var PrimitiveCylinderPrefab = (function (_super) {
             var index = 0;
             // top
             if (this._topClosed) {
-                uvs[index++] = 0.5 * triangleGeometry.scaleU; // central vertex
-                uvs[index++] = 0.5 * triangleGeometry.scaleV;
+                uvs[index++] = 0.5 * this._scaleU; // central vertex
+                uvs[index++] = 0.5 * this._scaleV;
                 for (i = 0; i <= this._pSegmentsW; ++i) {
                     revolutionAngle = i * revolutionAngleDelta;
                     x = 0.5 + 0.5 * -Math.cos(revolutionAngle);
                     y = 0.5 + 0.5 * Math.sin(revolutionAngle);
-                    uvs[index++] = x * triangleGeometry.scaleU; // revolution vertex
-                    uvs[index++] = y * triangleGeometry.scaleV;
+                    uvs[index++] = x * this._scaleU; // revolution vertex
+                    uvs[index++] = y * this._scaleV;
                 }
             }
             // bottom
             if (this._bottomClosed) {
-                uvs[index++] = 0.5 * triangleGeometry.scaleU; // central vertex
-                uvs[index++] = 0.5 * triangleGeometry.scaleV;
+                uvs[index++] = 0.5 * this._scaleU; // central vertex
+                uvs[index++] = 0.5 * this._scaleV;
                 for (i = 0; i <= this._pSegmentsW; ++i) {
                     revolutionAngle = i * revolutionAngleDelta;
                     x = 0.5 + 0.5 * Math.cos(revolutionAngle);
                     y = 0.5 + 0.5 * Math.sin(revolutionAngle);
-                    uvs[index++] = x * triangleGeometry.scaleU; // revolution vertex
-                    uvs[index++] = y * triangleGeometry.scaleV;
+                    uvs[index++] = x * this._scaleU; // revolution vertex
+                    uvs[index++] = y * this._scaleV;
                 }
             }
             // lateral surface
@@ -14231,13 +14209,13 @@ var PrimitiveCylinderPrefab = (function (_super) {
                 for (j = 0; j <= this._pSegmentsH; ++j) {
                     for (i = 0; i <= this._pSegmentsW; ++i) {
                         // revolution vertex
-                        uvs[index++] = (i / this._pSegmentsW) * triangleGeometry.scaleU;
-                        uvs[index++] = (j / this._pSegmentsH) * triangleGeometry.scaleV;
+                        uvs[index++] = (i / this._pSegmentsW) * this._scaleU;
+                        uvs[index++] = (j / this._pSegmentsH) * this._scaleV;
                     }
                 }
             }
             // build real data from raw data
-            triangleGeometry.updateUVs(uvs);
+            triangleGeometry.setUVs(uvs);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -14374,12 +14352,11 @@ var PrimitivePlanePrefab = (function (_super) {
      * @inheritDoc
      */
     PrimitivePlanePrefab.prototype._pBuildGeometry = function (target, geometryType) {
-        var indices /*uint*/;
+        var indices;
         var x, y;
         var numIndices;
         var base;
         var tw = this._segmentsW + 1;
-        var numVertices;
         var vidx, fidx; // indices
         var xi;
         var yi;
@@ -14395,21 +14372,21 @@ var PrimitivePlanePrefab = (function (_super) {
             if (this._doubleSided)
                 numIndices *= 2;
             if (triangleGeometry.indices != null && numIndices == triangleGeometry.indices.length) {
-                indices = triangleGeometry.indices;
+                indices = triangleGeometry.indices.get(triangleGeometry.numElements);
             }
             else {
-                indices = new Array(numIndices);
+                indices = new Uint16Array(numIndices);
                 this._pInvalidateUVs();
             }
             if (numVertices == triangleGeometry.numVertices) {
-                positions = triangleGeometry.positions;
-                normals = triangleGeometry.vertexNormals;
-                tangents = triangleGeometry.vertexTangents;
+                positions = triangleGeometry.positions.get(numVertices);
+                normals = triangleGeometry.normals.get(numVertices);
+                tangents = triangleGeometry.tangents.get(numVertices);
             }
             else {
-                positions = new Array(numVertices * 3);
-                normals = new Array(numVertices * 3);
-                tangents = new Array(numVertices * 3);
+                positions = new Float32Array(numVertices * 3);
+                normals = new Float32Array(numVertices * 3);
+                tangents = new Float32Array(numVertices * 3);
                 this._pInvalidateUVs();
             }
             fidx = 0;
@@ -14469,54 +14446,43 @@ var PrimitivePlanePrefab = (function (_super) {
                     }
                 }
             }
-            triangleGeometry.updateIndices(indices);
-            triangleGeometry.updatePositions(positions);
-            triangleGeometry.updateVertexNormals(normals);
-            triangleGeometry.updateVertexTangents(tangents);
+            triangleGeometry.setIndices(indices);
+            triangleGeometry.setPositions(positions);
+            triangleGeometry.setNormals(normals);
+            triangleGeometry.setTangents(tangents);
         }
         else if (geometryType == "lineSubGeometry") {
             var lineGeometry = target;
             var numSegments = (this._segmentsH + 1) + tw;
-            var startPositions;
-            var endPositions;
+            var positions;
             var thickness;
             var hw = this._width / 2;
             var hh = this._height / 2;
-            if (lineGeometry.indices != null && numSegments == lineGeometry.numSegments) {
-                startPositions = lineGeometry.startPositions;
-                endPositions = lineGeometry.endPositions;
-                thickness = lineGeometry.thickness;
-            }
-            else {
-                startPositions = new Array(numSegments * 3);
-                endPositions = new Array(numSegments * 3);
-                thickness = new Array(numSegments);
-            }
+            positions = new Float32Array(numSegments * 6);
+            thickness = new Float32Array(numSegments);
             fidx = 0;
             vidx = 0;
             for (yi = 0; yi <= this._segmentsH; ++yi) {
-                startPositions[vidx] = -hw;
-                startPositions[vidx + 1] = 0;
-                startPositions[vidx + 2] = yi * this._height - hh;
-                endPositions[vidx] = hw;
-                endPositions[vidx + 1] = 0;
-                endPositions[vidx + 2] = yi * this._height - hh;
+                positions[vidx++] = -hw;
+                positions[vidx++] = 0;
+                positions[vidx++] = yi * this._height - hh;
+                positions[vidx++] = hw;
+                positions[vidx++] = 0;
+                positions[vidx++] = yi * this._height - hh;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             for (xi = 0; xi <= this._segmentsW; ++xi) {
-                startPositions[vidx] = xi * this._width - hw;
-                startPositions[vidx + 1] = 0;
-                startPositions[vidx + 2] = -hh;
-                endPositions[vidx] = xi * this._width - hw;
-                endPositions[vidx + 1] = 0;
-                endPositions[vidx + 2] = hh;
+                positions[vidx++] = xi * this._width - hw;
+                positions[vidx++] = 0;
+                positions[vidx++] = -hh;
+                positions[vidx++] = xi * this._width - hw;
+                positions[vidx++] = 0;
+                positions[vidx++] = hh;
                 thickness[fidx++] = 1;
-                vidx += 3;
             }
             // build real data from raw data
-            lineGeometry.updatePositions(startPositions, endPositions);
-            lineGeometry.updateThickness(thickness);
+            lineGeometry.setPositions(positions);
+            lineGeometry.setThickness(thickness);
         }
     };
     /**
@@ -14531,26 +14497,26 @@ var PrimitivePlanePrefab = (function (_super) {
                 numVertices *= 2;
             var triangleGeometry = target;
             if (triangleGeometry.uvs && numVertices == triangleGeometry.numVertices) {
-                uvs = triangleGeometry.uvs;
+                uvs = triangleGeometry.uvs.get(numVertices);
             }
             else {
-                uvs = new Array(numVertices * 2);
+                uvs = new Float32Array(numVertices * 2);
                 this._pInvalidateGeometry();
             }
             var index = 0;
             for (var yi = 0; yi <= this._segmentsH; ++yi) {
                 for (var xi = 0; xi <= this._segmentsW; ++xi) {
-                    uvs[index] = (xi / this._segmentsW) * triangleGeometry.scaleU;
-                    uvs[index + 1] = (1 - yi / this._segmentsH) * triangleGeometry.scaleV;
+                    uvs[index] = (xi / this._segmentsW) * this._scaleU;
+                    uvs[index + 1] = (1 - yi / this._segmentsH) * this._scaleV;
                     index += 2;
                     if (this._doubleSided) {
-                        uvs[index] = (xi / this._segmentsW) * triangleGeometry.scaleU;
-                        uvs[index + 1] = (1 - yi / this._segmentsH) * triangleGeometry.scaleV;
+                        uvs[index] = (xi / this._segmentsW) * this._scaleU;
+                        uvs[index + 1] = (1 - yi / this._segmentsH) * this._scaleV;
                         index += 2;
                     }
                 }
             }
-            triangleGeometry.updateUVs(uvs);
+            triangleGeometry.setUVs(uvs);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -14635,6 +14601,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 var Geometry = require("awayjs-core/lib/data/Geometry");
 var TriangleSubGeometry = require("awayjs-core/lib/data/TriangleSubGeometry");
 var LineSubGeometry = require("awayjs-core/lib/data/LineSubGeometry");
@@ -14657,6 +14624,8 @@ var PrimitivePrefabBase = (function (_super) {
         _super.call(this);
         this._geomDirty = true;
         this._uvDirty = true;
+        this._scaleU = 1;
+        this._scaleV = 1;
         this._geometryTypeDirty = true;
         this._geometry = new Geometry();
         this._material = material;
@@ -14714,6 +14683,32 @@ var PrimitivePrefabBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(PrimitivePrefabBase.prototype, "scaleU", {
+        get: function () {
+            return this._scaleU;
+        },
+        set: function (value) {
+            if (this._scaleU = value)
+                return;
+            this._scaleU = value;
+            this._pInvalidateUVs();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(PrimitivePrefabBase.prototype, "scaleV", {
+        get: function () {
+            return this._scaleV;
+        },
+        set: function (value) {
+            if (this._scaleV = value)
+                return;
+            this._scaleV = value;
+            this._pInvalidateUVs();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Builds the primitive's geometry when invalid. This method should not be called directly. The calling should
      * be triggered by the invalidateGeometry method (and in turn by updateGeometry).
@@ -14756,7 +14751,7 @@ var PrimitivePrefabBase = (function (_super) {
         if (this._subGeometry)
             this._geometry.removeSubGeometry(this._subGeometry);
         if (this._geometryType == "triangleSubGeometry") {
-            var triangleGeometry = new TriangleSubGeometry(true);
+            var triangleGeometry = new TriangleSubGeometry(new AttributesBuffer());
             triangleGeometry.autoDeriveNormals = false;
             triangleGeometry.autoDeriveTangents = false;
             triangleGeometry.autoDeriveUVs = false;
@@ -14764,7 +14759,7 @@ var PrimitivePrefabBase = (function (_super) {
             this._subGeometry = triangleGeometry;
         }
         else if (this._geometryType == "lineSubGeometry") {
-            this._geometry.addSubGeometry(this._subGeometry = new LineSubGeometry());
+            this._geometry.addSubGeometry(this._subGeometry = new LineSubGeometry(new AttributesBuffer()));
         }
         this._geometryTypeDirty = false;
     };
@@ -14800,7 +14795,7 @@ var PrimitivePrefabBase = (function (_super) {
 })(PrefabBase);
 module.exports = PrimitivePrefabBase;
 
-},{"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/LineSubGeometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/data/Geometry":undefined,"awayjs-core/lib/data/LineSubGeometry":undefined,"awayjs-core/lib/data/TriangleSubGeometry":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14894,7 +14889,7 @@ var PrimitiveSpherePrefab = (function (_super) {
      * @inheritDoc
      */
     PrimitiveSpherePrefab.prototype._pBuildGeometry = function (target, geometryType) {
-        var indices /*uint*/;
+        var indices;
         var positions;
         var normals;
         var tangents;
@@ -14908,16 +14903,16 @@ var PrimitiveSpherePrefab = (function (_super) {
             var triangleGeometry = target;
             numVertices = (this._segmentsH + 1) * (this._segmentsW + 1);
             if (numVertices == triangleGeometry.numVertices && triangleGeometry.indices != null) {
-                indices = triangleGeometry.indices;
-                positions = triangleGeometry.positions;
-                normals = triangleGeometry.vertexNormals;
-                tangents = triangleGeometry.vertexTangents;
+                indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+                positions = triangleGeometry.positions.get(numVertices);
+                normals = triangleGeometry.normals.get(numVertices);
+                tangents = triangleGeometry.tangents.get(numVertices);
             }
             else {
-                indices = new Array((this._segmentsH - 1) * this._segmentsW * 6);
-                positions = new Array(numVertices * 3);
-                normals = new Array(numVertices * 3);
-                tangents = new Array(numVertices * 3);
+                indices = new Uint16Array((this._segmentsH - 1) * this._segmentsW * 6);
+                positions = new Float32Array(numVertices * 3);
+                normals = new Float32Array(numVertices * 3);
+                tangents = new Float32Array(numVertices * 3);
                 this._pInvalidateUVs();
             }
             vidx = 0;
@@ -15000,27 +14995,16 @@ var PrimitiveSpherePrefab = (function (_super) {
                     vidx += 3;
                 }
             }
-            triangleGeometry.updateIndices(indices);
-            triangleGeometry.updatePositions(positions);
-            triangleGeometry.updateVertexNormals(normals);
-            triangleGeometry.updateVertexTangents(tangents);
+            triangleGeometry.setIndices(indices);
+            triangleGeometry.setPositions(positions);
+            triangleGeometry.setNormals(normals);
+            triangleGeometry.setTangents(tangents);
         }
         else if (geometryType == "lineSubGeometry") {
             var lineGeometry = target;
-            var numSegments = (this._segmentsH - 1) * this._segmentsW * 2;
-            var startPositions;
-            var endPositions;
-            var thickness;
-            if (lineGeometry.indices != null && numSegments == lineGeometry.numSegments) {
-                startPositions = lineGeometry.startPositions;
-                endPositions = lineGeometry.endPositions;
-                thickness = lineGeometry.thickness;
-            }
-            else {
-                startPositions = new Array(numSegments * 3);
-                endPositions = new Array(numSegments * 3);
-                thickness = new Array(numSegments);
-            }
+            var numSegments = this._segmentsH * this._segmentsW * 2 + this._segmentsW;
+            var positions = new Float32Array(numSegments * 6);
+            var thickness = new Float32Array(numSegments);
             vidx = 0;
             fidx = 0;
             for (j = 0; j <= this._segmentsH; ++j) {
@@ -15039,35 +15023,35 @@ var PrimitiveSpherePrefab = (function (_super) {
                         comp1 = y;
                         comp2 = z;
                     }
-                    if (i > 0 && j > 0) {
+                    if (i > 0) {
                         //horizonal lines
-                        if (j < this._segmentsH) {
-                            endPositions[vidx] = x;
-                            endPositions[vidx + 1] = comp1;
-                            endPositions[vidx + 2] = comp2;
-                            thickness[fidx++] = 1;
-                            vidx += 3;
-                        }
-                        //vertical lines
-                        startPositions[vidx] = endPositions[vidx - this._segmentsW * 6];
-                        startPositions[vidx + 1] = endPositions[vidx + 1 - this._segmentsW * 6];
-                        startPositions[vidx + 2] = endPositions[vidx + 2 - this._segmentsW * 6];
-                        endPositions[vidx] = x;
-                        endPositions[vidx + 1] = comp1;
-                        endPositions[vidx + 2] = comp2;
+                        positions[vidx++] = x;
+                        positions[vidx++] = comp1;
+                        positions[vidx++] = comp2;
                         thickness[fidx++] = 1;
-                        vidx += 3;
+                        //vertical lines
+                        if (j > 0) {
+                            var addx = (j == 1) ? 3 - (6 * (this._segmentsW - i) + 12 * i) : 3 - this._segmentsW * 12;
+                            positions[vidx] = positions[vidx++ + addx];
+                            positions[vidx] = positions[vidx++ + addx];
+                            positions[vidx] = positions[vidx++ + addx];
+                            positions[vidx++] = x;
+                            positions[vidx++] = comp1;
+                            positions[vidx++] = comp2;
+                            thickness[fidx++] = 1;
+                        }
                     }
-                    if (i < this._segmentsW && j > 0 && j < this._segmentsH) {
-                        startPositions[vidx] = x;
-                        startPositions[vidx + 1] = comp1;
-                        startPositions[vidx + 2] = comp2;
+                    //horizonal lines
+                    if (i < this._segmentsW) {
+                        positions[vidx++] = x;
+                        positions[vidx++] = comp1;
+                        positions[vidx++] = comp2;
                     }
                 }
             }
             // build real data from raw data
-            lineGeometry.updatePositions(startPositions, endPositions);
-            lineGeometry.updateThickness(thickness);
+            lineGeometry.setPositions(positions);
+            lineGeometry.setThickness(thickness);
         }
     };
     /**
@@ -15081,19 +15065,19 @@ var PrimitiveSpherePrefab = (function (_super) {
             numVertices = (this._segmentsH + 1) * (this._segmentsW + 1);
             var triangleGeometry = target;
             if (numVertices == triangleGeometry.numVertices && triangleGeometry.uvs != null) {
-                uvs = triangleGeometry.uvs;
+                uvs = triangleGeometry.uvs.get(numVertices);
             }
             else {
-                uvs = new Array(numVertices * 2);
+                uvs = new Float32Array(numVertices * 2);
             }
             var index = 0;
             for (j = 0; j <= this._segmentsH; ++j) {
                 for (i = 0; i <= this._segmentsW; ++i) {
-                    uvs[index++] = (i / this._segmentsW) * triangleGeometry.scaleU;
-                    uvs[index++] = (j / this._segmentsH) * triangleGeometry.scaleV;
+                    uvs[index++] = (i / this._segmentsW) * this._scaleU;
+                    uvs[index++] = (j / this._segmentsH) * this._scaleV;
                 }
             }
-            triangleGeometry.updateUVs(uvs);
+            triangleGeometry.setUVs(uvs);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -15213,7 +15197,7 @@ var PrimitiveTorusPrefab = (function (_super) {
      * @inheritDoc
      */
     PrimitiveTorusPrefab.prototype._pBuildGeometry = function (target, geometryType) {
-        var indices /*uint*/;
+        var indices;
         var positions;
         var normals;
         var tangents;
@@ -15229,16 +15213,16 @@ var PrimitiveTorusPrefab = (function (_super) {
             numIndices = this._segmentsT * this._segmentsR * 6; // each level has segmentR quads, each of 2 triangles
             // need to initialize raw arrays or can be reused?
             if (this._numVertices == triangleGeometry.numVertices) {
-                indices = triangleGeometry.indices;
-                positions = triangleGeometry.positions;
-                normals = triangleGeometry.vertexNormals;
-                tangents = triangleGeometry.vertexTangents;
+                indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+                positions = triangleGeometry.positions.get(this._numVertices);
+                normals = triangleGeometry.normals.get(this._numVertices);
+                tangents = triangleGeometry.tangents.get(this._numVertices);
             }
             else {
-                indices = new Array(numIndices);
-                positions = new Array(this._numVertices * 3);
-                normals = new Array(this._numVertices * 3);
-                tangents = new Array(this._numVertices * 3);
+                indices = new Uint16Array(numIndices);
+                positions = new Float32Array(this._numVertices * 3);
+                normals = new Float32Array(this._numVertices * 3);
+                tangents = new Float32Array(this._numVertices * 3);
                 this._pInvalidateUVs();
             }
             vidx = 0;
@@ -15315,10 +15299,10 @@ var PrimitiveTorusPrefab = (function (_super) {
                 }
             }
             // build real data from raw data
-            triangleGeometry.updateIndices(indices);
-            triangleGeometry.updatePositions(positions);
-            triangleGeometry.updateVertexNormals(normals);
-            triangleGeometry.updateVertexTangents(tangents);
+            triangleGeometry.setIndices(indices);
+            triangleGeometry.setPositions(positions);
+            triangleGeometry.setNormals(normals);
+            triangleGeometry.setTangents(tangents);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -15333,22 +15317,22 @@ var PrimitiveTorusPrefab = (function (_super) {
             var triangleGeometry = target;
             // need to initialize raw array or can be reused?
             if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-                uvs = triangleGeometry.uvs;
+                uvs = triangleGeometry.uvs.get(this._numVertices);
             }
             else {
-                uvs = new Array(this._numVertices * 2);
+                uvs = new Float32Array(this._numVertices * 2);
             }
             // current uv component index
             var index = 0;
             for (j = 0; j <= this._segmentsT; ++j) {
                 for (i = 0; i <= this._segmentsR; ++i) {
                     // revolution vertex
-                    uvs[index++] = (i / this._segmentsR) * triangleGeometry.scaleU;
-                    uvs[index++] = (j / this._segmentsT) * triangleGeometry.scaleV;
+                    uvs[index++] = (i / this._segmentsR) * this._scaleU;
+                    uvs[index++] = (j / this._segmentsT) * this._scaleV;
                 }
             }
             // build real data from raw data
-            triangleGeometry.updateUVs(uvs);
+            triangleGeometry.setUVs(uvs);
         }
         else if (geometryType == "lineSubGeometry") {
         }
@@ -15693,7 +15677,7 @@ var TesselatedFontChar = (function () {
         this.char_width = 0;
         this.subgeom = subgeom;
         if (this.subgeom != null) {
-            var positions2 = this.subgeom.positions;
+            var positions2 = this.subgeom.positions.get(this.subgeom.numVertices);
             for (var v = 0; v < positions2.length / 3; v++) {
                 if (positions2[v * 3] > this.char_width)
                     this.char_width = positions2[v * 3];
