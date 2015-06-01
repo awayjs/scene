@@ -188,6 +188,132 @@ class JSPickingCollider implements IPickingCollider
 	 */
 	public testCurveCollision(curveSubGeometry:CurveSubGeometry, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
 	{
+		var rayPosition:Vector3D = pickingCollisionVO.localRayPosition;
+		var rayDirection:Vector3D = pickingCollisionVO.localRayDirection;
+
+		//project ray onto x/y plane to generate useful test points from mouse coordinates
+		var plane:Vector3D = new Vector3D(0,0,-1,0);
+
+		var result:Vector3D = new Vector3D();
+		var distance:number = plane.x * rayPosition.x + plane.y * rayPosition.y + plane.z * rayPosition.z + plane.w;//distance(position);
+		result.x = rayPosition.x - ( plane.x*distance);
+		result.y = rayPosition.y - ( plane.y*distance);
+		result.z = rayPosition.z - ( plane.z*distance);
+		var normal:Vector3D = new Vector3D(plane.x,plane.y,plane.z);
+		var t:number = -(rayPosition.dotProduct(normal))/(rayDirection.dotProduct(normal));
+		rayDirection.scaleBy(t);
+		var p:Vector3D = rayPosition.add(rayDirection);
+
+		var indices:Uint16Array = curveSubGeometry.indices.get(curveSubGeometry.numElements);
+		var collisionCurveIndex:number = -1;
+		var bothSides:boolean = material.bothSides;
+
+
+		var positions:Float32Array = curveSubGeometry.positions.get(curveSubGeometry.numVertices);
+		var posDim:number = curveSubGeometry.positions.dimensions;
+		var curves:Float32Array = curveSubGeometry.curves.get(curveSubGeometry.numVertices);
+		var curveDim:number = curveSubGeometry.curves.dimensions;
+		var uvs:Float32Array = curveSubGeometry.uvs.get(curveSubGeometry.numVertices);
+		var uvDim:number = curveSubGeometry.uvs.dimensions;
+		var numIndices:number = indices.length;
+
+
+		for(var index:number = 0; index < numIndices; index+=3)
+		{
+			var id0:number = indices[index];
+			var id1:number = indices[index + 1] * posDim;
+			var id2:number = indices[index + 2] * posDim;
+
+			var ax:number = positions[id0 * posDim];
+			var ay:number = positions[id0 * posDim + 1];
+			var bx:number = positions[id1];
+			var by:number = positions[id1 + 1];
+			var cx:number = positions[id2];
+			var cy:number = positions[id2 + 1];
+
+			var curvex:number = curves[id0 * curveDim];
+			var az:number = positions[id0 * posDim + 2];
+
+			//console.log(ax, ay, bx, by, cx, cy);
+
+			//from a to p
+			var dx:number = ax - p.x;
+			var dy:number = ay - p.y;
+
+			//edge normal (a-b)
+			var nx:number = by - ay;
+			var ny:number = -(bx - ax);
+
+			//console.log(ax,ay,bx,by,cx,cy);
+
+			var dot:number = (dx * nx) + (dy * ny);
+			//console.log("dot a",dot);
+			if (dot > 0)
+				continue;
+
+			dx = bx - p.x;
+			dy = by - p.y;
+			nx = cy - by;
+			ny = -(cx - bx);
+
+			dot = (dx * nx) + (dy * ny);
+			//console.log("dot b",dot);
+			if (dot > 0)
+				continue;
+
+			dx = cx - p.x;
+			dy = cy - p.y;
+			nx = ay - cy;
+			ny = -(ax - cx);
+
+			dot = (dx * nx) + (dy * ny);
+			//console.log("dot c",dot);
+			if (dot > 0)
+				continue;
+
+			//check if nmot solid
+			if (curvex != 2) {
+
+				var v0x:number = bx - ax;
+				var v0y:number = by - ay;
+				var v1x:number = cx - ax;
+				var v1y:number = cy - ay;
+				var v2x:number = p.x - ax;
+				var v2y:number = p.y - ay;
+
+				var den:number = v0x * v1y - v1x * v0y;
+				var v:number = (v2x * v1y - v1x * v2y) / den;
+				var w:number = (v0x * v2y - v2x * v0y) / den;
+				var u:number = 1 - v - w;
+
+				var uu:number = 0.5 * v + w;// (0 * u) + (0.5 * v) + (1 * w);// (lerp(0, 0.5, v) + lerp(0.5, 1, w) + lerp(1, 0, u)) / 1.5;
+				var vv:number = w;// (0 * u) + (0 * v) + (1 * w);// (lerp(0, 1, w) + lerp(1, 0, u)) / 1;
+
+				var d:number = uu * uu - vv;
+
+				if ((d > 0 && az == -1) || (d < 0 && az == 1))
+					continue;
+			}
+
+			//if (!( u < 0 ) && t > 0 && t < shortestCollisionDistance) { // all tests passed
+			//	shortestCollisionDistance = t;
+			//	collisionCurveIndex = index/3;
+			//	pickingCollisionVO.rayEntryDistance = t;
+			//	pickingCollisionVO.localPosition = new Vector3D(cx, cy, cz);
+			//	pickingCollisionVO.localNormal = new Vector3D(nx, ny, nz);
+			//	pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
+			//	pickingCollisionVO.index = index;
+			//	//						pickingCollisionVO.subGeometryIndex = this.pGetMeshSubMeshIndex(renderable);
+			//
+			//	// if not looking for best hit, first found will do...
+			//	if (!this._findClosestCollision)
+			//		return true;
+			//}
+		}
+
+		if (collisionCurveIndex >= 0)
+			return true;
+
 		return false;
 	}
 
