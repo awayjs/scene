@@ -14050,6 +14050,90 @@ var JSPickingCollider = (function () {
      * @returns {boolean}
      */
     JSPickingCollider.prototype.testCurveCollision = function (curveSubGeometry, material, pickingCollisionVO, shortestCollisionDistance) {
+        var rayPosition = pickingCollisionVO.localRayPosition;
+        var rayDirection = pickingCollisionVO.localRayDirection;
+        //project ray onto x/y plane to generate useful test points from mouse coordinates
+        var plane = new Vector3D(0, 0, -1, 0);
+        var result = new Vector3D();
+        var distance = plane.x * rayPosition.x + plane.y * rayPosition.y + plane.z * rayPosition.z + plane.w; //distance(position);
+        result.x = rayPosition.x - (plane.x * distance);
+        result.y = rayPosition.y - (plane.y * distance);
+        result.z = rayPosition.z - (plane.z * distance);
+        var normal = new Vector3D(plane.x, plane.y, plane.z);
+        var t = -(rayPosition.dotProduct(normal)) / (rayDirection.dotProduct(normal));
+        rayDirection.scaleBy(t);
+        var p = rayPosition.add(rayDirection);
+        var indices = curveSubGeometry.indices.get(curveSubGeometry.numElements);
+        var collisionCurveIndex = -1;
+        var bothSides = material.bothSides;
+        var positions = curveSubGeometry.positions.get(curveSubGeometry.numVertices);
+        var posDim = curveSubGeometry.positions.dimensions;
+        var curves = curveSubGeometry.curves.get(curveSubGeometry.numVertices);
+        var curveDim = curveSubGeometry.curves.dimensions;
+        var uvs = curveSubGeometry.uvs.get(curveSubGeometry.numVertices);
+        var uvDim = curveSubGeometry.uvs.dimensions;
+        var numIndices = indices.length;
+        for (var index = 0; index < numIndices; index += 3) {
+            var id0 = indices[index];
+            var id1 = indices[index + 1] * posDim;
+            var id2 = indices[index + 2] * posDim;
+            var ax = positions[id0 * posDim];
+            var ay = positions[id0 * posDim + 1];
+            var bx = positions[id1];
+            var by = positions[id1 + 1];
+            var cx = positions[id2];
+            var cy = positions[id2 + 1];
+            var curvex = curves[id0 * curveDim];
+            var az = positions[id0 * posDim + 2];
+            //console.log(ax, ay, bx, by, cx, cy);
+            //from a to p
+            var dx = ax - p.x;
+            var dy = ay - p.y;
+            //edge normal (a-b)
+            var nx = by - ay;
+            var ny = -(bx - ax);
+            //console.log(ax,ay,bx,by,cx,cy);
+            var dot = (dx * nx) + (dy * ny);
+            //console.log("dot a",dot);
+            if (dot > 0)
+                continue;
+            dx = bx - p.x;
+            dy = by - p.y;
+            nx = cy - by;
+            ny = -(cx - bx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot b",dot);
+            if (dot > 0)
+                continue;
+            dx = cx - p.x;
+            dy = cy - p.y;
+            nx = ay - cy;
+            ny = -(ax - cx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot c",dot);
+            if (dot > 0)
+                continue;
+            //check if nmot solid
+            if (curvex != 2) {
+                var v0x = bx - ax;
+                var v0y = by - ay;
+                var v1x = cx - ax;
+                var v1y = cy - ay;
+                var v2x = p.x - ax;
+                var v2y = p.y - ay;
+                var den = v0x * v1y - v1x * v0y;
+                var v = (v2x * v1y - v1x * v2y) / den;
+                var w = (v0x * v2y - v2x * v0y) / den;
+                var u = 1 - v - w;
+                var uu = 0.5 * v + w; // (0 * u) + (0.5 * v) + (1 * w);// (lerp(0, 0.5, v) + lerp(0.5, 1, w) + lerp(1, 0, u)) / 1.5;
+                var vv = w; // (0 * u) + (0 * v) + (1 * w);// (lerp(0, 1, w) + lerp(1, 0, u)) / 1;
+                var d = uu * uu - vv;
+                if ((d > 0 && az == -1) || (d < 0 && az == 1))
+                    continue;
+            }
+        }
+        if (collisionCurveIndex >= 0)
+            return true;
         return false;
     };
     /**
