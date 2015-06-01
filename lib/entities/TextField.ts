@@ -748,6 +748,8 @@ class TextField extends Mesh
 		var x_offset:number=0;
 		var y_offset:number=0;
 		var prev_char:TesselatedFontChar = null;
+		var j:number = 0;
+		var k:number = 0;
 		for (var i = 0; i < this.text.length; i++) {
 
 			var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
@@ -755,12 +757,11 @@ class TextField extends Mesh
 				var this_subGeom:CurveSubGeometry = this_char.subgeom;
 				if (this_subGeom != null) {
 					tri_cnt = 0;
-					var j:number = 0;
 					var indices2:Uint16Array = this_subGeom.indices.get(this_subGeom.numElements);
 					var positions2:Float32Array = this_subGeom.positions.get(this_subGeom.numVertices);
 					var curveData2:Float32Array = this_subGeom.curves.get(this_subGeom.numVertices);
 					for (var v = 0; v < indices2.length; v++) {
-						indices[v] = indices2[v] + tri_idx_offset;
+						indices[k++] = indices2[v] + tri_idx_offset;
 						tri_cnt++;
 					}
 					tri_idx_offset += tri_cnt;
