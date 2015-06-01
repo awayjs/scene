@@ -9103,18 +9103,19 @@ var TextField = (function (_super) {
         var x_offset = 0;
         var y_offset = 0;
         var prev_char = null;
+        var j = 0;
+        var k = 0;
         for (var i = 0; i < this.text.length; i++) {
             var this_char = this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
             if (this_char != null) {
                 var this_subGeom = this_char.subgeom;
                 if (this_subGeom != null) {
                     tri_cnt = 0;
-                    var j = 0;
                     var indices2 = this_subGeom.indices.get(this_subGeom.numElements);
                     var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
                     var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
                     for (var v = 0; v < indices2.length; v++) {
-                        indices[v] = indices2[v] + tri_idx_offset;
+                        indices[k++] = indices2[v] + tri_idx_offset;
                         tri_cnt++;
                     }
                     tri_idx_offset += tri_cnt;
