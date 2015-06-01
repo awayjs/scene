@@ -1,7 +1,7 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
 import IAnimationSet			= require("awayjs-display/lib/animators/IAnimationSet");
-import SubGeometryBase			= require("awayjs-core/lib/data/SubGeometryBase");
+import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
 import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
 import IEntity					= require("awayjs-display/lib/entities/IEntity");
 

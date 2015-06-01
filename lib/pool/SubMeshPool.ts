@@ -1,7 +1,7 @@
-import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
-import LineSubGeometry				= require("awayjs-core/lib/data/LineSubGeometry");
-import TriangleSubGeometry			= require("awayjs-core/lib/data/TriangleSubGeometry");
-import CurveSubGeometry				= require("awayjs-core/lib/data/CurveSubGeometry");
+import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import LineSubGeometry				= require("awayjs-display/lib/base/LineSubGeometry");
+import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeometry");
+import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
 
 import ISubMeshClass				= require("awayjs-display/lib/base/ISubMeshClass");
 import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");

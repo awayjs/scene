@@ -1,6 +1,6 @@
-import CurveSubGeometry			= require("awayjs-core/lib/data/CurveSubGeometry");
 import IAssetClass				= require("awayjs-core/lib/library/IAssetClass");
 
+import CurveSubGeometry			= require("awayjs-display/lib/base/CurveSubGeometry");
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
 import SubMeshPool				= require("awayjs-display/lib/pool/SubMeshPool");

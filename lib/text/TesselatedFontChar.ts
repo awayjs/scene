@@ -1,7 +1,9 @@
 import IAsset						= require("awayjs-core/lib/library/IAsset");
+
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import CurveSubGeometry				= require("awayjs-core/lib/data/CurveSubGeometry");
+import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You

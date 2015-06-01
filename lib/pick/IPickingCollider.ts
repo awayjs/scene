@@ -1,7 +1,11 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import Billboard					= require("awayjs-display/lib/entities/Billboard");
+import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeometry");
+import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+import LineSubGeometry				= require("awayjs-display/lib/base/LineSubGeometry");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
  * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
@@ -14,32 +18,47 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
  */
 interface IPickingCollider
 {
-	/**
-	 * Sets the position and direction of a picking ray in local coordinates to the entity.
-	 *
-	 * @param localDirection The position vector in local coordinates
-	 * @param localPosition The direction vector in local coordinates
-	 */
-	setLocalRay(localPosition:Vector3D, localDirection:Vector3D);
 
 	/**
 	 * Tests a <code>Billboard</code> object for a collision with the picking ray.
 	 *
-	 * @param entity The entity instance to be tested.
-	 * @param pickingCollisionVO The collision object used to store the collision results
-	 * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	 * @param billboard
+	 * @param material
+	 * @param pickingCollisionVO
+	 * @param shortestCollisionDistance
 	 */
-	testBillboardCollision(entity:IEntity, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
 
 	/**
-	 * Tests a <code>Mesh</code> object for a collision with the picking ray.
+	 * Tests a <code>TriangleSubGeometry</code> object for a collision with the picking ray.
 	 *
-	 * @param entity The entity instance to be tested.
-	 * @param pickingCollisionVO The collision object used to store the collision results
-	 * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
-	 * @param findClosest
+	 * @param triangleSubGeometry
+	 * @param material
+	 * @param pickingCollisionVO
+	 * @param shortestCollisionDistance
 	 */
-	testMeshCollision(entity:IEntity, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number, findClosest:boolean):boolean
+	testTriangleCollision(triangleSubGeometry:TriangleSubGeometry, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+
+	/**
+	 * Tests a <code>CurveSubGeometry</code> object for a collision with the picking ray.
+	 *
+	 * @param curveSubGeometry
+	 * @param material
+	 * @param pickingCollisionVO
+	 * @param shortestCollisionDistance
+	 */
+	testCurveCollision(curveSubGeometry:CurveSubGeometry, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+
+	/**
+	 * Tests a <code>LineSubGeometry</code> object for a collision with the picking ray.
+	 *
+	 * @param lineSubGeometry
+	 * @param material
+	 * @param pickingCollisionVO
+	 * @param shortestCollisionDistance
+	 */
+	testLineCollision(lineSubGeometry:LineSubGeometry, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+
 }
 
 export = IPickingCollider;

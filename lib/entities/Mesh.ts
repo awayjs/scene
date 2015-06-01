@@ -1,16 +1,15 @@
-﻿import Geometry						= require("awayjs-core/lib/data/Geometry");
-import TriangleSubGeometry			= require("awayjs-core/lib/data/TriangleSubGeometry");
-import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
-import GeometryEvent				= require("awayjs-core/lib/events/GeometryEvent");
-import Box							= require("awayjs-core/lib/geom/Box");
+﻿import Box							= require("awayjs-core/lib/geom/Box");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
-import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import ISubMesh						= require("awayjs-display/lib/base/ISubMesh");
 import ISubMeshClass				= require("awayjs-display/lib/base/ISubMeshClass");
+import Geometry						= require("awayjs-display/lib/base/Geometry");
+import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Partition					= require("awayjs-display/lib/partition/Partition");
@@ -544,7 +543,25 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public _iTestCollision(shortestCollisionDistance:number, findClosest:boolean):boolean
 	{
-		return this._pPickingCollider.testMeshCollision(this, this._pPickingCollisionVO, shortestCollisionDistance, findClosest);
+		this._pPickingCollisionVO.renderableOwner = null;
+
+		var subMesh:ISubMesh;
+
+		var len:number = this.subMeshes.length;
+		for (var i:number = 0; i < len; ++i) {
+			subMesh = this.subMeshes[i];
+
+			if (subMesh.subGeometry._iTestCollision(this._pPickingCollider, subMesh.material, this._pPickingCollisionVO, shortestCollisionDistance)) {
+				shortestCollisionDistance = this._pPickingCollisionVO.rayEntryDistance;
+
+				this._pPickingCollisionVO.renderableOwner = subMesh;
+
+				if (!findClosest)
+					return true;
+			}
+		}
+
+		return this._pPickingCollisionVO.renderableOwner != null;
 	}
 
 	/**

@@ -15,9 +15,9 @@ import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
-import Geometry						= require("awayjs-core/lib/data/Geometry");
-import SubGeometryBase				= require("awayjs-core/lib/data/SubGeometryBase");
-import CurveSubGeometry				= require("awayjs-core/lib/data/CurveSubGeometry");
+import Geometry						= require("awayjs-display/lib/base/Geometry");
+import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 
 /**

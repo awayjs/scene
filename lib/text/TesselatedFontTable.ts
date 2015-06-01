@@ -3,8 +3,8 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 
 import IAsset						= require("awayjs-core/lib/library/IAsset");
-import SubGeometryBase						= require("awayjs-core/lib/data/SubGeometryBase");
-import CurveSubGeometry						= require("awayjs-core/lib/data/CurveSubGeometry");
+import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 
 /**

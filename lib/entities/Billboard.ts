@@ -288,7 +288,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	 */
 	public _iTestCollision(shortestCollisionDistance:number, findClosest:boolean):boolean
 	{
-		return this._pPickingCollider.testBillboardCollision(this, this._pPickingCollisionVO, shortestCollisionDistance);
+		return this._pPickingCollider.testBillboardCollision(this, this.material, this._pPickingCollisionVO, shortestCollisionDistance);
 	}
 
 	/**

@@ -1,6 +1,6 @@
-import LineSubGeometry			= require("awayjs-core/lib/data/LineSubGeometry");
 import IAssetClass				= require("awayjs-core/lib/library/IAssetClass");
 
+import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
 import SubMeshPool				= require("awayjs-display/lib/pool/SubMeshPool");
