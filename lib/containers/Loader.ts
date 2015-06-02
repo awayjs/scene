@@ -634,6 +634,11 @@ class Loader extends DisplayObjectContainer
 		}
 	}
 
+	private onTextureSizeError(event:AssetEvent)
+	{
+		this.dispatchEvent(event);
+	}
+
 	/**
 	 * Called when the resource and all of its dependencies was retrieved.
 	 */
