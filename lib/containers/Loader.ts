@@ -100,6 +100,9 @@ class Loader extends DisplayObjectContainer
 	private _assetLibId:string;
 	private _onResourceCompleteDelegate:Function;
 	private _onAssetCompleteDelegate:Function;
+	private _onTextureSizeErrorDelegate:(event:AssetEvent) => void;
+	private _onLoadErrorDelegate:(event:IOErrorEvent) => boolean;
+	private _onParseErrorDelegate:(event:ParserEvent) => boolean;
 
 	private _content:DisplayObject;
 	private _contentLoaderInfo:LoaderInfo;
@@ -205,6 +208,9 @@ class Loader extends DisplayObjectContainer
 
 		this._onResourceCompleteDelegate = (event:LoaderEvent) => this.onResourceComplete(event);
 		this._onAssetCompleteDelegate = (event:AssetEvent) => this.onAssetComplete(event);
+		this._onTextureSizeErrorDelegate = (event:AssetEvent) => this.onTextureSizeError(event);
+		this._onLoadErrorDelegate = (event:IOErrorEvent) => this.onLoadError(event);
+		this._onParseErrorDelegate = (event:ParserEvent) => this.onParseError(event);
 	}
 
 	/**
@@ -413,11 +419,12 @@ class Loader extends DisplayObjectContainer
 		}
 
 		token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+		token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
 		token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
 
 		// Error are handled separately (see documentation for addErrorHandler)
-		token._iLoader._iAddErrorHandler(this.onLoadError);
-		token._iLoader._iAddParseErrorHandler(this.onParseError);
+		token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
+		token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
 
 		return token;
 	}
@@ -523,11 +530,12 @@ class Loader extends DisplayObjectContainer
 		}
 
 		token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+		token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
 		token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
 
 		// Error are handled separately (see documentation for addErrorHandler)
-		token._iLoader._iAddErrorHandler(this.onLoadError);
-		token._iLoader._iAddParseErrorHandler(this.onParseError);
+		token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
+		token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
 
 		return token;
 	}
@@ -603,7 +611,7 @@ class Loader extends DisplayObjectContainer
 	/**
 	 * Called when an error occurs during loading
 	 */
-	private onLoadError(event:LoaderEvent):boolean
+	private onLoadError(event:IOErrorEvent):boolean
 	{
 		if (this.hasEventListener(IOErrorEvent.IO_ERROR)) {
 			this.dispatchEvent(event);
