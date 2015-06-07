@@ -1629,6 +1629,98 @@ var DisplayObject = (function (_super) {
      *         intersect; <code>false</code> if not.
      */
     DisplayObject.prototype.hitTestObject = function (obj) {
+        var objBox = obj.getBox();
+        if (!objBox)
+            return false;
+        var topLeft = new Point(objBox.x, objBox.y);
+        var bottomLeft = new Point(objBox.x, objBox.y - objBox.height);
+        var topRight = new Point(objBox.x + objBox.width, objBox.y);
+        var bottomRight = new Point(objBox.x + objBox.width, objBox.y - objBox.height);
+        topLeft = this.globalToLocal(obj.localToGlobal(topLeft));
+        bottomLeft = this.globalToLocal(obj.localToGlobal(bottomLeft));
+        topRight = this.globalToLocal(obj.localToGlobal(topRight));
+        bottomRight = this.globalToLocal(obj.localToGlobal(bottomRight));
+        var box = this.getBox();
+        if (!box)
+            return false;
+        //first check all points against targer box
+        if (topLeft.x <= box.left && topLeft.x <= box.left && topLeft.y <= box.top && topLeft.y >= box.bottom)
+            return true;
+        if (bottomLeft.x <= box.left && bottomLeft.x <= box.left && bottomLeft.y <= box.top && bottomLeft.y >= box.bottom)
+            return true;
+        if (topRight.x <= box.left && topRight.x <= box.left && topRight.y <= box.top && topRight.y >= box.bottom)
+            return true;
+        if (bottomRight.x <= box.left && bottomRight.x <= box.left && bottomRight.y <= box.top && bottomRight.y >= box.bottom)
+            return true;
+        //now test against obj box
+        var n0x = topRight.y - topLeft.y;
+        var n0y = -(topRight.x - topLeft.x);
+        var n1x = bottomRight.y - topRight.y;
+        var n1y = -(bottomRight.x - topRight.x);
+        var n2x = bottomLeft.y - bottomRight.y;
+        var n2y = -(bottomLeft.x - bottomRight.x);
+        var n3x = topLeft.y - bottomLeft.y;
+        var n3y = -(topLeft.x - bottomLeft.x);
+        var p0x = box.left - topLeft.x;
+        var p0y = box.top - topLeft.y;
+        var p1x = box.left - topRight.x;
+        var p1y = box.top - topRight.y;
+        var p2x = box.left - bottomRight.x;
+        var p2y = box.top - bottomRight.y;
+        var p3x = box.left - bottomLeft.x;
+        var p3y = box.top - bottomLeft.y;
+        var dot0 = (n0x * p0x) + (n0y * p0y);
+        var dot1 = (n1x * p1x) + (n1y * p1y);
+        var dot2 = (n2x * p2x) + (n2y * p2y);
+        var dot3 = (n3x * p3x) + (n3y * p3y);
+        //check if topLeft is contained
+        if (dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0)
+            return true;
+        p0x = box.right - topLeft.x;
+        p0y = box.top - topLeft.y;
+        p1x = box.right - topRight.x;
+        p1y = box.top - topRight.y;
+        p2x = box.right - bottomRight.x;
+        p2y = box.top - bottomRight.y;
+        p3x = box.right - bottomLeft.x;
+        p3y = box.top - bottomLeft.y;
+        dot0 = (n0x * p0x) + (n0y * p0y);
+        dot1 = (n1x * p1x) + (n1y * p1y);
+        dot2 = (n2x * p2x) + (n2y * p2y);
+        dot3 = (n3x * p3x) + (n3y * p3y);
+        //check if topRight is contained
+        if (dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0)
+            return true;
+        p0x = box.left - topLeft.x;
+        p0y = box.bottom - topLeft.y;
+        p1x = box.left - topRight.x;
+        p1y = box.bottom - topRight.y;
+        p2x = box.left - bottomRight.x;
+        p2y = box.bottom - bottomRight.y;
+        p3x = box.left - bottomLeft.x;
+        p3y = box.bottom - bottomLeft.y;
+        dot0 = (n0x * p0x) + (n0y * p0y);
+        dot1 = (n1x * p1x) + (n1y * p1y);
+        dot2 = (n2x * p2x) + (n2y * p2y);
+        dot3 = (n3x * p3x) + (n3y * p3y);
+        //check if bottomLeft is contained
+        if (dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0)
+            return true;
+        p0x = box.right - topLeft.x;
+        p0y = box.bottom - topLeft.y;
+        p1x = box.right - topRight.x;
+        p1y = box.bottom - topRight.y;
+        p2x = box.right - bottomRight.x;
+        p2y = box.bottom - bottomRight.y;
+        p3x = box.right - bottomLeft.x;
+        p3y = box.bottom - bottomLeft.y;
+        dot0 = (n0x * p0x) + (n0y * p0y);
+        dot1 = (n1x * p1x) + (n1y * p1y);
+        dot2 = (n2x * p2x) + (n2y * p2y);
+        dot3 = (n3x * p3x) + (n3y * p3y);
+        //check if bottomRight is contained
+        if (dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0)
+            return true;
         return false; //TODO
     };
     /**
@@ -1649,7 +1741,110 @@ var DisplayObject = (function (_super) {
      */
     DisplayObject.prototype.hitTestPoint = function (x, y, shapeFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
-        return false; //TODO
+        //thought I would need the global hit point converted into local space, but not sure how to hook it in
+        var local = this.globalToLocal(new Point(x, y));
+        var hit = false;
+        //if(true)//this.assetType == Mesh.assetType)
+        var mesh = this;
+        //if this is a mesh then check self
+        if (mesh && mesh.geometry) {
+            //mesh.pickingCollider.testCurveCollision(())
+            var box = this.getBox();
+            if (box.left > local.x || box.right < local.x || box.top > local.y || box.bottom < local.y)
+                return false;
+            for (var j = 0; j < mesh.geometry.subGeometries.length; j++) {
+                var sub = mesh.geometry.subGeometries[j];
+                var curve = sub;
+                if (curve)
+                    hit = this.hittestMesh(local.x, local.y, curve);
+                if (hit)
+                    return true;
+            }
+        }
+        var displayObjectContainer = this;
+        //if this is a container then recurse children
+        if (displayObjectContainer) {
+            for (var i = 0; i < displayObjectContainer.numChildren; i++) {
+                var child = displayObjectContainer.getChildAt(i);
+                var childHit = child.hitTestPoint(x, y, shapeFlag);
+                if (childHit)
+                    return true;
+            }
+        }
+        return false;
+    };
+    DisplayObject.prototype.hittestMesh = function (px, py, sub) {
+        var posDim = sub.positions.dimensions;
+        var curveDim = sub.curves.dimensions;
+        var indices = sub.indices.get(sub.indices.count);
+        var positions = sub.positions.get(sub.positions.count);
+        var curves = sub.curves.get(sub.curves.count);
+        for (var k = 0; k < sub.indices.length; k += 3) {
+            var id0 = indices[k];
+            var id1 = indices[k + 1] * posDim;
+            var id2 = indices[k + 2] * posDim;
+            var ax = positions[id0 * posDim];
+            var ay = positions[id0 * posDim + 1];
+            var bx = positions[id1];
+            var by = positions[id1 + 1];
+            var cx = positions[id2];
+            var cy = positions[id2 + 1];
+            var curvex = curves[id0 * curveDim];
+            var az = positions[id0 * posDim + 2];
+            //console.log(ax, ay, bx, by, cx, cy);
+            //from a to p
+            var dx = ax - px;
+            var dy = ay - py;
+            //edge normal (a-b)
+            var nx = by - ay;
+            var ny = -(bx - ax);
+            //console.log(ax,ay,bx,by,cx,cy);
+            var dot = (dx * nx) + (dy * ny);
+            //console.log("dot a",dot);
+            if (dot > 0)
+                continue;
+            dx = bx - px;
+            dy = by - py;
+            nx = cy - by;
+            ny = -(cx - bx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot b",dot);
+            if (dot > 0)
+                continue;
+            dx = cx - px;
+            dy = cy - py;
+            nx = ay - cy;
+            ny = -(ax - cx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot c",dot);
+            if (dot > 0)
+                continue;
+            //check if nmot solid
+            if (curvex != 2) {
+                var v0x = bx - ax;
+                var v0y = by - ay;
+                var v1x = cx - ax;
+                var v1y = cy - ay;
+                var v2x = px - ax;
+                var v2y = py - ay;
+                var den = v0x * v1y - v1x * v0y;
+                var v = (v2x * v1y - v1x * v2y) / den;
+                var w = (v0x * v2y - v2x * v0y) / den;
+                var u = 1 - v - w;
+                //here be dragons
+                var uu = 0.5 * v + w;
+                var vv = w;
+                var d = uu * uu - vv;
+                if (d > 0 && az == -1) {
+                    continue;
+                }
+                else if (d < 0 && az == 1) {
+                    continue;
+                }
+            }
+            return true;
+        }
+        return false;
     };
     /**
      * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
@@ -14061,6 +14256,7 @@ var JSPickingCollider = (function () {
         var rayPosition = pickingCollisionVO.localRayPosition;
         var rayDirection = pickingCollisionVO.localRayDirection;
         //project ray onto x/y plane to generate useful test points from mouse coordinates
+        //this will only work while all points lie on the x/y plane
         var plane = new Vector3D(0, 0, -1, 0);
         var result = new Vector3D();
         var distance = plane.x * rayPosition.x + plane.y * rayPosition.y + plane.z * rayPosition.z + plane.w; //distance(position);
@@ -14121,7 +14317,7 @@ var JSPickingCollider = (function () {
             //console.log("dot c",dot);
             if (dot > 0)
                 continue;
-            //check if nmot solid
+            //check if not solid
             if (curvex != 2) {
                 var v0x = bx - ax;
                 var v0y = by - ay;
@@ -14138,6 +14334,21 @@ var JSPickingCollider = (function () {
                 var d = uu * uu - vv;
                 if ((d > 0 && az == -1) || (d < 0 && az == 1))
                     continue;
+            }
+            //TODO optimize away this pointless check as the distance is always the same
+            //also this stuff should only be calculated right before the return and not for each hit
+            if (distance < shortestCollisionDistance) {
+                shortestCollisionDistance = distance;
+                collisionCurveIndex = index / 3;
+                pickingCollisionVO.rayEntryDistance = distance;
+                pickingCollisionVO.localPosition = p;
+                pickingCollisionVO.localNormal = new Vector3D(0, 0, 1);
+                pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
+                pickingCollisionVO.index = index;
+                //						pickingCollisionVO.subGeometryIndex = this.pGetMeshSubMeshIndex(renderable);
+                // if not looking for best hit, first found will do...
+                if (!this._findClosestCollision)
+                    return true;
             }
         }
         if (collisionCurveIndex >= 0)
