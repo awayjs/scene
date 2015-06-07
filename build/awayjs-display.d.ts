@@ -5141,6 +5141,23 @@ declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
 	
 }
 
+declare module "awayjs-display/lib/draw/IGraphicsData" {
+	/**
+	 * This interface is used to define objects that can be used as parameters in the
+	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
+	 * the implementor classes of this interface to create and manage drawing property
+	 * data, and to reuse the same data for different instances. Then, use the methods of
+	 * the Graphics class to render the drawing objects.
+	 *
+	 * @see away.base.Graphics.drawGraphicsData()
+	 * @see away.base.Graphics.readGraphicsData()
+	 */
+	interface IGraphicsData {
+	}
+	export = IGraphicsData;
+	
+}
+
 declare module "awayjs-display/lib/draw/InterpolationMethod" {
 	/**
 	 * The InterpolationMethod class provides values for the
@@ -5250,23 +5267,6 @@ declare module "awayjs-display/lib/draw/LineScaleMode" {
 	    static VERTICAL: string;
 	}
 	export = LineScaleMode;
-	
-}
-
-declare module "awayjs-display/lib/draw/IGraphicsData" {
-	/**
-	 * This interface is used to define objects that can be used as parameters in the
-	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
-	 * the implementor classes of this interface to create and manage drawing property
-	 * data, and to reuse the same data for different instances. Then, use the methods of
-	 * the Graphics class to render the drawing objects.
-	 *
-	 * @see away.base.Graphics.drawGraphicsData()
-	 * @see away.base.Graphics.readGraphicsData()
-	 */
-	interface IGraphicsData {
-	}
-	export = IGraphicsData;
 	
 }
 
@@ -9772,48 +9772,6 @@ declare module "awayjs-display/lib/text/GridFitType" {
 	
 }
 
-declare module "awayjs-display/lib/text/TesselatedFontTable" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
-	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.SubMeshBase
-	 */
-	class TesselatedFontTable extends AssetBase {
-	    private _font_chars;
-	    private _font_chars_dic;
-	    private _font_em_size;
-	    private _charDictDirty;
-	    /**
-	     * Creates a new TesselatedFont object
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    get_font_chars(): Array<TesselatedFontChar>;
-	    get_font_em_size(): number;
-	    set_font_em_size(font_em_size: number): void;
-	    /**
-	     *
-	     */
-	    get_subgeo_for_char(char: string): TesselatedFontChar;
-	    /**
-	     *
-	     */
-	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
-	}
-	export = TesselatedFontTable;
-	
-}
-
 declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 	/**
@@ -9862,6 +9820,48 @@ declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	    constructor(subgeom: CurveSubGeometry);
 	}
 	export = TesselatedFontChar;
+	
+}
+
+declare module "awayjs-display/lib/text/TesselatedFontTable" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
+	/**
+	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.SubMeshBase
+	 */
+	class TesselatedFontTable extends AssetBase {
+	    private _font_chars;
+	    private _font_chars_dic;
+	    private _font_em_size;
+	    private _charDictDirty;
+	    /**
+	     * Creates a new TesselatedFont object
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    get_font_chars(): Array<TesselatedFontChar>;
+	    get_font_em_size(): number;
+	    set_font_em_size(font_em_size: number): void;
+	    /**
+	     *
+	     */
+	    get_subgeo_for_char(char: string): TesselatedFontChar;
+	    /**
+	     *
+	     */
+	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
+	}
+	export = TesselatedFontTable;
 	
 }
 
