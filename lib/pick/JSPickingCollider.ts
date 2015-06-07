@@ -192,6 +192,7 @@ class JSPickingCollider implements IPickingCollider
 		var rayDirection:Vector3D = pickingCollisionVO.localRayDirection;
 
 		//project ray onto x/y plane to generate useful test points from mouse coordinates
+		//this will only work while all points lie on the x/y plane
 		var plane:Vector3D = new Vector3D(0,0,-1,0);
 
 		var result:Vector3D = new Vector3D();
@@ -271,7 +272,7 @@ class JSPickingCollider implements IPickingCollider
 			if (dot > 0)
 				continue;
 
-			//check if nmot solid
+			//check if not solid
 			if (curvex != 2) {
 
 				var v0x:number = bx - ax;
@@ -294,21 +295,22 @@ class JSPickingCollider implements IPickingCollider
 				if ((d > 0 && az == -1) || (d < 0 && az == 1))
 					continue;
 			}
+			//TODO optimize away this pointless check as the distance is always the same
+			//also this stuff should only be calculated right before the return and not for each hit
+			if (distance < shortestCollisionDistance) {
+				shortestCollisionDistance = distance;
+				collisionCurveIndex = index/3;
+				pickingCollisionVO.rayEntryDistance = distance;
+				pickingCollisionVO.localPosition = p;
+				pickingCollisionVO.localNormal = new Vector3D(0, 0, 1);
+				pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
+				pickingCollisionVO.index = index;
+				//						pickingCollisionVO.subGeometryIndex = this.pGetMeshSubMeshIndex(renderable);
 
-			//if (!( u < 0 ) && t > 0 && t < shortestCollisionDistance) { // all tests passed
-			//	shortestCollisionDistance = t;
-			//	collisionCurveIndex = index/3;
-			//	pickingCollisionVO.rayEntryDistance = t;
-			//	pickingCollisionVO.localPosition = new Vector3D(cx, cy, cz);
-			//	pickingCollisionVO.localNormal = new Vector3D(nx, ny, nz);
-			//	pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
-			//	pickingCollisionVO.index = index;
-			//	//						pickingCollisionVO.subGeometryIndex = this.pGetMeshSubMeshIndex(renderable);
-			//
-			//	// if not looking for best hit, first found will do...
-			//	if (!this._findClosestCollision)
-			//		return true;
-			//}
+				// if not looking for best hit, first found will do...
+				if (!this._findClosestCollision)
+					return true;
+			}
 		}
 
 		if (collisionCurveIndex >= 0)

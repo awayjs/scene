@@ -29,6 +29,10 @@ import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEv
 import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
 import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
 
+import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+
 /**
  * The DisplayObject class is the base class for all objects that can be
  * placed on the display list. The display list manages all objects displayed
@@ -1602,6 +1606,108 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public hitTestObject(obj:DisplayObject):boolean
 	{
+		var objBox:Box = obj.getBox();
+		if(!objBox) return false;
+		var topLeft:Point = new Point(objBox.x,objBox.y);
+		var bottomLeft:Point = new Point(objBox.x,objBox.y-objBox.height);
+		var topRight:Point = new Point(objBox.x+objBox.width,objBox.y);
+		var bottomRight:Point = new Point(objBox.x+objBox.width,objBox.y-objBox.height);
+
+		topLeft = this.globalToLocal(obj.localToGlobal(topLeft));
+		bottomLeft = this.globalToLocal(obj.localToGlobal(bottomLeft));
+		topRight = this.globalToLocal(obj.localToGlobal(topRight));
+		bottomRight = this.globalToLocal(obj.localToGlobal(bottomRight));
+
+		var box:Box = this.getBox();
+		if(!box) return false;
+
+		//first check all points against targer box
+		if(topLeft.x <= box.left && topLeft.x <= box.left && topLeft.y <= box.top && topLeft.y >= box.bottom) return true;
+		if(bottomLeft.x <= box.left && bottomLeft.x <= box.left && bottomLeft.y <= box.top && bottomLeft.y >= box.bottom) return true;
+		if(topRight.x <= box.left && topRight.x <= box.left && topRight.y <= box.top && topRight.y >= box.bottom) return true;
+		if(bottomRight.x <= box.left && bottomRight.x <= box.left && bottomRight.y <= box.top && bottomRight.y >= box.bottom) return true;
+
+		//now test against obj box
+		var n0x:number = topRight.y - topLeft.y;
+		var n0y:number = -(topRight.x - topLeft.x);
+
+		var n1x:number = bottomRight.y - topRight.y;
+		var n1y:number = -(bottomRight.x - topRight.x);
+
+		var n2x:number = bottomLeft.y - bottomRight.y;
+		var n2y:number = -(bottomLeft.x - bottomRight.x);
+
+		var n3x:number = topLeft.y - bottomLeft.y;
+		var n3y:number = -(topLeft.x - bottomLeft.x);
+
+		var p0x:number = box.left - topLeft.x;
+		var p0y:number = box.top - topLeft.y;
+		var p1x:number = box.left - topRight.x;
+		var p1y:number = box.top - topRight.y;
+		var p2x:number = box.left - bottomRight.x;
+		var p2y:number = box.top - bottomRight.y;
+		var p3x:number = box.left - bottomLeft.x;
+		var p3y:number = box.top - bottomLeft.y;
+
+		var dot0:number = (n0x*p0x)+(n0y*p0y);
+		var dot1:number = (n1x*p1x)+(n1y*p1y);
+		var dot2:number = (n2x*p2x)+(n2y*p2y);
+		var dot3:number = (n3x*p3x)+(n3y*p3y);
+
+		//check if topLeft is contained
+		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
+
+		p0x = box.right - topLeft.x;
+		p0y = box.top - topLeft.y;
+		p1x = box.right - topRight.x;
+		p1y = box.top - topRight.y;
+		p2x = box.right - bottomRight.x;
+		p2y = box.top - bottomRight.y;
+		p3x = box.right - bottomLeft.x;
+		p3y = box.top - bottomLeft.y;
+
+		dot0 = (n0x*p0x)+(n0y*p0y);
+		dot1 = (n1x*p1x)+(n1y*p1y);
+		dot2 = (n2x*p2x)+(n2y*p2y);
+		dot3 = (n3x*p3x)+(n3y*p3y);
+
+		//check if topRight is contained
+		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
+
+		p0x = box.left - topLeft.x;
+		p0y = box.bottom - topLeft.y;
+		p1x = box.left - topRight.x;
+		p1y = box.bottom - topRight.y;
+		p2x = box.left - bottomRight.x;
+		p2y = box.bottom - bottomRight.y;
+		p3x = box.left - bottomLeft.x;
+		p3y = box.bottom - bottomLeft.y;
+
+		dot0 = (n0x*p0x)+(n0y*p0y);
+		dot1 = (n1x*p1x)+(n1y*p1y);
+		dot2 = (n2x*p2x)+(n2y*p2y);
+		dot3 = (n3x*p3x)+(n3y*p3y);
+
+		//check if bottomLeft is contained
+		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
+
+		p0x = box.right - topLeft.x;
+		p0y = box.bottom - topLeft.y;
+		p1x = box.right - topRight.x;
+		p1y = box.bottom - topRight.y;
+		p2x = box.right - bottomRight.x;
+		p2y = box.bottom - bottomRight.y;
+		p3x = box.right - bottomLeft.x;
+		p3y = box.bottom - bottomLeft.y;
+
+		dot0 = (n0x*p0x)+(n0y*p0y);
+		dot1 = (n1x*p1x)+(n1y*p1y);
+		dot2 = (n2x*p2x)+(n2y*p2y);
+		dot3 = (n3x*p3x)+(n3y*p3y);
+
+		//check if bottomRight is contained
+		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
+
 		return false; //TODO
 	}
 
@@ -1623,9 +1729,137 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
 	{
-		return false; //TODO
-	}
+		//thought I would need the global hit point converted into local space, but not sure how to hook it in
+		var local:Point = this.globalToLocal(new Point(x,y));
 
+
+
+		var hit:boolean = false;
+
+		//if(true)//this.assetType == Mesh.assetType)
+
+		var mesh:Mesh = <Mesh>this;
+
+		//if this is a mesh then check self
+		if(mesh && mesh.geometry)// && mesh.pickingCollider)
+		{
+			//mesh.pickingCollider.testCurveCollision(())
+			var box:Box = this.getBox();
+			if(box.left > local.x || box.right < local.x || box.top  > local.y ||  box.bottom < local.y) return false;
+
+
+			for(var j:number = 0; j < mesh.geometry.subGeometries.length; j++)
+			{
+				var sub:SubGeometryBase = mesh.geometry.subGeometries[j];
+				var curve:CurveSubGeometry = <CurveSubGeometry>sub;
+				if(curve) hit = this.hittestMesh(local.x, local.y, curve);
+				if(hit) return true;
+			}
+		}
+
+		var displayObjectContainer:DisplayObjectContainer = <DisplayObjectContainer>this;
+		//if this is a container then recurse children
+		if(displayObjectContainer)
+		{
+			for(var i:number = 0; i < displayObjectContainer.numChildren; i++)
+			{
+				var child:DisplayObject = displayObjectContainer.getChildAt(i);
+				var childHit:boolean = child.hitTestPoint(x,y, shapeFlag);
+				if(childHit) return true;
+			}
+		}
+
+		return false;
+	}
+	private hittestMesh(px:number, py:number, sub:CurveSubGeometry):boolean
+	{
+		var posDim:number = sub.positions.dimensions;
+		var curveDim:number = sub.curves.dimensions;
+		var indices:Uint16Array = sub.indices.get(sub.indices.count);
+		var positions:Float32Array = sub.positions.get(sub.positions.count);
+		var curves:Float32Array = sub.curves.get(sub.curves.count);
+
+		for(var k:number = 0; k < sub.indices.length; k+=3)
+		{
+			var id0:number = indices[k];
+			var id1:number = indices[k + 1] * posDim;
+			var id2:number = indices[k + 2] * posDim;
+
+			var ax:number = positions[id0 * posDim];
+			var ay:number = positions[id0 * posDim + 1];
+			var bx:number = positions[id1];
+			var by:number = positions[id1 + 1];
+			var cx:number = positions[id2];
+			var cy:number = positions[id2 + 1];
+
+			var curvex:number = curves[id0 * curveDim];
+			var az:number = positions[id0 * posDim + 2];
+
+			//console.log(ax, ay, bx, by, cx, cy);
+
+			//from a to p
+			var dx:number = ax - px;
+			var dy:number = ay - py;
+
+			//edge normal (a-b)
+			var nx:number = by - ay;
+			var ny:number = -(bx - ax);
+
+			//console.log(ax,ay,bx,by,cx,cy);
+
+			var dot:number = (dx * nx) + (dy * ny);
+			//console.log("dot a",dot);
+			if (dot > 0) continue;
+
+			dx = bx - px;
+			dy = by - py;
+			nx = cy - by;
+			ny = -(cx - bx);
+
+			dot = (dx * nx) + (dy * ny);
+			//console.log("dot b",dot);
+			if (dot > 0) continue;
+
+			dx = cx - px;
+			dy = cy - py;
+			nx = ay - cy;
+			ny = -(ax - cx);
+
+			dot = (dx * nx) + (dy * ny);
+			//console.log("dot c",dot);
+			if (dot > 0) continue;
+
+			//check if nmot solid
+			if (curvex != 2) {
+
+				var v0x:number = bx - ax;
+				var v0y:number = by - ay;
+				var v1x:number = cx - ax;
+				var v1y:number = cy - ay;
+				var v2x:number = px - ax;
+				var v2y:number = py - ay;
+
+				var den:number = v0x * v1y - v1x * v0y;
+				var v:number = (v2x * v1y - v1x * v2y) / den;
+				var w:number = (v0x * v2y - v2x * v0y) / den;
+				var u:number = 1 - v - w;
+
+				//here be dragons
+				var uu:number = 0.5 * v + w;
+				var vv:number = w;
+
+				var d:number = uu * uu - vv;
+
+				if (d > 0 && az == -1) {
+					continue;
+				} else if (d < 0 && az == 1) {
+					continue;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	 *
