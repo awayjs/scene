@@ -1365,7 +1365,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
 	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
-	    private hittestMesh(px, py, sub);
 	    /**
 	     * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	     *
@@ -3333,6 +3332,23 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     * @param child
 	     */
 	    private removeChildInternal(child);
+	    /**
+	     * Evaluates the display object to see if it overlaps or intersects with the
+	     * point specified by the <code>x</code> and <code>y</code> parameters. The
+	     * <code>x</code> and <code>y</code> parameters specify a point in the
+	     * coordinate space of the Scene, not the display object container that
+	     * contains the display object(unless that display object container is the
+	     * Scene).
+	     *
+	     * @param x         The <i>x</i> coordinate to test against this object.
+	     * @param y         The <i>y</i> coordinate to test against this object.
+	     * @param shapeFlag Whether to check against the actual pixels of the object
+	     *                 (<code>true</code>) or the bounding box
+	     *                 (<code>false</code>).
+	     * @return <code>true</code> if the display object overlaps or intersects
+	     *         with the specified point; <code>false</code> otherwise.
+	     */
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
 	}
 	export = DisplayObjectContainer;
 	
@@ -6037,6 +6053,24 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    _iInvalidateRenderableGeometries(): void;
 	    _pRegisterEntity(partition: Partition): void;
 	    _pUnregisterEntity(partition: Partition): void;
+	    /**
+	     * Evaluates the display object to see if it overlaps or intersects with the
+	     * point specified by the <code>x</code> and <code>y</code> parameters. The
+	     * <code>x</code> and <code>y</code> parameters specify a point in the
+	     * coordinate space of the Scene, not the display object container that
+	     * contains the display object(unless that display object container is the
+	     * Scene).
+	     *
+	     * @param x         The <i>x</i> coordinate to test against this object.
+	     * @param y         The <i>y</i> coordinate to test against this object.
+	     * @param shapeFlag Whether to check against the actual pixels of the object
+	     *                 (<code>true</code>) or the bounding box
+	     *                 (<code>false</code>).
+	     * @return <code>true</code> if the display object overlaps or intersects
+	     *         with the specified point; <code>false</code> otherwise.
+	     */
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+	    private hittestMesh(px, py, sub);
 	}
 	export = Mesh;
 	
@@ -7421,6 +7455,17 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/RendererEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class RendererEvent extends Event {
+	    static VIEWPORT_UPDATED: string;
+	    static SCISSOR_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = RendererEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/ResizeEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class ResizeEvent extends Event {
@@ -7432,17 +7477,6 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	    oldWidth: number;
 	}
 	export = ResizeEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/RendererEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class RendererEvent extends Event {
-	    static VIEWPORT_UPDATED: string;
-	    static SCISSOR_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = RendererEvent;
 	
 }
 

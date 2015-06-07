@@ -1741,109 +1741,6 @@ var DisplayObject = (function (_super) {
      */
     DisplayObject.prototype.hitTestPoint = function (x, y, shapeFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
-        //thought I would need the global hit point converted into local space, but not sure how to hook it in
-        var local = this.globalToLocal(new Point(x, y));
-        var hit = false;
-        //if(true)//this.assetType == Mesh.assetType)
-        var mesh = this;
-        //if this is a mesh then check self
-        if (mesh && mesh.geometry) {
-            //mesh.pickingCollider.testCurveCollision(())
-            var box = this.getBox();
-            if (box.left > local.x || box.right < local.x || box.top > local.y || box.bottom < local.y)
-                return false;
-            for (var j = 0; j < mesh.geometry.subGeometries.length; j++) {
-                var sub = mesh.geometry.subGeometries[j];
-                var curve = sub;
-                if (curve)
-                    hit = this.hittestMesh(local.x, local.y, curve);
-                if (hit)
-                    return true;
-            }
-        }
-        var displayObjectContainer = this;
-        //if this is a container then recurse children
-        if (displayObjectContainer) {
-            for (var i = 0; i < displayObjectContainer.numChildren; i++) {
-                var child = displayObjectContainer.getChildAt(i);
-                var childHit = child.hitTestPoint(x, y, shapeFlag);
-                if (childHit)
-                    return true;
-            }
-        }
-        return false;
-    };
-    DisplayObject.prototype.hittestMesh = function (px, py, sub) {
-        var posDim = sub.positions.dimensions;
-        var curveDim = sub.curves.dimensions;
-        var indices = sub.indices.get(sub.indices.count);
-        var positions = sub.positions.get(sub.positions.count);
-        var curves = sub.curves.get(sub.curves.count);
-        for (var k = 0; k < sub.indices.length; k += 3) {
-            var id0 = indices[k];
-            var id1 = indices[k + 1] * posDim;
-            var id2 = indices[k + 2] * posDim;
-            var ax = positions[id0 * posDim];
-            var ay = positions[id0 * posDim + 1];
-            var bx = positions[id1];
-            var by = positions[id1 + 1];
-            var cx = positions[id2];
-            var cy = positions[id2 + 1];
-            var curvex = curves[id0 * curveDim];
-            var az = positions[id0 * posDim + 2];
-            //console.log(ax, ay, bx, by, cx, cy);
-            //from a to p
-            var dx = ax - px;
-            var dy = ay - py;
-            //edge normal (a-b)
-            var nx = by - ay;
-            var ny = -(bx - ax);
-            //console.log(ax,ay,bx,by,cx,cy);
-            var dot = (dx * nx) + (dy * ny);
-            //console.log("dot a",dot);
-            if (dot > 0)
-                continue;
-            dx = bx - px;
-            dy = by - py;
-            nx = cy - by;
-            ny = -(cx - bx);
-            dot = (dx * nx) + (dy * ny);
-            //console.log("dot b",dot);
-            if (dot > 0)
-                continue;
-            dx = cx - px;
-            dy = cy - py;
-            nx = ay - cy;
-            ny = -(ax - cx);
-            dot = (dx * nx) + (dy * ny);
-            //console.log("dot c",dot);
-            if (dot > 0)
-                continue;
-            //check if nmot solid
-            if (curvex != 2) {
-                var v0x = bx - ax;
-                var v0y = by - ay;
-                var v1x = cx - ax;
-                var v1y = cy - ay;
-                var v2x = px - ax;
-                var v2y = py - ay;
-                var den = v0x * v1y - v1x * v0y;
-                var v = (v2x * v1y - v1x * v2y) / den;
-                var w = (v0x * v2y - v2x * v0y) / den;
-                var u = 1 - v - w;
-                //here be dragons
-                var uu = 0.5 * v + w;
-                var vv = w;
-                var d = uu * uu - vv;
-                if (d > 0 && az == -1) {
-                    continue;
-                }
-                else if (d < 0 && az == 1) {
-                    continue;
-                }
-            }
-            return true;
-        }
         return false;
     };
     /**
@@ -5423,6 +5320,32 @@ var DisplayObjectContainer = (function (_super) {
     DisplayObjectContainer.prototype.removeChildInternal = function (child) {
         this._children.splice(this.getChildIndex(child), 1);
         return child;
+    };
+    /**
+     * Evaluates the display object to see if it overlaps or intersects with the
+     * point specified by the <code>x</code> and <code>y</code> parameters. The
+     * <code>x</code> and <code>y</code> parameters specify a point in the
+     * coordinate space of the Scene, not the display object container that
+     * contains the display object(unless that display object container is the
+     * Scene).
+     *
+     * @param x         The <i>x</i> coordinate to test against this object.
+     * @param y         The <i>y</i> coordinate to test against this object.
+     * @param shapeFlag Whether to check against the actual pixels of the object
+     *                 (<code>true</code>) or the bounding box
+     *                 (<code>false</code>).
+     * @return <code>true</code> if the display object overlaps or intersects
+     *         with the specified point; <code>false</code> otherwise.
+     */
+    DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag) {
+        if (shapeFlag === void 0) { shapeFlag = false; }
+        for (var i = 0; i < this.numChildren; i++) {
+            var child = this.getChildAt(i);
+            var childHit = child.hitTestPoint(x, y, shapeFlag);
+            if (childHit)
+                return true;
+        }
+        return false;
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
     return DisplayObjectContainer;
@@ -9419,6 +9342,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var Point = require("awayjs-core/lib/geom/Point");
 var Geometry = require("awayjs-display/lib/base/Geometry");
 var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
@@ -9892,12 +9816,124 @@ var Mesh = (function (_super) {
     Mesh.prototype._pUnregisterEntity = function (partition) {
         partition._iUnregisterEntity(this);
     };
+    /**
+     * Evaluates the display object to see if it overlaps or intersects with the
+     * point specified by the <code>x</code> and <code>y</code> parameters. The
+     * <code>x</code> and <code>y</code> parameters specify a point in the
+     * coordinate space of the Scene, not the display object container that
+     * contains the display object(unless that display object container is the
+     * Scene).
+     *
+     * @param x         The <i>x</i> coordinate to test against this object.
+     * @param y         The <i>y</i> coordinate to test against this object.
+     * @param shapeFlag Whether to check against the actual pixels of the object
+     *                 (<code>true</code>) or the bounding box
+     *                 (<code>false</code>).
+     * @return <code>true</code> if the display object overlaps or intersects
+     *         with the specified point; <code>false</code> otherwise.
+     */
+    Mesh.prototype.hitTestPoint = function (x, y, shapeFlag) {
+        if (shapeFlag === void 0) { shapeFlag = false; }
+        //thought I would need the global hit point converted into local space, but not sure how to hook it in
+        var local = this.globalToLocal(new Point(x, y));
+        var hit = false;
+        if (this.geometry) {
+            var box = this.getBox();
+            if (box.left > local.x || box.right < local.x || box.top > local.y || box.bottom < local.y)
+                return false;
+            for (var j = 0; j < this.geometry.subGeometries.length; j++) {
+                var sub = this.geometry.subGeometries[j];
+                var curve = sub;
+                if (curve)
+                    hit = this.hittestMesh(local.x, local.y, curve);
+                if (hit)
+                    return true;
+            }
+        }
+        hit = _super.prototype.hitTestPoint.call(this, x, y, shapeFlag);
+        if (hit)
+            return true;
+        return false;
+    };
+    Mesh.prototype.hittestMesh = function (px, py, sub) {
+        var posDim = sub.positions.dimensions;
+        var curveDim = sub.curves.dimensions;
+        var indices = sub.indices.get(sub.indices.count);
+        var positions = sub.positions.get(sub.positions.count);
+        var curves = sub.curves.get(sub.curves.count);
+        for (var k = 0; k < sub.indices.length; k += 3) {
+            var id0 = indices[k];
+            var id1 = indices[k + 1] * posDim;
+            var id2 = indices[k + 2] * posDim;
+            var ax = positions[id0 * posDim];
+            var ay = positions[id0 * posDim + 1];
+            var bx = positions[id1];
+            var by = positions[id1 + 1];
+            var cx = positions[id2];
+            var cy = positions[id2 + 1];
+            var curvex = curves[id0 * curveDim];
+            var az = positions[id0 * posDim + 2];
+            //console.log(ax, ay, bx, by, cx, cy);
+            //from a to p
+            var dx = ax - px;
+            var dy = ay - py;
+            //edge normal (a-b)
+            var nx = by - ay;
+            var ny = -(bx - ax);
+            //console.log(ax,ay,bx,by,cx,cy);
+            var dot = (dx * nx) + (dy * ny);
+            //console.log("dot a",dot);
+            if (dot > 0)
+                continue;
+            dx = bx - px;
+            dy = by - py;
+            nx = cy - by;
+            ny = -(cx - bx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot b",dot);
+            if (dot > 0)
+                continue;
+            dx = cx - px;
+            dy = cy - py;
+            nx = ay - cy;
+            ny = -(ax - cx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot c",dot);
+            if (dot > 0)
+                continue;
+            //check if nmot solid
+            if (curvex != 2) {
+                var v0x = bx - ax;
+                var v0y = by - ay;
+                var v1x = cx - ax;
+                var v1y = cy - ay;
+                var v2x = px - ax;
+                var v2y = py - ay;
+                var den = v0x * v1y - v1x * v0y;
+                var v = (v2x * v1y - v1x * v2y) / den;
+                var w = (v0x * v2y - v2x * v0y) / den;
+                var u = 1 - v - w;
+                //here be dragons
+                var uu = 0.5 * v + w;
+                var vv = w;
+                var d = uu * uu - vv;
+                if (d > 0 && az == -1) {
+                    continue;
+                }
+                else if (d < 0 && az == 1) {
+                    continue;
+                }
+            }
+            return true;
+        }
+        return false;
+    };
     Mesh.assetType = "[asset Mesh]";
     return Mesh;
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
-},{"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
