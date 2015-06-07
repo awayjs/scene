@@ -1631,48 +1631,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	
 }
 
-declare module "awayjs-display/lib/base/IBitmapDrawable" {
-	/**
-	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
-	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
-	 * objects are of type BitmapData or DisplayObject.
-	 *
-	 * @see away.base.BitmapData#draw()
-	 * @see away.base.BitmapData
-	 * @see away.base.DisplayObject
-	 */
-	interface IBitmapDrawable {
-	}
-	export = IBitmapDrawable;
-	
-}
-
-declare module "awayjs-display/lib/base/IRenderOwner" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRender = require("awayjs-display/lib/pool/IRender");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * IRenderOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderOwner
-	 */
-	interface IRenderOwner extends IAsset {
-	    alphaThreshold: number;
-	    mipmap: boolean;
-	    smooth: boolean;
-	    blendMode: string;
-	    lightPicker: LightPickerBase;
-	    animationSet: IAnimationSet;
-	    iOwners: Array<IRenderableOwner>;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	}
-	export = IRenderOwner;
-	
-}
-
 declare module "awayjs-display/lib/base/Geometry" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -1738,6 +1696,48 @@ declare module "awayjs-display/lib/base/Geometry" {
 	    iInvalidateBounds(subGeom: SubGeometryBase): void;
 	}
 	export = Geometry;
+	
+}
+
+declare module "awayjs-display/lib/base/IBitmapDrawable" {
+	/**
+	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
+	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
+	 * objects are of type BitmapData or DisplayObject.
+	 *
+	 * @see away.base.BitmapData#draw()
+	 * @see away.base.BitmapData
+	 * @see away.base.DisplayObject
+	 */
+	interface IBitmapDrawable {
+	}
+	export = IBitmapDrawable;
+	
+}
+
+declare module "awayjs-display/lib/base/IRenderOwner" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRender = require("awayjs-display/lib/pool/IRender");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * IRenderOwner provides an interface for objects that can use materials.
+	 *
+	 * @interface away.base.IRenderOwner
+	 */
+	interface IRenderOwner extends IAsset {
+	    alphaThreshold: number;
+	    mipmap: boolean;
+	    smooth: boolean;
+	    blendMode: string;
+	    lightPicker: LightPickerBase;
+	    animationSet: IAnimationSet;
+	    iOwners: Array<IRenderableOwner>;
+	    _iAddRender(render: IRender): IRender;
+	    _iRemoveRender(render: IRender): IRender;
+	}
+	export = IRenderOwner;
 	
 }
 
@@ -5141,23 +5141,6 @@ declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
 	
 }
 
-declare module "awayjs-display/lib/draw/IGraphicsData" {
-	/**
-	 * This interface is used to define objects that can be used as parameters in the
-	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
-	 * the implementor classes of this interface to create and manage drawing property
-	 * data, and to reuse the same data for different instances. Then, use the methods of
-	 * the Graphics class to render the drawing objects.
-	 *
-	 * @see away.base.Graphics.drawGraphicsData()
-	 * @see away.base.Graphics.readGraphicsData()
-	 */
-	interface IGraphicsData {
-	}
-	export = IGraphicsData;
-	
-}
-
 declare module "awayjs-display/lib/draw/InterpolationMethod" {
 	/**
 	 * The InterpolationMethod class provides values for the
@@ -5267,6 +5250,23 @@ declare module "awayjs-display/lib/draw/LineScaleMode" {
 	    static VERTICAL: string;
 	}
 	export = LineScaleMode;
+	
+}
+
+declare module "awayjs-display/lib/draw/IGraphicsData" {
+	/**
+	 * This interface is used to define objects that can be used as parameters in the
+	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
+	 * the implementor classes of this interface to create and manage drawing property
+	 * data, and to reuse the same data for different instances. Then, use the methods of
+	 * the Graphics class to render the drawing objects.
+	 *
+	 * @see away.base.Graphics.drawGraphicsData()
+	 * @see away.base.Graphics.readGraphicsData()
+	 */
+	interface IGraphicsData {
+	}
+	export = IGraphicsData;
 	
 }
 
@@ -7421,6 +7421,17 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/RendererEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class RendererEvent extends Event {
+	    static VIEWPORT_UPDATED: string;
+	    static SCISSOR_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = RendererEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/ResizeEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class ResizeEvent extends Event {
@@ -7432,17 +7443,6 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	    oldWidth: number;
 	}
 	export = ResizeEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/RendererEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class RendererEvent extends Event {
-	    static VIEWPORT_UPDATED: string;
-	    static SCISSOR_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = RendererEvent;
 	
 }
 
@@ -9007,6 +9007,48 @@ declare module "awayjs-display/lib/pool/IRender" {
 	
 }
 
+declare module "awayjs-display/lib/pool/IRenderable" {
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * IRenderable is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderable
+	 */
+	interface IRenderable {
+	    /**
+	     *
+	     */
+	    next: IRenderable;
+	    /**
+	     *
+	     */
+	    sourceEntity: IEntity;
+	    /**
+	     *
+	     */
+	    renderId: number;
+	    /**
+	     *
+	     */
+	    renderOrderId: number;
+	    /**
+	     *
+	     */
+	    zIndex: number;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidateGeometry(): any;
+	}
+	export = IRenderable;
+	
+}
+
 declare module "awayjs-display/lib/pool/ITextureVO" {
 	/**
 	 * ITextureVO is an interface for classes that are used in the rendering pipeline to render the
@@ -9050,48 +9092,6 @@ declare module "awayjs-display/lib/pool/SubMeshPool" {
 	    private static addDefaults();
 	}
 	export = SubMeshPool;
-	
-}
-
-declare module "awayjs-display/lib/pool/IRenderable" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * IRenderable is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderable
-	 */
-	interface IRenderable {
-	    /**
-	     *
-	     */
-	    next: IRenderable;
-	    /**
-	     *
-	     */
-	    sourceEntity: IEntity;
-	    /**
-	     *
-	     */
-	    renderId: number;
-	    /**
-	     *
-	     */
-	    renderOrderId: number;
-	    /**
-	     *
-	     */
-	    zIndex: number;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidateGeometry(): any;
-	}
-	export = IRenderable;
 	
 }
 
@@ -9772,6 +9772,48 @@ declare module "awayjs-display/lib/text/GridFitType" {
 	
 }
 
+declare module "awayjs-display/lib/text/TesselatedFontTable" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
+	/**
+	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.SubMeshBase
+	 */
+	class TesselatedFontTable extends AssetBase {
+	    private _font_chars;
+	    private _font_chars_dic;
+	    private _font_em_size;
+	    private _charDictDirty;
+	    /**
+	     * Creates a new TesselatedFont object
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    get_font_chars(): Array<TesselatedFontChar>;
+	    get_font_em_size(): number;
+	    set_font_em_size(font_em_size: number): void;
+	    /**
+	     *
+	     */
+	    get_subgeo_for_char(char: string): TesselatedFontChar;
+	    /**
+	     *
+	     */
+	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
+	}
+	export = TesselatedFontTable;
+	
+}
+
 declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 	/**
@@ -9820,48 +9862,6 @@ declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	    constructor(subgeom: CurveSubGeometry);
 	}
 	export = TesselatedFontChar;
-	
-}
-
-declare module "awayjs-display/lib/text/TesselatedFontTable" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
-	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.SubMeshBase
-	 */
-	class TesselatedFontTable extends AssetBase {
-	    private _font_chars;
-	    private _font_chars_dic;
-	    private _font_em_size;
-	    private _charDictDirty;
-	    /**
-	     * Creates a new TesselatedFont object
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    get_font_chars(): Array<TesselatedFontChar>;
-	    get_font_em_size(): number;
-	    set_font_em_size(font_em_size: number): void;
-	    /**
-	     *
-	     */
-	    get_subgeo_for_char(char: string): TesselatedFontChar;
-	    /**
-	     *
-	     */
-	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
-	}
-	export = TesselatedFontTable;
 	
 }
 
