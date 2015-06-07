@@ -7421,17 +7421,6 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/RendererEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class RendererEvent extends Event {
-	    static VIEWPORT_UPDATED: string;
-	    static SCISSOR_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = RendererEvent;
-	
-}
-
 declare module "awayjs-display/lib/events/ResizeEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class ResizeEvent extends Event {
@@ -7443,6 +7432,17 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	    oldWidth: number;
 	}
 	export = ResizeEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/RendererEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class RendererEvent extends Event {
+	    static VIEWPORT_UPDATED: string;
+	    static SCISSOR_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = RendererEvent;
 	
 }
 
