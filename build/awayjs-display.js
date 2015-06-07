@@ -5371,6 +5371,9 @@ var Loader = (function (_super) {
         this._assetLibId = assetLibraryId;
         this._onResourceCompleteDelegate = function (event) { return _this.onResourceComplete(event); };
         this._onAssetCompleteDelegate = function (event) { return _this.onAssetComplete(event); };
+        this._onTextureSizeErrorDelegate = function (event) { return _this.onTextureSizeError(event); };
+        this._onLoadErrorDelegate = function (event) { return _this.onLoadError(event); };
+        this._onParseErrorDelegate = function (event) { return _this.onParseError(event); };
     }
     Object.defineProperty(Loader.prototype, "content", {
         /**
@@ -5624,10 +5627,11 @@ var Loader = (function (_super) {
             token = loader.load(request, context, ns, parser);
         }
         token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+        token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
         token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
         // Error are handled separately (see documentation for addErrorHandler)
-        token._iLoader._iAddErrorHandler(this.onLoadError);
-        token._iLoader._iAddParseErrorHandler(this.onParseError);
+        token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
+        token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
         return token;
     };
     /**
@@ -5732,10 +5736,11 @@ var Loader = (function (_super) {
             token = loader.loadData(data, '', context, ns, parser);
         }
         token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+        token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
         token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
         // Error are handled separately (see documentation for addErrorHandler)
-        token._iLoader._iAddErrorHandler(this.onLoadError);
-        token._iLoader._iAddParseErrorHandler(this.onParseError);
+        token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
+        token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
         return token;
     };
     /**
@@ -5818,6 +5823,9 @@ var Loader = (function (_super) {
         else {
             return false;
         }
+    };
+    Loader.prototype.onTextureSizeError = function (event) {
+        this.dispatchEvent(event);
     };
     /**
      * Called when the resource and all of its dependencies was retrieved.

@@ -3425,6 +3425,9 @@ declare module "awayjs-display/lib/containers/Loader" {
 	    private _assetLibId;
 	    private _onResourceCompleteDelegate;
 	    private _onAssetCompleteDelegate;
+	    private _onTextureSizeErrorDelegate;
+	    private _onLoadErrorDelegate;
+	    private _onParseErrorDelegate;
 	    private _content;
 	    private _contentLoaderInfo;
 	    /**
@@ -3826,6 +3829,7 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     * Called when a an error occurs during parsing
 	     */
 	    private onParseError(event);
+	    private onTextureSizeError(event);
 	    /**
 	     * Called when the resource and all of its dependencies was retrieved.
 	     */
