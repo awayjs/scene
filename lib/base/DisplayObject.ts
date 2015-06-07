@@ -31,7 +31,7 @@ import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
 
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
-import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -1729,137 +1729,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
 	{
-		//thought I would need the global hit point converted into local space, but not sure how to hook it in
-		var local:Point = this.globalToLocal(new Point(x,y));
-
-
-
-		var hit:boolean = false;
-
-		//if(true)//this.assetType == Mesh.assetType)
-
-		var mesh:Mesh = <Mesh>this;
-
-		//if this is a mesh then check self
-		if(mesh && mesh.geometry)// && mesh.pickingCollider)
-		{
-			//mesh.pickingCollider.testCurveCollision(())
-			var box:Box = this.getBox();
-			if(box.left > local.x || box.right < local.x || box.top  > local.y ||  box.bottom < local.y) return false;
-
-
-			for(var j:number = 0; j < mesh.geometry.subGeometries.length; j++)
-			{
-				var sub:SubGeometryBase = mesh.geometry.subGeometries[j];
-				var curve:CurveSubGeometry = <CurveSubGeometry>sub;
-				if(curve) hit = this.hittestMesh(local.x, local.y, curve);
-				if(hit) return true;
-			}
-		}
-
-		var displayObjectContainer:DisplayObjectContainer = <DisplayObjectContainer>this;
-		//if this is a container then recurse children
-		if(displayObjectContainer)
-		{
-			for(var i:number = 0; i < displayObjectContainer.numChildren; i++)
-			{
-				var child:DisplayObject = displayObjectContainer.getChildAt(i);
-				var childHit:boolean = child.hitTestPoint(x,y, shapeFlag);
-				if(childHit) return true;
-			}
-		}
-
 		return false;
 	}
-	private hittestMesh(px:number, py:number, sub:CurveSubGeometry):boolean
-	{
-		var posDim:number = sub.positions.dimensions;
-		var curveDim:number = sub.curves.dimensions;
-		var indices:Uint16Array = sub.indices.get(sub.indices.count);
-		var positions:Float32Array = sub.positions.get(sub.positions.count);
-		var curves:Float32Array = sub.curves.get(sub.curves.count);
 
-		for(var k:number = 0; k < sub.indices.length; k+=3)
-		{
-			var id0:number = indices[k];
-			var id1:number = indices[k + 1] * posDim;
-			var id2:number = indices[k + 2] * posDim;
-
-			var ax:number = positions[id0 * posDim];
-			var ay:number = positions[id0 * posDim + 1];
-			var bx:number = positions[id1];
-			var by:number = positions[id1 + 1];
-			var cx:number = positions[id2];
-			var cy:number = positions[id2 + 1];
-
-			var curvex:number = curves[id0 * curveDim];
-			var az:number = positions[id0 * posDim + 2];
-
-			//console.log(ax, ay, bx, by, cx, cy);
-
-			//from a to p
-			var dx:number = ax - px;
-			var dy:number = ay - py;
-
-			//edge normal (a-b)
-			var nx:number = by - ay;
-			var ny:number = -(bx - ax);
-
-			//console.log(ax,ay,bx,by,cx,cy);
-
-			var dot:number = (dx * nx) + (dy * ny);
-			//console.log("dot a",dot);
-			if (dot > 0) continue;
-
-			dx = bx - px;
-			dy = by - py;
-			nx = cy - by;
-			ny = -(cx - bx);
-
-			dot = (dx * nx) + (dy * ny);
-			//console.log("dot b",dot);
-			if (dot > 0) continue;
-
-			dx = cx - px;
-			dy = cy - py;
-			nx = ay - cy;
-			ny = -(ax - cx);
-
-			dot = (dx * nx) + (dy * ny);
-			//console.log("dot c",dot);
-			if (dot > 0) continue;
-
-			//check if nmot solid
-			if (curvex != 2) {
-
-				var v0x:number = bx - ax;
-				var v0y:number = by - ay;
-				var v1x:number = cx - ax;
-				var v1y:number = cy - ay;
-				var v2x:number = px - ax;
-				var v2y:number = py - ay;
-
-				var den:number = v0x * v1y - v1x * v0y;
-				var v:number = (v2x * v1y - v1x * v2y) / den;
-				var w:number = (v0x * v2y - v2x * v0y) / den;
-				var u:number = 1 - v - w;
-
-				//here be dragons
-				var uu:number = 0.5 * v + w;
-				var vv:number = w;
-
-				var d:number = uu * uu - vv;
-
-				if (d > 0 && az == -1) {
-					continue;
-				} else if (d < 0 && az == 1) {
-					continue;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
 	/**
 	 * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	 *

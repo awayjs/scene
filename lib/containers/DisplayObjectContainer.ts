@@ -544,9 +544,36 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	private removeChildInternal(child:DisplayObject):DisplayObject
 	{
 		this._children.splice(this.getChildIndex(child), 1);
-
 		return child;
 	}
+
+	/**
+	 * Evaluates the display object to see if it overlaps or intersects with the
+	 * point specified by the <code>x</code> and <code>y</code> parameters. The
+	 * <code>x</code> and <code>y</code> parameters specify a point in the
+	 * coordinate space of the Scene, not the display object container that
+	 * contains the display object(unless that display object container is the
+	 * Scene).
+	 *
+	 * @param x         The <i>x</i> coordinate to test against this object.
+	 * @param y         The <i>y</i> coordinate to test against this object.
+	 * @param shapeFlag Whether to check against the actual pixels of the object
+	 *                 (<code>true</code>) or the bounding box
+	 *                 (<code>false</code>).
+	 * @return <code>true</code> if the display object overlaps or intersects
+	 *         with the specified point; <code>false</code> otherwise.
+	 */
+	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
+	{
+		for(var i:number = 0; i < this.numChildren; i++)
+		{
+			var child:DisplayObject = this.getChildAt(i);
+			var childHit:boolean = child.hitTestPoint(x,y, shapeFlag);
+			if(childHit) return true;
+		}
+		return false;
+	}
+
 }
 
 export = DisplayObjectContainer;
