@@ -5584,6 +5584,41 @@ declare module "awayjs-display/lib/entities/Camera" {
 	
 }
 
+declare module "awayjs-display/lib/entities/DirectionalLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class DirectionalLight extends LightBase implements IEntity {
+	    private _direction;
+	    private _tmpLookAt;
+	    private _sceneDirection;
+	    private _pAabbPoints;
+	    private _projAABBPoints;
+	    constructor(xDir?: number, yDir?: number, zDir?: number);
+	    sceneDirection: Vector3D;
+	    direction: Vector3D;
+	    pUpdateSceneTransform(): void;
+	    pCreateShadowMapper(): DirectionalShadowMapper;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    _applyRenderer(renderer: IRenderer): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	}
+	export = DirectionalLight;
+	
+}
+
 declare module "awayjs-display/lib/entities/IEntity" {
 	import Box = require("awayjs-core/lib/geom/Box");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
@@ -5734,41 +5769,6 @@ declare module "awayjs-display/lib/entities/IEntity" {
 	
 }
 
-declare module "awayjs-display/lib/entities/DirectionalLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class DirectionalLight extends LightBase implements IEntity {
-	    private _direction;
-	    private _tmpLookAt;
-	    private _sceneDirection;
-	    private _pAabbPoints;
-	    private _projAABBPoints;
-	    constructor(xDir?: number, yDir?: number, zDir?: number);
-	    sceneDirection: Vector3D;
-	    direction: Vector3D;
-	    pUpdateSceneTransform(): void;
-	    pCreateShadowMapper(): DirectionalShadowMapper;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    _applyRenderer(renderer: IRenderer): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	}
-	export = DirectionalLight;
-	
-}
-
 declare module "awayjs-display/lib/entities/LightProbe" {
 	import ImageCube = require("awayjs-core/lib/data/ImageCube");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
@@ -5871,67 +5871,6 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = LineSegment;
-	
-}
-
-declare module "awayjs-display/lib/entities/PointLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
-	class PointLight extends LightBase implements IEntity {
-	    _pRadius: number;
-	    _pFallOff: number;
-	    _pFallOffFactor: number;
-	    constructor();
-	    pCreateShadowMapper(): CubeMapShadowMapper;
-	    radius: number;
-	    iFallOffFactor(): number;
-	    fallOff: number;
-	    _pUpdateSphereBounds(): void;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    _applyRenderer(renderer: IRenderer): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = PointLight;
-	
-}
-
-declare module "awayjs-display/lib/entities/Shape" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Graphics = require("awayjs-display/lib/draw/Graphics");
-	/**
-	 * This class is used to create lightweight shapes using the ActionScript
-	 * drawing application program interface(API). The Shape class includes a
-	 * <code>graphics</code> property, which lets you access methods from the
-	 * Graphics class.
-	 *
-	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
-	 * includes other features not available to the Shape class. For example, a
-	 * Sprite object is a display object container, whereas a Shape object is not
-	 * (and cannot contain child display objects). For this reason, Shape objects
-	 * consume less memory than Sprite objects that contain the same graphics.
-	 * However, a Sprite object supports user input events, while a Shape object
-	 * does not.</p>
-	 */
-	class Shape extends DisplayObject {
-	    private _graphics;
-	    /**
-	     * Specifies the Graphics object belonging to this Shape object, where vector
-	     * drawing commands can occur.
-	     */
-	    graphics: Graphics;
-	    /**
-	     * Creates a new Shape object.
-	     */
-	    constructor();
-	    clone(): DisplayObject;
-	}
-	export = Shape;
 	
 }
 
@@ -6100,6 +6039,189 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = Mesh;
+	
+}
+
+declare module "awayjs-display/lib/entities/PointLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
+	class PointLight extends LightBase implements IEntity {
+	    _pRadius: number;
+	    _pFallOff: number;
+	    _pFallOffFactor: number;
+	    constructor();
+	    pCreateShadowMapper(): CubeMapShadowMapper;
+	    radius: number;
+	    iFallOffFactor(): number;
+	    fallOff: number;
+	    _pUpdateSphereBounds(): void;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    _applyRenderer(renderer: IRenderer): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = PointLight;
+	
+}
+
+declare module "awayjs-display/lib/entities/Shape" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import Graphics = require("awayjs-display/lib/draw/Graphics");
+	/**
+	 * This class is used to create lightweight shapes using the ActionScript
+	 * drawing application program interface(API). The Shape class includes a
+	 * <code>graphics</code> property, which lets you access methods from the
+	 * Graphics class.
+	 *
+	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
+	 * includes other features not available to the Shape class. For example, a
+	 * Sprite object is a display object container, whereas a Shape object is not
+	 * (and cannot contain child display objects). For this reason, Shape objects
+	 * consume less memory than Sprite objects that contain the same graphics.
+	 * However, a Sprite object supports user input events, while a Shape object
+	 * does not.</p>
+	 */
+	class Shape extends DisplayObject {
+	    private _graphics;
+	    /**
+	     * Specifies the Graphics object belonging to this Shape object, where vector
+	     * drawing commands can occur.
+	     */
+	    graphics: Graphics;
+	    /**
+	     * Creates a new Shape object.
+	     */
+	    constructor();
+	    clone(): DisplayObject;
+	}
+	export = Shape;
+	
+}
+
+declare module "awayjs-display/lib/entities/Skybox" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IRender = require("awayjs-display/lib/pool/IRender");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+	/**
+	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
+	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
+	 * the sky box is always as large as possible without being clipped.
+	 */
+	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner {
+	    static assetType: string;
+	    private _cubeMap;
+	    _pAlphaThreshold: number;
+	    private _animationSet;
+	    _pLightPicker: LightPickerBase;
+	    _pBlendMode: string;
+	    private _renders;
+	    private _renderables;
+	    private _uvTransform;
+	    private _colorTransform;
+	    private _owners;
+	    private _mipmap;
+	    private _smooth;
+	    private _animator;
+	    /**
+	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	     * invisible or entirely opaque, often used with textures for foliage, etc.
+	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	     */
+	    alphaThreshold: number;
+	    /**
+	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
+	     */
+	    mipmap: boolean;
+	    /**
+	     * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
+	     */
+	    smooth: boolean;
+	    /**
+	     * The light picker used by the material to provide lights to the material if it supports lighting.
+	     *
+	     * @see LightPickerBase
+	     * @see StaticLightPicker
+	     */
+	    lightPicker: LightPickerBase;
+	    /**
+	     *
+	     */
+	    animationSet: IAnimationSet;
+	    /**
+	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	     * <ul>
+	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	     * <li>BlendMode.MULTIPLY</li>
+	     * <li>BlendMode.ADD</li>
+	     * <li>BlendMode.ALPHA</li>
+	     * </ul>
+	     */
+	    blendMode: string;
+	    _pInvalidateRender(): void;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    _pIinvalidatePasses(): void;
+	    /**
+	     * A list of the IRenderableOwners that use this material
+	     *
+	     * @private
+	     */
+	    iOwners: Array<IRenderableOwner>;
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     *
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	    * The cube texture to use as the skybox.
+	    */
+	    cubeMap: SingleCubeTexture;
+	    /**
+	     * Create a new Skybox object.
+	     *
+	     * @param material	The material with which to render the Skybox.
+	     */
+	    constructor(cubeMap?: SingleCubeTexture);
+	    assetType: string;
+	    castsShadows: boolean;
+	    /**
+	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
+	     * could be used by other materials and will not be disposed.
+	     */
+	    dispose(): void;
+	    _applyRenderer(renderer: IRenderer): void;
+	    _iAddRender(render: IRender): IRender;
+	    _iRemoveRender(render: IRender): IRender;
+	    _iAddRenderable(renderable: IRenderable): IRenderable;
+	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = Skybox;
 	
 }
 
@@ -7009,6 +7131,15 @@ declare module "awayjs-display/lib/entities/TextField" {
 	
 }
 
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
+
 declare module "awayjs-display/lib/events/CameraEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -7022,137 +7153,6 @@ declare module "awayjs-display/lib/events/CameraEvent" {
 	    camera: Camera;
 	}
 	export = CameraEvent;
-	
-}
-
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
-
-declare module "awayjs-display/lib/entities/Skybox" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IRender = require("awayjs-display/lib/pool/IRender");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
-	/**
-	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
-	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
-	 * the sky box is always as large as possible without being clipped.
-	 */
-	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner {
-	    static assetType: string;
-	    private _cubeMap;
-	    _pAlphaThreshold: number;
-	    private _animationSet;
-	    _pLightPicker: LightPickerBase;
-	    _pBlendMode: string;
-	    private _renders;
-	    private _renderables;
-	    private _uvTransform;
-	    private _colorTransform;
-	    private _owners;
-	    private _mipmap;
-	    private _smooth;
-	    private _animator;
-	    /**
-	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	     * invisible or entirely opaque, often used with textures for foliage, etc.
-	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	     */
-	    alphaThreshold: number;
-	    /**
-	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
-	     */
-	    mipmap: boolean;
-	    /**
-	     * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
-	     */
-	    smooth: boolean;
-	    /**
-	     * The light picker used by the material to provide lights to the material if it supports lighting.
-	     *
-	     * @see LightPickerBase
-	     * @see StaticLightPicker
-	     */
-	    lightPicker: LightPickerBase;
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
-	     * <ul>
-	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-	     * <li>BlendMode.MULTIPLY</li>
-	     * <li>BlendMode.ADD</li>
-	     * <li>BlendMode.ALPHA</li>
-	     * </ul>
-	     */
-	    blendMode: string;
-	    _pInvalidateRender(): void;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    _pIinvalidatePasses(): void;
-	    /**
-	     * A list of the IRenderableOwners that use this material
-	     *
-	     * @private
-	     */
-	    iOwners: Array<IRenderableOwner>;
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	    * The cube texture to use as the skybox.
-	    */
-	    cubeMap: SingleCubeTexture;
-	    /**
-	     * Create a new Skybox object.
-	     *
-	     * @param material	The material with which to render the Skybox.
-	     */
-	    constructor(cubeMap?: SingleCubeTexture);
-	    assetType: string;
-	    castsShadows: boolean;
-	    /**
-	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	     * could be used by other materials and will not be disposed.
-	     */
-	    dispose(): void;
-	    _applyRenderer(renderer: IRenderer): void;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = Skybox;
 	
 }
 
@@ -7171,17 +7171,6 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	    constructor(type: string, object: DisplayObject);
 	}
 	export = DisplayObjectEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/LightEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class LightEvent extends Event {
-	    static CASTS_SHADOW_CHANGE: string;
-	    constructor(type: string);
-	    clone(): Event;
-	}
-	export = LightEvent;
 	
 }
 
@@ -7225,6 +7214,17 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	    clone(): Event;
 	}
 	export = GeometryEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/LightEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class LightEvent extends Event {
+	    static CASTS_SHADOW_CHANGE: string;
+	    constructor(type: string);
+	    clone(): Event;
+	}
+	export = LightEvent;
 	
 }
 
@@ -7665,149 +7665,6 @@ declare module "awayjs-display/lib/materials/LightSources" {
 	
 }
 
-declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
-	/**
-	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
-	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
-	 * extended to provide more application-specific dynamic selection of lights.
-	 *
-	 * @see StaticLightPicker
-	 */
-	class LightPickerBase extends AssetBase implements IAsset {
-	    static assetType: string;
-	    _pNumPointLights: number;
-	    _pNumDirectionalLights: number;
-	    _pNumCastingPointLights: number;
-	    _pNumCastingDirectionalLights: number;
-	    _pNumLightProbes: number;
-	    _pAllPickedLights: Array<LightBase>;
-	    _pPointLights: Array<PointLight>;
-	    _pCastingPointLights: Array<PointLight>;
-	    _pDirectionalLights: Array<DirectionalLight>;
-	    _pCastingDirectionalLights: Array<DirectionalLight>;
-	    _pLightProbes: Array<LightProbe>;
-	    _pLightProbeWeights: Array<number>;
-	    /**
-	     * Creates a new LightPickerBase object.
-	     */
-	    constructor();
-	    /**
-	     * Disposes resources used by the light picker.
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    assetType: string;
-	    /**
-	     * The maximum amount of directional lights that will be provided.
-	     */
-	    numDirectionalLights: number;
-	    /**
-	     * The maximum amount of point lights that will be provided.
-	     */
-	    numPointLights: number;
-	    /**
-	     * The maximum amount of directional lights that cast shadows.
-	     */
-	    numCastingDirectionalLights: number;
-	    /**
-	     * The amount of point lights that cast shadows.
-	     */
-	    numCastingPointLights: number;
-	    /**
-	     * The maximum amount of light probes that will be provided.
-	     */
-	    numLightProbes: number;
-	    /**
-	     * The collected point lights to be used for shading.
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights to be used for shading.
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected point lights that cast shadows to be used for shading.
-	     */
-	    castingPointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights that cast shadows to be used for shading.
-	     */
-	    castingDirectionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected light probes to be used for shading.
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     * The weights for each light probe, defining their influence on the object.
-	     */
-	    lightProbeWeights: Array<number>;
-	    /**
-	     * A collection of all the collected lights.
-	     */
-	    allPickedLights: Array<LightBase>;
-	    /**
-	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
-	     */
-	    collectLights(renderable: IRenderable): void;
-	    /**
-	     * Updates the weights for the light probes, based on the renderable's position relative to them.
-	     * @param renderable The renderble for which to calculate the light probes' influence.
-	     */
-	    private updateProbeWeights(renderable);
-	}
-	export = LightPickerBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
-	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
-	 * occur.
-	 */
-	class StaticLightPicker extends LightPickerBase {
-	    private _lights;
-	    private _onCastShadowChangeDelegate;
-	    /**
-	     * Creates a new StaticLightPicker object.
-	     * @param lights The lights to be used for shading.
-	     */
-	    constructor(lights: any);
-	    /**
-	     * The lights used for shading.
-	     */
-	    lights: Array<any>;
-	    /**
-	     * Remove configuration change listeners on the lights.
-	     */
-	    private clearListeners();
-	    /**
-	     * Notifies the material of a configuration change.
-	     */
-	    private onCastShadowChange(event);
-	    /**
-	     * Called when a directional light's shadow casting configuration changes.
-	     */
-	    private updateDirectionalCasting(light);
-	    /**
-	     * Called when a point light's shadow casting configuration changes.
-	     */
-	    private updatePointCasting(light);
-	}
-	export = StaticLightPicker;
-	
-}
-
 declare module "awayjs-display/lib/materials/MaterialBase" {
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
@@ -8035,6 +7892,149 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    _iRemoveRender(render: IRender): IRender;
 	}
 	export = MaterialBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import PointLight = require("awayjs-display/lib/entities/PointLight");
+	/**
+	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
+	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
+	 * extended to provide more application-specific dynamic selection of lights.
+	 *
+	 * @see StaticLightPicker
+	 */
+	class LightPickerBase extends AssetBase implements IAsset {
+	    static assetType: string;
+	    _pNumPointLights: number;
+	    _pNumDirectionalLights: number;
+	    _pNumCastingPointLights: number;
+	    _pNumCastingDirectionalLights: number;
+	    _pNumLightProbes: number;
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
+	    /**
+	     * Creates a new LightPickerBase object.
+	     */
+	    constructor();
+	    /**
+	     * Disposes resources used by the light picker.
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    assetType: string;
+	    /**
+	     * The maximum amount of directional lights that will be provided.
+	     */
+	    numDirectionalLights: number;
+	    /**
+	     * The maximum amount of point lights that will be provided.
+	     */
+	    numPointLights: number;
+	    /**
+	     * The maximum amount of directional lights that cast shadows.
+	     */
+	    numCastingDirectionalLights: number;
+	    /**
+	     * The amount of point lights that cast shadows.
+	     */
+	    numCastingPointLights: number;
+	    /**
+	     * The maximum amount of light probes that will be provided.
+	     */
+	    numLightProbes: number;
+	    /**
+	     * The collected point lights to be used for shading.
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights to be used for shading.
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected point lights that cast shadows to be used for shading.
+	     */
+	    castingPointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights that cast shadows to be used for shading.
+	     */
+	    castingDirectionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected light probes to be used for shading.
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     * The weights for each light probe, defining their influence on the object.
+	     */
+	    lightProbeWeights: Array<number>;
+	    /**
+	     * A collection of all the collected lights.
+	     */
+	    allPickedLights: Array<LightBase>;
+	    /**
+	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
+	     */
+	    collectLights(renderable: IRenderable): void;
+	    /**
+	     * Updates the weights for the light probes, based on the renderable's position relative to them.
+	     * @param renderable The renderble for which to calculate the light probes' influence.
+	     */
+	    private updateProbeWeights(renderable);
+	}
+	export = LightPickerBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
+	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
+	 * occur.
+	 */
+	class StaticLightPicker extends LightPickerBase {
+	    private _lights;
+	    private _onCastShadowChangeDelegate;
+	    /**
+	     * Creates a new StaticLightPicker object.
+	     * @param lights The lights to be used for shading.
+	     */
+	    constructor(lights: any);
+	    /**
+	     * The lights used for shading.
+	     */
+	    lights: Array<any>;
+	    /**
+	     * Remove configuration change listeners on the lights.
+	     */
+	    private clearListeners();
+	    /**
+	     * Notifies the material of a configuration change.
+	     */
+	    private onCastShadowChange(event);
+	    /**
+	     * Called when a directional light's shadow casting configuration changes.
+	     */
+	    private updateDirectionalCasting(light);
+	    /**
+	     * Called when a point light's shadow casting configuration changes.
+	     */
+	    private updatePointCasting(light);
+	}
+	export = StaticLightPicker;
 	
 }
 
@@ -9007,48 +9007,6 @@ declare module "awayjs-display/lib/pool/IRender" {
 	
 }
 
-declare module "awayjs-display/lib/pool/IRenderable" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * IRenderable is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderable
-	 */
-	interface IRenderable {
-	    /**
-	     *
-	     */
-	    next: IRenderable;
-	    /**
-	     *
-	     */
-	    sourceEntity: IEntity;
-	    /**
-	     *
-	     */
-	    renderId: number;
-	    /**
-	     *
-	     */
-	    renderOrderId: number;
-	    /**
-	     *
-	     */
-	    zIndex: number;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidateGeometry(): any;
-	}
-	export = IRenderable;
-	
-}
-
 declare module "awayjs-display/lib/pool/ITextureVO" {
 	/**
 	 * ITextureVO is an interface for classes that are used in the rendering pipeline to render the
@@ -9092,6 +9050,48 @@ declare module "awayjs-display/lib/pool/SubMeshPool" {
 	    private static addDefaults();
 	}
 	export = SubMeshPool;
+	
+}
+
+declare module "awayjs-display/lib/pool/IRenderable" {
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * IRenderable is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderable
+	 */
+	interface IRenderable {
+	    /**
+	     *
+	     */
+	    next: IRenderable;
+	    /**
+	     *
+	     */
+	    sourceEntity: IEntity;
+	    /**
+	     *
+	     */
+	    renderId: number;
+	    /**
+	     *
+	     */
+	    renderOrderId: number;
+	    /**
+	     *
+	     */
+	    zIndex: number;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidateGeometry(): any;
+	}
+	export = IRenderable;
 	
 }
 
@@ -10328,6 +10328,44 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	
 }
 
+declare module "awayjs-display/lib/textures/TextureBase" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import ITextureVO = require("awayjs-display/lib/pool/ITextureVO");
+	/**
+	 *
+	 */
+	class TextureBase extends AssetBase implements IAsset {
+	    private _textureVO;
+	    _width: number;
+	    _height: number;
+	    width: number;
+	    height: number;
+	    /**
+	     *
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    invalidateContent(): void;
+	    /**
+	     *
+	     * @private
+	     */
+	    invalidateSize(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    dispose(): void;
+	    _iAddTextureVO(textureVO: ITextureVO): ITextureVO;
+	    _iRemoveTextureVO(textureVO: ITextureVO): ITextureVO;
+	    _setSize(width: number, height: number): void;
+	}
+	export = TextureBase;
+	
+}
+
 declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	/**
@@ -10420,44 +10458,6 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = CollectorBase;
-	
-}
-
-declare module "awayjs-display/lib/textures/TextureBase" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import ITextureVO = require("awayjs-display/lib/pool/ITextureVO");
-	/**
-	 *
-	 */
-	class TextureBase extends AssetBase implements IAsset {
-	    private _textureVO;
-	    _width: number;
-	    _height: number;
-	    width: number;
-	    height: number;
-	    /**
-	     *
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    invalidateContent(): void;
-	    /**
-	     *
-	     * @private
-	     */
-	    invalidateSize(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    dispose(): void;
-	    _iAddTextureVO(textureVO: ITextureVO): ITextureVO;
-	    _iRemoveTextureVO(textureVO: ITextureVO): ITextureVO;
-	    _setSize(width: number, height: number): void;
-	}
-	export = TextureBase;
 	
 }
 
