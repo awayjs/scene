@@ -91,12 +91,14 @@ class MouseManager
 			event = this._queuedEvents[i];
 			dispatcher = event.object;
 
-			while (dispatcher && !dispatcher._iIsMouseEnabled())
-				dispatcher = dispatcher.parent;
+			while (dispatcher) {
+				if (dispatcher._iIsMouseEnabled())
+					dispatcher.dispatchEvent(event);
 
-			if (dispatcher)
-				dispatcher.dispatchEvent(event);
+				dispatcher = dispatcher.parent;
+			}
 		}
+
 
 		this._queuedEvents.length = 0;
 
