@@ -256,6 +256,8 @@ class TriangleSubGeometry extends SubGeometryBase
 		super(concatenatedBuffer);
 
 		this._positions = new Float3Attributes(this._concatenatedBuffer);
+
+		this._numVertices = this._positions.count;
 	}
 
 	public getBoundingPositions():Float32Array
@@ -615,8 +617,6 @@ class TriangleSubGeometry extends SubGeometryBase
 		var clone:TriangleSubGeometry = new TriangleSubGeometry(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
 
 		clone.setIndices(this._pIndices.clone());
-
-		clone.setPositions(this._positions.clone());
 
 		clone.setNormals((this._normals && !this._autoDeriveNormals)? this._normals.clone() : null);
 

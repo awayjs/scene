@@ -116,6 +116,8 @@ class CurveSubGeometry extends SubGeometryBase
 		this._positions = new Float3Attributes(this._concatenatedBuffer);
 
 		this._curves = new Float2Attributes(this._concatenatedBuffer);
+
+		this._numVertices = this._positions.count;
 	}
 
 	public getBoundingPositions():Float32Array
@@ -247,10 +249,6 @@ class CurveSubGeometry extends SubGeometryBase
 		var clone:CurveSubGeometry = new CurveSubGeometry(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
 
 		clone.setIndices(this._pIndices.clone());
-
-		clone.setPositions(this._positions.clone());
-
-		clone.setCurves(this._curves.clone());
 
 		clone.setUVs((this._uvs && !this._autoDeriveUVs)? this._uvs.clone() : null);
 
