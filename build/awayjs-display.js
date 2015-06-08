@@ -98,6 +98,7 @@ var CurveSubGeometry = (function (_super) {
         this._scaleV = 1;
         this._positions = new Float3Attributes(this._concatenatedBuffer);
         this._curves = new Float2Attributes(this._concatenatedBuffer);
+        this._numVertices = this._positions.count;
     }
     Object.defineProperty(CurveSubGeometry.prototype, "assetType", {
         get: function () {
@@ -274,8 +275,6 @@ var CurveSubGeometry = (function (_super) {
     CurveSubGeometry.prototype.clone = function () {
         var clone = new CurveSubGeometry(this._concatenatedBuffer ? this._concatenatedBuffer.clone() : null);
         clone.setIndices(this._pIndices.clone());
-        clone.setPositions(this._positions.clone());
-        clone.setCurves(this._curves.clone());
         clone.setUVs((this._uvs && !this._autoDeriveUVs) ? this._uvs.clone() : null);
         return clone;
     };
@@ -388,6 +387,7 @@ var Point = require("awayjs-core/lib/geom/Point");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
 var Transform = require("awayjs-display/lib/base/Transform");
@@ -600,6 +600,8 @@ var DisplayObject = (function (_super) {
         this._transform = new Transform(this);
         this._matrix3D.identity();
         this._flipY.appendScale(1, -1, 1);
+        //default bounds type
+        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
     Object.defineProperty(DisplayObject.prototype, "inheritColorTransform", {
         get: function () {
@@ -1568,7 +1570,12 @@ var DisplayObject = (function (_super) {
                 this.invalidateScale();
             }
         }
-        return this._pBoxBounds;
+        if (targetCoordinateSpace == null || targetCoordinateSpace == this)
+            return this._pBoxBounds;
+        if (targetCoordinateSpace = this._pParent)
+            return this._iMatrix3D.transformBox(this._pBoxBounds);
+        else
+            return targetCoordinateSpace.inverseSceneTransform.transformBox(this.sceneTransform.transformBox(this._pBoxBounds));
     };
     DisplayObject.prototype.getSphere = function (targetCoordinateSpace) {
         if (targetCoordinateSpace === void 0) { targetCoordinateSpace = null; }
@@ -1597,7 +1604,8 @@ var DisplayObject = (function (_super) {
      * @return A Point object with coordinates relative to the display object.
      */
     DisplayObject.prototype.globalToLocal = function (point) {
-        return point; //TODO
+        var pos = this.inverseSceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+        return new Point(pos.x, pos.y);
     };
     /**
      * Converts a two-dimensional point from the Scene(global) coordinates to a
@@ -1815,7 +1823,8 @@ var DisplayObject = (function (_super) {
      * @return A Point object with coordinates relative to the Scene.
      */
     DisplayObject.prototype.localToGlobal = function (point) {
-        return new Point(); //TODO
+        var pos = this.sceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+        return new Point(pos.x, pos.y);
     };
     /**
      * Converts a three-dimensional point of the three-dimensional display
@@ -2097,6 +2106,8 @@ var DisplayObject = (function (_super) {
         this._scenePositionDirty = !this._pIgnoreTransform;
         if (this.isEntity)
             this.invalidatePartition();
+        if (this._pParent)
+            this._pParent._pInvalidateBounds();
         if (this._listenToSceneTransformChanged)
             this.notifySceneTransformChange();
     };
@@ -2362,6 +2373,8 @@ var DisplayObject = (function (_super) {
         this._sphereBoundsInvalid = true;
         if (this.isEntity)
             this.invalidatePartition();
+        if (this._pParent)
+            this._pParent._pInvalidateBounds();
     };
     DisplayObject.prototype._pUpdateBoxBounds = function () {
         this._boxBoundsInvalid = false;
@@ -2408,7 +2421,7 @@ var DisplayObject = (function (_super) {
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3945,6 +3958,7 @@ var TriangleSubGeometry = (function (_super) {
         this._autoDeriveTangents = true;
         this._autoDeriveUVs = false;
         this._positions = new Float3Attributes(this._concatenatedBuffer);
+        this._numVertices = this._positions.count;
     }
     Object.defineProperty(TriangleSubGeometry.prototype, "assetType", {
         get: function () {
@@ -4412,7 +4426,6 @@ var TriangleSubGeometry = (function (_super) {
     TriangleSubGeometry.prototype.clone = function () {
         var clone = new TriangleSubGeometry(this._concatenatedBuffer ? this._concatenatedBuffer.clone() : null);
         clone.setIndices(this._pIndices.clone());
-        clone.setPositions(this._positions.clone());
         clone.setNormals((this._normals && !this._autoDeriveNormals) ? this._normals.clone() : null);
         clone.setUVs((this._uvs && !this._autoDeriveUVs) ? this._uvs.clone() : null);
         clone.setTangents((this._tangents && !this._autoDeriveTangents) ? this._tangents.clone() : null);
@@ -5275,6 +5288,53 @@ var DisplayObjectContainer = (function (_super) {
      */
     DisplayObjectContainer.prototype.swapChildrenAt = function (index1 /*int*/, index2 /*int*/) {
         //TODO
+    };
+    /**
+     * //TODO
+     *
+     * @protected
+     */
+    DisplayObjectContainer.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        var min;
+        var max;
+        var minX, minY, minZ;
+        var maxX, maxY, maxZ;
+        var box;
+        var numChildren = this._children.length;
+        if (numChildren > 0) {
+            for (var i = 0; i < numChildren; ++i) {
+                box = this._children[i].getBox(this);
+                if (!i) {
+                    maxX = box.width + (minX = box.x);
+                    maxY = box.height + (minY = box.y);
+                    maxZ = box.depth + (minZ = box.z);
+                }
+                else {
+                    max = box.width + (min = box.x);
+                    if (min < minX)
+                        minX = min;
+                    else if (max > maxX)
+                        maxX = max;
+                    max = box.height + (min = box.y);
+                    if (min < minY)
+                        minY = min;
+                    else if (max > maxY)
+                        maxY = max;
+                    max = box.depth + (min = box.z);
+                    if (min < minZ)
+                        minZ = min;
+                    else if (max > maxZ)
+                        maxZ = max;
+                }
+            }
+            this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+            this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+            this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
+        }
+        else {
+            this._pBoxBounds.setEmpty();
+        }
     };
     /**
      * @protected
@@ -9345,7 +9405,6 @@ var __extends = this.__extends || function (d, b) {
 var Point = require("awayjs-core/lib/geom/Point");
 var Geometry = require("awayjs-display/lib/base/Geometry");
 var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var SubMeshPool = require("awayjs-display/lib/pool/SubMeshPool");
 /**
@@ -9375,8 +9434,6 @@ var Mesh = (function (_super) {
         //this should never happen, but if people insist on trying to create their meshes before they have geometry to fill it, it becomes necessary
         this.geometry = geometry || new Geometry();
         this.material = material;
-        //default bounds type
-        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
     Object.defineProperty(Mesh.prototype, "animator", {
         /**
@@ -9635,6 +9692,7 @@ var Mesh = (function (_super) {
         var subGeoms = this._geometry.subGeometries;
         var subGeom;
         var boundingPositions;
+        var numChildren = this.numChildren;
         var numSubGeoms = subGeoms.length;
         var minX, minY, minZ;
         var maxX, maxY, maxZ;
@@ -9642,9 +9700,16 @@ var Mesh = (function (_super) {
             i = 0;
             subGeom = subGeoms[0];
             boundingPositions = subGeom.getBoundingPositions();
-            minX = maxX = boundingPositions[i];
-            minY = maxY = boundingPositions[i + 1];
-            minZ = maxZ = boundingPositions[i + 2];
+            if (this.numChildren) {
+                maxX = this._pBoxBounds.width + (minX = this._pBoxBounds.x);
+                maxY = this._pBoxBounds.height + (minY = this._pBoxBounds.y);
+                maxZ = this._pBoxBounds.depth + (minZ = this._pBoxBounds.z);
+            }
+            else {
+                minX = maxX = boundingPositions[i];
+                minY = maxY = boundingPositions[i + 1];
+                minZ = maxZ = boundingPositions[i + 2];
+            }
             for (j = 0; j < numSubGeoms; j++) {
                 subGeom = subGeoms[j];
                 boundingPositions = subGeom.getBoundingPositions();
@@ -9670,9 +9735,6 @@ var Mesh = (function (_super) {
             this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
             this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
             this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
-        }
-        else {
-            this._pBoxBounds.setEmpty();
         }
     };
     Mesh.prototype._pUpdateSphereBounds = function () {
@@ -9933,7 +9995,7 @@ var Mesh = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11586,6 +11648,125 @@ var SubGeometryEvent = (function (_super) {
 })(Event);
 module.exports = SubGeometryEvent;
 
+},{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Event = require("awayjs-core/lib/events/Event");
+var TouchEvent = (function (_super) {
+    __extends(TouchEvent, _super);
+    /**
+     * Create a new TouchEvent object.
+     * @param type The type of the TouchEvent.
+     */
+    function TouchEvent(type) {
+        _super.call(this, type);
+        // Private.
+        this._iAllowedToPropagate = true;
+    }
+    Object.defineProperty(TouchEvent.prototype, "bubbles", {
+        /**
+         * @inheritDoc
+         */
+        get: function () {
+            var doesBubble = this._iAllowedToPropagate;
+            this._iAllowedToPropagate = true;
+            // Don't bubble if propagation has been stopped.
+            return doesBubble;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @inheritDoc
+     */
+    TouchEvent.prototype.stopPropagation = function () {
+        this._iAllowedToPropagate = false;
+        if (this._iParentEvent)
+            this._iParentEvent.stopPropagation();
+    };
+    /**
+     * @inheritDoc
+     */
+    TouchEvent.prototype.stopImmediatePropagation = function () {
+        this._iAllowedToPropagate = false;
+        if (this._iParentEvent)
+            this._iParentEvent.stopImmediatePropagation();
+    };
+    /**
+     * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
+     */
+    TouchEvent.prototype.clone = function () {
+        var result = new TouchEvent(this.type);
+        /* TODO: Debug / test - look into isDefaultPrevented
+         if (isDefaultPrevented())
+         result.preventDefault();
+         */
+        result.screenX = this.screenX;
+        result.screenY = this.screenY;
+        result.view = this.view;
+        result.object = this.object;
+        result.renderableOwner = this.renderableOwner;
+        result.material = this.material;
+        result.uv = this.uv;
+        result.localPosition = this.localPosition;
+        result.localNormal = this.localNormal;
+        result.index = this.index;
+        result.subGeometryIndex = this.subGeometryIndex;
+        result.ctrlKey = this.ctrlKey;
+        result.shiftKey = this.shiftKey;
+        result._iParentEvent = this;
+        return result;
+    };
+    Object.defineProperty(TouchEvent.prototype, "scenePosition", {
+        /**
+         * The position in scene space where the event took place
+         */
+        get: function () {
+            return this.object.sceneTransform.transformVector(this.localPosition);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TouchEvent.prototype, "sceneNormal", {
+        /**
+         * The normal in scene space where the event took place
+         */
+        get: function () {
+            var sceneNormal = this.object.sceneTransform.deltaTransformVector(this.localNormal);
+            sceneNormal.normalize();
+            return sceneNormal;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    TouchEvent.TOUCH_END = "touchEnd3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_BEGIN = "touchBegin3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_MOVE = "touchMove3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_OUT = "touchOut3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_OVER = "touchOver3d";
+    return TouchEvent;
+})(Event);
+module.exports = TouchEvent;
+
 },{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
 var BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
@@ -11866,7 +12047,188 @@ var MouseManager = (function () {
 })();
 module.exports = MouseManager;
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent"}],"awayjs-display/lib/materials/BasicMaterial":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent"}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var AwayTouchEvent = require("awayjs-display/lib/events/TouchEvent");
+var TouchManager = (function () {
+    function TouchManager() {
+        var _this = this;
+        this._updateDirty = true;
+        this._nullVector = new Vector3D();
+        this._queuedEvents = new Array();
+        this._touchOut = new AwayTouchEvent(AwayTouchEvent.TOUCH_OUT);
+        this._touchBegin = new AwayTouchEvent(AwayTouchEvent.TOUCH_BEGIN);
+        this._touchMove = new AwayTouchEvent(AwayTouchEvent.TOUCH_MOVE);
+        this._touchEnd = new AwayTouchEvent(AwayTouchEvent.TOUCH_END);
+        this._touchOver = new AwayTouchEvent(AwayTouchEvent.TOUCH_OVER);
+        this._touchPoints = new Array();
+        this._touchPointFromId = new Object();
+        TouchManager._iCollidingObjectFromTouchId = new Object();
+        TouchManager._previousCollidingObjectFromTouchId = new Object();
+        this.onTouchBeginDelegate = function (event) { return _this.onTouchBegin(event); };
+        this.onTouchMoveDelegate = function (event) { return _this.onTouchMove(event); };
+        this.onTouchEndDelegate = function (event) { return _this.onTouchEnd(event); };
+    }
+    TouchManager.getInstance = function () {
+        if (this._instance)
+            return this._instance;
+        return (this._instance = new TouchManager());
+    };
+    // ---------------------------------------------------------------------
+    // Interface.
+    // ---------------------------------------------------------------------
+    TouchManager.prototype.updateCollider = function (forceTouchMove) {
+        //if (forceTouchMove || this._updateDirty) { // If forceTouchMove is off, and no 2D Touch events dirty the update, don't update either.
+        //	for (var i:number; i < this._numTouchPoints; ++i) {
+        //		this._touchPoint = this._touchPoints[ i ];
+        //		this._iCollidingObject = this._touchPicker.getViewCollision(this._touchPoint.x, this._touchPoint.y, this._view);
+        //		TouchManager._iCollidingObjectFromTouchId[ this._touchPoint.id ] = this._iCollidingObject;
+        //	}
+        //}
+    };
+    TouchManager.prototype.fireTouchEvents = function (forceTouchMove) {
+        var i;
+        for (i = 0; i < this._numTouchPoints; ++i) {
+            this._touchPoint = this._touchPoints[i];
+            // If colliding object has changed, queue over/out events.
+            this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[this._touchPoint.id];
+            this._previousCollidingObject = TouchManager._previousCollidingObjectFromTouchId[this._touchPoint.id];
+            if (this._iCollidingObject != this._previousCollidingObject) {
+                if (this._previousCollidingObject)
+                    this.queueDispatch(this._touchOut, this._touchMoveEvent, this._previousCollidingObject, this._touchPoint);
+                if (this._iCollidingObject)
+                    this.queueDispatch(this._touchOver, this._touchMoveEvent, this._iCollidingObject, this._touchPoint);
+            }
+            // Fire Touch move events here if forceTouchMove is on.
+            if (forceTouchMove && this._iCollidingObject)
+                this.queueDispatch(this._touchMove, this._touchMoveEvent, this._iCollidingObject, this._touchPoint);
+        }
+        var event;
+        var dispatcher;
+        // Dispatch all queued events.
+        var len = this._queuedEvents.length;
+        for (i = 0; i < len; ++i) {
+            // Only dispatch from first implicitly enabled object ( one that is not a child of a TouchChildren = false hierarchy ).
+            event = this._queuedEvents[i];
+            dispatcher = event.object;
+            while (dispatcher && !dispatcher._iIsMouseEnabled())
+                dispatcher = dispatcher.parent;
+            if (dispatcher)
+                dispatcher.dispatchEvent(event);
+        }
+        this._queuedEvents.length = 0;
+        this._updateDirty = false;
+        for (i = 0; i < this._numTouchPoints; ++i) {
+            this._touchPoint = this._touchPoints[i];
+            TouchManager._previousCollidingObjectFromTouchId[this._touchPoint.id] = TouchManager._iCollidingObjectFromTouchId[this._touchPoint.id];
+        }
+    };
+    TouchManager.prototype.registerView = function (view) {
+        view.htmlElement.addEventListener("touchstart", this.onTouchBeginDelegate);
+        view.htmlElement.addEventListener("touchmove", this.onTouchMoveDelegate);
+        view.htmlElement.addEventListener("touchend", this.onTouchEndDelegate);
+    };
+    TouchManager.prototype.unregisterView = function (view) {
+        view.htmlElement.removeEventListener("touchstart", this.onTouchBeginDelegate);
+        view.htmlElement.removeEventListener("touchmove", this.onTouchMoveDelegate);
+        view.htmlElement.removeEventListener("touchend", this.onTouchEndDelegate);
+    };
+    // ---------------------------------------------------------------------
+    // Private.
+    // ---------------------------------------------------------------------
+    TouchManager.prototype.queueDispatch = function (event, sourceEvent, collider, touch) {
+        // 2D properties.
+        event.ctrlKey = sourceEvent.ctrlKey;
+        event.altKey = sourceEvent.altKey;
+        event.shiftKey = sourceEvent.shiftKey;
+        event.screenX = touch.x;
+        event.screenY = touch.y;
+        event.touchPointID = touch.id;
+        // 3D properties.
+        if (collider) {
+            // Object.
+            event.object = collider.displayObject;
+            event.renderableOwner = collider.renderableOwner;
+            // UV.
+            event.uv = collider.uv;
+            // Position.
+            event.localPosition = collider.localPosition ? collider.localPosition.clone() : null;
+            // Normal.
+            event.localNormal = collider.localNormal ? collider.localNormal.clone() : null;
+            // Face index.
+            event.index = collider.index;
+            // SubGeometryIndex.
+            event.subGeometryIndex = collider.index;
+        }
+        else {
+            // Set all to null.
+            event.uv = null;
+            event.object = null;
+            event.localPosition = this._nullVector;
+            event.localNormal = this._nullVector;
+            event.index = 0;
+            event.subGeometryIndex = 0;
+        }
+        // Store event to be dispatched later.
+        this._queuedEvents.push(event);
+    };
+    // ---------------------------------------------------------------------
+    // Event handlers.
+    // ---------------------------------------------------------------------
+    TouchManager.prototype.onTouchBegin = function (event) {
+        var touch = new TouchPoint();
+        //touch.id = event.touchPointID;
+        //touch.x = event.stageX;
+        //touch.y = event.stageY;
+        this._numTouchPoints++;
+        this._touchPoints.push(touch);
+        this._touchPointFromId[touch.id] = touch;
+        //this.updateCollider(event); // ensures collision check is done with correct mouse coordinates on mobile
+        this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[touch.id];
+        if (this._iCollidingObject)
+            this.queueDispatch(this._touchBegin, event, this._iCollidingObject, touch);
+        this._updateDirty = true;
+    };
+    TouchManager.prototype.onTouchMove = function (event) {
+        //var touch:TouchPoint = this._touchPointFromId[ event.touchPointID ];
+        //
+        //if (!touch) return;
+        //
+        ////touch.x = event.stageX;
+        ////touch.y = event.stageY;
+        //
+        //this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ touch.id ];
+        //
+        //if (this._iCollidingObject)
+        //	this.queueDispatch(this._touchMove, this._touchMoveEvent = event, this._iCollidingObject, touch);
+        //
+        //this._updateDirty = true;
+    };
+    TouchManager.prototype.onTouchEnd = function (event) {
+        //var touch:TouchPoint = this._touchPointFromId[ event.touchPointID ];
+        //
+        //if (!touch) return;
+        //
+        //this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ touch.id ];
+        //if (this._iCollidingObject)
+        //	this.queueDispatch(this._touchEnd, event, this._iCollidingObject, touch);
+        //
+        //this._touchPointFromId[ touch.id ] = null;
+        //this._numTouchPoints--;
+        //this._touchPoints.splice(this._touchPoints.indexOf(touch), 1);
+        //
+        //this._updateDirty = true;
+    };
+    return TouchManager;
+})();
+var TouchPoint = (function () {
+    function TouchPoint() {
+    }
+    return TouchPoint;
+})();
+module.exports = TouchManager;
+
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/TouchEvent":"awayjs-display/lib/events/TouchEvent"}],"awayjs-display/lib/materials/BasicMaterial":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

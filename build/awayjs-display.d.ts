@@ -3311,6 +3311,12 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     */
 	    swapChildrenAt(index1: number, index2: number): void;
 	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    /**
 	     * @protected
 	     */
 	    pInvalidateSceneTransform(): void;
@@ -7554,6 +7560,128 @@ declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/TouchEvent" {
+	import Point = require("awayjs-core/lib/geom/Point");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Event = require("awayjs-core/lib/events/Event");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import View = require("awayjs-display/lib/containers/View");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	class TouchEvent extends Event {
+	    _iAllowedToPropagate: boolean;
+	    _iParentEvent: TouchEvent;
+	    /**
+	     *
+	     */
+	    static TOUCH_END: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_BEGIN: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_MOVE: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_OUT: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_OVER: string;
+	    /**
+	     * The horizontal coordinate at which the event occurred in view coordinates.
+	     */
+	    screenX: number;
+	    /**
+	     * The vertical coordinate at which the event occurred in view coordinates.
+	     */
+	    screenY: number;
+	    /**
+	     * The view object inside which the event took place.
+	     */
+	    view: View;
+	    /**
+	     * The 3d object inside which the event took place.
+	     */
+	    object: DisplayObject;
+	    /**
+	     * The renderable owner inside which the event took place.
+	     */
+	    renderableOwner: IRenderableOwner;
+	    /**
+	     * The material of the 3d element inside which the event took place.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * The uv coordinate inside the draw primitive where the event took place.
+	     */
+	    uv: Point;
+	    /**
+	     * The index of the face where the event took place.
+	     */
+	    index: number;
+	    /**
+	     * The index of the subGeometry where the event took place.
+	     */
+	    subGeometryIndex: number;
+	    /**
+	     * The position in object space where the event took place
+	     */
+	    localPosition: Vector3D;
+	    /**
+	     * The normal in object space where the event took place
+	     */
+	    localNormal: Vector3D;
+	    /**
+	     * Indicates whether the Control key is active (true) or inactive (false).
+	     */
+	    ctrlKey: boolean;
+	    /**
+	     * Indicates whether the Alt key is active (true) or inactive (false).
+	     */
+	    altKey: boolean;
+	    /**
+	     * Indicates whether the Shift key is active (true) or inactive (false).
+	     */
+	    shiftKey: boolean;
+	    touchPointID: number;
+	    /**
+	     * Create a new TouchEvent object.
+	     * @param type The type of the TouchEvent.
+	     */
+	    constructor(type: string);
+	    /**
+	     * @inheritDoc
+	     */
+	    bubbles: boolean;
+	    /**
+	     * @inheritDoc
+	     */
+	    stopPropagation(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    stopImmediatePropagation(): void;
+	    /**
+	     * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
+	     */
+	    clone(): Event;
+	    /**
+	     * The position in scene space where the event took place
+	     */
+	    scenePosition: Vector3D;
+	    /**
+	     * The normal in scene space where the event took place
+	     */
+	    sceneNormal: Vector3D;
+	}
+	export = TouchEvent;
+	
+}
+
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
@@ -7628,6 +7756,45 @@ declare module "awayjs-display/lib/managers/MouseManager" {
 	    private updateColliders(event);
 	}
 	export = MouseManager;
+	
+}
+
+declare module "awayjs-display/lib/managers/TouchManager" {
+	import View = require("awayjs-display/lib/containers/View");
+	class TouchManager {
+	    private static _instance;
+	    private _updateDirty;
+	    private _nullVector;
+	    private _numTouchPoints;
+	    private _touchPoint;
+	    private _iCollidingObject;
+	    private _previousCollidingObject;
+	    static _iCollidingObjectFromTouchId: Object;
+	    static _previousCollidingObjectFromTouchId: Object;
+	    private _queuedEvents;
+	    private _touchPoints;
+	    private _touchPointFromId;
+	    private _touchMoveEvent;
+	    private _touchOut;
+	    private _touchBegin;
+	    private _touchMove;
+	    private _touchEnd;
+	    private _touchOver;
+	    private onTouchBeginDelegate;
+	    private onTouchMoveDelegate;
+	    private onTouchEndDelegate;
+	    constructor();
+	    static getInstance(): TouchManager;
+	    updateCollider(forceTouchMove: boolean): void;
+	    fireTouchEvents(forceTouchMove: boolean): void;
+	    registerView(view: View): void;
+	    unregisterView(view: View): void;
+	    private queueDispatch(event, sourceEvent, collider, touch);
+	    private onTouchBegin(event);
+	    private onTouchMove(event);
+	    private onTouchEnd(event);
+	}
+	export = TouchManager;
 	
 }
 
