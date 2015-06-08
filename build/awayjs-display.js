@@ -11885,10 +11885,11 @@ var MouseManager = (function () {
             // Only dispatch from first implicitly enabled object ( one that is not a child of a mouseChildren = false hierarchy ).
             event = this._queuedEvents[i];
             dispatcher = event.object;
-            while (dispatcher && !dispatcher._iIsMouseEnabled())
+            while (dispatcher) {
+                if (dispatcher._iIsMouseEnabled())
+                    dispatcher.dispatchEvent(event);
                 dispatcher = dispatcher.parent;
-            if (dispatcher)
-                dispatcher.dispatchEvent(event);
+            }
         }
         this._queuedEvents.length = 0;
         this._previousCollidingObject = this._iCollidingObject;
