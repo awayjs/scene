@@ -1,3 +1,4 @@
+import Box							= require("awayjs-core/lib/geom/Box");
 import Point						= require("awayjs-core/lib/geom/Point");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import ArgumentError				= require("awayjs-core/lib/errors/ArgumentError");
@@ -485,6 +486,61 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	public swapChildrenAt(index1:number /*int*/, index2:number /*int*/)
 	{
 		//TODO
+	}
+
+
+	/**
+	 * //TODO
+	 *
+	 * @protected
+	 */
+	public _pUpdateBoxBounds()
+	{
+		super._pUpdateBoxBounds();
+
+		var min:number;
+		var max:number;
+		var minX:number, minY:number, minZ:number;
+		var maxX:number, maxY:number, maxZ:number;
+
+		var box:Box;
+		var numChildren:number = this._children.length;
+
+		if (numChildren > 0) {
+			for (var i:number = 0; i < numChildren; ++i) {
+				box = this._children[i].getBox(this);
+
+				if (!i) {
+					maxX = box.width + (minX = box.x);
+					maxY = box.height + (minY = box.y);
+					maxZ = box.depth + (minZ = box.z);
+				} else {
+					max = box.width + (min = box.x);
+					if (min < minX)
+						minX = min;
+					else if (max > maxX)
+						maxX = max;
+
+					max = box.height + (min = box.y);
+					if (min < minY)
+						minY = min;
+					else if (max > maxY)
+						maxY = max;
+
+					max = box.depth + (min = box.z);
+					if (min < minZ)
+						minZ = min;
+					else if (max > maxZ)
+						maxZ = max;
+				}
+			}
+
+			this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+			this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+			this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
+		} else {
+			this._pBoxBounds.setEmpty();
+		}
 	}
 
 

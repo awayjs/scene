@@ -11,6 +11,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
+import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
@@ -1391,6 +1392,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this._matrix3D.identity();
 
 		this._flipY.appendScale(1, -1, 1);
+
+		//default bounds type
+		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
 	/**
@@ -1534,8 +1538,13 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 			}
 		}
 
+		if (targetCoordinateSpace == null || targetCoordinateSpace == this)
+			return this._pBoxBounds;
 
-		return this._pBoxBounds;
+		if (targetCoordinateSpace = this._pParent)
+			return this._iMatrix3D.transformBox(this._pBoxBounds);
+		else
+			return targetCoordinateSpace.inverseSceneTransform.transformBox(this.sceneTransform.transformBox(this._pBoxBounds));
 	}
 
 	public getSphere(targetCoordinateSpace:DisplayObject = null):Sphere
@@ -1570,7 +1579,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public globalToLocal(point:Point):Point
 	{
-		return point; //TODO
+		var pos:Vector3D = this.inverseSceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+		return new Point(pos.x, pos.y);
 	}
 
 	/**
@@ -1820,7 +1830,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public localToGlobal(point:Point):Point
 	{
-		return new Point(); //TODO
+		var pos:Vector3D = this.sceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+		return new Point(pos.x, pos.y);
 	}
 
 	/**
@@ -2168,6 +2179,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		if (this.isEntity)
 			this.invalidatePartition();
+
+		if (this._pParent)
+			this._pParent._pInvalidateBounds();
 
 		if (this._listenToSceneTransformChanged)
 			this.notifySceneTransformChange();
@@ -2537,6 +2551,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		if (this.isEntity)
 			this.invalidatePartition();
+
+		if (this._pParent)
+			this._pParent._pInvalidateBounds();
 	}
 	
 	public _pUpdateBoxBounds()

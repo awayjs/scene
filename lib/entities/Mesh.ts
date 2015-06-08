@@ -12,7 +12,6 @@ import Geometry						= require("awayjs-display/lib/base/Geometry");
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
 import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Partition					= require("awayjs-display/lib/partition/Partition");
 import SubMeshPool					= require("awayjs-display/lib/pool/SubMeshPool");
@@ -241,9 +240,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		this.geometry = geometry || new Geometry();
 
 		this.material = material;
-
-		//default bounds type
-		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
 	/**
@@ -365,6 +361,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
 		var subGeom:SubGeometryBase;
 		var boundingPositions:Float32Array;
+		var numChildren:number = this.numChildren;
 		var numSubGeoms:number = subGeoms.length;
 		var minX:number, minY:number, minZ:number;
 		var maxX:number, maxY:number, maxZ:number;
@@ -373,9 +370,16 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			i = 0;
 			subGeom = subGeoms[0];
 			boundingPositions = subGeom.getBoundingPositions();
-			minX = maxX = boundingPositions[i];
-			minY = maxY = boundingPositions[i + 1];
-			minZ = maxZ = boundingPositions[i + 2];
+
+			if (this.numChildren) {
+				maxX = this._pBoxBounds.width + (minX = this._pBoxBounds.x);
+				maxY = this._pBoxBounds.height + (minY = this._pBoxBounds.y);
+				maxZ = this._pBoxBounds.depth + (minZ = this._pBoxBounds.z);
+			} else {
+				minX = maxX = boundingPositions[i];
+				minY = maxY = boundingPositions[i + 1];
+				minZ = maxZ = boundingPositions[i + 2];
+			}
 
 			for (j = 0; j < numSubGeoms; j++) {
 				subGeom = subGeoms[j];
@@ -408,8 +412,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
 			this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
 			this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
-		} else {
-			this._pBoxBounds.setEmpty();
 		}
 	}
 
