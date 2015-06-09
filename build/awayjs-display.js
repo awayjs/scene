@@ -1572,7 +1572,7 @@ var DisplayObject = (function (_super) {
         }
         if (targetCoordinateSpace == null || targetCoordinateSpace == this)
             return this._pBoxBounds;
-        if (targetCoordinateSpace = this._pParent)
+        if (targetCoordinateSpace == this._pParent)
             return this._iMatrix3D.transformBox(this._pBoxBounds);
         else
             return targetCoordinateSpace.inverseSceneTransform.transformBox(this.sceneTransform.transformBox(this._pBoxBounds));
@@ -1581,9 +1581,8 @@ var DisplayObject = (function (_super) {
         if (targetCoordinateSpace === void 0) { targetCoordinateSpace = null; }
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
-        if (this._sphereBoundsInvalid) {
+        if (this._sphereBoundsInvalid)
             this._pUpdateSphereBounds();
-        }
         return this._pSphereBounds;
     };
     /**
@@ -5305,7 +5304,7 @@ var DisplayObjectContainer = (function (_super) {
         if (numChildren > 0) {
             for (var i = 0; i < numChildren; ++i) {
                 box = this._children[i].getBox(this);
-                if (!i) {
+                if (i == 0) {
                     maxX = box.width + (minX = box.x);
                     maxY = box.height + (minY = box.y);
                     maxZ = box.depth + (minZ = box.z);
@@ -5314,17 +5313,17 @@ var DisplayObjectContainer = (function (_super) {
                     max = box.width + (min = box.x);
                     if (min < minX)
                         minX = min;
-                    else if (max > maxX)
+                    if (max > maxX)
                         maxX = max;
                     max = box.height + (min = box.y);
                     if (min < minY)
                         minY = min;
-                    else if (max > maxY)
+                    if (max > maxY)
                         maxY = max;
                     max = box.depth + (min = box.z);
                     if (min < minZ)
                         minZ = min;
-                    else if (max > maxZ)
+                    if (max > maxZ)
                         maxZ = max;
                 }
             }
@@ -9692,7 +9691,6 @@ var Mesh = (function (_super) {
         var subGeoms = this._geometry.subGeometries;
         var subGeom;
         var boundingPositions;
-        var numChildren = this.numChildren;
         var numSubGeoms = subGeoms.length;
         var minX, minY, minZ;
         var maxX, maxY, maxZ;
