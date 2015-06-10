@@ -656,16 +656,16 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		for(var k:number = 0; k < sub.indices.length; k+=3)
 		{
-			var id0:number = indices[k];
-			var id1:number = indices[k + 1] * posDim;
-			var id2:number = indices[k + 2] * posDim;
+			var id0:number = indices[k + 2];
+			var id1:number = indices[k + 1];
+			var id2:number = indices[k + 0];
 
 			var ax:number = positions[id0 * posDim];
 			var ay:number = positions[id0 * posDim + 1];
-			var bx:number = positions[id1];
-			var by:number = positions[id1 + 1];
-			var cx:number = positions[id2];
-			var cy:number = positions[id2 + 1];
+			var bx:number = positions[id1 * posDim];
+			var by:number = positions[id1 * posDim + 1];
+			var cx:number = positions[id2 * posDim];
+			var cy:number = positions[id2 * posDim + 1];
 
 			var curvex:number = curves[id0 * curveDim];
 			var az:number = positions[id0 * posDim + 2];
