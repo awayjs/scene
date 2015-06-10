@@ -87,10 +87,10 @@ class MouseManager
 		 // Dispatch all queued events.
 		var len:number = this._queuedEvents.length;
 		for (var i:number = 0; i < len; ++i) {
-			// Only dispatch from first implicitly enabled object ( one that is not a child of a mouseChildren = false hierarchy ).
 			event = this._queuedEvents[i];
 			dispatcher = event.object;
 
+			// bubble event up the heirarchy until the top level parent is reached
 			while (dispatcher) {
 				if (dispatcher._iIsMouseEnabled())
 					dispatcher.dispatchEvent(event);

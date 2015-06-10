@@ -163,6 +163,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		this._children.push(child);
 
+		this._pInvalidateBounds();
+
 		return child;
 	}
 
@@ -367,6 +369,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		this.removeChildInternal(child);
 
 		child.iSetParent(null);
+
+		this._pInvalidateBounds();
 
 		return child;
 	}
