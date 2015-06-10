@@ -5002,6 +5002,7 @@ var DisplayObjectContainer = (function (_super) {
             child._pParent.removeChildInternal(child);
         child.iSetParent(this);
         this._children.push(child);
+        this._pInvalidateBounds();
         return child;
     };
     /**
@@ -5179,6 +5180,7 @@ var DisplayObjectContainer = (function (_super) {
             throw new Error("Parameter child cannot be null");
         this.removeChildInternal(child);
         child.iSetParent(null);
+        this._pInvalidateBounds();
         return child;
     };
     /**
@@ -10442,7 +10444,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-var Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Geometry = require("awayjs-display/lib/base/Geometry");
@@ -10786,8 +10787,6 @@ var TextField = (function (_super) {
         attributesView.dispose();
         var curve_sub_geom = new CurveSubGeometry(attributesBuffer);
         curve_sub_geom.setIndices(indices);
-        curve_sub_geom.setPositions(new Float3Attributes(attributesBuffer));
-        curve_sub_geom.setCurves(new Float2Attributes(attributesBuffer));
         curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
         this.geometry.addSubGeometry(curve_sub_geom);
         this.subMeshes[0].material = this._textFormat.material;
@@ -11132,7 +11131,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11880,7 +11879,6 @@ var MouseManager = (function () {
         // Dispatch all queued events.
         var len = this._queuedEvents.length;
         for (var i = 0; i < len; ++i) {
-            // Only dispatch from first implicitly enabled object ( one that is not a child of a mouseChildren = false hierarchy ).
             event = this._queuedEvents[i];
             dispatcher = event.object;
             while (dispatcher) {
