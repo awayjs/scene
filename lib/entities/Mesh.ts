@@ -361,7 +361,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
 		var subGeom:SubGeometryBase;
 		var boundingPositions:Float32Array;
-		var numChildren:number = this.numChildren;
 		var numSubGeoms:number = subGeoms.length;
 		var minX:number, minY:number, minZ:number;
 		var maxX:number, maxY:number, maxZ:number;

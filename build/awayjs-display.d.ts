@@ -10662,6 +10662,46 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	
 }
 
+declare module "awayjs-display/lib/traverse/RaycastCollector" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
+	 * considered intersecting with the defined ray.
+	 *
+	 * @see away.partition.Partition
+	 * @see away.entities.IEntity
+	 *
+	 * @class away.traverse.RaycastCollector
+	 */
+	class RaycastCollector extends CollectorBase {
+	    private _rayPosition;
+	    private _rayDirection;
+	    _iCollectionMark: number;
+	    /**
+	     * Provides the starting position of the ray.
+	     */
+	    rayPosition: Vector3D;
+	    /**
+	     * Provides the direction vector of the ray.
+	     */
+	    rayDirection: Vector3D;
+	    /**
+	     * Creates a new RaycastCollector object.
+	     */
+	    constructor();
+	    /**
+	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	     *
+	     * @param node The Partition3DNode object to frustum-test.
+	     */
+	    enterNode(node: NodeBase): boolean;
+	}
+	export = RaycastCollector;
+	
+}
+
 declare module "awayjs-display/lib/traverse/EntityCollector" {
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -10730,46 +10770,6 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	    clear(): void;
 	}
 	export = EntityCollector;
-	
-}
-
-declare module "awayjs-display/lib/traverse/RaycastCollector" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
-	 * considered intersecting with the defined ray.
-	 *
-	 * @see away.partition.Partition
-	 * @see away.entities.IEntity
-	 *
-	 * @class away.traverse.RaycastCollector
-	 */
-	class RaycastCollector extends CollectorBase {
-	    private _rayPosition;
-	    private _rayDirection;
-	    _iCollectionMark: number;
-	    /**
-	     * Provides the starting position of the ray.
-	     */
-	    rayPosition: Vector3D;
-	    /**
-	     * Provides the direction vector of the ray.
-	     */
-	    rayDirection: Vector3D;
-	    /**
-	     * Creates a new RaycastCollector object.
-	     */
-	    constructor();
-	    /**
-	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
-	     *
-	     * @param node The Partition3DNode object to frustum-test.
-	     */
-	    enterNode(node: NodeBase): boolean;
-	}
-	export = RaycastCollector;
 	
 }
 

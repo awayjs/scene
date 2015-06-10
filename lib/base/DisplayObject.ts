@@ -1541,7 +1541,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (targetCoordinateSpace == null || targetCoordinateSpace == this)
 			return this._pBoxBounds;
 
-		if (targetCoordinateSpace = this._pParent)
+		if (targetCoordinateSpace == this._pParent)
 			return this._iMatrix3D.transformBox(this._pBoxBounds);
 		else
 			return targetCoordinateSpace.inverseSceneTransform.transformBox(this.sceneTransform.transformBox(this._pBoxBounds));
@@ -1552,10 +1552,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
 
-		if (this._sphereBoundsInvalid) {
+		if (this._sphereBoundsInvalid)
 			this._pUpdateSphereBounds();
-		}
-
 
 		return this._pSphereBounds;
 	}

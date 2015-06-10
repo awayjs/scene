@@ -510,7 +510,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			for (var i:number = 0; i < numChildren; ++i) {
 				box = this._children[i].getBox(this);
 
-				if (!i) {
+				if (i == 0) {
 					maxX = box.width + (minX = box.x);
 					maxY = box.height + (minY = box.y);
 					maxZ = box.depth + (minZ = box.z);
@@ -518,19 +518,19 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 					max = box.width + (min = box.x);
 					if (min < minX)
 						minX = min;
-					else if (max > maxX)
+					if (max > maxX)
 						maxX = max;
 
 					max = box.height + (min = box.y);
 					if (min < minY)
 						minY = min;
-					else if (max > maxY)
+					if (max > maxY)
 						maxY = max;
 
 					max = box.depth + (min = box.z);
 					if (min < minZ)
 						minZ = min;
-					else if (max > maxZ)
+					if (max > maxZ)
 						maxZ = max;
 				}
 			}
