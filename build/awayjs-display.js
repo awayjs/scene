@@ -9922,15 +9922,15 @@ var Mesh = (function (_super) {
         var positions = sub.positions.get(sub.positions.count);
         var curves = sub.curves.get(sub.curves.count);
         for (var k = 0; k < sub.indices.length; k += 3) {
-            var id0 = indices[k];
-            var id1 = indices[k + 1] * posDim;
-            var id2 = indices[k + 2] * posDim;
+            var id0 = indices[k + 2];
+            var id1 = indices[k + 1];
+            var id2 = indices[k + 0];
             var ax = positions[id0 * posDim];
             var ay = positions[id0 * posDim + 1];
-            var bx = positions[id1];
-            var by = positions[id1 + 1];
-            var cx = positions[id2];
-            var cy = positions[id2 + 1];
+            var bx = positions[id1 * posDim];
+            var by = positions[id1 * posDim + 1];
+            var cx = positions[id2 * posDim];
+            var cy = positions[id2 * posDim + 1];
             var curvex = curves[id0 * curveDim];
             var az = positions[id0 * posDim + 2];
             //console.log(ax, ay, bx, by, cx, cy);
