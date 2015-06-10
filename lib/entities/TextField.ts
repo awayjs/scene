@@ -802,8 +802,6 @@ class TextField extends Mesh
 		attributesView.dispose();
 		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(attributesBuffer);
 		curve_sub_geom.setIndices(indices);
-		curve_sub_geom.setPositions(new Float3Attributes(attributesBuffer));
-		curve_sub_geom.setCurves(new Float2Attributes(attributesBuffer));
 		curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
 		this.geometry.addSubGeometry(curve_sub_geom);
 		this.subMeshes[0].material=this._textFormat.material;
