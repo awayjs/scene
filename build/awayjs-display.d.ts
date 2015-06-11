@@ -3900,6 +3900,7 @@ declare module "awayjs-display/lib/containers/Scene" {
 declare module "awayjs-display/lib/containers/View" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import IPicker = require("awayjs-display/lib/pick/IPicker");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -3937,6 +3938,8 @@ declare module "awayjs-display/lib/containers/View" {
 	    layeredView: boolean;
 	    mouseX: number;
 	    mouseY: number;
+	    getLocalMouseX(displayObject: DisplayObject): number;
+	    getLocalMouseY(displayObject: DisplayObject): number;
 	    /**
 	     *
 	     */

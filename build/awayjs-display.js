@@ -6180,6 +6180,12 @@ var View = (function () {
         enumerable: true,
         configurable: true
     });
+    View.prototype.getLocalMouseX = function (displayObject) {
+        return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 0)).x;
+    };
+    View.prototype.getLocalMouseY = function (displayObject) {
+        return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 0)).y;
+    };
     Object.defineProperty(View.prototype, "htmlElement", {
         /**
          *
