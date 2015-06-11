@@ -176,6 +176,11 @@ class SubGeometryBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
+	public hitTestPoint(x:number, y:number, z:number):boolean
+	{
+		throw new AbstractMethodError();
+	}
+
 	private notifyIndicesUpdate()
 	{
 		if (!this._indicesUpdated)

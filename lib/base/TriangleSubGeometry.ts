@@ -265,6 +265,12 @@ class TriangleSubGeometry extends SubGeometryBase
 		return this._positions.get(this._numVertices);
 	}
 
+
+	public hitTestPoint(x:number, y:number, z:number):boolean
+	{
+		return true;
+	}
+
 	/**
 	 *
 	 */

@@ -733,18 +733,15 @@ class TextField extends Mesh
 		for (var i:number=this.geometry.subGeometries.length-1; i>=0; i--)
 			this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
 
-		if(this._textFormat==null){
+		if(this._textFormat==null)
 			return;
-		}
-		if(this._text==""){
+
+		if(this._text=="")
 			return;
-		}
-		var indices:Array<number> = new Array<number>();
+
 		var vertices:Array<number> = new Array<number>();
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
-		var tri_idx_offset:number=0;
-		var tri_cnt:number=0;
 		var x_offset:number=0;
 		var y_offset:number=0;
 		var prev_char:TesselatedFontChar = null;
@@ -756,16 +753,9 @@ class TextField extends Mesh
 			if(this_char!= null) {
 				var this_subGeom:CurveSubGeometry = this_char.subgeom;
 				if (this_subGeom != null) {
-					tri_cnt = 0;
-					var indices2:Uint16Array = this_subGeom.indices.get(this_subGeom.numElements);
 					var positions2:Float32Array = this_subGeom.positions.get(this_subGeom.numVertices);
 					var curveData2:Float32Array = this_subGeom.curves.get(this_subGeom.numVertices);
-					for (var v = 0; v < indices2.length; v++) {
-						indices[k++] = indices2[v] + tri_idx_offset;
-						tri_cnt++;
-					}
-					tri_idx_offset += tri_cnt;
-					for (v = 0; v < this_subGeom.numVertices; v++) {
+					for (var v:number = 0; v < this_subGeom.numVertices; v++) {
 						vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
 						vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
 						vertices[j++] = positions2[v * 3 + 2];
@@ -801,7 +791,6 @@ class TextField extends Mesh
 		var attributesBuffer:AttributesBuffer = attributesView.buffer;
 		attributesView.dispose();
 		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(attributesBuffer);
-		curve_sub_geom.setIndices(indices);
 		curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
 		this.geometry.addSubGeometry(curve_sub_geom);
 		this.subMeshes[0].material=this._textFormat.material;

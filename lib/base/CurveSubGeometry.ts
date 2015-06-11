@@ -125,6 +125,108 @@ class CurveSubGeometry extends SubGeometryBase
 		return this._positions.get(this._numVertices);
 	}
 
+	public hitTestPoint(x:number, y:number, z:number):boolean
+	{
+		var posDim:number = this.positions.dimensions;
+		var curveDim:number = this.curves.dimensions;
+
+		var positions:Float32Array = this.positions.get(this._numVertices);
+		var curves:Float32Array = this.curves.get(this._numVertices);
+
+		var id0:number;
+		var id1:number;
+		var id2:number;
+
+		var ax:number;
+		var ay:number;
+		var bx:number;
+		var by:number;
+		var cx:number;
+		var cy:number;
+
+
+		for(var k:number = 0; k < this._numVertices; k+=3)
+		{
+			id0 = k + 2;
+			id1 = k + 1;
+			id2 = k + 0;
+
+			ax = positions[id0 * posDim];
+			ay = positions[id0 * posDim + 1];
+			bx = positions[id1 * posDim];
+			by = positions[id1 * posDim + 1];
+			cx = positions[id2 * posDim];
+			cy = positions[id2 * posDim + 1];
+
+			var curvex:number = curves[id0 * curveDim];
+			var az:number = positions[id0 * posDim + 2];
+
+			//console.log(ax, ay, bx, by, cx, cy);
+
+			//from a to p
+			var dx:number = ax - x;
+			var dy:number = ay - y;
+
+			//edge normal (a-b)
+			var nx:number = by - ay;
+			var ny:number = -(bx - ax);
+
+			//console.log(ax,ay,bx,by,cx,cy);
+
+			var dot:number = (dx * nx) + (dy * ny);
+			//console.log("dot a",dot);
+			if (dot > 0) continue;
+
+			dx = bx - x;
+			dy = by - y;
+			nx = cy - by;
+			ny = -(cx - bx);
+
+			dot = (dx * nx) + (dy * ny);
+			//console.log("dot b",dot);
+			if (dot > 0) continue;
+
+			dx = cx - x;
+			dy = cy - y;
+			nx = ay - cy;
+			ny = -(ax - cx);
+
+			dot = (dx * nx) + (dy * ny);
+			//console.log("dot c",dot);
+			if (dot > 0) continue;
+
+			//check if nmot solid
+			if (curvex != 2) {
+
+				var v0x:number = bx - ax;
+				var v0y:number = by - ay;
+				var v1x:number = cx - ax;
+				var v1y:number = cy - ay;
+				var v2x:number = x - ax;
+				var v2y:number = y - ay;
+
+				var den:number = v0x * v1y - v1x * v0y;
+				var v:number = (v2x * v1y - v1x * v2y) / den;
+				var w:number = (v0x * v2y - v2x * v0y) / den;
+				var u:number = 1 - v - w;
+
+				//here be dragons
+				var uu:number = 0.5 * v + w;
+				var vv:number = w;
+
+				var d:number = uu * uu - vv;
+
+				if (d > 0 && az == -1) {
+					continue;
+				} else if (d < 0 && az == 1) {
+					continue;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 *
 	 */
