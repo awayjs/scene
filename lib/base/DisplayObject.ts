@@ -737,8 +737,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 			return;
 
 		this._explicitMouseEnabled = value;
-
-		this._pUpdateImplicitMouseEnabled(this._pParent? this._pParent.mouseChildren : true);
 	}
 
 
@@ -1431,7 +1429,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		var clone:DisplayObject = new DisplayObject();
 		clone.pivot = this.pivot;
 		clone._iMatrix3D = this._iMatrix3D;
-		clone.name = name;
+		clone.name = this.name;
+
         clone._iMaskID = this._iMaskID;
         clone._iMasks = this._iMasks? this._iMasks.concat() : null;
 
@@ -2153,7 +2152,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this._pParent = value;
 
         if (value) {
-			this._pUpdateImplicitMouseEnabled(value.mouseChildren);
+			this._pUpdateImplicitMouseEnabled(value.mouseChildren && value._pImplicitMouseEnabled);
 			this._pUpdateImplicitVisibility(value._iIsVisible());
 			this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
             value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
@@ -2190,7 +2189,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public _pUpdateImplicitMouseEnabled(value:boolean)
 	{
-		this._pImplicitMouseEnabled = this._explicitMouseEnabled && value;
+		this._pImplicitMouseEnabled = value;
 
 		// If there is a parent and this child does not have a picking collider, use its parent's picking collider.
 		if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
@@ -2356,7 +2355,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public _iIsMouseEnabled():boolean
 	{
-		return this._pImplicitMouseEnabled;
+		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
 	}
 
 	/**

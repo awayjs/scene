@@ -22,9 +22,9 @@ class EntityNode extends NodeBase
 	public static id:string = "entityNode";
 
 	private _pool:EntityNodePool;
-	private _entity:IEntity;
+	public _entity:IEntity;
 	private _partition:Partition;
-	private _bounds:BoundingVolumeBase;
+	public _bounds:BoundingVolumeBase;
 	public _iUpdateQueueNext:EntityNode;
 
 	constructor(pool:EntityNodePool, entity:IEntity, partition:Partition)

@@ -17,7 +17,7 @@ import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCube
  */
 class AxisAlignedBoundingBox extends BoundingVolumeBase
 {
-	private _box:Box;
+	public _box:Box;
 	private _x:number = 0;
 	private _y:number = 0;
 	private _z:number = 0;

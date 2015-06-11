@@ -79,7 +79,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		this._mouseChildren = value;
 
-		this._pUpdateImplicitMouseEnabled(this._pParent? this._pParent.mouseChildren : true);
+		this._pUpdateImplicitMouseEnabled(this._pParent? this._pParent._pImplicitMouseEnabled : true);
 	}
 
 	/**
@@ -219,7 +219,9 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		clone.pivot = this.pivot;
 		clone._iMatrix3D = this._iMatrix3D;
 		clone.partition = this.partition;
-		clone.name = name;
+		clone.name = this.name;
+		clone.mouseEnabled = this.mouseEnabled;
+		clone.mouseChildren = this.mouseChildren;
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
@@ -569,7 +571,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateImplicitMouseEnabled(this._mouseChildren);
+			this._children[i]._pUpdateImplicitMouseEnabled(this._mouseChildren && this._pImplicitMouseEnabled);
 	}
 
 	/**
