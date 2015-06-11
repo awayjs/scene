@@ -5,6 +5,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import getTimer						= require("awayjs-core/lib/utils/getTimer");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
@@ -120,6 +121,16 @@ class View
 	public get mouseY():number
 	{
 		return this._pMouseY;
+	}
+
+	public getLocalMouseX(displayObject:DisplayObject):number
+	{
+		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 0)).x;
+	}
+
+	public getLocalMouseY(displayObject:DisplayObject):number
+	{
+		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 0)).y;
 	}
 
 	/**
