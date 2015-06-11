@@ -125,12 +125,12 @@ class View
 
 	public getLocalMouseX(displayObject:DisplayObject):number
 	{
-		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 0)).x;
+		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
 	}
 
 	public getLocalMouseY(displayObject:DisplayObject):number
 	{
-		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 0)).y;
+		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
 	}
 
 	/**
