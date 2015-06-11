@@ -926,7 +926,6 @@ var DisplayObject = (function (_super) {
             if (this._explicitMouseEnabled == value)
                 return;
             this._explicitMouseEnabled = value;
-            this._pUpdateImplicitMouseEnabled(this._pParent ? this._pParent.mouseChildren : true);
         },
         enumerable: true,
         configurable: true
@@ -1480,7 +1479,7 @@ var DisplayObject = (function (_super) {
         var clone = new DisplayObject();
         clone.pivot = this.pivot;
         clone._iMatrix3D = this._iMatrix3D;
-        clone.name = name;
+        clone.name = this.name;
         clone._iMaskID = this._iMaskID;
         clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
         // todo: implement for all subtypes
@@ -2084,7 +2083,7 @@ var DisplayObject = (function (_super) {
         }
         this._pParent = value;
         if (value) {
-            this._pUpdateImplicitMouseEnabled(value.mouseChildren);
+            this._pUpdateImplicitMouseEnabled(value.mouseChildren && value._pImplicitMouseEnabled);
             this._pUpdateImplicitVisibility(value._iIsVisible());
             this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
             value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
@@ -2114,7 +2113,7 @@ var DisplayObject = (function (_super) {
      * @protected
      */
     DisplayObject.prototype._pUpdateImplicitMouseEnabled = function (value) {
-        this._pImplicitMouseEnabled = this._explicitMouseEnabled && value;
+        this._pImplicitMouseEnabled = value;
         // If there is a parent and this child does not have a picking collider, use its parent's picking collider.
         if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
             this._pPickingCollider = this._pParent._pPickingCollider;
@@ -2239,7 +2238,7 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype._iIsMouseEnabled = function () {
-        return this._pImplicitMouseEnabled;
+        return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
     };
     /**
      * @internal
@@ -4949,7 +4948,7 @@ var DisplayObjectContainer = (function (_super) {
             if (this._mouseChildren == value)
                 return;
             this._mouseChildren = value;
-            this._pUpdateImplicitMouseEnabled(this._pParent ? this._pParent.mouseChildren : true);
+            this._pUpdateImplicitMouseEnabled(this._pParent ? this._pParent._pImplicitMouseEnabled : true);
         },
         enumerable: true,
         configurable: true
@@ -5054,7 +5053,9 @@ var DisplayObjectContainer = (function (_super) {
         clone.pivot = this.pivot;
         clone._iMatrix3D = this._iMatrix3D;
         clone.partition = this.partition;
-        clone.name = name;
+        clone.name = this.name;
+        clone.mouseEnabled = this.mouseEnabled;
+        clone.mouseChildren = this.mouseChildren;
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
             clone.addChild(this._children[i].clone());
@@ -5353,7 +5354,7 @@ var DisplayObjectContainer = (function (_super) {
         _super.prototype._pUpdateImplicitMouseEnabled.call(this, value);
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateImplicitMouseEnabled(this._mouseChildren);
+            this._children[i]._pUpdateImplicitMouseEnabled(this._mouseChildren && this._pImplicitMouseEnabled);
     };
     /**
      * @protected

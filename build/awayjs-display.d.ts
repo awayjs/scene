@@ -2846,6 +2846,7 @@ declare module "awayjs-display/lib/base/TriangleSubMesh" {
 }
 
 declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
+	import Box = require("awayjs-core/lib/geom/Box");
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
@@ -2856,7 +2857,7 @@ declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
 	 * This is useful for most meshes.
 	 */
 	class AxisAlignedBoundingBox extends BoundingVolumeBase {
-	    private _box;
+	    _box: Box;
 	    private _x;
 	    private _y;
 	    private _z;
@@ -8444,6 +8445,7 @@ declare module "awayjs-display/lib/partition/DirectionalLightNode" {
 declare module "awayjs-display/lib/partition/EntityNode" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
 	import Partition = require("awayjs-display/lib/partition/Partition");
 	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -8455,9 +8457,9 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	class EntityNode extends NodeBase {
 	    static id: string;
 	    private _pool;
-	    private _entity;
+	    _entity: IEntity;
 	    private _partition;
-	    private _bounds;
+	    _bounds: BoundingVolumeBase;
 	    _iUpdateQueueNext: EntityNode;
 	    constructor(pool: EntityNodePool, entity: IEntity, partition: Partition);
 	    entity: IEntity;
