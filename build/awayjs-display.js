@@ -188,6 +188,87 @@ var CurveSubGeometry = (function (_super) {
     CurveSubGeometry.prototype.getBoundingPositions = function () {
         return this._positions.get(this._numVertices);
     };
+    CurveSubGeometry.prototype.hitTestPoint = function (x, y, z) {
+        var posDim = this.positions.dimensions;
+        var curveDim = this.curves.dimensions;
+        var positions = this.positions.get(this._numVertices);
+        var curves = this.curves.get(this._numVertices);
+        var id0;
+        var id1;
+        var id2;
+        var ax;
+        var ay;
+        var bx;
+        var by;
+        var cx;
+        var cy;
+        for (var k = 0; k < this._numVertices; k += 3) {
+            id0 = k + 2;
+            id1 = k + 1;
+            id2 = k + 0;
+            ax = positions[id0 * posDim];
+            ay = positions[id0 * posDim + 1];
+            bx = positions[id1 * posDim];
+            by = positions[id1 * posDim + 1];
+            cx = positions[id2 * posDim];
+            cy = positions[id2 * posDim + 1];
+            var curvex = curves[id0 * curveDim];
+            var az = positions[id0 * posDim + 2];
+            //console.log(ax, ay, bx, by, cx, cy);
+            //from a to p
+            var dx = ax - x;
+            var dy = ay - y;
+            //edge normal (a-b)
+            var nx = by - ay;
+            var ny = -(bx - ax);
+            //console.log(ax,ay,bx,by,cx,cy);
+            var dot = (dx * nx) + (dy * ny);
+            //console.log("dot a",dot);
+            if (dot > 0)
+                continue;
+            dx = bx - x;
+            dy = by - y;
+            nx = cy - by;
+            ny = -(cx - bx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot b",dot);
+            if (dot > 0)
+                continue;
+            dx = cx - x;
+            dy = cy - y;
+            nx = ay - cy;
+            ny = -(ax - cx);
+            dot = (dx * nx) + (dy * ny);
+            //console.log("dot c",dot);
+            if (dot > 0)
+                continue;
+            //check if nmot solid
+            if (curvex != 2) {
+                var v0x = bx - ax;
+                var v0y = by - ay;
+                var v1x = cx - ax;
+                var v1y = cy - ay;
+                var v2x = x - ax;
+                var v2y = y - ay;
+                var den = v0x * v1y - v1x * v0y;
+                var v = (v2x * v1y - v1x * v2y) / den;
+                var w = (v0x * v2y - v2x * v0y) / den;
+                var u = 1 - v - w;
+                //here be dragons
+                var uu = 0.5 * v + w;
+                var vv = w;
+                var d = uu * uu - vv;
+                if (d > 0 && az == -1) {
+                    continue;
+                }
+                else if (d < 0 && az == 1) {
+                    continue;
+                }
+            }
+            return true;
+        }
+        return false;
+    };
     CurveSubGeometry.prototype.setPositions = function (values, offset) {
         if (offset === void 0) { offset = 0; }
         if (values == this._positions)
@@ -3430,6 +3511,9 @@ var SubGeometryBase = (function (_super) {
     SubGeometryBase.prototype.getBoundingPositions = function () {
         throw new AbstractMethodError();
     };
+    SubGeometryBase.prototype.hitTestPoint = function (x, y, z) {
+        throw new AbstractMethodError();
+    };
     SubGeometryBase.prototype.notifyIndicesUpdate = function () {
         if (!this._indicesUpdated)
             this._indicesUpdated = new SubGeometryEvent(SubGeometryEvent.INDICES_UPDATED, this._pIndices);
@@ -4172,6 +4256,9 @@ var TriangleSubGeometry = (function (_super) {
     });
     TriangleSubGeometry.prototype.getBoundingPositions = function () {
         return this._positions.get(this._numVertices);
+    };
+    TriangleSubGeometry.prototype.hitTestPoint = function (x, y, z) {
+        return true;
     };
     TriangleSubGeometry.prototype.setPositions = function (values, offset) {
         if (offset === void 0) { offset = 0; }
@@ -9907,94 +9994,17 @@ var Mesh = (function (_super) {
         var local = this.globalToLocal(new Point(x, y));
         var hit = false;
         if (this.geometry) {
-            var box = this.getBox();
-            if (box.left > local.x || box.right < local.x || box.top > local.y || box.bottom < local.y)
+            if (!this.getBox().contains(local.x, local.y, 0))
                 return false;
-            for (var j = 0; j < this.geometry.subGeometries.length; j++) {
-                var sub = this.geometry.subGeometries[j];
-                var curve = sub;
-                if (curve)
-                    hit = this.hittestMesh(local.x, local.y, curve);
-                if (hit)
+            if (!shapeFlag)
+                return true;
+            for (var j = 0; j < this.geometry.subGeometries.length; j++)
+                if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0))
                     return true;
-            }
         }
         hit = _super.prototype.hitTestPoint.call(this, x, y, shapeFlag);
         if (hit)
             return true;
-        return false;
-    };
-    Mesh.prototype.hittestMesh = function (px, py, sub) {
-        var posDim = sub.positions.dimensions;
-        var curveDim = sub.curves.dimensions;
-        var indices = sub.indices.get(sub.indices.count);
-        var positions = sub.positions.get(sub.positions.count);
-        var curves = sub.curves.get(sub.curves.count);
-        for (var k = 0; k < sub.indices.length; k += 3) {
-            var id0 = indices[k + 2];
-            var id1 = indices[k + 1];
-            var id2 = indices[k + 0];
-            var ax = positions[id0 * posDim];
-            var ay = positions[id0 * posDim + 1];
-            var bx = positions[id1 * posDim];
-            var by = positions[id1 * posDim + 1];
-            var cx = positions[id2 * posDim];
-            var cy = positions[id2 * posDim + 1];
-            var curvex = curves[id0 * curveDim];
-            var az = positions[id0 * posDim + 2];
-            //console.log(ax, ay, bx, by, cx, cy);
-            //from a to p
-            var dx = ax - px;
-            var dy = ay - py;
-            //edge normal (a-b)
-            var nx = by - ay;
-            var ny = -(bx - ax);
-            //console.log(ax,ay,bx,by,cx,cy);
-            var dot = (dx * nx) + (dy * ny);
-            //console.log("dot a",dot);
-            if (dot > 0)
-                continue;
-            dx = bx - px;
-            dy = by - py;
-            nx = cy - by;
-            ny = -(cx - bx);
-            dot = (dx * nx) + (dy * ny);
-            //console.log("dot b",dot);
-            if (dot > 0)
-                continue;
-            dx = cx - px;
-            dy = cy - py;
-            nx = ay - cy;
-            ny = -(ax - cx);
-            dot = (dx * nx) + (dy * ny);
-            //console.log("dot c",dot);
-            if (dot > 0)
-                continue;
-            //check if nmot solid
-            if (curvex != 2) {
-                var v0x = bx - ax;
-                var v0y = by - ay;
-                var v1x = cx - ax;
-                var v1y = cy - ay;
-                var v2x = px - ax;
-                var v2y = py - ay;
-                var den = v0x * v1y - v1x * v0y;
-                var v = (v2x * v1y - v1x * v2y) / den;
-                var w = (v0x * v2y - v2x * v0y) / den;
-                var u = 1 - v - w;
-                //here be dragons
-                var uu = 0.5 * v + w;
-                var vv = w;
-                var d = uu * uu - vv;
-                if (d > 0 && az == -1) {
-                    continue;
-                }
-                else if (d < 0 && az == 1) {
-                    continue;
-                }
-            }
-            return true;
-        }
         return false;
     };
     Mesh.assetType = "[asset Mesh]";
@@ -10727,17 +10737,12 @@ var TextField = (function (_super) {
     TextField.prototype.reConstruct = function () {
         for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
             this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
-        if (this._textFormat == null) {
+        if (this._textFormat == null)
             return;
-        }
-        if (this._text == "") {
+        if (this._text == "")
             return;
-        }
-        var indices = new Array();
         var vertices = new Array();
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-        var tri_idx_offset = 0;
-        var tri_cnt = 0;
         var x_offset = 0;
         var y_offset = 0;
         var prev_char = null;
@@ -10748,16 +10753,9 @@ var TextField = (function (_super) {
             if (this_char != null) {
                 var this_subGeom = this_char.subgeom;
                 if (this_subGeom != null) {
-                    tri_cnt = 0;
-                    var indices2 = this_subGeom.indices.get(this_subGeom.numElements);
                     var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
                     var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
-                    for (var v = 0; v < indices2.length; v++) {
-                        indices[k++] = indices2[v] + tri_idx_offset;
-                        tri_cnt++;
-                    }
-                    tri_idx_offset += tri_cnt;
-                    for (v = 0; v < this_subGeom.numVertices; v++) {
+                    for (var v = 0; v < this_subGeom.numVertices; v++) {
                         vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
                         vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
                         vertices[j++] = positions2[v * 3 + 2];
@@ -10793,7 +10791,6 @@ var TextField = (function (_super) {
         var attributesBuffer = attributesView.buffer;
         attributesView.dispose();
         var curve_sub_geom = new CurveSubGeometry(attributesBuffer);
-        curve_sub_geom.setIndices(indices);
         curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
         this.geometry.addSubGeometry(curve_sub_geom);
         this.subMeshes[0].material = this._textFormat.material;
