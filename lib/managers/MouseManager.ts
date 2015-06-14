@@ -127,9 +127,11 @@ class MouseManager
 	{
 		view.htmlElement.addEventListener("click", this.onClickDelegate);
 		view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
+		view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
 		view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
 		view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
 		view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
+		view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
 		view.htmlElement.addEventListener("mousewheel", this.onMouseWheelDelegate);
 		view.htmlElement.addEventListener("mouseover", this.onMouseOverDelegate);
 		view.htmlElement.addEventListener("mouseout", this.onMouseOutDelegate);
@@ -141,8 +143,10 @@ class MouseManager
 	{
 		view.htmlElement.removeEventListener("click", this.onClickDelegate);
 		view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
+		view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
 		view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
 		view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
+		view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
 		view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
 		view.htmlElement.removeEventListener("mousewheel", this.onMouseWheelDelegate);
 		view.htmlElement.removeEventListener("mouseover", this.onMouseOverDelegate);
@@ -244,8 +248,10 @@ class MouseManager
 			this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
-	private onMouseDown(event:MouseEvent)
+	private onMouseDown(event)
 	{
+		event.preventDefault();
+
 		this._iActiveDiv = <HTMLDivElement> event.target;
 
 		this.updateColliders(event);
@@ -254,8 +260,10 @@ class MouseManager
 			this.queueDispatch(this._mouseDown, event);
 	}
 
-	private onMouseUp(event:MouseEvent)
+	private onMouseUp(event)
 	{
+		event.preventDefault();
+
 		this.updateColliders(event);
 
 		if (this._iCollidingObject)
@@ -271,15 +279,15 @@ class MouseManager
 	}
 
 
-	private updateColliders(event:MouseEvent)
+	private updateColliders(event)
 	{
 		if (this._iUpdateDirty)
 			return;
 
 		var view:View;
 		var bounds:ClientRect;
-		var mouseX:number = event.clientX;
-		var mouseY:number = event.clientY;
+		var mouseX:number = (event.clientX != null)? event.clientX : event.changedTouches[0].clientX;
+		var mouseY:number = (event.clientY != null)? event.clientY : event.changedTouches[0].clientY;
 		var len:number = this._viewLookup.length;
 		for (var i:number = 0; i < len; i++) {
 			view = this._viewLookup[i];
