@@ -4351,27 +4351,6 @@ declare module "awayjs-display/lib/draw/CapsStyle" {
 	
 }
 
-declare module "awayjs-display/lib/draw/GradientType" {
-	/**
-	 * The GradientType class provides values for the <code>type</code> parameter
-	 * in the <code>beginGradientFill()</code> and
-	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
-	 * class.
-	 */
-	class GradientType {
-	    /**
-	     * Value used to specify a linear gradient fill.
-	     */
-	    static LINEAR: string;
-	    /**
-	     * Value used to specify a radial gradient fill.
-	     */
-	    static RADIAL: string;
-	}
-	export = GradientType;
-	
-}
-
 declare module "awayjs-display/lib/draw/Graphics" {
 	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
@@ -5148,6 +5127,27 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	    moveTo(x: number, y: number): void;
 	}
 	export = Graphics;
+	
+}
+
+declare module "awayjs-display/lib/draw/GradientType" {
+	/**
+	 * The GradientType class provides values for the <code>type</code> parameter
+	 * in the <code>beginGradientFill()</code> and
+	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
+	 * class.
+	 */
+	class GradientType {
+	    /**
+	     * Value used to specify a linear gradient fill.
+	     */
+	    static LINEAR: string;
+	    /**
+	     * Value used to specify a radial gradient fill.
+	     */
+	    static RADIAL: string;
+	}
+	export = GradientType;
 	
 }
 
