@@ -4351,6 +4351,27 @@ declare module "awayjs-display/lib/draw/CapsStyle" {
 	
 }
 
+declare module "awayjs-display/lib/draw/GradientType" {
+	/**
+	 * The GradientType class provides values for the <code>type</code> parameter
+	 * in the <code>beginGradientFill()</code> and
+	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
+	 * class.
+	 */
+	class GradientType {
+	    /**
+	     * Value used to specify a linear gradient fill.
+	     */
+	    static LINEAR: string;
+	    /**
+	     * Value used to specify a radial gradient fill.
+	     */
+	    static RADIAL: string;
+	}
+	export = GradientType;
+	
+}
+
 declare module "awayjs-display/lib/draw/Graphics" {
 	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
@@ -5127,27 +5148,6 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	    moveTo(x: number, y: number): void;
 	}
 	export = Graphics;
-	
-}
-
-declare module "awayjs-display/lib/draw/GradientType" {
-	/**
-	 * The GradientType class provides values for the <code>type</code> parameter
-	 * in the <code>beginGradientFill()</code> and
-	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
-	 * class.
-	 */
-	class GradientType {
-	    /**
-	     * Value used to specify a linear gradient fill.
-	     */
-	    static LINEAR: string;
-	    /**
-	     * Value used to specify a radial gradient fill.
-	     */
-	    static RADIAL: string;
-	}
-	export = GradientType;
 	
 }
 
@@ -6815,10 +6815,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     */
 	    textColor: number;
 	    /**
-	     * The height of the text in pixels.
-	     */
-	    textHeight: number;
-	    /**
 	     * The interaction mode property, Default value is
 	     * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
 	     * that the text can be scrolled but not selected. One can switch to the
@@ -6831,6 +6827,10 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * The width of the text in pixels.
 	     */
 	    textWidth: number;
+	    /**
+	     * The width of the text in pixels.
+	     */
+	    textHeight: number;
 	    /**
 	     * The thickness of the glyph edges in this text field. This property applies
 	     * only when <code>AntiAliasType</code> is set to

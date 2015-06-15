@@ -10696,16 +10696,6 @@ var TextField = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(TextField.prototype, "textHeight", {
-        /**
-         * The height of the text in pixels.
-         */
-        get: function () {
-            return this._textHeight;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(TextField.prototype, "textInteractionMode", {
         /**
          * The interaction mode property, Default value is
@@ -10728,6 +10718,22 @@ var TextField = (function (_super) {
         get: function () {
             return this._textWidth;
         },
+        set: function (value) {
+            this._textWidth = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textHeight", {
+        /**
+         * The width of the text in pixels.
+         */
+        get: function () {
+            return this._textHeight;
+        },
+        set: function (value) {
+            this._textHeight = value;
+        },
         enumerable: true,
         configurable: true
     });
@@ -10743,48 +10749,88 @@ var TextField = (function (_super) {
             return;
         var vertices = new Array();
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-        var x_offset = 0;
         var y_offset = 0;
         var prev_char = null;
         var j = 0;
         var k = 0;
-        for (var i = 0; i < this.text.length; i++) {
-            var this_char = this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
-            if (this_char != null) {
-                var this_subGeom = this_char.subgeom;
-                if (this_subGeom != null) {
-                    var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
-                    var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
-                    for (var v = 0; v < this_subGeom.numVertices; v++) {
-                        vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
-                        vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
-                        vertices[j++] = positions2[v * 3 + 2];
-                        vertices[j++] = curveData2[v * 2];
-                        vertices[j++] = curveData2[v * 2 + 1];
-                        vertices[j++] = this._textFormat.uv_values[0];
-                        vertices[j++] = this._textFormat.uv_values[1];
-                    }
-                    // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-                    var kerning_value = 0;
-                    if (prev_char != null) {
-                        for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
-                            if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-                                kerning_value = prev_char.kerningValues[k];
-                                break;
+        var textlines = this.text.split("\n");
+        for (var tl = 0; tl < textlines.length; tl++) {
+            var line_width = 0;
+            var font_chars = [];
+            for (var i = 0; i < textlines[tl].length; i++) {
+                var this_char = this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
+                if (this_char != null) {
+                    var this_subGeom = this_char.subgeom;
+                    if (this_subGeom != null) {
+                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                        var kerning_value = 0;
+                        if (prev_char != null) {
+                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                    kerning_value = prev_char.kerningValues[k];
+                                    break;
+                                }
                             }
                         }
+                        line_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
                     }
-                    x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                    else {
+                        // if no char-geometry was found, we insert a "space"
+                        line_width += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    }
                 }
                 else {
                     // if no char-geometry was found, we insert a "space"
+                    //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    line_width += this._textFormat.font_table.get_font_em_size() * char_scale;
+                }
+                font_chars.push(this_char);
+            }
+            var x_offset = 0;
+            if (this._textFormat.align == "center") {
+                x_offset = (this._textWidth - line_width) / 2;
+            }
+            else if (this._textFormat.align == "right") {
+                x_offset = (this._textWidth - line_width);
+            }
+            for (var i = 0; i < textlines[tl].length; i++) {
+                var this_char = font_chars[i];
+                if (this_char != null) {
+                    var this_subGeom = this_char.subgeom;
+                    if (this_subGeom != null) {
+                        var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
+                        var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
+                        for (var v = 0; v < this_subGeom.numVertices; v++) {
+                            vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
+                            vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
+                            vertices[j++] = positions2[v * 3 + 2];
+                            vertices[j++] = curveData2[v * 2];
+                            vertices[j++] = curveData2[v * 2 + 1];
+                            vertices[j++] = this._textFormat.uv_values[0];
+                            vertices[j++] = this._textFormat.uv_values[1];
+                        }
+                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                        var kerning_value = 0;
+                        if (prev_char != null) {
+                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                    kerning_value = prev_char.kerningValues[k];
+                                    break;
+                                }
+                            }
+                        }
+                        x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                    }
+                    else {
+                        // if no char-geometry was found, we insert a "space"
+                        x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    }
+                }
+                else {
                     x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
                 }
             }
-            else {
-                // if no char-geometry was found, we insert a "space"
-                x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-            }
+            y_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
         }
         var attributesView = new AttributesView(Float32Array, 7);
         attributesView.set(vertices);
