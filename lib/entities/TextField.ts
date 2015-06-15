@@ -19,6 +19,7 @@ import Geometry						= require("awayjs-display/lib/base/Geometry");
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
+import TextFormatAlign				= require("awayjs-display/lib/text/TextFormatAlign");
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -639,13 +640,6 @@ class TextField extends Mesh
 	 */
 	public textColor:number /*int*/;
 
-	/**
-	 * The height of the text in pixels.
-	 */
-	public get textHeight():number
-	{
-		return this._textHeight;
-	}
 
 	/**
 	 * The interaction mode property, Default value is
@@ -667,7 +661,22 @@ class TextField extends Mesh
 	{
 		return this._textWidth;
 	}
+	public set textWidth(value:number)
+	{
+		this._textWidth = value;
+	}
 
+	/**
+	 * The width of the text in pixels.
+	 */
+	public get textHeight():number
+	{
+		return this._textHeight;
+	}
+	public set textHeight(value:number)
+	{
+		this._textHeight = value;
+	}
 	/**
 	 * The thickness of the glyph edges in this text field. This property applies
 	 * only when <code>AntiAliasType</code> is set to
@@ -741,50 +750,92 @@ class TextField extends Mesh
 
 		var vertices:Array<number> = new Array<number>();
 
+
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
-		var x_offset:number=0;
 		var y_offset:number=0;
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
 		var k:number = 0;
-		for (var i = 0; i < this.text.length; i++) {
-
-			var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
-			if(this_char!= null) {
-				var this_subGeom:CurveSubGeometry = this_char.subgeom;
-				if (this_subGeom != null) {
-					var positions2:Float32Array = this_subGeom.positions.get(this_subGeom.numVertices);
-					var curveData2:Float32Array = this_subGeom.curves.get(this_subGeom.numVertices);
-					for (var v:number = 0; v < this_subGeom.numVertices; v++) {
-						vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
-						vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
-						vertices[j++] = positions2[v * 3 + 2];
-						vertices[j++] = curveData2[v * 2];
-						vertices[j++] = curveData2[v * 2 + 1];
-						vertices[j++] = this._textFormat.uv_values[0];
-						vertices[j++] = this._textFormat.uv_values[1];
-					}
-					// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-					var kerning_value:number=0;
-					if(prev_char!=null){
-						for(var k:number=0; k<prev_char.kerningCharCodes.length;k++){
-							if(prev_char.kerningCharCodes[k]==this._text.charCodeAt(i)){
-								kerning_value=prev_char.kerningValues[k];
-								break;
+		var textlines:Array<string> = this.text.split("\n");
+		for (var tl = 0; tl < textlines.length; tl++) {
+			var line_width:number=0;
+			var font_chars:Array<TesselatedFontChar> = [];
+			for (var i = 0; i < textlines[tl].length; i++) {
+				var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
+				if (this_char != null) {
+					var this_subGeom:CurveSubGeometry = this_char.subgeom;
+					if (this_subGeom != null) {
+						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+						var kerning_value:number = 0;
+						if (prev_char != null) {
+							for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
+								if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+									kerning_value = prev_char.kerningValues[k];
+									break;
+								}
 							}
 						}
+						line_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
 					}
-					x_offset += ((this_char.char_width+kerning_value) * char_scale) + this._textFormat.letterSpacing;
+					else {
+						// if no char-geometry was found, we insert a "space"
+						line_width+=this._textFormat.font_table.get_font_em_size() * char_scale;
+					}
 				}
 				else {
 					// if no char-geometry was found, we insert a "space"
-					x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+					//x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+					line_width+=this._textFormat.font_table.get_font_em_size() * char_scale;
+				}
+				font_chars.push(this_char);
+			}
+			var x_offset:number=0;
+			if(this._textFormat.align=="center"){
+				x_offset=(this._textWidth-line_width)/2;
+			}
+			else if(this._textFormat.align=="right"){
+				x_offset=(this._textWidth-line_width);
+			}
+			//console.log("this._textFormat.align="+this._textFormat.align);
+			//console.log("this._width="+this._width);
+			for (var i = 0; i < textlines[tl].length; i++) {
+				var this_char:TesselatedFontChar = font_chars[i];
+				if (this_char != null) {
+					var this_subGeom:CurveSubGeometry = this_char.subgeom;
+					if (this_subGeom != null) {
+						var positions2:Float32Array = this_subGeom.positions.get(this_subGeom.numVertices);
+						var curveData2:Float32Array = this_subGeom.curves.get(this_subGeom.numVertices);
+						for (var v:number = 0; v < this_subGeom.numVertices; v++) {
+							vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
+							vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
+							vertices[j++] = positions2[v * 3 + 2];
+							vertices[j++] = curveData2[v * 2];
+							vertices[j++] = curveData2[v * 2 + 1];
+							vertices[j++] = this._textFormat.uv_values[0];
+							vertices[j++] = this._textFormat.uv_values[1];
+						}
+						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+						var kerning_value:number = 0;
+						if (prev_char != null) {
+							for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
+								if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+									kerning_value = prev_char.kerningValues[k];
+									break;
+								}
+							}
+						}
+						x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+					}
+					else {
+						// if no char-geometry was found, we insert a "space"
+						x_offset+=this._textFormat.font_table.get_font_em_size() * char_scale;
+					}
+				}
+				else{
+					x_offset+=this._textFormat.font_table.get_font_em_size() * char_scale;
 				}
 			}
-			else {
-				// if no char-geometry was found, we insert a "space"
-				x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-			}
+			y_offset+=this._textFormat.font_table.get_font_em_size() * char_scale;
 		}
 		var attributesView:AttributesView = new AttributesView(Float32Array, 7);
 		attributesView.set(vertices);
