@@ -739,14 +739,15 @@ class TextField extends Mesh
 	 */
 	public reConstruct() {
 
-		for (var i:number=this.geometry.subGeometries.length-1; i>=0; i--)
-			this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
 
 		if(this._textFormat==null)
 			return;
 
 		if(this._text=="")
 			return;
+
+		for (var i:number=this.geometry.subGeometries.length-1; i>=0; i--)
+			this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
 
 		var vertices:Array<number> = new Array<number>();
 
@@ -756,12 +757,12 @@ class TextField extends Mesh
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
 		var k:number = 0;
-		var textlines:Array<string> = this.text.split("\n");
+		var textlines:Array<string> = this.text.toString().split("\n");
 		for (var tl = 0; tl < textlines.length; tl++) {
 			var line_width:number=0;
 			var font_chars:Array<TesselatedFontChar> = [];
 			for (var i = 0; i < textlines[tl].length; i++) {
-				var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
+				var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
 				if (this_char != null) {
 					var this_subGeom:CurveSubGeometry = this_char.subgeom;
 					if (this_subGeom != null) {
@@ -1217,9 +1218,11 @@ class TextField extends Mesh
     public _iCopyToTextField(clone:TextField):void
     {
         this._iCopyToMesh(clone);
-        clone.textFormat = clone.textFormat;
-        clone.textColor = clone.textColor;
-        clone.text = clone.text;
+		clone.textWidth=this.textWidth;
+		clone.textHeight=this.textHeight;
+       	clone.textFormat = this._textFormat;
+        //clone.textColor = clone.textColor;
+       	clone.text = this._text;
     }
 }
 
