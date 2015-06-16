@@ -10741,24 +10741,24 @@ var TextField = (function (_super) {
      * Reconstructs the Geometry for this Text-field.
      */
     TextField.prototype.reConstruct = function () {
-        for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
-            this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
         if (this._textFormat == null)
             return;
         if (this._text == "")
             return;
+        for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
+            this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
         var vertices = new Array();
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
         var y_offset = 0;
         var prev_char = null;
         var j = 0;
         var k = 0;
-        var textlines = this.text.split("\n");
+        var textlines = this.text.toString().split("\n");
         for (var tl = 0; tl < textlines.length; tl++) {
             var line_width = 0;
             var font_chars = [];
             for (var i = 0; i < textlines[tl].length; i++) {
-                var this_char = this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
+                var this_char = this._textFormat.font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
                 if (this_char != null) {
                     var this_subGeom = this_char.subgeom;
                     if (this_subGeom != null) {
@@ -11172,9 +11172,11 @@ var TextField = (function (_super) {
     };
     TextField.prototype._iCopyToTextField = function (clone) {
         this._iCopyToMesh(clone);
-        clone.textFormat = clone.textFormat;
-        clone.textColor = clone.textColor;
-        clone.text = clone.text;
+        clone.textWidth = this.textWidth;
+        clone.textHeight = this.textHeight;
+        clone.textFormat = this._textFormat;
+        //clone.textColor = clone.textColor;
+        clone.text = this._text;
     };
     TextField.assetType = "[asset TextField]";
     return TextField;
