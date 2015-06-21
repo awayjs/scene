@@ -10028,13 +10028,13 @@ var Mesh = (function (_super) {
         if (masksFlag === void 0) { masksFlag = false; }
         // if this is a mask, directly return false
         if (this._iMaskID !== -1 && !masksFlag)
-            return;
+            return false;
+        // if this is invisible, all children should be invisible too.
+        // todo: is the above statement correct for awayjs visible-property ?
         if (this.visible == false)
-            return;
-        //thought I would need the global hit point converted into local space, but not sure how to hook it in
+            return false;
+        // from this point out, we can not return false, without checking collision of childs.
         var local = this.globalToLocal(new Point(x, y));
-        var hit = false;
-        // we can not return false befor we checked the children
         if (this.geometry) {
             if (this.getBox().contains(local.x, local.y, 0)) {
                 if (!shapeFlag)
@@ -10045,6 +10045,7 @@ var Mesh = (function (_super) {
                         var all_masks = this._iMasks;
                         if (all_masks) {
                             var all_hir_masks = this["hierarchicalMasks"];
+                            //todo: check if there will be cases when no hirarchical masks have been collected and assigned yet.
                             if (all_hir_masks) {
                                 all_masks = all_hir_masks;
                             }
@@ -10064,6 +10065,7 @@ var Mesh = (function (_super) {
                 }
             }
         }
+        var hit = false;
         hit = _super.prototype.hitTestPoint.call(this, x, y, shapeFlag, masksFlag);
         if (hit)
             return true;
