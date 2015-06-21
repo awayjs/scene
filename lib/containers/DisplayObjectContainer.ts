@@ -625,13 +625,29 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 * @return <code>true</code> if the display object overlaps or intersects
 	 *         with the specified point; <code>false</code> otherwise.
 	 */
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
+	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
 	{
+		if(this._iMaskID!==-1 && !masksFlag)return;
+		if(this.visible==false)return;
 		for(var i:number = 0; i < this.numChildren; i++)
 		{
 			var child:DisplayObject = this.getChildAt(i);
-			var childHit:boolean = child.hitTestPoint(x,y, shapeFlag);
-			if(childHit) return true;
+			var childHit:boolean = child.hitTestPoint(x,y, shapeFlag, masksFlag);
+			if(childHit) {
+				var all_masks:Array<DisplayObject> = this._iMasks;
+				if(all_masks){
+					for (var mi_cnt:number = 0; mi_cnt < all_masks.length; mi_cnt++){
+						var mask_child:DisplayObject = all_masks[mi_cnt];
+						if(mask_child.parent){
+							var childHit:boolean = mask_child.hitTestPoint(x,y, shapeFlag, true);
+							if(childHit) return true;
+						}
+					}
+				}
+				else{
+					return true;
+				}
+			}
 		}
 		return false;
 	}

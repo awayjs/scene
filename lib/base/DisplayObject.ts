@@ -1731,10 +1731,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 * @param shapeFlag Whether to check against the actual pixels of the object
 	 *                 (<code>true</code>) or the bounding box
 	 *                 (<code>false</code>).
+	 * @param maskFlag Whether to check against the object when it is used as mask
+	 *                 (<code>false</code>).
 	 * @return <code>true</code> if the display object overlaps or intersects
 	 *         with the specified point; <code>false</code> otherwise.
 	 */
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
+	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, maskFlag = false):boolean
 	{
 		return false;
 	}

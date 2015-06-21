@@ -364,6 +364,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var numSubGeoms:number = subGeoms.length;
 		var minX:number, minY:number, minZ:number;
 		var maxX:number, maxY:number, maxZ:number;
+		var tmp_maxZ:number, tmp_minZ:number;
 
 		if (numSubGeoms > 0) {
 			i = 0;
@@ -374,17 +375,23 @@ class Mesh extends DisplayObjectContainer implements IEntity
 				maxX = this._pBoxBounds.width + (minX = this._pBoxBounds.x);
 				maxY = this._pBoxBounds.height + (minY = this._pBoxBounds.y);
 				maxZ = this._pBoxBounds.depth + (minZ = this._pBoxBounds.z);
+				tmp_maxZ = this._pBoxBounds.depth + (tmp_minZ = this._pBoxBounds.z);
 			} else {
 				minX = maxX = boundingPositions[i];
 				minY = maxY = boundingPositions[i + 1];
-				minZ = maxZ = boundingPositions[i + 2];
+				if(subGeom.isAsset(CurveSubGeometry)){
+					minZ = maxZ = 0;
+					tmp_minZ = tmp_maxZ = 0;
+				}
+				else{
+					tmp_minZ = tmp_maxZ = boundingPositions[i + 2];
+				}
 			}
 
 			for (j = 0; j < numSubGeoms; j++) {
 				subGeom = subGeoms[j];
 				boundingPositions = subGeom.getBoundingPositions();
 				len = boundingPositions.length;
-
 				for (i = 0; i < len; i+=3) {
 					p = boundingPositions[i];
 					if (p < minX)
@@ -401,11 +408,16 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 					p = boundingPositions[i + 2];
 
-					if (p < minZ)
-						minZ = p;
-					else if (p > maxZ)
-						maxZ = p;
+					if (p < tmp_minZ)
+						tmp_minZ = p;
+					else if (p > tmp_maxZ)
+						tmp_maxZ = p;
 				}
+				if(!(subGeom.isAsset(CurveSubGeometry))){
+					minZ = tmp_minZ;
+					maxZ = tmp_maxZ;
+				}
+
 			}
 
 			this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
@@ -618,29 +630,55 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 * @return <code>true</code> if the display object overlaps or intersects
 	 *         with the specified point; <code>false</code> otherwise.
 	 */
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false):boolean
+	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
 	{
-		//thought I would need the global hit point converted into local space, but not sure how to hook it in
+		// if this is a mask, directly return false
+		if(this._iMaskID!==-1 && !masksFlag)return false;
+
+		// if this is invisible, all children should be invisible too.
+		// todo: is the above statement correct for awayjs visible-property ?
+		if(this.visible==false)return false;
+
+		// from this point out, we can not return false, without checking collision of childs.
+		
 		var local:Point = this.globalToLocal(new Point(x,y));
 
-		var hit:boolean = false;
-
 		if(this.geometry) {
-			if(!this.getBox().contains(local.x, local.y, 0))
-				return false;
-
-			if (!shapeFlag)
-				return true;
-
-			for(var j:number = 0; j < this.geometry.subGeometries.length; j++)
-				if(this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0))
+			if(this.getBox().contains(local.x, local.y, 0)){
+				if (!shapeFlag)
 					return true;
+
+				for(var j:number = 0; j < this.geometry.subGeometries.length; j++) {
+					if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
+
+						// if the mesh is masked, we need to check if 1 mask will collide
+						var all_masks:Array<DisplayObject> = this._iMasks;
+						if (all_masks) {
+							var all_hir_masks:Array<DisplayObject> = this["hierarchicalMasks"];
+							//todo: check if there will be cases when no hirarchical masks have been collected and assigned yet.
+							if (all_hir_masks){
+								all_masks = all_hir_masks;
+							}
+							for (var mi_cnt:number = 0; mi_cnt < all_masks.length; mi_cnt++) {
+								var mask_child:DisplayObject = all_masks[mi_cnt];
+								if (mask_child.parent) {
+									var childHit:boolean = mask_child.hitTestPoint(x, y, shapeFlag, true);
+									if (childHit)return true;
+								}
+							}
+						}
+						else{
+							return true;
+
+						}
+					}
+				}
+			}
 		}
 
-		hit = super.hitTestPoint(x, y, shapeFlag);
-
-		if(hit)
-			return true;
+		var hit:boolean = false;
+		hit = super.hitTestPoint(x, y, shapeFlag, masksFlag);
+		if(hit)	return true;
 
 		return false;
 	}

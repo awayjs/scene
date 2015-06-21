@@ -1362,10 +1362,12 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @param shapeFlag Whether to check against the actual pixels of the object
 	     *                 (<code>true</code>) or the bounding box
 	     *                 (<code>false</code>).
+	     * @param maskFlag Whether to check against the object when it is used as mask
+	     *                 (<code>false</code>).
 	     * @return <code>true</code> if the display object overlaps or intersects
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean;
 	    /**
 	     * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	     *
@@ -3358,7 +3360,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     * @return <code>true</code> if the display object overlaps or intersects
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
 	}
 	export = DisplayObjectContainer;
 	
@@ -6082,7 +6084,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * @return <code>true</code> if the display object overlaps or intersects
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
 	}
 	export = Mesh;
 	
@@ -7274,16 +7276,6 @@ declare module "awayjs-display/lib/events/LightEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/MaterialEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class MaterialEvent extends Event {
-	    static SIZE_CHANGED: string;
-	    constructor(type: string);
-	}
-	export = MaterialEvent;
-	
-}
-
 declare module "awayjs-display/lib/events/MouseEvent" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -7431,6 +7423,16 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/MaterialEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class MaterialEvent extends Event {
+	    static SIZE_CHANGED: string;
+	    constructor(type: string);
+	}
+	export = MaterialEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
@@ -7478,20 +7480,6 @@ declare module "awayjs-display/lib/events/RendererEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/ResizeEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class ResizeEvent extends Event {
-	    static RESIZE: string;
-	    private _oldHeight;
-	    private _oldWidth;
-	    constructor(type: string, oldHeight?: number, oldWidth?: number);
-	    oldHeight: number;
-	    oldWidth: number;
-	}
-	export = ResizeEvent;
-	
-}
-
 declare module "awayjs-display/lib/events/SceneEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -7518,51 +7506,17 @@ declare module "awayjs-display/lib/events/SceneEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/SubGeometryEvent" {
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+declare module "awayjs-display/lib/events/ResizeEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
-	/**
-	 * Dispatched to notify changes in a sub geometry object's state.
-	 *
-	 * @class away.events.SubGeometryEvent
-	 * @see away.core.base.Geometry
-	 */
-	class SubGeometryEvent extends Event {
-	    /**
-	     * Dispatched when a SubGeometry's index data has been updated.
-	     */
-	    static INDICES_UPDATED: string;
-	    /**
-	     * Dispatched when a SubGeometry's index data has been disposed.
-	     */
-	    static INDICES_DISPOSED: string;
-	    /**
-	     * Dispatched when a SubGeometry's vertex data has been updated.
-	     */
-	    static VERTICES_UPDATED: string;
-	    /**
-	     * Dispatched when a SubGeometry's vertex data has been disposed.
-	     */
-	    static VERTICES_DISPOSED: string;
-	    private _attributesView;
-	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param attributesView An optional data type of the vertex data being updated.
-	     */
-	    constructor(type: string, attributesView: AttributesView);
-	    /**
-	     * The attributes view of the vertex data.
-	     */
-	    attributesView: AttributesView;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): Event;
+	class ResizeEvent extends Event {
+	    static RESIZE: string;
+	    private _oldHeight;
+	    private _oldWidth;
+	    constructor(type: string, oldHeight?: number, oldWidth?: number);
+	    oldHeight: number;
+	    oldWidth: number;
 	}
-	export = SubGeometryEvent;
+	export = ResizeEvent;
 	
 }
 
@@ -7688,24 +7642,51 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	
 }
 
-declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
-	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-	class DefaultMaterialManager {
-	    private static _defaultBitmapImage2D;
-	    private static _defaultTriangleMaterial;
-	    private static _defaultLineMaterial;
-	    private static _defaultTexture;
-	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
-	    static getDefaultTexture(renderableOwner?: IRenderableOwner): Single2DTexture;
-	    private static createDefaultTexture();
-	    static createCheckeredBitmapImage2D(): BitmapImage2D;
-	    private static createDefaultTriangleMaterial();
-	    private static createDefaultLineMaterial();
+declare module "awayjs-display/lib/events/SubGeometryEvent" {
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+	import Event = require("awayjs-core/lib/events/Event");
+	/**
+	 * Dispatched to notify changes in a sub geometry object's state.
+	 *
+	 * @class away.events.SubGeometryEvent
+	 * @see away.core.base.Geometry
+	 */
+	class SubGeometryEvent extends Event {
+	    /**
+	     * Dispatched when a SubGeometry's index data has been updated.
+	     */
+	    static INDICES_UPDATED: string;
+	    /**
+	     * Dispatched when a SubGeometry's index data has been disposed.
+	     */
+	    static INDICES_DISPOSED: string;
+	    /**
+	     * Dispatched when a SubGeometry's vertex data has been updated.
+	     */
+	    static VERTICES_UPDATED: string;
+	    /**
+	     * Dispatched when a SubGeometry's vertex data has been disposed.
+	     */
+	    static VERTICES_DISPOSED: string;
+	    private _attributesView;
+	    /**
+	     * Create a new GeometryEvent
+	     * @param type The event type.
+	     * @param attributesView An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, attributesView: AttributesView);
+	    /**
+	     * The attributes view of the vertex data.
+	     */
+	    attributesView: AttributesView;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): Event;
 	}
-	export = DefaultMaterialManager;
+	export = SubGeometryEvent;
 	
 }
 
@@ -7765,6 +7746,27 @@ declare module "awayjs-display/lib/managers/MouseManager" {
 	
 }
 
+declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
+	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+	class DefaultMaterialManager {
+	    private static _defaultBitmapImage2D;
+	    private static _defaultTriangleMaterial;
+	    private static _defaultLineMaterial;
+	    private static _defaultTexture;
+	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
+	    static getDefaultTexture(renderableOwner?: IRenderableOwner): Single2DTexture;
+	    private static createDefaultTexture();
+	    static createCheckeredBitmapImage2D(): BitmapImage2D;
+	    private static createDefaultTriangleMaterial();
+	    private static createDefaultLineMaterial();
+	}
+	export = DefaultMaterialManager;
+	
+}
+
 declare module "awayjs-display/lib/managers/TouchManager" {
 	import View = require("awayjs-display/lib/containers/View");
 	class TouchManager {
@@ -7804,6 +7806,39 @@ declare module "awayjs-display/lib/managers/TouchManager" {
 	
 }
 
+declare module "awayjs-display/lib/materials/LightSources" {
+	/**
+	 * Enumeration class for defining which lighting types affect the specific material
+	 * lighting component (diffuse and specular). This can be useful if, for example, you
+	 * want to use light probes for diffuse global lighting, but want specular reflections from
+	 * traditional light sources without those affecting the diffuse light.
+	 *
+	 * @see away.materials.ColorMaterial.diffuseLightSources
+	 * @see away.materials.ColorMaterial.specularLightSources
+	 * @see away.materials.TextureMaterial.diffuseLightSources
+	 * @see away.materials.TextureMaterial.specularLightSources
+	 */
+	class LightSources {
+	    /**
+	     * Defines normal lights are to be used as the source for the lighting
+	     * component.
+	     */
+	    static LIGHTS: number;
+	    /**
+	     * Defines that global lighting probes are to be used as the source for the
+	     * lighting component.
+	     */
+	    static PROBES: number;
+	    /**
+	     * Defines that both normal and global lighting probes  are to be used as the
+	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
+	     */
+	    static ALL: number;
+	}
+	export = LightSources;
+	
+}
+
 declare module "awayjs-display/lib/materials/BasicMaterial" {
 	import Image2D = require("awayjs-core/lib/data/Image2D");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -7839,36 +7874,106 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	
 }
 
-declare module "awayjs-display/lib/materials/LightSources" {
+declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import PointLight = require("awayjs-display/lib/entities/PointLight");
 	/**
-	 * Enumeration class for defining which lighting types affect the specific material
-	 * lighting component (diffuse and specular). This can be useful if, for example, you
-	 * want to use light probes for diffuse global lighting, but want specular reflections from
-	 * traditional light sources without those affecting the diffuse light.
+	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
+	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
+	 * extended to provide more application-specific dynamic selection of lights.
 	 *
-	 * @see away.materials.ColorMaterial.diffuseLightSources
-	 * @see away.materials.ColorMaterial.specularLightSources
-	 * @see away.materials.TextureMaterial.diffuseLightSources
-	 * @see away.materials.TextureMaterial.specularLightSources
+	 * @see StaticLightPicker
 	 */
-	class LightSources {
+	class LightPickerBase extends AssetBase implements IAsset {
+	    static assetType: string;
+	    _pNumPointLights: number;
+	    _pNumDirectionalLights: number;
+	    _pNumCastingPointLights: number;
+	    _pNumCastingDirectionalLights: number;
+	    _pNumLightProbes: number;
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
 	    /**
-	     * Defines normal lights are to be used as the source for the lighting
-	     * component.
+	     * Creates a new LightPickerBase object.
 	     */
-	    static LIGHTS: number;
+	    constructor();
 	    /**
-	     * Defines that global lighting probes are to be used as the source for the
-	     * lighting component.
+	     * Disposes resources used by the light picker.
 	     */
-	    static PROBES: number;
+	    dispose(): void;
 	    /**
-	     * Defines that both normal and global lighting probes  are to be used as the
-	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
+	     * @inheritDoc
 	     */
-	    static ALL: number;
+	    assetType: string;
+	    /**
+	     * The maximum amount of directional lights that will be provided.
+	     */
+	    numDirectionalLights: number;
+	    /**
+	     * The maximum amount of point lights that will be provided.
+	     */
+	    numPointLights: number;
+	    /**
+	     * The maximum amount of directional lights that cast shadows.
+	     */
+	    numCastingDirectionalLights: number;
+	    /**
+	     * The amount of point lights that cast shadows.
+	     */
+	    numCastingPointLights: number;
+	    /**
+	     * The maximum amount of light probes that will be provided.
+	     */
+	    numLightProbes: number;
+	    /**
+	     * The collected point lights to be used for shading.
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights to be used for shading.
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected point lights that cast shadows to be used for shading.
+	     */
+	    castingPointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights that cast shadows to be used for shading.
+	     */
+	    castingDirectionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected light probes to be used for shading.
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     * The weights for each light probe, defining their influence on the object.
+	     */
+	    lightProbeWeights: Array<number>;
+	    /**
+	     * A collection of all the collected lights.
+	     */
+	    allPickedLights: Array<LightBase>;
+	    /**
+	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
+	     */
+	    collectLights(renderable: IRenderable): void;
+	    /**
+	     * Updates the weights for the light probes, based on the renderable's position relative to them.
+	     * @param renderable The renderble for which to calculate the light probes' influence.
+	     */
+	    private updateProbeWeights(renderable);
 	}
-	export = LightSources;
+	export = LightPickerBase;
 	
 }
 
@@ -8102,149 +8207,6 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	
 }
 
-declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
-	/**
-	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
-	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
-	 * extended to provide more application-specific dynamic selection of lights.
-	 *
-	 * @see StaticLightPicker
-	 */
-	class LightPickerBase extends AssetBase implements IAsset {
-	    static assetType: string;
-	    _pNumPointLights: number;
-	    _pNumDirectionalLights: number;
-	    _pNumCastingPointLights: number;
-	    _pNumCastingDirectionalLights: number;
-	    _pNumLightProbes: number;
-	    _pAllPickedLights: Array<LightBase>;
-	    _pPointLights: Array<PointLight>;
-	    _pCastingPointLights: Array<PointLight>;
-	    _pDirectionalLights: Array<DirectionalLight>;
-	    _pCastingDirectionalLights: Array<DirectionalLight>;
-	    _pLightProbes: Array<LightProbe>;
-	    _pLightProbeWeights: Array<number>;
-	    /**
-	     * Creates a new LightPickerBase object.
-	     */
-	    constructor();
-	    /**
-	     * Disposes resources used by the light picker.
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    assetType: string;
-	    /**
-	     * The maximum amount of directional lights that will be provided.
-	     */
-	    numDirectionalLights: number;
-	    /**
-	     * The maximum amount of point lights that will be provided.
-	     */
-	    numPointLights: number;
-	    /**
-	     * The maximum amount of directional lights that cast shadows.
-	     */
-	    numCastingDirectionalLights: number;
-	    /**
-	     * The amount of point lights that cast shadows.
-	     */
-	    numCastingPointLights: number;
-	    /**
-	     * The maximum amount of light probes that will be provided.
-	     */
-	    numLightProbes: number;
-	    /**
-	     * The collected point lights to be used for shading.
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights to be used for shading.
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected point lights that cast shadows to be used for shading.
-	     */
-	    castingPointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights that cast shadows to be used for shading.
-	     */
-	    castingDirectionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected light probes to be used for shading.
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     * The weights for each light probe, defining their influence on the object.
-	     */
-	    lightProbeWeights: Array<number>;
-	    /**
-	     * A collection of all the collected lights.
-	     */
-	    allPickedLights: Array<LightBase>;
-	    /**
-	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
-	     */
-	    collectLights(renderable: IRenderable): void;
-	    /**
-	     * Updates the weights for the light probes, based on the renderable's position relative to them.
-	     * @param renderable The renderble for which to calculate the light probes' influence.
-	     */
-	    private updateProbeWeights(renderable);
-	}
-	export = LightPickerBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
-	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
-	 * occur.
-	 */
-	class StaticLightPicker extends LightPickerBase {
-	    private _lights;
-	    private _onCastShadowChangeDelegate;
-	    /**
-	     * Creates a new StaticLightPicker object.
-	     * @param lights The lights to be used for shading.
-	     */
-	    constructor(lights: any);
-	    /**
-	     * The lights used for shading.
-	     */
-	    lights: Array<any>;
-	    /**
-	     * Remove configuration change listeners on the lights.
-	     */
-	    private clearListeners();
-	    /**
-	     * Notifies the material of a configuration change.
-	     */
-	    private onCastShadowChange(event);
-	    /**
-	     * Called when a directional light's shadow casting configuration changes.
-	     */
-	    private updateDirectionalCasting(light);
-	    /**
-	     * Called when a point light's shadow casting configuration changes.
-	     */
-	    private updatePointCasting(light);
-	}
-	export = StaticLightPicker;
-	
-}
-
 declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
@@ -8288,24 +8250,43 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	
 }
 
-declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
-	class CubeMapShadowMapper extends ShadowMapperBase {
-	    private _depthCameras;
-	    private _projections;
-	    private _needsRender;
-	    constructor();
-	    private initCameras();
-	    private addCamera(rotationX, rotationY, rotationZ);
-	    pCreateDepthTexture(): SingleCubeTexture;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pDrawDepthMap(target: SingleCubeTexture, scene: Scene, renderer: IRenderer): void;
+declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
+	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
+	 * occur.
+	 */
+	class StaticLightPicker extends LightPickerBase {
+	    private _lights;
+	    private _onCastShadowChangeDelegate;
+	    /**
+	     * Creates a new StaticLightPicker object.
+	     * @param lights The lights to be used for shading.
+	     */
+	    constructor(lights: any);
+	    /**
+	     * The lights used for shading.
+	     */
+	    lights: Array<any>;
+	    /**
+	     * Remove configuration change listeners on the lights.
+	     */
+	    private clearListeners();
+	    /**
+	     * Notifies the material of a configuration change.
+	     */
+	    private onCastShadowChange(event);
+	    /**
+	     * Called when a directional light's shadow casting configuration changes.
+	     */
+	    private updateDirectionalCasting(light);
+	    /**
+	     * Called when a point light's shadow casting configuration changes.
+	     */
+	    private updatePointCasting(light);
 	}
-	export = CubeMapShadowMapper;
+	export = StaticLightPicker;
 	
 }
 
@@ -8344,19 +8325,24 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	
 }
 
-declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
+declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
+	import Scene = require("awayjs-display/lib/containers/Scene");
 	import Camera = require("awayjs-display/lib/entities/Camera");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
-	    private _coverageRatio;
-	    constructor(coverageRatio?: number);
-	    /**
-	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
-	     */
-	    coverageRatio: number;
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+	class CubeMapShadowMapper extends ShadowMapperBase {
+	    private _depthCameras;
+	    private _projections;
+	    private _needsRender;
+	    constructor();
+	    private initCameras();
+	    private addCamera(rotationX, rotationY, rotationZ);
+	    pCreateDepthTexture(): SingleCubeTexture;
 	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    pDrawDepthMap(target: SingleCubeTexture, scene: Scene, renderer: IRenderer): void;
 	}
-	export = NearDirectionalShadowMapper;
+	export = CubeMapShadowMapper;
 	
 }
 
@@ -8392,6 +8378,22 @@ declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	    _pSetDepthMapSize(value: any): void;
 	}
 	export = ShadowMapperBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
+	    private _coverageRatio;
+	    constructor(coverageRatio?: number);
+	    /**
+	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
+	     */
+	    coverageRatio: number;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	}
+	export = NearDirectionalShadowMapper;
 	
 }
 
