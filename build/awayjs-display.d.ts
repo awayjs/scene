@@ -1362,10 +1362,12 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @param shapeFlag Whether to check against the actual pixels of the object
 	     *                 (<code>true</code>) or the bounding box
 	     *                 (<code>false</code>).
+	     * @param maskFlag Whether to check against the object when it is used as mask
+	     *                 (<code>false</code>).
 	     * @return <code>true</code> if the display object overlaps or intersects
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean;
 	    /**
 	     * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	     *
@@ -3358,7 +3360,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     * @return <code>true</code> if the display object overlaps or intersects
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
 	}
 	export = DisplayObjectContainer;
 	
@@ -6082,7 +6084,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * @return <code>true</code> if the display object overlaps or intersects
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
 	}
 	export = Mesh;
 	
@@ -6815,10 +6817,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     */
 	    textColor: number;
 	    /**
-	     * The height of the text in pixels.
-	     */
-	    textHeight: number;
-	    /**
 	     * The interaction mode property, Default value is
 	     * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
 	     * that the text can be scrolled but not selected. One can switch to the
@@ -6831,6 +6829,10 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * The width of the text in pixels.
 	     */
 	    textWidth: number;
+	    /**
+	     * The width of the text in pixels.
+	     */
+	    textHeight: number;
 	    /**
 	     * The thickness of the glyph edges in this text field. This property applies
 	     * only when <code>AntiAliasType</code> is set to
@@ -10674,46 +10676,6 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	
 }
 
-declare module "awayjs-display/lib/traverse/RaycastCollector" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
-	 * considered intersecting with the defined ray.
-	 *
-	 * @see away.partition.Partition
-	 * @see away.entities.IEntity
-	 *
-	 * @class away.traverse.RaycastCollector
-	 */
-	class RaycastCollector extends CollectorBase {
-	    private _rayPosition;
-	    private _rayDirection;
-	    _iCollectionMark: number;
-	    /**
-	     * Provides the starting position of the ray.
-	     */
-	    rayPosition: Vector3D;
-	    /**
-	     * Provides the direction vector of the ray.
-	     */
-	    rayDirection: Vector3D;
-	    /**
-	     * Creates a new RaycastCollector object.
-	     */
-	    constructor();
-	    /**
-	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
-	     *
-	     * @param node The Partition3DNode object to frustum-test.
-	     */
-	    enterNode(node: NodeBase): boolean;
-	}
-	export = RaycastCollector;
-	
-}
-
 declare module "awayjs-display/lib/traverse/EntityCollector" {
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -10782,6 +10744,46 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	    clear(): void;
 	}
 	export = EntityCollector;
+	
+}
+
+declare module "awayjs-display/lib/traverse/RaycastCollector" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
+	 * considered intersecting with the defined ray.
+	 *
+	 * @see away.partition.Partition
+	 * @see away.entities.IEntity
+	 *
+	 * @class away.traverse.RaycastCollector
+	 */
+	class RaycastCollector extends CollectorBase {
+	    private _rayPosition;
+	    private _rayDirection;
+	    _iCollectionMark: number;
+	    /**
+	     * Provides the starting position of the ray.
+	     */
+	    rayPosition: Vector3D;
+	    /**
+	     * Provides the direction vector of the ray.
+	     */
+	    rayDirection: Vector3D;
+	    /**
+	     * Creates a new RaycastCollector object.
+	     */
+	    constructor();
+	    /**
+	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	     *
+	     * @param node The Partition3DNode object to frustum-test.
+	     */
+	    enterNode(node: NodeBase): boolean;
+	}
+	export = RaycastCollector;
 	
 }
 
