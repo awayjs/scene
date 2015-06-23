@@ -1823,11 +1823,14 @@ var DisplayObject = (function (_super) {
      * @param shapeFlag Whether to check against the actual pixels of the object
      *                 (<code>true</code>) or the bounding box
      *                 (<code>false</code>).
+     * @param maskFlag Whether to check against the object when it is used as mask
+     *                 (<code>false</code>).
      * @return <code>true</code> if the display object overlaps or intersects
      *         with the specified point; <code>false</code> otherwise.
      */
-    DisplayObject.prototype.hitTestPoint = function (x, y, shapeFlag) {
+    DisplayObject.prototype.hitTestPoint = function (x, y, shapeFlag, maskFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
+        if (maskFlag === void 0) { maskFlag = false; }
         return false;
     };
     /**
@@ -5486,13 +5489,32 @@ var DisplayObjectContainer = (function (_super) {
      * @return <code>true</code> if the display object overlaps or intersects
      *         with the specified point; <code>false</code> otherwise.
      */
-    DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag) {
+    DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
+        if (masksFlag === void 0) { masksFlag = false; }
+        if (this._iMaskID !== -1 && !masksFlag)
+            return;
+        if (this.visible == false)
+            return;
         for (var i = 0; i < this.numChildren; i++) {
             var child = this.getChildAt(i);
-            var childHit = child.hitTestPoint(x, y, shapeFlag);
-            if (childHit)
-                return true;
+            var childHit = child.hitTestPoint(x, y, shapeFlag, masksFlag);
+            if (childHit) {
+                var all_masks = this._iMasks;
+                if (all_masks) {
+                    for (var mi_cnt = 0; mi_cnt < all_masks.length; mi_cnt++) {
+                        var mask_child = all_masks[mi_cnt];
+                        if (mask_child.parent) {
+                            var childHit = mask_child.hitTestPoint(x, y, shapeFlag, true);
+                            if (childHit)
+                                return true;
+                        }
+                    }
+                }
+                else {
+                    return true;
+                }
+            }
         }
         return false;
     };
@@ -9499,6 +9521,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var Point = require("awayjs-core/lib/geom/Point");
 var Geometry = require("awayjs-display/lib/base/Geometry");
+var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var SubMeshPool = require("awayjs-display/lib/pool/SubMeshPool");
@@ -9790,6 +9813,7 @@ var Mesh = (function (_super) {
         var numSubGeoms = subGeoms.length;
         var minX, minY, minZ;
         var maxX, maxY, maxZ;
+        var tmp_maxZ, tmp_minZ;
         if (numSubGeoms > 0) {
             i = 0;
             subGeom = subGeoms[0];
@@ -9798,11 +9822,18 @@ var Mesh = (function (_super) {
                 maxX = this._pBoxBounds.width + (minX = this._pBoxBounds.x);
                 maxY = this._pBoxBounds.height + (minY = this._pBoxBounds.y);
                 maxZ = this._pBoxBounds.depth + (minZ = this._pBoxBounds.z);
+                tmp_maxZ = this._pBoxBounds.depth + (tmp_minZ = this._pBoxBounds.z);
             }
             else {
                 minX = maxX = boundingPositions[i];
                 minY = maxY = boundingPositions[i + 1];
-                minZ = maxZ = boundingPositions[i + 2];
+                if (subGeom.isAsset(CurveSubGeometry)) {
+                    minZ = maxZ = 0;
+                    tmp_minZ = tmp_maxZ = 0;
+                }
+                else {
+                    tmp_minZ = tmp_maxZ = boundingPositions[i + 2];
+                }
             }
             for (j = 0; j < numSubGeoms; j++) {
                 subGeom = subGeoms[j];
@@ -9820,10 +9851,14 @@ var Mesh = (function (_super) {
                     else if (p > maxY)
                         maxY = p;
                     p = boundingPositions[i + 2];
-                    if (p < minZ)
-                        minZ = p;
-                    else if (p > maxZ)
-                        maxZ = p;
+                    if (p < tmp_minZ)
+                        tmp_minZ = p;
+                    else if (p > tmp_maxZ)
+                        tmp_maxZ = p;
+                }
+                if (!(subGeom.isAsset(CurveSubGeometry))) {
+                    minZ = tmp_minZ;
+                    maxZ = tmp_maxZ;
                 }
             }
             this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
@@ -9988,21 +10023,50 @@ var Mesh = (function (_super) {
      * @return <code>true</code> if the display object overlaps or intersects
      *         with the specified point; <code>false</code> otherwise.
      */
-    Mesh.prototype.hitTestPoint = function (x, y, shapeFlag) {
+    Mesh.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
-        //thought I would need the global hit point converted into local space, but not sure how to hook it in
+        if (masksFlag === void 0) { masksFlag = false; }
+        // if this is a mask, directly return false
+        if (this._iMaskID !== -1 && !masksFlag)
+            return false;
+        // if this is invisible, all children should be invisible too.
+        // todo: is the above statement correct for awayjs visible-property ?
+        if (this.visible == false)
+            return false;
+        // from this point out, we can not return false, without checking collision of childs.
         var local = this.globalToLocal(new Point(x, y));
-        var hit = false;
         if (this.geometry) {
-            if (!this.getBox().contains(local.x, local.y, 0))
-                return false;
-            if (!shapeFlag)
-                return true;
-            for (var j = 0; j < this.geometry.subGeometries.length; j++)
-                if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0))
+            if (this.getBox().contains(local.x, local.y, 0)) {
+                if (!shapeFlag)
                     return true;
+                for (var j = 0; j < this.geometry.subGeometries.length; j++) {
+                    if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
+                        // if the mesh is masked, we need to check if 1 mask will collide
+                        var all_masks = this._iMasks;
+                        if (all_masks) {
+                            var all_hir_masks = this["hierarchicalMasks"];
+                            //todo: check if there will be cases when no hirarchical masks have been collected and assigned yet.
+                            if (all_hir_masks) {
+                                all_masks = all_hir_masks;
+                            }
+                            for (var mi_cnt = 0; mi_cnt < all_masks.length; mi_cnt++) {
+                                var mask_child = all_masks[mi_cnt];
+                                if (mask_child.parent) {
+                                    var childHit = mask_child.hitTestPoint(x, y, shapeFlag, true);
+                                    if (childHit)
+                                        return true;
+                                }
+                            }
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
-        hit = _super.prototype.hitTestPoint.call(this, x, y, shapeFlag);
+        var hit = false;
+        hit = _super.prototype.hitTestPoint.call(this, x, y, shapeFlag, masksFlag);
         if (hit)
             return true;
         return false;
@@ -10012,7 +10076,7 @@ var Mesh = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -10696,16 +10760,6 @@ var TextField = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(TextField.prototype, "textHeight", {
-        /**
-         * The height of the text in pixels.
-         */
-        get: function () {
-            return this._textHeight;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(TextField.prototype, "textInteractionMode", {
         /**
          * The interaction mode property, Default value is
@@ -10728,6 +10782,22 @@ var TextField = (function (_super) {
         get: function () {
             return this._textWidth;
         },
+        set: function (value) {
+            this._textWidth = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textHeight", {
+        /**
+         * The width of the text in pixels.
+         */
+        get: function () {
+            return this._textHeight;
+        },
+        set: function (value) {
+            this._textHeight = value;
+        },
         enumerable: true,
         configurable: true
     });
@@ -10735,56 +10805,96 @@ var TextField = (function (_super) {
      * Reconstructs the Geometry for this Text-field.
      */
     TextField.prototype.reConstruct = function () {
-        for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
-            this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
         if (this._textFormat == null)
             return;
         if (this._text == "")
             return;
+        for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
+            this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
         var vertices = new Array();
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-        var x_offset = 0;
         var y_offset = 0;
         var prev_char = null;
         var j = 0;
         var k = 0;
-        for (var i = 0; i < this.text.length; i++) {
-            var this_char = this._textFormat.font_table.get_subgeo_for_char(this._text.charCodeAt(i).toString());
-            if (this_char != null) {
-                var this_subGeom = this_char.subgeom;
-                if (this_subGeom != null) {
-                    var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
-                    var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
-                    for (var v = 0; v < this_subGeom.numVertices; v++) {
-                        vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
-                        vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
-                        vertices[j++] = positions2[v * 3 + 2];
-                        vertices[j++] = curveData2[v * 2];
-                        vertices[j++] = curveData2[v * 2 + 1];
-                        vertices[j++] = this._textFormat.uv_values[0];
-                        vertices[j++] = this._textFormat.uv_values[1];
-                    }
-                    // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-                    var kerning_value = 0;
-                    if (prev_char != null) {
-                        for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
-                            if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-                                kerning_value = prev_char.kerningValues[k];
-                                break;
+        var textlines = this.text.toString().split("\n");
+        for (var tl = 0; tl < textlines.length; tl++) {
+            var line_width = 0;
+            var font_chars = [];
+            for (var i = 0; i < textlines[tl].length; i++) {
+                var this_char = this._textFormat.font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
+                if (this_char != null) {
+                    var this_subGeom = this_char.subgeom;
+                    if (this_subGeom != null) {
+                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                        var kerning_value = 0;
+                        if (prev_char != null) {
+                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                    kerning_value = prev_char.kerningValues[k];
+                                    break;
+                                }
                             }
                         }
+                        line_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
                     }
-                    x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                    else {
+                        // if no char-geometry was found, we insert a "space"
+                        line_width += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    }
                 }
                 else {
                     // if no char-geometry was found, we insert a "space"
+                    //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    line_width += this._textFormat.font_table.get_font_em_size() * char_scale;
+                }
+                font_chars.push(this_char);
+            }
+            var x_offset = 0;
+            if (this._textFormat.align == "center") {
+                x_offset = (this._textWidth - line_width) / 2;
+            }
+            else if (this._textFormat.align == "right") {
+                x_offset = (this._textWidth - line_width);
+            }
+            for (var i = 0; i < textlines[tl].length; i++) {
+                var this_char = font_chars[i];
+                if (this_char != null) {
+                    var this_subGeom = this_char.subgeom;
+                    if (this_subGeom != null) {
+                        var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
+                        var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
+                        for (var v = 0; v < this_subGeom.numVertices; v++) {
+                            vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
+                            vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
+                            vertices[j++] = positions2[v * 3 + 2];
+                            vertices[j++] = curveData2[v * 2];
+                            vertices[j++] = curveData2[v * 2 + 1];
+                            vertices[j++] = this._textFormat.uv_values[0];
+                            vertices[j++] = this._textFormat.uv_values[1];
+                        }
+                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                        var kerning_value = 0;
+                        if (prev_char != null) {
+                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                    kerning_value = prev_char.kerningValues[k];
+                                    break;
+                                }
+                            }
+                        }
+                        x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                    }
+                    else {
+                        // if no char-geometry was found, we insert a "space"
+                        x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    }
+                }
+                else {
                     x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
                 }
             }
-            else {
-                // if no char-geometry was found, we insert a "space"
-                x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-            }
+            y_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
         }
         var attributesView = new AttributesView(Float32Array, 7);
         attributesView.set(vertices);
@@ -11126,9 +11236,11 @@ var TextField = (function (_super) {
     };
     TextField.prototype._iCopyToTextField = function (clone) {
         this._iCopyToMesh(clone);
-        clone.textFormat = clone.textFormat;
-        clone.textColor = clone.textColor;
-        clone.text = clone.text;
+        clone.textWidth = this.textWidth;
+        clone.textHeight = this.textHeight;
+        clone.textFormat = this._textFormat;
+        //clone.textColor = clone.textColor;
+        clone.text = this._text;
     };
     TextField.assetType = "[asset TextField]";
     return TextField;
