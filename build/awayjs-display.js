@@ -11770,35 +11770,61 @@ module.exports = TouchEvent;
 
 },{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
 var BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
+var BitmapImageCube = require("awayjs-core/lib/data/BitmapImageCube");
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
+var Skybox = require("awayjs-display/lib/entities/Skybox");
 var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
 var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 var DefaultMaterialManager = (function () {
     function DefaultMaterialManager() {
     }
     DefaultMaterialManager.getDefaultMaterial = function (renderableOwner) {
         if (renderableOwner === void 0) { renderableOwner = null; }
         if (renderableOwner != null && renderableOwner.isAsset(LineSubMesh)) {
-            if (!DefaultMaterialManager._defaultLineMaterial)
-                DefaultMaterialManager.createDefaultLineMaterial();
-            return DefaultMaterialManager._defaultLineMaterial;
+            if (!DefaultMaterialManager._defaultColorMaterial)
+                DefaultMaterialManager.createDefaultColorMaterial();
+            return DefaultMaterialManager._defaultColorMaterial;
         }
-        else {
-            if (!DefaultMaterialManager._defaultTriangleMaterial)
-                DefaultMaterialManager.createDefaultTriangleMaterial();
-            return DefaultMaterialManager._defaultTriangleMaterial;
+        if (renderableOwner != null && renderableOwner.isAsset(Skybox)) {
+            if (!DefaultMaterialManager._defaultCubeTextureMaterial)
+                DefaultMaterialManager.createDefaultCubeTextureMaterial();
+            return DefaultMaterialManager._defaultCubeTextureMaterial;
         }
+        if (!DefaultMaterialManager._defaultTextureMaterial)
+            DefaultMaterialManager.createDefaultTextureMaterial();
+        return DefaultMaterialManager._defaultTextureMaterial;
     };
     DefaultMaterialManager.getDefaultTexture = function (renderableOwner) {
         if (renderableOwner === void 0) { renderableOwner = null; }
+        if (renderableOwner != null && renderableOwner.isAsset(Skybox)) {
+            if (!DefaultMaterialManager._defaultCubeTexture)
+                DefaultMaterialManager.createDefaultCubeTexture();
+            return DefaultMaterialManager._defaultCubeTexture;
+        }
         if (!DefaultMaterialManager._defaultTexture)
             DefaultMaterialManager.createDefaultTexture();
         return DefaultMaterialManager._defaultTexture;
     };
     DefaultMaterialManager.createDefaultTexture = function () {
-        DefaultMaterialManager._defaultBitmapImage2D = DefaultMaterialManager.createCheckeredBitmapImage2D();
+        if (!DefaultMaterialManager._defaultBitmapImage2D)
+            DefaultMaterialManager.createCheckeredBitmapImage2D();
         DefaultMaterialManager._defaultTexture = new Single2DTexture(DefaultMaterialManager._defaultBitmapImage2D);
         DefaultMaterialManager._defaultTexture.name = "defaultTexture";
+    };
+    DefaultMaterialManager.createDefaultCubeTexture = function () {
+        if (!DefaultMaterialManager._defaultBitmapImageCube)
+            DefaultMaterialManager.createCheckeredBitmapImageCube();
+        DefaultMaterialManager._defaultCubeTexture = new SingleCubeTexture(DefaultMaterialManager._defaultBitmapImageCube);
+        DefaultMaterialManager._defaultCubeTexture.name = "defaultCubeTexture";
+    };
+    DefaultMaterialManager.createCheckeredBitmapImageCube = function () {
+        if (!DefaultMaterialManager._defaultBitmapImage2D)
+            DefaultMaterialManager.createCheckeredBitmapImage2D();
+        var b = new BitmapImageCube(DefaultMaterialManager._defaultBitmapImage2D.width);
+        for (var i = 0; i < 6; i++)
+            b.draw(i, DefaultMaterialManager._defaultBitmapImage2D);
+        DefaultMaterialManager._defaultBitmapImageCube = b;
     };
     DefaultMaterialManager.createCheckeredBitmapImage2D = function () {
         var b = new BitmapImage2D(8, 8, false, 0x000000);
@@ -11811,25 +11837,33 @@ var DefaultMaterialManager = (function () {
                 }
             }
         }
-        return b;
+        DefaultMaterialManager._defaultBitmapImage2D = b;
     };
-    DefaultMaterialManager.createDefaultTriangleMaterial = function () {
+    DefaultMaterialManager.createDefaultTextureMaterial = function () {
         if (!DefaultMaterialManager._defaultTexture)
             DefaultMaterialManager.createDefaultTexture();
-        DefaultMaterialManager._defaultTriangleMaterial = new BasicMaterial(DefaultMaterialManager._defaultTexture);
-        DefaultMaterialManager._defaultTriangleMaterial.mipmap = false;
-        DefaultMaterialManager._defaultTriangleMaterial.smooth = false;
-        DefaultMaterialManager._defaultTriangleMaterial.name = "defaultTriangleMaterial";
+        DefaultMaterialManager._defaultTextureMaterial = new BasicMaterial(DefaultMaterialManager._defaultTexture);
+        DefaultMaterialManager._defaultTextureMaterial.mipmap = false;
+        DefaultMaterialManager._defaultTextureMaterial.smooth = false;
+        DefaultMaterialManager._defaultTextureMaterial.name = "defaultTextureMaterial";
     };
-    DefaultMaterialManager.createDefaultLineMaterial = function () {
-        DefaultMaterialManager._defaultLineMaterial = new BasicMaterial();
-        DefaultMaterialManager._defaultLineMaterial.name = "defaultLineMaterial";
+    DefaultMaterialManager.createDefaultCubeTextureMaterial = function () {
+        if (!DefaultMaterialManager._defaultCubeTexture)
+            DefaultMaterialManager.createDefaultCubeTexture();
+        DefaultMaterialManager._defaultCubeTextureMaterial = new BasicMaterial(DefaultMaterialManager._defaultCubeTexture);
+        DefaultMaterialManager._defaultCubeTextureMaterial.mipmap = false;
+        DefaultMaterialManager._defaultCubeTextureMaterial.smooth = false;
+        DefaultMaterialManager._defaultCubeTextureMaterial.name = "defaultCubeTextureMaterial";
+    };
+    DefaultMaterialManager.createDefaultColorMaterial = function () {
+        DefaultMaterialManager._defaultColorMaterial = new BasicMaterial();
+        DefaultMaterialManager._defaultColorMaterial.name = "defaultColorMaterial";
     };
     return DefaultMaterialManager;
 })();
 module.exports = DefaultMaterialManager;
 
-},{"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
+},{"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayMouseEvent = require("awayjs-display/lib/events/MouseEvent");
 /**
@@ -19434,9 +19468,9 @@ var SubGeometryUtils = (function () {
             tangents[index++] += faceTangents[f1] * weight;
             tangents[index++] += faceTangents[f2] * weight;
             tangents[index] += faceTangents[f3] * weight;
-            f1 += 4;
-            f2 += 4;
-            f3 += 4;
+            f1 += 3;
+            f2 += 3;
+            f3 += 3;
             f4 += 4;
         }
         i = 0;
