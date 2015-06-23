@@ -276,9 +276,9 @@ class SubGeometryUtils
 			tangents[index++] += faceTangents[f1]*weight;
 			tangents[index++] += faceTangents[f2]*weight;
 			tangents[index] += faceTangents[f3]*weight;
-			f1 += 4;
-			f2 += 4;
-			f3 += 4;
+			f1 += 3;
+			f2 += 3;
+			f3 += 3;
 			f4 += 4;
 		}
 
