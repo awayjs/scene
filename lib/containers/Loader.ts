@@ -1,7 +1,6 @@
 import AssetLibraryBundle			= require("awayjs-core/lib/library/AssetLibraryBundle");
-import AssetLoader					= require("awayjs-core/lib/library/AssetLoader");
-import AssetLoaderContext			= require("awayjs-core/lib/library/AssetLoaderContext");
-import AssetLoaderToken				= require("awayjs-core/lib/library/AssetLoaderToken");
+import LoaderSession				= require("awayjs-core/lib/library/LoaderSession");
+import LoaderContext				= require("awayjs-core/lib/library/LoaderContext");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
@@ -95,7 +94,9 @@ class Loader extends DisplayObjectContainer
 	 */
 	//[Event(name="resourceComplete", type="LoaderEvent")]
 
-	private _loadingSessions:Array<AssetLoader>;
+	private _loaderSession:LoaderSession;
+	private _loaderSessionGarbage:LoaderSession;
+	private _gcTimeoutIID:number;
 	private _useAssetLib:boolean;
 	private _assetLibId:string;
 	private _onResourceCompleteDelegate:Function;
@@ -201,8 +202,7 @@ class Loader extends DisplayObjectContainer
 	constructor(useAssetLibrary:boolean = true, assetLibraryId:string = null)
 	{
 		super();
-
-		this._loadingSessions = new Array<AssetLoader>();
+		
 		this._useAssetLib = useAssetLibrary;
 		this._assetLibId = assetLibraryId;
 
@@ -220,21 +220,16 @@ class Loader extends DisplayObjectContainer
 	 */
 	public close()
 	{
+		if (!this._loaderSession)
+			return;
+		
 		if (this._useAssetLib) {
 			var lib:AssetLibraryBundle;
 			lib = AssetLibraryBundle.getInstance(this._assetLibId);
-			lib.stopAllLoadingSessions();
-			this._loadingSessions = null;
-			return
+			lib.disposeLoaderSession(this._loaderSession);
 		}
-		var i:number /*int*/;
-		var length:number /*int*/ = this._loadingSessions.length;
-		for (i = 0; i < length; i++) {
-			this.removeListeners(this._loadingSessions[i]);
-			this._loadingSessions[i].stop();
-			this._loadingSessions[i] = null;
-		}
-		this._loadingSessions = null;
+		
+		this._disposeLoaderSession();
 	}
 
 	/**
@@ -320,7 +315,7 @@ class Loader extends DisplayObjectContainer
 	 *                loaded, allowing the differentiation of two resources with
 	 *                identical assets.
 	 * @param parser  An optional parser object for translating the loaded data
-	 *                into a usable resource. If not provided, AssetLoader will
+	 *                into a usable resource. If not provided, LoaderSession will
 	 *                attempt to auto-detect the file type.
 	 * @throws IOError               The <code>digest</code> property of the
 	 *                               <code>request</code> object is not
@@ -404,29 +399,9 @@ class Loader extends DisplayObjectContainer
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	public load(request:URLRequest, context:AssetLoaderContext = null, ns:string = null, parser:ParserBase = null):AssetLoaderToken
+	public load(request:URLRequest, context:LoaderContext = null, ns:string = null, parser:ParserBase = null)
 	{
-		var token:AssetLoaderToken;
-
-		if (this._useAssetLib) {
-			var lib:AssetLibraryBundle;
-			lib = AssetLibraryBundle.getInstance(this._assetLibId);
-			token = lib.load(request, context, ns, parser);
-		} else {
-			var loader:AssetLoader = new AssetLoader();
-			this._loadingSessions.push(loader);
-			token = loader.load(request, context, ns, parser);
-		}
-
-		token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-		token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-		token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
-
-		// Error are handled separately (see documentation for addErrorHandler)
-		token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
-		token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
-
-		return token;
+		this._getLoaderSession().load(request, context, ns, parser);
 	}
 
 	/**
@@ -515,31 +490,40 @@ class Loader extends DisplayObjectContainer
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	public loadData(data:any, context:AssetLoaderContext = null, ns:string = null, parser:ParserBase = null):AssetLoaderToken
+	public loadData(data:any, context:LoaderContext = null, ns:string = null, parser:ParserBase = null)
 	{
-		var token:AssetLoaderToken;
-
-		if (this._useAssetLib) {
-			var lib:AssetLibraryBundle;
-			lib = AssetLibraryBundle.getInstance(this._assetLibId);
-			token = lib.loadData(data, context, ns, parser);
-		} else {
-			var loader:AssetLoader = new AssetLoader();
-			this._loadingSessions.push(loader);
-			token = loader.loadData(data, '', context, ns, parser);
-		}
-
-		token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-		token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-		token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
-
-		// Error are handled separately (see documentation for addErrorHandler)
-		token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
-		token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
-
-		return token;
+		this._getLoaderSession().loadData(data, '', context, ns, parser);
 	}
 
+	private _getLoaderSession()
+	{
+		if (this._useAssetLib) {
+			var lib:AssetLibraryBundle = AssetLibraryBundle.getInstance(this._assetLibId);
+			this._loaderSession = lib.getLoaderSession();
+		} else {
+			this._loaderSession = new LoaderSession();
+		}
+
+		this._loaderSession.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+		this._loaderSession.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
+		this._loaderSession.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+
+		// Error are handled separately (see documentation for addErrorHandler)
+		this._loaderSession._iAddErrorHandler(this._onLoadErrorDelegate);
+		this._loaderSession._iAddParseErrorHandler(this._onParseErrorDelegate);
+
+		return this._loaderSession;
+	}
+
+	private _disposeLoaderSession()
+	{
+		// Add loader to garbage - for a collection sweep and kill
+		this._loaderSessionGarbage = this._loaderSession;
+		delete this._loaderSession;
+		this._loaderSession = null;
+		this._gcTimeoutIID = setTimeout(() => {this.loaderSessionGC()}, 100);
+	}
+	
 	/**
 	 * Removes a child of this Loader object that was loaded by using the
 	 * <code>load()</code> method. The <code>property</code> of the associated
@@ -579,7 +563,7 @@ class Loader extends DisplayObjectContainer
 	 */
 	public static enableParser(parserClass:Object)
 	{
-		AssetLoader.enableParser(parserClass);
+		LoaderSession.enableParser(parserClass);
 	}
 
 	/**
@@ -593,14 +577,24 @@ class Loader extends DisplayObjectContainer
 	 */
 	public static enableParsers(parserClasses:Array<Object>)
 	{
-		AssetLoader.enableParsers(parserClasses);
+		LoaderSession.enableParsers(parserClasses);
 	}
-
-
-	private removeListeners(dispatcher:EventDispatcher)
+	
+	private loaderSessionGC():void
 	{
-		dispatcher.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-		dispatcher.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+		//remove listeners
+		this._loaderSessionGarbage.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+		this._loaderSessionGarbage.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
+		this._loaderSessionGarbage.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+
+		if (!this._useAssetLib)
+			this._loaderSessionGarbage.stop();
+
+		delete this._loaderSessionGarbage;
+		this._loaderSessionGarbage = null;
+
+		clearTimeout(this._gcTimeoutIID);
+		this._gcTimeoutIID = null;
 	}
 
 	private onAssetComplete(event:AssetEvent)
@@ -650,6 +644,8 @@ class Loader extends DisplayObjectContainer
 			this.addChild(this._content);
 
 		this.dispatchEvent(event);
+
+		this._disposeLoaderSession();
 	}
 }
 
