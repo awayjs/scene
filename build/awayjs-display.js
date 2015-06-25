@@ -5531,7 +5531,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AssetLibraryBundle = require("awayjs-core/lib/library/AssetLibraryBundle");
-var AssetLoader = require("awayjs-core/lib/library/AssetLoader");
+var LoaderSession = require("awayjs-core/lib/library/LoaderSession");
 var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var IOErrorEvent = require("awayjs-core/lib/events/IOErrorEvent");
 var LoaderEvent = require("awayjs-core/lib/events/LoaderEvent");
@@ -5655,7 +5655,6 @@ var Loader = (function (_super) {
         if (useAssetLibrary === void 0) { useAssetLibrary = true; }
         if (assetLibraryId === void 0) { assetLibraryId = null; }
         _super.call(this);
-        this._loadingSessions = new Array();
         this._useAssetLib = useAssetLibrary;
         this._assetLibId = assetLibraryId;
         this._onResourceCompleteDelegate = function (event) { return _this.onResourceComplete(event); };
@@ -5717,21 +5716,14 @@ var Loader = (function (_super) {
      *
      */
     Loader.prototype.close = function () {
+        if (!this._loaderSession)
+            return;
         if (this._useAssetLib) {
             var lib;
             lib = AssetLibraryBundle.getInstance(this._assetLibId);
-            lib.stopAllLoadingSessions();
-            this._loadingSessions = null;
-            return;
+            lib.disposeLoaderSession(this._loaderSession);
         }
-        var i /*int*/;
-        var length = this._loadingSessions.length;
-        for (i = 0; i < length; i++) {
-            this.removeListeners(this._loadingSessions[i]);
-            this._loadingSessions[i].stop();
-            this._loadingSessions[i] = null;
-        }
-        this._loadingSessions = null;
+        this._disposeLoaderSession();
     };
     /**
      * Loads a SWF, JPEG, progressive JPEG, unanimated GIF, or PNG file into an
@@ -5816,7 +5808,7 @@ var Loader = (function (_super) {
      *                loaded, allowing the differentiation of two resources with
      *                identical assets.
      * @param parser  An optional parser object for translating the loaded data
-     *                into a usable resource. If not provided, AssetLoader will
+     *                into a usable resource. If not provided, LoaderSession will
      *                attempt to auto-detect the file type.
      * @throws IOError               The <code>digest</code> property of the
      *                               <code>request</code> object is not
@@ -5904,24 +5896,7 @@ var Loader = (function (_super) {
         if (context === void 0) { context = null; }
         if (ns === void 0) { ns = null; }
         if (parser === void 0) { parser = null; }
-        var token;
-        if (this._useAssetLib) {
-            var lib;
-            lib = AssetLibraryBundle.getInstance(this._assetLibId);
-            token = lib.load(request, context, ns, parser);
-        }
-        else {
-            var loader = new AssetLoader();
-            this._loadingSessions.push(loader);
-            token = loader.load(request, context, ns, parser);
-        }
-        token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-        token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-        token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
-        // Error are handled separately (see documentation for addErrorHandler)
-        token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
-        token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
-        return token;
+        this._getLoaderSession().load(request, context, ns, parser);
     };
     /**
      * Loads from binary data stored in a ByteArray object.
@@ -6013,24 +5988,33 @@ var Loader = (function (_super) {
         if (context === void 0) { context = null; }
         if (ns === void 0) { ns = null; }
         if (parser === void 0) { parser = null; }
-        var token;
+        this._getLoaderSession().loadData(data, '', context, ns, parser);
+    };
+    Loader.prototype._getLoaderSession = function () {
         if (this._useAssetLib) {
-            var lib;
-            lib = AssetLibraryBundle.getInstance(this._assetLibId);
-            token = lib.loadData(data, context, ns, parser);
+            var lib = AssetLibraryBundle.getInstance(this._assetLibId);
+            this._loaderSession = lib.getLoaderSession();
         }
         else {
-            var loader = new AssetLoader();
-            this._loadingSessions.push(loader);
-            token = loader.loadData(data, '', context, ns, parser);
+            this._loaderSession = new LoaderSession();
         }
-        token.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-        token.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-        token.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+        this._loaderSession.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+        this._loaderSession.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
+        this._loaderSession.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
         // Error are handled separately (see documentation for addErrorHandler)
-        token._iLoader._iAddErrorHandler(this._onLoadErrorDelegate);
-        token._iLoader._iAddParseErrorHandler(this._onParseErrorDelegate);
-        return token;
+        this._loaderSession._iAddErrorHandler(this._onLoadErrorDelegate);
+        this._loaderSession._iAddParseErrorHandler(this._onParseErrorDelegate);
+        return this._loaderSession;
+    };
+    Loader.prototype._disposeLoaderSession = function () {
+        var _this = this;
+        // Add loader to garbage - for a collection sweep and kill
+        this._loaderSessionGarbage = this._loaderSession;
+        delete this._loaderSession;
+        this._loaderSession = null;
+        this._gcTimeoutIID = setTimeout(function () {
+            _this.loaderSessionGC();
+        }, 100);
     };
     /**
      * Removes a child of this Loader object that was loaded by using the
@@ -6068,7 +6052,7 @@ var Loader = (function (_super) {
      * @see away.parsers.Parsers
      */
     Loader.enableParser = function (parserClass) {
-        AssetLoader.enableParser(parserClass);
+        LoaderSession.enableParser(parserClass);
     };
     /**
      * Enables a list of parsers.
@@ -6080,11 +6064,19 @@ var Loader = (function (_super) {
      * @see away.parsers.Parsers
      */
     Loader.enableParsers = function (parserClasses) {
-        AssetLoader.enableParsers(parserClasses);
+        LoaderSession.enableParsers(parserClasses);
     };
-    Loader.prototype.removeListeners = function (dispatcher) {
-        dispatcher.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-        dispatcher.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+    Loader.prototype.loaderSessionGC = function () {
+        //remove listeners
+        this._loaderSessionGarbage.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
+        this._loaderSessionGarbage.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
+        this._loaderSessionGarbage.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+        if (!this._useAssetLib)
+            this._loaderSessionGarbage.stop();
+        delete this._loaderSessionGarbage;
+        this._loaderSessionGarbage = null;
+        clearTimeout(this._gcTimeoutIID);
+        this._gcTimeoutIID = null;
     };
     Loader.prototype.onAssetComplete = function (event) {
         this.dispatchEvent(event);
@@ -6124,12 +6116,13 @@ var Loader = (function (_super) {
         if (this._content)
             this.addChild(this._content);
         this.dispatchEvent(event);
+        this._disposeLoaderSession();
     };
     return Loader;
 })(DisplayObjectContainer);
 module.exports = Loader;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/IOErrorEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/AssetLoader":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer"}],"awayjs-display/lib/containers/Scene":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/IOErrorEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/LoaderSession":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer"}],"awayjs-display/lib/containers/Scene":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

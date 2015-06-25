@@ -3367,8 +3367,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 }
 
 declare module "awayjs-display/lib/containers/Loader" {
-	import AssetLoaderContext = require("awayjs-core/lib/library/AssetLoaderContext");
-	import AssetLoaderToken = require("awayjs-core/lib/library/AssetLoaderToken");
+	import LoaderContext = require("awayjs-core/lib/library/LoaderContext");
 	import URLRequest = require("awayjs-core/lib/net/URLRequest");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -3449,7 +3448,9 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     *
 	     * @eventType LoaderEvent
 	     */
-	    private _loadingSessions;
+	    private _loaderSession;
+	    private _loaderSessionGarbage;
+	    private _gcTimeoutIID;
 	    private _useAssetLib;
 	    private _assetLibId;
 	    private _onResourceCompleteDelegate;
@@ -3632,7 +3633,7 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     *                loaded, allowing the differentiation of two resources with
 	     *                identical assets.
 	     * @param parser  An optional parser object for translating the loaded data
-	     *                into a usable resource. If not provided, AssetLoader will
+	     *                into a usable resource. If not provided, LoaderSession will
 	     *                attempt to auto-detect the file type.
 	     * @throws IOError               The <code>digest</code> property of the
 	     *                               <code>request</code> object is not
@@ -3716,7 +3717,7 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	     *                      object when a loaded object is removed.
 	     */
-	    load(request: URLRequest, context?: AssetLoaderContext, ns?: string, parser?: ParserBase): AssetLoaderToken;
+	    load(request: URLRequest, context?: LoaderContext, ns?: string, parser?: ParserBase): void;
 	    /**
 	     * Loads from binary data stored in a ByteArray object.
 	     *
@@ -3803,7 +3804,9 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	     *                      object when a loaded object is removed.
 	     */
-	    loadData(data: any, context?: AssetLoaderContext, ns?: string, parser?: ParserBase): AssetLoaderToken;
+	    loadData(data: any, context?: LoaderContext, ns?: string, parser?: ParserBase): void;
+	    private _getLoaderSession();
+	    private _disposeLoaderSession();
 	    /**
 	     * Removes a child of this Loader object that was loaded by using the
 	     * <code>load()</code> method. The <code>property</code> of the associated
@@ -3848,7 +3851,7 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     * @see away.parsers.Parsers
 	     */
 	    static enableParsers(parserClasses: Array<Object>): void;
-	    private removeListeners(dispatcher);
+	    private loaderSessionGC();
 	    private onAssetComplete(event);
 	    /**
 	     * Called when an error occurs during loading
