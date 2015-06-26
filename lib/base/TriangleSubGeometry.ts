@@ -111,9 +111,6 @@ class TriangleSubGeometry extends SubGeometryBase
 			return;
 
 		this._autoDeriveUVs = value;
-
-		if (value)
-			this.notifyVerticesUpdate(this._uvs);
 	}
 
 	/**
@@ -131,9 +128,6 @@ class TriangleSubGeometry extends SubGeometryBase
 			return;
 
 		this._autoDeriveNormals = value;
-
-		if (value)
-			this.notifyVerticesUpdate(this._normals);
 	}
 
 	/**
@@ -151,9 +145,6 @@ class TriangleSubGeometry extends SubGeometryBase
 			return;
 
 		this._autoDeriveTangents = value;
-
-		if (value)
-			this.notifyVerticesUpdate(this._tangents);
 	}
 
 	/**
@@ -255,7 +246,7 @@ class TriangleSubGeometry extends SubGeometryBase
 	{
 		super(concatenatedBuffer);
 
-		this._positions = new Float3Attributes(this._concatenatedBuffer);
+		this._positions = this._concatenatedBuffer? <Float3Attributes> this._concatenatedBuffer.getView(0) || new Float3Attributes(this._concatenatedBuffer) : new Float3Attributes();
 
 		this._numVertices = this._positions.count;
 	}
@@ -622,24 +613,38 @@ class TriangleSubGeometry extends SubGeometryBase
 	{
 		var clone:TriangleSubGeometry = new TriangleSubGeometry(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
 
-		clone.setIndices(this._pIndices.clone());
+		//temp disable auto derives
+		clone.autoDeriveNormals = false;
+		clone.autoDeriveTangents = false;
+		clone.autoDeriveUVs = false;
 
-		clone.setNormals((this._normals && !this._autoDeriveNormals)? this._normals.clone() : null);
+		if (this.indices)
+			clone.setIndices(this.indices.clone());
 
-		clone.setUVs((this._uvs && !this._autoDeriveUVs)? this._uvs.clone() : null);
+		if (this.normals)
+			clone.setNormals(this.normals.clone());
 
-		clone.setTangents((this._tangents && !this._autoDeriveTangents)? this._tangents.clone() : null);
+		if (this.uvs)
+			clone.setUVs(this.uvs.clone());
 
-		if (this._secondaryUVs)
-			clone.setSecondaryUVs(this._secondaryUVs.clone());
+		if (this.tangents)
+			clone.setTangents(this.tangents.clone());
 
-		if (this._jointIndices) {
-			clone.jointsPerVertex = this._jointsPerVertex;
-			clone.setJointIndices(this._jointIndices.clone());
-		}
+		if (this.secondaryUVs)
+			clone.setSecondaryUVs(this.secondaryUVs.clone());
 
-		if (this._jointWeights)
-			clone.setJointWeights(this._jointWeights.clone());
+		clone.jointsPerVertex = this._jointsPerVertex;
+
+		if (this.jointIndices)
+			clone.setJointIndices(this.jointIndices.clone());
+
+		if (this.jointWeights)
+			clone.setJointWeights(this.jointWeights.clone());
+
+		//return auto derives to cloned values
+		clone.autoDeriveNormals = this._autoDeriveNormals;
+		clone.autoDeriveTangents = this._autoDeriveTangents;
+		clone.autoDeriveUVs = this._autoDeriveUVs;
 
 		return clone;
 	}

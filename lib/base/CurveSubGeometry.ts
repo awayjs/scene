@@ -113,9 +113,9 @@ class CurveSubGeometry extends SubGeometryBase
 	{
 		super(concatenatedBuffer);
 
-		this._positions = new Float3Attributes(this._concatenatedBuffer);
+		this._positions = this._concatenatedBuffer? <Float3Attributes> this._concatenatedBuffer.getView(0) || new Float3Attributes(this._concatenatedBuffer) : new Float3Attributes();
 
-		this._curves = new Float2Attributes(this._concatenatedBuffer);
+		this._curves = this._concatenatedBuffer? <Float2Attributes> this._concatenatedBuffer.getView(1) || new Float2Attributes(this._concatenatedBuffer) : new Float2Attributes();
 
 		this._numVertices = this._positions.count;
 	}
@@ -350,9 +350,17 @@ class CurveSubGeometry extends SubGeometryBase
 	{
 		var clone:CurveSubGeometry = new CurveSubGeometry(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
 
-		clone.setIndices(this._pIndices.clone());
+		//temp disable auto derives
+		clone.autoDeriveUVs = false;
 
-		clone.setUVs((this._uvs && !this._autoDeriveUVs)? this._uvs.clone() : null);
+		if (this.indices)
+			clone.setIndices(this.indices.clone());
+
+		if (this.uvs)
+			clone.setUVs(this.uvs.clone());
+
+		//return auto derives to cloned values
+		clone.autoDeriveUVs = this._autoDeriveUVs;
 
 		return clone;
 	}
