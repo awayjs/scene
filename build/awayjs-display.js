@@ -96,8 +96,8 @@ var CurveSubGeometry = (function (_super) {
         this._autoDeriveUVs = false;
         this._scaleU = 1;
         this._scaleV = 1;
-        this._positions = new Float3Attributes(this._concatenatedBuffer);
-        this._curves = new Float2Attributes(this._concatenatedBuffer);
+        this._positions = this._concatenatedBuffer ? this._concatenatedBuffer.getView(0) || new Float3Attributes(this._concatenatedBuffer) : new Float3Attributes();
+        this._curves = this._concatenatedBuffer ? this._concatenatedBuffer.getView(1) || new Float2Attributes(this._concatenatedBuffer) : new Float2Attributes();
         this._numVertices = this._positions.count;
     }
     Object.defineProperty(CurveSubGeometry.prototype, "assetType", {
@@ -355,8 +355,14 @@ var CurveSubGeometry = (function (_super) {
      */
     CurveSubGeometry.prototype.clone = function () {
         var clone = new CurveSubGeometry(this._concatenatedBuffer ? this._concatenatedBuffer.clone() : null);
-        clone.setIndices(this._pIndices.clone());
-        clone.setUVs((this._uvs && !this._autoDeriveUVs) ? this._uvs.clone() : null);
+        //temp disable auto derives
+        clone.autoDeriveUVs = false;
+        if (this.indices)
+            clone.setIndices(this.indices.clone());
+        if (this.uvs)
+            clone.setUVs(this.uvs.clone());
+        //return auto derives to cloned values
+        clone.autoDeriveUVs = this._autoDeriveUVs;
         return clone;
     };
     CurveSubGeometry.prototype.scaleUV = function (scaleU, scaleV) {
@@ -4042,7 +4048,7 @@ var TriangleSubGeometry = (function (_super) {
         this._autoDeriveNormals = true;
         this._autoDeriveTangents = true;
         this._autoDeriveUVs = false;
-        this._positions = new Float3Attributes(this._concatenatedBuffer);
+        this._positions = this._concatenatedBuffer ? this._concatenatedBuffer.getView(0) || new Float3Attributes(this._concatenatedBuffer) : new Float3Attributes();
         this._numVertices = this._positions.count;
     }
     Object.defineProperty(TriangleSubGeometry.prototype, "assetType", {
@@ -4108,8 +4114,6 @@ var TriangleSubGeometry = (function (_super) {
             if (this._autoDeriveUVs == value)
                 return;
             this._autoDeriveUVs = value;
-            if (value)
-                this.notifyVerticesUpdate(this._uvs);
         },
         enumerable: true,
         configurable: true
@@ -4126,8 +4130,6 @@ var TriangleSubGeometry = (function (_super) {
             if (this._autoDeriveNormals == value)
                 return;
             this._autoDeriveNormals = value;
-            if (value)
-                this.notifyVerticesUpdate(this._normals);
         },
         enumerable: true,
         configurable: true
@@ -4144,8 +4146,6 @@ var TriangleSubGeometry = (function (_super) {
             if (this._autoDeriveTangents == value)
                 return;
             this._autoDeriveTangents = value;
-            if (value)
-                this.notifyVerticesUpdate(this._tangents);
         },
         enumerable: true,
         configurable: true
@@ -4513,18 +4513,29 @@ var TriangleSubGeometry = (function (_super) {
      */
     TriangleSubGeometry.prototype.clone = function () {
         var clone = new TriangleSubGeometry(this._concatenatedBuffer ? this._concatenatedBuffer.clone() : null);
-        clone.setIndices(this._pIndices.clone());
-        clone.setNormals((this._normals && !this._autoDeriveNormals) ? this._normals.clone() : null);
-        clone.setUVs((this._uvs && !this._autoDeriveUVs) ? this._uvs.clone() : null);
-        clone.setTangents((this._tangents && !this._autoDeriveTangents) ? this._tangents.clone() : null);
-        if (this._secondaryUVs)
-            clone.setSecondaryUVs(this._secondaryUVs.clone());
-        if (this._jointIndices) {
-            clone.jointsPerVertex = this._jointsPerVertex;
-            clone.setJointIndices(this._jointIndices.clone());
-        }
-        if (this._jointWeights)
-            clone.setJointWeights(this._jointWeights.clone());
+        //temp disable auto derives
+        clone.autoDeriveNormals = false;
+        clone.autoDeriveTangents = false;
+        clone.autoDeriveUVs = false;
+        if (this.indices)
+            clone.setIndices(this.indices.clone());
+        if (this.normals)
+            clone.setNormals(this.normals.clone());
+        if (this.uvs)
+            clone.setUVs(this.uvs.clone());
+        if (this.tangents)
+            clone.setTangents(this.tangents.clone());
+        if (this.secondaryUVs)
+            clone.setSecondaryUVs(this.secondaryUVs.clone());
+        clone.jointsPerVertex = this._jointsPerVertex;
+        if (this.jointIndices)
+            clone.setJointIndices(this.jointIndices.clone());
+        if (this.jointWeights)
+            clone.setJointWeights(this.jointWeights.clone());
+        //return auto derives to cloned values
+        clone.autoDeriveNormals = this._autoDeriveNormals;
+        clone.autoDeriveTangents = this._autoDeriveTangents;
+        clone.autoDeriveUVs = this._autoDeriveUVs;
         return clone;
     };
     TriangleSubGeometry.prototype.scaleUV = function (scaleU, scaleV) {
