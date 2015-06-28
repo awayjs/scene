@@ -21,6 +21,7 @@ class TesselatedFontTable extends AssetBase
 	private _font_chars:Array<TesselatedFontChar>;
 	private _font_chars_dic:Object;
 	private _font_em_size:number;
+	private _whitespace_width:number;
 	private _charDictDirty:Boolean;
 	//TODO test shader picking
 //		public get shaderPickingDetails():boolean
@@ -54,6 +55,14 @@ class TesselatedFontTable extends AssetBase
 	public get_font_em_size():number
 	{
 		return this._font_em_size
+	}
+	public set_whitespace_width(value:number):void
+	{
+		this._whitespace_width=value;
+	}
+	public get_whitespace_width():number
+	{
+		return this._whitespace_width
 	}
 	public set_font_em_size(font_em_size:number):void
 	{

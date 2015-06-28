@@ -10811,17 +10811,17 @@ var TextField = (function (_super) {
     TextField.prototype.reConstruct = function () {
         if (this._textFormat == null)
             return;
-        if (this._text == "")
-            return;
         for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
             this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
+        if (this._text == "")
+            return;
         var vertices = new Array();
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
         var y_offset = 0;
         var prev_char = null;
         var j = 0;
         var k = 0;
-        var textlines = this.text.toString().split("\n");
+        var textlines = this.text.toString().split("\r");
         for (var tl = 0; tl < textlines.length; tl++) {
             var line_width = 0;
             var font_chars = [];
@@ -10844,13 +10844,13 @@ var TextField = (function (_super) {
                     }
                     else {
                         // if no char-geometry was found, we insert a "space"
-                        line_width += this._textFormat.font_table.get_font_em_size() * char_scale;
+                        line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
                     }
                 }
                 else {
                     // if no char-geometry was found, we insert a "space"
                     //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-                    line_width += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
                 }
                 font_chars.push(this_char);
             }
@@ -10891,11 +10891,11 @@ var TextField = (function (_super) {
                     }
                     else {
                         // if no char-geometry was found, we insert a "space"
-                        x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                        x_offset += this._textFormat.font_table.get_whitespace_width() * char_scale;
                     }
                 }
                 else {
-                    x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                    x_offset += this._textFormat.font_table.get_whitespace_width() * char_scale;
                 }
             }
             y_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
@@ -18233,6 +18233,12 @@ var TesselatedFontTable = (function (_super) {
     };
     TesselatedFontTable.prototype.get_font_em_size = function () {
         return this._font_em_size;
+    };
+    TesselatedFontTable.prototype.set_whitespace_width = function (value) {
+        this._whitespace_width = value;
+    };
+    TesselatedFontTable.prototype.get_whitespace_width = function () {
+        return this._whitespace_width;
     };
     TesselatedFontTable.prototype.set_font_em_size = function (font_em_size) {
         this._font_em_size = font_em_size;

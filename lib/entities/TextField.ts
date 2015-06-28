@@ -743,11 +743,12 @@ class TextField extends Mesh
 		if(this._textFormat==null)
 			return;
 
-		if(this._text=="")
-			return;
 
 		for (var i:number=this.geometry.subGeometries.length-1; i>=0; i--)
 			this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
+
+		if(this._text=="")
+			return;
 
 		var vertices:Array<number> = new Array<number>();
 
@@ -757,7 +758,7 @@ class TextField extends Mesh
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
 		var k:number = 0;
-		var textlines:Array<string> = this.text.toString().split("\n");
+		var textlines:Array<string> = this.text.toString().split("\r");
 		for (var tl = 0; tl < textlines.length; tl++) {
 			var line_width:number=0;
 			var font_chars:Array<TesselatedFontChar> = [];
@@ -780,13 +781,13 @@ class TextField extends Mesh
 					}
 					else {
 						// if no char-geometry was found, we insert a "space"
-						line_width+=this._textFormat.font_table.get_font_em_size() * char_scale;
+						line_width+=this._textFormat.font_table.get_whitespace_width() * char_scale;
 					}
 				}
 				else {
 					// if no char-geometry was found, we insert a "space"
 					//x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-					line_width+=this._textFormat.font_table.get_font_em_size() * char_scale;
+					line_width+=this._textFormat.font_table.get_whitespace_width() * char_scale;
 				}
 				font_chars.push(this_char);
 			}
@@ -829,11 +830,11 @@ class TextField extends Mesh
 					}
 					else {
 						// if no char-geometry was found, we insert a "space"
-						x_offset+=this._textFormat.font_table.get_font_em_size() * char_scale;
+						x_offset+=this._textFormat.font_table.get_whitespace_width() * char_scale;
 					}
 				}
 				else{
-					x_offset+=this._textFormat.font_table.get_font_em_size() * char_scale;
+					x_offset+=this._textFormat.font_table.get_whitespace_width() * char_scale;
 				}
 			}
 			y_offset+=this._textFormat.font_table.get_font_em_size() * char_scale;
