@@ -636,6 +636,7 @@ var DisplayObject = (function (_super) {
         this._pImplicitMouseEnabled = true;
         this._positionDirty = true;
         this._rotationDirty = true;
+        this._skewDirty = true;
         this._scaleDirty = true;
         this._rotationX = 0;
         this._rotationY = 0;
@@ -643,6 +644,9 @@ var DisplayObject = (function (_super) {
         this._eulers = new Vector3D();
         this._flipY = new Matrix3D();
         this._zOffset = 0;
+        this._pSkewX = 0;
+        this._pSkewY = 0;
+        this._pSkewZ = 0;
         this._pScaleX = 1;
         this._pScaleY = 1;
         this._pScaleZ = 1;
@@ -656,6 +660,7 @@ var DisplayObject = (function (_super) {
         this._pivotDirty = true;
         this._pos = new Vector3D();
         this._rot = new Vector3D();
+        this._ske = new Vector3D();
         this._sca = new Vector3D();
         this._pIgnoreTransform = false;
         this._pRenderables = new Array();
@@ -679,10 +684,11 @@ var DisplayObject = (function (_super) {
         // recomposing the transform matrix in updateTransform()
         this._onGlobalColorTransformChangedDelegate = function (event) { return _this.onGlobalColorTransformChanged(event); };
         this._onColorTransformChangedDelegate = function (event) { return _this.onColorTransformChanged(event); };
-        this._transformComponents = new Array(3);
+        this._transformComponents = new Array(4);
         this._transformComponents[0] = this._pos;
         this._transformComponents[1] = this._rot;
-        this._transformComponents[2] = this._sca;
+        this._transformComponents[2] = this._ske;
+        this._transformComponents[3] = this._sca;
         //creation of associated transform object
         this._transform = new Transform(this);
         this._matrix3D.identity();
@@ -1292,6 +1298,57 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DisplayObject.prototype, "skewX", {
+        /**
+         * Indicates the horizontal skew(angle) of the object as applied from
+         * the registration point. The default registration point is(0,0).
+         */
+        get: function () {
+            return this._pSkewX;
+        },
+        set: function (val) {
+            if (this._pSkewX == val)
+                return;
+            this._pSkewX = val;
+            this.invalidateSkew();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObject.prototype, "skewY", {
+        /**
+         * Indicates the vertical skew(angle) of an object as applied from the
+         * registration point of the object. The default registration point is(0,0).
+         */
+        get: function () {
+            return this._pSkewY;
+        },
+        set: function (val) {
+            if (this._pSkewY == val)
+                return;
+            this._pSkewY = val;
+            this.invalidateSkew();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObject.prototype, "skewZ", {
+        /**
+         * Indicates the depth skew(angle) of an object as applied from the
+         * registration point of the object. The default registration point is(0,0).
+         */
+        get: function () {
+            return this._pSkewZ;
+        },
+        set: function (val) {
+            if (this._pSkewZ == val)
+                return;
+            this._pSkewZ = val;
+            this.invalidateSkew();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObject.prototype, "scene", {
         /**
          *
@@ -1547,6 +1604,9 @@ var DisplayObject = (function (_super) {
                 break;
             case DisplayObjectEvent.ROTATION_CHANGED:
                 this._listenToRotationChanged = true;
+                break;
+            case DisplayObjectEvent.SKEW_CHANGED:
+                this._listenToSkewChanged = true;
                 break;
             case DisplayObjectEvent.SCALE_CHANGED:
                 this._listenToScaleChanged = true;
@@ -1986,7 +2046,7 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.getRenderSceneTransform = function (camera) {
         if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
             var comps = camera.sceneTransform.decompose();
-            var scale = comps[2];
+            var scale = comps[3];
             comps[0] = this.scenePosition;
             scale.x = this._pScaleX;
             scale.y = this._pScaleY;
@@ -2142,6 +2202,13 @@ var DisplayObject = (function (_super) {
                 this.invalidateRotation();
             }
             vec = elements[2];
+            if (this._pSkewX != vec.x || this._pSkewY != vec.y || this._pSkewZ != vec.z) {
+                this._pSkewX = vec.x;
+                this._pSkewY = vec.y;
+                this._pSkewZ = vec.z;
+                this.invalidateSkew();
+            }
+            vec = elements[3];
             if (this._pScaleX != vec.x || this._pScaleY != vec.y || this._pScaleZ != vec.z) {
                 this._pScaleX = vec.x;
                 this._pScaleY = vec.y;
@@ -2259,6 +2326,9 @@ var DisplayObject = (function (_super) {
         this._rot.x = this._rotationX;
         this._rot.y = this._rotationY;
         this._rot.z = this._rotationZ;
+        this._ske.x = this._pSkewX;
+        this._ske.y = this._pSkewY;
+        this._ske.z = this._pSkewZ;
         this._sca.x = this._pScaleX;
         this._sca.y = this._pScaleY;
         this._sca.z = this._pScaleZ;
@@ -2274,6 +2344,7 @@ var DisplayObject = (function (_super) {
         this._matrix3DDirty = false;
         this._positionDirty = false;
         this._rotationDirty = false;
+        this._skewDirty = false;
         this._scaleDirty = false;
         this._pivotDirty = false;
     };
@@ -2357,6 +2428,14 @@ var DisplayObject = (function (_super) {
     /**
      * @private
      */
+    DisplayObject.prototype.notifySkewChanged = function () {
+        if (!this._skewChanged)
+            this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this);
+        this.dispatchEvent(this._skewChanged);
+    };
+    /**
+     * @private
+     */
     DisplayObject.prototype.notifyScaleChanged = function () {
         if (!this._scaleChanged)
             this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this);
@@ -2429,6 +2508,17 @@ var DisplayObject = (function (_super) {
         this.invalidateMatrix3D();
         if (this._listenToRotationChanged)
             this.notifyRotationChanged();
+    };
+    /**
+     * @private
+     */
+    DisplayObject.prototype.invalidateSkew = function () {
+        if (this._skewDirty)
+            return;
+        this._skewDirty = true;
+        this.invalidateMatrix3D();
+        if (this._listenToSkewChanged)
+            this.notifySkewChanged();
     };
     /**
      * @private
@@ -11316,6 +11406,7 @@ var DisplayObjectEvent = (function (_super) {
     DisplayObjectEvent.SCENE_CHANGED = "sceneChanged";
     DisplayObjectEvent.POSITION_CHANGED = "positionChanged";
     DisplayObjectEvent.ROTATION_CHANGED = "rotationChanged";
+    DisplayObjectEvent.SKEW_CHANGED = "skewChanged";
     DisplayObjectEvent.SCALE_CHANGED = "scaleChanged";
     DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED = "globalColorTransformChanged";
     return DisplayObjectEvent;

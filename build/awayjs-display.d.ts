@@ -555,9 +555,11 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _listenToSceneChanged;
 	    private _positionDirty;
 	    private _rotationDirty;
+	    private _skewDirty;
 	    private _scaleDirty;
 	    private _positionChanged;
 	    private _rotationChanged;
+	    private _skewChanged;
 	    private _scaleChanged;
 	    private _rotationX;
 	    private _rotationY;
@@ -566,11 +568,15 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _flipY;
 	    private _listenToPositionChanged;
 	    private _listenToRotationChanged;
+	    private _listenToSkewChanged;
 	    private _listenToScaleChanged;
 	    private _zOffset;
 	    _width: number;
 	    _height: number;
 	    _depth: number;
+	    _pSkewX: number;
+	    _pSkewY: number;
+	    _pSkewZ: number;
 	    _pScaleX: number;
 	    _pScaleY: number;
 	    _pScaleZ: number;
@@ -584,6 +590,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _pivotDirty;
 	    private _pos;
 	    private _rot;
+	    private _ske;
 	    private _sca;
 	    private _transformComponents;
 	    _pIgnoreTransform: boolean;
@@ -1096,6 +1103,21 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    scaleZ: number;
 	    /**
+	     * Indicates the horizontal skew(angle) of the object as applied from
+	     * the registration point. The default registration point is(0,0).
+	     */
+	    skewX: number;
+	    /**
+	     * Indicates the vertical skew(angle) of an object as applied from the
+	     * registration point of the object. The default registration point is(0,0).
+	     */
+	    skewY: number;
+	    /**
+	     * Indicates the depth skew(angle) of an object as applied from the
+	     * registration point of the object. The default registration point is(0,0).
+	     */
+	    skewZ: number;
+	    /**
 	     *
 	     */
 	    scene: Scene;
@@ -1581,6 +1603,10 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @private
 	     */
+	    private notifySkewChanged();
+	    /**
+	     * @private
+	     */
 	    private notifyScaleChanged();
 	    /**
 	     * @private
@@ -1612,6 +1638,10 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @private
 	     */
 	    private invalidateRotation();
+	    /**
+	     * @private
+	     */
+	    private invalidateSkew();
 	    /**
 	     * @private
 	     */
@@ -7216,6 +7246,7 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	    static SCENE_CHANGED: string;
 	    static POSITION_CHANGED: string;
 	    static ROTATION_CHANGED: string;
+	    static SKEW_CHANGED: string;
 	    static SCALE_CHANGED: string;
 	    static GLOBAL_COLOR_TRANSFORM_CHANGED: string;
 	    object: DisplayObject;
