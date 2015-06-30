@@ -208,10 +208,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 	private _positionDirty:boolean = true;
 	private _rotationDirty:boolean = true;
+	private _skewDirty:boolean = true;
 	private _scaleDirty:boolean = true;
 
 	private _positionChanged:DisplayObjectEvent;
 	private _rotationChanged:DisplayObjectEvent;
+	private _skewChanged:DisplayObjectEvent;
 	private _scaleChanged:DisplayObjectEvent;
 
 	private _rotationX:number = 0;
@@ -222,6 +224,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 	private _listenToPositionChanged:boolean;
 	private _listenToRotationChanged:boolean;
+	private _listenToSkewChanged:boolean;
 	private _listenToScaleChanged:boolean;
 	private _zOffset:number = 0;
 
@@ -229,6 +232,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _height:number;
 	public _depth:number;
 
+	public _pSkewX:number = 0;
+	public _pSkewY:number = 0;
+	public _pSkewZ:number = 0;
 	public _pScaleX:number = 1;
 	public _pScaleY:number = 1;
 	public _pScaleZ:number = 1;
@@ -242,6 +248,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	private _pivotDirty:boolean = true;
 	private _pos:Vector3D = new Vector3D();
 	private _rot:Vector3D = new Vector3D();
+	private _ske:Vector3D = new Vector3D();
 	private _sca:Vector3D = new Vector3D();
 	private _transformComponents:Array<Vector3D>;
 
@@ -1094,6 +1101,63 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	}
 
 	/**
+	 * Indicates the horizontal skew(angle) of the object as applied from
+	 * the registration point. The default registration point is(0,0).
+	 */
+	public get skewX():number
+	{
+		return this._pSkewX;
+	}
+
+	public set skewX(val:number)
+	{
+		if (this._pSkewX == val)
+			return;
+
+		this._pSkewX = val;
+
+		this.invalidateSkew();
+	}
+
+	/**
+	 * Indicates the vertical skew(angle) of an object as applied from the
+	 * registration point of the object. The default registration point is(0,0).
+	 */
+	public get skewY():number
+	{
+		return this._pSkewY;
+	}
+
+	public set skewY(val:number)
+	{
+		if (this._pSkewY == val)
+			return;
+
+		this._pSkewY = val;
+
+		this.invalidateSkew();
+	}
+
+	/**
+	 * Indicates the depth skew(angle) of an object as applied from the
+	 * registration point of the object. The default registration point is(0,0).
+	 */
+	public get skewZ():number
+	{
+		return this._pSkewZ;
+	}
+
+	public set skewZ(val:number)
+	{
+		if (this._pSkewZ == val)
+			return;
+
+		this._pSkewZ = val;
+
+		this.invalidateSkew();
+	}
+
+	/**
 	 *
 	 */
 	public get scene():Scene
@@ -1378,11 +1442,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
         this._onGlobalColorTransformChangedDelegate = (event:DisplayObjectEvent) => this.onGlobalColorTransformChanged(event);
         this._onColorTransformChangedDelegate = (event:Event) => this.onColorTransformChanged(event);
-		this._transformComponents = new Array<Vector3D>(3);
+		this._transformComponents = new Array<Vector3D>(4);
 
 		this._transformComponents[0] = this._pos;
 		this._transformComponents[1] = this._rot;
-		this._transformComponents[2] = this._sca;
+		this._transformComponents[2] = this._ske;
+		this._transformComponents[3] = this._sca;
 
 		//creation of associated transform object
 		this._transform = new Transform(this);
@@ -1408,6 +1473,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 				break;
 			case DisplayObjectEvent.ROTATION_CHANGED:
 				this._listenToRotationChanged = true;
+				break;
+			case DisplayObjectEvent.SKEW_CHANGED:
+				this._listenToSkewChanged = true;
 				break;
 			case DisplayObjectEvent.SCALE_CHANGED:
 				this._listenToScaleChanged = true;
@@ -1919,7 +1987,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	{
 		if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
 			var comps:Array<Vector3D> = camera.sceneTransform.decompose();
-			var scale:Vector3D = comps[2];
+			var scale:Vector3D = comps[3];
 			comps[0] = this.scenePosition;
 			scale.x = this._pScaleX;
 			scale.y = this._pScaleY;
@@ -2122,6 +2190,16 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		vec = elements[2];
 
+		if (this._pSkewX != vec.x || this._pSkewY != vec.y || this._pSkewZ != vec.z) {
+			this._pSkewX = vec.x;
+			this._pSkewY = vec.y;
+			this._pSkewZ = vec.z;
+
+			this.invalidateSkew();
+		}
+
+		vec = elements[3];
+
 		if (this._pScaleX != vec.x || this._pScaleY != vec.y || this._pScaleZ != vec.z) {
 			this._pScaleX = vec.x;
 			this._pScaleY = vec.y;
@@ -2267,6 +2345,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this._rot.y = this._rotationY;
 		this._rot.z = this._rotationZ;
 
+		this._ske.x = this._pSkewX;
+		this._ske.y = this._pSkewY;
+		this._ske.z = this._pSkewZ;
+
 		this._sca.x = this._pScaleX;
 		this._sca.y = this._pScaleY;
 		this._sca.z = this._pScaleZ;
@@ -2285,6 +2367,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this._matrix3DDirty = false;
 		this._positionDirty = false;
 		this._rotationDirty = false;
+		this._skewDirty =false;
 		this._scaleDirty = false;
 		this._pivotDirty = false;
 	}
@@ -2396,6 +2479,17 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	/**
 	 * @private
 	 */
+	private notifySkewChanged()
+	{
+		if (!this._skewChanged)
+			this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this);
+
+		this.dispatchEvent(this._skewChanged);
+	}
+
+	/**
+	 * @private
+	 */
 	private notifyScaleChanged()
 	{
 		if (!this._scaleChanged)
@@ -2497,6 +2591,22 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		if (this._listenToRotationChanged)
 			this.notifyRotationChanged();
+	}
+
+	/**
+	 * @private
+	 */
+	private invalidateSkew()
+	{
+		if (this._skewDirty)
+			return;
+
+		this._skewDirty = true;
+
+		this.invalidateMatrix3D();
+
+		if (this._listenToSkewChanged)
+			this.notifySkewChanged();
 	}
 
 	/**
