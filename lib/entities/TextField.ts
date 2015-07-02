@@ -20,6 +20,7 @@ import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 import TextFormatAlign				= require("awayjs-display/lib/text/TextFormatAlign");
+import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -1218,7 +1219,40 @@ class TextField extends Mesh
 
     public _iCopyToTextField(clone:TextField):void
     {
-        this._iCopyToMesh(clone);
+		clone.geometry = new Geometry();
+		//clone.material = this._material;
+		clone._iMatrix3D = this._iMatrix3D;
+		clone.pivot = this.pivot;
+		clone.partition = this.partition;
+		clone.boundsType = this.boundsType;
+
+
+		clone.name = this.name;
+		clone.castsShadows = this.castsShadows;
+		clone.shareAnimationGeometry = this.shareAnimationGeometry;
+		clone.mouseEnabled = this.mouseEnabled;
+		clone.mouseChildren = this.mouseChildren;
+		//this is of course no proper cloning
+		//maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
+		clone.extra = this.extra;
+		clone._iMaskID = this._iMaskID;
+		clone._iMasks = this._iMasks? this._iMasks.concat() : null;
+
+		//var len:number = this._subMeshes.length;
+		//for (var i:number = 0; i < len; ++i)
+		//	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
+
+
+		var len = this.numChildren;
+		var obj:any;
+		var i;
+		for (i = 0; i < len; ++i) {
+			obj = this.getChildAt(i).clone();
+			clone.addChild(<DisplayObjectContainer> obj);
+		}
+
+		//if (this._animator)
+		//	clone.animator = this._animator.clone();
 		clone.textWidth=this.textWidth;
 		clone.textHeight=this.textHeight;
        	clone.textFormat = this._textFormat;

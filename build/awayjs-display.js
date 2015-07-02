@@ -11329,7 +11329,34 @@ var TextField = (function (_super) {
         return clone;
     };
     TextField.prototype._iCopyToTextField = function (clone) {
-        this._iCopyToMesh(clone);
+        clone.geometry = new Geometry();
+        //clone.material = this._material;
+        clone._iMatrix3D = this._iMatrix3D;
+        clone.pivot = this.pivot;
+        clone.partition = this.partition;
+        clone.boundsType = this.boundsType;
+        clone.name = this.name;
+        clone.castsShadows = this.castsShadows;
+        clone.shareAnimationGeometry = this.shareAnimationGeometry;
+        clone.mouseEnabled = this.mouseEnabled;
+        clone.mouseChildren = this.mouseChildren;
+        //this is of course no proper cloning
+        //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
+        clone.extra = this.extra;
+        clone._iMaskID = this._iMaskID;
+        clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
+        //var len:number = this._subMeshes.length;
+        //for (var i:number = 0; i < len; ++i)
+        //	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
+        var len = this.numChildren;
+        var obj;
+        var i;
+        for (i = 0; i < len; ++i) {
+            obj = this.getChildAt(i).clone();
+            clone.addChild(obj);
+        }
+        //if (this._animator)
+        //	clone.animator = this._animator.clone();
         clone.textWidth = this.textWidth;
         clone.textHeight = this.textHeight;
         clone.textFormat = this._textFormat;
