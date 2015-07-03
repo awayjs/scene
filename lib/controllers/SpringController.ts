@@ -63,6 +63,8 @@ class SpringController extends LookAtController
 		if (!this._pLookAtObject || !this._pTargetObject)
 			return;
 
+		this._pControllerDirty = true;
+
 		offs = this._pLookAtObject.transform.matrix3D.deltaTransformVector(this.positionOffset);
 		this._desiredPosition.x = this._pLookAtObject.x + offs.x;
 		this._desiredPosition.y = this._pLookAtObject.y + offs.y;

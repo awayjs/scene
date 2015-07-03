@@ -50,8 +50,16 @@ class Partition
 
 	public traverse(traverser:CollectorBase)
 	{
-		if (this._updatesMade)
+		if (this._updatesMade) {
+			var t:EntityNode = this._updateQueue;
+			while (t) {
+				//required for controllers with autoUpdate set to true and queued events
+				t.entity._iInternalUpdate();
+				t = t._iUpdateQueueNext;
+			}
 			this.updateEntities();
+		}
+
 
 		this._rootNode.acceptTraverser(traverser);
 	}
@@ -116,9 +124,6 @@ class Partition
 
 			t = node._iUpdateQueueNext;
 			node._iUpdateQueueNext = null;
-
-			//required for controllers with autoUpdate set to true
-			node.entity._iInternalUpdate();
 
 		} while ((node = t) != null);
 	}

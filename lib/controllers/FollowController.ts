@@ -16,8 +16,6 @@ class FollowController extends HoverController
 
 	public update(interpolate:boolean = true)
 	{
-		interpolate = interpolate; // unused: prevents warning
-
 		if (!this.lookAtObject)
 			return;
 

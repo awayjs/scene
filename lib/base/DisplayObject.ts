@@ -10,6 +10,7 @@ import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import Event						= require("awayjs-core/lib/events/Event");
 
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -165,6 +166,8 @@ import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
  */
 class DisplayObject extends AssetBase implements IBitmapDrawable
 {
+	private _queuedEvents:Array<Event> = new Array<Event>();
+	private _elementsDirty:boolean;
 	private _loaderInfo:LoaderInfo;
 	private _mouseX:number;
 	private _mouseY:number;
@@ -180,7 +183,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _pScene:Scene;
 	public _pParent:DisplayObjectContainer;
 	public _pSceneTransform:Matrix3D = new Matrix3D();
-	public _pSceneTransformDirty:boolean = true;
+	public _pSceneTransformDirty:boolean;
 	public _pIsEntity:boolean;
     public _iMaskID:number = -1;
     public _iMasks:DisplayObject[] = null;
@@ -189,16 +192,16 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _pImplicitPartition:Partition;
 
 	private _sceneTransformChanged:DisplayObjectEvent;
-	private _scenechanged:DisplayObjectEvent;
+	private _sceneChanged:DisplayObjectEvent;
 	private _transform:Transform;
 	private _matrix3D:Matrix3D = new Matrix3D();
-	private _matrix3DDirty:boolean = true;
+	private _matrix3DDirty:boolean;
     public _pColorTransform:ColorTransform;
 
 	private _inverseSceneTransform:Matrix3D = new Matrix3D();
-	private _inverseSceneTransformDirty:boolean = true;
+	private _inverseSceneTransformDirty:boolean;
 	private _scenePosition:Vector3D = new Vector3D();
-	private _scenePositionDirty:boolean = true;
+	private _scenePositionDirty:boolean;
 	private _explicitVisibility:boolean = true;
 	public _pImplicitVisibility:boolean = true;
 	private _explicitMouseEnabled:boolean = true;
@@ -206,10 +209,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	private _listenToSceneTransformChanged:boolean;
 	private _listenToSceneChanged:boolean;
 
-	private _positionDirty:boolean = true;
-	private _rotationDirty:boolean = true;
-	private _skewDirty:boolean = true;
-	private _scaleDirty:boolean = true;
+	private _positionDirty:boolean;
+	private _rotationDirty:boolean;
+	private _skewDirty:boolean;
+	private _scaleDirty:boolean;
 
 	private _positionChanged:DisplayObjectEvent;
 	private _rotationChanged:DisplayObjectEvent;
@@ -232,12 +235,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _height:number;
 	public _depth:number;
 
-	public _pSkewX:number = 0;
-	public _pSkewY:number = 0;
-	public _pSkewZ:number = 0;
-	public _pScaleX:number = 1;
-	public _pScaleY:number = 1;
-	public _pScaleZ:number = 1;
+	private _skewX:number = 0;
+	private _skewY:number = 0;
+	private _skewZ:number = 0;
+	private _scaleX:number = 1;
+	private _scaleY:number = 1;
+	private _scaleZ:number = 1;
 	private _x:number = 0;
 	private _y:number = 0;
 	private _z:number = 0;
@@ -245,7 +248,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	private _pivotScale:Vector3D = new Vector3D();
 	private _orientationMatrix:Matrix3D = new Matrix3D();
 	private _pivotZero:boolean = true;
-	private _pivotDirty:boolean = true;
+	private _pivotDirty:boolean;
 	private _pos:Vector3D = new Vector3D();
 	private _rot:Vector3D = new Vector3D();
 	private _ske:Vector3D = new Vector3D();
@@ -268,7 +271,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	public _iSourcePrefab:PrefabBase;
 
     private _globalColorTransformChanged:DisplayObjectEvent;
-    private _globalColorTransformDirty:boolean = false;
+    private _globalColorTransformDirty:boolean;
     private _globalColorTransform:ColorTransform = new ColorTransform();
     private _onGlobalColorTransformChangedDelegate:(event:DisplayObjectEvent) => void;
     private _onColorTransformChangedDelegate:(event:Event) => void;
@@ -457,7 +460,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get depth():number
 	{
-		return this.getBox().depth*this._pScaleZ;
+		return this.getBox().depth*this.scaleZ;
 	}
 
 	public set depth(val:number)
@@ -467,9 +470,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		this._depth = val;
 
-		this._pScaleZ = val/this.getBox().depth;
-
-		this.invalidateScale();
+		this._setScaleZ(val/this.getBox().depth);
 	}
 
 	/**
@@ -477,20 +478,18 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get eulers():Vector3D
 	{
-		this._eulers.x = this._rotationX*MathConsts.RADIANS_TO_DEGREES;
-		this._eulers.y = this._rotationY*MathConsts.RADIANS_TO_DEGREES;
-		this._eulers.z = this._rotationZ*MathConsts.RADIANS_TO_DEGREES;
+		this._eulers.x = this.rotationX;
+		this._eulers.y = this.rotationY;
+		this._eulers.z = this.rotationZ;
 
 		return this._eulers;
 	}
 
 	public set eulers(value:Vector3D)
 	{
-		this._rotationX = value.x*MathConsts.DEGREES_TO_RADIANS;
-		this._rotationY = value.y*MathConsts.DEGREES_TO_RADIANS;
-		this._rotationZ = value.z*MathConsts.DEGREES_TO_RADIANS;
-
-		this.invalidateRotation();
+		this.rotationX = value.x;
+		this.rotationY = value.y;
+		this.rotationZ = value.z;
 	}
 
 	/**
@@ -591,7 +590,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get height():number
 	{
-		return this.getBox().height*this._pScaleY;
+		return this.getBox().height*this.scaleY;
 	}
 
 	public set height(val:number)
@@ -601,9 +600,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		this._height = val;
 
-		this._pScaleY = val/this.getBox().height;
-
-		this.invalidateScale();
+		this._setScaleY(val/this.getBox().height);
 	}
 
 	/**
@@ -857,7 +854,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 	public set pivot(pivot:Vector3D)
 	{
-		this._pivot = pivot.clone();
+		if (this._pivot.x == pivot.x && this._pivot.y == pivot.y && this._pivot.z == pivot.z)
+			return;
+
+		this._pivot.x = pivot.x;
+		this._pivot.y = pivot.y;
+		this._pivot.z = pivot.z;
 
 		this.invalidatePivot();
 	}
@@ -912,6 +914,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get rotationX():number
 	{
+		if (this._elementsDirty)
+			this.updateElements();
+
 		return this._rotationX*MathConsts.RADIANS_TO_DEGREES;
 	}
 
@@ -934,6 +939,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get rotationY():number
 	{
+		if (this._elementsDirty)
+			this.updateElements();
+
 		return this._rotationY*MathConsts.RADIANS_TO_DEGREES;
 	}
 
@@ -956,6 +964,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get rotationZ():number
 	{
+		if (this._elementsDirty)
+			this.updateElements();
+
 		return this._rotationZ*MathConsts.RADIANS_TO_DEGREES;
 	}
 
@@ -1031,7 +1042,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get scaleX():number
 	{
-		return this._pScaleX;
+		if (this._elementsDirty)
+			this.updateElements();
+
+		return this._scaleX;
 	}
 
 	public set scaleX(val:number)
@@ -1039,12 +1053,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		//remove absolute width
 		this._width = null;
 
-		if (this._pScaleX == val)
-			return;
-
-		this._pScaleX = val;
-
-		this.invalidateScale();
+		this._setScaleX(val);
 	}
 
 	/**
@@ -1057,7 +1066,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get scaleY():number
 	{
-		return this._pScaleY;
+		if (this._elementsDirty)
+			this.updateElements();
+
+		return this._scaleY;
 	}
 
 	public set scaleY(val:number)
@@ -1065,12 +1077,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		//remove absolute height
 		this._height = null;
 
-		if (this._pScaleY == val)
-			return;
-
-		this._pScaleY = val;
-
-		this.invalidateScale();
+		this._setScaleY(val);
 	}
 
 	/**
@@ -1084,7 +1091,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get scaleZ():number
 	{
-		return this._pScaleZ;
+		if (this._elementsDirty)
+			this.updateElements();
+
+		return this._scaleZ;
 	}
 
 	public set scaleZ(val:number)
@@ -1092,12 +1102,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		//remove absolute depth
 		this._depth = null;
 
-		if (this._pScaleZ == val)
-			return;
-
-		this._pScaleZ = val;
-
-		this.invalidateScale();
+		this._setScaleZ(val);
 	}
 
 	/**
@@ -1106,15 +1111,18 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get skewX():number
 	{
-		return this._pSkewX;
+		if (this._elementsDirty)
+			this.updateElements();
+
+		return this._skewX;
 	}
 
 	public set skewX(val:number)
 	{
-		if (this._pSkewX == val)
+		if (this.skewX == val)
 			return;
 
-		this._pSkewX = val;
+		this._skewX = val;
 
 		this.invalidateSkew();
 	}
@@ -1125,15 +1133,18 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get skewY():number
 	{
-		return this._pSkewY;
+		if (this._elementsDirty)
+			this.updateElements();
+
+		return this._skewY;
 	}
 
 	public set skewY(val:number)
 	{
-		if (this._pSkewY == val)
+		if (this.skewY == val)
 			return;
 
-		this._pSkewY = val;
+		this._skewY = val;
 
 		this.invalidateSkew();
 	}
@@ -1144,15 +1155,18 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get skewZ():number
 	{
-		return this._pSkewZ;
+		if (this._elementsDirty)
+			this.updateElements();
+
+		return this._skewZ;
 	}
 
 	public set skewZ(val:number)
 	{
-		if (this._pSkewZ == val)
+		if (this.skewZ == val)
 			return;
 
-		this._pSkewZ = val;
+		this._skewZ = val;
 
 		this.invalidateSkew();
 	}
@@ -1173,7 +1187,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._scenePositionDirty) {
 			if (!this._pivotZero && this.alignmentMode == AlignmentMode.PIVOT_POINT) {
 				this._scenePosition = this.sceneTransform.transformVector(this._pivotScale);
-				//this._scenePosition.decrementBy(new Vector3D(this._pivot.x*this._pScaleX, this._pivot.y*this._pScaleY, this._pivot.z*this._pScaleZ));
+				//this._scenePosition.decrementBy(new Vector3D(this._pivot.x*this._scaleX, this._pivot.y*this._scaleY, this._pivot.z*this._scaleZ));
 			} else {
 				this.sceneTransform.copyColumnTo(3, this._scenePosition);
 			}
@@ -1318,7 +1332,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public get width():number
 	{
-		return this.getBox().width*this._pScaleX;
+		return this.getBox().width*this.scaleX;
 	}
 
 	public set width(val:number)
@@ -1328,9 +1342,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		this._width = val;
 
-		this._pScaleX = val/this.getBox().width;
-
-		this.invalidateScale();
+		this._setScaleX(val/this.getBox().width);
 	}
 
 	/**
@@ -1353,7 +1365,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._x == val)
 			return;
 
-		this._x = val;
+		this._x = this._matrix3D.rawData[12] = val;
 
 		this.invalidatePosition();
 	}
@@ -1378,7 +1390,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._y == val)
 			return;
 
-		this._y = val;
+		this._y = this._matrix3D.rawData[13] = val;
 
 		this.invalidatePosition();
 	}
@@ -1412,7 +1424,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._z == val)
 			return;
 
-		this._z = val;
+		this._z = this._matrix3D.rawData[14] = val;
 
 		this.invalidatePosition();
 	}
@@ -1587,22 +1599,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._boxBoundsInvalid) {
 			this._pUpdateBoxBounds();
 
-			if (this._width != null) {
-				this._pScaleX = this._width/this._pBoxBounds.width;
-				this.invalidateScale();
-			}
+			//scale updates if absolute dimensions are detected
+			if (this._width != null)
+				this._setScaleX(this._width/this._pBoxBounds.width);
 
+			if (this._height != null)
+				this._setScaleY(this._height/this._pBoxBounds.height);
 
-			if (this._height != null) {
-				this._pScaleY = this._height/this._pBoxBounds.height;
-				this.invalidateScale();
-			}
-
-
-			if (this._depth != null) {
-				this._pScaleZ = this._depth/this._pBoxBounds.depth;
-				this.invalidateScale();
-			}
+			if (this._depth != null)
+				this._setScaleZ(this._depth/this._pBoxBounds.depth);
 		}
 
 		if (targetCoordinateSpace == null || targetCoordinateSpace == this)
@@ -1865,11 +1870,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		var vec:Vector3D = m.decompose()[1];
 
-		this._rotationX = vec.x;
-		this._rotationY = vec.y;
-		this._rotationZ = vec.z;
-
-		this.invalidateRotation();
+		this.rotationX = vec.x*MathConsts.RADIANS_TO_DEGREES;
+		this.rotationY = vec.y*MathConsts.RADIANS_TO_DEGREES;
+		this.rotationZ = vec.z*MathConsts.RADIANS_TO_DEGREES;
 	}
 
 	/**
@@ -1944,11 +1947,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._x == dx && this._y == dy && this._z == dz)
 			return;
 
-		this._x = dx;
-		this._y = dy;
-		this._z = dz;
-
-		this.invalidatePosition();
+		this.x = dx;
+		this.y = dy;
+		this.z = dz;
 	}
 
 	/**
@@ -1960,8 +1961,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public movePivot(dx:number, dy:number, dz:number)
 	{
-		if (this._pivot == null)
-			this._pivot = new Vector3D();
+		if (dx == 0 && dy == 0 && dz == 0)
+			return;
 
 		this._pivot.x += dx;
 		this._pivot.y += dy;
@@ -1989,14 +1990,14 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 			var comps:Array<Vector3D> = camera.sceneTransform.decompose();
 			var scale:Vector3D = comps[3];
 			comps[0] = this.scenePosition;
-			scale.x = this._pScaleX;
-			scale.y = this._pScaleY;
-			scale.z = this._pScaleZ;
+			scale.x = this.scaleX;
+			scale.y = this.scaleY;
+			scale.z = this.scaleZ;
 			this._orientationMatrix.recompose(comps);
 
 			//add in case of pivot
 			if (!this._pivotZero && this.alignmentMode == AlignmentMode.PIVOT_POINT)
-				this._orientationMatrix.prependTranslation(-this._pivot.x/this._pScaleX, -this._pivot.y/this._pScaleY, -this._pivot.z/this._pScaleZ);
+				this._orientationMatrix.prependTranslation(-this._pivot.x/this.scaleX, -this._pivot.y/this.scaleY, -this._pivot.z/this.scaleZ);
 
 			return this._orientationMatrix;
 		}
@@ -2027,11 +2028,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		var vec:Vector3D = m.decompose()[1];
 
-		this._rotationX += vec.x;
-		this._rotationY += vec.y;
-		this._rotationZ += vec.z;
-
-		this.invalidateRotation();
+		this.rotationX += vec.x*MathConsts.RADIANS_TO_DEGREES;
+		this.rotationY += vec.y*MathConsts.RADIANS_TO_DEGREES;
+		this.rotationZ += vec.z*MathConsts.RADIANS_TO_DEGREES;
 	}
 
 	/**
@@ -2043,11 +2042,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public rotateTo(ax:number, ay:number, az:number)
 	{
-		this._rotationX = ax*MathConsts.DEGREES_TO_RADIANS;
-		this._rotationY = ay*MathConsts.DEGREES_TO_RADIANS;
-		this._rotationZ = az*MathConsts.DEGREES_TO_RADIANS;
-
-		this.invalidateRotation();
+		this.rotationX = ax;
+		this.rotationY = ay;
+		this.rotationZ = az;
 	}
 
 	/**
@@ -2069,6 +2066,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 				this._listenToRotationChanged = false;
 				break;
 
+			case DisplayObjectEvent.SKEW_CHANGED:
+				this._listenToSkewChanged = false;
+
 			case DisplayObjectEvent.SCALE_CHANGED:
 				this._listenToScaleChanged = false;
 				break;
@@ -2086,11 +2086,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		var x:number = axis.x, y:number = axis.y, z:number = axis.z;
 		var len:number = distance/Math.sqrt(x*x + y*y + z*z);
 
-		this._x += x*len;
-		this._y += y*len;
-		this._z += z*len;
-
-		this.invalidatePosition();
+		this.x += x*len;
+		this.y += y*len;
+		this.z += z*len;
 	}
 
 	/**
@@ -2108,11 +2106,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		this._matrix3D.copyColumnTo(3, this._pos);
 
-		this._x = this._pos.x;
-		this._y = this._pos.y;
-		this._z = this._pos.z;
-
-		this.invalidatePosition();
+		this.x = this._pos.x;
+		this.y = this._pos.y;
+		this.z = this._pos.z;
 	}
 
 	/**
@@ -2148,65 +2144,25 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._matrix3DDirty)
 			this._pUpdateMatrix3D();
 
+		if (this._pivotDirty)
+			this._pUpdatePivot();
+
 		return this._matrix3D;
 	}
 
 	public set _iMatrix3D(val:Matrix3D)
 	{
+		for (var i:number = 0; i < 12; i++)
+			this._matrix3D.rawData[i] = val.rawData[i];
 
-		// TODO: From AS3 - Do we still need this in JS ?
-		//ridiculous matrix error
-		/*
-		if (!val.rawData[0]) {
+		this.x = val.rawData[12];
+		this.y = val.rawData[13];
+		this.z = val.rawData[14];
 
-			var raw:number[] = Matrix3DUtils.RAW_DATA_CONTAINER;
-			val.copyRawDataTo(raw);
-			raw[0] = this._smallestNumber;
-			val.copyRawDataFrom(raw);
-		}
-		//*/
-		var elements:Array<Vector3D> = val.decompose();
-		var vec:Vector3D;
+		this._elementsDirty = true;
 
-		vec = elements[0];
-
-		if (this._x != vec.x || this._y != vec.y || this._z != vec.z) {
-			this._x = vec.x;
-			this._y = vec.y;
-			this._z = vec.z;
-
-			this.invalidatePosition();
-		}
-
-		vec = elements[1];
-
-		if (this._rotationX != vec.x || this._rotationY != vec.y || this._rotationZ != vec.z) {
-			this._rotationX = vec.x;
-			this._rotationY = vec.y;
-			this._rotationZ = vec.z;
-
-			this.invalidateRotation();
-		}
-
-		vec = elements[2];
-
-		if (this._pSkewX != vec.x || this._pSkewY != vec.y || this._pSkewZ != vec.z) {
-			this._pSkewX = vec.x;
-			this._pSkewY = vec.y;
-			this._pSkewZ = vec.z;
-
-			this.invalidateSkew();
-		}
-
-		vec = elements[3];
-
-		if (this._pScaleX != vec.x || this._pScaleY != vec.y || this._pScaleZ != vec.z) {
-			this._pScaleX = vec.x;
-			this._pScaleY = vec.y;
-			this._pScaleZ = vec.z;
-
-			this.invalidateScale();
-		}
+		if (!this._pIgnoreTransform)
+			this.pInvalidateSceneTransform();
 	}
 
 	/**
@@ -2250,6 +2206,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public pInvalidateSceneTransform()
 	{
+		if (this._pSceneTransformDirty)
+			return;
+
 		this._pSceneTransformDirty = !this._pIgnoreTransform;
 		this._inverseSceneTransformDirty = !this._pIgnoreTransform;
 		this._scenePositionDirty = !this._pIgnoreTransform;
@@ -2260,8 +2219,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._pParent)
 			this._pParent._pInvalidateBounds();
 
-		if (this._listenToSceneTransformChanged)
-			this.notifySceneTransformChange();
+		if (!this._sceneTransformChanged)
+			this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this);
+
+		this.queueDispatch(this._sceneTransformChanged);
 	}
 
 	/**
@@ -2315,11 +2276,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 			this._pScene.dispatchEvent(new SceneEvent(SceneEvent.ADDED_TO_SCENE, this));
 
 		if (sceneChanged) {
-			if (!this._pSceneTransformDirty && !this._pIgnoreTransform)
+			if (!this._pIgnoreTransform)
 				this.pInvalidateSceneTransform();
 
-			if (this._listenToSceneChanged)
-				this.notifySceneChange();
+			this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
 		}
 	}
 
@@ -2336,6 +2296,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public _pUpdateMatrix3D()
 	{
+		if (this._elementsDirty)
+			this.updateElements();
 
 		this._pos.x = this._x;
 		this._pos.y = this._y;
@@ -2345,30 +2307,30 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this._rot.y = this._rotationY;
 		this._rot.z = this._rotationZ;
 
-		this._ske.x = this._pSkewX;
-		this._ske.y = this._pSkewY;
-		this._ske.z = this._pSkewZ;
+		this._ske.x = this._skewX;
+		this._ske.y = this._skewY;
+		this._ske.z = this._skewZ;
 
-		this._sca.x = this._pScaleX;
-		this._sca.y = this._pScaleY;
-		this._sca.z = this._pScaleZ;
+		this._sca.x = this._scaleX;
+		this._sca.y = this._scaleY;
+		this._sca.z = this._scaleZ;
 
 		this._matrix3D.recompose(this._transformComponents);
 
+		this._matrix3DDirty = false;
+	}
+
+	public _pUpdatePivot()
+	{
 		if (!this._pivotZero) {
-			this._pivotScale.x = this._pivot.x/this._pScaleX;
-			this._pivotScale.y = this._pivot.y/this._pScaleY;
-			this._pivotScale.z = this._pivot.z/this._pScaleZ;
+			this._pivotScale.x = this._pivot.x/this._scaleX;
+			this._pivotScale.y = this._pivot.y/this._scaleY;
+			this._pivotScale.z = this._pivot.z/this._scaleZ;
 			this._matrix3D.prependTranslation(-this._pivotScale.x, -this._pivotScale.y, -this._pivotScale.z);
 			if (this.alignmentMode != AlignmentMode.PIVOT_POINT)
 				this._matrix3D.appendTranslation(this._pivot.x, this._pivot.y, this._pivot.z);
 		}
 
-		this._matrix3DDirty = false;
-		this._positionDirty = false;
-		this._rotationDirty = false;
-		this._skewDirty =false;
-		this._scaleDirty = false;
 		this._pivotDirty = false;
 	}
 
@@ -2377,6 +2339,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	 */
 	public pUpdateSceneTransform()
 	{
+		if (this._iController)
+			this._iController.updateController();
+
 		if (this._pParent && !this._pParent._iIsRoot) {
 			this._pSceneTransform.copyFrom(this._pParent.sceneTransform);
 			this._pSceneTransform.prepend(this._iMatrix3D);
@@ -2384,6 +2349,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 			this._pSceneTransform.copyFrom(this._iMatrix3D);
 		}
 
+		this._positionDirty = false;
+		this._rotationDirty = false;
+		this._skewDirty = false;
+		this._scaleDirty = false;
 		this._pSceneTransformDirty = false;
 	}
 
@@ -2425,6 +2394,13 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	{
 		if (this._iController)
 			this._iController.update();
+
+		// Dispatch all queued events.
+		var len:number = this._queuedEvents.length;
+		for (var i:number = 0; i < len; ++i)
+			this.dispatchEvent(this._queuedEvents[i]);
+
+		this._queuedEvents.length = 0;
 	}
 
 	/**
@@ -2454,71 +2430,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null, value);
 	}
 
-	/**
-	 * @private
-	 */
-	private notifyPositionChanged()
-	{
-		if (!this._positionChanged)
-			this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this);
-
-		this.dispatchEvent(this._positionChanged);
-	}
-
-	/**
-	 * @private
-	 */
-	private notifyRotationChanged()
-	{
-		if (!this._rotationChanged)
-			this._rotationChanged = new DisplayObjectEvent(DisplayObjectEvent.ROTATION_CHANGED, this);
-
-		this.dispatchEvent(this._rotationChanged);
-	}
-
-	/**
-	 * @private
-	 */
-	private notifySkewChanged()
-	{
-		if (!this._skewChanged)
-			this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this);
-
-		this.dispatchEvent(this._skewChanged);
-	}
-
-	/**
-	 * @private
-	 */
-	private notifyScaleChanged()
-	{
-		if (!this._scaleChanged)
-			this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this);
-
-		this.dispatchEvent(this._scaleChanged);
-	}
-
-	/**
-	 * @private
-	 */
-	private notifySceneChange()
-	{
-		if (!this._scenechanged)
-			this._scenechanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this);
-
-		this.dispatchEvent(this._scenechanged);
-}
-
-	/**
-	 * @private
-	 */
-	private notifySceneTransformChange()
-	{
-		if (!this._sceneTransformChanged)
-			this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this);
-
-		this.dispatchEvent(this._sceneTransformChanged);
-	}
 
 	/**
 	 * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
@@ -2532,7 +2443,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		this._matrix3DDirty = true;
 
-		if (!this._pSceneTransformDirty && !this._pIgnoreTransform)
+		if (!this._pIgnoreTransform)
 			this.pInvalidateSceneTransform();
 	}
 
@@ -2571,58 +2482,61 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 
 		this._positionDirty = true;
 
-		this.invalidateMatrix3D();
+		if (!this._pIgnoreTransform)
+			this.pInvalidateSceneTransform();
 
-		if (this._listenToPositionChanged)
-			this.notifyPositionChanged();
+		if (!this._pivotZero)
+			this.invalidatePivot();
+
+		this.queueDispatch(this._positionChanged || (this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this)));
 	}
 
 	/**
 	 * @private
 	 */
-	private invalidateRotation()
+	private invalidateRotation(matrixDirty:boolean = true)
 	{
+		if (matrixDirty)
+			this.invalidateMatrix3D();
+
 		if (this._rotationDirty)
 			return;
 
 		this._rotationDirty = true;
 
-		this.invalidateMatrix3D();
-
-		if (this._listenToRotationChanged)
-			this.notifyRotationChanged();
+		this.queueDispatch(this._rotationChanged || (this._rotationChanged = new DisplayObjectEvent(DisplayObjectEvent.ROTATION_CHANGED, this)));
 	}
 
 	/**
 	 * @private
 	 */
-	private invalidateSkew()
+	private invalidateSkew(matrixDirty:boolean = true)
 	{
+		if (matrixDirty)
+			this.invalidateMatrix3D();
+
 		if (this._skewDirty)
 			return;
 
 		this._skewDirty = true;
 
-		this.invalidateMatrix3D();
-
-		if (this._listenToSkewChanged)
-			this.notifySkewChanged();
+		this.queueDispatch(this._skewChanged || (this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this)));
 	}
 
 	/**
 	 * @private
 	 */
-	private invalidateScale()
+	private invalidateScale(matrixDirty:boolean = true)
 	{
+		if (matrixDirty)
+			this.invalidateMatrix3D();
+
 		if (this._scaleDirty)
 			return;
 
 		this._scaleDirty = true;
 
-		this.invalidateMatrix3D();
-
-		if (this._listenToScaleChanged)
-			this.notifyScaleChanged();
+		this.queueDispatch(this._scaleChanged || (this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this)));
 	}
 
 
@@ -2664,11 +2578,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		if (this._pParent)
 			this._pParent._pInvalidateBounds();
 	}
-	
+
 	public _pUpdateBoxBounds()
 	{
 		this._boxBoundsInvalid = false;
-		
+
 		if (this._pBoxBounds == null)
 			this._pBoxBounds = new Box();
 	}
@@ -2723,6 +2637,84 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
     {
         this._invalidateGlobalColorTransform();
     }
+
+	private queueDispatch(event:Event)
+	{
+		// Store event to be dispatched later.
+		this._queuedEvents.push(event);
+	}
+
+	private updateElements()
+	{
+		this._elementsDirty = false;
+
+		var elements:Array<Vector3D> = this._matrix3D.decompose();
+		var vec:Vector3D;
+
+		vec = elements[1];
+
+		if (this._rotationX != vec.x || this._rotationY != vec.y || this._rotationZ != vec.z) {
+			this._rotationX = vec.x;
+			this._rotationY = vec.y;
+			this._rotationZ = vec.z;
+
+			this.invalidateRotation(false);
+		}
+
+		vec = elements[2];
+
+		if (this._skewX != vec.x || this._skewY != vec.y || this._skewZ != vec.z) {
+			this._skewX = vec.x;
+			this._skewY = vec.y;
+			this._skewZ = vec.z;
+
+			this.invalidateSkew(false);
+		}
+
+		vec = elements[3];
+
+		this._width = null;
+		this._height = null;
+		this._depth = null;
+
+		if (this._scaleX != vec.x || this._scaleY != vec.y || this._scaleZ != vec.z) {
+			this._scaleX = vec.x;
+			this._scaleY = vec.y;
+			this._scaleZ = vec.z;
+
+			this.invalidateScale(false);
+		}
+	}
+
+	private _setScaleX(val:number)
+	{
+		if (this.scaleX == val)
+			return;
+
+		this._scaleX = val;
+
+		this.invalidateScale();
+	}
+
+	private _setScaleY(val:number)
+	{
+		if (this.scaleY == val)
+			return;
+
+		this._scaleY = val;
+
+		this.invalidateScale();
+	}
+
+	private _setScaleZ(val:number)
+	{
+		if (this.scaleZ == val)
+			return;
+
+		this._scaleZ = val;
+
+		this.invalidateScale();
+	}
 }
 
 export = DisplayObject;

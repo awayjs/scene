@@ -265,7 +265,7 @@ class HoverController extends LookAtController
 	{
 		if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
 
-			this.pNotifyUpdate();
+			this._pControllerDirty = true;
 
 			if (this._wrapPanAngle) {
 				if (this._panAngle < 0) {

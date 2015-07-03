@@ -84,7 +84,7 @@ class MouseManager
 		var event:AwayMouseEvent;
 		var dispatcher:DisplayObject;
 
-		 // Dispatch all queued events.
+		// Dispatch all queued events.
 		var len:number = this._queuedEvents.length;
 		for (var i:number = 0; i < len; ++i) {
 			event = this._queuedEvents[i];
