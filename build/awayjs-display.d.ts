@@ -517,6 +517,8 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	 *                         content is either minimized or obscured. </p>
 	 */
 	class DisplayObject extends AssetBase implements IBitmapDrawable {
+	    private _queuedEvents;
+	    private _elementsDirty;
 	    private _loaderInfo;
 	    private _mouseX;
 	    private _mouseY;
@@ -538,7 +540,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _explicitPartition;
 	    _pImplicitPartition: Partition;
 	    private _sceneTransformChanged;
-	    private _scenechanged;
+	    private _sceneChanged;
 	    private _transform;
 	    private _matrix3D;
 	    private _matrix3DDirty;
@@ -574,12 +576,12 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _width: number;
 	    _height: number;
 	    _depth: number;
-	    _pSkewX: number;
-	    _pSkewY: number;
-	    _pSkewZ: number;
-	    _pScaleX: number;
-	    _pScaleY: number;
-	    _pScaleZ: number;
+	    private _skewX;
+	    private _skewY;
+	    private _skewZ;
+	    private _scaleX;
+	    private _scaleY;
+	    private _scaleZ;
 	    private _x;
 	    private _y;
 	    private _z;
@@ -1560,6 +1562,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @protected
 	     */
 	    _pUpdateMatrix3D(): void;
+	    _pUpdatePivot(): void;
 	    /**
 	     * @protected
 	     */
@@ -1593,30 +1596,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    _iSetScene(value: Scene): void;
 	    /**
-	     * @private
-	     */
-	    private notifyPositionChanged();
-	    /**
-	     * @private
-	     */
-	    private notifyRotationChanged();
-	    /**
-	     * @private
-	     */
-	    private notifySkewChanged();
-	    /**
-	     * @private
-	     */
-	    private notifyScaleChanged();
-	    /**
-	     * @private
-	     */
-	    private notifySceneChange();
-	    /**
-	     * @private
-	     */
-	    private notifySceneTransformChange();
-	    /**
 	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
 	     *
 	     * @private
@@ -1637,15 +1616,15 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @private
 	     */
-	    private invalidateRotation();
+	    private invalidateRotation(matrixDirty?);
 	    /**
 	     * @private
 	     */
-	    private invalidateSkew();
+	    private invalidateSkew(matrixDirty?);
 	    /**
 	     * @private
 	     */
-	    private invalidateScale();
+	    private invalidateScale(matrixDirty?);
 	    _iAddEntityNode(entityNode: EntityNode): EntityNode;
 	    _iRemoveEntityNode(entityNode: EntityNode): EntityNode;
 	    _pRegisterEntity(partition: Partition): void;
@@ -1658,6 +1637,11 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _invalidateGlobalColorTransform(): void;
 	    private onGlobalColorTransformChanged(event);
 	    private onColorTransformChanged(event);
+	    private queueDispatch(event);
+	    private updateElements();
+	    private _setScaleX(val);
+	    private _setScaleY(val);
+	    private _setScaleZ(val);
 	}
 	export = DisplayObject;
 	
@@ -4094,6 +4078,7 @@ declare module "awayjs-display/lib/containers/View" {
 declare module "awayjs-display/lib/controllers/ControllerBase" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	class ControllerBase {
+	    _pControllerDirty: boolean;
 	    _pAutoUpdate: boolean;
 	    _pTargetObject: DisplayObject;
 	    constructor(targetObject?: DisplayObject);
@@ -4101,6 +4086,7 @@ declare module "awayjs-display/lib/controllers/ControllerBase" {
 	    targetObject: DisplayObject;
 	    autoUpdate: boolean;
 	    update(interpolate?: boolean): void;
+	    updateController(): void;
 	}
 	export = ControllerBase;
 	
