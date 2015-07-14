@@ -1981,6 +1981,16 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this.rotate(Vector3D.X_AXIS, angle);
 	}
 
+	public reset_to_init_state():void
+	{
+		this.visible=true;
+		if(this._iMatrix3D)
+			this._iMatrix3D.identity();
+		if(this.colorTransform)
+			this.colorTransform.clear();
+
+		this.pInvalidateSceneTransform();
+	}
 	/**
 	 *
 	 */
