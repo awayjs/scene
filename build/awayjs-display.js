@@ -2033,6 +2033,14 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.pitch = function (angle) {
         this.rotate(Vector3D.X_AXIS, angle);
     };
+    DisplayObject.prototype.reset_to_init_state = function () {
+        this.visible = true;
+        if (this._iMatrix3D)
+            this._iMatrix3D.identity();
+        if (this.colorTransform)
+            this.colorTransform.clear();
+        this.pInvalidateSceneTransform();
+    };
     /**
      *
      */
@@ -14208,7 +14216,8 @@ var EntityNode = (function (_super) {
     EntityNode.prototype.isInFrustum = function (planes, numPlanes) {
         if (!this._entity._iIsVisible())
             return false;
-        return this._bounds.isInFrustum(planes, numPlanes);
+        return true; // todo: hack for 2d. attention. might break stuff in 3d.
+        //return this._bounds.isInFrustum(planes, numPlanes);
     };
     /**
      * @inheritDoc

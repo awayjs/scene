@@ -1471,6 +1471,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @param    angle        The amount of rotation in degrees
 	     */
 	    pitch(angle: number): void;
+	    reset_to_init_state(): void;
 	    /**
 	     *
 	     */
