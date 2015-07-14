@@ -73,7 +73,8 @@ class EntityNode extends NodeBase
 		if (!this._entity._iIsVisible())
 			return false;
 
-		return this._bounds.isInFrustum(planes, numPlanes);
+		return true; // todo: hack for 2d. attention. might break stuff in 3d.
+		//return this._bounds.isInFrustum(planes, numPlanes);
 	}
 
 	/**
