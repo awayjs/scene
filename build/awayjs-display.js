@@ -14927,7 +14927,6 @@ var JSPickingCollider = (function () {
         //project ray onto x/y plane to generate useful test points from mouse coordinates
         //this will only work while all points lie on the x/y plane
         var plane = new Vector3D(0, 0, -1, 0);
-        console.log("yep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         var result = new Vector3D();
         var distance = plane.x * rayPosition.x + plane.y * rayPosition.y + plane.z * rayPosition.z + plane.w; //distance(position);
         result.x = rayPosition.x - (plane.x * distance);

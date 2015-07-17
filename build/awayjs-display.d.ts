@@ -82,6 +82,99 @@ declare module "awayjs-display/lib/IRenderer" {
 	
 }
 
+declare module "awayjs-display/lib/animators/IAnimationSet" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
+	/**
+	 * Provides an interface for data set classes that hold animation data for use in animator classes.
+	 *
+	 * @see away.animators.AnimatorBase
+	 */
+	interface IAnimationSet extends IAsset {
+	    /**
+	     * Check to determine whether a state is registered in the animation set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be checked.
+	     */
+	    hasAnimation(name: string): boolean;
+	    /**
+	     * Retrieves the animation state object registered in the animation data set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be retrieved.
+	     */
+	    getAnimation(name: string): AnimationNodeBase;
+	    /**
+	     * Indicates whether the properties of the animation data contained within the set combined with
+	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
+	     * GPU calls.
+	     */
+	    usesCPU: boolean;
+	    /**
+	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
+	     * is available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    resetGPUCompatibility(): any;
+	    /**
+	     * Called by the animator to void the GPU indicator when register space in the shader
+	     * is no longer available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    cancelGPUCompatibility(): any;
+	}
+	export = IAnimationSet;
+	
+}
+
+declare module "awayjs-display/lib/animators/IAnimator" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.
+	 *
+	 * @see away.animators.IAnimationSet
+	 */
+	interface IAnimator extends IAsset {
+	    /**
+	     *
+	     */
+	    animationSet: IAnimationSet;
+	    /**
+	     *
+	     */
+	    clone(): IAnimator;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     * Used by the entity object to which the animator is applied, registers the owner for internal use.
+	     *
+	     * @private
+	     */
+	    addOwner(mesh: IEntity): any;
+	    /**
+	     * Used by the mesh object from which the animator is removed, unregisters the owner for internal use.
+	     *
+	     * @private
+	     */
+	    removeOwner(mesh: IEntity): any;
+	    /**
+	     * //TODO
+	     *
+	     * @param sourceSubGeometry
+	     */
+	    getRenderableSubGeometry(renderable: IRenderable, sourceSubGeometry: SubGeometryBase): SubGeometryBase;
+	}
+	export = IAnimator;
+	
+}
+
 declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
@@ -268,99 +361,6 @@ declare module "awayjs-display/lib/base/CurveSubMesh" {
 	    dispose(): void;
 	}
 	export = CurveSubMesh;
-	
-}
-
-declare module "awayjs-display/lib/animators/IAnimator" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.
-	 *
-	 * @see away.animators.IAnimationSet
-	 */
-	interface IAnimator extends IAsset {
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     *
-	     */
-	    clone(): IAnimator;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     * Used by the entity object to which the animator is applied, registers the owner for internal use.
-	     *
-	     * @private
-	     */
-	    addOwner(mesh: IEntity): any;
-	    /**
-	     * Used by the mesh object from which the animator is removed, unregisters the owner for internal use.
-	     *
-	     * @private
-	     */
-	    removeOwner(mesh: IEntity): any;
-	    /**
-	     * //TODO
-	     *
-	     * @param sourceSubGeometry
-	     */
-	    getRenderableSubGeometry(renderable: IRenderable, sourceSubGeometry: SubGeometryBase): SubGeometryBase;
-	}
-	export = IAnimator;
-	
-}
-
-declare module "awayjs-display/lib/animators/IAnimationSet" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
-	/**
-	 * Provides an interface for data set classes that hold animation data for use in animator classes.
-	 *
-	 * @see away.animators.AnimatorBase
-	 */
-	interface IAnimationSet extends IAsset {
-	    /**
-	     * Check to determine whether a state is registered in the animation set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be checked.
-	     */
-	    hasAnimation(name: string): boolean;
-	    /**
-	     * Retrieves the animation state object registered in the animation data set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be retrieved.
-	     */
-	    getAnimation(name: string): AnimationNodeBase;
-	    /**
-	     * Indicates whether the properties of the animation data contained within the set combined with
-	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
-	     * GPU calls.
-	     */
-	    usesCPU: boolean;
-	    /**
-	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
-	     * is available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    resetGPUCompatibility(): any;
-	    /**
-	     * Called by the animator to void the GPU indicator when register space in the shader
-	     * is no longer available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    cancelGPUCompatibility(): any;
-	}
-	export = IAnimationSet;
 	
 }
 
@@ -8130,6 +8130,49 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	
 }
 
+declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import Event = require("awayjs-core/lib/events/Event");
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+	class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher {
+	    _pScissorRects: Rectangle[];
+	    private _pScissorRectsInvalid;
+	    private _splitRatios;
+	    private _numCascades;
+	    private _depthCameras;
+	    private _depthLenses;
+	    private _texOffsetsX;
+	    private _texOffsetsY;
+	    private _changeDispatcher;
+	    private _nearPlaneDistances;
+	    constructor(numCascades?: number);
+	    getSplitRatio(index: number): number;
+	    setSplitRatio(index: number, value: number): void;
+	    getDepthProjections(partition: number): Matrix3D;
+	    private init();
+	    _pSetDepthMapSize(value: number): void;
+	    private invalidateScissorRects();
+	    numCascades: number;
+	    pDrawDepthMap(target: Single2DTexture, scene: Scene, renderer: IRenderer): void;
+	    private updateScissorRects();
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    private updateProjectionPartition(matrix, splitRatio, texOffsetX, texOffsetY);
+	    addEventListener(type: string, listener: Function): void;
+	    removeEventListener(type: string, listener: Function): void;
+	    dispatchEvent(event: Event): void;
+	    hasEventListener(type: string): boolean;
+	    _iNearPlaneDistances: Array<number>;
+	}
+	export = CascadeShadowMapper;
+	
+}
+
 declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -8233,6 +8276,27 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	
 }
 
+declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+	class CubeMapShadowMapper extends ShadowMapperBase {
+	    private _depthCameras;
+	    private _projections;
+	    private _needsRender;
+	    constructor();
+	    private initCameras();
+	    private addCamera(rotationX, rotationY, rotationZ);
+	    pCreateDepthTexture(): SingleCubeTexture;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    pDrawDepthMap(target: SingleCubeTexture, scene: Scene, renderer: IRenderer): void;
+	}
+	export = CubeMapShadowMapper;
+	
+}
+
 declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	/**
@@ -8270,70 +8334,6 @@ declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	    private updatePointCasting(light);
 	}
 	export = StaticLightPicker;
-	
-}
-
-declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Event = require("awayjs-core/lib/events/Event");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-	class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher {
-	    _pScissorRects: Rectangle[];
-	    private _pScissorRectsInvalid;
-	    private _splitRatios;
-	    private _numCascades;
-	    private _depthCameras;
-	    private _depthLenses;
-	    private _texOffsetsX;
-	    private _texOffsetsY;
-	    private _changeDispatcher;
-	    private _nearPlaneDistances;
-	    constructor(numCascades?: number);
-	    getSplitRatio(index: number): number;
-	    setSplitRatio(index: number, value: number): void;
-	    getDepthProjections(partition: number): Matrix3D;
-	    private init();
-	    _pSetDepthMapSize(value: number): void;
-	    private invalidateScissorRects();
-	    numCascades: number;
-	    pDrawDepthMap(target: Single2DTexture, scene: Scene, renderer: IRenderer): void;
-	    private updateScissorRects();
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    private updateProjectionPartition(matrix, splitRatio, texOffsetX, texOffsetY);
-	    addEventListener(type: string, listener: Function): void;
-	    removeEventListener(type: string, listener: Function): void;
-	    dispatchEvent(event: Event): void;
-	    hasEventListener(type: string): boolean;
-	    _iNearPlaneDistances: Array<number>;
-	}
-	export = CascadeShadowMapper;
-	
-}
-
-declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
-	class CubeMapShadowMapper extends ShadowMapperBase {
-	    private _depthCameras;
-	    private _projections;
-	    private _needsRender;
-	    constructor();
-	    private initCameras();
-	    private addCamera(rotationX, rotationY, rotationZ);
-	    pCreateDepthTexture(): SingleCubeTexture;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pDrawDepthMap(target: SingleCubeTexture, scene: Scene, renderer: IRenderer): void;
-	}
-	export = CubeMapShadowMapper;
 	
 }
 
