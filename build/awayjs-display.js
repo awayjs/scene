@@ -10608,6 +10608,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
+var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Geometry = require("awayjs-display/lib/base/Geometry");
 var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
@@ -10703,6 +10704,7 @@ var TextField = (function (_super) {
     function TextField() {
         _super.call(this, new Geometry());
         this._text = "";
+        this.type = TextFieldType.STATIC;
     }
     Object.defineProperty(TextField.prototype, "assetType", {
         /**
@@ -11356,7 +11358,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14925,6 +14927,7 @@ var JSPickingCollider = (function () {
         //project ray onto x/y plane to generate useful test points from mouse coordinates
         //this will only work while all points lie on the x/y plane
         var plane = new Vector3D(0, 0, -1, 0);
+        console.log("yep!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         var result = new Vector3D();
         var distance = plane.x * rayPosition.x + plane.y * rayPosition.y + plane.z * rayPosition.z + plane.w; //distance(position);
         result.x = rayPosition.x - (plane.x * distance);
@@ -18426,6 +18429,10 @@ var TextFieldType = (function () {
      * Used to specify an <code>input</code> TextField.
      */
     TextFieldType.INPUT = "input";
+    /**
+     * Used to specify an <code>static</code> TextField.
+     */
+    TextFieldType.STATIC = "input";
     return TextFieldType;
 })();
 module.exports = TextFieldType;

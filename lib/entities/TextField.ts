@@ -733,6 +733,7 @@ class TextField extends Mesh
 	constructor()
 	{
 		super(new Geometry());
+		this.type = TextFieldType.STATIC;
 	}
 
 	/**

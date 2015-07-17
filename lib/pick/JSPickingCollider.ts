@@ -92,7 +92,6 @@ class JSPickingCollider implements IPickingCollider
 		var uvs:Float32Array = triangleSubGeometry.uvs.get(triangleSubGeometry.numVertices);
 		var uvDim:number = triangleSubGeometry.uvs.dimensions;
 		var numIndices:number = indices.length;
-
 		for (var index:number = 0; index < numIndices; index += 3) { // sweep all triangles
 			// evaluate triangle indices
 			i0 = indices[index]*posDim;

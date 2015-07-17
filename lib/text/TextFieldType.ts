@@ -15,6 +15,11 @@ class TextFieldType
 	 * Used to specify an <code>input</code> TextField.
 	 */
 	public static INPUT:string = "input";
+
+	/**
+	 * Used to specify an <code>static</code> TextField.
+	 */
+	public static STATIC:string = "input";
 }
 
 export = TextFieldType;
