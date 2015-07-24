@@ -4354,27 +4354,6 @@ declare module "awayjs-display/lib/controllers/SpringController" {
 	
 }
 
-declare module "awayjs-display/lib/draw/GradientType" {
-	/**
-	 * The GradientType class provides values for the <code>type</code> parameter
-	 * in the <code>beginGradientFill()</code> and
-	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
-	 * class.
-	 */
-	class GradientType {
-	    /**
-	     * Value used to specify a linear gradient fill.
-	     */
-	    static LINEAR: string;
-	    /**
-	     * Value used to specify a radial gradient fill.
-	     */
-	    static RADIAL: string;
-	}
-	export = GradientType;
-	
-}
-
 declare module "awayjs-display/lib/draw/CapsStyle" {
 	/**
 	 * The CapsStyle class is an enumeration of constant values that specify the
@@ -4401,6 +4380,27 @@ declare module "awayjs-display/lib/draw/CapsStyle" {
 	    static SQUARE: string;
 	}
 	export = CapsStyle;
+	
+}
+
+declare module "awayjs-display/lib/draw/GradientType" {
+	/**
+	 * The GradientType class provides values for the <code>type</code> parameter
+	 * in the <code>beginGradientFill()</code> and
+	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
+	 * class.
+	 */
+	class GradientType {
+	    /**
+	     * Value used to specify a linear gradient fill.
+	     */
+	    static LINEAR: string;
+	    /**
+	     * Value used to specify a radial gradient fill.
+	     */
+	    static RADIAL: string;
+	}
+	export = GradientType;
 	
 }
 
@@ -7464,17 +7464,6 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/RendererEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class RendererEvent extends Event {
-	    static VIEWPORT_UPDATED: string;
-	    static SCISSOR_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = RendererEvent;
-	
-}
-
 declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
@@ -7508,6 +7497,17 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	    clone(): Event;
 	}
 	export = RenderableOwnerEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/RendererEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class RendererEvent extends Event {
+	    static VIEWPORT_UPDATED: string;
+	    static SCISSOR_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = RendererEvent;
 	
 }
 
@@ -8326,6 +8326,22 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	
 }
 
+declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
+	    private _coverageRatio;
+	    constructor(coverageRatio?: number);
+	    /**
+	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
+	     */
+	    coverageRatio: number;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	}
+	export = NearDirectionalShadowMapper;
+	
+}
+
 declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -8344,6 +8360,27 @@ declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" 
 	    pDrawDepthMap(target: SingleCubeTexture, scene: Scene, renderer: IRenderer): void;
 	}
 	export = CubeMapShadowMapper;
+	
+}
+
+declare module "awayjs-display/lib/partition/CameraNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+	/**
+	 * @class away.partition.CameraNode
+	 */
+	class CameraNode extends EntityNode {
+	    static id: string;
+	    constructor(pool: EntityNodePool, camera: IEntity, partition: Partition);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	}
+	export = CameraNode;
 	
 }
 
@@ -8379,78 +8416,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
 	}
 	export = DirectionalShadowMapper;
-	
-}
-
-declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
-	    private _coverageRatio;
-	    constructor(coverageRatio?: number);
-	    /**
-	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
-	     */
-	    coverageRatio: number;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	}
-	export = NearDirectionalShadowMapper;
-	
-}
-
-declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class ShadowMapperBase {
-	    _pCasterCollector: ShadowCasterCollector;
-	    _depthMap: TextureBase;
-	    _pDepthMapSize: number;
-	    _pLight: LightBase;
-	    _explicitDepthMap: boolean;
-	    private _autoUpdateShadows;
-	    _iShadowsInvalid: boolean;
-	    constructor();
-	    pCreateCasterCollector(): ShadowCasterCollector;
-	    autoUpdateShadows: boolean;
-	    updateShadows(): void;
-	    iSetDepthMap(depthMap: TextureBase): void;
-	    light: LightBase;
-	    depthMap: TextureBase;
-	    depthMapSize: number;
-	    dispose(): void;
-	    pCreateDepthTexture(): TextureBase;
-	    iRenderDepthMap(entityCollector: EntityCollector, renderer: IRenderer): void;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pDrawDepthMap(target: TextureBase, scene: Scene, renderer: IRenderer): void;
-	    _pSetDepthMapSize(value: any): void;
-	}
-	export = ShadowMapperBase;
-	
-}
-
-declare module "awayjs-display/lib/partition/CameraNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
-	/**
-	 * @class away.partition.CameraNode
-	 */
-	class CameraNode extends EntityNode {
-	    static id: string;
-	    constructor(pool: EntityNodePool, camera: IEntity, partition: Partition);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
-	}
-	export = CameraNode;
 	
 }
 
@@ -8536,6 +8501,41 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	    updateBounds(): void;
 	}
 	export = EntityNode;
+	
+}
+
+declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class ShadowMapperBase {
+	    _pCasterCollector: ShadowCasterCollector;
+	    _depthMap: TextureBase;
+	    _pDepthMapSize: number;
+	    _pLight: LightBase;
+	    _explicitDepthMap: boolean;
+	    private _autoUpdateShadows;
+	    _iShadowsInvalid: boolean;
+	    constructor();
+	    pCreateCasterCollector(): ShadowCasterCollector;
+	    autoUpdateShadows: boolean;
+	    updateShadows(): void;
+	    iSetDepthMap(depthMap: TextureBase): void;
+	    light: LightBase;
+	    depthMap: TextureBase;
+	    depthMapSize: number;
+	    dispose(): void;
+	    pCreateDepthTexture(): TextureBase;
+	    iRenderDepthMap(entityCollector: EntityCollector, renderer: IRenderer): void;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    pDrawDepthMap(target: TextureBase, scene: Scene, renderer: IRenderer): void;
+	    _pSetDepthMapSize(value: any): void;
+	}
+	export = ShadowMapperBase;
 	
 }
 
@@ -9225,34 +9225,6 @@ declare module "awayjs-display/lib/pool/IEntityNodeClass" {
 	
 }
 
-declare module "awayjs-display/lib/pool/IRender" {
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	/**
-	 * IRender provides an abstract base class for material shader passes. A material pass constitutes at least
-	 * a render call per required renderable.
-	 */
-	interface IRender extends IEventDispatcher {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidateRender(): any;
-	    /**
-	     *
-	     */
-	    invalidatePasses(): any;
-	    /**
-	     *
-	     */
-	    invalidateAnimation(): any;
-	}
-	export = IRender;
-	
-}
-
 declare module "awayjs-display/lib/pool/IRenderable" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	/**
@@ -9292,6 +9264,34 @@ declare module "awayjs-display/lib/pool/IRenderable" {
 	    invalidateGeometry(): any;
 	}
 	export = IRenderable;
+	
+}
+
+declare module "awayjs-display/lib/pool/IRender" {
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	/**
+	 * IRender provides an abstract base class for material shader passes. A material pass constitutes at least
+	 * a render call per required renderable.
+	 */
+	interface IRender extends IEventDispatcher {
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidateRender(): any;
+	    /**
+	     *
+	     */
+	    invalidatePasses(): any;
+	    /**
+	     *
+	     */
+	    invalidateAnimation(): any;
+	}
+	export = IRender;
 	
 }
 
@@ -10147,6 +10147,31 @@ declare module "awayjs-display/lib/text/TextFieldAutoSize" {
 	
 }
 
+declare module "awayjs-display/lib/text/TextFieldType" {
+	/**
+	 * The TextFieldType class is an enumeration of constant values used in setting the
+	 * <code>type</code> property of the TextField class.
+	 *
+	 * @see away.entities.TextField#type
+	 */
+	class TextFieldType {
+	    /**
+	     * Used to specify a <code>dynamic</code> TextField.
+	     */
+	    static DYNAMIC: string;
+	    /**
+	     * Used to specify an <code>input</code> TextField.
+	     */
+	    static INPUT: string;
+	    /**
+	     * Used to specify an <code>static</code> TextField.
+	     */
+	    static STATIC: string;
+	}
+	export = TextFieldType;
+	
+}
+
 declare module "awayjs-display/lib/text/TextFormat" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -10413,31 +10438,6 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	    RIGHT: string;
 	}
 	export = TextFormatAlign;
-	
-}
-
-declare module "awayjs-display/lib/text/TextFieldType" {
-	/**
-	 * The TextFieldType class is an enumeration of constant values used in setting the
-	 * <code>type</code> property of the TextField class.
-	 *
-	 * @see away.entities.TextField#type
-	 */
-	class TextFieldType {
-	    /**
-	     * Used to specify a <code>dynamic</code> TextField.
-	     */
-	    static DYNAMIC: string;
-	    /**
-	     * Used to specify an <code>input</code> TextField.
-	     */
-	    static INPUT: string;
-	    /**
-	     * Used to specify an <code>static</code> TextField.
-	     */
-	    static STATIC: string;
-	}
-	export = TextFieldType;
 	
 }
 
@@ -10714,63 +10714,6 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	
 }
 
-declare module "awayjs-display/lib/traverse/RaycastCollector" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
-	 * considered intersecting with the defined ray.
-	 *
-	 * @see away.partition.Partition
-	 * @see away.entities.IEntity
-	 *
-	 * @class away.traverse.RaycastCollector
-	 */
-	class RaycastCollector extends CollectorBase {
-	    private _rayPosition;
-	    private _rayDirection;
-	    _iCollectionMark: number;
-	    /**
-	     * Provides the starting position of the ray.
-	     */
-	    rayPosition: Vector3D;
-	    /**
-	     * Provides the direction vector of the ray.
-	     */
-	    rayDirection: Vector3D;
-	    /**
-	     * Creates a new RaycastCollector object.
-	     */
-	    constructor();
-	    /**
-	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
-	     *
-	     * @param node The Partition3DNode object to frustum-test.
-	     */
-	    enterNode(node: NodeBase): boolean;
-	}
-	export = RaycastCollector;
-	
-}
-
-declare module "awayjs-display/lib/traverse/ShadowCasterCollector" {
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.ShadowCasterCollector
-	 */
-	class ShadowCasterCollector extends CollectorBase {
-	    constructor();
-	    /**
-	     *
-	     */
-	    enterNode(node: NodeBase): boolean;
-	}
-	export = ShadowCasterCollector;
-	
-}
-
 declare module "awayjs-display/lib/traverse/EntityCollector" {
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -10842,6 +10785,88 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	
 }
 
+declare module "awayjs-display/lib/traverse/RaycastCollector" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
+	 * considered intersecting with the defined ray.
+	 *
+	 * @see away.partition.Partition
+	 * @see away.entities.IEntity
+	 *
+	 * @class away.traverse.RaycastCollector
+	 */
+	class RaycastCollector extends CollectorBase {
+	    private _rayPosition;
+	    private _rayDirection;
+	    _iCollectionMark: number;
+	    /**
+	     * Provides the starting position of the ray.
+	     */
+	    rayPosition: Vector3D;
+	    /**
+	     * Provides the direction vector of the ray.
+	     */
+	    rayDirection: Vector3D;
+	    /**
+	     * Creates a new RaycastCollector object.
+	     */
+	    constructor();
+	    /**
+	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	     *
+	     * @param node The Partition3DNode object to frustum-test.
+	     */
+	    enterNode(node: NodeBase): boolean;
+	}
+	export = RaycastCollector;
+	
+}
+
+declare module "awayjs-display/lib/traverse/ShadowCasterCollector" {
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.ShadowCasterCollector
+	 */
+	class ShadowCasterCollector extends CollectorBase {
+	    constructor();
+	    /**
+	     *
+	     */
+	    enterNode(node: NodeBase): boolean;
+	}
+	export = ShadowCasterCollector;
+	
+}
+
+declare module "awayjs-display/lib/utils/Cast" {
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+	/**
+	 * Helper class for casting assets to usable objects
+	 */
+	class Cast {
+	    private static _colorNames;
+	    private static _hexChars;
+	    private static _notClasses;
+	    private static _classes;
+	    static string(data: any): string;
+	    static byteArray(data: any): ByteArray;
+	    private static isHex(str);
+	    static tryColor(data: any): number;
+	    static color(data: any): number;
+	    static tryClass(name: string): any;
+	    static image2D(data: any): Image2D;
+	    static bitmapTexture(data: any): Single2DTexture;
+	}
+	export = Cast;
+	
+}
+
 declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Short2Attributes = require("awayjs-core/lib/attributes/Short2Attributes");
@@ -10869,31 +10894,6 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	    static getSubVertices(vertexBuffer: AttributesBuffer, indexMappings: Array<number>): AttributesBuffer;
 	}
 	export = SubGeometryUtils;
-	
-}
-
-declare module "awayjs-display/lib/utils/Cast" {
-	import Image2D = require("awayjs-core/lib/data/Image2D");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-	/**
-	 * Helper class for casting assets to usable objects
-	 */
-	class Cast {
-	    private static _colorNames;
-	    private static _hexChars;
-	    private static _notClasses;
-	    private static _classes;
-	    static string(data: any): string;
-	    static byteArray(data: any): ByteArray;
-	    private static isHex(str);
-	    static tryColor(data: any): number;
-	    static color(data: any): number;
-	    static tryClass(name: string): any;
-	    static image2D(data: any): Image2D;
-	    static bitmapTexture(data: any): Single2DTexture;
-	}
-	export = Cast;
 	
 }
 
