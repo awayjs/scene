@@ -171,6 +171,9 @@ class CurveSubGeometry extends SubGeometryBase
 
 
 		//now we have bounds start creating grid cells and filling
+		var maxDevisions:number = 32;
+		this.devisions = Math.ceil(Math.sqrt(this.numVertices));
+		this.devisions = Math.min(this.devisions, maxDevisions);
 		var numCells:number = this.devisions * this.devisions;
 		var cellWidth:number = width/this.devisions;
 		var cellHeight:number = height/this.devisions;
@@ -251,96 +254,99 @@ class CurveSubGeometry extends SubGeometryBase
 		var cx:number;
 		var cy:number;
 
-		if (this.cells == null) {
-			this.buildGrid();
-		}
-		var cell:number = this.getCell(x,y);
-		if(cell == -1) return false;
-
-		var nodes:Array<number> = this.cells[cell];
-		if(nodes == null) return false;
+		//hard coded min vertex count to bother using a grid for
+		if(this.numVertices > 150){
 
 
-		for(var k:number = 0; k < nodes.length; k+=3)
-		{
-			id0 = nodes[k];
-			id1 = nodes[k+1];
-			id2 = nodes[k + 2];
-
-			ax = positions[id0 * posDim];
-			ay = positions[id0 * posDim + 1];
-			bx = positions[id1 * posDim];
-			by = positions[id1 * posDim + 1];
-			cx = positions[id2 * posDim];
-			cy = positions[id2 * posDim + 1];
-
-			//console.log(ax, ay, bx, by, cx, cy);
-
-			//from a to p
-			var dx:number = ax - x;
-			var dy:number = ay - y;
-
-			//edge normal (a-b)
-			var nx:number = by - ay;
-			var ny:number = -(bx - ax);
-
-			//console.log(ax,ay,bx,by,cx,cy);
-
-			var dot:number = (dx * nx) + (dy * ny);
-			//console.log("dot a",dot);
-			if (dot > 0) continue;
-
-			dx = bx - x;
-			dy = by - y;
-			nx = cy - by;
-			ny = -(cx - bx);
-
-			dot = (dx * nx) + (dy * ny);
-			//console.log("dot b",dot);
-			if (dot > 0) continue;
-
-			dx = cx - x;
-			dy = cy - y;
-			nx = ay - cy;
-			ny = -(ax - cx);
-
-			dot = (dx * nx) + (dy * ny);
-			//console.log("dot c",dot);
-			if (dot > 0) continue;
-
-			var curvex:number = curves[id0 * curveDim];
-			//check if not solid
-			if (curvex != 2) {
-
-				var v0x:number = bx - ax;
-				var v0y:number = by - ay;
-				var v1x:number = cx - ax;
-				var v1y:number = cy - ay;
-				var v2x:number = x - ax;
-				var v2y:number = y - ay;
-
-				var den:number = v0x * v1y - v1x * v0y;
-				var v:number = (v2x * v1y - v1x * v2y) / den;
-				var w:number = (v0x * v2y - v2x * v0y) / den;
-				//var u:number = 1 - v - w;	//commented out as inlined away
-
-				//here be dragons
-				var uu:number = 0.5 * v + w;
-				var vv:number = w;
-
-				var d:number = uu * uu - vv;
-
-				var az:number = positions[id0 * posDim + 2];
-				if (d > 0 && az == -1) {
-					continue;
-				} else if (d < 0 && az == 1) {
-					continue;
-				}
+			if (this.cells == null) {
+				this.buildGrid();
 			}
-			return true;
-		}
-		return false;
+			var cell:number = this.getCell(x, y);
+			if (cell == -1) return false;
 
+			var nodes:Array<number> = this.cells[cell];
+			if (nodes == null) return false;
+
+
+			for (var k:number = 0; k < nodes.length; k += 3) {
+				id0 = nodes[k];
+				id1 = nodes[k + 1];
+				id2 = nodes[k + 2];
+
+				ax = positions[id0 * posDim];
+				ay = positions[id0 * posDim + 1];
+				bx = positions[id1 * posDim];
+				by = positions[id1 * posDim + 1];
+				cx = positions[id2 * posDim];
+				cy = positions[id2 * posDim + 1];
+
+				//console.log(ax, ay, bx, by, cx, cy);
+
+				//from a to p
+				var dx:number = ax - x;
+				var dy:number = ay - y;
+
+				//edge normal (a-b)
+				var nx:number = by - ay;
+				var ny:number = -(bx - ax);
+
+				//console.log(ax,ay,bx,by,cx,cy);
+
+				var dot:number = (dx * nx) + (dy * ny);
+				//console.log("dot a",dot);
+				if (dot > 0) continue;
+
+				dx = bx - x;
+				dy = by - y;
+				nx = cy - by;
+				ny = -(cx - bx);
+
+				dot = (dx * nx) + (dy * ny);
+				//console.log("dot b",dot);
+				if (dot > 0) continue;
+
+				dx = cx - x;
+				dy = cy - y;
+				nx = ay - cy;
+				ny = -(ax - cx);
+
+				dot = (dx * nx) + (dy * ny);
+				//console.log("dot c",dot);
+				if (dot > 0) continue;
+
+				var curvex:number = curves[id0 * curveDim];
+				//check if not solid
+				if (curvex != 2) {
+
+					var v0x:number = bx - ax;
+					var v0y:number = by - ay;
+					var v1x:number = cx - ax;
+					var v1y:number = cy - ay;
+					var v2x:number = x - ax;
+					var v2y:number = y - ay;
+
+					var den:number = v0x * v1y - v1x * v0y;
+					var v:number = (v2x * v1y - v1x * v2y) / den;
+					var w:number = (v0x * v2y - v2x * v0y) / den;
+					//var u:number = 1 - v - w;	//commented out as inlined away
+
+					//here be dragons
+					var uu:number = 0.5 * v + w;
+					var vv:number = w;
+
+					var d:number = uu * uu - vv;
+
+					var az:number = positions[id0 * posDim + 2];
+					if (d > 0 && az == -1) {
+						continue;
+					} else if (d < 0 && az == 1) {
+						continue;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
 		//brute force
 
 		for(var k:number = 0; k < this._numVertices; k+=3)
