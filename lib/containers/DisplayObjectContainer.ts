@@ -35,6 +35,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	public static assetType:string = "[asset DisplayObjectContainer]";
 
 	private _mouseChildren:boolean = true;
+	private _depths:Array<number> = new Array<number>();
+	private _nextHighestDepth:number = 0;
 	private _children:Array<DisplayObject> = new Array<DisplayObject>();
 	public _iIsRoot:boolean;
 
@@ -152,23 +154,57 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public addChild(child:DisplayObject):DisplayObject
 	{
+		return this.addChildAt(child, this._children.length);
+	}
+
+	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
+	{
 		if (child == null)
 			throw new Error("Parameter child cannot be null.");
-
+		
 		//if child already has a parent, remove it.
 		if (child._pParent)
-			child._pParent.removeChildInternal(child);
+			child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
 
 		child.iSetParent(this);
 
-		this._children.push(child);
-
 		this._pInvalidateBounds();
+
+		var len:number = this._depths.length;
+		var index:number = len;
+		
+		while (index--)
+			if (this._depths[index] < depth)
+				break;
+
+		index++;
+
+		if (index < len) {
+			//if replace flag & depths match current depth, remove the existing child
+			if (this._depths[index] == depth) {
+				if (replace) {
+					this.removeChildAt(index);
+				} else {
+					//update depths if there are children higher than added child
+					for (var i:number = index; i < len; i++)
+						this._depths[i] = this._depths[i] + 1;
+
+					this._nextHighestDepth++;
+				}
+			}
+
+			this._children.splice(index, 0, child);
+			this._depths.splice(index, 0, depth);
+		} else {
+			this._children.push(child);
+			this._depths.push(depth);
+
+			this._nextHighestDepth = depth + 1;
+		}
 
 		return child;
 	}
-
-
+	
 	/**
 	 * Adds a child DisplayObject instance to this DisplayObjectContainer
 	 * instance. The child is added at the index position specified. An index of
@@ -198,9 +234,9 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 * @event added Dispatched when a display object is added to the display
 	 *              list.
 	 */
-	public addChildAt(child:DisplayObject, index:number /*int*/):DisplayObject
+	public addChildAt(child:DisplayObject, index:number):DisplayObject
 	{
-		return child;
+		return this.addChildAtDepth(child, (index < this._children.length)? this._depths[index] : this._nextHighestDepth, false);
 	}
 
 	public addChildren(...childarray:Array<DisplayObject>)
@@ -258,7 +294,12 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		while (this.numChildren > 0)
 			this.getChildAt(0).dispose();
 	}
-
+	
+	public getChildAtDepth(depth:number /*int*/):DisplayObject
+	{
+		return this.getChildAt(this.getDepthIndexInternal(depth));
+	}
+	
 	/**
 	 * Returns the child display object instance that exists at the specified
 	 * index.
@@ -320,6 +361,16 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		return childIndex;
 	}
 
+	public getChildDepth(child:DisplayObject):number /*int*/
+	{
+		return this._depths[this.getChildIndex(child)];
+	}
+
+	public getNextHighestDepth()
+	{
+		return this._nextHighestDepth;
+	}
+
 	/**
 	 * Returns an array of objects that lie under the specified point and are
 	 * children(or grandchildren, and so on) of this DisplayObjectContainer
@@ -368,14 +419,15 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		if (child == null)
 			throw new Error("Parameter child cannot be null");
 
-		this.removeChildInternal(child);
-
-		child.iSetParent(null);
-
-		this._pInvalidateBounds();
+		this.removeChildAt(this.getChildIndex(child));
 
 		return child;
 	}
+
+	public removeChildAtDepth(depth:number /*int*/):DisplayObject
+	{
+		return this.removeChildAt(this.getDepthIndexInternal(depth));
+	}	
 
 	/**
 	 * Removes a child DisplayObject from the specified <code>index</code>
@@ -401,7 +453,13 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public removeChildAt(index:number /*int*/):DisplayObject
 	{
-		return this.removeChild(this._children[index]);
+		var child:DisplayObject = this.removeChildAtInternal(index);
+
+		child.iSetParent(null);
+
+		this._pInvalidateBounds();
+		
+		return child;
 	}
 
 	/**
@@ -477,7 +535,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public swapChildren(child1:DisplayObject, child2:DisplayObject)
 	{
-		//TODO
+		this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2))
 	}
 
 	/**
@@ -489,9 +547,16 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 * @param index2 The index position of the second child object.
 	 * @throws RangeError If either index does not exist in the child list.
 	 */
-	public swapChildrenAt(index1:number /*int*/, index2:number /*int*/)
+	public swapChildrenAt(index1:number, index2:number)
 	{
-		//TODO
+		var depth:number = this._depths[index1];
+		var child:DisplayObject = this._children[index1];
+
+		this._depths[index1] = this._depths[index2];
+		this._children[index1] = this._children[index2];
+
+		this._depths[index2] = depth;
+		this._children[index2] = child;
 	}
 
 
@@ -603,12 +668,28 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 *
 	 * @param child
 	 */
-	private removeChildInternal(child:DisplayObject):DisplayObject
+	private removeChildAtInternal(index:number):DisplayObject
 	{
-		this._children.splice(this.getChildIndex(child), 1);
+		var child:DisplayObject = this._children.splice(index, 1)[0];
+		this._depths.splice(index, 1);
+
+		//if child is the last in array, update next highest depth
+		if (index == this._children.length)
+			this._nextHighestDepth = this._depths[index - 1] + 1;
+
 		return child;
 	}
+	
+	private getDepthIndexInternal(depth:number /*int*/):number
+	{
+		var index:number = this._depths.indexOf(depth);
 
+		if (index == -1)
+			throw new ArgumentError("No child at specified depth");
+
+		return index;
+	}
+	
 	/**
 	 * Evaluates the display object to see if it overlaps or intersects with the
 	 * point specified by the <code>x</code> and <code>y</code> parameters. The

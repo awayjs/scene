@@ -326,12 +326,8 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 
         len = this.numChildren;
-        var obj:any;
-
-        for (i = 0; i < len; ++i) {
-            obj = this.getChildAt(i).clone();
-            clone.addChild(<DisplayObjectContainer> obj);
-        }
+        for (i = 0; i < len; ++i)
+            clone.addChild(this.getChildAt(i).clone());
 
         if (this._animator)
             clone.animator = this._animator.clone();
