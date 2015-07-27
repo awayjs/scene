@@ -5250,6 +5250,8 @@ var DisplayObjectContainer = (function (_super) {
     function DisplayObjectContainer() {
         _super.call(this);
         this._mouseChildren = true;
+        this._depths = new Array();
+        this._nextHighestDepth = 0;
         this._children = new Array();
     }
     Object.defineProperty(DisplayObjectContainer.prototype, "assetType", {
@@ -5337,14 +5339,43 @@ var DisplayObjectContainer = (function (_super) {
      *              list.
      */
     DisplayObjectContainer.prototype.addChild = function (child) {
+        return this.addChildAt(child, this._children.length);
+    };
+    DisplayObjectContainer.prototype.addChildAtDepth = function (child, depth, replace) {
+        if (replace === void 0) { replace = true; }
         if (child == null)
             throw new Error("Parameter child cannot be null.");
         //if child already has a parent, remove it.
         if (child._pParent)
-            child._pParent.removeChildInternal(child);
+            child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
         child.iSetParent(this);
-        this._children.push(child);
         this._pInvalidateBounds();
+        var len = this._depths.length;
+        var index = len;
+        while (index--)
+            if (this._depths[index] < depth)
+                break;
+        index++;
+        if (index < len) {
+            //if replace flag & depths match current depth, remove the existing child
+            if (this._depths[index] == depth) {
+                if (replace) {
+                    this.removeChildAt(index);
+                }
+                else {
+                    for (var i = index; i < len; i++)
+                        this._depths[i] = this._depths[i] + 1;
+                    this._nextHighestDepth++;
+                }
+            }
+            this._children.splice(index, 0, child);
+            this._depths.splice(index, 0, depth);
+        }
+        else {
+            this._children.push(child);
+            this._depths.push(depth);
+            this._nextHighestDepth = depth + 1;
+        }
         return child;
     };
     /**
@@ -5376,8 +5407,8 @@ var DisplayObjectContainer = (function (_super) {
      * @event added Dispatched when a display object is added to the display
      *              list.
      */
-    DisplayObjectContainer.prototype.addChildAt = function (child, index /*int*/) {
-        return child;
+    DisplayObjectContainer.prototype.addChildAt = function (child, index) {
+        return this.addChildAtDepth(child, (index < this._children.length) ? this._depths[index] : this._nextHighestDepth, false);
     };
     DisplayObjectContainer.prototype.addChildren = function () {
         var childarray = [];
@@ -5427,6 +5458,9 @@ var DisplayObjectContainer = (function (_super) {
         this.dispose();
         while (this.numChildren > 0)
             this.getChildAt(0).dispose();
+    };
+    DisplayObjectContainer.prototype.getChildAtDepth = function (depth /*int*/) {
+        return this.getChildAt(this.getDepthIndexInternal(depth));
     };
     /**
      * Returns the child display object instance that exists at the specified
@@ -5478,6 +5512,12 @@ var DisplayObjectContainer = (function (_super) {
             throw new ArgumentError("Child parameter is not a child of the caller");
         return childIndex;
     };
+    DisplayObjectContainer.prototype.getChildDepth = function (child) {
+        return this._depths[this.getChildIndex(child)];
+    };
+    DisplayObjectContainer.prototype.getNextHighestDepth = function () {
+        return this._nextHighestDepth;
+    };
     /**
      * Returns an array of objects that lie under the specified point and are
      * children(or grandchildren, and so on) of this DisplayObjectContainer
@@ -5522,10 +5562,11 @@ var DisplayObjectContainer = (function (_super) {
     DisplayObjectContainer.prototype.removeChild = function (child) {
         if (child == null)
             throw new Error("Parameter child cannot be null");
-        this.removeChildInternal(child);
-        child.iSetParent(null);
-        this._pInvalidateBounds();
+        this.removeChildAt(this.getChildIndex(child));
         return child;
+    };
+    DisplayObjectContainer.prototype.removeChildAtDepth = function (depth /*int*/) {
+        return this.removeChildAt(this.getDepthIndexInternal(depth));
     };
     /**
      * Removes a child DisplayObject from the specified <code>index</code>
@@ -5550,7 +5591,10 @@ var DisplayObjectContainer = (function (_super) {
      *                       call the <code>Security.allowDomain()</code> method.
      */
     DisplayObjectContainer.prototype.removeChildAt = function (index /*int*/) {
-        return this.removeChild(this._children[index]);
+        var child = this.removeChildAtInternal(index);
+        child.iSetParent(null);
+        this._pInvalidateBounds();
+        return child;
     };
     /**
      * Removes all <code>child</code> DisplayObject instances from the child list
@@ -5620,7 +5664,7 @@ var DisplayObjectContainer = (function (_super) {
      *                       this object.
      */
     DisplayObjectContainer.prototype.swapChildren = function (child1, child2) {
-        //TODO
+        this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2));
     };
     /**
      * Swaps the z-order(front-to-back order) of the child objects at the two
@@ -5631,8 +5675,13 @@ var DisplayObjectContainer = (function (_super) {
      * @param index2 The index position of the second child object.
      * @throws RangeError If either index does not exist in the child list.
      */
-    DisplayObjectContainer.prototype.swapChildrenAt = function (index1 /*int*/, index2 /*int*/) {
-        //TODO
+    DisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
+        var depth = this._depths[index1];
+        var child = this._children[index1];
+        this._depths[index1] = this._depths[index2];
+        this._children[index1] = this._children[index2];
+        this._depths[index2] = depth;
+        this._children[index2] = child;
     };
     /**
      * //TODO
@@ -5722,9 +5771,19 @@ var DisplayObjectContainer = (function (_super) {
      *
      * @param child
      */
-    DisplayObjectContainer.prototype.removeChildInternal = function (child) {
-        this._children.splice(this.getChildIndex(child), 1);
+    DisplayObjectContainer.prototype.removeChildAtInternal = function (index) {
+        var child = this._children.splice(index, 1)[0];
+        this._depths.splice(index, 1);
+        //if child is the last in array, update next highest depth
+        if (index == this._children.length)
+            this._nextHighestDepth = this._depths[index - 1] + 1;
         return child;
+    };
+    DisplayObjectContainer.prototype.getDepthIndexInternal = function (depth /*int*/) {
+        var index = this._depths.indexOf(depth);
+        if (index == -1)
+            throw new ArgumentError("No child at specified depth");
+        return index;
     };
     /**
      * Evaluates the display object to see if it overlaps or intersects with the
@@ -10027,11 +10086,8 @@ var Mesh = (function (_super) {
         for (var i = 0; i < len; ++i)
             clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
         len = this.numChildren;
-        var obj;
-        for (i = 0; i < len; ++i) {
-            obj = this.getChildAt(i).clone();
-            clone.addChild(obj);
-        }
+        for (i = 0; i < len; ++i)
+            clone.addChild(this.getChildAt(i).clone());
         if (this._animator)
             clone.animator = this._animator.clone();
     };
@@ -11502,12 +11558,9 @@ var TextField = (function (_super) {
         //for (var i:number = 0; i < len; ++i)
         //	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
         var len = this.numChildren;
-        var obj;
         var i;
-        for (i = 0; i < len; ++i) {
-            obj = this.getChildAt(i).clone();
-            clone.addChild(obj);
-        }
+        for (i = 0; i < len; ++i)
+            clone.addChild(this.getChildAt(i).clone());
         //if (this._animator)
         //	clone.animator = this._animator.clone();
         clone.textWidth = this.textWidth;

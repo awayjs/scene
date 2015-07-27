@@ -3037,6 +3037,8 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	class DisplayObjectContainer extends DisplayObject implements IAsset {
 	    static assetType: string;
 	    private _mouseChildren;
+	    private _depths;
+	    private _nextHighestDepth;
 	    private _children;
 	    _iIsRoot: boolean;
 	    /**
@@ -3125,6 +3127,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *              list.
 	     */
 	    addChild(child: DisplayObject): DisplayObject;
+	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
 	    /**
 	     * Adds a child DisplayObject instance to this DisplayObjectContainer
 	     * instance. The child is added at the index position specified. An index of
@@ -3177,6 +3180,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *
 	     */
 	    disposeWithChildren(): void;
+	    getChildAtDepth(depth: number): DisplayObject;
 	    /**
 	     * Returns the child display object instance that exists at the specified
 	     * index.
@@ -3211,6 +3215,8 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *                       object.
 	     */
 	    getChildIndex(child: DisplayObject): number;
+	    getChildDepth(child: DisplayObject): number;
+	    getNextHighestDepth(): number;
 	    /**
 	     * Returns an array of objects that lie under the specified point and are
 	     * children(or grandchildren, and so on) of this DisplayObjectContainer
@@ -3251,6 +3257,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *                       object.
 	     */
 	    removeChild(child: DisplayObject): DisplayObject;
+	    removeChildAtDepth(depth: number): DisplayObject;
 	    /**
 	     * Removes a child DisplayObject from the specified <code>index</code>
 	     * position in the child list of the DisplayObjectContainer. The
@@ -3368,7 +3375,8 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *
 	     * @param child
 	     */
-	    private removeChildInternal(child);
+	    private removeChildAtInternal(index);
+	    private getDepthIndexInternal(depth);
 	    /**
 	     * Evaluates the display object to see if it overlaps or intersects with the
 	     * point specified by the <code>x</code> and <code>y</code> parameters. The
@@ -8326,22 +8334,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	
 }
 
-declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
-	    private _coverageRatio;
-	    constructor(coverageRatio?: number);
-	    /**
-	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
-	     */
-	    coverageRatio: number;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	}
-	export = NearDirectionalShadowMapper;
-	
-}
-
 declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -8360,27 +8352,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" 
 	    pDrawDepthMap(target: SingleCubeTexture, scene: Scene, renderer: IRenderer): void;
 	}
 	export = CubeMapShadowMapper;
-	
-}
-
-declare module "awayjs-display/lib/partition/CameraNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
-	/**
-	 * @class away.partition.CameraNode
-	 */
-	class CameraNode extends EntityNode {
-	    static id: string;
-	    constructor(pool: EntityNodePool, camera: IEntity, partition: Partition);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
-	}
-	export = CameraNode;
 	
 }
 
@@ -8416,6 +8387,78 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
 	}
 	export = DirectionalShadowMapper;
+	
+}
+
+declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
+	    private _coverageRatio;
+	    constructor(coverageRatio?: number);
+	    /**
+	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
+	     */
+	    coverageRatio: number;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	}
+	export = NearDirectionalShadowMapper;
+	
+}
+
+declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
+	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class ShadowMapperBase {
+	    _pCasterCollector: ShadowCasterCollector;
+	    _depthMap: TextureBase;
+	    _pDepthMapSize: number;
+	    _pLight: LightBase;
+	    _explicitDepthMap: boolean;
+	    private _autoUpdateShadows;
+	    _iShadowsInvalid: boolean;
+	    constructor();
+	    pCreateCasterCollector(): ShadowCasterCollector;
+	    autoUpdateShadows: boolean;
+	    updateShadows(): void;
+	    iSetDepthMap(depthMap: TextureBase): void;
+	    light: LightBase;
+	    depthMap: TextureBase;
+	    depthMapSize: number;
+	    dispose(): void;
+	    pCreateDepthTexture(): TextureBase;
+	    iRenderDepthMap(entityCollector: EntityCollector, renderer: IRenderer): void;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    pDrawDepthMap(target: TextureBase, scene: Scene, renderer: IRenderer): void;
+	    _pSetDepthMapSize(value: any): void;
+	}
+	export = ShadowMapperBase;
+	
+}
+
+declare module "awayjs-display/lib/partition/CameraNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+	/**
+	 * @class away.partition.CameraNode
+	 */
+	class CameraNode extends EntityNode {
+	    static id: string;
+	    constructor(pool: EntityNodePool, camera: IEntity, partition: Partition);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	}
+	export = CameraNode;
 	
 }
 
@@ -8501,41 +8544,6 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	    updateBounds(): void;
 	}
 	export = EntityNode;
-	
-}
-
-declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
-	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class ShadowMapperBase {
-	    _pCasterCollector: ShadowCasterCollector;
-	    _depthMap: TextureBase;
-	    _pDepthMapSize: number;
-	    _pLight: LightBase;
-	    _explicitDepthMap: boolean;
-	    private _autoUpdateShadows;
-	    _iShadowsInvalid: boolean;
-	    constructor();
-	    pCreateCasterCollector(): ShadowCasterCollector;
-	    autoUpdateShadows: boolean;
-	    updateShadows(): void;
-	    iSetDepthMap(depthMap: TextureBase): void;
-	    light: LightBase;
-	    depthMap: TextureBase;
-	    depthMapSize: number;
-	    dispose(): void;
-	    pCreateDepthTexture(): TextureBase;
-	    iRenderDepthMap(entityCollector: EntityCollector, renderer: IRenderer): void;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    pDrawDepthMap(target: TextureBase, scene: Scene, renderer: IRenderer): void;
-	    _pSetDepthMapSize(value: any): void;
-	}
-	export = ShadowMapperBase;
 	
 }
 
@@ -9225,6 +9233,34 @@ declare module "awayjs-display/lib/pool/IEntityNodeClass" {
 	
 }
 
+declare module "awayjs-display/lib/pool/IRender" {
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	/**
+	 * IRender provides an abstract base class for material shader passes. A material pass constitutes at least
+	 * a render call per required renderable.
+	 */
+	interface IRender extends IEventDispatcher {
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidateRender(): any;
+	    /**
+	     *
+	     */
+	    invalidatePasses(): any;
+	    /**
+	     *
+	     */
+	    invalidateAnimation(): any;
+	}
+	export = IRender;
+	
+}
+
 declare module "awayjs-display/lib/pool/IRenderable" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	/**
@@ -9264,34 +9300,6 @@ declare module "awayjs-display/lib/pool/IRenderable" {
 	    invalidateGeometry(): any;
 	}
 	export = IRenderable;
-	
-}
-
-declare module "awayjs-display/lib/pool/IRender" {
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	/**
-	 * IRender provides an abstract base class for material shader passes. A material pass constitutes at least
-	 * a render call per required renderable.
-	 */
-	interface IRender extends IEventDispatcher {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidateRender(): any;
-	    /**
-	     *
-	     */
-	    invalidatePasses(): any;
-	    /**
-	     *
-	     */
-	    invalidateAnimation(): any;
-	}
-	export = IRender;
 	
 }
 
