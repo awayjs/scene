@@ -1,4 +1,4 @@
-import MovieClip                    = require("awayjs-display/lib/entities/MovieClip");
+import MovieClip						= require("awayjs-display/lib/entities/MovieClip");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 import DisplayObject                    = require("awayjs-display/lib/base/DisplayObject");
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
@@ -429,7 +429,7 @@ class Timeline
 		var doit:boolean;
 		for(var i:number = 0; i < len; i++) {
 			var childID:number=this.update_child_stream[start_index + i];
-			var target:DisplayObjectContainer = sourceMovieClip.getPotentialChildInstance(childID);
+			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(childID);
 			if (target.parent == sourceMovieClip) {
 				doit = true;
 				// check if the child is active + not blocked by script
@@ -483,13 +483,13 @@ class Timeline
 							if (mask_length == 1 && firstMaskID == -1) {
 								target._iMaskID = childID;
 							} else {
-								var mask:DisplayObjectContainer;
-								var masks:Array<DisplayObjectContainer> = new Array<DisplayObjectContainer>();
+								var mask:DisplayObject;
+								var masks:Array<DisplayObject> = new Array<DisplayObject>();
 								for(var m:number = 0; m < mask_length; m++){
 									mask = masks[m] = sourceMovieClip.getPotentialChildInstance(this.properties_stream_int[value_start_index++] - 1);
 									mask.mouseEnabled = false;
 									if(mask.isAsset(MovieClip))
-										mask.mouseChildren = false;
+										(<MovieClip> mask).mouseChildren = false;
 								}
 								target._iMasks = masks;
 							}
