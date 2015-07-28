@@ -106,6 +106,52 @@ declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
 	
 }
 
+declare module "awayjs-display/lib/animators/IAnimationSet" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
+	/**
+	 * Provides an interface for data set classes that hold animation data for use in animator classes.
+	 *
+	 * @see away.animators.AnimatorBase
+	 */
+	interface IAnimationSet extends IAsset {
+	    /**
+	     * Check to determine whether a state is registered in the animation set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be checked.
+	     */
+	    hasAnimation(name: string): boolean;
+	    /**
+	     * Retrieves the animation state object registered in the animation data set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be retrieved.
+	     */
+	    getAnimation(name: string): AnimationNodeBase;
+	    /**
+	     * Indicates whether the properties of the animation data contained within the set combined with
+	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
+	     * GPU calls.
+	     */
+	    usesCPU: boolean;
+	    /**
+	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
+	     * is available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    resetGPUCompatibility(): any;
+	    /**
+	     * Called by the animator to void the GPU indicator when register space in the shader
+	     * is no longer available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    cancelGPUCompatibility(): any;
+	}
+	export = IAnimationSet;
+	
+}
+
 declare module "awayjs-display/lib/animators/IAnimator" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -150,52 +196,6 @@ declare module "awayjs-display/lib/animators/IAnimator" {
 	    getRenderableSubGeometry(renderable: IRenderable, sourceSubGeometry: SubGeometryBase): SubGeometryBase;
 	}
 	export = IAnimator;
-	
-}
-
-declare module "awayjs-display/lib/animators/IAnimationSet" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
-	/**
-	 * Provides an interface for data set classes that hold animation data for use in animator classes.
-	 *
-	 * @see away.animators.AnimatorBase
-	 */
-	interface IAnimationSet extends IAsset {
-	    /**
-	     * Check to determine whether a state is registered in the animation set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be checked.
-	     */
-	    hasAnimation(name: string): boolean;
-	    /**
-	     * Retrieves the animation state object registered in the animation data set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be retrieved.
-	     */
-	    getAnimation(name: string): AnimationNodeBase;
-	    /**
-	     * Indicates whether the properties of the animation data contained within the set combined with
-	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
-	     * GPU calls.
-	     */
-	    usesCPU: boolean;
-	    /**
-	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
-	     * is available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    resetGPUCompatibility(): any;
-	    /**
-	     * Called by the animator to void the GPU indicator when register space in the shader
-	     * is no longer available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    cancelGPUCompatibility(): any;
-	}
-	export = IAnimationSet;
 	
 }
 
@@ -2447,30 +2447,30 @@ declare module "awayjs-display/lib/base/Timeline" {
 	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	class Timeline {
-	    private _keyframe_indices;
-	    private _keyframe_firstframes;
-	    private _keyframe_constructframes;
-	    private _keyframe_durations;
 	    _labels: Object;
 	    _framescripts: Object;
 	    _framescripts_translated: Object;
-	    private _frame_command_indices;
-	    private _frame_recipe;
-	    private _command_index_stream;
-	    private _command_length_stream;
-	    private _add_child_stream;
-	    private _remove_child_stream;
-	    private _update_child_stream;
-	    private _update_child_props_length_stream;
-	    private _update_child_props_indices_stream;
-	    private _property_index_stream;
-	    private _property_type_stream;
-	    private _properties_stream_int;
-	    private _properties_stream_f32_mtx_all;
-	    private _properties_stream_f32_mtx_scale_rot;
-	    private _properties_stream_f32_mtx_pos;
-	    private _properties_stream_f32_ct;
-	    private _properties_stream_strings;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_f32_mtx_all: ArrayBufferView;
+	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
+	    properties_stream_f32_mtx_pos: ArrayBufferView;
+	    properties_stream_f32_ct: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
 	    private _potentialPrototypes;
 	    numKeyFrames: number;
 	    constructor();
@@ -2480,27 +2480,6 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    private regexIndexOf(str, regex, startpos);
 	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number): void;
 	    translateScript(classReplacements: any, frame_script_in: string, keyframe_idx: number): void;
-	    keyframe_durations: ArrayBufferView;
-	    frame_command_indices: ArrayBufferView;
-	    frame_recipe: ArrayBufferView;
-	    command_index_stream: ArrayBufferView;
-	    command_length_stream: ArrayBufferView;
-	    add_child_stream: ArrayBufferView;
-	    remove_child_stream: ArrayBufferView;
-	    update_child_stream: ArrayBufferView;
-	    update_child_props_indices_stream: ArrayBufferView;
-	    update_child_props_length_stream: ArrayBufferView;
-	    property_index_stream: ArrayBufferView;
-	    property_type_stream: ArrayBufferView;
-	    properties_stream_f32_mtx_all: Float32Array;
-	    properties_stream_f32_mtx_scale_rot: Float32Array;
-	    properties_stream_f32_mtx_pos: Float32Array;
-	    properties_stream_f32_ct: Float32Array;
-	    properties_stream_int: ArrayBufferView;
-	    properties_stream_strings: Array<string>;
-	    keyframe_indices: Array<number>;
-	    keyframe_firstframes: Array<number>;
-	    keyframe_constructframes: Array<number>;
 	    numFrames(): number;
 	    getPotentialChildPrototype(id: number): DisplayObject;
 	    getKeyframeIndexForFrameIndex(frame_index: number): number;

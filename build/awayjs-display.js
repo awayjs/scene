@@ -3979,30 +3979,30 @@ var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Timeline = (function () {
     function Timeline() {
         this.numKeyFrames = 0;
+        this.keyframe_indices = [];
         this._potentialPrototypes = [];
-        this._keyframe_indices = [];
         this._labels = {};
         this._framescripts = {};
         this._framescripts_translated = {};
     }
     Timeline.prototype.init = function () {
-        if ((this._frame_command_indices == null) || (this._frame_recipe == null) || (this._keyframe_durations == null))
+        if ((this.frame_command_indices == null) || (this.frame_recipe == null) || (this.keyframe_durations == null))
             return;
-        this._keyframe_firstframes = [];
-        this._keyframe_constructframes = [];
+        this.keyframe_firstframes = [];
+        this.keyframe_constructframes = [];
         var frame_cnt = 0;
         var ic = 0;
         var ic2 = 0;
         var keyframe_cnt = 0;
         var last_construct_frame = 0;
         for (ic = 0; ic < this.numKeyFrames; ic++) {
-            var duration = this._keyframe_durations[(ic)];
-            if ((this._frame_recipe[ic] & 1) == 1)
+            var duration = this.keyframe_durations[(ic)];
+            if ((this.frame_recipe[ic] & 1) == 1)
                 last_construct_frame = keyframe_cnt;
-            this._keyframe_firstframes[keyframe_cnt] = frame_cnt;
-            this._keyframe_constructframes[keyframe_cnt++] = last_construct_frame;
+            this.keyframe_firstframes[keyframe_cnt] = frame_cnt;
+            this.keyframe_constructframes[keyframe_cnt++] = last_construct_frame;
             for (ic2 = 0; ic2 < duration; ic2++) {
-                this._keyframe_indices[frame_cnt++] = ic;
+                this.keyframe_indices[frame_cnt++] = ic;
             }
         }
     };
@@ -4061,161 +4061,14 @@ var Timeline = (function () {
             throw err;
         }
     };
-    Object.defineProperty(Timeline.prototype, "keyframe_durations", {
-        set: function (value) {
-            this._keyframe_durations = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "frame_command_indices", {
-        set: function (value) {
-            this._frame_command_indices = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "frame_recipe", {
-        set: function (value) {
-            this._frame_recipe = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "command_index_stream", {
-        set: function (value) {
-            this._command_index_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "command_length_stream", {
-        set: function (value) {
-            this._command_length_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "add_child_stream", {
-        set: function (value) {
-            this._add_child_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "remove_child_stream", {
-        set: function (value) {
-            this._remove_child_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "update_child_stream", {
-        set: function (value) {
-            this._update_child_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "update_child_props_indices_stream", {
-        set: function (value) {
-            this._update_child_props_indices_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "update_child_props_length_stream", {
-        set: function (value) {
-            this._update_child_props_length_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "property_index_stream", {
-        set: function (value) {
-            this._property_index_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "property_type_stream", {
-        set: function (value) {
-            this._property_type_stream = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "properties_stream_f32_mtx_all", {
-        set: function (value) {
-            this._properties_stream_f32_mtx_all = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "properties_stream_f32_mtx_scale_rot", {
-        set: function (value) {
-            this._properties_stream_f32_mtx_scale_rot = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "properties_stream_f32_mtx_pos", {
-        set: function (value) {
-            this._properties_stream_f32_mtx_pos = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "properties_stream_f32_ct", {
-        set: function (value) {
-            this._properties_stream_f32_ct = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "properties_stream_int", {
-        set: function (value) {
-            this._properties_stream_int = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "properties_stream_strings", {
-        set: function (value) {
-            this._properties_stream_strings = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "keyframe_indices", {
-        set: function (value) {
-            this._keyframe_indices = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "keyframe_firstframes", {
-        set: function (value) {
-            this._keyframe_firstframes = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Timeline.prototype, "keyframe_constructframes", {
-        set: function (value) {
-            this._keyframe_constructframes = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Timeline.prototype.numFrames = function () {
-        return this._keyframe_indices.length;
+        return this.keyframe_indices.length;
     };
     Timeline.prototype.getPotentialChildPrototype = function (id) {
         return this._potentialPrototypes[id];
     };
     Timeline.prototype.getKeyframeIndexForFrameIndex = function (frame_index) {
-        return this._keyframe_indices[frame_index];
+        return this.keyframe_indices[frame_index];
     };
     Timeline.prototype.getPotentialChilds = function () {
         return this._potentialPrototypes;
@@ -4230,14 +4083,14 @@ var Timeline = (function () {
     Timeline.prototype.jumpToLabel = function (target_mc, label) {
         var key_frame_index = this._labels[label];
         if (key_frame_index >= 0)
-            target_mc.currentFrameIndex = this._keyframe_firstframes[key_frame_index];
+            target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
     };
     Timeline.prototype.gotoFrame = function (target_mc, value) {
         //console.log("gotoframe");
         var frameIndex = target_mc.currentFrameIndex;
         var current_keyframe_idx = target_mc.constructedKeyFrameIndex;
-        var target_keyframe_idx = this._keyframe_indices[value];
-        var firstframe = this._keyframe_firstframes[target_keyframe_idx];
+        var target_keyframe_idx = this.keyframe_indices[value];
+        var firstframe = this.keyframe_firstframes[target_keyframe_idx];
         if (frameIndex == value) {
             //we are already on this frame.
             return;
@@ -4251,7 +4104,7 @@ var Timeline = (function () {
             // already constructed
             return;
         }
-        var break_frame_idx = this._keyframe_constructframes[target_keyframe_idx];
+        var break_frame_idx = this.keyframe_constructframes[target_keyframe_idx];
         //we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
         var jump_forward = (target_keyframe_idx > current_keyframe_idx);
         var jump_gap = (break_frame_idx > current_keyframe_idx);
@@ -4301,12 +4154,12 @@ var Timeline = (function () {
         var update_indices = []; // store a list of updatecommand_indices, so we dont have to read frame_recipe again
         var update_cnt = 0;
         for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
-            var frame_command_idx = this._frame_command_indices[k];
-            var frame_recipe = this._frame_recipe[k];
+            var frame_command_idx = this.frame_command_indices[k];
+            var frame_recipe = this.frame_recipe[k];
             if ((frame_recipe & 2) == 2)
-                this.remove_childs(target_mc, this._command_index_stream[frame_command_idx], this._command_length_stream[frame_command_idx++]);
+                this.remove_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
             if ((frame_recipe & 4) == 4)
-                this.add_childs(target_mc, this._command_index_stream[frame_command_idx], this._command_length_stream[frame_command_idx++]);
+                this.add_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
             if ((frame_recipe & 8) == 8)
                 update_indices[update_cnt++] = frame_command_idx; // execute update command later
         }
@@ -4342,43 +4195,42 @@ var Timeline = (function () {
         var frame_command_idx = 0;
         for (k = 0; k < update_indices.length; k++) {
             frame_command_idx = update_indices[k];
-            this.update_childs(target_mc, this._command_index_stream[frame_command_idx], this._command_length_stream[frame_command_idx]);
+            this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx]);
         }
         target_mc.constructedKeyFrameIndex = target_keyframe_idx;
     };
     Timeline.prototype.constructNextFrame = function (target_mc) {
-        //console.log("next frame");
         var frameIndex = target_mc.currentFrameIndex;
         var constructed_keyFrameIndex = target_mc.constructedKeyFrameIndex;
-        var new_keyFrameIndex = this._keyframe_indices[frameIndex];
+        var new_keyFrameIndex = this.keyframe_indices[frameIndex];
         if (constructed_keyFrameIndex != new_keyFrameIndex) {
             target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
-            var frame_command_idx = this._frame_command_indices[new_keyFrameIndex];
-            var frame_recipe = this._frame_recipe[new_keyFrameIndex];
+            var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
+            var frame_recipe = this.frame_recipe[new_keyFrameIndex];
             if ((frame_recipe & 1) == 1) {
                 var i = target_mc.numChildren;
                 while (i--)
                     target_mc.removeChildAt(i);
             }
             else if ((frame_recipe & 2) == 2) {
-                this.remove_childs_continous(target_mc, this._command_index_stream[frame_command_idx], this._command_length_stream[frame_command_idx++]);
+                this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
             }
             if ((frame_recipe & 4) == 4)
-                this.add_childs_continous(target_mc, this._command_index_stream[frame_command_idx], this._command_length_stream[frame_command_idx++]);
+                this.add_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
             if ((frame_recipe & 8) == 8)
-                this.update_childs(target_mc, this._command_index_stream[frame_command_idx], this._command_length_stream[frame_command_idx++]);
+                this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
         }
-        if (this._keyframe_firstframes[new_keyFrameIndex] == frameIndex) {
+        if (this.keyframe_firstframes[new_keyFrameIndex] == frameIndex) {
             this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
         }
     };
     Timeline.prototype.remove_childs = function (sourceMovieClip, start_index, len) {
         for (var i = 0; i < len; i++)
-            sourceMovieClip.removeChildAtDepth(this._remove_child_stream[start_index + i] - 16383);
+            sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
     };
     Timeline.prototype.remove_childs_continous = function (sourceMovieClip, start_index, len) {
         for (var i = 0; i < len; i++) {
-            var target = sourceMovieClip.removeChildAtDepth(this._remove_child_stream[start_index + i] - 16383);
+            var target = sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
             sourceMovieClip.adapter.unregisterScriptObject(target);
             if (target.isAsset(MovieClip) && target.adapter)
                 target.adapter.freeFromScript();
@@ -4387,15 +4239,15 @@ var Timeline = (function () {
     // used to add childs when jumping between frames
     Timeline.prototype.add_childs = function (sourceMovieClip, start_index, len) {
         for (var i = 0; i < len; i++) {
-            var target = sourceMovieClip.getPotentialChildInstance(this._add_child_stream[(start_index * 2) + (i * 2)]);
+            var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index * 2 + i * 2]);
             target["__sessionID"] = start_index + i;
-            sourceMovieClip.addChildAtDepth(target, this._add_child_stream[(start_index * 2) + (i * 2) + 1] - 16383);
+            sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index * 2 + i * 2 + 1] - 16383);
         }
     };
     // used to add childs when jumping between frames
     Timeline.prototype.add_childs_continous = function (sourceMovieClip, start_index, len) {
         for (var i = 0; i < len; i++) {
-            var target = sourceMovieClip.getPotentialChildInstance(this._add_child_stream[(start_index * 2) + (i * 2)]);
+            var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index * 2 + i * 2]);
             target["__sessionID"] = start_index + i;
             if (target.isAsset(MovieClip)) {
                 if (target.adapter && !target.adapter.isBlockedByScript()) {
@@ -4406,131 +4258,110 @@ var Timeline = (function () {
             else {
                 target.reset_to_init_state();
             }
-            sourceMovieClip.addChildAtDepth(target, this._add_child_stream[(start_index * 2) + (i * 2) + 1] - 16383);
+            sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index * 2 + i * 2 + 1] - 16383);
         }
     };
     Timeline.prototype.update_childs = function (sourceMovieClip, start_index, len) {
-        //console.log("update childs");
-        var i;
-        var pc;
         var props_cnt;
         var props_start_idx;
         var value_start_index;
         var props_type;
         var doit;
-        for (i = 0; i < len; i++) {
-            var childID = this._update_child_stream[start_index + i];
-            //console.log("childID = "+childID);
+        for (var i = 0; i < len; i++) {
+            var childID = this.update_child_stream[start_index + i];
             var target = sourceMovieClip.getPotentialChildInstance(childID);
             if (target.parent == sourceMovieClip) {
                 doit = true;
                 // check if the child is active + not blocked by script
-                if (target.isAsset(MovieClip)) {
-                    if (target.adapter.isBlockedByScript()) {
+                if (target.isAsset(MovieClip))
+                    if (target.adapter.isBlockedByScript())
                         doit = false;
-                    }
-                }
-                props_start_idx = this._update_child_props_indices_stream[start_index + i];
-                props_cnt = this._update_child_props_length_stream[start_index + i];
-                for (pc = 0; pc < props_cnt; pc++) {
-                    props_type = this._property_type_stream[props_start_idx + pc];
-                    value_start_index = this._property_index_stream[props_start_idx + pc];
+                props_start_idx = this.update_child_props_indices_stream[start_index + i];
+                props_cnt = this.update_child_props_length_stream[start_index + i];
+                for (var p = 0; p < props_cnt; p++) {
+                    props_type = this.property_type_stream[props_start_idx + p];
+                    value_start_index = this.property_index_stream[props_start_idx + p];
                     switch (props_type) {
                         case 0:
                             break;
                         case 1:
                             if (doit) {
-                                var new_matrix = target["_iMatrix3D"];
-                                if (new_matrix == null) {
-                                    new_matrix = new Matrix3D();
-                                }
-                                new_matrix.rawData[0] = this._properties_stream_f32_mtx_all[(value_start_index * 6)];
-                                new_matrix.rawData[1] = this._properties_stream_f32_mtx_all[(value_start_index * 6) + 1];
-                                new_matrix.rawData[4] = this._properties_stream_f32_mtx_all[(value_start_index * 6) + 2];
-                                new_matrix.rawData[5] = this._properties_stream_f32_mtx_all[(value_start_index * 6) + 3];
-                                new_matrix.rawData[12] = this._properties_stream_f32_mtx_all[(value_start_index * 6) + 4];
-                                new_matrix.rawData[13] = this._properties_stream_f32_mtx_all[(value_start_index * 6) + 5];
-                                target["_iMatrix3D"] = new_matrix;
+                                value_start_index *= 6;
+                                var new_matrix = target._iMatrix3D || new Matrix3D();
+                                new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[value_start_index++];
+                                new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[value_start_index++];
+                                new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[value_start_index++];
+                                new_matrix.rawData[5] = this.properties_stream_f32_mtx_all[value_start_index++];
+                                new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[value_start_index++];
+                                new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[value_start_index];
+                                target._iMatrix3D = new_matrix;
                             }
                             break;
                         case 2:
                             if (doit) {
-                                var new_ct = target["colorTransform"];
-                                if (new_ct == null) {
-                                    new_ct = new ColorTransform();
-                                }
-                                new_ct.redMultiplier = this._properties_stream_f32_ct[(value_start_index * 8)];
-                                new_ct.greenMultiplier = this._properties_stream_f32_ct[(value_start_index * 8) + 1];
-                                new_ct.blueMultiplier = this._properties_stream_f32_ct[(value_start_index * 8) + 2];
-                                new_ct.alphaMultiplier = this._properties_stream_f32_ct[(value_start_index * 8) + 3];
-                                new_ct.redOffset = this._properties_stream_f32_ct[(value_start_index * 8) + 4];
-                                new_ct.greenOffset = this._properties_stream_f32_ct[(value_start_index * 8) + 5];
-                                new_ct.blueOffset = this._properties_stream_f32_ct[(value_start_index * 8) + 6];
-                                new_ct.alphaOffset = this._properties_stream_f32_ct[(value_start_index * 8) + 7];
-                                target["colorTransform"] = new_ct;
+                                value_start_index *= 8;
+                                var new_ct = target.colorTransform || new ColorTransform();
+                                new_ct.redMultiplier = this.properties_stream_f32_ct[value_start_index++];
+                                new_ct.greenMultiplier = this.properties_stream_f32_ct[value_start_index++];
+                                new_ct.blueMultiplier = this.properties_stream_f32_ct[value_start_index++];
+                                new_ct.alphaMultiplier = this.properties_stream_f32_ct[value_start_index++];
+                                new_ct.redOffset = this.properties_stream_f32_ct[value_start_index++];
+                                new_ct.greenOffset = this.properties_stream_f32_ct[value_start_index++];
+                                new_ct.blueOffset = this.properties_stream_f32_ct[value_start_index++];
+                                new_ct.alphaOffset = this.properties_stream_f32_ct[value_start_index];
+                                target.colorTransform = new_ct;
                             }
                             break;
                         case 3:
-                            var mask_length = this._properties_stream_int[value_start_index];
-                            var firstMaskID = this._properties_stream_int[value_start_index + 1] - 1;
-                            //console.log("mask length "+mask_length);
-                            if ((mask_length == 1) && (firstMaskID == -1)) {
-                                target["_iMaskID"] = childID;
+                            var mask_length = this.properties_stream_int[value_start_index++];
+                            var firstMaskID = this.properties_stream_int[value_start_index] - 1;
+                            if (mask_length == 1 && firstMaskID == -1) {
+                                target._iMaskID = childID;
                             }
                             else {
-                                var mc = 0;
-                                var mc2 = 0;
+                                var mask;
                                 var masks = new Array();
-                                for (mc = 1; mc <= mask_length; mc++) {
-                                    masks[mc2] = sourceMovieClip.getPotentialChildInstance(this._properties_stream_int[value_start_index + mc] - 1);
-                                    masks[mc2].mouseEnabled = false;
-                                    if (masks[mc2].isAsset(MovieClip))
-                                        masks[mc2].mouseChildren = false;
-                                    mc2++;
+                                for (var m = 0; m < mask_length; m++) {
+                                    mask = masks[m] = sourceMovieClip.getPotentialChildInstance(this.properties_stream_int[value_start_index++] - 1);
+                                    mask.mouseEnabled = false;
+                                    if (mask.isAsset(MovieClip))
+                                        mask.mouseChildren = false;
                                 }
                                 target._iMasks = masks;
                             }
                             break;
                         case 4:
-                            target.name = this._properties_stream_strings[value_start_index];
+                            target.name = this.properties_stream_strings[value_start_index];
                             sourceMovieClip.adapter.registerScriptObject(target);
                             break;
                         case 5:
-                            target.name = this._properties_stream_strings[value_start_index];
+                            target.name = this.properties_stream_strings[value_start_index];
                             sourceMovieClip.adapter.registerScriptObject(target);
-                            //console.log("registered button = "+target.name);
                             target.makeButton();
                             break;
                         case 6:
                             if (doit) {
-                                if (value_start_index == 0)
-                                    target.visible = false;
-                                else
-                                    target.visible = true;
+                                target.visible = Boolean(value_start_index);
                             }
                             break;
                         case 11:
                             if (doit) {
-                                var new_matrix = target["_iMatrix3D"];
-                                if (new_matrix == null) {
-                                    new_matrix = new Matrix3D();
-                                }
-                                new_matrix.rawData[0] = this._properties_stream_f32_mtx_scale_rot[(value_start_index * 4)];
-                                new_matrix.rawData[1] = this._properties_stream_f32_mtx_scale_rot[(value_start_index * 4) + 1];
-                                new_matrix.rawData[4] = this._properties_stream_f32_mtx_scale_rot[(value_start_index * 4) + 2];
-                                new_matrix.rawData[5] = this._properties_stream_f32_mtx_scale_rot[(value_start_index * 4) + 3];
-                                target["_iMatrix3D"] = new_matrix;
+                                value_start_index *= 4;
+                                var new_matrix = target._iMatrix3D || new Matrix3D();
+                                new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
+                                new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
+                                new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
+                                new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[value_start_index];
+                                target._iMatrix3D = new_matrix;
                             }
                             break;
                         case 12:
                             if (doit) {
-                                var new_matrix = target["_iMatrix3D"];
-                                if (new_matrix == null) {
-                                    new_matrix = new Matrix3D();
-                                }
-                                new_matrix.rawData[12] = this._properties_stream_f32_mtx_pos[(value_start_index * 2)];
-                                new_matrix.rawData[13] = this._properties_stream_f32_mtx_pos[(value_start_index * 2) + 1];
-                                target["_iMatrix3D"] = new_matrix;
+                                value_start_index *= 2;
+                                var new_matrix = target._iMatrix3D || new Matrix3D();
+                                new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[value_start_index++];
+                                new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[value_start_index];
+                                target._iMatrix3D = new_matrix;
                             }
                             break;
                         default:
