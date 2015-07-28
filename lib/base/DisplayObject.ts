@@ -12,6 +12,7 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Event						= require("awayjs-core/lib/events/Event");
 
+import IDisplayObjectAdapter		= require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Scene						= require("awayjs-display/lib/containers/Scene");
@@ -166,6 +167,7 @@ import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
  */
 class DisplayObject extends AssetBase implements IBitmapDrawable
 {
+	public _adapter:IDisplayObjectAdapter;
 	private _queuedEvents:Array<Event> = new Array<Event>();
 	private _elementsDirty:boolean;
 	private _loaderInfo:LoaderInfo;
@@ -276,6 +278,21 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
     private _onGlobalColorTransformChangedDelegate:(event:DisplayObjectEvent) => void;
     private _onColorTransformChangedDelegate:(event:Event) => void;
     private _inheritColorTransform:boolean = false;
+
+
+	/**
+	 * adapter is used to provide MovieClip to scripts taken from different platforms
+	 * setter typically managed by factory
+	 */
+	public get adapter():IDisplayObjectAdapter
+	{
+		return this._adapter;
+	}
+
+	public set adapter(value:IDisplayObjectAdapter)
+	{
+		this._adapter = value;
+	}
 
     public get inheritColorTransform():boolean
     {
@@ -1504,18 +1521,25 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 	/**
 	 *
 	 */
-	public clone():DisplayObject
+	public clone(newInstance:DisplayObject = null):DisplayObject
 	{
-		var clone:DisplayObject = new DisplayObject();
-		clone.pivot = this.pivot;
-		clone._iMatrix3D = this._iMatrix3D;
-		clone.name = this.name;
+		if (!newInstance)
+			newInstance = new DisplayObject();
 
-        clone._iMaskID = this._iMaskID;
-        clone._iMasks = this._iMasks? this._iMasks.concat() : null;
+		newInstance.pivot = this.pivot;
+		newInstance._iMatrix3D = this._iMatrix3D;
+		newInstance.name = this.name;
 
-		// todo: implement for all subtypes
-		return clone;
+		newInstance._iMaskID = this._iMaskID;
+		newInstance._iMasks = this._iMasks? this._iMasks.concat() : null;
+
+		if (this._adapter)
+			newInstance.adapter = this._adapter.clone(newInstance);
+
+		if (this._transform.colorTransform)
+			newInstance.transform.colorTransform = this._transform.colorTransform.clone();
+
+		return newInstance;
 	}
 
 	/**
