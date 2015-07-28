@@ -82,49 +82,27 @@ declare module "awayjs-display/lib/IRenderer" {
 	
 }
 
-declare module "awayjs-display/lib/animators/IAnimationSet" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
-	/**
-	 * Provides an interface for data set classes that hold animation data for use in animator classes.
-	 *
-	 * @see away.animators.AnimatorBase
-	 */
-	interface IAnimationSet extends IAsset {
-	    /**
-	     * Check to determine whether a state is registered in the animation set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be checked.
-	     */
-	    hasAnimation(name: string): boolean;
-	    /**
-	     * Retrieves the animation state object registered in the animation data set under the given name.
-	     *
-	     * @param stateName The name of the animation state object to be retrieved.
-	     */
-	    getAnimation(name: string): AnimationNodeBase;
-	    /**
-	     * Indicates whether the properties of the animation data contained within the set combined with
-	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
-	     * GPU calls.
-	     */
-	    usesCPU: boolean;
-	    /**
-	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
-	     * is available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    resetGPUCompatibility(): any;
-	    /**
-	     * Called by the animator to void the GPU indicator when register space in the shader
-	     * is no longer available for running GPU-based animation code.
-	     *
-	     * @private
-	     */
-	    cancelGPUCompatibility(): any;
+declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	interface IDisplayObjectAdapter {
+	    adaptee: DisplayObject;
+	    clone(newAdaptee: DisplayObject): IDisplayObjectAdapter;
 	}
-	export = IAnimationSet;
+	export = IDisplayObjectAdapter;
+	
+}
+
+declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
+	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	interface IMovieClipAdapter extends IDisplayObjectAdapter {
+	    isBlockedByScript(): boolean;
+	    freeFromScript(): void;
+	    registerScriptObject(child: DisplayObject): void;
+	    unregisterScriptObject(child: DisplayObject): void;
+	    classReplacements: Object;
+	}
+	export = IMovieClipAdapter;
 	
 }
 
@@ -172,6 +150,52 @@ declare module "awayjs-display/lib/animators/IAnimator" {
 	    getRenderableSubGeometry(renderable: IRenderable, sourceSubGeometry: SubGeometryBase): SubGeometryBase;
 	}
 	export = IAnimator;
+	
+}
+
+declare module "awayjs-display/lib/animators/IAnimationSet" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
+	/**
+	 * Provides an interface for data set classes that hold animation data for use in animator classes.
+	 *
+	 * @see away.animators.AnimatorBase
+	 */
+	interface IAnimationSet extends IAsset {
+	    /**
+	     * Check to determine whether a state is registered in the animation set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be checked.
+	     */
+	    hasAnimation(name: string): boolean;
+	    /**
+	     * Retrieves the animation state object registered in the animation data set under the given name.
+	     *
+	     * @param stateName The name of the animation state object to be retrieved.
+	     */
+	    getAnimation(name: string): AnimationNodeBase;
+	    /**
+	     * Indicates whether the properties of the animation data contained within the set combined with
+	     * the vertex registers aslready in use on shading materials allows the animation data to utilise
+	     * GPU calls.
+	     */
+	    usesCPU: boolean;
+	    /**
+	     * Called by the material to reset the GPU indicator before testing whether register space in the shader
+	     * is available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    resetGPUCompatibility(): any;
+	    /**
+	     * Called by the animator to void the GPU indicator when register space in the shader
+	     * is no longer available for running GPU-based animation code.
+	     *
+	     * @private
+	     */
+	    cancelGPUCompatibility(): any;
+	}
+	export = IAnimationSet;
 	
 }
 
@@ -384,6 +408,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
@@ -527,6 +552,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	 *                         content is either minimized or obscured. </p>
 	 */
 	class DisplayObject extends AssetBase implements IBitmapDrawable {
+	    _adapter: IDisplayObjectAdapter;
 	    private _queuedEvents;
 	    private _elementsDirty;
 	    private _loaderInfo;
@@ -619,6 +645,11 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _onGlobalColorTransformChangedDelegate;
 	    private _onColorTransformChangedDelegate;
 	    private _inheritColorTransform;
+	    /**
+	     * adapter is used to provide MovieClip to scripts taken from different platforms
+	     * setter typically managed by factory
+	     */
+	    adapter: IDisplayObjectAdapter;
 	    inheritColorTransform: boolean;
 	    globalColorTransform: ColorTransform;
 	    /**
@@ -1282,7 +1313,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     *
 	     */
-	    clone(): DisplayObject;
+	    clone(newInstance?: DisplayObject): DisplayObject;
 	    /**
 	     *
 	     */
@@ -2412,6 +2443,83 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	
 }
 
+declare module "awayjs-display/lib/base/Timeline" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class Timeline {
+	    private _keyframe_indices;
+	    private _keyframe_firstframes;
+	    private _keyframe_constructframes;
+	    private _keyframe_durations;
+	    _labels: Object;
+	    _framescripts: Object;
+	    _framescripts_translated: Object;
+	    private _frame_command_indices;
+	    private _frame_recipe;
+	    private _command_index_stream;
+	    private _command_length_stream;
+	    private _add_child_stream;
+	    private _remove_child_stream;
+	    private _update_child_stream;
+	    private _update_child_props_length_stream;
+	    private _update_child_props_indices_stream;
+	    private _property_index_stream;
+	    private _property_type_stream;
+	    private _properties_stream_int;
+	    private _properties_stream_f32_mtx_all;
+	    private _properties_stream_f32_mtx_scale_rot;
+	    private _properties_stream_f32_mtx_pos;
+	    private _properties_stream_f32_ct;
+	    private _properties_stream_strings;
+	    private _potentialPrototypes;
+	    numKeyFrames: number;
+	    constructor();
+	    init(): void;
+	    get_framescript(keyframe_index: number): string;
+	    add_framescript(value: string, keyframe_index: number): void;
+	    private regexIndexOf(str, regex, startpos);
+	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number): void;
+	    translateScript(classReplacements: any, frame_script_in: string, keyframe_idx: number): void;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_f32_mtx_all: Float32Array;
+	    properties_stream_f32_mtx_scale_rot: Float32Array;
+	    properties_stream_f32_mtx_pos: Float32Array;
+	    properties_stream_f32_ct: Float32Array;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    numFrames(): number;
+	    getPotentialChildPrototype(id: number): DisplayObject;
+	    getKeyframeIndexForFrameIndex(frame_index: number): number;
+	    getPotentialChilds(): Array<DisplayObject>;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    registerPotentialChild(prototype: DisplayObject): void;
+	    jumpToLabel(target_mc: MovieClip, label: string): void;
+	    gotoFrame(target_mc: MovieClip, value: number): void;
+	    constructNextFrame(target_mc: MovieClip): void;
+	    remove_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    add_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	}
+	export = Timeline;
+	
+}
+
 declare module "awayjs-display/lib/base/Transform" {
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
@@ -3162,7 +3270,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     *
 	     */
-	    clone(): DisplayObject;
+	    clone(newInstance?: DisplayObjectContainer): DisplayObject;
 	    /**
 	     * Determines whether the specified display object is a child of the
 	     * DisplayObjectContainer instance or the instance itself. The search
@@ -6128,6 +6236,76 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	
 }
 
+declare module "awayjs-display/lib/entities/MovieClip" {
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
+	import Timeline = require("awayjs-display/lib/base/Timeline");
+	class MovieClip extends DisplayObjectContainer {
+	    static assetType: string;
+	    private _timeline;
+	    private _isButton;
+	    private _onMouseOver;
+	    private _onMouseOut;
+	    private _onMouseDown;
+	    private _onMouseUp;
+	    private _time;
+	    private _currentFrameIndex;
+	    private _constructedKeyFrameIndex;
+	    private _fps;
+	    private _isPlaying;
+	    private _loop;
+	    private _enterFrame;
+	    private _skipAdvance;
+	    private _isInit;
+	    private _potentialInstances;
+	    private _framescripts_to_execute;
+	    /**
+	     * adapter is used to provide MovieClip to scripts taken from different platforms
+	     * setter typically managed by factory
+	     */
+	    adapter: IMovieClipAdapter;
+	    constructor();
+	    isInit: boolean;
+	    timeline: Timeline;
+	    loop: boolean;
+	    numFrames: number;
+	    jumpToLabel(label: string): void;
+	    currentFrameIndex: number;
+	    constructedKeyFrameIndex: number;
+	    reset(): void;
+	    makeButton(): void;
+	    removeButtonListener(): void;
+	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
+	    fps: number;
+	    assetType: string;
+	    /**
+	     * Starts playback of animation from current position
+	     */
+	    play(): void;
+	    /**
+	     * should be called right before the call to away3d-render.
+	     */
+	    update(timeDelta: number): void;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    addScriptForExecution(value: Function): void;
+	    activateChild(id: number): void;
+	    deactivateChild(id: number): void;
+	    /**
+	     * Stop playback of animation and hold current position
+	     */
+	    stop(): void;
+	    clone(newInstance?: MovieClip): DisplayObject;
+	    advanceFrame(skipChildren?: boolean): void;
+	    private advanceChildren();
+	    logHierarchy(depth?: number): void;
+	    printHierarchyName(depth: number, target: DisplayObject): void;
+	    executePostConstructCommands(): boolean;
+	}
+	export = MovieClip;
+	
+}
+
 declare module "awayjs-display/lib/entities/PointLight" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
@@ -7726,6 +7904,17 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	    sceneNormal: Vector3D;
 	}
 	export = TouchEvent;
+	
+}
+
+declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import TextField = require("awayjs-display/lib/entities/TextField");
+	interface ITimelineSceneGraphFactory {
+	    createMovieClip(): MovieClip;
+	    createTextField(): TextField;
+	}
+	export = ITimelineSceneGraphFactory;
 	
 }
 
