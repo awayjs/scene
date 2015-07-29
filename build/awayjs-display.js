@@ -4033,7 +4033,6 @@ var Timeline = (function () {
     };
     // TODO: handle this in the exporter so it's safe!
     Timeline.prototype.translateScript = function (classReplacements, frame_script_in, keyframe_idx) {
-        var replaced = frame_script_in.replace(/(\\n|\r)/g, "");
         var replacementPreface = "";
         var replacementPostface = "";
         for (var srcName in classReplacements) {
@@ -4049,7 +4048,7 @@ var Timeline = (function () {
             replacementPostface += srcName + " = __OLD_" + srcName + ";\n";
         }
         // make sure we don't use "this", since Actionscript's "this" has the same scope rules as a variable
-        var str = replacementPreface + replaced + replacementPostface;
+        var str = replacementPreface + frame_script_in + replacementPostface;
         //console.log(str);
         this._framescripts_translated[keyframe_idx] = true;
         try {
@@ -10981,16 +10980,9 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.addChildAtDepth = function (child, depth, replace) {
         if (replace === void 0) { replace = true; }
-        //if (child.name) console.log("adding child " + child.name + " at frame " + this._currentFrameIndex);
+        //this should be implemented for all display objects
         child.inheritColorTransform = true;
         _super.prototype.addChildAtDepth.call(this, child, depth, replace);
-        if (child.isAsset(MovieClip)) {
-            if (child.timeline) {
-                if (child.currentFrameIndex == -1) {
-                    child.reset();
-                }
-            }
-        }
         return child;
     };
     Object.defineProperty(MovieClip.prototype, "fps", {
@@ -11060,10 +11052,15 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.clone = function (newInstance) {
         if (newInstance === void 0) { newInstance = null; }
         newInstance = _super.prototype.clone.call(this, newInstance || new MovieClip());
-        newInstance.timeline = this.timeline;
+        newInstance.timeline = this._timeline;
         newInstance._fps = this._fps;
         newInstance._loop = this._loop;
         return newInstance;
+    };
+    MovieClip.prototype.iSetParent = function (value) {
+        _super.prototype.iSetParent.call(this, value);
+        if (value && this._timeline && this._currentFrameIndex == -1)
+            this.reset();
     };
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }

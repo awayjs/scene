@@ -6275,6 +6275,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	     */
 	    stop(): void;
 	    clone(newInstance?: MovieClip): DisplayObject;
+	    iSetParent(value: DisplayObjectContainer): void;
 	    advanceFrame(skipChildren?: boolean): void;
 	    private advanceChildren();
 	    logHierarchy(depth?: number): void;
