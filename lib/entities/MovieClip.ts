@@ -216,18 +216,9 @@ class MovieClip extends DisplayObjectContainer
 
     public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
     {
-        //if (child.name) console.log("adding child " + child.name + " at frame " + this._currentFrameIndex);
+        //this should be implemented for all display objects
         child.inheritColorTransform = true;
-        super.addChildAtDepth(child, depth, replace);
-
-        if(child.isAsset(MovieClip)){
-            if((<MovieClip>child).timeline)
-            {
-                if ((<MovieClip>child).currentFrameIndex == -1) {
-                    (<MovieClip>child).reset();
-                }
-            }
-        }
+		super.addChildAtDepth(child, depth, replace);
 
         return child;
     }
@@ -316,7 +307,7 @@ class MovieClip extends DisplayObjectContainer
     {
         newInstance = <MovieClip> super.clone(newInstance || new MovieClip());
 
-        newInstance.timeline = this.timeline;
+        newInstance.timeline = this._timeline;
 
         newInstance._fps = this._fps;
         newInstance._loop = this._loop;
@@ -324,6 +315,13 @@ class MovieClip extends DisplayObjectContainer
         return newInstance;
     }
 
+	public iSetParent(value:DisplayObjectContainer)
+	{
+		super.iSetParent(value);
+
+		if (value && this._timeline && this._currentFrameIndex == -1)
+			this.reset();
+	}
 
     public advanceFrame(skipChildren:boolean = false)
     {

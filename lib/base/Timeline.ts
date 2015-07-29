@@ -118,12 +118,8 @@ class Timeline
 	// TODO: handle this in the exporter so it's safe!
 	public translateScript(classReplacements, frame_script_in:string, keyframe_idx:number)
 	{
-		var replaced = frame_script_in.replace(/(\\n|\r)/g, "");
 		var replacementPreface = "";
 		var replacementPostface = "";
-
-		// where "this" is a single word
-		//replaced = replaced.replace(/\bthis\./, "___scoped_this___.");
 
 		for (var srcName in classReplacements) {
 			var dstName = classReplacements[srcName];
@@ -141,10 +137,7 @@ class Timeline
 
 		// make sure we don't use "this", since Actionscript's "this" has the same scope rules as a variable
 		var str =   replacementPreface +
-				//"var ___scoped_this___ = this;" +
-				//"with(___scoped_this___) { \n" +
-			replaced +
-				//"}\n" +
+			frame_script_in +
 			replacementPostface;
 
 		//console.log(str);
@@ -394,7 +387,7 @@ class Timeline
 	public add_childs(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
 		for(var i:number = 0; i < len; i++){
-			var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
+			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
 			target["__sessionID"] = start_index + i;
 			sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index*2 + i*2 + 1] - 16383);
 		}
@@ -404,7 +397,7 @@ class Timeline
 	public add_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
 		for(var i:number = 0; i < len; i++){
-			var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
+			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
 			target["__sessionID"] = start_index + i;
 
 			if(target.isAsset(MovieClip)) {
@@ -437,8 +430,8 @@ class Timeline
 					if ((<MovieClip>target).adapter.isBlockedByScript())
 						doit = false;
 
-				props_start_idx = this.update_child_props_indices_stream[start_index+i];
-				props_cnt = this.update_child_props_length_stream[start_index+i];
+				props_start_idx = this.update_child_props_indices_stream[start_index + i];
+				props_cnt = this.update_child_props_length_stream[start_index + i];
 
 				for(var p:number = 0; p < props_cnt; p++) {
 					props_type = this.property_type_stream[props_start_idx + p];
