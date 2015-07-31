@@ -116,9 +116,7 @@ class Partition
 			targetNode = this._rootNode.findPartitionForEntity(node.entity);
 
 			if (node.parent != targetNode) {
-				if (node)
-					node.removeFromParent();
-
+				node.removeFromParent();
 				targetNode.iAddNode(node);
 			}
 

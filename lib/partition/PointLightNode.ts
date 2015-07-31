@@ -2,7 +2,7 @@ import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import Partition					= require("awayjs-display/lib/partition/Partition");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import PointLight					= require("awayjs-display/lib/entities/PointLight");
 import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
@@ -12,13 +12,13 @@ class PointLightNode extends EntityNode
 {
 	public static id:string = "pointLightNode";
 
-	private _pointLight:IEntity;
+	private _pointLight:PointLight;
 
 	/**
 	 *
 	 * @param pointLight
 	 */
-	constructor(pool:EntityNodePool, pointLight:IEntity, partition:Partition)
+	constructor(pool:EntityNodePool, pointLight:PointLight, partition:Partition)
 	{
 		super(pool, pointLight, partition);
 

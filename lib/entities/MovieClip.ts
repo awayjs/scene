@@ -21,10 +21,10 @@ class MovieClip extends DisplayObjectContainer
     private _timeline:Timeline;
 
     private _isButton:boolean;
-    private _onMouseOver:Function;
-    private _onMouseOut:Function;
-    private _onMouseDown:Function;
-    private _onMouseUp:Function;
+    private _onMouseOver:(event:MouseEvent) => void;
+    private _onMouseOut:(event:MouseEvent) => void;
+    private _onMouseDown:(event:MouseEvent) => void;
+    private _onMouseUp:(event:MouseEvent) => void;
 
     private _time:number;// the current time inside the animation
     private _currentFrameIndex:number;// the current frame
@@ -70,6 +70,11 @@ class MovieClip extends DisplayObjectContainer
         this._time = 0;
         this._enterFrame = new Event(Event.ENTER_FRAME);
         this.inheritColorTransform = true;
+
+        this._onMouseOver = (event:MouseEvent) => this.currentFrameIndex = 1;
+        this._onMouseOut = (event:MouseEvent) => this.currentFrameIndex = 0;
+        this._onMouseDown = (event:MouseEvent) => this.currentFrameIndex = 2;
+        this._onMouseUp = (event:MouseEvent) => this.currentFrameIndex = this.currentFrameIndex == 0? 0 : 1;
     }
 
     public get isInit():boolean
@@ -194,15 +199,11 @@ class MovieClip extends DisplayObjectContainer
         }
     }
 
-    public makeButton()
+    public addButtonListeners()
     {
-        this._isButton=true;
-        this.stop();
+        this._isButton = true;
 
-        this._onMouseOver = function(evt:MouseEvent) {(<MovieClip>evt.target).currentFrameIndex = 1; };
-        this._onMouseOut = function(evt:MouseEvent) { (<MovieClip>evt.target).currentFrameIndex = 0; };
-        this._onMouseDown = function(evt:MouseEvent) { (<MovieClip>evt.target).currentFrameIndex = 2; };
-        this._onMouseUp = function(evt:MouseEvent) { (<MovieClip>evt.target).currentFrameIndex = this.currentFrameIndex == 0? 0 : 1; };
+        this.stop();
 
         this.addEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
         this.addEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
@@ -210,7 +211,7 @@ class MovieClip extends DisplayObjectContainer
         this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
     }
 
-    public removeButtonListener()
+    public removeButtonListeners()
     {
         this.removeEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
         this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);

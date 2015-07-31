@@ -4,7 +4,7 @@ import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import Partition					= require("awayjs-display/lib/partition/Partition");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import Skybox						= require("awayjs-display/lib/entities/Skybox");
 import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
@@ -16,13 +16,13 @@ class SkyboxNode extends EntityNode
 {
 	public static id:string = "skyboxNode";
 
-	private _skyBox:IEntity;
+	private _skyBox:Skybox;
 
 	/**
 	 * Creates a new SkyboxNode object.
 	 * @param skyBox The Skybox to be contained in the node.
 	 */
-	constructor(pool:EntityNodePool, skyBox:IEntity, partition:Partition)
+	constructor(pool:EntityNodePool, skyBox:Skybox, partition:Partition)
 	{
 		super(pool, skyBox, partition);
 

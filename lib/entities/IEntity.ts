@@ -8,6 +8,7 @@ import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeB
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import Transform					= require("awayjs-display/lib/base/Transform");
 import Scene						= require("awayjs-display/lib/containers/Scene");
+import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import Partition					= require("awayjs-display/lib/partition/Partition");
@@ -18,6 +19,8 @@ import IRenderer					= require("awayjs-display/lib/IRenderer");
 
 interface IEntity extends IAsset
 {
+	parent:DisplayObjectContainer;
+
 	x:number;
 	y:number;
 	z:number;

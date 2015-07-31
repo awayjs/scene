@@ -166,10 +166,6 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		if (child._pParent)
 			child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
 
-		child.iSetParent(this);
-
-		this._pInvalidateBounds();
-
 		var len:number = this._depths.length;
 		var index:number = len;
 		
@@ -185,11 +181,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 				if (replace) {
 					this.removeChildAt(index);
 				} else {
-					//update depths if there are children higher than added child
-					for (var i:number = index; i < len; i++)
-						this._depths[i] = this._depths[i] + 1;
-
-					this._nextHighestDepth++;
+					//move depth of existing child up by 1
+					this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
 				}
 			}
 
@@ -201,6 +194,10 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 			this._nextHighestDepth = depth + 1;
 		}
+
+		child.iSetParent(this);
+
+		this._pInvalidateBounds();
 
 		return child;
 	}
@@ -546,14 +543,11 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public swapChildrenAt(index1:number, index2:number)
 	{
-		var depth:number = this._depths[index1];
+		var depth:number = this._depths[index2];
 		var child:DisplayObject = this._children[index1];
 
-		this._depths[index1] = this._depths[index2];
-		this._children[index1] = this._children[index2];
-
-		this._depths[index2] = depth;
-		this._children[index2] = child;
+		this.addChildAtDepth(this._children[index2], this._depths[index1]);
+		this.addChildAtDepth(child, depth);
 	}
 
 

@@ -2,7 +2,6 @@ import Box							= require("awayjs-core/lib/geom/Box");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import Partition					= require("awayjs-display/lib/partition/Partition");
@@ -121,11 +120,6 @@ class PointLight extends LightBase implements IEntity
 		target.prepend(m);
 
 		return target;
-	}
-
-	public _applyRenderer(renderer:IRenderer)
-	{
-		//nothing to do here
 	}
 
 	public _pRegisterEntity(partition:Partition)

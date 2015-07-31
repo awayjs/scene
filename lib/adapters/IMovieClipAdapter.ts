@@ -4,6 +4,8 @@ import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayO
 
 interface IMovieClipAdapter extends IDisplayObjectAdapter
 {
+	evalScript(str:string):Function;
+
 	isBlockedByScript():boolean;
 
 	freeFromScript():void;
@@ -11,9 +13,6 @@ interface IMovieClipAdapter extends IDisplayObjectAdapter
 	registerScriptObject(child:DisplayObject):void;
 
 	unregisterScriptObject(child:DisplayObject):void;
-
-	// Lists a bunch of class names which need to be replaced with adapter types
-	classReplacements:Object;
 }
 
 export = IMovieClipAdapter;

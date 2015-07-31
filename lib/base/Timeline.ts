@@ -110,47 +110,10 @@ class Timeline
 	{
 		if(this._framescripts[keyframe_idx]!=null){
 			if(this._framescripts_translated[keyframe_idx]==null){
-				this.translateScript(target_mc.adapter.classReplacements,this._framescripts[keyframe_idx], keyframe_idx);
+				this._framescripts[keyframe_idx] = target_mc.adapter.evalScript(this._framescripts[keyframe_idx]);
+				this._framescripts_translated[keyframe_idx]=true;
 			}
 			target_mc.addScriptForExecution(this._framescripts[keyframe_idx]);
-		}
-	}
-	// TODO: handle this in the exporter so it's safe!
-	public translateScript(classReplacements, frame_script_in:string, keyframe_idx:number)
-	{
-		var replacementPreface = "";
-		var replacementPostface = "";
-
-		for (var srcName in classReplacements) {
-			var dstName = classReplacements[srcName];
-			// where class name is a single word
-			//var regex = "\b" + srcName + "\b";
-			//replaced = replaced.replace(new RegExp(regex, "g"), dstName);
-
-			// store old references to stuff in a temporary var to be reset after script execution;
-			// make sure a definition exists, even if it's undefined
-			replacementPreface += "var __OLD_" + srcName + " = typeof " + srcName + " == 'function'? " + srcName + " : undefined;\n";
-			replacementPreface += srcName + " = require(\"" + dstName + "\");\n";
-			replacementPreface += "function int(value) { return value | 0; }\n";
-			replacementPostface += srcName + " = __OLD_" + srcName + ";\n";
-		}
-
-		// make sure we don't use "this", since Actionscript's "this" has the same scope rules as a variable
-		var str =   replacementPreface +
-			frame_script_in +
-			replacementPostface;
-
-		//console.log(str);
-
-		this._framescripts_translated[keyframe_idx]=true;
-		try {
-			this._framescripts[keyframe_idx] = new Function(str);
-		}
-		catch(err)
-		{
-			console.log("Syntax error in script:\n", str);
-			console.log(err.message);
-			throw err;
 		}
 	}
 
@@ -503,7 +466,7 @@ class Timeline
 						case 5:// instance name button instance
 							target.name = this.properties_stream_strings[value_start_index];
 							sourceMovieClip.adapter.registerScriptObject(target);
-							(<MovieClip>target).makeButton();
+							(<MovieClip>target).addButtonListeners();
 							break;
 
 						case 6://visible

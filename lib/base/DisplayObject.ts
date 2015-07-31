@@ -12,6 +12,7 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Event						= require("awayjs-core/lib/events/Event");
 
+import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IDisplayObjectAdapter		= require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -28,6 +29,7 @@ import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider")
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import Camera						= require("awayjs-display/lib/entities/Camera");
+import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
 import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
@@ -165,7 +167,7 @@ import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-class DisplayObject extends AssetBase implements IBitmapDrawable
+class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
 	public _adapter:IDisplayObjectAdapter;
 	private _queuedEvents:Array<Event> = new Array<Event>();
@@ -2464,6 +2466,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable
 		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null, value);
 	}
 
+	public _applyRenderer(renderer:IRenderer)
+	{
+		//nothing to do here
+	}
 
 	/**
 	 * Invalidates the 3D transformation matrix, causing it to be updated upon the next request

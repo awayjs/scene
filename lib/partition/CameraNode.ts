@@ -1,7 +1,7 @@
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import Partition					= require("awayjs-display/lib/partition/Partition");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import Camera						= require("awayjs-display/lib/entities/Camera");
 import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
@@ -11,7 +11,7 @@ class CameraNode extends EntityNode
 {
 	public static id:string = "cameraNode";
 
-	constructor(pool:EntityNodePool, camera:IEntity, partition:Partition)
+	constructor(pool:EntityNodePool, camera:Camera, partition:Partition)
 	{
 		super(pool, camera, partition);
 	}

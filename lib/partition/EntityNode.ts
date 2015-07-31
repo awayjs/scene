@@ -1,6 +1,7 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import AxisAlignedBoundingBox		= require("awayjs-display/lib/bounds/AxisAlignedBoundingBox");
 import BoundingSphere				= require("awayjs-display/lib/bounds/BoundingSphere");
 import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
@@ -21,13 +22,14 @@ class EntityNode extends NodeBase
 {
 	public static id:string = "entityNode";
 
+	public _sceneGraphDepths:Array<number> = new Array<number>();
 	private _pool:EntityNodePool;
-	public _entity:IEntity;
+	public _entity:DisplayObject;
 	private _partition:Partition;
 	public _bounds:BoundingVolumeBase;
 	public _iUpdateQueueNext:EntityNode;
 
-	constructor(pool:EntityNodePool, entity:IEntity, partition:Partition)
+	constructor(pool:EntityNodePool, entity:DisplayObject, partition:Partition)
 	{
 		super();
 		this._pool = pool;
@@ -40,7 +42,7 @@ class EntityNode extends NodeBase
 		this.debugVisible = this._entity.debugVisible;
 	}
 
-	public get entity():IEntity
+	public get entity():DisplayObject
 	{
 		return this._entity;
 	}
@@ -83,7 +85,7 @@ class EntityNode extends NodeBase
 	public acceptTraverser(traverser:CollectorBase)
 	{
 		if (traverser.enterNode(this)) {
-			traverser.applyEntity(this._entity);
+			traverser.applyEntity(<IEntity> this._entity);
 
 			if (this._pImplicitDebugVisible && traverser.isEntityCollector)
 				traverser.applyEntity(this._pDebugEntity);
