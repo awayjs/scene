@@ -6465,15 +6465,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	
 }
 
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
-
 declare module "awayjs-display/lib/entities/TextField" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -7377,6 +7368,15 @@ declare module "awayjs-display/lib/entities/TextField" {
 	    _iCopyToTextField(clone: TextField): void;
 	}
 	export = TextField;
+	
+}
+
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
 	
 }
 
@@ -10819,6 +10819,30 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	
 }
 
+declare module "awayjs-display/lib/textures/SingleCubeTexture" {
+	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class SingleCubeTexture extends TextureBase {
+	    static assetType: string;
+	    private _samplerCube;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {BitmapData}
+	     */
+	    samplerCube: SamplerCube;
+	    constructor(source: SamplerCube);
+	    constructor(source: ImageCube);
+	}
+	export = SingleCubeTexture;
+	
+}
+
 declare module "awayjs-display/lib/textures/TextureBase" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
@@ -10854,30 +10878,6 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    _setSize(width: number, height: number): void;
 	}
 	export = TextureBase;
-	
-}
-
-declare module "awayjs-display/lib/textures/SingleCubeTexture" {
-	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class SingleCubeTexture extends TextureBase {
-	    static assetType: string;
-	    private _samplerCube;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     * @returns {BitmapData}
-	     */
-	    samplerCube: SamplerCube;
-	    constructor(source: SamplerCube);
-	    constructor(source: ImageCube);
-	}
-	export = SingleCubeTexture;
 	
 }
 
