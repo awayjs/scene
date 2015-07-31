@@ -2576,6 +2576,9 @@ var DisplayObject = (function (_super) {
             return;
         this._pUpdateImplicitPartition(this._pParent ? this._pParent._iAssignedPartition : null, value);
     };
+    DisplayObject.prototype._applyRenderer = function (renderer) {
+        //nothing to do here
+    };
     /**
      * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
      *
@@ -4026,38 +4029,10 @@ var Timeline = (function () {
     Timeline.prototype.add_script_for_postcontruct = function (target_mc, keyframe_idx) {
         if (this._framescripts[keyframe_idx] != null) {
             if (this._framescripts_translated[keyframe_idx] == null) {
-                this.translateScript(target_mc.adapter.classReplacements, this._framescripts[keyframe_idx], keyframe_idx);
+                this._framescripts[keyframe_idx] = target_mc.adapter.evalScript(this._framescripts[keyframe_idx]);
+                this._framescripts_translated[keyframe_idx] = true;
             }
             target_mc.addScriptForExecution(this._framescripts[keyframe_idx]);
-        }
-    };
-    // TODO: handle this in the exporter so it's safe!
-    Timeline.prototype.translateScript = function (classReplacements, frame_script_in, keyframe_idx) {
-        var replacementPreface = "";
-        var replacementPostface = "";
-        for (var srcName in classReplacements) {
-            var dstName = classReplacements[srcName];
-            // where class name is a single word
-            //var regex = "\b" + srcName + "\b";
-            //replaced = replaced.replace(new RegExp(regex, "g"), dstName);
-            // store old references to stuff in a temporary var to be reset after script execution;
-            // make sure a definition exists, even if it's undefined
-            replacementPreface += "var __OLD_" + srcName + " = typeof " + srcName + " == 'function'? " + srcName + " : undefined;\n";
-            replacementPreface += srcName + " = require(\"" + dstName + "\");\n";
-            replacementPreface += "function int(value) { return value | 0; }\n";
-            replacementPostface += srcName + " = __OLD_" + srcName + ";\n";
-        }
-        // make sure we don't use "this", since Actionscript's "this" has the same scope rules as a variable
-        var str = replacementPreface + frame_script_in + replacementPostface;
-        //console.log(str);
-        this._framescripts_translated[keyframe_idx] = true;
-        try {
-            this._framescripts[keyframe_idx] = new Function(str);
-        }
-        catch (err) {
-            console.log("Syntax error in script:\n", str);
-            console.log(err.message);
-            throw err;
         }
     };
     Timeline.prototype.numFrames = function () {
@@ -4340,7 +4315,7 @@ var Timeline = (function () {
                         case 5:
                             target.name = this.properties_stream_strings[value_start_index];
                             sourceMovieClip.adapter.registerScriptObject(target);
-                            target.makeButton();
+                            target.addButtonListeners();
                             break;
                         case 6:
                             if (doit) {
@@ -5777,8 +5752,6 @@ var DisplayObjectContainer = (function (_super) {
         //if child already has a parent, remove it.
         if (child._pParent)
             child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
-        child.iSetParent(this);
-        this._pInvalidateBounds();
         var len = this._depths.length;
         var index = len;
         while (index--)
@@ -5792,9 +5765,8 @@ var DisplayObjectContainer = (function (_super) {
                     this.removeChildAt(index);
                 }
                 else {
-                    for (var i = index; i < len; i++)
-                        this._depths[i] = this._depths[i] + 1;
-                    this._nextHighestDepth++;
+                    //move depth of existing child up by 1
+                    this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
                 }
             }
             this._children.splice(index, 0, child);
@@ -5805,6 +5777,8 @@ var DisplayObjectContainer = (function (_super) {
             this._depths.push(depth);
             this._nextHighestDepth = depth + 1;
         }
+        child.iSetParent(this);
+        this._pInvalidateBounds();
         return child;
     };
     /**
@@ -6102,12 +6076,10 @@ var DisplayObjectContainer = (function (_super) {
      * @throws RangeError If either index does not exist in the child list.
      */
     DisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
-        var depth = this._depths[index1];
+        var depth = this._depths[index2];
         var child = this._children[index1];
-        this._depths[index1] = this._depths[index2];
-        this._children[index1] = this._children[index2];
-        this._depths[index2] = depth;
-        this._children[index2] = child;
+        this.addChildAtDepth(this._children[index2], this._depths[index1]);
+        this.addChildAtDepth(child, depth);
     };
     /**
      * //TODO
@@ -9928,9 +9900,6 @@ var DirectionalLight = (function (_super) {
         target.prepend(m);
         return target;
     };
-    DirectionalLight.prototype._applyRenderer = function (renderer) {
-        //nothing to do here
-    };
     DirectionalLight.prototype._pRegisterEntity = function (partition) {
         partition._iRegisterDirectionalLight(this);
     };
@@ -10027,9 +9996,6 @@ var LightProbe = (function (_super) {
     LightProbe.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
         if (target === void 0) { target = null; }
         throw new Error("Object projection matrices are not supported for LightProbe objects!");
-    };
-    LightProbe.prototype._applyRenderer = function (renderer) {
-        //nothing to do here
     };
     LightProbe.prototype._pRegisterEntity = function (partition) {
         partition._iRegisterLightProbe(this);
@@ -10817,6 +10783,7 @@ var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager
 var MovieClip = (function (_super) {
     __extends(MovieClip, _super);
     function MovieClip() {
+        var _this = this;
         _super.call(this);
         this._loop = true;
         this._potentialInstances = [];
@@ -10829,6 +10796,10 @@ var MovieClip = (function (_super) {
         this._time = 0;
         this._enterFrame = new Event(Event.ENTER_FRAME);
         this.inheritColorTransform = true;
+        this._onMouseOver = function (event) { return _this.currentFrameIndex = 1; };
+        this._onMouseOut = function (event) { return _this.currentFrameIndex = 0; };
+        this._onMouseDown = function (event) { return _this.currentFrameIndex = 2; };
+        this._onMouseUp = function (event) { return _this.currentFrameIndex = _this.currentFrameIndex == 0 ? 0 : 1; };
     }
     Object.defineProperty(MovieClip.prototype, "adapter", {
         // private _framescripts_to_execute:Array<Function>;
@@ -10963,27 +10934,15 @@ var MovieClip = (function (_super) {
         */
         //this.advanceChildren();
     };
-    MovieClip.prototype.makeButton = function () {
+    MovieClip.prototype.addButtonListeners = function () {
         this._isButton = true;
         this.stop();
-        this._onMouseOver = function (evt) {
-            evt.target.currentFrameIndex = 1;
-        };
-        this._onMouseOut = function (evt) {
-            evt.target.currentFrameIndex = 0;
-        };
-        this._onMouseDown = function (evt) {
-            evt.target.currentFrameIndex = 2;
-        };
-        this._onMouseUp = function (evt) {
-            evt.target.currentFrameIndex = this.currentFrameIndex == 0 ? 0 : 1;
-        };
         this.addEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
         this.addEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
         this.addEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
         this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
     };
-    MovieClip.prototype.removeButtonListener = function () {
+    MovieClip.prototype.removeButtonListeners = function () {
         this.removeEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
         this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
         this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
@@ -11239,9 +11198,6 @@ var PointLight = (function (_super) {
         target.copyRawDataFrom(raw);
         target.prepend(m);
         return target;
-    };
-    PointLight.prototype._applyRenderer = function (renderer) {
-        //nothing to do here
     };
     PointLight.prototype._pRegisterEntity = function (partition) {
         partition._iRegisterPointLight(this);
@@ -15201,6 +15157,7 @@ var EntityNode = (function (_super) {
     __extends(EntityNode, _super);
     function EntityNode(pool, entity, partition) {
         _super.call(this);
+        this._sceneGraphDepths = new Array();
         this._pool = pool;
         this._entity = entity;
         this._partition = partition;
@@ -15606,8 +15563,7 @@ var Partition = (function () {
         do {
             targetNode = this._rootNode.findPartitionForEntity(node.entity);
             if (node.parent != targetNode) {
-                if (node)
-                    node.removeFromParent();
+                node.removeFromParent();
                 targetNode.iAddNode(node);
             }
             t = node._iUpdateQueueNext;
@@ -15730,7 +15686,30 @@ var PointLightNode = (function (_super) {
 })(EntityNode);
 module.exports = PointLightNode;
 
-},{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
+},{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SceneGraphNode":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var NodeBase = require("awayjs-display/lib/partition/NodeBase");
+/**
+ * Maintains scenegraph heirarchy when collecting nodes
+ */
+var SceneGraphNode = (function (_super) {
+    __extends(SceneGraphNode, _super);
+    function SceneGraphNode(pool, container, partition) {
+        _super.call(this);
+        this._pool = pool;
+        this._container = container;
+        this._partition = partition;
+    }
+    return SceneGraphNode;
+})(NodeBase);
+module.exports = SceneGraphNode;
+
+},{"awayjs-display/lib/partition/NodeBase":"awayjs-display/lib/partition/NodeBase"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16352,7 +16331,48 @@ module.exports = EntityNodePool;
 
 },{}],"awayjs-display/lib/pool/IRender":[function(require,module,exports){
 
+},{}],"awayjs-display/lib/pool/ISceneGraphNodeClass":[function(require,module,exports){
+
 },{}],"awayjs-display/lib/pool/ITextureVO":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/pool/SceneGraphNodePool":[function(require,module,exports){
+/**
+ * @class away.pool.SceneGraphNodePool
+ */
+var SceneGraphNodePool = (function () {
+    /**
+     * //TODO
+     *
+     * @param sceneGraphNodeClass
+     */
+    function SceneGraphNodePool(sceneGraphNodeClass, partition) {
+        this._sceneGraphNodePool = new Object();
+        this._sceneGraphNodeClass = sceneGraphNodeClass;
+        this._partition = partition;
+    }
+    /**
+     * //TODO
+     *
+     * @param displayObjectContainer
+     * @returns SceneGraphNode
+     */
+    SceneGraphNodePool.prototype.getItem = function (displayObjectContainer) {
+        return (this._sceneGraphNodePool[displayObjectContainer.id] || (this._sceneGraphNodePool[displayObjectContainer.id] = new this._sceneGraphNodeClass(this, displayObjectContainer, this._partition)));
+    };
+    /**
+     * //TODO
+     *
+     * @param displayObjectContainer
+     */
+    SceneGraphNodePool.prototype.disposeItem = function (displayObjectContainer) {
+        var sceneGraphNode = this._sceneGraphNodePool[displayObjectContainer.id];
+        if (sceneGraphNode)
+            this._sceneGraphNodePool[displayObjectContainer.id] = null;
+        return sceneGraphNode;
+    };
+    return SceneGraphNodePool;
+})();
+module.exports = SceneGraphNodePool;
 
 },{}],"awayjs-display/lib/pool/SubMeshPool":[function(require,module,exports){
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
