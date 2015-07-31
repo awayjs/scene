@@ -2490,10 +2490,8 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    registerPotentialChild(prototype: DisplayObject): void;
 	    jumpToLabel(target_mc: MovieClip, label: string): void;
 	    gotoFrame(target_mc: MovieClip, value: number): void;
-	    constructNextFrame(target_mc: MovieClip): void;
-	    remove_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean): void;
 	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    add_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
 	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
 	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
 	}
@@ -6252,6 +6250,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    currentFrameIndex: number;
 	    constructedKeyFrameIndex: number;
 	    reset(): void;
+	    set_currentFrameIndex(value: number): void;
 	    addButtonListeners(): void;
 	    removeButtonListeners(): void;
 	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
@@ -6463,6 +6462,15 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = Skybox;
+	
+}
+
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
 	
 }
 
@@ -7369,15 +7377,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	    _iCopyToTextField(clone: TextField): void;
 	}
 	export = TextField;
-	
-}
-
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
 	
 }
 
@@ -10820,30 +10819,6 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	
 }
 
-declare module "awayjs-display/lib/textures/SingleCubeTexture" {
-	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class SingleCubeTexture extends TextureBase {
-	    static assetType: string;
-	    private _samplerCube;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     * @returns {BitmapData}
-	     */
-	    samplerCube: SamplerCube;
-	    constructor(source: SamplerCube);
-	    constructor(source: ImageCube);
-	}
-	export = SingleCubeTexture;
-	
-}
-
 declare module "awayjs-display/lib/textures/TextureBase" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
@@ -10879,6 +10854,30 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    _setSize(width: number, height: number): void;
 	}
 	export = TextureBase;
+	
+}
+
+declare module "awayjs-display/lib/textures/SingleCubeTexture" {
+	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class SingleCubeTexture extends TextureBase {
+	    static assetType: string;
+	    private _samplerCube;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {BitmapData}
+	     */
+	    samplerCube: SamplerCube;
+	    constructor(source: SamplerCube);
+	    constructor(source: ImageCube);
+	}
+	export = SingleCubeTexture;
 	
 }
 

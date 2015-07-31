@@ -137,6 +137,7 @@ class MovieClip extends DisplayObjectContainer
 
     public reset():void
     {
+        console.log("reset name = "+this.name);
         if(this.adapter){
             this.adapter.freeFromScript();
         }
@@ -161,11 +162,13 @@ class MovieClip extends DisplayObjectContainer
             }
         }
         */
+
         if(this.parent!=null){
             this._skipAdvance = true;
             this.timeline.gotoFrame(this, 0);
             this._currentFrameIndex = 0;
         }
+
         // i was thinking we might need to reset all children, but it makes stuff worse
         /*
         var i:number=this.numChildren;
@@ -177,6 +180,14 @@ class MovieClip extends DisplayObjectContainer
         */
         //this.advanceChildren();
 
+    }
+
+    /*
+     * Setting the currentFrameIndex without moving the playhead for this movieclip to the new position
+     */
+    public set_currentFrameIndex(value : number) {
+        this._skipAdvance = true;
+        this._currentFrameIndex = value;
     }
     /*
     * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
@@ -326,9 +337,7 @@ class MovieClip extends DisplayObjectContainer
 	{
 		super.iSetParent(value);
 
-		if (value && this._timeline && this._currentFrameIndex == -1){
-            this.currentFrameIndex=0;
-        }
+        this.reset();
 	}
 
     public advanceFrame(skipChildren:boolean = false)
