@@ -4224,15 +4224,6 @@ var Timeline = (function () {
             var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index * 2 + i * 2]);
             target["__sessionID"] = start_index + i;
             sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index * 2 + i * 2 + 1] - 16383);
-            if (target.isAsset(MovieClip)) {
-                if (target.adapter && !target.adapter.isBlockedByScript()) {
-                    target.reset();
-                    target.reset_to_init_state();
-                }
-            }
-            else {
-                target.reset_to_init_state();
-            }
         }
     };
     Timeline.prototype.update_childs = function (sourceMovieClip, start_index, len) {

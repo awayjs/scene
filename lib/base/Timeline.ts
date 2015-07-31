@@ -362,14 +362,6 @@ class Timeline
 			target["__sessionID"] = start_index + i;
 
 			sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index*2 + i*2 + 1] - 16383);
-			if(target.isAsset(MovieClip)) {
-				if ((<MovieClip>target).adapter && !(<MovieClip>target).adapter.isBlockedByScript()) {
-					(<MovieClip>target).reset();
-					target.reset_to_init_state();
-				}
-			} else {
-				target.reset_to_init_state();
-			}
 
 		}
 	}
