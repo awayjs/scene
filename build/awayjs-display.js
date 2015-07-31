@@ -4138,9 +4138,6 @@ var Timeline = (function () {
             }
             if (removeAll) {
                 if (removeAllFromScript) {
-                    target_mc.adapter.unregisterScriptObject(child);
-                    if (child.isAsset(MovieClip) && child.adapter)
-                        child.adapter.freeFromScript();
                 }
                 target_mc.removeChildAt(i);
             }
@@ -4155,8 +4152,10 @@ var Timeline = (function () {
         for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
             var frame_command_idx = this.frame_command_indices[k];
             var frame_recipe = this.frame_recipe[k];
-            if ((frame_recipe & 2) == 2)
+            if ((frame_recipe & 2) == 2) {
+                // if this is the first frame of the run-through, and we have "removeAll", we cannot execute remove (because all childs already removed)
                 this.remove_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
+            }
             if ((frame_recipe & 4) == 4)
                 this.add_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
             if ((frame_recipe & 8) == 8)
@@ -4202,14 +4201,22 @@ var Timeline = (function () {
         var frameIndex = target_mc.currentFrameIndex;
         var constructed_keyFrameIndex = target_mc.constructedKeyFrameIndex;
         var new_keyFrameIndex = this.keyframe_indices[frameIndex];
+        if (this.keyframe_firstframes[new_keyFrameIndex] == frameIndex) {
+            this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
+        }
         if (constructed_keyFrameIndex != new_keyFrameIndex) {
             target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
             var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
             var frame_recipe = this.frame_recipe[new_keyFrameIndex];
             if ((frame_recipe & 1) == 1) {
                 var i = target_mc.numChildren;
-                while (i--)
+                while (i--) {
+                    var target = target_mc.getChildAt(i);
                     target_mc.removeChildAt(i);
+                    target_mc.adapter.unregisterScriptObject(target);
+                    if (target.isAsset(MovieClip) && target.adapter)
+                        target.adapter.freeFromScript();
+                }
             }
             else if ((frame_recipe & 2) == 2) {
                 this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
@@ -4218,9 +4225,6 @@ var Timeline = (function () {
                 this.add_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
             if ((frame_recipe & 8) == 8)
                 this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
-        }
-        if (this.keyframe_firstframes[new_keyFrameIndex] == frameIndex) {
-            this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
         }
     };
     Timeline.prototype.remove_childs = function (sourceMovieClip, start_index, len) {
@@ -10809,6 +10813,7 @@ var __extends = this.__extends || function (d, b) {
 var Event = require("awayjs-core/lib/events/Event");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var MouseEvent = require("awayjs-display/lib/events/MouseEvent");
+var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 var MovieClip = (function (_super) {
     __extends(MovieClip, _super);
     function MovieClip() {
@@ -10818,7 +10823,6 @@ var MovieClip = (function (_super) {
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         this._isInit = true;
-        this._framescripts_to_execute = [];
         this._isPlaying = true; // auto-play
         this._isButton = false;
         this._fps = 30;
@@ -10827,6 +10831,7 @@ var MovieClip = (function (_super) {
         this.inheritColorTransform = true;
     }
     Object.defineProperty(MovieClip.prototype, "adapter", {
+        // private _framescripts_to_execute:Array<Function>;
         /**
          * adapter is used to provide MovieClip to scripts taken from different platforms
          * setter typically managed by factory
@@ -10920,27 +10925,33 @@ var MovieClip = (function (_super) {
         configurable: true
     });
     MovieClip.prototype.reset = function () {
-        //if(this.adapter && this.adapter.isBlockedByScript()){
-        this._framescripts_to_execute = [];
+        if (this.adapter) {
+            this.adapter.freeFromScript();
+        }
         this._isPlaying = true;
         this._time = 0;
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         var i = this.numChildren;
-        while (i--)
+        while (i--) {
+            var child = this.getChildAt(i);
+            this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
+        }
+        /*
+        // force reset all potential childs on timeline. // this seem to slow things down without having positive any effect
         for (var key in this._potentialInstances) {
             if (this._potentialInstances[key]) {
                 if (this._potentialInstances[key].isAsset(MovieClip))
-                    this._potentialInstances[key].reset();
+                    (<MovieClip>this._potentialInstances[key]).reset();
             }
         }
-        if (this.parent) {
-            this._currentFrameIndex = 0;
-            this.timeline.constructNextFrame(this);
+        */
+        if (this.parent != null) {
             this._skipAdvance = true;
+            this.timeline.gotoFrame(this, 0);
+            this._currentFrameIndex = 0;
         }
-        //___scoped_this___.dennis.mov.Man.body.reach.gotoAndPlay("call");
         // i was thinking we might need to reset all children, but it makes stuff worse
         /*
         var i:number=this.numChildren;
@@ -11020,12 +11031,12 @@ var MovieClip = (function (_super) {
         if (this._time >= frameMarker) {
             this._time = 0;
             this.advanceFrame();
-            //console.log("update "+this._currentFrameIndex);
-            //console.log("update key "+this._constructedKeyFrameIndex);
+            // after we advanced the scenegraph, we might have some script that needs executing
+            FrameScriptManager.execute_queue();
+            // now we want to execute the onEnter
             this.dispatchEvent(this._enterFrame);
-            var has_executed_script = true;
-            while (has_executed_script)
-                has_executed_script = this.executePostConstructCommands();
+            // after we executed the onEnter, we might have some script that needs executing
+            FrameScriptManager.execute_queue();
         }
     };
     MovieClip.prototype.getPotentialChildInstance = function (id) {
@@ -11035,7 +11046,7 @@ var MovieClip = (function (_super) {
         return this._potentialInstances[id];
     };
     MovieClip.prototype.addScriptForExecution = function (value) {
-        this._framescripts_to_execute.push(value);
+        FrameScriptManager.add_script_to_queue(this, value);
     };
     MovieClip.prototype.activateChild = function (id) {
         this.addChild(this.getPotentialChildInstance(id));
@@ -11059,8 +11070,9 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.iSetParent = function (value) {
         _super.prototype.iSetParent.call(this, value);
-        if (value && this._timeline && this._currentFrameIndex == -1)
-            this.reset();
+        if (value && this._timeline && this._currentFrameIndex == -1) {
+            this.currentFrameIndex = 0;
+        }
     };
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }
@@ -11122,44 +11134,14 @@ var MovieClip = (function (_super) {
         console.log(str);
     };
     MovieClip.prototype.executePostConstructCommands = function () {
-        // a script ,might call gotoAndStop() / gotoAndPlay() on itself or on other mc
-        // this might result in more script that should be executed.
-        // each mc provides a list of index to script that needs postconstructing.
-        // in this function, we postcontruct all those scripts
-        var has_script_executed = false;
-        if (this.timeline) {
-            if (this._framescripts_to_execute.length > 0) {
-                has_script_executed = true;
-                var caller = this.adapter ? this.adapter : this;
-                try {
-                    this._framescripts_to_execute[0].call(caller);
-                }
-                catch (err) {
-                    console.log("Script error in " + this.name + "\n", this._framescripts_to_execute[0]);
-                    console.log(err.message);
-                    throw err;
-                }
-                this._framescripts_to_execute.shift();
-            }
-        }
-        var i;
-        var len = this.numChildren - 1;
-        for (i = len; i >= 0; --i) {
-            var child = this.getChildAt(i);
-            if (child.isAsset(MovieClip)) {
-                if (child.executePostConstructCommands()) {
-                    has_script_executed = true;
-                }
-            }
-        }
-        return has_script_executed;
+        return true;
     };
     MovieClip.assetType = "[asset MovieClip]";
     return MovieClip;
 })(DisplayObjectContainer);
 module.exports = MovieClip;
 
-},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13087,7 +13069,43 @@ var DefaultMaterialManager = (function () {
 })();
 module.exports = DefaultMaterialManager;
 
-},{"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
+},{"awayjs-core/lib/data/BitmapImage2D":undefined,"awayjs-core/lib/data/BitmapImageCube":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
+var FrameScriptManager = (function () {
+    function FrameScriptManager() {
+    }
+    FrameScriptManager.add_script_to_queue = function (mc, script) {
+        this._queued_mcs.push(mc);
+        this._queued_scripts.push(script);
+    };
+    FrameScriptManager.execute_queue = function () {
+        var i = 0;
+        var mc;
+        for (i = 0; i < this._queued_mcs.length; i++) {
+            // during the loop we might add more scripts to the queue
+            mc = this._queued_mcs[i];
+            if ((mc.parent != null) || (mc.name == "Scene 1")) {
+                var caller = mc.adapter ? mc.adapter : mc;
+                try {
+                    this._queued_scripts[i].call(caller);
+                }
+                catch (err) {
+                    console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
+                    console.log(err.message);
+                    throw err;
+                }
+            }
+        }
+        // all scripts executed. clear all
+        this._queued_mcs = [];
+        this._queued_scripts = [];
+    };
+    FrameScriptManager._queued_mcs = [];
+    FrameScriptManager._queued_scripts = [];
+    return FrameScriptManager;
+})();
+module.exports = FrameScriptManager;
+
+},{}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayMouseEvent = require("awayjs-display/lib/events/MouseEvent");
 /**

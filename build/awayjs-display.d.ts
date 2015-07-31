@@ -4449,6 +4449,27 @@ declare module "awayjs-display/lib/controllers/SpringController" {
 	
 }
 
+declare module "awayjs-display/lib/draw/GradientType" {
+	/**
+	 * The GradientType class provides values for the <code>type</code> parameter
+	 * in the <code>beginGradientFill()</code> and
+	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
+	 * class.
+	 */
+	class GradientType {
+	    /**
+	     * Value used to specify a linear gradient fill.
+	     */
+	    static LINEAR: string;
+	    /**
+	     * Value used to specify a radial gradient fill.
+	     */
+	    static RADIAL: string;
+	}
+	export = GradientType;
+	
+}
+
 declare module "awayjs-display/lib/draw/CapsStyle" {
 	/**
 	 * The CapsStyle class is an enumeration of constant values that specify the
@@ -4475,27 +4496,6 @@ declare module "awayjs-display/lib/draw/CapsStyle" {
 	    static SQUARE: string;
 	}
 	export = CapsStyle;
-	
-}
-
-declare module "awayjs-display/lib/draw/GradientType" {
-	/**
-	 * The GradientType class provides values for the <code>type</code> parameter
-	 * in the <code>beginGradientFill()</code> and
-	 * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
-	 * class.
-	 */
-	class GradientType {
-	    /**
-	     * Value used to specify a linear gradient fill.
-	     */
-	    static LINEAR: string;
-	    /**
-	     * Value used to specify a radial gradient fill.
-	     */
-	    static RADIAL: string;
-	}
-	export = GradientType;
 	
 }
 
@@ -6238,7 +6238,6 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    private _skipAdvance;
 	    private _isInit;
 	    private _potentialInstances;
-	    private _framescripts_to_execute;
 	    /**
 	     * adapter is used to provide MovieClip to scripts taken from different platforms
 	     * setter typically managed by factory
@@ -7921,6 +7920,18 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	    private static createDefaultColorMaterial();
 	}
 	export = DefaultMaterialManager;
+	
+}
+
+declare module "awayjs-display/lib/managers/FrameScriptManager" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	class FrameScriptManager {
+	    private static _queued_mcs;
+	    private static _queued_scripts;
+	    static add_script_to_queue(mc: MovieClip, script: Function): void;
+	    static execute_queue(): void;
+	}
+	export = FrameScriptManager;
 	
 }
 

@@ -12,6 +12,7 @@ import SceneEvent = require("awayjs-display/lib/events/SceneEvent");
 
 import IMovieClipAdapter		= require("awayjs-display/lib/adapters/IMovieClipAdapter");
 import Timeline = require("awayjs-display/lib/base/Timeline");
+import FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 
 class MovieClip extends DisplayObjectContainer
 {
@@ -39,7 +40,7 @@ class MovieClip extends DisplayObjectContainer
     private _isInit : boolean;
 
     private _potentialInstances:Array<DisplayObject>;
-    private _framescripts_to_execute:Array<Function>;
+   // private _framescripts_to_execute:Array<Function>;
 
 	/**
 	 * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -62,7 +63,6 @@ class MovieClip extends DisplayObjectContainer
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         this._isInit=true;
-        this._framescripts_to_execute=[];
         this._isPlaying = true; // auto-play
         this._isButton=false;
 
@@ -132,30 +132,35 @@ class MovieClip extends DisplayObjectContainer
 
     public reset():void
     {
-        //if(this.adapter && this.adapter.isBlockedByScript()){
-        this._framescripts_to_execute=[];
+        if(this.adapter){
+            this.adapter.freeFromScript();
+        }
+
         this._isPlaying = true;
         this._time = 0;
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         var i:number=this.numChildren;
-        while (i--)
+        while (i--){
+            var child:DisplayObject=this.getChildAt(i);
+            this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
+        }
 
-        // force reset all potential childs on timeline.
+        /*
+        // force reset all potential childs on timeline. // this seem to slow things down without having positive any effect
         for (var key in this._potentialInstances) {
             if (this._potentialInstances[key]) {
                 if (this._potentialInstances[key].isAsset(MovieClip))
                     (<MovieClip>this._potentialInstances[key]).reset();
             }
         }
-
-        if(this.parent) {
+        */
+        if(this.parent!=null){
+            this._skipAdvance = true;
+            this.timeline.gotoFrame(this, 0);
             this._currentFrameIndex = 0;
-            this.timeline.constructNextFrame(this);
-            this._skipAdvance=true;
         }
-//___scoped_this___.dennis.mov.Man.body.reach.gotoAndPlay("call");
         // i was thinking we might need to reset all children, but it makes stuff worse
         /*
         var i:number=this.numChildren;
@@ -261,14 +266,15 @@ class MovieClip extends DisplayObjectContainer
         if (this._time >= frameMarker) {
             this._time = 0;
             this.advanceFrame();
+            // after we advanced the scenegraph, we might have some script that needs executing
+            FrameScriptManager.execute_queue();
+
+            // now we want to execute the onEnter
+            this.dispatchEvent(this._enterFrame);
+            // after we executed the onEnter, we might have some script that needs executing
+            FrameScriptManager.execute_queue();
             //console.log("update "+this._currentFrameIndex);
             //console.log("update key "+this._constructedKeyFrameIndex);
-
-            this.dispatchEvent(this._enterFrame);
-            var has_executed_script:boolean=true;
-            while(has_executed_script)
-                has_executed_script=this.executePostConstructCommands();
-
         }
     }
 
@@ -283,7 +289,7 @@ class MovieClip extends DisplayObjectContainer
 
     public addScriptForExecution(value:Function)
     {
-        this._framescripts_to_execute.push(value);
+        FrameScriptManager.add_script_to_queue(this, value);
     }
     public activateChild(id:number)
     {
@@ -319,8 +325,9 @@ class MovieClip extends DisplayObjectContainer
 	{
 		super.iSetParent(value);
 
-		if (value && this._timeline && this._currentFrameIndex == -1)
-			this.reset();
+		if (value && this._timeline && this._currentFrameIndex == -1){
+            this.currentFrameIndex=0;
+        }
 	}
 
     public advanceFrame(skipChildren:boolean = false)
@@ -398,41 +405,7 @@ class MovieClip extends DisplayObjectContainer
 
     executePostConstructCommands():boolean
     {
-
-        // a script ,might call gotoAndStop() / gotoAndPlay() on itself or on other mc
-        // this might result in more script that should be executed.
-        // each mc provides a list of index to script that needs postconstructing.
-        // in this function, we postcontruct all those scripts
-        var has_script_executed:boolean=false;
-        if(this.timeline) {
-            if(this._framescripts_to_execute.length>0){
-                has_script_executed=true;
-                var caller = this.adapter? this.adapter : this;
-
-                try {
-                    this._framescripts_to_execute[0].call(caller);
-                }
-                catch(err)
-                {
-                    console.log("Script error in " + this.name + "\n", this._framescripts_to_execute[0]);
-                    console.log(err.message);
-                    throw err;
-                }
-                this._framescripts_to_execute.shift();
-            }
-        }
-
-        var i;
-        var len:number = this.numChildren-1;
-        for (i = len; i >=0; --i) {
-            var child = this.getChildAt(i);
-            if (child.isAsset(MovieClip)) {
-                if ((<MovieClip>child).executePostConstructCommands()) {
-                    has_script_executed = true;
-                }
-            }
-        }
-        return has_script_executed;
+        return true;
     }
 }
 export = MovieClip;

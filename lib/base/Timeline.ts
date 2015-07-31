@@ -257,9 +257,9 @@ class Timeline
 			}
 			if (removeAll) {
 				if(removeAllFromScript){
-					target_mc.adapter.unregisterScriptObject(child);
-					if(child.isAsset(MovieClip) && (<MovieClip>child).adapter)
-						(<MovieClip>child).adapter.freeFromScript();
+					//target_mc.adapter.unregisterScriptObject(child);
+					//if(child.isAsset(MovieClip) && (<MovieClip>child).adapter)
+					//	(<MovieClip>child).adapter.freeFromScript();
 
 				}
 				target_mc.removeChildAt(i);
@@ -278,8 +278,10 @@ class Timeline
 			var frame_command_idx:number=this.frame_command_indices[k];
 			var frame_recipe:number=this.frame_recipe[k];
 
-			if ((frame_recipe & 2)==2)
-				this.remove_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
+			if ((frame_recipe & 2) == 2){
+				// if this is the first frame of the run-through, and we have "removeAll", we cannot execute remove (because all childs already removed)
+				this.remove_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
+			}
 
 			if((frame_recipe & 4)==4)
 				this.add_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
@@ -337,6 +339,10 @@ class Timeline
 		var constructed_keyFrameIndex:number = target_mc.constructedKeyFrameIndex;
 		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
 
+		if(this.keyframe_firstframes[new_keyFrameIndex]==frameIndex){
+			this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
+		}
+
 		if(constructed_keyFrameIndex!=new_keyFrameIndex){
 			target_mc.constructedKeyFrameIndex=new_keyFrameIndex;
 
@@ -345,10 +351,15 @@ class Timeline
 
 			if((frame_recipe & 1)==1) {
 				var i:number = target_mc.numChildren;
-				while (i--)
+				while (i--) {
+					var target:DisplayObject=target_mc.getChildAt(i);
 					target_mc.removeChildAt(i);
-
-			} else if ((frame_recipe & 2)==2) {
+					target_mc.adapter.unregisterScriptObject(target);
+					if (target.isAsset(MovieClip) && (<MovieClip> target).adapter)
+						(<MovieClip> target).adapter.freeFromScript();
+				}
+			}
+			else if ((frame_recipe & 2)==2) {
 				this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
 			}
 
@@ -358,9 +369,6 @@ class Timeline
 			if((frame_recipe & 8)==8)
 				this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
 
-		}
-		if(this.keyframe_firstframes[new_keyFrameIndex]==frameIndex){
-			this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
 		}
 
 	}
