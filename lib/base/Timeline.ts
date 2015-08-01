@@ -208,10 +208,7 @@ class Timeline
 		if(start_construct_idx==target_keyframe_idx){
 			// shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
 			// before we do that, we need to clear the childlist
-			while(i--) {
-				// todo free and unregister ?
-				target_mc.removeChildAt(i);
-			}
+
 			target_mc.set_currentFrameIndex(value);
 			this.constructNextFrame(target_mc, false);
 			return;
@@ -223,7 +220,6 @@ class Timeline
 				// if we jump forward, we just can remove all childs from mc. all script blockage will be gone
 				// todo free and unregister ?
 				target_mc.removeChild(child);
-				console.log("remove");
 			}
 			else{
 				// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
@@ -231,6 +227,7 @@ class Timeline
 			}
 		}
 
+		//console.log("gotoframe keyframe = "+target_keyframe_idx+" name = "+target_mc.name);
 		//  step1: only apply add/remove commands into current_childs_dic.
 		var update_indices:Array<number>=[];// store a list of updatecommand_indices, so we dont have to read frame_recipe again
 		var update_cnt=0;
@@ -242,20 +239,22 @@ class Timeline
 			if ((frame_recipe & 2) == 2){
 				// remove childs
 				var start_index = this.command_index_stream[frame_command_idx];
-				var len = this.command_index_stream[frame_command_idx++];
+				var len = this.command_length_stream[frame_command_idx++];
 				for(var i:number = 0; i < len; i++){
 					delete target_childs_dic[(this.remove_child_stream[start_index+i] - 16383)];
 				}
+				//console.log("remove childs = "+len);
 			}
 
 			if((frame_recipe & 4)==4){
 				var start_index = this.command_index_stream[frame_command_idx];
-				var len = this.command_index_stream[frame_command_idx++];
+				var len = this.command_length_stream[frame_command_idx++];
 				for(var i:number = 0; i < len; i++){
 					var target:DisplayObject = target_mc.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
 					target["__sessionID"] = start_index + i;
 					target_childs_dic[(this.add_child_stream[start_index*2 + i*2 + 1] - 16383)] = target;
 				}
+				//console.log("add childs = "+len);
 			}
 
 			if((frame_recipe & 8)==8)
@@ -265,13 +264,14 @@ class Timeline
 
 		var target_child_sessionIDS:Object={};
 		for (var key in target_childs_dic) {
-			target_child_sessionIDS[(<DisplayObject>target_childs_dic[key])["__sessionID"]]=key;
+			if (target_childs_dic[key] != null) {
+				target_child_sessionIDS[(<DisplayObject>target_childs_dic[key])["__sessionID"]] = key;
+			}
 		}
 
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
 		// childs that are alive on both frames get removed from the target_child_sessionIDS + target_childs_dic
-		var source_child_sessionIDS:Object={};
 		i = target_mc.numChildren;
 		while(i--){
 			child=target_mc.getChildAt(i);
@@ -346,10 +346,10 @@ class Timeline
 	{
 		for(var i:number = 0; i < len; i++) {
 			var target:DisplayObject = sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
-
 			sourceMovieClip.adapter.unregisterScriptObject(target);
 			if(target.isAsset(MovieClip) && (<MovieClip> target).adapter)
 				(<MovieClip> target).adapter.freeFromScript();
+
 		}
 	}
 

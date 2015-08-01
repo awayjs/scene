@@ -136,7 +136,7 @@ class MovieClip extends DisplayObjectContainer
     {
         //console.log("reset name = "+this.name);
         if(this.adapter){
-            this.adapter.freeFromScript();
+           // this.adapter.freeFromScript();
         }
 
         this._isPlaying = true;
