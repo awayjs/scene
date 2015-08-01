@@ -5298,6 +5298,23 @@ declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
 	
 }
 
+declare module "awayjs-display/lib/draw/IGraphicsData" {
+	/**
+	 * This interface is used to define objects that can be used as parameters in the
+	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
+	 * the implementor classes of this interface to create and manage drawing property
+	 * data, and to reuse the same data for different instances. Then, use the methods of
+	 * the Graphics class to render the drawing objects.
+	 *
+	 * @see away.base.Graphics.drawGraphicsData()
+	 * @see away.base.Graphics.readGraphicsData()
+	 */
+	interface IGraphicsData {
+	}
+	export = IGraphicsData;
+	
+}
+
 declare module "awayjs-display/lib/draw/InterpolationMethod" {
 	/**
 	 * The InterpolationMethod class provides values for the
@@ -5338,20 +5355,33 @@ declare module "awayjs-display/lib/draw/InterpolationMethod" {
 	
 }
 
-declare module "awayjs-display/lib/draw/IGraphicsData" {
+declare module "awayjs-display/lib/draw/JointStyle" {
 	/**
-	 * This interface is used to define objects that can be used as parameters in the
-	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
-	 * the implementor classes of this interface to create and manage drawing property
-	 * data, and to reuse the same data for different instances. Then, use the methods of
-	 * the Graphics class to render the drawing objects.
-	 *
-	 * @see away.base.Graphics.drawGraphicsData()
-	 * @see away.base.Graphics.readGraphicsData()
+	 * The JointStyle class is an enumeration of constant values that specify the
+	 * joint style to use in drawing lines. These constants are provided for use
+	 * as values in the <code>joints</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
+	 * three types of joints: miter, round, and bevel, as the following example
+	 * shows:
 	 */
-	interface IGraphicsData {
+	class JointStyle {
+	    /**
+	     * Specifies beveled joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static BEVEL: string;
+	    /**
+	     * Specifies mitered joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static MITER: string;
+	    /**
+	     * Specifies round joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
 	}
-	export = IGraphicsData;
+	export = JointStyle;
 	
 }
 
@@ -5394,36 +5424,6 @@ declare module "awayjs-display/lib/draw/LineScaleMode" {
 	    static VERTICAL: string;
 	}
 	export = LineScaleMode;
-	
-}
-
-declare module "awayjs-display/lib/draw/JointStyle" {
-	/**
-	 * The JointStyle class is an enumeration of constant values that specify the
-	 * joint style to use in drawing lines. These constants are provided for use
-	 * as values in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
-	 * three types of joints: miter, round, and bevel, as the following example
-	 * shows:
-	 */
-	class JointStyle {
-	    /**
-	     * Specifies beveled joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static BEVEL: string;
-	    /**
-	     * Specifies mitered joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static MITER: string;
-	    /**
-	     * Specifies round joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	}
-	export = JointStyle;
 	
 }
 
@@ -5741,6 +5741,39 @@ declare module "awayjs-display/lib/entities/Camera" {
 	
 }
 
+declare module "awayjs-display/lib/entities/DirectionalLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class DirectionalLight extends LightBase implements IEntity {
+	    private _direction;
+	    private _tmpLookAt;
+	    private _sceneDirection;
+	    private _pAabbPoints;
+	    private _projAABBPoints;
+	    constructor(xDir?: number, yDir?: number, zDir?: number);
+	    sceneDirection: Vector3D;
+	    direction: Vector3D;
+	    pUpdateSceneTransform(): void;
+	    pCreateShadowMapper(): DirectionalShadowMapper;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	}
+	export = DirectionalLight;
+	
+}
+
 declare module "awayjs-display/lib/entities/IEntity" {
 	import Box = require("awayjs-core/lib/geom/Box");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
@@ -5890,39 +5923,6 @@ declare module "awayjs-display/lib/entities/IEntity" {
 	    _applyRenderer(renderer: IRenderer): any;
 	}
 	export = IEntity;
-	
-}
-
-declare module "awayjs-display/lib/entities/DirectionalLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class DirectionalLight extends LightBase implements IEntity {
-	    private _direction;
-	    private _tmpLookAt;
-	    private _sceneDirection;
-	    private _pAabbPoints;
-	    private _projAABBPoints;
-	    constructor(xDir?: number, yDir?: number, zDir?: number);
-	    sceneDirection: Vector3D;
-	    direction: Vector3D;
-	    pUpdateSceneTransform(): void;
-	    pCreateShadowMapper(): DirectionalShadowMapper;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	}
-	export = DirectionalLight;
 	
 }
 
@@ -7459,16 +7459,6 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/MaterialEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class MaterialEvent extends Event {
-	    static SIZE_CHANGED: string;
-	    constructor(type: string);
-	}
-	export = MaterialEvent;
-	
-}
-
 declare module "awayjs-display/lib/events/LightEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class LightEvent extends Event {
@@ -7477,6 +7467,16 @@ declare module "awayjs-display/lib/events/LightEvent" {
 	    clone(): Event;
 	}
 	export = LightEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/MaterialEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class MaterialEvent extends Event {
+	    static SIZE_CHANGED: string;
+	    constructor(type: string);
+	}
+	export = MaterialEvent;
 	
 }
 
@@ -7688,6 +7688,32 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/SceneEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class SceneEvent extends Event {
+	    /**
+	     *
+	     */
+	    static ADDED_TO_SCENE: string;
+	    /**
+	     *
+	     */
+	    static REMOVED_FROM_SCENE: string;
+	    /**
+	     *
+	     */
+	    static PARTITION_CHANGED: string;
+	    /**
+	     *
+	     */
+	    displayObject: DisplayObject;
+	    constructor(type: string, displayObject: DisplayObject);
+	}
+	export = SceneEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 	import Event = require("awayjs-core/lib/events/Event");
@@ -7733,32 +7759,6 @@ declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	    clone(): Event;
 	}
 	export = SubGeometryEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/SceneEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class SceneEvent extends Event {
-	    /**
-	     *
-	     */
-	    static ADDED_TO_SCENE: string;
-	    /**
-	     *
-	     */
-	    static REMOVED_FROM_SCENE: string;
-	    /**
-	     *
-	     */
-	    static PARTITION_CHANGED: string;
-	    /**
-	     *
-	     */
-	    displayObject: DisplayObject;
-	    constructor(type: string, displayObject: DisplayObject);
-	}
-	export = SceneEvent;
 	
 }
 
@@ -10674,32 +10674,6 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	
 }
 
-declare module "awayjs-display/lib/text/TextInteractionMode" {
-	/**
-	 * A class that defines the Interactive mode of a text field object.
-	 *
-	 * @see away.entities.TextField#textInteractionMode
-	 */
-	class TextInteractionMode {
-	    /**
-	     * The text field's default interaction mode is NORMAL and it varies across
-	     * platform. On Desktop, the normal mode implies that the text field is in
-	     * scrollable + selection mode. On Mobile platforms like Android, normal mode
-	     * implies that the text field can only be scrolled but the text can not be
-	     * selected.
-	     */
-	    static NORMAL: string;
-	    /**
-	     * On mobile platforms like Android, the text field starts in normal mode
-	     * (which implies scroll and non-selectable mode). The user can switch to
-	     * selection mode through the in-built context menu of the text field object.
-	     */
-	    static SELECTION: string;
-	}
-	export = TextInteractionMode;
-	
-}
-
 declare module "awayjs-display/lib/text/TextFormatAlign" {
 	/**
 	 * The TextFormatAlign class provides values for text alignment in the
@@ -10728,6 +10702,32 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	    RIGHT: string;
 	}
 	export = TextFormatAlign;
+	
+}
+
+declare module "awayjs-display/lib/text/TextInteractionMode" {
+	/**
+	 * A class that defines the Interactive mode of a text field object.
+	 *
+	 * @see away.entities.TextField#textInteractionMode
+	 */
+	class TextInteractionMode {
+	    /**
+	     * The text field's default interaction mode is NORMAL and it varies across
+	     * platform. On Desktop, the normal mode implies that the text field is in
+	     * scrollable + selection mode. On Mobile platforms like Android, normal mode
+	     * implies that the text field can only be scrolled but the text can not be
+	     * selected.
+	     */
+	    static NORMAL: string;
+	    /**
+	     * On mobile platforms like Android, the text field starts in normal mode
+	     * (which implies scroll and non-selectable mode). The user can switch to
+	     * selection mode through the in-built context menu of the text field object.
+	     */
+	    static SELECTION: string;
+	}
+	export = TextInteractionMode;
 	
 }
 
