@@ -234,8 +234,8 @@ class MovieClip extends DisplayObjectContainer
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
 		super.addChildAtDepth(child, depth, replace);
-      /*  if(child.isAsset(MovieClip))
-            (<MovieClip>child).reset();*/
+        if(child.isAsset(MovieClip))
+            (<MovieClip>child).reset();
         return child;
     }
 
@@ -333,7 +333,7 @@ class MovieClip extends DisplayObjectContainer
 	public iSetParent(value:DisplayObjectContainer)
 	{
 		super.iSetParent(value);
-        this.reset();
+       // this.reset();
         /*  if(child.isAsset(MovieClip))
          (<MovieClip>child).reset();*/
 	}

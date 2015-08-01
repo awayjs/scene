@@ -10951,8 +10951,8 @@ var MovieClip = (function (_super) {
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
         _super.prototype.addChildAtDepth.call(this, child, depth, replace);
-        /*  if(child.isAsset(MovieClip))
-              (<MovieClip>child).reset();*/
+        if (child.isAsset(MovieClip))
+            child.reset();
         return child;
     };
     Object.defineProperty(MovieClip.prototype, "fps", {
@@ -11028,7 +11028,7 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.iSetParent = function (value) {
         _super.prototype.iSetParent.call(this, value);
-        this.reset();
+        // this.reset();
         /*  if(child.isAsset(MovieClip))
          (<MovieClip>child).reset();*/
     };
