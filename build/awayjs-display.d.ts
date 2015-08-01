@@ -5278,6 +5278,23 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	
 }
 
+declare module "awayjs-display/lib/draw/IGraphicsData" {
+	/**
+	 * This interface is used to define objects that can be used as parameters in the
+	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
+	 * the implementor classes of this interface to create and manage drawing property
+	 * data, and to reuse the same data for different instances. Then, use the methods of
+	 * the Graphics class to render the drawing objects.
+	 *
+	 * @see away.base.Graphics.drawGraphicsData()
+	 * @see away.base.Graphics.readGraphicsData()
+	 */
+	interface IGraphicsData {
+	}
+	export = IGraphicsData;
+	
+}
+
 declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
 	/**
 	 * The GraphicsPathWinding class provides values for the
@@ -5294,23 +5311,6 @@ declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
 	    static NON_ZERO: string;
 	}
 	export = GraphicsPathWinding;
-	
-}
-
-declare module "awayjs-display/lib/draw/IGraphicsData" {
-	/**
-	 * This interface is used to define objects that can be used as parameters in the
-	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
-	 * the implementor classes of this interface to create and manage drawing property
-	 * data, and to reuse the same data for different instances. Then, use the methods of
-	 * the Graphics class to render the drawing objects.
-	 *
-	 * @see away.base.Graphics.drawGraphicsData()
-	 * @see away.base.Graphics.readGraphicsData()
-	 */
-	interface IGraphicsData {
-	}
-	export = IGraphicsData;
 	
 }
 
@@ -7371,6 +7371,15 @@ declare module "awayjs-display/lib/entities/TextField" {
 	
 }
 
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
+
 declare module "awayjs-display/lib/events/CameraEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -7384,15 +7393,6 @@ declare module "awayjs-display/lib/events/CameraEvent" {
 	    camera: Camera;
 	}
 	export = CameraEvent;
-	
-}
-
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
 	
 }
 
@@ -7412,17 +7412,6 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	    constructor(type: string, object: DisplayObject);
 	}
 	export = DisplayObjectEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/LightEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class LightEvent extends Event {
-	    static CASTS_SHADOW_CHANGE: string;
-	    constructor(type: string);
-	    clone(): Event;
-	}
-	export = LightEvent;
 	
 }
 
@@ -7466,6 +7455,27 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	    clone(): Event;
 	}
 	export = GeometryEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/LightEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class LightEvent extends Event {
+	    static CASTS_SHADOW_CHANGE: string;
+	    constructor(type: string);
+	    clone(): Event;
+	}
+	export = LightEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/MaterialEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class MaterialEvent extends Event {
+	    static SIZE_CHANGED: string;
+	    constructor(type: string);
+	}
+	export = MaterialEvent;
 	
 }
 
@@ -7613,16 +7623,6 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	    sceneNormal: Vector3D;
 	}
 	export = MouseEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/MaterialEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class MaterialEvent extends Event {
-	    static SIZE_CHANGED: string;
-	    constructor(type: string);
-	}
-	export = MaterialEvent;
 	
 }
 
