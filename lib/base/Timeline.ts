@@ -206,6 +206,8 @@ class Timeline
 		var child:DisplayObject;
 
 		if((jump_forward) && (start_construct_idx==target_keyframe_idx)){
+			// if we jump back, we dont want this shortcut, because we need to compare targetframe vs currentframe
+
 			// shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
 			// before we do that, we need to clear the childlist
 
@@ -214,10 +216,11 @@ class Timeline
 			return;
 		}
 
+		//console.log("gotoframe frame mc name = "+target_mc.name +"   "+value);
 		while(i--){
 			child = target_mc.getChildAt(i);
 			if(jump_gap){
-				// if we jump forward, we just can remove all childs from mc. all script blockage will be gone
+				// if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 				// todo free and unregister ?
 				target_mc.removeChild(child);
 			}
@@ -251,7 +254,7 @@ class Timeline
 				var len = this.command_length_stream[frame_command_idx++];
 				for(var i:number = 0; i < len; i++){
 					var target:DisplayObject = target_mc.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
-					target["__sessionID"] = start_index + i;
+					target._sessionID = start_index + i;
 					target_childs_dic[(this.add_child_stream[start_index*2 + i*2 + 1] - 16383)] = target;
 				}
 				//console.log("add childs = "+len);
@@ -265,7 +268,7 @@ class Timeline
 		var target_child_sessionIDS:Object={};
 		for (var key in target_childs_dic) {
 			if (target_childs_dic[key] != null) {
-				target_child_sessionIDS[(<DisplayObject>target_childs_dic[key])["__sessionID"]] = key;
+				target_child_sessionIDS[(<DisplayObject>target_childs_dic[key])._sessionID] = key;
 			}
 		}
 
@@ -275,12 +278,12 @@ class Timeline
 		i = target_mc.numChildren;
 		while(i--){
 			child=target_mc.getChildAt(i);
-			if(target_child_sessionIDS[child["__sessionID"]]==null){
+			if(target_child_sessionIDS[child._sessionID]==null){
 				target_mc.removeChildAt(i);
 			}
 			else{
-				delete target_childs_dic[target_child_sessionIDS[child["__sessionID"]]];
-				delete target_child_sessionIDS[child["__sessionID"]];
+				delete target_childs_dic[target_child_sessionIDS[child._sessionID]];
+				delete target_child_sessionIDS[child._sessionID];
 			}
 		}
 		for (var key in target_childs_dic) {
@@ -310,7 +313,7 @@ class Timeline
 		if((queueScript)&&(this.keyframe_firstframes[new_keyFrameIndex]==frameIndex)){
 			this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
 		}
-		console.log("next frame mc name = "+target_mc.name);
+		//console.log("next frame mc name = "+target_mc.name+ "    "+frameIndex);
 		if(constructed_keyFrameIndex!=new_keyFrameIndex){
 			target_mc.constructedKeyFrameIndex=new_keyFrameIndex;
 
@@ -360,7 +363,7 @@ class Timeline
 	{
 		for(var i:number = 0; i < len; i++){
 			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
-			target["__sessionID"] = start_index + i;
+			target._sessionID = start_index + i;
 
 			sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index*2 + i*2 + 1] - 16383);
 
@@ -443,13 +446,19 @@ class Timeline
 							break;
 
 						case 4:// instance name movieclip instance
-							target.name = this.properties_stream_strings[value_start_index];
-							sourceMovieClip.adapter.registerScriptObject(target);
+							if (doit) {
+								target.name = this.properties_stream_strings[value_start_index];
+								sourceMovieClip.adapter.registerScriptObject(target);
+								//console.log("register name = "+target.name);
+							}
 							break;
 						case 5:// instance name button instance
-							target.name = this.properties_stream_strings[value_start_index];
-							sourceMovieClip.adapter.registerScriptObject(target);
-							(<MovieClip>target).addButtonListeners();
+							if (doit) {
+								target.name = this.properties_stream_strings[value_start_index];
+								sourceMovieClip.adapter.registerScriptObject(target);
+								(<MovieClip>target).addButtonListeners();
+								//console.log("register button = "+target.name);
+							}
 							break;
 
 						case 6://visible

@@ -191,6 +191,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pIsEntity:boolean;
     public _iMaskID:number = -1;
     public _iMasks:DisplayObject[] = null;
+	public _sessionID:number = -1;
 
 	private _explicitPartition:Partition;
 	public _pImplicitPartition:Partition;

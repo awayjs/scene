@@ -134,49 +134,30 @@ class MovieClip extends DisplayObjectContainer
 
     public reset():void
     {
-        console.log("reset name = "+this.name);
         if(this.adapter){
-           // this.adapter.freeFromScript();
+            //this.adapter.freeFromScript();
         }
 
         this._isPlaying = true;
-        this._time = 0;
+        //this._time = 0;
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         var i:number=this.numChildren;
         while (i--){
             var child:DisplayObject=this.getChildAt(i);
+           // if(child.isAsset(MovieClip))
+                //if( (<MovieClip>child).adapter){
+                //    (<MovieClip>child).adapter.freeFromScript();
+           // }
             this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
         }
 
-        /*
-        // force reset all potential childs on timeline. // this seem to slow things down without having positive any effect
-        for (var key in this._potentialInstances) {
-            if (this._potentialInstances[key]) {
-                if (this._potentialInstances[key].isAsset(MovieClip))
-                    (<MovieClip>this._potentialInstances[key]).reset();
-            }
-        }
-        */
-
-        if(this.parent!=null){
-            this._skipAdvance = true;
-            if (this._timeline.numFrames)
-                this._timeline.gotoFrame(this, 0);
+        this._skipAdvance = true;
+        if (this._timeline.numFrames) {
             this._currentFrameIndex = 0;
+            this._timeline.constructNextFrame(this);
         }
-
-        // i was thinking we might need to reset all children, but it makes stuff worse
-        /*
-        var i:number=this.numChildren;
-        while (i--) {
-            var child = this.getChildAt(i);
-            if (child.isAsset(MovieClip))
-                (<MovieClip>child).reset();
-        }
-        */
-        //this.advanceChildren();
 
     }
 
@@ -233,6 +214,7 @@ class MovieClip extends DisplayObjectContainer
     {
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
+        child.reset_to_init_state();
 		super.addChildAtDepth(child, depth, replace);
         if(child.isAsset(MovieClip))
             (<MovieClip>child).reset();
@@ -364,7 +346,6 @@ class MovieClip extends DisplayObjectContainer
                     this._timeline.constructNextFrame(this);
                 }
             }
-
             if (!skipChildren)
                 this.advanceChildren();
 
