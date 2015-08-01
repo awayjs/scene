@@ -1,4 +1,3 @@
-import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import MovieClip						= require("awayjs-display/lib/entities/MovieClip");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
 import DisplayObject                    = require("awayjs-display/lib/base/DisplayObject");
@@ -327,9 +326,8 @@ class Timeline
 					var target:DisplayObject=target_mc.getChildAt(i);
 					target_mc.removeChildAt(i);
 					target_mc.adapter.unregisterScriptObject(target);
-
-					if (target.adapter)
-						target.adapter.freeFromScript();
+					if (target.isAsset(MovieClip) && (<MovieClip> target).adapter)
+						(<MovieClip> target).adapter.freeFromScript();
 				}
 			}
 			else if ((frame_recipe & 2)==2) {
@@ -353,8 +351,9 @@ class Timeline
 		for(var i:number = 0; i < len; i++) {
 			var target:DisplayObject = sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
 			sourceMovieClip.adapter.unregisterScriptObject(target);
-			if( target.adapter)
-				target.adapter.freeFromScript();
+			if(target.isAsset(MovieClip) && (<MovieClip> target).adapter)
+				(<MovieClip> target).adapter.freeFromScript();
+
 		}
 	}
 
@@ -384,8 +383,9 @@ class Timeline
 			if (target.parent == sourceMovieClip) {
 				doit = true;
 				// check if the child is active + not blocked by script
-				if (target.adapter && target.adapter.isBlockedByScript())
-					doit = false;
+				if (target.isAsset(MovieClip))
+					if ((<MovieClip>target).adapter.isBlockedByScript())
+						doit = false;
 
 				props_start_idx = this.update_child_props_indices_stream[start_index + i];
 				props_cnt = this.update_child_props_length_stream[start_index + i];
@@ -438,27 +438,23 @@ class Timeline
 								for(var m:number = 0; m < mask_length; m++){
 									mask = masks[m] = sourceMovieClip.getPotentialChildInstance(this.properties_stream_int[value_start_index++] - 1);
 									mask.mouseEnabled = false;
-									if(mask.isAsset(DisplayObjectContainer))
-										(<DisplayObjectContainer> mask).mouseChildren = false;
+									if(mask.isAsset(MovieClip))
+										(<MovieClip> mask).mouseChildren = false;
 								}
 								target._iMasks = masks;
 							}
 							break;
 
 						case 4:// instance name movieclip instance
-							if (doit) {
-								target.name = this.properties_stream_strings[value_start_index];
-								sourceMovieClip.adapter.registerScriptObject(target);
-								//console.log("register name = "+target.name);
-							}
+							target.name = this.properties_stream_strings[value_start_index];
+							sourceMovieClip.adapter.registerScriptObject(target);
+							//console.log("register name = "+target.name);
 							break;
 						case 5:// instance name button instance
-							if (doit) {
-								target.name = this.properties_stream_strings[value_start_index];
-								sourceMovieClip.adapter.registerScriptObject(target);
-								(<MovieClip>target).addButtonListeners();
-								//console.log("register button = "+target.name);
-							}
+							target.name = this.properties_stream_strings[value_start_index];
+							sourceMovieClip.adapter.registerScriptObject(target);
+							(<MovieClip>target).addButtonListeners();
+							//console.log("register button = "+target.name);
 							break;
 
 						case 6://visible
