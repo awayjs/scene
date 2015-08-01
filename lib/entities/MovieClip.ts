@@ -134,7 +134,7 @@ class MovieClip extends DisplayObjectContainer
 
     public reset():void
     {
-        //console.log("reset name = "+this.name);
+        console.log("reset name = "+this.name);
         if(this.adapter){
            // this.adapter.freeFromScript();
         }

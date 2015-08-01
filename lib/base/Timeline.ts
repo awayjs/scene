@@ -205,7 +205,7 @@ class Timeline
 		var i:number = target_mc.numChildren;
 		var child:DisplayObject;
 
-		if(start_construct_idx==target_keyframe_idx){
+		if((jump_forward) && (start_construct_idx==target_keyframe_idx)){
 			// shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
 			// before we do that, we need to clear the childlist
 
@@ -302,6 +302,7 @@ class Timeline
 
 	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean=true)
 	{
+
 		var frameIndex:number = target_mc.currentFrameIndex;
 		var constructed_keyFrameIndex:number = target_mc.constructedKeyFrameIndex;
 		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
@@ -309,7 +310,7 @@ class Timeline
 		if((queueScript)&&(this.keyframe_firstframes[new_keyFrameIndex]==frameIndex)){
 			this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
 		}
-
+		console.log("next frame mc name = "+target_mc.name);
 		if(constructed_keyFrameIndex!=new_keyFrameIndex){
 			target_mc.constructedKeyFrameIndex=new_keyFrameIndex;
 

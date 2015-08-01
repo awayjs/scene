@@ -4100,7 +4100,7 @@ var Timeline = (function () {
         var target_childs_dic = [];
         var i = target_mc.numChildren;
         var child;
-        if (start_construct_idx == target_keyframe_idx) {
+        if ((jump_forward) && (start_construct_idx == target_keyframe_idx)) {
             // shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
             // before we do that, we need to clear the childlist
             target_mc.set_currentFrameIndex(value);
@@ -4190,6 +4190,7 @@ var Timeline = (function () {
         if ((queueScript) && (this.keyframe_firstframes[new_keyFrameIndex] == frameIndex)) {
             this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
         }
+        console.log("next frame mc name = " + target_mc.name);
         if (constructed_keyFrameIndex != new_keyFrameIndex) {
             target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
             var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
@@ -10884,7 +10885,7 @@ var MovieClip = (function (_super) {
         configurable: true
     });
     MovieClip.prototype.reset = function () {
-        //console.log("reset name = "+this.name);
+        console.log("reset name = " + this.name);
         if (this.adapter) {
         }
         this._isPlaying = true;

@@ -9343,6 +9343,33 @@ declare module "awayjs-display/lib/pool/EntityListItem" {
 	
 }
 
+declare module "awayjs-display/lib/pool/EntityListItemPool" {
+	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
+	/**
+	 * @class away.pool.EntityListItemPool
+	 */
+	class EntityListItemPool {
+	    private _pool;
+	    private _index;
+	    private _poolSize;
+	    /**
+	     *
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    getItem(): EntityListItem;
+	    /**
+	     *
+	     */
+	    freeAll(): void;
+	    dispose(): void;
+	}
+	export = EntityListItemPool;
+	
+}
+
 declare module "awayjs-display/lib/pool/EntityNodePool" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
@@ -9653,33 +9680,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveCapsulePrefab;
-	
-}
-
-declare module "awayjs-display/lib/pool/EntityListItemPool" {
-	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
-	/**
-	 * @class away.pool.EntityListItemPool
-	 */
-	class EntityListItemPool {
-	    private _pool;
-	    private _index;
-	    private _poolSize;
-	    /**
-	     *
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    getItem(): EntityListItem;
-	    /**
-	     *
-	     */
-	    freeAll(): void;
-	    dispose(): void;
-	}
-	export = EntityListItemPool;
 	
 }
 
