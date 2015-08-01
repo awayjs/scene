@@ -118,7 +118,7 @@ class Timeline
 		}
 	}
 
-	public numFrames():number
+	public get numFrames():number
 	{
 		return this.keyframe_indices.length;
 	}
@@ -286,7 +286,7 @@ class Timeline
 		for (var key in target_childs_dic) {
 			child=target_childs_dic[key];
 			if(child){
-				target_mc.addChildAtDepth(child, key);
+				target_mc.addChildAtDepth(child, parseInt(key));
 			}
 		}
 

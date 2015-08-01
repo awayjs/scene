@@ -56,7 +56,7 @@ class MovieClip extends DisplayObjectContainer
 		this._adapter = value;
 	}
 
-    constructor()
+    constructor(timeline:Timeline = null)
     {
         super();
         this._potentialInstances = [];
@@ -75,6 +75,8 @@ class MovieClip extends DisplayObjectContainer
         this._onMouseOut = (event:MouseEvent) => this.currentFrameIndex = 0;
         this._onMouseDown = (event:MouseEvent) => this.currentFrameIndex = 2;
         this._onMouseUp = (event:MouseEvent) => this.currentFrameIndex = this.currentFrameIndex == 0? 0 : 1;
+
+        this._timeline = timeline || new Timeline();
     }
 
     public get isInit():boolean
@@ -94,11 +96,6 @@ class MovieClip extends DisplayObjectContainer
     public set timeline(value:Timeline)
     {
         this._timeline = value;
-        var i:number=0;
-        var potential_child_length:number=value.getPotentialChilds().length;
-        for(i=0; i<potential_child_length; i++){
-            this._potentialInstances[i]=null;
-        }
     }
     public get loop()
     {
@@ -112,13 +109,13 @@ class MovieClip extends DisplayObjectContainer
 
     public get numFrames() : number
     {
-        return this.timeline.numFrames();
+        return this._timeline.numFrames;
     }
 
     public jumpToLabel(label:string) : void
     {
         // the timeline.jumpTolabel will set currentFrameIndex
-        this.timeline.jumpToLabel(this, label);
+        this._timeline.jumpToLabel(this, label);
     }
 
     public get currentFrameIndex() : number
@@ -165,7 +162,8 @@ class MovieClip extends DisplayObjectContainer
 
         if(this.parent!=null){
             this._skipAdvance = true;
-            this.timeline.gotoFrame(this, 0);
+            if (this._timeline.numFrames)
+                this._timeline.gotoFrame(this, 0);
             this._currentFrameIndex = 0;
         }
 
@@ -194,17 +192,17 @@ class MovieClip extends DisplayObjectContainer
      */
     public set currentFrameIndex(value : number)
     {
-        if(this._timeline) {
+        if(this._timeline.numFrames) {
             value = Math.floor(value);
             if (value < 0)
                 value = 0;
-            else if (value >= this.timeline.numFrames())
-                value = this.timeline.numFrames() - 1;
+            else if (value >= this._timeline.numFrames)
+                value = this._timeline.numFrames - 1;
 
             this._skipAdvance = true;
             //this._time = 0;
 
-            this.timeline.gotoFrame(this, value);
+            this._timeline.gotoFrame(this, value);
 
             this._currentFrameIndex = value;
         }
@@ -294,7 +292,7 @@ class MovieClip extends DisplayObjectContainer
     public getPotentialChildInstance(id:number) : DisplayObject
     {
         if (!this._potentialInstances[id]) {
-            this._potentialInstances[id] = this.timeline.getPotentialChildInstance(id);
+            this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
         }
 
         return this._potentialInstances[id];
@@ -324,9 +322,7 @@ class MovieClip extends DisplayObjectContainer
 
     public clone(newInstance:MovieClip = null) : DisplayObject
     {
-        newInstance = <MovieClip> super.clone(newInstance || new MovieClip());
-
-        newInstance.timeline = this._timeline;
+        newInstance = <MovieClip> super.clone(newInstance || new MovieClip(this._timeline));
 
         newInstance._fps = this._fps;
         newInstance._loop = this._loop;
@@ -344,14 +340,14 @@ class MovieClip extends DisplayObjectContainer
 
     public advanceFrame(skipChildren:boolean = false)
     {
-        if(this.timeline) {
+        if(this._timeline.numFrames) {
             var i;
             var oldFrameIndex = this._currentFrameIndex;
             var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
-            if (advance && oldFrameIndex == this.timeline.numFrames() - 1 && !this._loop) {
+            if (advance && oldFrameIndex == this._timeline.numFrames - 1 && !this._loop) {
                 advance = false;
             }
-            if (advance && oldFrameIndex == 0 && this.timeline.numFrames() == 1) {
+            if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
                 //console.log("one frame clip");
                 this._currentFrameIndex = 0;
                 advance = false;
@@ -359,13 +355,13 @@ class MovieClip extends DisplayObjectContainer
             if (advance) {
                 //console.log("advance");
                 ++this._currentFrameIndex;
-                if (this._currentFrameIndex == this.timeline.numFrames()) {
+                if (this._currentFrameIndex == this._timeline.numFrames) {
                     // looping - jump to first frame.
                     this.currentFrameIndex=0;
                 }
                 else if (oldFrameIndex != this._currentFrameIndex){
                     // not looping - construct next frame
-                    this.timeline.constructNextFrame(this);
+                    this._timeline.constructNextFrame(this);
                 }
             }
 
