@@ -5673,39 +5673,6 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	
 }
 
-declare module "awayjs-display/lib/entities/DirectionalLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class DirectionalLight extends LightBase implements IEntity {
-	    private _direction;
-	    private _tmpLookAt;
-	    private _sceneDirection;
-	    private _pAabbPoints;
-	    private _projAABBPoints;
-	    constructor(xDir?: number, yDir?: number, zDir?: number);
-	    sceneDirection: Vector3D;
-	    direction: Vector3D;
-	    pUpdateSceneTransform(): void;
-	    pCreateShadowMapper(): DirectionalShadowMapper;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	}
-	export = DirectionalLight;
-	
-}
-
 declare module "awayjs-display/lib/entities/Camera" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
@@ -5770,6 +5737,39 @@ declare module "awayjs-display/lib/entities/Camera" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = Camera;
+	
+}
+
+declare module "awayjs-display/lib/entities/DirectionalLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class DirectionalLight extends LightBase implements IEntity {
+	    private _direction;
+	    private _tmpLookAt;
+	    private _sceneDirection;
+	    private _pAabbPoints;
+	    private _projAABBPoints;
+	    constructor(xDir?: number, yDir?: number, zDir?: number);
+	    sceneDirection: Vector3D;
+	    direction: Vector3D;
+	    pUpdateSceneTransform(): void;
+	    pCreateShadowMapper(): DirectionalShadowMapper;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	}
+	export = DirectionalLight;
 	
 }
 
@@ -9343,33 +9343,6 @@ declare module "awayjs-display/lib/pool/EntityListItem" {
 	
 }
 
-declare module "awayjs-display/lib/pool/EntityListItemPool" {
-	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
-	/**
-	 * @class away.pool.EntityListItemPool
-	 */
-	class EntityListItemPool {
-	    private _pool;
-	    private _index;
-	    private _poolSize;
-	    /**
-	     *
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    getItem(): EntityListItem;
-	    /**
-	     *
-	     */
-	    freeAll(): void;
-	    dispose(): void;
-	}
-	export = EntityListItemPool;
-	
-}
-
 declare module "awayjs-display/lib/pool/EntityNodePool" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
@@ -9522,6 +9495,27 @@ declare module "awayjs-display/lib/pool/ISceneGraphNodeClass" {
 	
 }
 
+declare module "awayjs-display/lib/pool/ITextureVO" {
+	/**
+	 * ITextureVO is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a texture
+	 *
+	 * @class away.pool.ITextureVO
+	 */
+	interface ITextureVO {
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidate(): any;
+	}
+	export = ITextureVO;
+	
+}
+
 declare module "awayjs-display/lib/pool/SceneGraphNodePool" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import SceneGraphNode = require("awayjs-display/lib/partition/SceneGraphNode");
@@ -9555,27 +9549,6 @@ declare module "awayjs-display/lib/pool/SceneGraphNodePool" {
 	    disposeItem(displayObjectContainer: DisplayObjectContainer): SceneGraphNode;
 	}
 	export = SceneGraphNodePool;
-	
-}
-
-declare module "awayjs-display/lib/pool/ITextureVO" {
-	/**
-	 * ITextureVO is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a texture
-	 *
-	 * @class away.pool.ITextureVO
-	 */
-	interface ITextureVO {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidate(): any;
-	}
-	export = ITextureVO;
 	
 }
 
@@ -9680,6 +9653,33 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveCapsulePrefab;
+	
+}
+
+declare module "awayjs-display/lib/pool/EntityListItemPool" {
+	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
+	/**
+	 * @class away.pool.EntityListItemPool
+	 */
+	class EntityListItemPool {
+	    private _pool;
+	    private _index;
+	    private _poolSize;
+	    /**
+	     *
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    getItem(): EntityListItem;
+	    /**
+	     *
+	     */
+	    freeAll(): void;
+	    dispose(): void;
+	}
+	export = EntityListItemPool;
 	
 }
 
