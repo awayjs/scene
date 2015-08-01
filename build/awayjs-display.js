@@ -4101,7 +4101,7 @@ var Timeline = (function () {
                 // todo free and unregister ?
                 target_mc.removeChildAt(i);
             }
-            target_mc.currentFrameIndex = value;
+            target_mc.set_currentFrameIndex(value);
             this.constructNextFrame(target_mc, false);
             return;
         }
@@ -4115,7 +4115,7 @@ var Timeline = (function () {
             }
             else {
                 // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-                target_childs_dic[child.depth] = child;
+                target_childs_dic[target_mc.getChildDepth(child)] = child;
             }
         }
         //  step1: only apply add/remove commands into current_childs_dic.
@@ -4148,7 +4148,7 @@ var Timeline = (function () {
         //  step2: construct the final frame
         var target_child_sessionIDS = {};
         for (var key in target_childs_dic) {
-            target_child_sessionIDS[target_childs_dic[key]["__sessionID"]] = target_childs_dic[key].depth;
+            target_child_sessionIDS[target_childs_dic[key]["__sessionID"]] = key;
         }
         // check what childs are alive on both frames.
         // childs that are not alive anymore get removed and unregistered
@@ -10883,7 +10883,7 @@ var MovieClip = (function (_super) {
         configurable: true
     });
     MovieClip.prototype.reset = function () {
-        console.log("reset name = " + this.name);
+        //console.log("reset name = "+this.name);
         if (this.adapter) {
             this.adapter.freeFromScript();
         }
@@ -10948,6 +10948,8 @@ var MovieClip = (function (_super) {
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
         _super.prototype.addChildAtDepth.call(this, child, depth, replace);
+        /*  if(child.isAsset(MovieClip))
+              (<MovieClip>child).reset();*/
         return child;
     };
     Object.defineProperty(MovieClip.prototype, "fps", {
@@ -11025,6 +11027,8 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.iSetParent = function (value) {
         _super.prototype.iSetParent.call(this, value);
         this.reset();
+        /*  if(child.isAsset(MovieClip))
+         (<MovieClip>child).reset();*/
     };
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }

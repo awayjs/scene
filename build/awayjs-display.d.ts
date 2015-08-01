@@ -5946,6 +5946,88 @@ declare module "awayjs-display/lib/entities/LightProbe" {
 	
 }
 
+declare module "awayjs-display/lib/entities/LineSegment" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * A Line Segment primitive.
+	 */
+	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
+	    static assetType: string;
+	    private _animator;
+	    private _material;
+	    private _uvTransform;
+	    private _colorTransform;
+	    _startPosition: Vector3D;
+	    _endPosition: Vector3D;
+	    _halfThickness: number;
+	    /**
+	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    startPostion: Vector3D;
+	    startPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    endPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    /**
+	     *
+	     */
+	    thickness: number;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     *
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * Create a line segment
+	     *
+	     * @param startPosition Start position of the line segment
+	     * @param endPosition Ending position of the line segment
+	     * @param thickness Thickness of the line
+	     */
+	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
+	    dispose(): void;
+	    /**
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    _pUpdateSphereBounds(): void;
+	    /**
+	     * @private
+	     */
+	    private notifyRenderableUpdate();
+	    _applyRenderer(renderer: IRenderer): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = LineSegment;
+	
+}
+
 declare module "awayjs-display/lib/entities/Mesh" {
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -6131,88 +6213,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	
 }
 
-declare module "awayjs-display/lib/entities/LineSegment" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * A Line Segment primitive.
-	 */
-	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
-	    static assetType: string;
-	    private _animator;
-	    private _material;
-	    private _uvTransform;
-	    private _colorTransform;
-	    _startPosition: Vector3D;
-	    _endPosition: Vector3D;
-	    _halfThickness: number;
-	    /**
-	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    startPostion: Vector3D;
-	    startPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    endPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     *
-	     */
-	    thickness: number;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * Create a line segment
-	     *
-	     * @param startPosition Start position of the line segment
-	     * @param endPosition Ending position of the line segment
-	     * @param thickness Thickness of the line
-	     */
-	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
-	    dispose(): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    _pUpdateSphereBounds(): void;
-	    /**
-	     * @private
-	     */
-	    private notifyRenderableUpdate();
-	    _applyRenderer(renderer: IRenderer): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = LineSegment;
-	
-}
-
 declare module "awayjs-display/lib/entities/MovieClip" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -6306,6 +6306,40 @@ declare module "awayjs-display/lib/entities/PointLight" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = PointLight;
+	
+}
+
+declare module "awayjs-display/lib/entities/Shape" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import Graphics = require("awayjs-display/lib/draw/Graphics");
+	/**
+	 * This class is used to create lightweight shapes using the ActionScript
+	 * drawing application program interface(API). The Shape class includes a
+	 * <code>graphics</code> property, which lets you access methods from the
+	 * Graphics class.
+	 *
+	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
+	 * includes other features not available to the Shape class. For example, a
+	 * Sprite object is a display object container, whereas a Shape object is not
+	 * (and cannot contain child display objects). For this reason, Shape objects
+	 * consume less memory than Sprite objects that contain the same graphics.
+	 * However, a Sprite object supports user input events, while a Shape object
+	 * does not.</p>
+	 */
+	class Shape extends DisplayObject {
+	    private _graphics;
+	    /**
+	     * Specifies the Graphics object belonging to this Shape object, where vector
+	     * drawing commands can occur.
+	     */
+	    graphics: Graphics;
+	    /**
+	     * Creates a new Shape object.
+	     */
+	    constructor();
+	    clone(): DisplayObject;
+	}
+	export = Shape;
 	
 }
 
@@ -7337,49 +7371,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	
 }
 
-declare module "awayjs-display/lib/entities/Shape" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Graphics = require("awayjs-display/lib/draw/Graphics");
-	/**
-	 * This class is used to create lightweight shapes using the ActionScript
-	 * drawing application program interface(API). The Shape class includes a
-	 * <code>graphics</code> property, which lets you access methods from the
-	 * Graphics class.
-	 *
-	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
-	 * includes other features not available to the Shape class. For example, a
-	 * Sprite object is a display object container, whereas a Shape object is not
-	 * (and cannot contain child display objects). For this reason, Shape objects
-	 * consume less memory than Sprite objects that contain the same graphics.
-	 * However, a Sprite object supports user input events, while a Shape object
-	 * does not.</p>
-	 */
-	class Shape extends DisplayObject {
-	    private _graphics;
-	    /**
-	     * Specifies the Graphics object belonging to this Shape object, where vector
-	     * drawing commands can occur.
-	     */
-	    graphics: Graphics;
-	    /**
-	     * Creates a new Shape object.
-	     */
-	    constructor();
-	    clone(): DisplayObject;
-	}
-	export = Shape;
-	
-}
-
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
-
 declare module "awayjs-display/lib/events/CameraEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -7393,6 +7384,15 @@ declare module "awayjs-display/lib/events/CameraEvent" {
 	    camera: Camera;
 	}
 	export = CameraEvent;
+	
+}
+
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
 	
 }
 
@@ -7412,6 +7412,17 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	    constructor(type: string, object: DisplayObject);
 	}
 	export = DisplayObjectEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/LightEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class LightEvent extends Event {
+	    static CASTS_SHADOW_CHANGE: string;
+	    constructor(type: string);
+	    clone(): Event;
+	}
+	export = LightEvent;
 	
 }
 
@@ -7455,27 +7466,6 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	    clone(): Event;
 	}
 	export = GeometryEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/LightEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class LightEvent extends Event {
-	    static CASTS_SHADOW_CHANGE: string;
-	    constructor(type: string);
-	    clone(): Event;
-	}
-	export = LightEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/MaterialEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class MaterialEvent extends Event {
-	    static SIZE_CHANGED: string;
-	    constructor(type: string);
-	}
-	export = MaterialEvent;
 	
 }
 
@@ -7623,6 +7613,16 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	    sceneNormal: Vector3D;
 	}
 	export = MouseEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/MaterialEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class MaterialEvent extends Event {
+	    static SIZE_CHANGED: string;
+	    constructor(type: string);
+	}
+	export = MaterialEvent;
 	
 }
 

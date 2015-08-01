@@ -137,7 +137,7 @@ class MovieClip extends DisplayObjectContainer
 
     public reset():void
     {
-        console.log("reset name = "+this.name);
+        //console.log("reset name = "+this.name);
         if(this.adapter){
             this.adapter.freeFromScript();
         }
@@ -236,7 +236,8 @@ class MovieClip extends DisplayObjectContainer
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
 		super.addChildAtDepth(child, depth, replace);
-
+      /*  if(child.isAsset(MovieClip))
+            (<MovieClip>child).reset();*/
         return child;
     }
 
@@ -336,8 +337,9 @@ class MovieClip extends DisplayObjectContainer
 	public iSetParent(value:DisplayObjectContainer)
 	{
 		super.iSetParent(value);
-
         this.reset();
+        /*  if(child.isAsset(MovieClip))
+         (<MovieClip>child).reset();*/
 	}
 
     public advanceFrame(skipChildren:boolean = false)

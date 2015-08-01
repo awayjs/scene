@@ -212,7 +212,7 @@ class Timeline
 				// todo free and unregister ?
 				target_mc.removeChildAt(i);
 			}
-			target_mc.currentFrameIndex=value;
+			target_mc.set_currentFrameIndex(value);
 			this.constructNextFrame(target_mc, false);
 			return;
 		}
@@ -227,7 +227,7 @@ class Timeline
 			}
 			else{
 				// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-				target_childs_dic[child.depth]=child;
+				target_childs_dic[target_mc.getChildDepth(child)]=child;
 			}
 		}
 
@@ -265,7 +265,7 @@ class Timeline
 
 		var target_child_sessionIDS:Object={};
 		for (var key in target_childs_dic) {
-			target_child_sessionIDS[(<DisplayObject>target_childs_dic[key])["__sessionID"]]=(<DisplayObject>target_childs_dic[key]).depth;
+			target_child_sessionIDS[(<DisplayObject>target_childs_dic[key])["__sessionID"]]=key;
 		}
 
 		// check what childs are alive on both frames.
