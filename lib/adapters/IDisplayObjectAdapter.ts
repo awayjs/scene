@@ -5,6 +5,10 @@ interface IDisplayObjectAdapter
 {
 	adaptee:DisplayObject
 
+	isBlockedByScript():boolean;
+
+	freeFromScript():void;
+
 	clone(newAdaptee:DisplayObject):IDisplayObjectAdapter;
 }
 

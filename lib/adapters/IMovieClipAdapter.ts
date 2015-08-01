@@ -6,10 +6,6 @@ interface IMovieClipAdapter extends IDisplayObjectAdapter
 {
 	evalScript(str:string):Function;
 
-	isBlockedByScript():boolean;
-
-	freeFromScript():void;
-
 	registerScriptObject(child:DisplayObject):void;
 
 	unregisterScriptObject(child:DisplayObject):void;
