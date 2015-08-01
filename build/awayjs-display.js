@@ -3977,7 +3977,7 @@ var SubMeshBase = (function (_super) {
 module.exports = SubMeshBase;
 
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
-var MovieClip = require("awayjs-display/lib/entities/MovieClip");
+var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Timeline = (function () {
@@ -4203,7 +4203,7 @@ var Timeline = (function () {
                     var target = target_mc.getChildAt(i);
                     target_mc.removeChildAt(i);
                     target_mc.adapter.unregisterScriptObject(target);
-                    if (target.isAsset(MovieClip) && target.adapter)
+                    if (target.adapter)
                         target.adapter.freeFromScript();
                 }
             }
@@ -4220,7 +4220,7 @@ var Timeline = (function () {
         for (var i = 0; i < len; i++) {
             var target = sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
             sourceMovieClip.adapter.unregisterScriptObject(target);
-            if (target.isAsset(MovieClip) && target.adapter)
+            if (target.adapter)
                 target.adapter.freeFromScript();
         }
     };
@@ -4244,9 +4244,8 @@ var Timeline = (function () {
             if (target.parent == sourceMovieClip) {
                 doit = true;
                 // check if the child is active + not blocked by script
-                if (target.isAsset(MovieClip))
-                    if (target.adapter.isBlockedByScript())
-                        doit = false;
+                if (target.adapter && target.adapter.isBlockedByScript())
+                    doit = false;
                 props_start_idx = this.update_child_props_indices_stream[start_index + i];
                 props_cnt = this.update_child_props_length_stream[start_index + i];
                 for (var p = 0; p < props_cnt; p++) {
@@ -4295,7 +4294,7 @@ var Timeline = (function () {
                                 for (var m = 0; m < mask_length; m++) {
                                     mask = masks[m] = sourceMovieClip.getPotentialChildInstance(this.properties_stream_int[value_start_index++] - 1);
                                     mask.mouseEnabled = false;
-                                    if (mask.isAsset(MovieClip))
+                                    if (mask.isAsset(DisplayObjectContainer))
                                         mask.mouseChildren = false;
                                 }
                                 target._iMasks = masks;
@@ -4350,7 +4349,7 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/entities/MovieClip":"awayjs-display/lib/entities/MovieClip"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");

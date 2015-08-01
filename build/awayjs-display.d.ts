@@ -86,6 +86,8 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
 	    adaptee: DisplayObject;
+	    isBlockedByScript(): boolean;
+	    freeFromScript(): void;
 	    clone(newAdaptee: DisplayObject): IDisplayObjectAdapter;
 	}
 	export = IDisplayObjectAdapter;
@@ -97,8 +99,6 @@ declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IMovieClipAdapter extends IDisplayObjectAdapter {
 	    evalScript(str: string): Function;
-	    isBlockedByScript(): boolean;
-	    freeFromScript(): void;
 	    registerScriptObject(child: DisplayObject): void;
 	    unregisterScriptObject(child: DisplayObject): void;
 	}
