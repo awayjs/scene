@@ -2482,7 +2482,7 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    add_framescript(value: string, keyframe_index: number): void;
 	    private regexIndexOf(str, regex, startpos);
 	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number): void;
-	    numFrames(): number;
+	    numFrames: number;
 	    getPotentialChildPrototype(id: number): DisplayObject;
 	    getKeyframeIndexForFrameIndex(frame_index: number): number;
 	    getPotentialChilds(): Array<DisplayObject>;
@@ -5278,23 +5278,6 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	
 }
 
-declare module "awayjs-display/lib/draw/IGraphicsData" {
-	/**
-	 * This interface is used to define objects that can be used as parameters in the
-	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
-	 * the implementor classes of this interface to create and manage drawing property
-	 * data, and to reuse the same data for different instances. Then, use the methods of
-	 * the Graphics class to render the drawing objects.
-	 *
-	 * @see away.base.Graphics.drawGraphicsData()
-	 * @see away.base.Graphics.readGraphicsData()
-	 */
-	interface IGraphicsData {
-	}
-	export = IGraphicsData;
-	
-}
-
 declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
 	/**
 	 * The GraphicsPathWinding class provides values for the
@@ -5311,6 +5294,23 @@ declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
 	    static NON_ZERO: string;
 	}
 	export = GraphicsPathWinding;
+	
+}
+
+declare module "awayjs-display/lib/draw/IGraphicsData" {
+	/**
+	 * This interface is used to define objects that can be used as parameters in the
+	 * <code>away.base.Graphics</code> methods, including fills, strokes, and paths. Use
+	 * the implementor classes of this interface to create and manage drawing property
+	 * data, and to reuse the same data for different instances. Then, use the methods of
+	 * the Graphics class to render the drawing objects.
+	 *
+	 * @see away.base.Graphics.drawGraphicsData()
+	 * @see away.base.Graphics.readGraphicsData()
+	 */
+	interface IGraphicsData {
+	}
+	export = IGraphicsData;
 	
 }
 
@@ -6241,7 +6241,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	     * setter typically managed by factory
 	     */
 	    adapter: IMovieClipAdapter;
-	    constructor();
+	    constructor(timeline?: Timeline);
 	    isInit: boolean;
 	    timeline: Timeline;
 	    loop: boolean;
@@ -7884,10 +7884,11 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 }
 
 declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
+	import Timeline = require("awayjs-display/lib/base/Timeline");
 	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
 	import TextField = require("awayjs-display/lib/entities/TextField");
 	interface ITimelineSceneGraphFactory {
-	    createMovieClip(): MovieClip;
+	    createMovieClip(timelime: Timeline): MovieClip;
 	    createTextField(): TextField;
 	}
 	export = ITimelineSceneGraphFactory;

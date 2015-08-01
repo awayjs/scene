@@ -4035,9 +4035,13 @@ var Timeline = (function () {
             target_mc.addScriptForExecution(this._framescripts[keyframe_idx]);
         }
     };
-    Timeline.prototype.numFrames = function () {
-        return this.keyframe_indices.length;
-    };
+    Object.defineProperty(Timeline.prototype, "numFrames", {
+        get: function () {
+            return this.keyframe_indices.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Timeline.prototype.getPotentialChildPrototype = function (id) {
         return this._potentialPrototypes[id];
     };
@@ -4168,7 +4172,7 @@ var Timeline = (function () {
         for (var key in target_childs_dic) {
             child = target_childs_dic[key];
             if (child) {
-                target_mc.addChildAtDepth(child, key);
+                target_mc.addChildAtDepth(child, parseInt(key));
             }
         }
         //  pass2: apply update commands for objects on stage (only if they are not blocked by script)
@@ -10766,11 +10770,13 @@ var __extends = this.__extends || function (d, b) {
 var Event = require("awayjs-core/lib/events/Event");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var MouseEvent = require("awayjs-display/lib/events/MouseEvent");
+var Timeline = require("awayjs-display/lib/base/Timeline");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 var MovieClip = (function (_super) {
     __extends(MovieClip, _super);
-    function MovieClip() {
+    function MovieClip(timeline) {
         var _this = this;
+        if (timeline === void 0) { timeline = null; }
         _super.call(this);
         this._loop = true;
         this._potentialInstances = [];
@@ -10787,6 +10793,7 @@ var MovieClip = (function (_super) {
         this._onMouseOut = function (event) { return _this.currentFrameIndex = 0; };
         this._onMouseDown = function (event) { return _this.currentFrameIndex = 2; };
         this._onMouseUp = function (event) { return _this.currentFrameIndex = _this.currentFrameIndex == 0 ? 0 : 1; };
+        this._timeline = timeline || new Timeline();
     }
     Object.defineProperty(MovieClip.prototype, "adapter", {
         // private _framescripts_to_execute:Array<Function>;
@@ -10819,11 +10826,6 @@ var MovieClip = (function (_super) {
         },
         set: function (value) {
             this._timeline = value;
-            var i = 0;
-            var potential_child_length = value.getPotentialChilds().length;
-            for (i = 0; i < potential_child_length; i++) {
-                this._potentialInstances[i] = null;
-            }
         },
         enumerable: true,
         configurable: true
@@ -10840,14 +10842,14 @@ var MovieClip = (function (_super) {
     });
     Object.defineProperty(MovieClip.prototype, "numFrames", {
         get: function () {
-            return this.timeline.numFrames();
+            return this._timeline.numFrames;
         },
         enumerable: true,
         configurable: true
     });
     MovieClip.prototype.jumpToLabel = function (label) {
         // the timeline.jumpTolabel will set currentFrameIndex
-        this.timeline.jumpToLabel(this, label);
+        this._timeline.jumpToLabel(this, label);
     };
     Object.defineProperty(MovieClip.prototype, "currentFrameIndex", {
         get: function () {
@@ -10857,15 +10859,15 @@ var MovieClip = (function (_super) {
         * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
          */
         set: function (value) {
-            if (this._timeline) {
+            if (this._timeline.numFrames) {
                 value = Math.floor(value);
                 if (value < 0)
                     value = 0;
-                else if (value >= this.timeline.numFrames())
-                    value = this.timeline.numFrames() - 1;
+                else if (value >= this._timeline.numFrames)
+                    value = this._timeline.numFrames - 1;
                 this._skipAdvance = true;
                 //this._time = 0;
-                this.timeline.gotoFrame(this, value);
+                this._timeline.gotoFrame(this, value);
                 this._currentFrameIndex = value;
             }
         },
@@ -10908,7 +10910,8 @@ var MovieClip = (function (_super) {
         */
         if (this.parent != null) {
             this._skipAdvance = true;
-            this.timeline.gotoFrame(this, 0);
+            if (this._timeline.numFrames)
+                this._timeline.gotoFrame(this, 0);
             this._currentFrameIndex = 0;
         }
         // i was thinking we might need to reset all children, but it makes stuff worse
@@ -10997,7 +11000,7 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.getPotentialChildInstance = function (id) {
         if (!this._potentialInstances[id]) {
-            this._potentialInstances[id] = this.timeline.getPotentialChildInstance(id);
+            this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
         }
         return this._potentialInstances[id];
     };
@@ -11018,8 +11021,7 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.clone = function (newInstance) {
         if (newInstance === void 0) { newInstance = null; }
-        newInstance = _super.prototype.clone.call(this, newInstance || new MovieClip());
-        newInstance.timeline = this._timeline;
+        newInstance = _super.prototype.clone.call(this, newInstance || new MovieClip(this._timeline));
         newInstance._fps = this._fps;
         newInstance._loop = this._loop;
         return newInstance;
@@ -11032,14 +11034,14 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }
-        if (this.timeline) {
+        if (this._timeline.numFrames) {
             var i;
             var oldFrameIndex = this._currentFrameIndex;
             var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
-            if (advance && oldFrameIndex == this.timeline.numFrames() - 1 && !this._loop) {
+            if (advance && oldFrameIndex == this._timeline.numFrames - 1 && !this._loop) {
                 advance = false;
             }
-            if (advance && oldFrameIndex == 0 && this.timeline.numFrames() == 1) {
+            if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
                 //console.log("one frame clip");
                 this._currentFrameIndex = 0;
                 advance = false;
@@ -11047,13 +11049,13 @@ var MovieClip = (function (_super) {
             if (advance) {
                 //console.log("advance");
                 ++this._currentFrameIndex;
-                if (this._currentFrameIndex == this.timeline.numFrames()) {
+                if (this._currentFrameIndex == this._timeline.numFrames) {
                     // looping - jump to first frame.
                     this.currentFrameIndex = 0;
                 }
                 else if (oldFrameIndex != this._currentFrameIndex) {
                     // not looping - construct next frame
-                    this.timeline.constructNextFrame(this);
+                    this._timeline.constructNextFrame(this);
                 }
             }
             if (!skipChildren)
@@ -11097,7 +11099,7 @@ var MovieClip = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = MovieClip;
 
-},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/base/Timeline":"awayjs-display/lib/base/Timeline","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
