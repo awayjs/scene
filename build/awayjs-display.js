@@ -4109,7 +4109,6 @@ var Timeline = (function () {
             this.constructNextFrame(target_mc, false);
             return;
         }
-        console.log("gotoframe frame mc name = " + target_mc.name + "   " + value);
         while (i--) {
             child = target_mc.getChildAt(i);
             if (jump_gap) {
@@ -4193,7 +4192,7 @@ var Timeline = (function () {
         if ((queueScript) && (this.keyframe_firstframes[new_keyFrameIndex] == frameIndex)) {
             this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
         }
-        console.log("next frame mc name = " + target_mc.name + "    " + frameIndex);
+        //console.log("next frame mc name = "+target_mc.name+ "    "+frameIndex);
         if (constructed_keyFrameIndex != new_keyFrameIndex) {
             target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
             var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
@@ -4306,7 +4305,6 @@ var Timeline = (function () {
                             if (doit) {
                                 target.name = this.properties_stream_strings[value_start_index];
                                 sourceMovieClip.adapter.registerScriptObject(target);
-                                console.log("register name = " + target.name);
                             }
                             break;
                         case 5:
@@ -4314,7 +4312,6 @@ var Timeline = (function () {
                                 target.name = this.properties_stream_strings[value_start_index];
                                 sourceMovieClip.adapter.registerScriptObject(target);
                                 target.addButtonListeners();
-                                console.log("register button = " + target.name);
                             }
                             break;
                         case 6:

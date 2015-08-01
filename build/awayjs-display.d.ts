@@ -4390,35 +4390,6 @@ declare module "awayjs-display/lib/controllers/HoverController" {
 	
 }
 
-declare module "awayjs-display/lib/draw/CapsStyle" {
-	/**
-	 * The CapsStyle class is an enumeration of constant values that specify the
-	 * caps style to use in drawing lines. The constants are provided for use as
-	 * values in the <code>caps</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
-	 * following three types of caps:
-	 */
-	class CapsStyle {
-	    /**
-	     * Used to specify round caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	    /**
-	     * Used to specify no caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static NONE: string;
-	    /**
-	     * Used to specify square caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static SQUARE: string;
-	}
-	export = CapsStyle;
-	
-}
-
 declare module "awayjs-display/lib/controllers/LookAtController" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -4479,6 +4450,35 @@ declare module "awayjs-display/lib/controllers/SpringController" {
 	
 }
 
+declare module "awayjs-display/lib/draw/CapsStyle" {
+	/**
+	 * The CapsStyle class is an enumeration of constant values that specify the
+	 * caps style to use in drawing lines. The constants are provided for use as
+	 * values in the <code>caps</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
+	 * following three types of caps:
+	 */
+	class CapsStyle {
+	    /**
+	     * Used to specify round caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	    /**
+	     * Used to specify no caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static NONE: string;
+	    /**
+	     * Used to specify square caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static SQUARE: string;
+	}
+	export = CapsStyle;
+	
+}
+
 declare module "awayjs-display/lib/draw/GradientType" {
 	/**
 	 * The GradientType class provides values for the <code>type</code> parameter
@@ -4497,25 +4497,6 @@ declare module "awayjs-display/lib/draw/GradientType" {
 	    static RADIAL: string;
 	}
 	export = GradientType;
-	
-}
-
-declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
-	/**
-	 * The GraphicsPathWinding class provides values for the
-	 * <code>flash.display.GraphicsPath.winding</code> property and the
-	 * <code>flash.display.Graphics.drawPath()</code> method to determine the
-	 * direction to draw a path. A clockwise path is positively wound, and a
-	 * counter-clockwise path is negatively wound:
-	 *
-	 * <p> When paths intersect or overlap, the winding direction determines the
-	 * rules for filling the areas created by the intersection or overlap:</p>
-	 */
-	class GraphicsPathWinding {
-	    static EVEN_ODD: string;
-	    static NON_ZERO: string;
-	}
-	export = GraphicsPathWinding;
 	
 }
 
@@ -5295,6 +5276,25 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	    moveTo(x: number, y: number): void;
 	}
 	export = Graphics;
+	
+}
+
+declare module "awayjs-display/lib/draw/GraphicsPathWinding" {
+	/**
+	 * The GraphicsPathWinding class provides values for the
+	 * <code>flash.display.GraphicsPath.winding</code> property and the
+	 * <code>flash.display.Graphics.drawPath()</code> method to determine the
+	 * direction to draw a path. A clockwise path is positively wound, and a
+	 * counter-clockwise path is negatively wound:
+	 *
+	 * <p> When paths intersect or overlap, the winding direction determines the
+	 * rules for filling the areas created by the intersection or overlap:</p>
+	 */
+	class GraphicsPathWinding {
+	    static EVEN_ODD: string;
+	    static NON_ZERO: string;
+	}
+	export = GraphicsPathWinding;
 	
 }
 
@@ -8975,6 +8975,24 @@ declare module "awayjs-display/lib/partition/PointLightNode" {
 	
 }
 
+declare module "awayjs-display/lib/partition/SceneGraphNode" {
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import SceneGraphNodePool = require("awayjs-display/lib/pool/SceneGraphNodePool");
+	/**
+	 * Maintains scenegraph heirarchy when collecting nodes
+	 */
+	class SceneGraphNode extends NodeBase {
+	    private _container;
+	    private _pool;
+	    private _partition;
+	    constructor(pool: SceneGraphNodePool, container: DisplayObjectContainer, partition: Partition);
+	}
+	export = SceneGraphNode;
+	
+}
+
 declare module "awayjs-display/lib/partition/SkyboxNode" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
@@ -9523,24 +9541,6 @@ declare module "awayjs-display/lib/pool/ITextureVO" {
 	    invalidate(): any;
 	}
 	export = ITextureVO;
-	
-}
-
-declare module "awayjs-display/lib/partition/SceneGraphNode" {
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import SceneGraphNodePool = require("awayjs-display/lib/pool/SceneGraphNodePool");
-	/**
-	 * Maintains scenegraph heirarchy when collecting nodes
-	 */
-	class SceneGraphNode extends NodeBase {
-	    private _container;
-	    private _pool;
-	    private _partition;
-	    constructor(pool: SceneGraphNodePool, container: DisplayObjectContainer, partition: Partition);
-	}
-	export = SceneGraphNode;
 	
 }
 
