@@ -132,6 +132,18 @@ class MovieClip extends DisplayObjectContainer
         this._constructedKeyFrameIndex = value;
     }
 
+    public exit_frame():void
+    {
+
+        this._skipAdvance = false;
+        var i:number=this.numChildren;
+        while (i--){
+            var child:DisplayObject=this.getChildAt(i);
+            if(child.isAsset(MovieClip)){
+                (<MovieClip>child).exit_frame();
+            }
+        }
+    }
     public reset():void
     {
         // time only is relevant for the root mc, as it is the only one that executes the update function
@@ -177,6 +189,7 @@ class MovieClip extends DisplayObjectContainer
             else if (value >= this._timeline.numFrames)
                 value = this._timeline.numFrames - 1;
 
+            // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
             this._skipAdvance = true;
             //this._time = 0;
 
@@ -265,6 +278,7 @@ class MovieClip extends DisplayObjectContainer
             FrameScriptManager.execute_queue();
             //console.log("update "+this._currentFrameIndex);
             //console.log("update key "+this._constructedKeyFrameIndex);
+            this.exit_frame();
         }
     }
 

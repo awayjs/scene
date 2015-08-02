@@ -6250,6 +6250,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    jumpToLabel(label: string): void;
 	    currentFrameIndex: number;
 	    constructedKeyFrameIndex: number;
+	    exit_frame(): void;
 	    reset(): void;
 	    set_currentFrameIndex(value: number): void;
 	    addButtonListeners(): void;

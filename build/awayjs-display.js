@@ -4082,12 +4082,12 @@ var Timeline = (function () {
         if (current_keyframe_idx + 1 == target_keyframe_idx) {
             // target_keyframe_idx is the next keyframe. we can just use constructnext for this
             target_mc.set_currentFrameIndex(value);
-            this.constructNextFrame(target_mc);
+            this.constructNextFrame(target_mc, true, true);
             return;
         }
         if (firstframe == value) {
             //frame changed. and firstframe of keyframe. execute framescript if available
-            this.add_script_for_postcontruct(target_mc, target_keyframe_idx);
+            this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         }
         if (current_keyframe_idx == target_keyframe_idx) {
             // already constructed - exit
@@ -10876,6 +10876,7 @@ var MovieClip = (function (_super) {
                     value = 0;
                 else if (value >= this._timeline.numFrames)
                     value = this._timeline.numFrames - 1;
+                // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
                 this._skipAdvance = true;
                 //this._time = 0;
                 this._timeline.gotoFrame(this, value);
@@ -10895,6 +10896,16 @@ var MovieClip = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    MovieClip.prototype.exit_frame = function () {
+        this._skipAdvance = false;
+        var i = this.numChildren;
+        while (i--) {
+            var child = this.getChildAt(i);
+            if (child.isAsset(MovieClip)) {
+                child.exit_frame();
+            }
+        }
+    };
     MovieClip.prototype.reset = function () {
         // time only is relevant for the root mc, as it is the only one that executes the update function
         this._time = 0;
@@ -10987,6 +10998,9 @@ var MovieClip = (function (_super) {
             this.dispatchEvent(this._enterFrame);
             // after we executed the onEnter, we might have some script that needs executing
             FrameScriptManager.execute_queue();
+            //console.log("update "+this._currentFrameIndex);
+            //console.log("update key "+this._constructedKeyFrameIndex);
+            this.exit_frame();
         }
     };
     MovieClip.prototype.getPotentialChildInstance = function (id) {
