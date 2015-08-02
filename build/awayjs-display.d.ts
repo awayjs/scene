@@ -1890,52 +1890,6 @@ declare module "awayjs-display/lib/base/ISubMeshClass" {
 	
 }
 
-declare module "awayjs-display/lib/base/LightBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	class LightBase extends DisplayObjectContainer {
-	    static assetType: string;
-	    private _color;
-	    private _colorR;
-	    private _colorG;
-	    private _colorB;
-	    private _ambientColor;
-	    private _ambient;
-	    _iAmbientR: number;
-	    _iAmbientG: number;
-	    _iAmbientB: number;
-	    private _specular;
-	    _iSpecularR: number;
-	    _iSpecularG: number;
-	    _iSpecularB: number;
-	    private _diffuse;
-	    _iDiffuseR: number;
-	    _iDiffuseG: number;
-	    _iDiffuseB: number;
-	    private _castsShadows;
-	    private _shadowMapper;
-	    constructor();
-	    castsShadows: boolean;
-	    pCreateShadowMapper(): ShadowMapperBase;
-	    specular: number;
-	    diffuse: number;
-	    color: number;
-	    ambient: number;
-	    ambientColor: number;
-	    private updateAmbient();
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    assetType: string;
-	    private updateSpecular();
-	    private updateDiffuse();
-	    shadowMapper: ShadowMapperBase;
-	}
-	export = LightBase;
-	
-}
-
 declare module "awayjs-display/lib/base/LineSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
@@ -2014,47 +1968,49 @@ declare module "awayjs-display/lib/base/LineSubGeometry" {
 	
 }
 
-declare module "awayjs-display/lib/base/LineSubMesh" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * LineSubMesh wraps a LineSubGeometry as a scene graph instantiation. A LineSubMesh is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.LineSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.LineSubMesh
-	 */
-	class LineSubMesh extends SubMeshBase implements ISubMesh {
+declare module "awayjs-display/lib/base/LightBase" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	class LightBase extends DisplayObjectContainer {
 	    static assetType: string;
-	    static assetClass: IAssetClass;
-	    private _subGeometry;
-	    /**
-	     *
-	     */
+	    private _color;
+	    private _colorR;
+	    private _colorG;
+	    private _colorB;
+	    private _ambientColor;
+	    private _ambient;
+	    _iAmbientR: number;
+	    _iAmbientG: number;
+	    _iAmbientB: number;
+	    private _specular;
+	    _iSpecularR: number;
+	    _iSpecularG: number;
+	    _iSpecularB: number;
+	    private _diffuse;
+	    _iDiffuseR: number;
+	    _iDiffuseG: number;
+	    _iDiffuseB: number;
+	    private _castsShadows;
+	    private _shadowMapper;
+	    constructor();
+	    castsShadows: boolean;
+	    pCreateShadowMapper(): ShadowMapperBase;
+	    specular: number;
+	    diffuse: number;
+	    color: number;
+	    ambient: number;
+	    ambientColor: number;
+	    private updateAmbient();
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
 	    assetType: string;
-	    /**
-	     * The LineSubGeometry object which provides the geometry data for this LineSubMesh.
-	     */
-	    subGeometry: LineSubGeometry;
-	    /**
-	     * Creates a new LineSubMesh object
-	     * @param subGeometry The LineSubGeometry object which provides the geometry data for this LineSubMesh.
-	     * @param parentMesh The Mesh object to which this LineSubMesh belongs.
-	     * @param material An optional material used to render this LineSubMesh.
-	     */
-	    constructor(subGeometry: LineSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
+	    private updateSpecular();
+	    private updateDiffuse();
+	    shadowMapper: ShadowMapperBase;
 	}
-	export = LineSubMesh;
+	export = LightBase;
 	
 }
 
@@ -2268,22 +2224,47 @@ declare module "awayjs-display/lib/base/LoaderInfo" {
 	
 }
 
-declare module "awayjs-display/lib/base/OrientationMode" {
-	class OrientationMode {
+declare module "awayjs-display/lib/base/LineSubMesh" {
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
+	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * LineSubMesh wraps a LineSubGeometry as a scene graph instantiation. A LineSubMesh is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.LineSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.LineSubMesh
+	 */
+	class LineSubMesh extends SubMeshBase implements ISubMesh {
+	    static assetType: string;
+	    static assetClass: IAssetClass;
+	    private _subGeometry;
 	    /**
 	     *
 	     */
-	    static DEFAULT: string;
+	    assetType: string;
+	    /**
+	     * The LineSubGeometry object which provides the geometry data for this LineSubMesh.
+	     */
+	    subGeometry: LineSubGeometry;
+	    /**
+	     * Creates a new LineSubMesh object
+	     * @param subGeometry The LineSubGeometry object which provides the geometry data for this LineSubMesh.
+	     * @param parentMesh The Mesh object to which this LineSubMesh belongs.
+	     * @param material An optional material used to render this LineSubMesh.
+	     */
+	    constructor(subGeometry: LineSubGeometry, parentMesh: Mesh, material?: MaterialBase);
 	    /**
 	     *
 	     */
-	    static CAMERA_PLANE: string;
-	    /**
-	     *
-	     */
-	    static CAMERA_POSITION: string;
+	    dispose(): void;
 	}
-	export = OrientationMode;
+	export = LineSubMesh;
 	
 }
 
@@ -2375,6 +2356,78 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	
 }
 
+declare module "awayjs-display/lib/base/OrientationMode" {
+	class OrientationMode {
+	    /**
+	     *
+	     */
+	    static DEFAULT: string;
+	    /**
+	     *
+	     */
+	    static CAMERA_PLANE: string;
+	    /**
+	     *
+	     */
+	    static CAMERA_POSITION: string;
+	}
+	export = OrientationMode;
+	
+}
+
+declare module "awayjs-display/lib/base/Timeline" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class Timeline {
+	    _labels: Object;
+	    _framescripts: Object;
+	    _framescripts_translated: Object;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_f32_mtx_all: ArrayBufferView;
+	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
+	    properties_stream_f32_mtx_pos: ArrayBufferView;
+	    properties_stream_f32_ct: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
+	    private _potentialPrototypes;
+	    numKeyFrames: number;
+	    constructor();
+	    init(): void;
+	    get_framescript(keyframe_index: number): string;
+	    add_framescript(value: string, keyframe_index: number): void;
+	    private regexIndexOf(str, regex, startpos);
+	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
+	    numFrames: number;
+	    getPotentialChildPrototype(id: number): DisplayObject;
+	    getKeyframeIndexForFrameIndex(frame_index: number): number;
+	    getPotentialChilds(): Array<DisplayObject>;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    registerPotentialChild(prototype: DisplayObject): void;
+	    jumpToLabel(target_mc: MovieClip, label: string): void;
+	    gotoFrame(target_mc: MovieClip, value: number): void;
+	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	}
+	export = Timeline;
+	
+}
+
 declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
@@ -2445,59 +2498,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    _iGetExplicitMaterial(): MaterialBase;
 	}
 	export = SubMeshBase;
-	
-}
-
-declare module "awayjs-display/lib/base/Timeline" {
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class Timeline {
-	    _labels: Object;
-	    _framescripts: Object;
-	    _framescripts_translated: Object;
-	    keyframe_indices: Array<number>;
-	    keyframe_firstframes: Array<number>;
-	    keyframe_constructframes: Array<number>;
-	    keyframe_durations: ArrayBufferView;
-	    frame_command_indices: ArrayBufferView;
-	    frame_recipe: ArrayBufferView;
-	    command_index_stream: ArrayBufferView;
-	    command_length_stream: ArrayBufferView;
-	    add_child_stream: ArrayBufferView;
-	    remove_child_stream: ArrayBufferView;
-	    update_child_stream: ArrayBufferView;
-	    update_child_props_length_stream: ArrayBufferView;
-	    update_child_props_indices_stream: ArrayBufferView;
-	    property_index_stream: ArrayBufferView;
-	    property_type_stream: ArrayBufferView;
-	    properties_stream_int: ArrayBufferView;
-	    properties_stream_f32_mtx_all: ArrayBufferView;
-	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
-	    properties_stream_f32_mtx_pos: ArrayBufferView;
-	    properties_stream_f32_ct: ArrayBufferView;
-	    properties_stream_strings: Array<string>;
-	    private _potentialPrototypes;
-	    numKeyFrames: number;
-	    constructor();
-	    init(): void;
-	    get_framescript(keyframe_index: number): string;
-	    add_framescript(value: string, keyframe_index: number): void;
-	    private regexIndexOf(str, regex, startpos);
-	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
-	    numFrames: number;
-	    getPotentialChildPrototype(id: number): DisplayObject;
-	    getKeyframeIndexForFrameIndex(frame_index: number): number;
-	    getPotentialChilds(): Array<DisplayObject>;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    registerPotentialChild(prototype: DisplayObject): void;
-	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number): void;
-	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
-	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	}
-	export = Timeline;
 	
 }
 
@@ -9632,6 +9632,31 @@ declare module "awayjs-display/lib/prefabs/PrefabBase" {
 	
 }
 
+declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
+	/**
+	 * A UV Cone primitive mesh.
+	 */
+	class PrimitiveConePrefab extends PrimitiveCylinderPrefab implements IAsset {
+	    /**
+	     * The radius of the bottom end of the cone.
+	     */
+	    radius: number;
+	    /**
+	     * Creates a new Cone object.
+	     * @param radius The radius of the bottom end of the cone
+	     * @param height The height of the cone
+	     * @param segmentsW Defines the number of horizontal segments that make up the cone. Defaults to 16.
+	     * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
+	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
+	}
+	export = PrimitiveConePrefab;
+	
+}
+
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
@@ -9685,31 +9710,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveCapsulePrefab;
-	
-}
-
-declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
-	/**
-	 * A UV Cone primitive mesh.
-	 */
-	class PrimitiveConePrefab extends PrimitiveCylinderPrefab implements IAsset {
-	    /**
-	     * The radius of the bottom end of the cone.
-	     */
-	    radius: number;
-	    /**
-	     * Creates a new Cone object.
-	     * @param radius The radius of the bottom end of the cone
-	     * @param height The height of the cone
-	     * @param segmentsW Defines the number of horizontal segments that make up the cone. Defaults to 16.
-	     * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
-	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
-	}
-	export = PrimitiveConePrefab;
 	
 }
 
