@@ -403,7 +403,6 @@ class Timeline
 				// check if the child is active + not blocked by script
 				if (target.adapter && target.adapter.isBlockedByScript())
 					doit = false;
-
 				props_start_idx = this.update_child_props_indices_stream[start_index + i];
 				props_cnt = this.update_child_props_length_stream[start_index + i];
 
@@ -475,7 +474,9 @@ class Timeline
 							break;
 
 						case 6://visible
-							if (doit) {
+
+							if (target.adapter && target.adapter.isBlockedByScript()){}
+							else{
 								target.visible = Boolean(value_start_index);
 							}
 							break;

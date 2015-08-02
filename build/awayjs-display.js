@@ -4319,7 +4319,9 @@ var Timeline = (function () {
                             target.addButtonListeners();
                             break;
                         case 6:
-                            if (doit) {
+                            if (target.adapter && target.adapter.isBlockedByScript()) {
+                            }
+                            else {
                                 target.visible = Boolean(value_start_index);
                             }
                             break;

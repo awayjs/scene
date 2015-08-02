@@ -1693,22 +1693,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	
 }
 
-declare module "awayjs-display/lib/base/IBitmapDrawable" {
-	/**
-	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
-	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
-	 * objects are of type BitmapData or DisplayObject.
-	 *
-	 * @see away.base.BitmapData#draw()
-	 * @see away.base.BitmapData
-	 * @see away.base.DisplayObject
-	 */
-	interface IBitmapDrawable {
-	}
-	export = IBitmapDrawable;
-	
-}
-
 declare module "awayjs-display/lib/base/Geometry" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -1774,6 +1758,22 @@ declare module "awayjs-display/lib/base/Geometry" {
 	    iInvalidateBounds(subGeom: SubGeometryBase): void;
 	}
 	export = Geometry;
+	
+}
+
+declare module "awayjs-display/lib/base/IBitmapDrawable" {
+	/**
+	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
+	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
+	 * objects are of type BitmapData or DisplayObject.
+	 *
+	 * @see away.base.BitmapData#draw()
+	 * @see away.base.BitmapData
+	 * @see away.base.DisplayObject
+	 */
+	interface IBitmapDrawable {
+	}
+	export = IBitmapDrawable;
 	
 }
 
@@ -4199,6 +4199,23 @@ declare module "awayjs-display/lib/controllers/ControllerBase" {
 	
 }
 
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
+	
+}
+
 declare module "awayjs-display/lib/controllers/FirstPersonController" {
 	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -4272,23 +4289,6 @@ declare module "awayjs-display/lib/controllers/FirstPersonController" {
 	    incrementStrafe(val: number): void;
 	}
 	export = FirstPersonController;
-	
-}
-
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
 	
 }
 
@@ -4409,6 +4409,35 @@ declare module "awayjs-display/lib/controllers/LookAtController" {
 	
 }
 
+declare module "awayjs-display/lib/draw/CapsStyle" {
+	/**
+	 * The CapsStyle class is an enumeration of constant values that specify the
+	 * caps style to use in drawing lines. The constants are provided for use as
+	 * values in the <code>caps</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
+	 * following three types of caps:
+	 */
+	class CapsStyle {
+	    /**
+	     * Used to specify round caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	    /**
+	     * Used to specify no caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static NONE: string;
+	    /**
+	     * Used to specify square caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static SQUARE: string;
+	}
+	export = CapsStyle;
+	
+}
+
 declare module "awayjs-display/lib/controllers/SpringController" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -4447,35 +4476,6 @@ declare module "awayjs-display/lib/controllers/SpringController" {
 	    update(interpolate?: boolean): void;
 	}
 	export = SpringController;
-	
-}
-
-declare module "awayjs-display/lib/draw/CapsStyle" {
-	/**
-	 * The CapsStyle class is an enumeration of constant values that specify the
-	 * caps style to use in drawing lines. The constants are provided for use as
-	 * values in the <code>caps</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
-	 * following three types of caps:
-	 */
-	class CapsStyle {
-	    /**
-	     * Used to specify round caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	    /**
-	     * Used to specify no caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static NONE: string;
-	    /**
-	     * Used to specify square caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static SQUARE: string;
-	}
-	export = CapsStyle;
 	
 }
 
@@ -9277,6 +9277,25 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	
 }
 
+declare module "awayjs-display/lib/pool/EntityListItem" {
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * @class away.pool.EntityListItem
+	 */
+	class EntityListItem {
+	    /**
+	     *
+	     */
+	    entity: IEntity;
+	    /**
+	     *
+	     */
+	    next: EntityListItem;
+	}
+	export = EntityListItem;
+	
+}
+
 declare module "awayjs-display/lib/pick/RaycastPicker" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import Scene = require("awayjs-display/lib/containers/Scene");
@@ -9325,25 +9344,6 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	    dispose(): void;
 	}
 	export = RaycastPicker;
-	
-}
-
-declare module "awayjs-display/lib/pool/EntityListItem" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * @class away.pool.EntityListItem
-	 */
-	class EntityListItem {
-	    /**
-	     *
-	     */
-	    entity: IEntity;
-	    /**
-	     *
-	     */
-	    next: EntityListItem;
-	}
-	export = EntityListItem;
 	
 }
 
