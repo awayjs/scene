@@ -10887,6 +10887,7 @@ var MovieClip = (function (_super) {
     });
     MovieClip.prototype.reset = function () {
         if (this.adapter) {
+            this.adapter.freeFromScript();
         }
         this._isPlaying = true;
         //this._time = 0;

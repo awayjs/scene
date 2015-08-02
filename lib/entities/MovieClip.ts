@@ -135,7 +135,7 @@ class MovieClip extends DisplayObjectContainer
     public reset():void
     {
         if(this.adapter){
-            //this.adapter.freeFromScript();
+            this.adapter.freeFromScript();
         }
 
         this._isPlaying = true;
