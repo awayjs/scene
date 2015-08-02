@@ -13014,6 +13014,7 @@ var FrameScriptManager = (function () {
     function FrameScriptManager() {
     }
     FrameScriptManager.add_script_to_queue = function (mc, script) {
+        // whenever we queue scripts of new objects, we first inject the lists of pass2
         var i = this._queued_mcs_pass2.length;
         while (i--) {
             this._queued_mcs.push(this._queued_mcs_pass2[i]);
