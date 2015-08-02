@@ -475,7 +475,7 @@ class Timeline
 
 						case 6://visible
 
-							if (target.adapter && target.adapter.isBlockedByScript()){}
+							if (target.adapter && target.adapter.isVisibilityByScript()){}
 							else{
 								target.visible = Boolean(value_start_index);
 							}

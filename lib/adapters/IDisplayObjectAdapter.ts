@@ -3,9 +3,11 @@ import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayO
 
 interface IDisplayObjectAdapter
 {
-	adaptee:DisplayObject
+	adaptee:DisplayObject;
 
 	isBlockedByScript():boolean;
+
+	isVisibilityByScript():boolean;
 
 	freeFromScript():void;
 
