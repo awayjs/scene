@@ -323,6 +323,8 @@ class MovieClip extends DisplayObjectContainer
     public advanceFrame(skipChildren:boolean = false)
     {
         if(this._timeline.numFrames) {
+            if (!skipChildren)
+                this.advanceChildren();
             var i;
             var oldFrameIndex = this._currentFrameIndex;
             var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
@@ -346,8 +348,6 @@ class MovieClip extends DisplayObjectContainer
                     this._timeline.constructNextFrame(this);
                 }
             }
-            if (!skipChildren)
-                this.advanceChildren();
 
         }
         this._skipAdvance = false;
