@@ -236,7 +236,7 @@ class Timeline
 				target_mc.adapter.unregisterScriptObject(child);
 				target_mc.removeChild(child);
 			}
-			else{
+			else if (jump_forward){
 				// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
 				target_childs_dic[target_mc.getChildDepth(child)]=child;
 			}
