@@ -226,24 +226,6 @@ declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	
 }
 
-declare module "awayjs-display/lib/base/AlignmentMode" {
-	/**
-	 *
-	 */
-	class AlignmentMode {
-	    /**
-	     *
-	     */
-	    static REGISTRATION_POINT: string;
-	    /**
-	     *
-	     */
-	    static PIVOT_POINT: string;
-	}
-	export = AlignmentMode;
-	
-}
-
 declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
@@ -354,47 +336,21 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	
 }
 
-declare module "awayjs-display/lib/base/CurveSubMesh" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+declare module "awayjs-display/lib/base/AlignmentMode" {
 	/**
-	 * CurveSubMesh wraps a CurveSubGeometry as a scene graph instantiation. A CurveSubMesh is owned by a Mesh object.
 	 *
-	 *
-	 * @see away.base.CurveSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.CurveSubMesh
 	 */
-	class CurveSubMesh extends SubMeshBase implements ISubMesh {
-	    static assetType: string;
-	    static assetClass: IAssetClass;
-	    private _subGeometry;
+	class AlignmentMode {
 	    /**
 	     *
 	     */
-	    assetType: string;
-	    /**
-	     * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
-	     */
-	    subGeometry: CurveSubGeometry;
-	    /**
-	     * Creates a new CurveSubMesh object
-	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
-	     * @param parentMesh The Mesh object to which this CurveSubMesh belongs.
-	     * @param material An optional material used to render this CurveSubMesh.
-	     */
-	    constructor(subGeometry: CurveSubGeometry, parentMesh: Mesh, material?: MaterialBase);
+	    static REGISTRATION_POINT: string;
 	    /**
 	     *
 	     */
-	    dispose(): void;
+	    static PIVOT_POINT: string;
 	}
-	export = CurveSubMesh;
+	export = AlignmentMode;
 	
 }
 
@@ -1693,6 +1649,66 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	
 }
 
+declare module "awayjs-display/lib/base/CurveSubMesh" {
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
+	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * CurveSubMesh wraps a CurveSubGeometry as a scene graph instantiation. A CurveSubMesh is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.CurveSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.CurveSubMesh
+	 */
+	class CurveSubMesh extends SubMeshBase implements ISubMesh {
+	    static assetType: string;
+	    static assetClass: IAssetClass;
+	    private _subGeometry;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
+	     */
+	    subGeometry: CurveSubGeometry;
+	    /**
+	     * Creates a new CurveSubMesh object
+	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
+	     * @param parentMesh The Mesh object to which this CurveSubMesh belongs.
+	     * @param material An optional material used to render this CurveSubMesh.
+	     */
+	    constructor(subGeometry: CurveSubGeometry, parentMesh: Mesh, material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	}
+	export = CurveSubMesh;
+	
+}
+
+declare module "awayjs-display/lib/base/IBitmapDrawable" {
+	/**
+	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
+	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
+	 * objects are of type BitmapData or DisplayObject.
+	 *
+	 * @see away.base.BitmapData#draw()
+	 * @see away.base.BitmapData
+	 * @see away.base.DisplayObject
+	 */
+	interface IBitmapDrawable {
+	}
+	export = IBitmapDrawable;
+	
+}
+
 declare module "awayjs-display/lib/base/Geometry" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -1758,22 +1774,6 @@ declare module "awayjs-display/lib/base/Geometry" {
 	    iInvalidateBounds(subGeom: SubGeometryBase): void;
 	}
 	export = Geometry;
-	
-}
-
-declare module "awayjs-display/lib/base/IBitmapDrawable" {
-	/**
-	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
-	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
-	 * objects are of type BitmapData or DisplayObject.
-	 *
-	 * @see away.base.BitmapData#draw()
-	 * @see away.base.BitmapData
-	 * @see away.base.DisplayObject
-	 */
-	interface IBitmapDrawable {
-	}
-	export = IBitmapDrawable;
 	
 }
 
@@ -1844,29 +1844,6 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	
 }
 
-declare module "awayjs-display/lib/base/ISubMesh" {
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * ISubMesh is an interface for object SubMesh that is used to
-	 * apply a material to a SubGeometry class
-	 *
-	 * @class away.base.ISubMesh
-	 */
-	interface ISubMesh extends IRenderableOwner {
-	    subGeometry: SubGeometryBase;
-	    parentMesh: Mesh;
-	    material: MaterialBase;
-	    _iIndex: number;
-	    _iInvalidateRenderableGeometry(): any;
-	    _iGetExplicitMaterial(): MaterialBase;
-	}
-	export = ISubMesh;
-	
-}
-
 declare module "awayjs-display/lib/base/ISubMeshClass" {
 	import IWrapperClass = require("awayjs-core/lib/library/IWrapperClass");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
@@ -1889,49 +1866,26 @@ declare module "awayjs-display/lib/base/ISubMeshClass" {
 	
 }
 
-declare module "awayjs-display/lib/base/LightBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	class LightBase extends DisplayObjectContainer {
-	    static assetType: string;
-	    private _color;
-	    private _colorR;
-	    private _colorG;
-	    private _colorB;
-	    private _ambientColor;
-	    private _ambient;
-	    _iAmbientR: number;
-	    _iAmbientG: number;
-	    _iAmbientB: number;
-	    private _specular;
-	    _iSpecularR: number;
-	    _iSpecularG: number;
-	    _iSpecularB: number;
-	    private _diffuse;
-	    _iDiffuseR: number;
-	    _iDiffuseG: number;
-	    _iDiffuseB: number;
-	    private _castsShadows;
-	    private _shadowMapper;
-	    constructor();
-	    castsShadows: boolean;
-	    pCreateShadowMapper(): ShadowMapperBase;
-	    specular: number;
-	    diffuse: number;
-	    color: number;
-	    ambient: number;
-	    ambientColor: number;
-	    private updateAmbient();
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    assetType: string;
-	    private updateSpecular();
-	    private updateDiffuse();
-	    shadowMapper: ShadowMapperBase;
+declare module "awayjs-display/lib/base/ISubMesh" {
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	/**
+	 * ISubMesh is an interface for object SubMesh that is used to
+	 * apply a material to a SubGeometry class
+	 *
+	 * @class away.base.ISubMesh
+	 */
+	interface ISubMesh extends IRenderableOwner {
+	    subGeometry: SubGeometryBase;
+	    parentMesh: Mesh;
+	    material: MaterialBase;
+	    _iIndex: number;
+	    _iInvalidateRenderableGeometry(): any;
+	    _iGetExplicitMaterial(): MaterialBase;
 	}
-	export = LightBase;
+	export = ISubMesh;
 	
 }
 
@@ -2013,47 +1967,49 @@ declare module "awayjs-display/lib/base/LineSubGeometry" {
 	
 }
 
-declare module "awayjs-display/lib/base/LineSubMesh" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * LineSubMesh wraps a LineSubGeometry as a scene graph instantiation. A LineSubMesh is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.LineSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.LineSubMesh
-	 */
-	class LineSubMesh extends SubMeshBase implements ISubMesh {
+declare module "awayjs-display/lib/base/LightBase" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	class LightBase extends DisplayObjectContainer {
 	    static assetType: string;
-	    static assetClass: IAssetClass;
-	    private _subGeometry;
-	    /**
-	     *
-	     */
+	    private _color;
+	    private _colorR;
+	    private _colorG;
+	    private _colorB;
+	    private _ambientColor;
+	    private _ambient;
+	    _iAmbientR: number;
+	    _iAmbientG: number;
+	    _iAmbientB: number;
+	    private _specular;
+	    _iSpecularR: number;
+	    _iSpecularG: number;
+	    _iSpecularB: number;
+	    private _diffuse;
+	    _iDiffuseR: number;
+	    _iDiffuseG: number;
+	    _iDiffuseB: number;
+	    private _castsShadows;
+	    private _shadowMapper;
+	    constructor();
+	    castsShadows: boolean;
+	    pCreateShadowMapper(): ShadowMapperBase;
+	    specular: number;
+	    diffuse: number;
+	    color: number;
+	    ambient: number;
+	    ambientColor: number;
+	    private updateAmbient();
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
 	    assetType: string;
-	    /**
-	     * The LineSubGeometry object which provides the geometry data for this LineSubMesh.
-	     */
-	    subGeometry: LineSubGeometry;
-	    /**
-	     * Creates a new LineSubMesh object
-	     * @param subGeometry The LineSubGeometry object which provides the geometry data for this LineSubMesh.
-	     * @param parentMesh The Mesh object to which this LineSubMesh belongs.
-	     * @param material An optional material used to render this LineSubMesh.
-	     */
-	    constructor(subGeometry: LineSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
+	    private updateSpecular();
+	    private updateDiffuse();
+	    shadowMapper: ShadowMapperBase;
 	}
-	export = LineSubMesh;
+	export = LightBase;
 	
 }
 
@@ -2264,6 +2220,50 @@ declare module "awayjs-display/lib/base/LoaderInfo" {
 	    url: string;
 	}
 	export = LoaderInfo;
+	
+}
+
+declare module "awayjs-display/lib/base/LineSubMesh" {
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
+	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * LineSubMesh wraps a LineSubGeometry as a scene graph instantiation. A LineSubMesh is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.LineSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.LineSubMesh
+	 */
+	class LineSubMesh extends SubMeshBase implements ISubMesh {
+	    static assetType: string;
+	    static assetClass: IAssetClass;
+	    private _subGeometry;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The LineSubGeometry object which provides the geometry data for this LineSubMesh.
+	     */
+	    subGeometry: LineSubGeometry;
+	    /**
+	     * Creates a new LineSubMesh object
+	     * @param subGeometry The LineSubGeometry object which provides the geometry data for this LineSubMesh.
+	     * @param parentMesh The Mesh object to which this LineSubMesh belongs.
+	     * @param material An optional material used to render this LineSubMesh.
+	     */
+	    constructor(subGeometry: LineSubGeometry, parentMesh: Mesh, material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	}
+	export = LineSubMesh;
 	
 }
 
@@ -4199,23 +4199,6 @@ declare module "awayjs-display/lib/controllers/ControllerBase" {
 	
 }
 
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
-	
-}
-
 declare module "awayjs-display/lib/controllers/FirstPersonController" {
 	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -4289,6 +4272,23 @@ declare module "awayjs-display/lib/controllers/FirstPersonController" {
 	    incrementStrafe(val: number): void;
 	}
 	export = FirstPersonController;
+	
+}
+
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
 	
 }
 
@@ -4409,35 +4409,6 @@ declare module "awayjs-display/lib/controllers/LookAtController" {
 	
 }
 
-declare module "awayjs-display/lib/draw/CapsStyle" {
-	/**
-	 * The CapsStyle class is an enumeration of constant values that specify the
-	 * caps style to use in drawing lines. The constants are provided for use as
-	 * values in the <code>caps</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
-	 * following three types of caps:
-	 */
-	class CapsStyle {
-	    /**
-	     * Used to specify round caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	    /**
-	     * Used to specify no caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static NONE: string;
-	    /**
-	     * Used to specify square caps in the <code>caps</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static SQUARE: string;
-	}
-	export = CapsStyle;
-	
-}
-
 declare module "awayjs-display/lib/controllers/SpringController" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -4476,6 +4447,35 @@ declare module "awayjs-display/lib/controllers/SpringController" {
 	    update(interpolate?: boolean): void;
 	}
 	export = SpringController;
+	
+}
+
+declare module "awayjs-display/lib/draw/CapsStyle" {
+	/**
+	 * The CapsStyle class is an enumeration of constant values that specify the
+	 * caps style to use in drawing lines. The constants are provided for use as
+	 * values in the <code>caps</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
+	 * following three types of caps:
+	 */
+	class CapsStyle {
+	    /**
+	     * Used to specify round caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	    /**
+	     * Used to specify no caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static NONE: string;
+	    /**
+	     * Used to specify square caps in the <code>caps</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static SQUARE: string;
+	}
+	export = CapsStyle;
 	
 }
 
@@ -5947,88 +5947,6 @@ declare module "awayjs-display/lib/entities/LightProbe" {
 	
 }
 
-declare module "awayjs-display/lib/entities/LineSegment" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * A Line Segment primitive.
-	 */
-	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
-	    static assetType: string;
-	    private _animator;
-	    private _material;
-	    private _uvTransform;
-	    private _colorTransform;
-	    _startPosition: Vector3D;
-	    _endPosition: Vector3D;
-	    _halfThickness: number;
-	    /**
-	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    startPostion: Vector3D;
-	    startPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    endPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     *
-	     */
-	    thickness: number;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * Create a line segment
-	     *
-	     * @param startPosition Start position of the line segment
-	     * @param endPosition Ending position of the line segment
-	     * @param thickness Thickness of the line
-	     */
-	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
-	    dispose(): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    _pUpdateSphereBounds(): void;
-	    /**
-	     * @private
-	     */
-	    private notifyRenderableUpdate();
-	    _applyRenderer(renderer: IRenderer): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = LineSegment;
-	
-}
-
 declare module "awayjs-display/lib/entities/Mesh" {
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -6211,6 +6129,88 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
 	}
 	export = Mesh;
+	
+}
+
+declare module "awayjs-display/lib/entities/LineSegment" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * A Line Segment primitive.
+	 */
+	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
+	    static assetType: string;
+	    private _animator;
+	    private _material;
+	    private _uvTransform;
+	    private _colorTransform;
+	    _startPosition: Vector3D;
+	    _endPosition: Vector3D;
+	    _halfThickness: number;
+	    /**
+	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    startPostion: Vector3D;
+	    startPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    endPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    /**
+	     *
+	     */
+	    thickness: number;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     *
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * Create a line segment
+	     *
+	     * @param startPosition Start position of the line segment
+	     * @param endPosition Ending position of the line segment
+	     * @param thickness Thickness of the line
+	     */
+	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
+	    dispose(): void;
+	    /**
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    _pUpdateSphereBounds(): void;
+	    /**
+	     * @private
+	     */
+	    private notifyRenderableUpdate();
+	    _applyRenderer(renderer: IRenderer): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = LineSegment;
 	
 }
 
@@ -6463,6 +6463,15 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = Skybox;
+	
+}
+
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
 	
 }
 
@@ -7372,15 +7381,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	
 }
 
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
-	
-}
-
 declare module "awayjs-display/lib/events/CameraEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -7394,25 +7394,6 @@ declare module "awayjs-display/lib/events/CameraEvent" {
 	    camera: Camera;
 	}
 	export = CameraEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/DisplayObjectEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class DisplayObjectEvent extends Event {
-	    static VISIBLITY_UPDATED: string;
-	    static SCENETRANSFORM_CHANGED: string;
-	    static SCENE_CHANGED: string;
-	    static POSITION_CHANGED: string;
-	    static ROTATION_CHANGED: string;
-	    static SKEW_CHANGED: string;
-	    static SCALE_CHANGED: string;
-	    static GLOBAL_COLOR_TRANSFORM_CHANGED: string;
-	    object: DisplayObject;
-	    constructor(type: string, object: DisplayObject);
-	}
-	export = DisplayObjectEvent;
 	
 }
 
@@ -7456,6 +7437,25 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	    clone(): Event;
 	}
 	export = GeometryEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/DisplayObjectEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class DisplayObjectEvent extends Event {
+	    static VISIBLITY_UPDATED: string;
+	    static SCENETRANSFORM_CHANGED: string;
+	    static SCENE_CHANGED: string;
+	    static POSITION_CHANGED: string;
+	    static ROTATION_CHANGED: string;
+	    static SKEW_CHANGED: string;
+	    static SCALE_CHANGED: string;
+	    static GLOBAL_COLOR_TRANSFORM_CHANGED: string;
+	    object: DisplayObject;
+	    constructor(type: string, object: DisplayObject);
+	}
+	export = DisplayObjectEvent;
 	
 }
 
@@ -7759,128 +7759,6 @@ declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	    clone(): Event;
 	}
 	export = SubGeometryEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/TouchEvent" {
-	import Point = require("awayjs-core/lib/geom/Point");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Event = require("awayjs-core/lib/events/Event");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import View = require("awayjs-display/lib/containers/View");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	class TouchEvent extends Event {
-	    _iAllowedToPropagate: boolean;
-	    _iParentEvent: TouchEvent;
-	    /**
-	     *
-	     */
-	    static TOUCH_END: string;
-	    /**
-	     *
-	     */
-	    static TOUCH_BEGIN: string;
-	    /**
-	     *
-	     */
-	    static TOUCH_MOVE: string;
-	    /**
-	     *
-	     */
-	    static TOUCH_OUT: string;
-	    /**
-	     *
-	     */
-	    static TOUCH_OVER: string;
-	    /**
-	     * The horizontal coordinate at which the event occurred in view coordinates.
-	     */
-	    screenX: number;
-	    /**
-	     * The vertical coordinate at which the event occurred in view coordinates.
-	     */
-	    screenY: number;
-	    /**
-	     * The view object inside which the event took place.
-	     */
-	    view: View;
-	    /**
-	     * The 3d object inside which the event took place.
-	     */
-	    object: DisplayObject;
-	    /**
-	     * The renderable owner inside which the event took place.
-	     */
-	    renderableOwner: IRenderableOwner;
-	    /**
-	     * The material of the 3d element inside which the event took place.
-	     */
-	    material: MaterialBase;
-	    /**
-	     * The uv coordinate inside the draw primitive where the event took place.
-	     */
-	    uv: Point;
-	    /**
-	     * The index of the face where the event took place.
-	     */
-	    index: number;
-	    /**
-	     * The index of the subGeometry where the event took place.
-	     */
-	    subGeometryIndex: number;
-	    /**
-	     * The position in object space where the event took place
-	     */
-	    localPosition: Vector3D;
-	    /**
-	     * The normal in object space where the event took place
-	     */
-	    localNormal: Vector3D;
-	    /**
-	     * Indicates whether the Control key is active (true) or inactive (false).
-	     */
-	    ctrlKey: boolean;
-	    /**
-	     * Indicates whether the Alt key is active (true) or inactive (false).
-	     */
-	    altKey: boolean;
-	    /**
-	     * Indicates whether the Shift key is active (true) or inactive (false).
-	     */
-	    shiftKey: boolean;
-	    touchPointID: number;
-	    /**
-	     * Create a new TouchEvent object.
-	     * @param type The type of the TouchEvent.
-	     */
-	    constructor(type: string);
-	    /**
-	     * @inheritDoc
-	     */
-	    bubbles: boolean;
-	    /**
-	     * @inheritDoc
-	     */
-	    stopPropagation(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    stopImmediatePropagation(): void;
-	    /**
-	     * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
-	     */
-	    clone(): Event;
-	    /**
-	     * The position in scene space where the event took place
-	     */
-	    scenePosition: Vector3D;
-	    /**
-	     * The normal in scene space where the event took place
-	     */
-	    sceneNormal: Vector3D;
-	}
-	export = TouchEvent;
 	
 }
 
@@ -8473,6 +8351,128 @@ declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	
 }
 
+declare module "awayjs-display/lib/events/TouchEvent" {
+	import Point = require("awayjs-core/lib/geom/Point");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Event = require("awayjs-core/lib/events/Event");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import View = require("awayjs-display/lib/containers/View");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	class TouchEvent extends Event {
+	    _iAllowedToPropagate: boolean;
+	    _iParentEvent: TouchEvent;
+	    /**
+	     *
+	     */
+	    static TOUCH_END: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_BEGIN: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_MOVE: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_OUT: string;
+	    /**
+	     *
+	     */
+	    static TOUCH_OVER: string;
+	    /**
+	     * The horizontal coordinate at which the event occurred in view coordinates.
+	     */
+	    screenX: number;
+	    /**
+	     * The vertical coordinate at which the event occurred in view coordinates.
+	     */
+	    screenY: number;
+	    /**
+	     * The view object inside which the event took place.
+	     */
+	    view: View;
+	    /**
+	     * The 3d object inside which the event took place.
+	     */
+	    object: DisplayObject;
+	    /**
+	     * The renderable owner inside which the event took place.
+	     */
+	    renderableOwner: IRenderableOwner;
+	    /**
+	     * The material of the 3d element inside which the event took place.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * The uv coordinate inside the draw primitive where the event took place.
+	     */
+	    uv: Point;
+	    /**
+	     * The index of the face where the event took place.
+	     */
+	    index: number;
+	    /**
+	     * The index of the subGeometry where the event took place.
+	     */
+	    subGeometryIndex: number;
+	    /**
+	     * The position in object space where the event took place
+	     */
+	    localPosition: Vector3D;
+	    /**
+	     * The normal in object space where the event took place
+	     */
+	    localNormal: Vector3D;
+	    /**
+	     * Indicates whether the Control key is active (true) or inactive (false).
+	     */
+	    ctrlKey: boolean;
+	    /**
+	     * Indicates whether the Alt key is active (true) or inactive (false).
+	     */
+	    altKey: boolean;
+	    /**
+	     * Indicates whether the Shift key is active (true) or inactive (false).
+	     */
+	    shiftKey: boolean;
+	    touchPointID: number;
+	    /**
+	     * Create a new TouchEvent object.
+	     * @param type The type of the TouchEvent.
+	     */
+	    constructor(type: string);
+	    /**
+	     * @inheritDoc
+	     */
+	    bubbles: boolean;
+	    /**
+	     * @inheritDoc
+	     */
+	    stopPropagation(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    stopImmediatePropagation(): void;
+	    /**
+	     * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
+	     */
+	    clone(): Event;
+	    /**
+	     * The position in scene space where the event took place
+	     */
+	    scenePosition: Vector3D;
+	    /**
+	     * The normal in scene space where the event took place
+	     */
+	    sceneNormal: Vector3D;
+	}
+	export = TouchEvent;
+	
+}
+
 declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
@@ -8731,37 +8731,6 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	
 }
 
-declare module "awayjs-display/lib/partition/LightProbeNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
-	/**
-	 * @class away.partition.LightProbeNode
-	 */
-	class LightProbeNode extends EntityNode {
-	    static id: string;
-	    private _lightProbe;
-	    /**
-	     *
-	     * @param lightProbe
-	     */
-	    constructor(pool: EntityNodePool, lightProbe: LightProbe, partition: Partition);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
-	    /**
-	     *
-	     * @returns {boolean}
-	     */
-	    isCastingShadow(): boolean;
-	}
-	export = LightProbeNode;
-	
-}
-
 declare module "awayjs-display/lib/partition/NodeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -8854,14 +8823,34 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	
 }
 
-declare module "awayjs-display/lib/partition/NullNode" {
+declare module "awayjs-display/lib/partition/LightProbeNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
 	/**
-	 * @class away.partition.NullNode
+	 * @class away.partition.LightProbeNode
 	 */
-	class NullNode {
-	    constructor();
+	class LightProbeNode extends EntityNode {
+	    static id: string;
+	    private _lightProbe;
+	    /**
+	     *
+	     * @param lightProbe
+	     */
+	    constructor(pool: EntityNodePool, lightProbe: LightProbe, partition: Partition);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	    /**
+	     *
+	     * @returns {boolean}
+	     */
+	    isCastingShadow(): boolean;
 	}
-	export = NullNode;
+	export = LightProbeNode;
 	
 }
 
@@ -8947,6 +8936,35 @@ declare module "awayjs-display/lib/partition/Partition" {
 	
 }
 
+declare module "awayjs-display/lib/partition/NullNode" {
+	/**
+	 * @class away.partition.NullNode
+	 */
+	class NullNode {
+	    constructor();
+	}
+	export = NullNode;
+	
+}
+
+declare module "awayjs-display/lib/partition/SceneGraphNode" {
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import SceneGraphNodePool = require("awayjs-display/lib/pool/SceneGraphNodePool");
+	/**
+	 * Maintains scenegraph heirarchy when collecting nodes
+	 */
+	class SceneGraphNode extends NodeBase {
+	    private _container;
+	    private _pool;
+	    private _partition;
+	    constructor(pool: SceneGraphNodePool, container: DisplayObjectContainer, partition: Partition);
+	}
+	export = SceneGraphNode;
+	
+}
+
 declare module "awayjs-display/lib/partition/PointLightNode" {
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import Partition = require("awayjs-display/lib/partition/Partition");
@@ -8975,24 +8993,6 @@ declare module "awayjs-display/lib/partition/PointLightNode" {
 	    isCastingShadow(): boolean;
 	}
 	export = PointLightNode;
-	
-}
-
-declare module "awayjs-display/lib/partition/SceneGraphNode" {
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import SceneGraphNodePool = require("awayjs-display/lib/pool/SceneGraphNodePool");
-	/**
-	 * Maintains scenegraph heirarchy when collecting nodes
-	 */
-	class SceneGraphNode extends NodeBase {
-	    private _container;
-	    private _pool;
-	    private _partition;
-	    constructor(pool: SceneGraphNodePool, container: DisplayObjectContainer, partition: Partition);
-	}
-	export = SceneGraphNode;
 	
 }
 
@@ -9277,25 +9277,6 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	
 }
 
-declare module "awayjs-display/lib/pool/EntityListItem" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * @class away.pool.EntityListItem
-	 */
-	class EntityListItem {
-	    /**
-	     *
-	     */
-	    entity: IEntity;
-	    /**
-	     *
-	     */
-	    next: EntityListItem;
-	}
-	export = EntityListItem;
-	
-}
-
 declare module "awayjs-display/lib/pick/RaycastPicker" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import Scene = require("awayjs-display/lib/containers/Scene");
@@ -9344,6 +9325,25 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	    dispose(): void;
 	}
 	export = RaycastPicker;
+	
+}
+
+declare module "awayjs-display/lib/pool/EntityListItem" {
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * @class away.pool.EntityListItem
+	 */
+	class EntityListItem {
+	    /**
+	     *
+	     */
+	    entity: IEntity;
+	    /**
+	     *
+	     */
+	    next: EntityListItem;
+	}
+	export = EntityListItem;
 	
 }
 
