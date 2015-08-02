@@ -5356,6 +5356,36 @@ declare module "awayjs-display/lib/draw/InterpolationMethod" {
 	
 }
 
+declare module "awayjs-display/lib/draw/JointStyle" {
+	/**
+	 * The JointStyle class is an enumeration of constant values that specify the
+	 * joint style to use in drawing lines. These constants are provided for use
+	 * as values in the <code>joints</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
+	 * three types of joints: miter, round, and bevel, as the following example
+	 * shows:
+	 */
+	class JointStyle {
+	    /**
+	     * Specifies beveled joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static BEVEL: string;
+	    /**
+	     * Specifies mitered joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static MITER: string;
+	    /**
+	     * Specifies round joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	}
+	export = JointStyle;
+	
+}
+
 declare module "awayjs-display/lib/draw/LineScaleMode" {
 	/**
 	 * The LineScaleMode class provides values for the <code>scaleMode</code>
@@ -5395,36 +5425,6 @@ declare module "awayjs-display/lib/draw/LineScaleMode" {
 	    static VERTICAL: string;
 	}
 	export = LineScaleMode;
-	
-}
-
-declare module "awayjs-display/lib/draw/JointStyle" {
-	/**
-	 * The JointStyle class is an enumeration of constant values that specify the
-	 * joint style to use in drawing lines. These constants are provided for use
-	 * as values in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
-	 * three types of joints: miter, round, and bevel, as the following example
-	 * shows:
-	 */
-	class JointStyle {
-	    /**
-	     * Specifies beveled joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static BEVEL: string;
-	    /**
-	     * Specifies mitered joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static MITER: string;
-	    /**
-	     * Specifies round joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	}
-	export = JointStyle;
 	
 }
 
@@ -5526,6 +5526,252 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 	    static POSITIVE: string;
 	}
 	export = TriangleCulling;
+	
+}
+
+declare module "awayjs-display/lib/entities/Billboard" {
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * The Billboard class represents display objects that represent bitmap images.
+	 * These can be images that you load with the <code>flash.Assets</code> or
+	 * <code>flash.display.Loader</code> classes, or they can be images that you
+	 * create with the <code>Billboard()</code> constructor.
+	 *
+	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
+	 * object that contains a reference to a Image2D object. After you create a
+	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
+	 * method of the parent DisplayObjectContainer instance to place the bitmap on
+	 * the display list.</p>
+	 *
+	 * <p>A Billboard object can share its Image2D reference among several Billboard
+	 * objects, independent of translation or rotation properties. Because you can
+	 * create multiple Billboard objects that reference the same Image2D object,
+	 * multiple display objects can use the same complex Image2D object without
+	 * incurring the memory overhead of a Image2D object for each display
+	 * object instance.</p>
+	 *
+	 * <p>A Image2D object can be drawn to the screen by a Billboard object in one
+	 * of two ways: by using the default hardware renderer with a single hardware surface,
+	 * or by using the slower software renderer when 3D acceleration is not available.</p>
+	 *
+	 * <p>If you would prefer to perform a batch rendering command, rather than using a
+	 * single surface for each Billboard object, you can also draw to the screen using the
+	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
+	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
+	 * objects.</code></p>
+	 *
+	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
+	 * class, so it cannot dispatch mouse events. However, you can use the
+	 * <code>addEventListener()</code> method of the display object container that
+	 * contains the Billboard object.</p>
+	 */
+	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
+	    static assetType: string;
+	    private _animator;
+	    private _billboardWidth;
+	    private _billboardHeight;
+	    private _billboardRect;
+	    private _material;
+	    private _uvTransform;
+	    private _colorTransform;
+	    private _parentColorTransform;
+	    private onSizeChangedDelegate;
+	    /**
+	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The Image2D object being referenced.
+	     */
+	    image2D: Image2D;
+	    /**
+	     *
+	     */
+	    billboardRect: Rectangle;
+	    /**
+	     *
+	     */
+	    billboardHeight: number;
+	    /**
+	     *
+	     */
+	    billboardWidth: number;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    /**
+	     * Controls whether or not the Billboard object is snapped to the nearest pixel.
+	     * This value is ignored in the native and HTML5 targets.
+	     * The PixelSnapping class includes possible values:
+	     * <ul>
+	     *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
+	     *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
+	     * the nearest pixel, independent of transformation.</li>
+	     *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
+	     * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
+	     * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
+	     * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
+	     * When targeting Flash Player, this value allows the image to be drawn as fast
+	     * as possible using the internal vector renderer.</li>
+	     * </ul>
+	     */
+	    pixelSnapping: string;
+	    /**
+	     * Controls whether or not the bitmap is smoothed when scaled. If
+	     * <code>true</code>, the bitmap is smoothed when scaled. If
+	     * <code>false</code>, the bitmap is not smoothed when scaled.
+	     */
+	    smoothing: boolean;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     *
+	     */
+	    colorTransform: ColorTransform;
+	    parentColorTransform: ColorTransform;
+	    private _applyColorTransform();
+	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
+	    /**
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    clone(): DisplayObject;
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
+	    /**
+	     * @private
+	     */
+	    private onSizeChanged(event);
+	    _applyRenderer(renderer: IRenderer): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = Billboard;
+	
+}
+
+declare module "awayjs-display/lib/entities/Camera" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IProjection = require("awayjs-core/lib/projections/IProjection");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	class Camera extends DisplayObjectContainer implements IEntity {
+	    static assetType: string;
+	    private _viewProjection;
+	    private _viewProjectionDirty;
+	    private _projection;
+	    private _frustumPlanes;
+	    private _frustumPlanesDirty;
+	    private _onProjectionMatrixChangedDelegate;
+	    constructor(projection?: IProjection);
+	    assetType: string;
+	    private onProjectionMatrixChanged(event);
+	    frustumPlanes: Array<Plane3D>;
+	    private updateFrustum();
+	    /**
+	     * @protected
+	     */
+	    pInvalidateSceneTransform(): void;
+	    /**
+	     *
+	     */
+	    projection: IProjection;
+	    /**
+	     *
+	     */
+	    viewProjection: Matrix3D;
+	    /**
+	     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
+	     *
+	     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
+	     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
+	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+	     * @return The ray from the camera to the scene space position of the given screen coordinates.
+	     */
+	    getRay(nX: number, nY: number, sZ: number): Vector3D;
+	    /**
+	     * Calculates the normalised position in screen space of the given scene position.
+	     *
+	     * @param point3d the position vector of the scene coordinates to be projected.
+	     * @return The normalised screen position of the given scene coordinates.
+	     */
+	    project(point3d: Vector3D): Vector3D;
+	    /**
+	     * Calculates the scene position of the given normalized coordinates in screen space.
+	     *
+	     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
+	     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
+	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+	     * @return The scene position of the given screen coordinates.
+	     */
+	    unproject(nX: number, nY: number, sZ: number): Vector3D;
+	    _applyRenderer(renderer: IRenderer): void;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = Camera;
+	
+}
+
+declare module "awayjs-display/lib/entities/DirectionalLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class DirectionalLight extends LightBase implements IEntity {
+	    private _direction;
+	    private _tmpLookAt;
+	    private _sceneDirection;
+	    private _pAabbPoints;
+	    private _projAABBPoints;
+	    constructor(xDir?: number, yDir?: number, zDir?: number);
+	    sceneDirection: Vector3D;
+	    direction: Vector3D;
+	    pUpdateSceneTransform(): void;
+	    pCreateShadowMapper(): DirectionalShadowMapper;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	}
+	export = DirectionalLight;
 	
 }
 
@@ -5681,6 +5927,27 @@ declare module "awayjs-display/lib/entities/IEntity" {
 	
 }
 
+declare module "awayjs-display/lib/entities/LightProbe" {
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Partition = require("awayjs-display/lib/partition/Partition");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	class LightProbe extends LightBase implements IEntity {
+	    private _diffuseMap;
+	    private _specularMap;
+	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
+	    diffuseMap: ImageCube;
+	    specularMap: ImageCube;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    _pRegisterEntity(partition: Partition): void;
+	    _pUnregisterEntity(partition: Partition): void;
+	}
+	export = LightProbe;
+	
+}
+
 declare module "awayjs-display/lib/entities/LineSegment" {
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -5760,27 +6027,6 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = LineSegment;
-	
-}
-
-declare module "awayjs-display/lib/entities/LightProbe" {
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	class LightProbe extends LightBase implements IEntity {
-	    private _diffuseMap;
-	    private _specularMap;
-	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
-	    diffuseMap: ImageCube;
-	    specularMap: ImageCube;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = LightProbe;
 	
 }
 
@@ -6062,252 +6308,6 @@ declare module "awayjs-display/lib/entities/PointLight" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = PointLight;
-	
-}
-
-declare module "awayjs-display/lib/entities/Billboard" {
-	import Image2D = require("awayjs-core/lib/data/Image2D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * The Billboard class represents display objects that represent bitmap images.
-	 * These can be images that you load with the <code>flash.Assets</code> or
-	 * <code>flash.display.Loader</code> classes, or they can be images that you
-	 * create with the <code>Billboard()</code> constructor.
-	 *
-	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
-	 * object that contains a reference to a Image2D object. After you create a
-	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
-	 * method of the parent DisplayObjectContainer instance to place the bitmap on
-	 * the display list.</p>
-	 *
-	 * <p>A Billboard object can share its Image2D reference among several Billboard
-	 * objects, independent of translation or rotation properties. Because you can
-	 * create multiple Billboard objects that reference the same Image2D object,
-	 * multiple display objects can use the same complex Image2D object without
-	 * incurring the memory overhead of a Image2D object for each display
-	 * object instance.</p>
-	 *
-	 * <p>A Image2D object can be drawn to the screen by a Billboard object in one
-	 * of two ways: by using the default hardware renderer with a single hardware surface,
-	 * or by using the slower software renderer when 3D acceleration is not available.</p>
-	 *
-	 * <p>If you would prefer to perform a batch rendering command, rather than using a
-	 * single surface for each Billboard object, you can also draw to the screen using the
-	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
-	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
-	 * objects.</code></p>
-	 *
-	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
-	 * class, so it cannot dispatch mouse events. However, you can use the
-	 * <code>addEventListener()</code> method of the display object container that
-	 * contains the Billboard object.</p>
-	 */
-	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
-	    static assetType: string;
-	    private _animator;
-	    private _billboardWidth;
-	    private _billboardHeight;
-	    private _billboardRect;
-	    private _material;
-	    private _uvTransform;
-	    private _colorTransform;
-	    private _parentColorTransform;
-	    private onSizeChangedDelegate;
-	    /**
-	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The Image2D object being referenced.
-	     */
-	    image2D: Image2D;
-	    /**
-	     *
-	     */
-	    billboardRect: Rectangle;
-	    /**
-	     *
-	     */
-	    billboardHeight: number;
-	    /**
-	     *
-	     */
-	    billboardWidth: number;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     * Controls whether or not the Billboard object is snapped to the nearest pixel.
-	     * This value is ignored in the native and HTML5 targets.
-	     * The PixelSnapping class includes possible values:
-	     * <ul>
-	     *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
-	     *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
-	     * the nearest pixel, independent of transformation.</li>
-	     *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
-	     * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
-	     * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
-	     * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
-	     * When targeting Flash Player, this value allows the image to be drawn as fast
-	     * as possible using the internal vector renderer.</li>
-	     * </ul>
-	     */
-	    pixelSnapping: string;
-	    /**
-	     * Controls whether or not the bitmap is smoothed when scaled. If
-	     * <code>true</code>, the bitmap is smoothed when scaled. If
-	     * <code>false</code>, the bitmap is not smoothed when scaled.
-	     */
-	    smoothing: boolean;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    parentColorTransform: ColorTransform;
-	    private _applyColorTransform();
-	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    clone(): DisplayObject;
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
-	    /**
-	     * @private
-	     */
-	    private onSizeChanged(event);
-	    _applyRenderer(renderer: IRenderer): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = Billboard;
-	
-}
-
-declare module "awayjs-display/lib/entities/DirectionalLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class DirectionalLight extends LightBase implements IEntity {
-	    private _direction;
-	    private _tmpLookAt;
-	    private _sceneDirection;
-	    private _pAabbPoints;
-	    private _projAABBPoints;
-	    constructor(xDir?: number, yDir?: number, zDir?: number);
-	    sceneDirection: Vector3D;
-	    direction: Vector3D;
-	    pUpdateSceneTransform(): void;
-	    pCreateShadowMapper(): DirectionalShadowMapper;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	}
-	export = DirectionalLight;
-	
-}
-
-declare module "awayjs-display/lib/entities/Camera" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IProjection = require("awayjs-core/lib/projections/IProjection");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Partition = require("awayjs-display/lib/partition/Partition");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	class Camera extends DisplayObjectContainer implements IEntity {
-	    static assetType: string;
-	    private _viewProjection;
-	    private _viewProjectionDirty;
-	    private _projection;
-	    private _frustumPlanes;
-	    private _frustumPlanesDirty;
-	    private _onProjectionMatrixChangedDelegate;
-	    constructor(projection?: IProjection);
-	    assetType: string;
-	    private onProjectionMatrixChanged(event);
-	    frustumPlanes: Array<Plane3D>;
-	    private updateFrustum();
-	    /**
-	     * @protected
-	     */
-	    pInvalidateSceneTransform(): void;
-	    /**
-	     *
-	     */
-	    projection: IProjection;
-	    /**
-	     *
-	     */
-	    viewProjection: Matrix3D;
-	    /**
-	     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
-	     *
-	     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
-	     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
-	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-	     * @return The ray from the camera to the scene space position of the given screen coordinates.
-	     */
-	    getRay(nX: number, nY: number, sZ: number): Vector3D;
-	    /**
-	     * Calculates the normalised position in screen space of the given scene position.
-	     *
-	     * @param point3d the position vector of the scene coordinates to be projected.
-	     * @return The normalised screen position of the given scene coordinates.
-	     */
-	    project(point3d: Vector3D): Vector3D;
-	    /**
-	     * Calculates the scene position of the given normalized coordinates in screen space.
-	     *
-	     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
-	     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
-	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-	     * @return The scene position of the given screen coordinates.
-	     */
-	    unproject(nX: number, nY: number, sZ: number): Vector3D;
-	    _applyRenderer(renderer: IRenderer): void;
-	    _pRegisterEntity(partition: Partition): void;
-	    _pUnregisterEntity(partition: Partition): void;
-	}
-	export = Camera;
 	
 }
 
@@ -10825,6 +10825,30 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	
 }
 
+declare module "awayjs-display/lib/textures/SingleCubeTexture" {
+	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class SingleCubeTexture extends TextureBase {
+	    static assetType: string;
+	    private _samplerCube;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {BitmapData}
+	     */
+	    samplerCube: SamplerCube;
+	    constructor(source: SamplerCube);
+	    constructor(source: ImageCube);
+	}
+	export = SingleCubeTexture;
+	
+}
+
 declare module "awayjs-display/lib/textures/TextureBase" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
@@ -10860,30 +10884,6 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    _setSize(width: number, height: number): void;
 	}
 	export = TextureBase;
-	
-}
-
-declare module "awayjs-display/lib/textures/SingleCubeTexture" {
-	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class SingleCubeTexture extends TextureBase {
-	    static assetType: string;
-	    private _samplerCube;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     * @returns {BitmapData}
-	     */
-	    samplerCube: SamplerCube;
-	    constructor(source: SamplerCube);
-	    constructor(source: ImageCube);
-	}
-	export = SingleCubeTexture;
 	
 }
 
