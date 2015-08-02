@@ -5,6 +5,7 @@ import DisplayObject                    = require("awayjs-display/lib/base/Displ
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
+import FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 
 
 class Timeline
@@ -108,14 +109,18 @@ class Timeline
 	}
 
 
-	public add_script_for_postcontruct(target_mc:MovieClip, keyframe_idx:number) : void
+	public add_script_for_postcontruct(target_mc:MovieClip, keyframe_idx:number, scriptPass1:Boolean=false) : void
 	{
 		if(this._framescripts[keyframe_idx]!=null){
 			if(this._framescripts_translated[keyframe_idx]==null){
 				this._framescripts[keyframe_idx] = target_mc.adapter.evalScript(this._framescripts[keyframe_idx]);
 				this._framescripts_translated[keyframe_idx]=true;
 			}
-			target_mc.addScriptForExecution(this._framescripts[keyframe_idx]);
+			if(scriptPass1)
+				FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[keyframe_idx]);
+			else
+				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
+
 		}
 	}
 
@@ -253,7 +258,10 @@ class Timeline
 			if((frame_recipe & 4)==4){
 				var start_index = this.command_index_stream[frame_command_idx];
 				var len = this.command_length_stream[frame_command_idx++];
-				for(var i:number = 0; i < len; i++){
+				var i:number=len;
+				// apply add commands in reversed order to have script exeucted in correct order.
+				// this could be changed in exporter
+				while(i--){
 					var target:DisplayObject = target_mc.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
 					target._sessionID = start_index + i;
 					target_childs_dic[(this.add_child_stream[start_index*2 + i*2 + 1] - 16383)] = target;
@@ -304,7 +312,7 @@ class Timeline
 	}
 
 
-	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean=true)
+	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean=true, scriptPass1:Boolean=false)
 	{
 
 		var frameIndex:number = target_mc.currentFrameIndex;
@@ -312,7 +320,7 @@ class Timeline
 		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
 
 		if((queueScript)&&(this.keyframe_firstframes[new_keyFrameIndex]==frameIndex)){
-			this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
+			this.add_script_for_postcontruct(target_mc, new_keyFrameIndex, scriptPass1);
 		}
 		//console.log("next frame mc name = "+target_mc.name+ "    "+frameIndex);
 		if(constructed_keyFrameIndex!=new_keyFrameIndex){
@@ -362,7 +370,10 @@ class Timeline
 	// used to add childs when jumping between frames
 	public add_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
-		for(var i:number = 0; i < len; i++){
+		// apply add commands in reversed order to have script exeucted in correct order.
+		// this could be changed in exporter 
+		var i:number=len;
+		while(i--){
 			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
 			target._sessionID = start_index + i;
 

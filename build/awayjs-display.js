@@ -3980,6 +3980,7 @@ module.exports = SubMeshBase;
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 var Timeline = (function () {
     function Timeline() {
         this.numKeyFrames = 0;
@@ -4027,13 +4028,17 @@ var Timeline = (function () {
         var indexOf = str.substring(startpos || 0).search(regex);
         return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
     };
-    Timeline.prototype.add_script_for_postcontruct = function (target_mc, keyframe_idx) {
+    Timeline.prototype.add_script_for_postcontruct = function (target_mc, keyframe_idx, scriptPass1) {
+        if (scriptPass1 === void 0) { scriptPass1 = false; }
         if (this._framescripts[keyframe_idx] != null) {
             if (this._framescripts_translated[keyframe_idx] == null) {
                 this._framescripts[keyframe_idx] = target_mc.adapter.evalScript(this._framescripts[keyframe_idx]);
                 this._framescripts_translated[keyframe_idx] = true;
             }
-            target_mc.addScriptForExecution(this._framescripts[keyframe_idx]);
+            if (scriptPass1)
+                FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[keyframe_idx]);
+            else
+                FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
         }
     };
     Object.defineProperty(Timeline.prototype, "numFrames", {
@@ -4140,7 +4145,8 @@ var Timeline = (function () {
             if ((frame_recipe & 4) == 4) {
                 var start_index = this.command_index_stream[frame_command_idx];
                 var len = this.command_length_stream[frame_command_idx++];
-                for (var i = 0; i < len; i++) {
+                var i = len;
+                while (i--) {
                     var target = target_mc.getPotentialChildInstance(this.add_child_stream[start_index * 2 + i * 2]);
                     target._sessionID = start_index + i;
                     target_childs_dic[(this.add_child_stream[start_index * 2 + i * 2 + 1] - 16383)] = target;
@@ -4184,13 +4190,14 @@ var Timeline = (function () {
         }
         target_mc.constructedKeyFrameIndex = target_keyframe_idx;
     };
-    Timeline.prototype.constructNextFrame = function (target_mc, queueScript) {
+    Timeline.prototype.constructNextFrame = function (target_mc, queueScript, scriptPass1) {
         if (queueScript === void 0) { queueScript = true; }
+        if (scriptPass1 === void 0) { scriptPass1 = false; }
         var frameIndex = target_mc.currentFrameIndex;
         var constructed_keyFrameIndex = target_mc.constructedKeyFrameIndex;
         var new_keyFrameIndex = this.keyframe_indices[frameIndex];
         if ((queueScript) && (this.keyframe_firstframes[new_keyFrameIndex] == frameIndex)) {
-            this.add_script_for_postcontruct(target_mc, new_keyFrameIndex);
+            this.add_script_for_postcontruct(target_mc, new_keyFrameIndex, scriptPass1);
         }
         //console.log("next frame mc name = "+target_mc.name+ "    "+frameIndex);
         if (constructed_keyFrameIndex != new_keyFrameIndex) {
@@ -4226,7 +4233,10 @@ var Timeline = (function () {
     };
     // used to add childs when jumping between frames
     Timeline.prototype.add_childs_continous = function (sourceMovieClip, start_index, len) {
-        for (var i = 0; i < len; i++) {
+        // apply add commands in reversed order to have script exeucted in correct order.
+        // this could be changed in exporter 
+        var i = len;
+        while (i--) {
             var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index * 2 + i * 2]);
             target._sessionID = start_index + i;
             sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index * 2 + i * 2 + 1] - 16383);
@@ -4345,7 +4355,7 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -10886,27 +10896,23 @@ var MovieClip = (function (_super) {
         configurable: true
     });
     MovieClip.prototype.reset = function () {
-        if (this.adapter) {
+        // time only is relevant for the root mc, as it is the only one that executes the update function
+        this._time = 0;
+        if (this.adapter)
             this.adapter.freeFromScript();
-        }
         this._isPlaying = true;
-        //this._time = 0;
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         var i = this.numChildren;
         while (i--) {
             var child = this.getChildAt(i);
-            // if(child.isAsset(MovieClip))
-            //if( (<MovieClip>child).adapter){
-            //    (<MovieClip>child).adapter.freeFromScript();
-            // }
             this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
         }
         this._skipAdvance = true;
         if (this._timeline.numFrames) {
             this._currentFrameIndex = 0;
-            this._timeline.constructNextFrame(this);
+            this._timeline.constructNextFrame(this, true, true);
         }
     };
     /*
@@ -10989,9 +10995,6 @@ var MovieClip = (function (_super) {
         }
         return this._potentialInstances[id];
     };
-    MovieClip.prototype.addScriptForExecution = function (value) {
-        FrameScriptManager.add_script_to_queue(this, value);
-    };
     MovieClip.prototype.activateChild = function (id) {
         this.addChild(this.getPotentialChildInstance(id));
     };
@@ -11013,15 +11016,10 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.iSetParent = function (value) {
         _super.prototype.iSetParent.call(this, value);
-        // this.reset();
-        /*  if(child.isAsset(MovieClip))
-         (<MovieClip>child).reset();*/
     };
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }
         if (this._timeline.numFrames) {
-            if (!skipChildren)
-                this.advanceChildren();
             var i;
             var oldFrameIndex = this._currentFrameIndex;
             var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
@@ -11045,6 +11043,8 @@ var MovieClip = (function (_super) {
                     this._timeline.constructNextFrame(this);
                 }
             }
+            if (!skipChildren)
+                this.advanceChildren();
         }
         this._skipAdvance = false;
     };
@@ -13014,11 +13014,28 @@ var FrameScriptManager = (function () {
     function FrameScriptManager() {
     }
     FrameScriptManager.add_script_to_queue = function (mc, script) {
+        var i = this._queued_mcs_pass2.length;
+        while (i--) {
+            this._queued_mcs.push(this._queued_mcs_pass2[i]);
+            this._queued_scripts.push(this._queued_scripts_pass2[i]);
+        }
+        this._queued_mcs_pass2 = [];
+        this._queued_scripts_pass2 = [];
         this._queued_mcs.push(mc);
         this._queued_scripts.push(script);
     };
+    FrameScriptManager.add_script_to_queue_pass2 = function (mc, script) {
+        this._queued_mcs_pass2.push(mc);
+        this._queued_scripts_pass2.push(script);
+    };
     FrameScriptManager.execute_queue = function () {
-        var i = 0;
+        var i = this._queued_mcs_pass2.length;
+        while (i--) {
+            this._queued_mcs.push(this._queued_mcs_pass2[i]);
+            this._queued_scripts.push(this._queued_scripts_pass2[i]);
+        }
+        this._queued_mcs_pass2 = [];
+        this._queued_scripts_pass2 = [];
         var mc;
         for (i = 0; i < this._queued_mcs.length; i++) {
             // during the loop we might add more scripts to the queue
@@ -13041,6 +13058,8 @@ var FrameScriptManager = (function () {
     };
     FrameScriptManager._queued_mcs = [];
     FrameScriptManager._queued_scripts = [];
+    FrameScriptManager._queued_mcs_pass2 = [];
+    FrameScriptManager._queued_scripts_pass2 = [];
     return FrameScriptManager;
 })();
 module.exports = FrameScriptManager;
