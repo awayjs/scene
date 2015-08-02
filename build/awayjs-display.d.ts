@@ -1761,22 +1761,6 @@ declare module "awayjs-display/lib/base/Geometry" {
 	
 }
 
-declare module "awayjs-display/lib/base/IBitmapDrawable" {
-	/**
-	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
-	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
-	 * objects are of type BitmapData or DisplayObject.
-	 *
-	 * @see away.base.BitmapData#draw()
-	 * @see away.base.BitmapData
-	 * @see away.base.DisplayObject
-	 */
-	interface IBitmapDrawable {
-	}
-	export = IBitmapDrawable;
-	
-}
-
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -1800,6 +1784,22 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	    _iRemoveRender(render: IRender): IRender;
 	}
 	export = IRenderOwner;
+	
+}
+
+declare module "awayjs-display/lib/base/IBitmapDrawable" {
+	/**
+	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
+	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
+	 * objects are of type BitmapData or DisplayObject.
+	 *
+	 * @see away.base.BitmapData#draw()
+	 * @see away.base.BitmapData
+	 * @see away.base.DisplayObject
+	 */
+	interface IBitmapDrawable {
+	}
+	export = IBitmapDrawable;
 	
 }
 
@@ -1844,6 +1844,28 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	
 }
 
+declare module "awayjs-display/lib/base/ISubMeshClass" {
+	import IWrapperClass = require("awayjs-core/lib/library/IWrapperClass");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	/**
+	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
+	 * apply a material to a SubGeometry class
+	 *
+	 * @class away.base.ISubMeshClass
+	 */
+	interface ISubMeshClass extends IWrapperClass {
+	    /**
+	     *
+	     */
+	    new (subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
+	}
+	export = ISubMeshClass;
+	
+}
+
 declare module "awayjs-display/lib/base/ISubMesh" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -1864,28 +1886,6 @@ declare module "awayjs-display/lib/base/ISubMesh" {
 	    _iGetExplicitMaterial(): MaterialBase;
 	}
 	export = ISubMesh;
-	
-}
-
-declare module "awayjs-display/lib/base/ISubMeshClass" {
-	import IWrapperClass = require("awayjs-core/lib/library/IWrapperClass");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
-	 * apply a material to a SubGeometry class
-	 *
-	 * @class away.base.ISubMeshClass
-	 */
-	interface ISubMeshClass extends IWrapperClass {
-	    /**
-	     *
-	     */
-	    new (subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
-	}
-	export = ISubMeshClass;
 	
 }
 
@@ -5487,6 +5487,47 @@ declare module "awayjs-display/lib/draw/SpreadMethod" {
 	
 }
 
+declare module "awayjs-display/lib/draw/TriangleCulling" {
+	/**
+	 * Defines codes for culling algorithms that determine which triangles not to
+	 * render when drawing triangle paths.
+	 *
+	 * <p> The terms <code>POSITIVE</code> and <code>NEGATIVE</code> refer to the
+	 * sign of a triangle's normal along the z-axis. The normal is a 3D vector
+	 * that is perpendicular to the surface of the triangle. </p>
+	 *
+	 * <p> A triangle whose vertices 0, 1, and 2 are arranged in a clockwise order
+	 * has a positive normal value. That is, its normal points in a positive
+	 * z-axis direction, away from the current view point. When the
+	 * <code>TriangleCulling.POSITIVE</code> algorithm is used, triangles with
+	 * positive normals are not rendered. Another term for this is backface
+	 * culling. </p>
+	 *
+	 * <p> A triangle whose vertices are arranged in a counter-clockwise order has
+	 * a negative normal value. That is, its normal points in a negative z-axis
+	 * direction, toward the current view point. When the
+	 * <code>TriangleCulling.NEGATIVE</code> algorithm is used, triangles with
+	 * negative normals will not be rendered. </p>
+	 */
+	class TriangleCulling {
+	    /**
+	     * Specifies culling of all triangles facing toward the current view point.
+	     */
+	    static NEGATIVE: string;
+	    /**
+	     * Specifies no culling. All triangles in the path are rendered.
+	     */
+	    static NONE: string;
+	    /**
+	     * Specifies culling of all triangles facing away from the current view
+	     * point. This is also known as backface culling.
+	     */
+	    static POSITIVE: string;
+	}
+	export = TriangleCulling;
+	
+}
+
 declare module "awayjs-display/lib/entities/Billboard" {
 	import Image2D = require("awayjs-core/lib/data/Image2D");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
@@ -5630,47 +5671,6 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    _pUnregisterEntity(partition: Partition): void;
 	}
 	export = Billboard;
-	
-}
-
-declare module "awayjs-display/lib/draw/TriangleCulling" {
-	/**
-	 * Defines codes for culling algorithms that determine which triangles not to
-	 * render when drawing triangle paths.
-	 *
-	 * <p> The terms <code>POSITIVE</code> and <code>NEGATIVE</code> refer to the
-	 * sign of a triangle's normal along the z-axis. The normal is a 3D vector
-	 * that is perpendicular to the surface of the triangle. </p>
-	 *
-	 * <p> A triangle whose vertices 0, 1, and 2 are arranged in a clockwise order
-	 * has a positive normal value. That is, its normal points in a positive
-	 * z-axis direction, away from the current view point. When the
-	 * <code>TriangleCulling.POSITIVE</code> algorithm is used, triangles with
-	 * positive normals are not rendered. Another term for this is backface
-	 * culling. </p>
-	 *
-	 * <p> A triangle whose vertices are arranged in a counter-clockwise order has
-	 * a negative normal value. That is, its normal points in a negative z-axis
-	 * direction, toward the current view point. When the
-	 * <code>TriangleCulling.NEGATIVE</code> algorithm is used, triangles with
-	 * negative normals will not be rendered. </p>
-	 */
-	class TriangleCulling {
-	    /**
-	     * Specifies culling of all triangles facing toward the current view point.
-	     */
-	    static NEGATIVE: string;
-	    /**
-	     * Specifies no culling. All triangles in the path are rendered.
-	     */
-	    static NONE: string;
-	    /**
-	     * Specifies culling of all triangles facing away from the current view
-	     * point. This is also known as backface culling.
-	     */
-	    static POSITIVE: string;
-	}
-	export = TriangleCulling;
 	
 }
 
@@ -10797,30 +10797,6 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	
 }
 
-declare module "awayjs-display/lib/textures/Single2DTexture" {
-	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
-	import Image2D = require("awayjs-core/lib/data/Image2D");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class Single2DTexture extends TextureBase {
-	    static assetType: string;
-	    private _sampler2D;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     * @returns {Image2D}
-	     */
-	    sampler2D: Sampler2D;
-	    constructor(source: Sampler2D);
-	    constructor(source: Image2D);
-	}
-	export = Single2DTexture;
-	
-}
-
 declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
 	import ImageCube = require("awayjs-core/lib/data/ImageCube");
@@ -10842,6 +10818,30 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	    constructor(source: ImageCube);
 	}
 	export = SingleCubeTexture;
+	
+}
+
+declare module "awayjs-display/lib/textures/Single2DTexture" {
+	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class Single2DTexture extends TextureBase {
+	    static assetType: string;
+	    private _sampler2D;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {Image2D}
+	     */
+	    sampler2D: Sampler2D;
+	    constructor(source: Sampler2D);
+	    constructor(source: Image2D);
+	}
+	export = Single2DTexture;
 	
 }
 
@@ -11131,6 +11131,27 @@ declare module "awayjs-display/lib/utils/Cast" {
 	
 }
 
+declare module "awayjs-display/lib/vos/ISubGeometryVO" {
+	/**
+	 * ISubGeometryVO is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a texture
+	 *
+	 * @class away.pool.ISubGeometryVO
+	 */
+	interface ISubGeometryVO {
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidate(): any;
+	}
+	export = ISubGeometryVO;
+	
+}
+
 declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Short2Attributes = require("awayjs-core/lib/attributes/Short2Attributes");
@@ -11158,27 +11179,6 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	    static getSubVertices(vertexBuffer: AttributesBuffer, indexMappings: Array<number>): AttributesBuffer;
 	}
 	export = SubGeometryUtils;
-	
-}
-
-declare module "awayjs-display/lib/vos/ISubGeometryVO" {
-	/**
-	 * ISubGeometryVO is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a texture
-	 *
-	 * @class away.pool.ISubGeometryVO
-	 */
-	interface ISubGeometryVO {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidate(): any;
-	}
-	export = ISubGeometryVO;
 	
 }
 
