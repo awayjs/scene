@@ -4107,18 +4107,14 @@ var Timeline = (function () {
         var i = target_mc.numChildren;
         var child;
         if ((jump_forward) && (start_construct_idx == target_keyframe_idx)) {
-            // if we jump back, we dont want this shortcut, because we need to compare targetframe vs currentframe
-            // shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
-            // before we do that, we need to clear the childlist
-            target_mc.set_currentFrameIndex(value);
-            this.constructNextFrame(target_mc, false);
-            return;
         }
         while (i--) {
             child = target_mc.getChildAt(i);
             if (jump_gap) {
                 // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
-                // todo free and unregister ?
+                if (child.adapter)
+                    child.adapter.freeFromScript();
+                target_mc.adapter.unregisterScriptObject(child);
                 target_mc.removeChild(child);
             }
             else {
@@ -4169,6 +4165,9 @@ var Timeline = (function () {
         while (i--) {
             child = target_mc.getChildAt(i);
             if (target_child_sessionIDS[child._sessionID] == null) {
+                if (child.adapter)
+                    child.adapter.freeFromScript();
+                target_mc.adapter.unregisterScriptObject(child);
                 target_mc.removeChildAt(i);
             }
             else {
@@ -10917,6 +10916,8 @@ var MovieClip = (function (_super) {
         var i = this.numChildren;
         while (i--) {
             var child = this.getChildAt(i);
+            if (child.adapter)
+                child.adapter.freeFromScript();
             this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
         }

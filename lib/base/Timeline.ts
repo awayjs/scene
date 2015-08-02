@@ -214,10 +214,17 @@ class Timeline
 
 			// shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
 			// before we do that, we need to clear the childlist
-
+/*
+			while(i--){
+				child = target_mc.getChildAt(i);
+				if(child.adapter)child.adapter.freeFromScript();
+				target_mc.adapter.unregisterScriptObject(child);
+				target_mc.removeChild(child);
+			}
 			target_mc.set_currentFrameIndex(value);
 			this.constructNextFrame(target_mc, false);
 			return;
+			*/
 		}
 
 		//console.log("gotoframe frame mc name = "+target_mc.name +"   "+value);
@@ -225,7 +232,8 @@ class Timeline
 			child = target_mc.getChildAt(i);
 			if(jump_gap){
 				// if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
-				// todo free and unregister ?
+				if(child.adapter)child.adapter.freeFromScript();
+				target_mc.adapter.unregisterScriptObject(child);
 				target_mc.removeChild(child);
 			}
 			else{
@@ -286,6 +294,8 @@ class Timeline
 		while(i--){
 			child=target_mc.getChildAt(i);
 			if(target_child_sessionIDS[child._sessionID]==null){
+				if(child.adapter)child.adapter.freeFromScript();
+				target_mc.adapter.unregisterScriptObject(child);
 				target_mc.removeChildAt(i);
 			}
 			else{
@@ -359,8 +369,7 @@ class Timeline
 		for(var i:number = 0; i < len; i++) {
 			var target:DisplayObject = sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
 			sourceMovieClip.adapter.unregisterScriptObject(target);
-			if( target.adapter)
-				target.adapter.freeFromScript();
+			if( target.adapter) target.adapter.freeFromScript();
 		}
 	}
 
@@ -374,7 +383,6 @@ class Timeline
 		while(i--){
 			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
 			target._sessionID = start_index + i;
-
 			sourceMovieClip.addChildAtDepth(target, this.add_child_stream[start_index*2 + i*2 + 1] - 16383);
 
 		}

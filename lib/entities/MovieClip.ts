@@ -158,6 +158,7 @@ class MovieClip extends DisplayObjectContainer
         var i:number=this.numChildren;
         while (i--){
             var child:DisplayObject=this.getChildAt(i);
+            if(child.adapter)child.adapter.freeFromScript();
             this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
         }
