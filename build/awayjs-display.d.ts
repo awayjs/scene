@@ -1761,6 +1761,22 @@ declare module "awayjs-display/lib/base/Geometry" {
 	
 }
 
+declare module "awayjs-display/lib/base/IBitmapDrawable" {
+	/**
+	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
+	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
+	 * objects are of type BitmapData or DisplayObject.
+	 *
+	 * @see away.base.BitmapData#draw()
+	 * @see away.base.BitmapData
+	 * @see away.base.DisplayObject
+	 */
+	interface IBitmapDrawable {
+	}
+	export = IBitmapDrawable;
+	
+}
+
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -1784,22 +1800,6 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	    _iRemoveRender(render: IRender): IRender;
 	}
 	export = IRenderOwner;
-	
-}
-
-declare module "awayjs-display/lib/base/IBitmapDrawable" {
-	/**
-	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
-	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
-	 * objects are of type BitmapData or DisplayObject.
-	 *
-	 * @see away.base.BitmapData#draw()
-	 * @see away.base.BitmapData
-	 * @see away.base.DisplayObject
-	 */
-	interface IBitmapDrawable {
-	}
-	export = IBitmapDrawable;
 	
 }
 
@@ -1844,28 +1844,6 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	
 }
 
-declare module "awayjs-display/lib/base/ISubMeshClass" {
-	import IWrapperClass = require("awayjs-core/lib/library/IWrapperClass");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
-	 * apply a material to a SubGeometry class
-	 *
-	 * @class away.base.ISubMeshClass
-	 */
-	interface ISubMeshClass extends IWrapperClass {
-	    /**
-	     *
-	     */
-	    new (subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
-	}
-	export = ISubMeshClass;
-	
-}
-
 declare module "awayjs-display/lib/base/ISubMesh" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -1886,6 +1864,28 @@ declare module "awayjs-display/lib/base/ISubMesh" {
 	    _iGetExplicitMaterial(): MaterialBase;
 	}
 	export = ISubMesh;
+	
+}
+
+declare module "awayjs-display/lib/base/ISubMeshClass" {
+	import IWrapperClass = require("awayjs-core/lib/library/IWrapperClass");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	/**
+	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
+	 * apply a material to a SubGeometry class
+	 *
+	 * @class away.base.ISubMeshClass
+	 */
+	interface ISubMeshClass extends IWrapperClass {
+	    /**
+	     *
+	     */
+	    new (subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
+	}
+	export = ISubMeshClass;
 	
 }
 
@@ -10797,30 +10797,6 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	
 }
 
-declare module "awayjs-display/lib/textures/SingleCubeTexture" {
-	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class SingleCubeTexture extends TextureBase {
-	    static assetType: string;
-	    private _samplerCube;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     * @returns {BitmapData}
-	     */
-	    samplerCube: SamplerCube;
-	    constructor(source: SamplerCube);
-	    constructor(source: ImageCube);
-	}
-	export = SingleCubeTexture;
-	
-}
-
 declare module "awayjs-display/lib/textures/Single2DTexture" {
 	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
 	import Image2D = require("awayjs-core/lib/data/Image2D");
@@ -10842,6 +10818,30 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	    constructor(source: Image2D);
 	}
 	export = Single2DTexture;
+	
+}
+
+declare module "awayjs-display/lib/textures/SingleCubeTexture" {
+	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class SingleCubeTexture extends TextureBase {
+	    static assetType: string;
+	    private _samplerCube;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {BitmapData}
+	     */
+	    samplerCube: SamplerCube;
+	    constructor(source: SamplerCube);
+	    constructor(source: ImageCube);
+	}
+	export = SingleCubeTexture;
 	
 }
 
@@ -11131,27 +11131,6 @@ declare module "awayjs-display/lib/utils/Cast" {
 	
 }
 
-declare module "awayjs-display/lib/vos/ISubGeometryVO" {
-	/**
-	 * ISubGeometryVO is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a texture
-	 *
-	 * @class away.pool.ISubGeometryVO
-	 */
-	interface ISubGeometryVO {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidate(): any;
-	}
-	export = ISubGeometryVO;
-	
-}
-
 declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Short2Attributes = require("awayjs-core/lib/attributes/Short2Attributes");
@@ -11179,6 +11158,27 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	    static getSubVertices(vertexBuffer: AttributesBuffer, indexMappings: Array<number>): AttributesBuffer;
 	}
 	export = SubGeometryUtils;
+	
+}
+
+declare module "awayjs-display/lib/vos/ISubGeometryVO" {
+	/**
+	 * ISubGeometryVO is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a texture
+	 *
+	 * @class away.pool.ISubGeometryVO
+	 */
+	interface ISubGeometryVO {
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     */
+	    invalidate(): any;
+	}
+	export = ISubGeometryVO;
 	
 }
 

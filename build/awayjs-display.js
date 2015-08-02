@@ -11020,6 +11020,8 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }
         if (this._timeline.numFrames) {
+            if (!skipChildren)
+                this.advanceChildren();
             var i;
             var oldFrameIndex = this._currentFrameIndex;
             var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
@@ -11043,8 +11045,6 @@ var MovieClip = (function (_super) {
                     this._timeline.constructNextFrame(this);
                 }
             }
-            if (!skipChildren)
-                this.advanceChildren();
         }
         this._skipAdvance = false;
     };
