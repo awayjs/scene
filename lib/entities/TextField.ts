@@ -611,6 +611,7 @@ class TextField extends Mesh
 
 	public set text(value:string)
 	{
+		value=value.toString();
 		if (this._text == value)
 			return;
 
@@ -754,9 +755,12 @@ class TextField extends Mesh
 
 		var vertices:Array<number> = new Array<number>();
 
+		var additional_margin_x:number=2;
+		var additional_margin_y:number=2;
+
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
-		var y_offset:number=0;
+		var y_offset:number=additional_margin_y;
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
 		var k:number = 0;
@@ -793,12 +797,12 @@ class TextField extends Mesh
 				}
 				font_chars.push(this_char);
 			}
-			var x_offset:number=0;
+			var x_offset:number=additional_margin_x;
 			if(this._textFormat.align=="center"){
 				x_offset=(this._textWidth-line_width)/2;
 			}
 			else if(this._textFormat.align=="right"){
-				x_offset=(this._textWidth-line_width);
+				x_offset=(this._textWidth-line_width)-additional_margin_x;
 			}
 			//console.log("this._textFormat.align="+this._textFormat.align);
 			//console.log("this._width="+this._width);
