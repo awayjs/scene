@@ -11763,6 +11763,7 @@ var TextField = (function (_super) {
             return this._text;
         },
         set: function (value) {
+            value = value.toString();
             if (this._text == value)
                 return;
             this._text = value;
@@ -11836,8 +11837,10 @@ var TextField = (function (_super) {
         if (this._text == "")
             return;
         var vertices = new Array();
+        var additional_margin_x = 2;
+        var additional_margin_y = 2;
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-        var y_offset = 0;
+        var y_offset = additional_margin_y;
         var prev_char = null;
         var j = 0;
         var k = 0;
@@ -11874,12 +11877,12 @@ var TextField = (function (_super) {
                 }
                 font_chars.push(this_char);
             }
-            var x_offset = 0;
+            var x_offset = additional_margin_x;
             if (this._textFormat.align == "center") {
                 x_offset = (this._textWidth - line_width) / 2;
             }
             else if (this._textFormat.align == "right") {
-                x_offset = (this._textWidth - line_width);
+                x_offset = (this._textWidth - line_width) - additional_margin_x;
             }
             for (var i = 0; i < textlines[tl].length; i++) {
                 var this_char = font_chars[i];
