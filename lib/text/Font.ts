@@ -33,6 +33,10 @@ class Font extends AssetBase implements IAsset
 		super();
 	}
 
+	public get font_styles():Array<FontTable>
+	{
+		return this._font_styles;
+	}
 	/**
 	 *
 	 */

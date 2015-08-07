@@ -4187,6 +4187,7 @@ var Timeline = (function () {
             frame_command_idx = update_indices[k];
             this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx]);
         }
+        update_indices = null;
         target_mc.constructedKeyFrameIndex = target_keyframe_idx;
     };
     Timeline.prototype.constructNextFrame = function (target_mc, queueScript, scriptPass1) {
@@ -4207,8 +4208,8 @@ var Timeline = (function () {
                 var i = target_mc.numChildren;
                 while (i--) {
                     var target = target_mc.getChildAt(i);
-                    target_mc.removeChildAt(i);
                     target_mc.adapter.unregisterScriptObject(target);
+                    target_mc.removeChildAt(i);
                     if (target.adapter)
                         target.adapter.freeFromScript();
                 }
@@ -4312,6 +4313,8 @@ var Timeline = (function () {
                         case 4:
                             target.name = this.properties_stream_strings[value_start_index];
                             sourceMovieClip.adapter.registerScriptObject(target);
+                            if (target.name == "wind1")
+                                console.log("register name = " + target.name);
                             break;
                         case 5:
                             target.name = this.properties_stream_strings[value_start_index];
@@ -11839,6 +11842,7 @@ var TextField = (function (_super) {
         var vertices = new Array();
         var additional_margin_x = 2;
         var additional_margin_y = 2;
+        font_chars_scale;
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
         var y_offset = additional_margin_y;
         var prev_char = null;
@@ -11846,82 +11850,96 @@ var TextField = (function (_super) {
         var k = 0;
         var textlines = this.text.toString().split("\r");
         for (var tl = 0; tl < textlines.length; tl++) {
-            var line_width = 0;
-            var font_chars = [];
-            for (var i = 0; i < textlines[tl].length; i++) {
-                var this_char = this._textFormat.font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
-                if (this_char != null) {
-                    var this_subGeom = this_char.subgeom;
-                    if (this_subGeom != null) {
-                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-                        var kerning_value = 0;
-                        if (prev_char != null) {
-                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
-                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-                                    kerning_value = prev_char.kerningValues[k];
-                                    break;
+            var textlines2 = textlines[tl].split("\n");
+            for (var t2 = 0; t2 < textlines2.length; t2++) {
+                var line_width = 0;
+                var c_cnt = 0;
+                var font_chars = [];
+                var font_chars_scale = [];
+                for (var i = 0; i < textlines2[t2].length; i++) {
+                    char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+                    var this_char = this._textFormat.font_table.get_subgeo_for_char(textlines2[t2].charCodeAt(i).toString());
+                    if (this_char == null) {
+                        if (this._textFormat.fallback_font_table) {
+                            char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
+                            this_char = this._textFormat.fallback_font_table.get_subgeo_for_char(textlines2[t2].charCodeAt(i).toString());
+                        }
+                    }
+                    if (this_char != null) {
+                        var this_subGeom = this_char.subgeom;
+                        if (this_subGeom != null) {
+                            // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                            var kerning_value = 0;
+                            if (prev_char != null) {
+                                for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                    if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                        kerning_value = prev_char.kerningValues[k];
+                                        break;
+                                    }
                                 }
                             }
+                            line_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
                         }
-                        line_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                        else {
+                            // if no char-geometry was found, we insert a "space"
+                            line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
+                        }
                     }
                     else {
                         // if no char-geometry was found, we insert a "space"
+                        //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
                         line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
                     }
+                    font_chars_scale[c_cnt] = char_scale;
+                    font_chars[c_cnt++] = this_char;
                 }
-                else {
-                    // if no char-geometry was found, we insert a "space"
-                    //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-                    line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
+                var x_offset = additional_margin_x;
+                if (this._textFormat.align == "center") {
+                    x_offset = (this._textWidth - line_width) / 2;
                 }
-                font_chars.push(this_char);
-            }
-            var x_offset = additional_margin_x;
-            if (this._textFormat.align == "center") {
-                x_offset = (this._textWidth - line_width) / 2;
-            }
-            else if (this._textFormat.align == "right") {
-                x_offset = (this._textWidth - line_width) - additional_margin_x;
-            }
-            for (var i = 0; i < textlines[tl].length; i++) {
-                var this_char = font_chars[i];
-                if (this_char != null) {
-                    var this_subGeom = this_char.subgeom;
-                    if (this_subGeom != null) {
-                        var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
-                        var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
-                        for (var v = 0; v < this_subGeom.numVertices; v++) {
-                            vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
-                            vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
-                            vertices[j++] = positions2[v * 3 + 2];
-                            vertices[j++] = curveData2[v * 2];
-                            vertices[j++] = curveData2[v * 2 + 1];
-                            vertices[j++] = this._textFormat.uv_values[0];
-                            vertices[j++] = this._textFormat.uv_values[1];
-                        }
-                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-                        var kerning_value = 0;
-                        if (prev_char != null) {
-                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
-                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-                                    kerning_value = prev_char.kerningValues[k];
-                                    break;
+                else if (this._textFormat.align == "right") {
+                    x_offset = (this._textWidth - line_width) - additional_margin_x;
+                }
+                for (var i = 0; i < textlines2[t2].length; i++) {
+                    var this_char = font_chars[i];
+                    char_scale = font_chars_scale[i];
+                    if (this_char != null) {
+                        var this_subGeom = this_char.subgeom;
+                        if (this_subGeom != null) {
+                            var positions2 = this_subGeom.positions.get(this_subGeom.numVertices);
+                            var curveData2 = this_subGeom.curves.get(this_subGeom.numVertices);
+                            for (var v = 0; v < this_subGeom.numVertices; v++) {
+                                vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
+                                vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
+                                vertices[j++] = positions2[v * 3 + 2];
+                                vertices[j++] = curveData2[v * 2];
+                                vertices[j++] = curveData2[v * 2 + 1];
+                                vertices[j++] = this._textFormat.uv_values[0];
+                                vertices[j++] = this._textFormat.uv_values[1];
+                            }
+                            // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                            var kerning_value = 0;
+                            if (prev_char != null) {
+                                for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                    if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                        kerning_value = prev_char.kerningValues[k];
+                                        break;
+                                    }
                                 }
                             }
+                            x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
                         }
-                        x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                        else {
+                            // if no char-geometry was found, we insert a "space"
+                            x_offset += this._textFormat.font_table.get_whitespace_width() * char_scale;
+                        }
                     }
                     else {
-                        // if no char-geometry was found, we insert a "space"
                         x_offset += this._textFormat.font_table.get_whitespace_width() * char_scale;
                     }
                 }
-                else {
-                    x_offset += this._textFormat.font_table.get_whitespace_width() * char_scale;
-                }
+                y_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
             }
-            y_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
         }
         var attributesView = new AttributesView(Float32Array, 7);
         attributesView.set(vertices);
@@ -19243,6 +19261,13 @@ var Font = (function (_super) {
         _super.call(this);
         this._font_styles = new Array();
     }
+    Object.defineProperty(Font.prototype, "font_styles", {
+        get: function () {
+            return this._font_styles;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Font.prototype, "assetType", {
         /**
          *

@@ -19,7 +19,7 @@ import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontCha
 class TesselatedFontTable extends AssetBase
 {
 	private _font_chars:Array<TesselatedFontChar>;
-	private _font_chars_dic:Object;
+	public _font_chars_dic:Object;
 	private _font_em_size:number;
 	private _whitespace_width:number;
 	private _charDictDirty:Boolean;

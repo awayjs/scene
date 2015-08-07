@@ -316,6 +316,7 @@ class Timeline
 			frame_command_idx=update_indices[k];
 			this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx] );
 		}
+		update_indices=null;
 		target_mc.constructedKeyFrameIndex=target_keyframe_idx;
 	}
 
@@ -341,8 +342,8 @@ class Timeline
 				var i:number = target_mc.numChildren;
 				while (i--) {
 					var target:DisplayObject=target_mc.getChildAt(i);
-					target_mc.removeChildAt(i);
 					target_mc.adapter.unregisterScriptObject(target);
+					target_mc.removeChildAt(i);
 
 					if (target.adapter)
 						target.adapter.freeFromScript();
@@ -464,7 +465,8 @@ class Timeline
 						case 4:// instance name movieclip instance
 							target.name = this.properties_stream_strings[value_start_index];
 							sourceMovieClip.adapter.registerScriptObject(target);
-							//console.log("register name = "+target.name);
+							if(target.name=="wind1")
+								console.log("register name = "+target.name);
 							break;
 						case 5:// instance name button instance
 							target.name = this.properties_stream_strings[value_start_index];

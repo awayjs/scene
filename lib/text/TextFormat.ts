@@ -113,6 +113,11 @@ class TextFormat extends AssetBase implements IAsset
 	public font_table:TesselatedFontTable;
 
 	/**
+	 * The font-table that provides the subgeos for the chars
+	 */
+	public fallback_font_table:TesselatedFontTable;
+
+	/**
 	 * Indicates the indentation from the left margin to the first character in
 	 * the paragraph. The default value is <code>null</code>, which indicates
 	 * that no indentation is used.
