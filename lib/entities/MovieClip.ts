@@ -273,6 +273,7 @@ class MovieClip extends DisplayObjectContainer
             // after we advanced the scenegraph, we might have some script that needs executing
             FrameScriptManager.execute_queue();
 
+            FrameScriptManager.execute_intervals();
             // now we want to execute the onEnter
             this.dispatchEvent(this._enterFrame);
             // after we executed the onEnter, we might have some script that needs executing

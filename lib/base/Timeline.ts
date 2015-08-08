@@ -293,14 +293,14 @@ class Timeline
 		i = target_mc.numChildren;
 		while(i--){
 			child=target_mc.getChildAt(i);
-			if(target_child_sessionIDS[child._sessionID]==null){
+			if(target_child_sessionIDS[child._sessionID]){
+				delete target_childs_dic[target_child_sessionIDS[child._sessionID]];
+				delete target_child_sessionIDS[child._sessionID];
+			}
+			else{
 				if(child.adapter)child.adapter.freeFromScript();
 				target_mc.adapter.unregisterScriptObject(child);
 				target_mc.removeChildAt(i);
-			}
-			else{
-				delete target_childs_dic[target_child_sessionIDS[child._sessionID]];
-				delete target_child_sessionIDS[child._sessionID];
 			}
 		}
 		for (var key in target_childs_dic) {

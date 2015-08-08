@@ -8,6 +8,28 @@ class FrameScriptManager
 	private static _queued_mcs_pass2:Array<MovieClip> = [];
 	private static _queued_scripts_pass2:Array<Function> = [];
 
+	private static _active_intervals:Object = []; // maps id to function
+
+	private static _intervalID:number=0;
+	public static setInterval(func:any):number
+	{
+		this._intervalID++;
+		this._active_intervals[this._intervalID]=func;
+		return this._intervalID
+	}
+
+	public static clearInterval(id:number):void
+	{
+		delete this._active_intervals[id];
+	}
+
+	public static execute_intervals():void
+	{
+		for(var key in this._active_intervals){
+			this._active_intervals[key].call();
+		}
+	}
+
 	public static add_script_to_queue(mc:MovieClip, script:Function):void
 	{
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
