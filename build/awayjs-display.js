@@ -4164,15 +4164,15 @@ var Timeline = (function () {
         i = target_mc.numChildren;
         while (i--) {
             child = target_mc.getChildAt(i);
-            if (target_child_sessionIDS[child._sessionID] == null) {
+            if (target_child_sessionIDS[child._sessionID]) {
+                delete target_childs_dic[target_child_sessionIDS[child._sessionID]];
+                delete target_child_sessionIDS[child._sessionID];
+            }
+            else {
                 if (child.adapter)
                     child.adapter.freeFromScript();
                 target_mc.adapter.unregisterScriptObject(child);
                 target_mc.removeChildAt(i);
-            }
-            else {
-                delete target_childs_dic[target_child_sessionIDS[child._sessionID]];
-                delete target_child_sessionIDS[child._sessionID];
             }
         }
         for (var key in target_childs_dic) {
@@ -11000,6 +11000,7 @@ var MovieClip = (function (_super) {
             this.advanceFrame();
             // after we advanced the scenegraph, we might have some script that needs executing
             FrameScriptManager.execute_queue();
+            FrameScriptManager.execute_intervals();
             // now we want to execute the onEnter
             this.dispatchEvent(this._enterFrame);
             // after we executed the onEnter, we might have some script that needs executing
@@ -13051,6 +13052,19 @@ module.exports = DefaultMaterialManager;
 var FrameScriptManager = (function () {
     function FrameScriptManager() {
     }
+    FrameScriptManager.setInterval = function (func) {
+        this._intervalID++;
+        this._active_intervals[this._intervalID] = func;
+        return this._intervalID;
+    };
+    FrameScriptManager.clearInterval = function (id) {
+        delete this._active_intervals[id];
+    };
+    FrameScriptManager.execute_intervals = function () {
+        for (var key in this._active_intervals) {
+            this._active_intervals[key].call();
+        }
+    };
     FrameScriptManager.add_script_to_queue = function (mc, script) {
         // whenever we queue scripts of new objects, we first inject the lists of pass2
         var i = this._queued_mcs_pass2.length;
@@ -13099,6 +13113,8 @@ var FrameScriptManager = (function () {
     FrameScriptManager._queued_scripts = [];
     FrameScriptManager._queued_mcs_pass2 = [];
     FrameScriptManager._queued_scripts_pass2 = [];
+    FrameScriptManager._active_intervals = []; // maps id to function
+    FrameScriptManager._intervalID = 0;
     return FrameScriptManager;
 })();
 module.exports = FrameScriptManager;
