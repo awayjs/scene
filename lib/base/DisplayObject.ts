@@ -1531,8 +1531,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		newInstance.pivot = this.pivot;
 		newInstance._iMatrix3D = this._iMatrix3D;
-		newInstance.name = this.name;
-
+		//newInstance.name="";
 		newInstance._iMaskID = this._iMaskID;
 		newInstance._iMasks = this._iMasks? this._iMasks.concat() : null;
 
@@ -2015,7 +2014,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._iMatrix3D.identity();
 		if(this.colorTransform)
 			this.colorTransform.clear();
-
+		//this.name="";
 		this.pInvalidateSceneTransform();
 	}
 	/**

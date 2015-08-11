@@ -40,6 +40,7 @@ class MovieClip extends DisplayObjectContainer
     private _isInit : boolean;
 
     private _potentialInstances:Array<DisplayObject>;
+    private _active_session_ids:Array<DisplayObject>;
    // private _framescripts_to_execute:Array<Function>;
 
 	/**
@@ -59,6 +60,7 @@ class MovieClip extends DisplayObjectContainer
     constructor(timeline:Timeline = null)
     {
         super();
+        this._active_session_ids=[];
         this._potentialInstances = [];
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
@@ -157,9 +159,6 @@ class MovieClip extends DisplayObjectContainer
         this._constructedKeyFrameIndex = -1;
         var i:number=this.numChildren;
         while (i--){
-            var child:DisplayObject=this.getChildAt(i);
-            if(child.adapter)child.adapter.freeFromScript();
-            this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
         }
 
@@ -195,7 +194,6 @@ class MovieClip extends DisplayObjectContainer
             //this._time = 0;
 
             this._timeline.gotoFrame(this, value);
-
             this._currentFrameIndex = value;
         }
     }
@@ -221,14 +219,44 @@ class MovieClip extends DisplayObjectContainer
 
     }
 
+    public getChildAtSessionID(sessionID:number):DisplayObject
+    {
+        return this._active_session_ids[sessionID];
+    }
     public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
     {
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
-        child.reset_to_init_state();
+        child.reset_to_init_state();// this takes care of transform and visibility
 		super.addChildAtDepth(child, depth, replace);
-        if(child.isAsset(MovieClip))
-            (<MovieClip>child).reset();
+        if(child.isAsset(MovieClip))(<MovieClip>child).reset();
+        this._active_session_ids[child._sessionID]=child;
+        return child;
+    }
+
+    public removeChild(child:DisplayObject):DisplayObject
+    {
+        super.removeChild(child);
+        if(child.adapter)child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        this._active_session_ids[child._sessionID]=null;
+        return child;
+    }
+
+    public removeChildAtDepth(depth:number /*int*/):DisplayObject
+    {
+        var child:DisplayObject=super.removeChildAtDepth(depth);
+        if(child.adapter)child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        this._active_session_ids[child._sessionID]=null;
+        return child;
+    }
+    public removeChildAt(index:number /*int*/):DisplayObject
+    {
+        var child:DisplayObject=super.removeChildAt(index);
+        if(child.adapter)child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        this._active_session_ids[child._sessionID]=null;
         return child;
     }
 
@@ -273,14 +301,17 @@ class MovieClip extends DisplayObjectContainer
             // after we advanced the scenegraph, we might have some script that needs executing
             FrameScriptManager.execute_queue();
 
-            FrameScriptManager.execute_intervals();
             // now we want to execute the onEnter
             this.dispatchEvent(this._enterFrame);
             // after we executed the onEnter, we might have some script that needs executing
             FrameScriptManager.execute_queue();
-            //console.log("update "+this._currentFrameIndex);
-            //console.log("update key "+this._constructedKeyFrameIndex);
+
+
+            FrameScriptManager.execute_intervals();
+            FrameScriptManager.execute_queue();
+
             this.exit_frame();
+
         }
     }
 
@@ -293,15 +324,6 @@ class MovieClip extends DisplayObjectContainer
         return this._potentialInstances[id];
     }
 
-    public activateChild(id:number)
-    {
-        this.addChild(this.getPotentialChildInstance(id));
-    }
-
-    public deactivateChild(id:number)
-    {
-        this.removeChild(this._potentialInstances[id]);
-    }
 
     /**
      * Stop playback of animation and hold current position
@@ -336,12 +358,10 @@ class MovieClip extends DisplayObjectContainer
                 advance = false;
             }
             if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
-                //console.log("one frame clip");
                 this._currentFrameIndex = 0;
                 advance = false;
             }
             if (advance) {
-                //console.log("advance");
                 ++this._currentFrameIndex;
                 if (this._currentFrameIndex == this._timeline.numFrames) {
                     // looping - jump to first frame.
@@ -398,9 +418,6 @@ class MovieClip extends DisplayObjectContainer
         console.log(str);
     }
 
-    executePostConstructCommands():boolean
-    {
-        return true;
-    }
+
 }
 export = MovieClip;
