@@ -1810,7 +1810,7 @@ var DisplayObject = (function (_super) {
             newInstance = new DisplayObject();
         newInstance.pivot = this.pivot;
         newInstance._iMatrix3D = this._iMatrix3D;
-        newInstance.name = this.name;
+        //newInstance.name="";
         newInstance._iMaskID = this._iMaskID;
         newInstance._iMasks = this._iMasks ? this._iMasks.concat() : null;
         if (this._adapter)
@@ -2226,6 +2226,7 @@ var DisplayObject = (function (_super) {
             this._iMatrix3D.identity();
         if (this.colorTransform)
             this.colorTransform.clear();
+        //this.name="";
         this.pInvalidateSceneTransform();
     };
     /**
@@ -4058,7 +4059,9 @@ var Timeline = (function () {
         return this._potentialPrototypes;
     };
     Timeline.prototype.getPotentialChildInstance = function (id) {
-        return this._potentialPrototypes[id].clone();
+        var this_clone = this._potentialPrototypes[id].clone();
+        this_clone.name = "";
+        return this_clone;
     };
     Timeline.prototype.registerPotentialChild = function (prototype) {
         var id = this._potentialPrototypes.length;
@@ -4070,7 +4073,6 @@ var Timeline = (function () {
             target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
     };
     Timeline.prototype.gotoFrame = function (target_mc, value) {
-        //console.log("gotoframe");
         var frameIndex = target_mc.currentFrameIndex;
         var current_keyframe_idx = target_mc.constructedKeyFrameIndex;
         var target_keyframe_idx = this.keyframe_indices[value];
@@ -4104,6 +4106,7 @@ var Timeline = (function () {
             start_construct_idx = current_keyframe_idx + 1;
         }
         var target_childs_dic = [];
+        var target_sessionIDs_dic = [];
         var i = target_mc.numChildren;
         var child;
         if ((jump_forward) && (start_construct_idx == target_keyframe_idx)) {
@@ -4112,17 +4115,14 @@ var Timeline = (function () {
             child = target_mc.getChildAt(i);
             if (jump_gap) {
                 // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
-                if (child.adapter)
-                    child.adapter.freeFromScript();
-                target_mc.adapter.unregisterScriptObject(child);
                 target_mc.removeChild(child);
             }
             else if (jump_forward) {
                 // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
                 target_childs_dic[target_mc.getChildDepth(child)] = child;
+                target_sessionIDs_dic[target_mc.getChildDepth(child)] = child._sessionID;
             }
         }
-        //console.log("gotoframe keyframe = "+target_keyframe_idx+" name = "+target_mc.name);
         //  step1: only apply add/remove commands into current_childs_dic.
         var update_indices = []; // store a list of updatecommand_indices, so we dont have to read frame_recipe again
         var update_cnt = 0;
@@ -4135,7 +4135,9 @@ var Timeline = (function () {
                 var start_index = this.command_index_stream[frame_command_idx];
                 var len = this.command_length_stream[frame_command_idx++];
                 for (var i = 0; i < len; i++) {
+                    i;
                     delete target_childs_dic[(this.remove_child_stream[start_index + i] - 16383)];
+                    delete target_sessionIDs_dic[(this.remove_child_stream[start_index + i] - 16383)];
                 }
             }
             if ((frame_recipe & 4) == 4) {
@@ -4144,8 +4146,9 @@ var Timeline = (function () {
                 var i = len;
                 while (i--) {
                     var target = target_mc.getPotentialChildInstance(this.add_child_stream[start_index * 2 + i * 2]);
-                    target._sessionID = start_index + i;
+                    //target._sessionID = start_index + i;
                     target_childs_dic[(this.add_child_stream[start_index * 2 + i * 2 + 1] - 16383)] = target;
+                    target_sessionIDs_dic[(this.add_child_stream[start_index * 2 + i * 2 + 1] - 16383)] = start_index + i;
                 }
             }
             if ((frame_recipe & 8) == 8)
@@ -4153,9 +4156,9 @@ var Timeline = (function () {
         }
         //  step2: construct the final frame
         var target_child_sessionIDS = {};
-        for (var key in target_childs_dic) {
-            if (target_childs_dic[key] != null) {
-                target_child_sessionIDS[target_childs_dic[key]._sessionID] = key;
+        for (var key in target_sessionIDs_dic) {
+            if (target_sessionIDs_dic[key] != null) {
+                target_child_sessionIDS[target_sessionIDs_dic[key]] = key;
             }
         }
         // check what childs are alive on both frames.
@@ -4165,19 +4168,18 @@ var Timeline = (function () {
         while (i--) {
             child = target_mc.getChildAt(i);
             if (target_child_sessionIDS[child._sessionID]) {
-                delete target_childs_dic[target_child_sessionIDS[child._sessionID]];
-                delete target_child_sessionIDS[child._sessionID];
+                target_childs_dic[target_child_sessionIDS[child._sessionID]] = null;
+                target_child_sessionIDS[child._sessionID] = null;
+                target_sessionIDs_dic[target_child_sessionIDS[child._sessionID]] = null;
             }
             else {
-                if (child.adapter)
-                    child.adapter.freeFromScript();
-                target_mc.adapter.unregisterScriptObject(child);
                 target_mc.removeChildAt(i);
             }
         }
         for (var key in target_childs_dic) {
             child = target_childs_dic[key];
             if (child) {
+                child._sessionID = target_sessionIDs_dic[key];
                 target_mc.addChildAtDepth(child, parseInt(key));
             }
         }
@@ -4199,7 +4201,6 @@ var Timeline = (function () {
         if ((queueScript) && (this.keyframe_firstframes[new_keyFrameIndex] == frameIndex)) {
             this.add_script_for_postcontruct(target_mc, new_keyFrameIndex, scriptPass1);
         }
-        //console.log("next frame mc name = "+target_mc.name+ "    "+frameIndex);
         if (constructed_keyFrameIndex != new_keyFrameIndex) {
             target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
             var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
@@ -4207,11 +4208,7 @@ var Timeline = (function () {
             if ((frame_recipe & 1) == 1) {
                 var i = target_mc.numChildren;
                 while (i--) {
-                    var target = target_mc.getChildAt(i);
-                    target_mc.adapter.unregisterScriptObject(target);
                     target_mc.removeChildAt(i);
-                    if (target.adapter)
-                        target.adapter.freeFromScript();
                 }
             }
             else if ((frame_recipe & 2) == 2) {
@@ -4225,10 +4222,7 @@ var Timeline = (function () {
     };
     Timeline.prototype.remove_childs_continous = function (sourceMovieClip, start_index, len) {
         for (var i = 0; i < len; i++) {
-            var target = sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
-            sourceMovieClip.adapter.unregisterScriptObject(target);
-            if (target.adapter)
-                target.adapter.freeFromScript();
+            sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
         }
     };
     // used to add childs when jumping between frames
@@ -4243,6 +4237,7 @@ var Timeline = (function () {
         }
     };
     Timeline.prototype.update_childs = function (sourceMovieClip, start_index, len) {
+        var register_objects = [];
         var props_cnt;
         var props_start_idx;
         var value_start_index;
@@ -4250,8 +4245,9 @@ var Timeline = (function () {
         var doit;
         for (var i = 0; i < len; i++) {
             var childID = this.update_child_stream[start_index + i];
-            var target = sourceMovieClip.getPotentialChildInstance(childID);
-            if (target.parent == sourceMovieClip) {
+            //var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(childID);
+            var target = sourceMovieClip.getChildAtSessionID(childID); //target._sessionID);
+            if (target != null) {
                 doit = true;
                 // check if the child is active + not blocked by script
                 if (target.adapter && target.adapter.isBlockedByScript())
@@ -4293,33 +4289,32 @@ var Timeline = (function () {
                             }
                             break;
                         case 3:
+                            // mask the mc with a list of objects
+                            // a object could have multiple groups of masks, in case a graphic clip was merged into the timeline
+                            // this is not implmeented in the runtime yet
+                            // for now, a second mask-groupd would overwrite the first one
                             var mask_length = this.properties_stream_int[value_start_index++];
-                            var firstMaskID = this.properties_stream_int[value_start_index] - 1;
-                            if (mask_length == 1 && firstMaskID == -1) {
-                                target._iMaskID = childID;
+                            var mask;
+                            var masks = new Array();
+                            for (var m = 0; m < mask_length; m++) {
+                                mask = masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]); //sourceMovieClip.getPotentialChildInstance();
+                                if (mask == null)
+                                    throw "mask object not found !";
+                                mask.mouseEnabled = false;
+                                if (mask.isAsset(DisplayObjectContainer))
+                                    mask.mouseChildren = false;
                             }
-                            else {
-                                var mask;
-                                var masks = new Array();
-                                for (var m = 0; m < mask_length; m++) {
-                                    mask = masks[m] = sourceMovieClip.getPotentialChildInstance(this.properties_stream_int[value_start_index++] - 1);
-                                    mask.mouseEnabled = false;
-                                    if (mask.isAsset(DisplayObjectContainer))
-                                        mask.mouseChildren = false;
-                                }
-                                target._iMasks = masks;
-                            }
+                            target._iMasks = masks;
                             break;
                         case 4:
                             target.name = this.properties_stream_strings[value_start_index];
                             sourceMovieClip.adapter.registerScriptObject(target);
-                            if (target.name == "wind1")
-                                console.log("register name = " + target.name);
                             break;
                         case 5:
                             target.name = this.properties_stream_strings[value_start_index];
-                            sourceMovieClip.adapter.registerScriptObject(target);
+                            // todo: creating the buttonlistenrs later should also be done, but for icycle i dont think this will cause problems
                             target.addButtonListeners();
+                            sourceMovieClip.adapter.registerScriptObject(target);
                             break;
                         case 6:
                             if (target.adapter && target.adapter.isVisibilityByScript()) {
@@ -4348,12 +4343,17 @@ var Timeline = (function () {
                                 target._iMatrix3D = new_matrix;
                             }
                             break;
+                        case 200:
+                            //todo: remove once runtime does not need id for mask anymore
+                            target._iMaskID = childID;
+                            break;
                         default:
                             break;
                     }
                 }
             }
         }
+        return;
     };
     return Timeline;
 })();
@@ -10794,6 +10794,7 @@ var MovieClip = (function (_super) {
         if (timeline === void 0) { timeline = null; }
         _super.call(this);
         this._loop = true;
+        this._active_session_ids = [];
         this._potentialInstances = [];
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
@@ -10920,10 +10921,6 @@ var MovieClip = (function (_super) {
         this._constructedKeyFrameIndex = -1;
         var i = this.numChildren;
         while (i--) {
-            var child = this.getChildAt(i);
-            if (child.adapter)
-                child.adapter.freeFromScript();
-            this.adapter.unregisterScriptObject(child);
             this.removeChildAt(i);
         }
         this._skipAdvance = true;
@@ -10953,14 +10950,42 @@ var MovieClip = (function (_super) {
         this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
         this.removeEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
     };
+    MovieClip.prototype.getChildAtSessionID = function (sessionID) {
+        return this._active_session_ids[sessionID];
+    };
     MovieClip.prototype.addChildAtDepth = function (child, depth, replace) {
         if (replace === void 0) { replace = true; }
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
-        child.reset_to_init_state();
+        child.reset_to_init_state(); // this takes care of transform and visibility
         _super.prototype.addChildAtDepth.call(this, child, depth, replace);
         if (child.isAsset(MovieClip))
             child.reset();
+        this._active_session_ids[child._sessionID] = child;
+        return child;
+    };
+    MovieClip.prototype.removeChild = function (child) {
+        _super.prototype.removeChild.call(this, child);
+        if (child.adapter)
+            child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        this._active_session_ids[child._sessionID] = null;
+        return child;
+    };
+    MovieClip.prototype.removeChildAtDepth = function (depth /*int*/) {
+        var child = _super.prototype.removeChildAtDepth.call(this, depth);
+        if (child.adapter)
+            child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        this._active_session_ids[child._sessionID] = null;
+        return child;
+    };
+    MovieClip.prototype.removeChildAt = function (index /*int*/) {
+        var child = _super.prototype.removeChildAt.call(this, index);
+        if (child.adapter)
+            child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        this._active_session_ids[child._sessionID] = null;
         return child;
     };
     Object.defineProperty(MovieClip.prototype, "fps", {
@@ -11000,13 +11025,12 @@ var MovieClip = (function (_super) {
             this.advanceFrame();
             // after we advanced the scenegraph, we might have some script that needs executing
             FrameScriptManager.execute_queue();
-            FrameScriptManager.execute_intervals();
             // now we want to execute the onEnter
             this.dispatchEvent(this._enterFrame);
             // after we executed the onEnter, we might have some script that needs executing
             FrameScriptManager.execute_queue();
-            //console.log("update "+this._currentFrameIndex);
-            //console.log("update key "+this._constructedKeyFrameIndex);
+            FrameScriptManager.execute_intervals();
+            FrameScriptManager.execute_queue();
             this.exit_frame();
         }
     };
@@ -11015,12 +11039,6 @@ var MovieClip = (function (_super) {
             this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
         }
         return this._potentialInstances[id];
-    };
-    MovieClip.prototype.activateChild = function (id) {
-        this.addChild(this.getPotentialChildInstance(id));
-    };
-    MovieClip.prototype.deactivateChild = function (id) {
-        this.removeChild(this._potentialInstances[id]);
     };
     /**
      * Stop playback of animation and hold current position
@@ -11048,12 +11066,10 @@ var MovieClip = (function (_super) {
                 advance = false;
             }
             if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
-                //console.log("one frame clip");
                 this._currentFrameIndex = 0;
                 advance = false;
             }
             if (advance) {
-                //console.log("advance");
                 ++this._currentFrameIndex;
                 if (this._currentFrameIndex == this._timeline.numFrames) {
                     // looping - jump to first frame.
@@ -11096,9 +11112,6 @@ var MovieClip = (function (_super) {
             str += "--";
         str += " " + target.name + " = " + target._iMaskID;
         console.log(str);
-    };
-    MovieClip.prototype.executePostConstructCommands = function () {
-        return true;
     };
     MovieClip.assetType = "[asset MovieClip]";
     return MovieClip;
