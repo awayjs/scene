@@ -6243,7 +6243,6 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    private _time;
 	    private _currentFrameIndex;
 	    private _constructedKeyFrameIndex;
-	    private _fps;
 	    private _isPlaying;
 	    private _loop;
 	    private _enterFrame;
@@ -6274,7 +6273,6 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    removeChild(child: DisplayObject): DisplayObject;
 	    removeChildAtDepth(depth: number): DisplayObject;
 	    removeChildAt(index: number): DisplayObject;
-	    fps: number;
 	    assetType: string;
 	    /**
 	     * Starts playback of animation from current position
@@ -6283,7 +6281,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    /**
 	     * should be called right before the call to away3d-render.
 	     */
-	    update(timeDelta: number): void;
+	    update(): void;
 	    getPotentialChildInstance(id: number): DisplayObject;
 	    /**
 	     * Stop playback of animation and hold current position

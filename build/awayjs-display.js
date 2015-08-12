@@ -10829,7 +10829,6 @@ var MovieClip = (function (_super) {
         this._isInit = true;
         this._isPlaying = true; // auto-play
         this._isButton = false;
-        this._fps = 30;
         this._time = 0;
         this._enterFrame = new Event(Event.ENTER_FRAME);
         this.inheritColorTransform = true;
@@ -11016,16 +11015,6 @@ var MovieClip = (function (_super) {
         this._active_session_ids[child._sessionID] = null;
         return child;
     };
-    Object.defineProperty(MovieClip.prototype, "fps", {
-        get: function () {
-            return this._fps;
-        },
-        set: function (newFps) {
-            this._fps = newFps;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(MovieClip.prototype, "assetType", {
         get: function () {
             return MovieClip.assetType;
@@ -11042,25 +11031,17 @@ var MovieClip = (function (_super) {
     /**
      * should be called right before the call to away3d-render.
      */
-    MovieClip.prototype.update = function (timeDelta) {
-        //this.logHierarchy();
-        // TODO: Implement proper elastic racetrack logic
-        var frameMarker = Math.floor(1000 / this._fps);
-        // right now, just advance frame once time marker has been reached (only allow for one frame advance per-update)
-        this._time += Math.min(timeDelta, frameMarker);
-        if (this._time >= frameMarker) {
-            this._time = 0;
-            this.advanceFrame();
-            // after we advanced the scenegraph, we might have some script that needs executing
-            FrameScriptManager.execute_queue();
-            // now we want to execute the onEnter
-            this.dispatchEvent(this._enterFrame);
-            // after we executed the onEnter, we might have some script that needs executing
-            FrameScriptManager.execute_queue();
-            FrameScriptManager.execute_intervals();
-            FrameScriptManager.execute_queue();
-            this.exit_frame();
-        }
+    MovieClip.prototype.update = function () {
+        this.advanceFrame();
+        // after we advanced the scenegraph, we might have some script that needs executing
+        FrameScriptManager.execute_queue();
+        // now we want to execute the onEnter
+        this.dispatchEvent(this._enterFrame);
+        // after we executed the onEnter, we might have some script that needs executing
+        FrameScriptManager.execute_queue();
+        FrameScriptManager.execute_intervals();
+        FrameScriptManager.execute_queue();
+        this.exit_frame();
     };
     MovieClip.prototype.getPotentialChildInstance = function (id) {
         if (!this._potentialInstances[id]) {
@@ -11077,7 +11058,6 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.clone = function (newInstance) {
         if (newInstance === void 0) { newInstance = null; }
         newInstance = _super.prototype.clone.call(this, newInstance || new MovieClip(this._timeline));
-        newInstance._fps = this._fps;
         newInstance._loop = this._loop;
         return newInstance;
     };
@@ -13116,7 +13096,7 @@ var FrameScriptManager = (function () {
     FrameScriptManager._queued_scripts = [];
     FrameScriptManager._queued_mcs_pass2 = [];
     FrameScriptManager._queued_scripts_pass2 = [];
-    FrameScriptManager._active_intervals = []; // maps id to function
+    FrameScriptManager._active_intervals = new Object(); // maps id to function
     FrameScriptManager._intervalID = 0;
     return FrameScriptManager;
 })();
