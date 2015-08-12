@@ -29,7 +29,6 @@ class MovieClip extends DisplayObjectContainer
     private _currentFrameIndex:number;// the current frame
     private _constructedKeyFrameIndex:number;// the current index of the current active frame
 
-    private _fps:number;// we use ms internally, but have fps, so user can set time by frame
     private _isPlaying:boolean;// false if paused or stopped
     private _loop:boolean = true;
 
@@ -67,7 +66,6 @@ class MovieClip extends DisplayObjectContainer
         this._isPlaying = true; // auto-play
         this._isButton=false;
 
-        this._fps = 30;
         this._time = 0;
         this._enterFrame = new Event(Event.ENTER_FRAME);
         this.inheritColorTransform = true;
@@ -259,16 +257,6 @@ class MovieClip extends DisplayObjectContainer
         return child;
     }
 
-    public get fps():number
-    {
-        return this._fps;
-    }
-
-    public set fps(newFps:number)
-    {
-        this._fps = newFps;
-    }
-
     public get assetType():string
     {
         return MovieClip.assetType;
@@ -285,33 +273,22 @@ class MovieClip extends DisplayObjectContainer
     /**
      * should be called right before the call to away3d-render.
      */
-    public update(timeDelta:number)
+    public update()
     {
-        //this.logHierarchy();
-        // TODO: Implement proper elastic racetrack logic
-        var frameMarker:number = Math.floor(1000/this._fps);
+        this.advanceFrame();
+        // after we advanced the scenegraph, we might have some script that needs executing
+        FrameScriptManager.execute_queue();
 
-        // right now, just advance frame once time marker has been reached (only allow for one frame advance per-update)
-        this._time += Math.min(timeDelta, frameMarker);
-
-        if (this._time >= frameMarker) {
-            this._time = 0;
-            this.advanceFrame();
-            // after we advanced the scenegraph, we might have some script that needs executing
-            FrameScriptManager.execute_queue();
-
-            // now we want to execute the onEnter
-            this.dispatchEvent(this._enterFrame);
-            // after we executed the onEnter, we might have some script that needs executing
-            FrameScriptManager.execute_queue();
+        // now we want to execute the onEnter
+        this.dispatchEvent(this._enterFrame);
+        // after we executed the onEnter, we might have some script that needs executing
+        FrameScriptManager.execute_queue();
 
 
-            FrameScriptManager.execute_intervals();
-            FrameScriptManager.execute_queue();
+        FrameScriptManager.execute_intervals();
+        FrameScriptManager.execute_queue();
 
-            this.exit_frame();
-
-        }
+        this.exit_frame();
     }
 
     public getPotentialChildInstance(id:number) : DisplayObject
@@ -336,7 +313,6 @@ class MovieClip extends DisplayObjectContainer
     {
         newInstance = <MovieClip> super.clone(newInstance || new MovieClip(this._timeline));
 
-        newInstance._fps = this._fps;
         newInstance._loop = this._loop;
 
         return newInstance;

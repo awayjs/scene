@@ -8,7 +8,7 @@ class FrameScriptManager
 	private static _queued_mcs_pass2:Array<MovieClip> = [];
 	private static _queued_scripts_pass2:Array<Function> = [];
 
-	private static _active_intervals:Object = []; // maps id to function
+	private static _active_intervals:Object = new Object(); // maps id to function
 
 	private static _intervalID:number=0;
 	public static setInterval(func:any):number
