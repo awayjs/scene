@@ -640,14 +640,12 @@ var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Point = require("awayjs-core/lib/geom/Point");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
 var Transform = require("awayjs-display/lib/base/Transform");
 var PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
-var SceneEvent = require("awayjs-display/lib/events/SceneEvent");
 /**
  * The DisplayObject class is the base class for all objects that can be
  * placed on the display list. The display list manages all objects displayed
@@ -789,14 +787,17 @@ var DisplayObject = (function (_super) {
         this._boxBoundsInvalid = true;
         this._sphereBoundsInvalid = true;
         this._pSceneTransform = new Matrix3D();
-        this._iMaskID = -1;
-        this._iMasks = null;
+        this._pIsEntity = false;
+        this._pIsContainer = false;
         this._sessionID = -1;
         this._matrix3D = new Matrix3D();
         this._inverseSceneTransform = new Matrix3D();
         this._scenePosition = new Vector3D();
         this._explicitVisibility = true;
+        this._explicitMaskId = -1;
         this._pImplicitVisibility = true;
+        this._pImplicitMaskId = -1;
+        this._pImplicitMaskIds = new Array();
         this._explicitMouseEnabled = true;
         this._pImplicitMouseEnabled = true;
         this._rotationX = 0;
@@ -1145,6 +1146,16 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DisplayObject.prototype, "isContainer", {
+        /**
+         *
+         */
+        get: function () {
+            return this._pIsContainer;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObject.prototype, "loaderInfo", {
         /**
          * Returns a LoaderInfo object containing information about loading the file
@@ -1274,6 +1285,7 @@ var DisplayObject = (function (_super) {
                 return;
             this._explicitPartition = value;
             this._pUpdateImplicitPartition(this._pParent ? this._pParent._iAssignedPartition : null, this._pScene);
+            this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
         },
         enumerable: true,
         configurable: true
@@ -1661,6 +1673,37 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DisplayObject.prototype, "maskId", {
+        get: function () {
+            return this._explicitMaskId;
+        },
+        set: function (value) {
+            if (this._explicitMaskId == value)
+                return;
+            this._explicitMaskId = value;
+            this._pUpdateImplicitMaskId(this._pParent ? this._pParent._iAssignedMaskId() : -1);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObject.prototype, "masks", {
+        get: function () {
+            return this._explicitMasks;
+        },
+        set: function (value) {
+            if (this._explicitMasks == value)
+                return;
+            this._explicitMasks = value;
+            if (this._explicitMasks != null && this._explicitMasks.length) {
+                var len = this._explicitMasks.length;
+                for (var i = 0; i < len; i++)
+                    this._explicitMasks[i].maskId = this._explicitMasks[i].id;
+            }
+            this._pUpdateImplicitMasks(this._pParent ? this._pParent._iAssignedMasks() : null);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObject.prototype, "width", {
         /**
          * Indicates the width of the display object, in pixels. The width is
@@ -1810,9 +1853,9 @@ var DisplayObject = (function (_super) {
             newInstance = new DisplayObject();
         newInstance.pivot = this.pivot;
         newInstance._iMatrix3D = this._iMatrix3D;
-        //newInstance.name="";
-        newInstance._iMaskID = this._iMaskID;
-        newInstance._iMasks = this._iMasks ? this._iMasks.concat() : null;
+        //newInstance.name = this.name;
+        newInstance.maskId = this._explicitMaskId;
+        newInstance.masks = this.masks ? this.masks.concat() : null;
         if (this._adapter)
             newInstance.adapter = this._adapter.clone(newInstance);
         if (this._transform.colorTransform)
@@ -2398,12 +2441,16 @@ var DisplayObject = (function (_super) {
         if (value) {
             this._pUpdateImplicitMouseEnabled(value.mouseChildren && value._pImplicitMouseEnabled);
             this._pUpdateImplicitVisibility(value._iIsVisible());
+            this._pUpdateImplicitMaskId(value._iAssignedMaskId());
+            this._pUpdateImplicitMasks(value._iAssignedMasks());
             this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
             value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
         }
         else {
             this._pUpdateImplicitMouseEnabled(true);
             this._pUpdateImplicitVisibility(true);
+            this._pUpdateImplicitMaskId(-1);
+            this._pUpdateImplicitMasks(null);
             this._pUpdateImplicitPartition(null, null);
         }
         this._invalidateGlobalColorTransform();
@@ -2439,14 +2486,11 @@ var DisplayObject = (function (_super) {
      */
     DisplayObject.prototype._pUpdateImplicitPartition = function (partition, scene) {
         var sceneChanged = this._pScene != scene;
-        if (sceneChanged && this._pScene)
-            this._pScene.dispatchEvent(new SceneEvent(SceneEvent.REMOVED_FROM_SCENE, this));
         if (this._pScene && this._pImplicitPartition) {
             //unregister partition from current scene
             this._pScene._iUnregisterPartition(this._pImplicitPartition);
             //unregister entity from current partition
-            if (this._pIsEntity)
-                this._pUnregisterEntity(this._pImplicitPartition);
+            this._pImplicitPartition._iUnregisterEntity(this);
         }
         // assign parent implicit partition if no explicit one is given
         this._pImplicitPartition = this._explicitPartition || partition;
@@ -2457,11 +2501,8 @@ var DisplayObject = (function (_super) {
             //register partition with scene
             this._pScene._iRegisterPartition(this._pImplicitPartition);
             //register entity with new partition
-            if (this._pIsEntity)
-                this._pRegisterEntity(this._pImplicitPartition);
+            this._pImplicitPartition._iRegisterEntity(this);
         }
-        if (sceneChanged && this._pScene)
-            this._pScene.dispatchEvent(new SceneEvent(SceneEvent.ADDED_TO_SCENE, this));
         if (sceneChanged) {
             if (!this._pIgnoreTransform)
                 this.pInvalidateSceneTransform();
@@ -2473,6 +2514,33 @@ var DisplayObject = (function (_super) {
      */
     DisplayObject.prototype._pUpdateImplicitVisibility = function (value) {
         this._pImplicitVisibility = this._explicitVisibility && value;
+    };
+    /**
+     * @protected
+     */
+    DisplayObject.prototype._pUpdateImplicitMaskId = function (value) {
+        this._pImplicitMaskId = (value != -1) ? value : this._explicitMaskId;
+    };
+    /**
+     * @protected
+     */
+    DisplayObject.prototype._pUpdateImplicitMasks = function (value) {
+        this._pImplicitMasks = (value != null) ? (this._explicitMasks != null) ? value.concat([this._explicitMasks]) : value.concat() : (this._explicitMasks != null) ? [this._explicitMasks] : null;
+        this._pImplicitMaskIds.length = 0;
+        if (this._pImplicitMasks && this._pImplicitMasks.length) {
+            var numLayers = this._pImplicitMasks.length;
+            var numChildren;
+            var implicitChildren;
+            var implicitChildIds;
+            for (var i = 0; i < numLayers; i++) {
+                implicitChildren = this._pImplicitMasks[i];
+                numChildren = implicitChildren.length;
+                implicitChildIds = new Array();
+                for (var j = 0; j < numChildren; j++)
+                    implicitChildIds.push(implicitChildren[j].maskId);
+                this._pImplicitMaskIds.push(implicitChildIds);
+            }
+        }
     };
     /**
      * @protected
@@ -2563,6 +2631,21 @@ var DisplayObject = (function (_super) {
      */
     DisplayObject.prototype._iIsVisible = function () {
         return this._pImplicitVisibility;
+    };
+    /**
+     * @internal
+     */
+    DisplayObject.prototype._iAssignedMaskId = function () {
+        return this._pImplicitMaskId;
+    };
+    /**
+     * @internal
+     */
+    DisplayObject.prototype._iAssignedMasks = function () {
+        return this._pImplicitMasks;
+    };
+    DisplayObject.prototype._iMasksConfig = function () {
+        return this._pImplicitMaskIds;
     };
     /**
      * @internal
@@ -2669,12 +2752,6 @@ var DisplayObject = (function (_super) {
         this._entityNodes.splice(index, 1);
         return entityNode;
     };
-    DisplayObject.prototype._pRegisterEntity = function (partition) {
-        throw new AbstractMethodError();
-    };
-    DisplayObject.prototype._pUnregisterEntity = function (partition) {
-        throw new AbstractMethodError();
-    };
     DisplayObject.prototype._pInvalidateBounds = function () {
         this._boxBoundsInvalid = true;
         this._sphereBoundsInvalid = true;
@@ -2779,7 +2856,7 @@ var DisplayObject = (function (_super) {
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4304,7 +4381,7 @@ var Timeline = (function () {
                                 if (mask.isAsset(DisplayObjectContainer))
                                     mask.mouseChildren = false;
                             }
-                            target._iMasks = masks;
+                            target.masks = masks;
                             break;
                         case 4:
                             target.name = this.properties_stream_strings[value_start_index];
@@ -4344,8 +4421,6 @@ var Timeline = (function () {
                             }
                             break;
                         case 200:
-                            //todo: remove once runtime does not need id for mask anymore
-                            target._iMaskID = childID;
                             break;
                         default:
                             break;
@@ -5659,10 +5734,12 @@ var DisplayObjectContainer = (function (_super) {
      */
     function DisplayObjectContainer() {
         _super.call(this);
+        this._containerNodes = new Array();
         this._mouseChildren = true;
         this._depths = new Array();
         this._nextHighestDepth = 0;
         this._children = new Array();
+        this._pIsContainer = true;
     }
     Object.defineProperty(DisplayObjectContainer.prototype, "assetType", {
         /**
@@ -5758,31 +5835,20 @@ var DisplayObjectContainer = (function (_super) {
         //if child already has a parent, remove it.
         if (child._pParent)
             child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
-        var len = this._depths.length;
-        var index = len;
-        while (index--)
-            if (this._depths[index] < depth)
-                break;
-        index++;
-        if (index < len) {
-            //if replace flag & depths match current depth, remove the existing child
-            if (this._depths[index] == depth) {
-                if (replace) {
-                    this.removeChildAt(index);
-                }
-                else {
-                    //move depth of existing child up by 1
-                    this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
-                }
+        var index = this.getDepthIndexInternal(depth);
+        if (index != -1) {
+            if (replace) {
+                this.removeChildAt(index);
             }
-            this._children.splice(index, 0, child);
-            this._depths.splice(index, 0, depth);
+            else {
+                //move depth of existing child up by 1
+                this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
+            }
         }
-        else {
-            this._children.push(child);
-            this._depths.push(depth);
+        if (this._nextHighestDepth < depth + 1)
             this._nextHighestDepth = depth + 1;
-        }
+        this._children.push(child);
+        this._depths.push(depth);
         child.iSetParent(this);
         this._pInvalidateBounds();
         return child;
@@ -5817,7 +5883,7 @@ var DisplayObjectContainer = (function (_super) {
      *              list.
      */
     DisplayObjectContainer.prototype.addChildAt = function (child, index) {
-        return this.addChildAtDepth(child, (index < this._children.length) ? this._depths[index] : this._nextHighestDepth, false);
+        return this.addChildAtDepth(child, (index < this._depths.length) ? this._depths[index] : this.getNextHighestDepth(), false);
     };
     DisplayObjectContainer.prototype.addChildren = function () {
         var childarray = [];
@@ -5922,6 +5988,8 @@ var DisplayObjectContainer = (function (_super) {
         return this._depths[this.getChildIndex(child)];
     };
     DisplayObjectContainer.prototype.getNextHighestDepth = function () {
+        if (this._nextHighestDepthDirty)
+            this._updateNextHighestDepth();
         return this._nextHighestDepth;
     };
     /**
@@ -6164,6 +6232,24 @@ var DisplayObjectContainer = (function (_super) {
     /**
      * @protected
      */
+    DisplayObjectContainer.prototype._pUpdateImplicitMaskId = function (value) {
+        _super.prototype._pUpdateImplicitMaskId.call(this, value);
+        var len = this._children.length;
+        for (var i = 0; i < len; ++i)
+            this._children[i]._pUpdateImplicitMaskId(this._pImplicitMaskId);
+    };
+    /**
+     * @protected
+     */
+    DisplayObjectContainer.prototype._pUpdateImplicitMasks = function (value) {
+        _super.prototype._pUpdateImplicitMasks.call(this, value);
+        var len = this._children.length;
+        for (var i = 0; i < len; ++i)
+            this._children[i]._pUpdateImplicitMasks(this._pImplicitMasks);
+    };
+    /**
+     * @protected
+     */
     DisplayObjectContainer.prototype._pUpdateImplicitPartition = function (value, scene) {
         _super.prototype._pUpdateImplicitPartition.call(this, value, scene);
         var len = this._children.length;
@@ -6177,17 +6263,23 @@ var DisplayObjectContainer = (function (_super) {
      */
     DisplayObjectContainer.prototype.removeChildAtInternal = function (index) {
         var child = this._children.splice(index, 1)[0];
-        this._depths.splice(index, 1);
-        //if child is the last in array, update next highest depth
-        if (index == this._children.length)
-            this._nextHighestDepth = this._depths[index - 1] + 1;
+        var depth = this._depths.splice(index, 1)[0];
+        //update next highest depth
+        if (this._nextHighestDepth == depth + 1)
+            this._nextHighestDepthDirty = true;
         return child;
     };
     DisplayObjectContainer.prototype.getDepthIndexInternal = function (depth /*int*/) {
-        var index = this._depths.indexOf(depth);
-        if (index == -1)
-            throw new ArgumentError("No child at specified depth");
-        return index;
+        return this._depths.indexOf(depth);
+    };
+    DisplayObjectContainer.prototype._updateNextHighestDepth = function () {
+        this._nextHighestDepthDirty = false;
+        this._nextHighestDepth = 0;
+        var len = this._depths.length;
+        for (var i = 0; i < len; i++)
+            if (this._nextHighestDepth < this._depths[i])
+                this._nextHighestDepth = this._depths[i];
+        this._nextHighestDepth += 1;
     };
     /**
      * Evaluates the display object to see if it overlaps or intersects with the
@@ -6208,7 +6300,7 @@ var DisplayObjectContainer = (function (_super) {
     DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
         if (masksFlag === void 0) { masksFlag = false; }
-        if (this._iMaskID !== -1 && !masksFlag)
+        if (this.maskId !== -1 && !masksFlag)
             return;
         if (this.visible == false)
             return;
@@ -6216,7 +6308,7 @@ var DisplayObjectContainer = (function (_super) {
             var child = this.getChildAt(i);
             var childHit = child.hitTestPoint(x, y, shapeFlag, masksFlag);
             if (childHit) {
-                var all_masks = this._iMasks;
+                var all_masks = this.masks;
                 if (all_masks) {
                     for (var mi_cnt = 0; mi_cnt < all_masks.length; mi_cnt++) {
                         var mask_child = all_masks[mi_cnt];
@@ -6233,6 +6325,15 @@ var DisplayObjectContainer = (function (_super) {
             }
         }
         return false;
+    };
+    DisplayObjectContainer.prototype._iAddContainerNode = function (entityNode) {
+        this._containerNodes.push(entityNode);
+        return entityNode;
+    };
+    DisplayObjectContainer.prototype._iRemoveContainerNode = function (entityNode) {
+        var index = this._containerNodes.indexOf(entityNode);
+        this._containerNodes.splice(index, 1);
+        return entityNode;
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
     return DisplayObjectContainer;
@@ -6845,23 +6946,19 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-var SceneEvent = require("awayjs-display/lib/events/SceneEvent");
-var NodeBase = require("awayjs-display/lib/partition/NodeBase");
-var Partition = require("awayjs-display/lib/partition/Partition");
+var BasicPartition = require("awayjs-display/lib/partition/BasicPartition");
 var Scene = (function (_super) {
     __extends(Scene, _super);
-    function Scene() {
+    function Scene(partition) {
+        if (partition === void 0) { partition = null; }
         _super.call(this);
         this._expandedPartitions = new Array();
         this._partitions = new Array();
         this._iCollectionMark = 0;
-        this._partition = new Partition(new NodeBase());
-        this._iSceneGraphRoot = new DisplayObjectContainer();
-        this._iSceneGraphRoot._iSetScene(this);
-        this._iSceneGraphRoot._iIsRoot = true;
-        this._iSceneGraphRoot.partition = this._partition;
+        this.partition = partition || new BasicPartition();
+        this._iSetScene(this);
+        this._iIsRoot = true;
     }
     Scene.prototype.traversePartitions = function (traverser) {
         var i = 0;
@@ -6871,39 +6968,6 @@ var Scene = (function (_super) {
         while (i < len)
             this._partitions[i++].traverse(traverser);
     };
-    Object.defineProperty(Scene.prototype, "partition", {
-        get: function () {
-            return this._iSceneGraphRoot.partition;
-        },
-        set: function (value) {
-            this._iSceneGraphRoot.partition = value;
-            this.dispatchEvent(new SceneEvent(SceneEvent.PARTITION_CHANGED, this._iSceneGraphRoot));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Scene.prototype.contains = function (child) {
-        return this._iSceneGraphRoot.contains(child);
-    };
-    Scene.prototype.addChild = function (child) {
-        return this._iSceneGraphRoot.addChild(child);
-    };
-    Scene.prototype.removeChild = function (child) {
-        this._iSceneGraphRoot.removeChild(child);
-    };
-    Scene.prototype.removeChildAt = function (index) {
-        this._iSceneGraphRoot.removeChildAt(index);
-    };
-    Scene.prototype.getChildAt = function (index) {
-        return this._iSceneGraphRoot.getChildAt(index);
-    };
-    Object.defineProperty(Scene.prototype, "numChildren", {
-        get: function () {
-            return this._iSceneGraphRoot.numChildren;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      * @internal
      */
@@ -6923,16 +6987,16 @@ var Scene = (function (_super) {
             this._partitions.splice(this._partitions.indexOf(partition), 1);
     };
     return Scene;
-})(EventDispatcher);
+})(DisplayObjectContainer);
 module.exports = Scene;
 
-},{"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/partition/NodeBase":"awayjs-display/lib/partition/NodeBase","awayjs-display/lib/partition/Partition":"awayjs-display/lib/partition/Partition"}],"awayjs-display/lib/containers/View":[function(require,module,exports){
+},{"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/containers/View":[function(require,module,exports){
 var getTimer = require("awayjs-core/lib/utils/getTimer");
 var Scene = require("awayjs-display/lib/containers/Scene");
 var RaycastPicker = require("awayjs-display/lib/pick/RaycastPicker");
 var Camera = require("awayjs-display/lib/entities/Camera");
 var CameraEvent = require("awayjs-display/lib/events/CameraEvent");
-var SceneEvent = require("awayjs-display/lib/events/SceneEvent");
+var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
 var RendererEvent = require("awayjs-display/lib/events/RendererEvent");
 var MouseManager = require("awayjs-display/lib/managers/MouseManager");
 var View = (function () {
@@ -6959,10 +7023,10 @@ var View = (function () {
         this._viewportDirty = true;
         this._scissorDirty = true;
         this._mousePicker = new RaycastPicker();
-        this._onScenePartitionChangedDelegate = function (event) { return _this.onScenePartitionChanged(event); };
-        this._onProjectionChangedDelegate = function (event) { return _this.onProjectionChanged(event); };
-        this._onViewportUpdatedDelegate = function (event) { return _this.onViewportUpdated(event); };
-        this._onScissorUpdatedDelegate = function (event) { return _this.onScissorUpdated(event); };
+        this._onPartitionChangedDelegate = function (event) { return _this._onPartitionChanged(event); };
+        this._onProjectionChangedDelegate = function (event) { return _this._onProjectionChanged(event); };
+        this._onViewportUpdatedDelegate = function (event) { return _this._onViewportUpdated(event); };
+        this._onScissorUpdatedDelegate = function (event) { return _this._onScissorUpdated(event); };
         this.scene = scene || new Scene();
         this.camera = camera || new Camera();
         this.renderer = renderer;
@@ -6976,14 +7040,6 @@ var View = (function () {
         //			if (this._shareContext)
         //				this._mouse3DManager.addViewLayer(this);
     }
-    /**
-     *
-     * @param e
-     */
-    View.prototype.onScenePartitionChanged = function (event) {
-        if (this._pCamera)
-            this._pScene.partition._iRegisterCamera(this._pCamera);
-    };
     Object.defineProperty(View.prototype, "mouseX", {
         get: function () {
             return this._pMouseX;
@@ -7127,7 +7183,7 @@ var View = (function () {
             if (this._pEntityCollector)
                 this._pEntityCollector.camera = this._pCamera;
             if (this._pScene)
-                this._pScene.partition._iRegisterCamera(this._pCamera);
+                this._pScene.partition._iRegisterEntity(this._pCamera);
             this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
             this._scissorDirty = true;
             this._viewportDirty = true;
@@ -7150,11 +7206,11 @@ var View = (function () {
             if (this._pScene == value)
                 return;
             if (this._pScene)
-                this._pScene.removeEventListener(SceneEvent.PARTITION_CHANGED, this._onScenePartitionChangedDelegate);
+                this._pScene.removeEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
             this._pScene = value;
-            this._pScene.addEventListener(SceneEvent.PARTITION_CHANGED, this._onScenePartitionChangedDelegate);
+            this._pScene.addEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
             if (this._pCamera)
-                this._pScene.partition._iRegisterCamera(this._pCamera);
+                this._pScene.partition._iRegisterEntity(this._pCamera);
         },
         enumerable: true,
         configurable: true
@@ -7349,21 +7405,29 @@ var View = (function () {
     });
     /**
      *
+     * @param e
      */
-    View.prototype.onProjectionChanged = function (event) {
+    View.prototype._onPartitionChanged = function (event) {
+        if (this._pCamera)
+            this._pScene.partition._iRegisterEntity(this._pCamera);
+    };
+    /**
+     *
+     */
+    View.prototype._onProjectionChanged = function (event) {
         this._scissorDirty = true;
         this._viewportDirty = true;
     };
     /**
      *
      */
-    View.prototype.onViewportUpdated = function (event) {
+    View.prototype._onViewportUpdated = function (event) {
         this._viewportDirty = true;
     };
     /**
      *
      */
-    View.prototype.onScissorUpdated = function (event) {
+    View.prototype._onScissorUpdated = function (event) {
         this._scissorDirty = true;
     };
     View.prototype.project = function (point3d) {
@@ -7407,7 +7471,7 @@ var View = (function () {
 })();
 module.exports = View;
 
-},{"awayjs-core/lib/utils/getTimer":undefined,"awayjs-display/lib/containers/Scene":"awayjs-display/lib/containers/Scene","awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-display/lib/events/RendererEvent":"awayjs-display/lib/events/RendererEvent","awayjs-display/lib/events/SceneEvent":"awayjs-display/lib/events/SceneEvent","awayjs-display/lib/managers/MouseManager":"awayjs-display/lib/managers/MouseManager","awayjs-display/lib/pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
+},{"awayjs-core/lib/utils/getTimer":undefined,"awayjs-display/lib/containers/Scene":"awayjs-display/lib/containers/Scene","awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/RendererEvent":"awayjs-display/lib/events/RendererEvent","awayjs-display/lib/managers/MouseManager":"awayjs-display/lib/managers/MouseManager","awayjs-display/lib/pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var ControllerBase = (function () {
     function ControllerBase(targetObject) {
@@ -9547,12 +9611,6 @@ var Billboard = (function (_super) {
             this._iSourcePrefab._iValidate();
         renderer._iApplyRenderableOwner(this);
     };
-    Billboard.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterEntity(this);
-    };
-    Billboard.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterEntity(this);
-    };
     Billboard.assetType = "[asset Billboard]";
     return Billboard;
 })(DisplayObject);
@@ -9786,12 +9844,6 @@ var Camera = (function (_super) {
             this._iSourcePrefab._iValidate();
         //nothing to do here
     };
-    Camera.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterCamera(this);
-    };
-    Camera.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterCamera(this);
-    };
     Camera.assetType = "[asset Camera]";
     return Camera;
 })(DisplayObjectContainer);
@@ -9906,12 +9958,6 @@ var DirectionalLight = (function (_super) {
         target.prepend(m);
         return target;
     };
-    DirectionalLight.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterDirectionalLight(this);
-    };
-    DirectionalLight.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterDirectionalLight(this);
-    };
     /**
      * //TODO
      *
@@ -10002,12 +10048,6 @@ var LightProbe = (function (_super) {
     LightProbe.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
         if (target === void 0) { target = null; }
         throw new Error("Object projection matrices are not supported for LightProbe objects!");
-    };
-    LightProbe.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterLightProbe(this);
-    };
-    LightProbe.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterLightProbe(this);
     };
     return LightProbe;
 })(LightBase);
@@ -10202,12 +10242,6 @@ var LineSegment = (function (_super) {
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
         renderer._iApplyRenderableOwner(this);
-    };
-    LineSegment.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterEntity(this);
-    };
-    LineSegment.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterEntity(this);
     };
     LineSegment.assetType = "[asset LineSegment]";
     return LineSegment;
@@ -10478,8 +10512,8 @@ var Mesh = (function (_super) {
         //this is of course no proper cloning
         //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
         clone.extra = this.extra;
-        clone._iMaskID = this._iMaskID;
-        clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
+        clone.maskId = this.maskId;
+        clone.masks = this.masks ? this.masks.concat() : null;
         var len = this._subMeshes.length;
         for (var i = 0; i < len; ++i)
             clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
@@ -10700,12 +10734,6 @@ var Mesh = (function (_super) {
         for (var i = 0; i < len; ++i)
             this._subMeshes[i]._iInvalidateRenderableGeometry();
     };
-    Mesh.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterEntity(this);
-    };
-    Mesh.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterEntity(this);
-    };
     /**
      * Evaluates the display object to see if it overlaps or intersects with the
      * point specified by the <code>x</code> and <code>y</code> parameters. The
@@ -10726,7 +10754,7 @@ var Mesh = (function (_super) {
         if (shapeFlag === void 0) { shapeFlag = false; }
         if (masksFlag === void 0) { masksFlag = false; }
         // if this is a mask, directly return false
-        if (this._iMaskID !== -1 && !masksFlag)
+        if (this.maskId !== -1 && !masksFlag)
             return false;
         // if this is invisible, all children should be invisible too.
         // todo: is the above statement correct for awayjs visible-property ?
@@ -10741,7 +10769,7 @@ var Mesh = (function (_super) {
                 for (var j = 0; j < this.geometry.subGeometries.length; j++) {
                     if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
                         // if the mesh is masked, we need to check if 1 mask will collide
-                        var all_masks = this._iMasks;
+                        var all_masks = this.masks;
                         if (all_masks) {
                             var all_hir_masks = this["hierarchicalMasks"];
                             //todo: check if there will be cases when no hirarchical masks have been collected and assigned yet.
@@ -11110,7 +11138,7 @@ var MovieClip = (function (_super) {
         var str = "";
         for (var i = 0; i < depth; ++i)
             str += "--";
-        str += " " + target.name + " = " + target._iMaskID;
+        str += " " + target.name + " = " + target.maskId;
         console.log(str);
     };
     MovieClip.assetType = "[asset MovieClip]";
@@ -11217,12 +11245,6 @@ var PointLight = (function (_super) {
         target.prepend(m);
         return target;
     };
-    PointLight.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterPointLight(this);
-    };
-    PointLight.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterPointLight(this);
-    };
     return PointLight;
 })(LightBase);
 module.exports = PointLight;
@@ -11273,8 +11295,8 @@ var Shape = (function (_super) {
         clone.pivot = this.pivot;
         clone._iMatrix3D = this._iMatrix3D;
         clone.name = name;
-        clone._iMaskID = this._iMaskID;
-        clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
+        clone.maskId = this.maskId;
+        clone.masks = this.masks ? this.masks.concat() : null;
         clone._graphics = this._graphics;
         return clone;
     };
@@ -11544,12 +11566,6 @@ var Skybox = (function (_super) {
         var index = this._renderables.indexOf(renderable);
         this._renderables.splice(index, 1);
         return renderable;
-    };
-    Skybox.prototype._pRegisterEntity = function (partition) {
-        partition._iRegisterSkybox(this);
-    };
-    Skybox.prototype._pUnregisterEntity = function (partition) {
-        partition._iUnregisterSkybox(this);
     };
     Skybox.assetType = "[asset Skybox]";
     return Skybox;
@@ -12308,8 +12324,8 @@ var TextField = (function (_super) {
         //this is of course no proper cloning
         //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
         clone.extra = this.extra;
-        clone._iMaskID = this._iMaskID;
-        clone._iMasks = this._iMasks ? this._iMasks.concat() : null;
+        clone.maskId = this.maskId;
+        clone.masks = this.masks ? this.masks.concat() : null;
         //var len:number = this._subMeshes.length;
         //for (var i:number = 0; i < len; ++i)
         //	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
@@ -12398,6 +12414,10 @@ var DisplayObjectEvent = (function (_super) {
     DisplayObjectEvent.SKEW_CHANGED = "skewChanged";
     DisplayObjectEvent.SCALE_CHANGED = "scaleChanged";
     DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED = "globalColorTransformChanged";
+    /**
+     *
+     */
+    DisplayObjectEvent.PARTITION_CHANGED = "partitionChanged";
     return DisplayObjectEvent;
 })(Event);
 module.exports = DisplayObjectEvent;
@@ -12751,36 +12771,6 @@ var ResizeEvent = (function (_super) {
     return ResizeEvent;
 })(Event);
 module.exports = ResizeEvent;
-
-},{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/events/SceneEvent":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Event = require("awayjs-core/lib/events/Event");
-var SceneEvent = (function (_super) {
-    __extends(SceneEvent, _super);
-    function SceneEvent(type, displayObject) {
-        _super.call(this, type);
-        this.displayObject = displayObject;
-    }
-    /**
-     *
-     */
-    SceneEvent.ADDED_TO_SCENE = "addedToScene";
-    /**
-     *
-     */
-    SceneEvent.REMOVED_FROM_SCENE = "removedFromScene";
-    /**
-     *
-     */
-    SceneEvent.PARTITION_CHANGED = "partitionChanged";
-    return SceneEvent;
-})(Event);
-module.exports = SceneEvent;
 
 },{"awayjs-core/lib/events/Event":undefined}],"awayjs-display/lib/events/SubGeometryEvent":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
@@ -15141,7 +15131,29 @@ var ShadowMapperBase = (function () {
 })();
 module.exports = ShadowMapperBase;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/traverse/ShadowCasterCollector":"awayjs-display/lib/traverse/ShadowCasterCollector"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/traverse/ShadowCasterCollector":"awayjs-display/lib/traverse/ShadowCasterCollector"}],"awayjs-display/lib/partition/BasicPartition":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var NodeBase = require("awayjs-display/lib/partition/NodeBase");
+var PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+/**
+ * @class away.partition.Partition
+ */
+var BasicPartition = (function (_super) {
+    __extends(BasicPartition, _super);
+    function BasicPartition() {
+        _super.call(this);
+        this._rootNode = new NodeBase();
+    }
+    return BasicPartition;
+})(PartitionBase);
+module.exports = BasicPartition;
+
+},{"awayjs-display/lib/partition/NodeBase":"awayjs-display/lib/partition/NodeBase","awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15163,12 +15175,139 @@ var CameraNode = (function (_super) {
     CameraNode.prototype.acceptTraverser = function (traverser) {
         // todo: dead end for now, if it has a debug mesh, then sure accept that
     };
-    CameraNode.id = "cameraNode";
     return CameraNode;
 })(EntityNode);
 module.exports = CameraNode;
 
-},{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DirectionalLightNode":[function(require,module,exports){
+},{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/ContainerNode":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var NodeBase = require("awayjs-display/lib/partition/NodeBase");
+/**
+ * Maintains scenegraph heirarchy when collecting nodes
+ */
+var ContainerNode = (function (_super) {
+    __extends(ContainerNode, _super);
+    function ContainerNode(pool, container, partition) {
+        _super.call(this);
+        this.isContainerNode = true;
+        this._childDepths = new Array();
+        this._childMasks = new Array();
+        this._numChildMasks = 0;
+        this._pool = pool;
+        this._container = container;
+        this._partition = partition;
+    }
+    Object.defineProperty(ContainerNode.prototype, "displayObject", {
+        get: function () {
+            return this._container;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     * @param traverser
+     */
+    ContainerNode.prototype.acceptTraverser = function (traverser) {
+        if (this.numEntities == 0 && !this._pImplicitDebugVisible)
+            return;
+        if (traverser.enterNode(this)) {
+            if (this._pEntityNode)
+                this._pEntityNode.acceptTraverser(traverser);
+            var i;
+            for (i = 0; i < this._numChildMasks; i++)
+                this._childMasks[i].acceptTraverser(traverser);
+            for (i = 0; i < this._pNumChildNodes; i++)
+                this._pChildNodes[i].acceptTraverser(traverser);
+            if (this._pImplicitDebugVisible && traverser.isEntityCollector)
+                traverser.applyEntity(this._pDebugEntity);
+        }
+    };
+    /**
+     *
+     * @param entity
+     * @returns {away.partition.NodeBase}
+     */
+    ContainerNode.prototype.findParentForNode = function (node) {
+        if (!node.isContainerNode && node.displayObject.isContainer)
+            return this._pool.getItem(node.displayObject);
+        return this._pool.getItem(node.displayObject.parent);
+    };
+    /**
+     *
+     * @param node
+     * @internal
+     */
+    ContainerNode.prototype.iAddNode = function (node) {
+        node.parent = this;
+        if (!node.isContainerNode && node.displayObject.isContainer) {
+            this._pEntityNode = node;
+        }
+        else if (node.displayObject.maskId != -1) {
+            this._childMasks.push(node);
+            this._numChildMasks = this._childMasks.length;
+        }
+        else {
+            var depth = this._container.getChildDepth(node.displayObject);
+            var len = this._childDepths.length;
+            var index = len;
+            while (index--)
+                if (this._childDepths[index] < depth)
+                    break;
+            index++;
+            if (index < len) {
+                this._pChildNodes.splice(index, 0, node);
+                this._childDepths.splice(index, 0, depth);
+            }
+            else {
+                this._pChildNodes.push(node);
+                this._childDepths.push(depth);
+            }
+            this._pNumChildNodes = this._childDepths.length;
+        }
+        node._iUpdateImplicitDebugVisible(this.debugChildrenVisible);
+        var numEntities = node.numEntities;
+        node = this;
+        do {
+            node.numEntities += numEntities;
+        } while ((node = node.parent) != null);
+    };
+    /**
+     *
+     * @param node
+     * @internal
+     */
+    ContainerNode.prototype.iRemoveNode = function (node) {
+        if (!node.isContainerNode && node.displayObject.isContainer) {
+            this._pEntityNode = null;
+        }
+        else if (node.displayObject.maskId != -1) {
+            this._childMasks.splice(this._childMasks.indexOf(node), 1);
+            this._numChildMasks = this._childMasks.length;
+        }
+        else {
+            var index = this._pChildNodes.indexOf(node);
+            this._pChildNodes.splice(index, 1);
+            this._childDepths.splice(index, 1);
+            this._pNumChildNodes = this._childDepths.length;
+        }
+        node._iUpdateImplicitDebugVisible(false);
+        var numEntities = node.numEntities;
+        node = this;
+        do {
+            node.numEntities -= numEntities;
+        } while ((node = node.parent) != null);
+    };
+    return ContainerNode;
+})(NodeBase);
+module.exports = ContainerNode;
+
+},{"awayjs-display/lib/partition/NodeBase":"awayjs-display/lib/partition/NodeBase"}],"awayjs-display/lib/partition/DirectionalLightNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15176,6 +15315,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var EntityNode = require("awayjs-display/lib/partition/EntityNode");
+var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
 /**
  * @class away.partition.DirectionalLightNode
  */
@@ -15203,12 +15343,12 @@ var DirectionalLightNode = (function (_super) {
     DirectionalLightNode.prototype.isCastingShadow = function () {
         return false;
     };
-    DirectionalLightNode.id = "directionalLightNode";
+    DirectionalLightNode.assetClass = DirectionalLight;
     return DirectionalLightNode;
 })(EntityNode);
 module.exports = DirectionalLightNode;
 
-},{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/EntityNode":[function(require,module,exports){
+},{"awayjs-display/lib/entities/DirectionalLight":"awayjs-display/lib/entities/DirectionalLight","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/EntityNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15228,32 +15368,27 @@ var EntityNode = (function (_super) {
     __extends(EntityNode, _super);
     function EntityNode(pool, entity, partition) {
         _super.call(this);
-        this._sceneGraphDepths = new Array();
+        this.isContainerNode = false;
         this._pool = pool;
         this._entity = entity;
         this._partition = partition;
-        this._iNumEntities = 1;
+        this.numEntities = 1;
         this.updateBounds();
         this.debugVisible = this._entity.debugVisible;
     }
-    Object.defineProperty(EntityNode.prototype, "entity", {
+    Object.defineProperty(EntityNode.prototype, "displayObject", {
         get: function () {
             return this._entity;
         },
         enumerable: true,
         configurable: true
     });
-    EntityNode.prototype.removeFromParent = function () {
-        if (this._iParent)
-            this._iParent.iRemoveNode(this);
-        this._iParent = null;
-    };
     /**
      *
      * @returns {boolean}
      */
     EntityNode.prototype.isCastingShadow = function () {
-        return this.entity.castsShadows;
+        return this.displayObject.castsShadows;
     };
     /**
      *
@@ -15306,7 +15441,7 @@ var EntityNode = (function (_super) {
     };
     EntityNode.prototype.invalidatePartition = function () {
         this._bounds.invalidate();
-        this._partition.iMarkForUpdate(this);
+        //this._partition.iMarkForUpdate(this);
     };
     EntityNode.prototype.updateBounds = function () {
         if (this._entity.boundsType == BoundsType.AXIS_ALIGNED_BOX)
@@ -15317,12 +15452,15 @@ var EntityNode = (function (_super) {
             this._bounds = new NullBounds();
         this.updateDebugEntity();
     };
-    EntityNode.id = "entityNode";
     return EntityNode;
 })(NodeBase);
 module.exports = EntityNode;
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","awayjs-display/lib/bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds","awayjs-display/lib/partition/NodeBase":"awayjs-display/lib/partition/NodeBase"}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","awayjs-display/lib/bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds","awayjs-display/lib/partition/NodeBase":"awayjs-display/lib/partition/NodeBase"}],"awayjs-display/lib/partition/IDisplayObjectNode":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/partition/INode":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15372,9 +15510,9 @@ var NodeBase = (function () {
      *
      */
     function NodeBase() {
-        this._pNumChildNodes = 0;
-        this._iNumEntities = 0;
         this._pChildNodes = new Array();
+        this._pNumChildNodes = 0;
+        this.numEntities = 0;
     }
     Object.defineProperty(NodeBase.prototype, "debugVisible", {
         /**
@@ -15387,7 +15525,7 @@ var NodeBase = (function () {
             if (this._explicitDebugVisible == value)
                 return;
             this._explicitDebugVisible = value;
-            this._iUpdateImplicitDebugVisible(this._iParent ? this._iParent.debugChildrenVisible : false);
+            this._iUpdateImplicitDebugVisible(this.parent ? this.parent.debugChildrenVisible : false);
         },
         enumerable: true,
         configurable: true
@@ -15402,27 +15540,6 @@ var NodeBase = (function () {
             this._debugChildrenVisible = value;
             for (var i = 0; i < this._pNumChildNodes; ++i)
                 this._pChildNodes[i]._iUpdateImplicitDebugVisible(this._debugChildrenVisible);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NodeBase.prototype, "parent", {
-        /**
-         *
-         */
-        get: function () {
-            return this._iParent;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NodeBase.prototype, "_pNumEntities", {
-        /**
-         *
-         * @protected
-         */
-        get: function () {
-            return this._iNumEntities;
         },
         enumerable: true,
         configurable: true
@@ -15458,7 +15575,7 @@ var NodeBase = (function () {
      * @param entity
      * @returns {away.partition.NodeBase}
      */
-    NodeBase.prototype.findPartitionForEntity = function (entity) {
+    NodeBase.prototype.findParentForNode = function (node) {
         return this;
     };
     /**
@@ -15466,12 +15583,11 @@ var NodeBase = (function () {
      * @param traverser
      */
     NodeBase.prototype.acceptTraverser = function (traverser) {
-        if (this._pNumEntities == 0 && !this._pImplicitDebugVisible)
+        if (this.numEntities == 0 && !this._pImplicitDebugVisible)
             return;
         if (traverser.enterNode(this)) {
-            var i = 0;
-            while (i < this._pNumChildNodes)
-                this._pChildNodes[i++].acceptTraverser(traverser);
+            for (var i = 0; i < this._pNumChildNodes; i++)
+                this._pChildNodes[i].acceptTraverser(traverser);
             if (this._pImplicitDebugVisible && traverser.isEntityCollector)
                 traverser.applyEntity(this._pDebugEntity);
         }
@@ -15491,15 +15607,15 @@ var NodeBase = (function () {
      * @internal
      */
     NodeBase.prototype.iAddNode = function (node) {
-        node._iParent = this;
-        this._iNumEntities += node._pNumEntities;
+        node.parent = this;
+        this.numEntities += node.numEntities;
         this._pChildNodes[this._pNumChildNodes++] = node;
         node._iUpdateImplicitDebugVisible(this.debugChildrenVisible);
-        var numEntities = node._pNumEntities;
+        var numEntities = node.numEntities;
         node = this;
         do {
-            node._iNumEntities += numEntities;
-        } while ((node = node._iParent) != null);
+            node.numEntities += numEntities;
+        } while ((node = node.parent) != null);
     };
     /**
      *
@@ -15511,11 +15627,11 @@ var NodeBase = (function () {
         this._pChildNodes[index] = this._pChildNodes[--this._pNumChildNodes];
         this._pChildNodes.pop();
         node._iUpdateImplicitDebugVisible(false);
-        var numEntities = node._pNumEntities;
+        var numEntities = node.numEntities;
         node = this;
         do {
-            node._pNumEntities -= numEntities;
-        } while ((node = node._iParent) != null);
+            node.numEntities -= numEntities;
+        } while ((node = node.parent) != null);
     };
     NodeBase.prototype._iUpdateImplicitDebugVisible = function (value) {
         if (this._pImplicitDebugVisible == this._explicitDebugVisible || value)
@@ -15544,60 +15660,22 @@ var NodeBase = (function () {
 })();
 module.exports = NodeBase;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/partition/NullNode":[function(require,module,exports){
-/**
- * @class away.partition.NullNode
- */
-var NullNode = (function () {
-    function NullNode() {
-    }
-    return NullNode;
-})();
-module.exports = NullNode;
-
-},{}],"awayjs-display/lib/partition/Partition":[function(require,module,exports){
-var CameraNode = require("awayjs-display/lib/partition/CameraNode");
-var DirectionalLightNode = require("awayjs-display/lib/partition/DirectionalLightNode");
-var EntityNode = require("awayjs-display/lib/partition/EntityNode");
-var LightProbeNode = require("awayjs-display/lib/partition/LightProbeNode");
-var PointLightNode = require("awayjs-display/lib/partition/PointLightNode");
-var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
-var NullNode = require("awayjs-display/lib/partition/NullNode");
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/partition/PartitionBase":[function(require,module,exports){
 var EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
 /**
  * @class away.partition.Partition
  */
-var Partition = (function () {
-    function Partition(rootNode) {
+var PartitionBase = (function () {
+    function PartitionBase() {
         this._updatesMade = false;
-        this._rootNode = rootNode || new NullNode();
-        this._cameraNodePool = new EntityNodePool(CameraNode, this);
-        this._directionalLightNodePool = new EntityNodePool(DirectionalLightNode, this);
-        this._entityNodePool = new EntityNodePool(EntityNode, this);
-        this._lightProbeNodePool = new EntityNodePool(LightProbeNode, this);
-        this._pointLightNodePool = new EntityNodePool(PointLightNode, this);
-        this._skyboxNodePool = new EntityNodePool(SkyboxNode, this);
+        this._entityNodePool = new EntityNodePool(this);
     }
-    Object.defineProperty(Partition.prototype, "rootNode", {
-        get: function () {
-            return this._rootNode;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Partition.prototype.traverse = function (traverser) {
-        if (this._updatesMade) {
-            var t = this._updateQueue;
-            while (t) {
-                //required for controllers with autoUpdate set to true and queued events
-                t.entity._iInternalUpdate();
-                t = t._iUpdateQueueNext;
-            }
+    PartitionBase.prototype.traverse = function (traverser) {
+        if (this._updatesMade)
             this.updateEntities();
-        }
         this._rootNode.acceptTraverser(traverser);
     };
-    Partition.prototype.iMarkForUpdate = function (node) {
+    PartitionBase.prototype.iMarkForUpdate = function (node) {
         var t = this._updateQueue;
         while (t) {
             if (node == t)
@@ -15608,9 +15686,12 @@ var Partition = (function () {
         this._updateQueue = node;
         this._updatesMade = true;
     };
-    Partition.prototype.iRemoveEntity = function (node) {
+    PartitionBase.prototype.iRemoveEntity = function (node) {
         var t;
-        node.removeFromParent();
+        if (node.parent) {
+            node.parent.iRemoveNode(node);
+            node.parent = null;
+        }
         if (node == this._updateQueue) {
             this._updateQueue = node._iUpdateQueueNext;
         }
@@ -15625,16 +15706,24 @@ var Partition = (function () {
         if (!this._updateQueue)
             this._updatesMade = false;
     };
-    Partition.prototype.updateEntities = function () {
+    PartitionBase.prototype.updateEntities = function () {
         var node = this._updateQueue;
+        while (node) {
+            //required for controllers with autoUpdate set to true and queued events
+            node.displayObject._iInternalUpdate();
+            node = node._iUpdateQueueNext;
+        }
+        //reset head
+        node = this._updateQueue;
         var targetNode;
         var t;
         this._updateQueue = null;
         this._updatesMade = false;
         do {
-            targetNode = this._rootNode.findPartitionForEntity(node.entity);
+            targetNode = this._rootNode.findParentForNode(node);
             if (node.parent != targetNode) {
-                node.removeFromParent();
+                if (node.parent)
+                    node.parent.iRemoveNode(node);
                 targetNode.iAddNode(node);
             }
             t = node._iUpdateQueueNext;
@@ -15644,80 +15733,22 @@ var Partition = (function () {
     /**
      * @internal
      */
-    Partition.prototype._iRegisterCamera = function (camera) {
-        this.iMarkForUpdate(this._cameraNodePool.getItem(camera));
+    PartitionBase.prototype._iRegisterEntity = function (displayObject) {
+        if (displayObject.isEntity)
+            this.iMarkForUpdate(this._entityNodePool.getItem(displayObject));
     };
     /**
      * @internal
      */
-    Partition.prototype._iRegisterDirectionalLight = function (directionalLight) {
-        this.iMarkForUpdate(this._directionalLightNodePool.getItem(directionalLight));
+    PartitionBase.prototype._iUnregisterEntity = function (displayObject) {
+        if (displayObject.isEntity)
+            this.iRemoveEntity(this._entityNodePool.disposeItem(displayObject));
     };
-    /**
-     * @internal
-     */
-    Partition.prototype._iRegisterEntity = function (entity) {
-        this.iMarkForUpdate(this._entityNodePool.getItem(entity));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iRegisterLightProbe = function (lightProbe) {
-        this.iMarkForUpdate(this._lightProbeNodePool.getItem(lightProbe));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iRegisterPointLight = function (pointLight) {
-        this.iMarkForUpdate(this._pointLightNodePool.getItem(pointLight));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iRegisterSkybox = function (skybox) {
-        this.iMarkForUpdate(this._skyboxNodePool.getItem(skybox));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iUnregisterCamera = function (camera) {
-        this.iRemoveEntity(this._cameraNodePool.disposeItem(camera));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iUnregisterDirectionalLight = function (directionalLight) {
-        this.iRemoveEntity(this._directionalLightNodePool.disposeItem(directionalLight));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iUnregisterEntity = function (entity) {
-        this.iRemoveEntity(this._entityNodePool.disposeItem(entity));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iUnregisterLightProbe = function (lightProbe) {
-        this.iRemoveEntity(this._lightProbeNodePool.disposeItem(lightProbe));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iUnregisterPointLight = function (pointLight) {
-        this.iRemoveEntity(this._pointLightNodePool.disposeItem(pointLight));
-    };
-    /**
-     * @internal
-     */
-    Partition.prototype._iUnregisterSkybox = function (skybox) {
-        this.iRemoveEntity(this._skyboxNodePool.disposeItem(skybox));
-    };
-    return Partition;
+    return PartitionBase;
 })();
-module.exports = Partition;
+module.exports = PartitionBase;
 
-},{"awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/NullNode":"awayjs-display/lib/partition/NullNode","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode","awayjs-display/lib/pool/EntityNodePool":"awayjs-display/lib/pool/EntityNodePool"}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
+},{"awayjs-display/lib/pool/EntityNodePool":"awayjs-display/lib/pool/EntityNodePool"}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15757,30 +15788,49 @@ var PointLightNode = (function (_super) {
 })(EntityNode);
 module.exports = PointLightNode;
 
-},{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SceneGraphNode":[function(require,module,exports){
+},{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SceneGraphPartition":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var NodeBase = require("awayjs-display/lib/partition/NodeBase");
+var PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+var ContainerNodePool = require("awayjs-display/lib/pool/ContainerNodePool");
 /**
- * Maintains scenegraph heirarchy when collecting nodes
+ * @class away.partition.Partition
  */
-var SceneGraphNode = (function (_super) {
-    __extends(SceneGraphNode, _super);
-    function SceneGraphNode(pool, container, partition) {
+var SceneGraphPartition = (function (_super) {
+    __extends(SceneGraphPartition, _super);
+    function SceneGraphPartition(rootContainer) {
         _super.call(this);
-        this._pool = pool;
-        this._container = container;
-        this._partition = partition;
+        this._containerNodePool = new ContainerNodePool(this);
+        this._rootNode = this._containerNodePool.getItem(rootContainer);
     }
-    return SceneGraphNode;
-})(NodeBase);
-module.exports = SceneGraphNode;
+    SceneGraphPartition.prototype.traverse = function (traverser) {
+        _super.prototype.traverse.call(this, traverser);
+    };
+    /**
+     * @internal
+     */
+    SceneGraphPartition.prototype._iRegisterEntity = function (displayObject) {
+        _super.prototype._iRegisterEntity.call(this, displayObject);
+        if (displayObject.isContainer)
+            this.iMarkForUpdate(this._containerNodePool.getItem(displayObject));
+    };
+    /**
+     * @internal
+     */
+    SceneGraphPartition.prototype._iUnregisterEntity = function (displayObject) {
+        _super.prototype._iUnregisterEntity.call(this, displayObject);
+        if (displayObject.isContainer)
+            this.iRemoveEntity(this._containerNodePool.disposeItem(displayObject));
+    };
+    return SceneGraphPartition;
+})(PartitionBase);
+module.exports = SceneGraphPartition;
 
-},{"awayjs-display/lib/partition/NodeBase":"awayjs-display/lib/partition/NodeBase"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
+},{"awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","awayjs-display/lib/pool/ContainerNodePool":"awayjs-display/lib/pool/ContainerNodePool"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16302,7 +16352,49 @@ var RaycastPicker = (function () {
 })();
 module.exports = RaycastPicker;
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/traverse/RaycastCollector":"awayjs-display/lib/traverse/RaycastCollector"}],"awayjs-display/lib/pool/EntityListItemPool":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/traverse/RaycastCollector":"awayjs-display/lib/traverse/RaycastCollector"}],"awayjs-display/lib/pool/ContainerNodePool":[function(require,module,exports){
+var ContainerNode = require("awayjs-display/lib/partition/ContainerNode");
+/**
+ * @class away.pool.ContainerNodePool
+ */
+var ContainerNodePool = (function () {
+    /**
+     * //TODO
+     *
+     * @param entityNodeClass
+     */
+    function ContainerNodePool(partition) {
+        this._containerNodePool = new Object();
+        this._partition = partition;
+    }
+    /**
+     * //TODO
+     *
+     * @param entity
+     * @returns EntityNode
+     */
+    ContainerNodePool.prototype.getItem = function (displayObjectContainer) {
+        return (this._containerNodePool[displayObjectContainer.id] || (this._containerNodePool[displayObjectContainer.id] = displayObjectContainer._iAddContainerNode(new ContainerNode(this, displayObjectContainer, this._partition))));
+    };
+    /**
+     * //TODO
+     *
+     * @param entity
+     */
+    ContainerNodePool.prototype.disposeItem = function (displayObjectContainer) {
+        var containerNode = this._containerNodePool[displayObjectContainer.id];
+        if (containerNode) {
+            displayObjectContainer._iRemoveContainerNode(containerNode);
+            delete this._containerNodePool[displayObjectContainer.id];
+        }
+        return containerNode;
+    };
+    ContainerNodePool._classPool = new Object();
+    return ContainerNodePool;
+})();
+module.exports = ContainerNodePool;
+
+},{"awayjs-display/lib/partition/ContainerNode":"awayjs-display/lib/partition/ContainerNode"}],"awayjs-display/lib/pool/EntityListItemPool":[function(require,module,exports){
 var EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
 /**
  * @class away.pool.EntityListItemPool
@@ -16356,6 +16448,22 @@ var EntityListItem = (function () {
 module.exports = EntityListItem;
 
 },{}],"awayjs-display/lib/pool/EntityNodePool":[function(require,module,exports){
+var Camera = require("awayjs-display/lib/entities/Camera");
+var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+var Mesh = require("awayjs-display/lib/entities/Mesh");
+var MovieClip = require("awayjs-display/lib/entities/MovieClip");
+var Billboard = require("awayjs-display/lib/entities/Billboard");
+var LineSegment = require("awayjs-display/lib/entities/LineSegment");
+var TextField = require("awayjs-display/lib/entities/TextField");
+var PointLight = require("awayjs-display/lib/entities/PointLight");
+var LightProbe = require("awayjs-display/lib/entities/LightProbe");
+var Skybox = require("awayjs-display/lib/entities/Skybox");
+var CameraNode = require("awayjs-display/lib/partition/CameraNode");
+var DirectionalLightNode = require("awayjs-display/lib/partition/DirectionalLightNode");
+var EntityNode = require("awayjs-display/lib/partition/EntityNode");
+var LightProbeNode = require("awayjs-display/lib/partition/LightProbeNode");
+var PointLightNode = require("awayjs-display/lib/partition/PointLightNode");
+var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
 /**
  * @class away.pool.EntityNodePool
  */
@@ -16365,9 +16473,8 @@ var EntityNodePool = (function () {
      *
      * @param entityNodeClass
      */
-    function EntityNodePool(entityNodeClass, partition) {
+    function EntityNodePool(partition) {
         this._entityNodePool = new Object();
-        this._entityNodeClass = entityNodeClass;
         this._partition = partition;
     }
     /**
@@ -16376,74 +16483,61 @@ var EntityNodePool = (function () {
      * @param entity
      * @returns EntityNode
      */
-    EntityNodePool.prototype.getItem = function (entity) {
-        return (this._entityNodePool[entity.id] || (this._entityNodePool[entity.id] = entity._iAddEntityNode(new this._entityNodeClass(this, entity, this._partition))));
+    EntityNodePool.prototype.getItem = function (displayObject) {
+        return (this._entityNodePool[displayObject.id] || (this._entityNodePool[displayObject.id] = displayObject._iAddEntityNode(new (EntityNodePool.getClass(displayObject))(this, displayObject, this._partition))));
     };
     /**
      * //TODO
      *
      * @param entity
      */
-    EntityNodePool.prototype.disposeItem = function (entity) {
-        var entityNode = this._entityNodePool[entity.id];
+    EntityNodePool.prototype.disposeItem = function (displayObject) {
+        var entityNode = this._entityNodePool[displayObject.id];
         if (entityNode) {
-            entity._iRemoveEntityNode(entityNode);
-            this._entityNodePool[entity.id] = null;
+            displayObject._iRemoveEntityNode(entityNode);
+            delete this._entityNodePool[displayObject.id];
         }
         return entityNode;
     };
+    /**
+     *
+     * @param imageObjectClass
+     */
+    EntityNodePool.registerClass = function (entityNodeClass, assetClass) {
+        EntityNodePool._classPool[assetClass.assetType] = entityNodeClass;
+    };
+    /**
+     *
+     * @param subGeometry
+     */
+    EntityNodePool.getClass = function (displayObject) {
+        return EntityNodePool._classPool[displayObject.assetType];
+    };
+    EntityNodePool.addDefaults = function () {
+        EntityNodePool.registerClass(CameraNode, Camera);
+        EntityNodePool.registerClass(DirectionalLightNode, DirectionalLight);
+        EntityNodePool.registerClass(EntityNode, Mesh);
+        EntityNodePool.registerClass(EntityNode, Billboard);
+        EntityNodePool.registerClass(EntityNode, LineSegment);
+        EntityNodePool.registerClass(EntityNode, TextField);
+        EntityNodePool.registerClass(EntityNode, MovieClip);
+        EntityNodePool.registerClass(LightProbeNode, LightProbe);
+        EntityNodePool.registerClass(PointLightNode, PointLight);
+        EntityNodePool.registerClass(SkyboxNode, Skybox);
+    };
+    EntityNodePool._classPool = new Object();
+    EntityNodePool.main = EntityNodePool.addDefaults();
     return EntityNodePool;
 })();
 module.exports = EntityNodePool;
 
-},{}],"awayjs-display/lib/pool/IEntityNodeClass":[function(require,module,exports){
+},{"awayjs-display/lib/entities/Billboard":"awayjs-display/lib/entities/Billboard","awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/entities/DirectionalLight":"awayjs-display/lib/entities/DirectionalLight","awayjs-display/lib/entities/LightProbe":"awayjs-display/lib/entities/LightProbe","awayjs-display/lib/entities/LineSegment":"awayjs-display/lib/entities/LineSegment","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/entities/MovieClip":"awayjs-display/lib/entities/MovieClip","awayjs-display/lib/entities/PointLight":"awayjs-display/lib/entities/PointLight","awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/entities/TextField":"awayjs-display/lib/entities/TextField","awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/pool/IEntityNodeClass":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/pool/IRenderable":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/pool/IRender":[function(require,module,exports){
 
-},{}],"awayjs-display/lib/pool/ISceneGraphNodeClass":[function(require,module,exports){
-
 },{}],"awayjs-display/lib/pool/ITextureVO":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/pool/SceneGraphNodePool":[function(require,module,exports){
-/**
- * @class away.pool.SceneGraphNodePool
- */
-var SceneGraphNodePool = (function () {
-    /**
-     * //TODO
-     *
-     * @param sceneGraphNodeClass
-     */
-    function SceneGraphNodePool(sceneGraphNodeClass, partition) {
-        this._sceneGraphNodePool = new Object();
-        this._sceneGraphNodeClass = sceneGraphNodeClass;
-        this._partition = partition;
-    }
-    /**
-     * //TODO
-     *
-     * @param displayObjectContainer
-     * @returns SceneGraphNode
-     */
-    SceneGraphNodePool.prototype.getItem = function (displayObjectContainer) {
-        return (this._sceneGraphNodePool[displayObjectContainer.id] || (this._sceneGraphNodePool[displayObjectContainer.id] = new this._sceneGraphNodeClass(this, displayObjectContainer, this._partition)));
-    };
-    /**
-     * //TODO
-     *
-     * @param displayObjectContainer
-     */
-    SceneGraphNodePool.prototype.disposeItem = function (displayObjectContainer) {
-        var sceneGraphNode = this._sceneGraphNodePool[displayObjectContainer.id];
-        if (sceneGraphNode)
-            this._sceneGraphNodePool[displayObjectContainer.id] = null;
-        return sceneGraphNode;
-    };
-    return SceneGraphNodePool;
-})();
-module.exports = SceneGraphNodePool;
 
 },{}],"awayjs-display/lib/pool/SubMeshPool":[function(require,module,exports){
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
