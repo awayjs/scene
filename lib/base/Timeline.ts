@@ -165,35 +165,31 @@ class Timeline
 	}
 
 
-	public gotoFrame(target_mc:MovieClip, value : number)
+	public gotoFrame(target_mc:MovieClip, value:number)
 	{
 		var frameIndex:number = target_mc.currentFrameIndex;
+
+		if (frameIndex == value) //we are already on exactly this frame.
+			return;
+
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
 		var target_keyframe_idx:number = this.keyframe_indices[value];
 
-		var firstframe=this.keyframe_firstframes[target_keyframe_idx];
-		if(frameIndex==value){
-			//we are already on exactly this frame.
-			return;
-		}
-		if(current_keyframe_idx+1==target_keyframe_idx){
-			// target_keyframe_idx is the next keyframe. we can just use constructnext for this
+		var firstframe:number = this.keyframe_firstframes[target_keyframe_idx];
+
+		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
 			target_mc.set_currentFrameIndex(value);
 			this.constructNextFrame(target_mc, true, true);
 			return;
 		}
 
-		if(firstframe==value){
-			//frame changed. and firstframe of keyframe. execute framescript if available
+		if (firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
-		}
 
-		if(current_keyframe_idx==target_keyframe_idx) {
-			// already constructed - exit
+		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
 			return;
-		}
 
-		var break_frame_idx:number=this.keyframe_constructframes[target_keyframe_idx];
+		var break_frame_idx:number = this.keyframe_constructframes[target_keyframe_idx];
 
 		//we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
 
@@ -201,17 +197,20 @@ class Timeline
 		var jump_gap:boolean = (break_frame_idx > current_keyframe_idx);
 
 		// in case we jump back or we jump a gap, we want to start constructing at BreakFrame
-		var start_construct_idx:number=break_frame_idx;
-		// in case we jump forward, but not jump a gap, we start at current_keyframe_idx +1
-		if((jump_forward)&&(!jump_gap)){
-			start_construct_idx=current_keyframe_idx+1;
-		}
-		var target_childs_dic:Object=[];
-		var target_sessionIDs_dic:Object=[];
-		var i:number = target_mc.numChildren;
-		var child:DisplayObject;
+		var start_construct_idx:number = break_frame_idx;
 
-		if((jump_forward) && (start_construct_idx==target_keyframe_idx)){
+		if (jump_forward && !jump_gap) // in case we jump forward, but not jump a gap, we start at current_keyframe_idx +1
+			start_construct_idx = current_keyframe_idx + 1;
+
+		var target_childs_dic:Object = {};
+		var target_sessionIDs_dic:Object = {};
+		var i:number = target_mc.numChildren;
+		var len:number;
+		var k:number;
+		var child:DisplayObject;
+		var depth:number;
+
+		if (jump_forward && start_construct_idx == target_keyframe_idx){
 			// if we jump back, we dont want this shortcut, because we need to compare targetframe vs currentframe
 
 			// shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
@@ -229,92 +228,94 @@ class Timeline
 			*/
 		}
 
-		while(i--){
+		while (i--) {
 			child = target_mc.getChildAt(i);
-			if(jump_gap){
-				// if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
+			if (jump_gap) { // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 				target_mc.removeChild(child);
-			}
-			else if (jump_forward){
-				// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-				target_childs_dic[target_mc.getChildDepth(child)]=child;
-				target_sessionIDs_dic[target_mc.getChildDepth(child)]=child._sessionID;
+			} else if (jump_forward) { // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
+				depth = target_mc.getChildDepth(child)
+				target_childs_dic[depth] = child;
+				target_sessionIDs_dic[depth] = child._sessionID;
 			}
 		}
 
 		//  step1: only apply add/remove commands into current_childs_dic.
-		var update_indices:Array<number>=[];// store a list of updatecommand_indices, so we dont have to read frame_recipe again
-		var update_cnt=0;
-		var k;
-		for(k=start_construct_idx;k<=target_keyframe_idx; k++){
-			var frame_command_idx:number=this.frame_command_indices[k];
-			var frame_recipe:number=this.frame_recipe[k];
+		var update_indices:Array<number> = [];// store a list of updatecommand_indices, so we dont have to read frame_recipe again
+		var update_cnt = 0;
+		for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
+			var frame_command_idx:number = this.frame_command_indices[k];
+			var frame_recipe:number = this.frame_recipe[k];
+			var start_index:number;
+			var idx:number;
 
-			if ((frame_recipe & 2) == 2){
+			if ((frame_recipe & 2) == 2) {
 				// remove childs
-				var start_index = this.command_index_stream[frame_command_idx];
-				var len = this.command_length_stream[frame_command_idx++];
-				for(var i:number = 0; i < len; i++){i
-					delete target_childs_dic[(this.remove_child_stream[start_index+i] - 16383)];
-					delete target_sessionIDs_dic[(this.remove_child_stream[start_index+i] - 16383)];
+				start_index = this.command_index_stream[frame_command_idx];
+				len = this.command_length_stream[frame_command_idx++];
+				for (var i:number = 0; i < len; i++) {
+					depth = this.remove_child_stream[start_index + i] - 16383;
+					delete target_childs_dic[depth];
+					delete target_sessionIDs_dic[depth];
 				}
 			}
 
-			if((frame_recipe & 4)==4){
-				var start_index = this.command_index_stream[frame_command_idx];
-				var len = this.command_length_stream[frame_command_idx++];
-				var i:number=len;
+			if ((frame_recipe & 4) == 4) {
+				start_index = this.command_index_stream[frame_command_idx];
+				len = this.command_length_stream[frame_command_idx++];
+				i = len;
 				// apply add commands in reversed order to have script exeucted in correct order.
 				// this could be changed in exporter
-				while(i--){
-					var target:DisplayObject = target_mc.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
-					//target._sessionID = start_index + i;
-					target_childs_dic[(this.add_child_stream[start_index*2 + i*2 + 1] - 16383)] = target;
-					target_sessionIDs_dic[(this.add_child_stream[start_index*2 + i*2 + 1] - 16383)] = start_index + i;
+				while (i--) {
+					idx = start_index*2 + i*2;
+					var target:DisplayObject = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
+
+					depth = this.add_child_stream[idx + 1] - 16383;
+					target_childs_dic[depth] = target;
+					target_sessionIDs_dic[depth] = start_index + i;
 				}
 			}
 
-			if((frame_recipe & 8)==8)
-				update_indices[update_cnt++]=frame_command_idx;// execute update command later
+			if ((frame_recipe & 8) == 8)
+				update_indices[update_cnt++] = frame_command_idx;// execute update command later
 		}
 		//  step2: construct the final frame
 
-		var target_child_sessionIDS:Object={};
-		for (var key in target_sessionIDs_dic) {
-			if (target_sessionIDs_dic[key] != null) {
+		var target_child_sessionIDS:Object = {};
+		for (var key in target_sessionIDs_dic)
+			if (target_sessionIDs_dic[key] != null)
 				target_child_sessionIDS[target_sessionIDs_dic[key]] = key;
-			}
-		}
+
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
 		// childs that are alive on both frames get removed from the target_child_sessionIDS + target_childs_dic
 		i = target_mc.numChildren;
-		while(i--){
+		while (i--) {
 			child=target_mc.getChildAt(i);
-			if(target_child_sessionIDS[child._sessionID]){
-				target_childs_dic[target_child_sessionIDS[child._sessionID]]=null;
-				target_child_sessionIDS[child._sessionID]=null;
-				target_sessionIDs_dic[target_child_sessionIDS[child._sessionID]]=null;
-			}
-			else{
+			if (target_child_sessionIDS[child._sessionID]) {
+				target_childs_dic[target_child_sessionIDS[child._sessionID]] = null;
+				target_child_sessionIDS[child._sessionID] = null;
+				target_sessionIDs_dic[target_child_sessionIDS[child._sessionID]] = null;
+			} else {
 				target_mc.removeChildAt(i);
 			}
 		}
+
 		for (var key in target_childs_dic) {
-			child=target_childs_dic[key];
-			if(child){
-				child._sessionID=target_sessionIDs_dic[key];
+			child = target_childs_dic[key];
+			if(child) {
+				child._sessionID = target_sessionIDs_dic[key];
 				target_mc.addChildAtDepth(child, parseInt(key));
 			}
 		}
 
 		//  pass2: apply update commands for objects on stage (only if they are not blocked by script)
-		var frame_command_idx:number=0;
-		for(k=0;k<update_indices.length; k++){
-			frame_command_idx=update_indices[k];
+		var frame_command_idx:number;
+		var len:number = update_indices.length;
+		for (k = 0; k < len; k++) {
+			frame_command_idx = update_indices[k];
 			this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx]);
 		}
-		update_indices=null;
+
 		target_mc.constructedKeyFrameIndex=target_keyframe_idx;
 	}
 
@@ -358,9 +359,8 @@ class Timeline
 
 	public remove_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
-		for(var i:number = 0; i < len; i++) {
+		for(var i:number = 0; i < len; i++)
 			sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
-		}
 	}
 
 
@@ -368,8 +368,8 @@ class Timeline
 	public add_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
 		// apply add commands in reversed order to have script exeucted in correct order.
-		// this could be changed in exporter 
-		var i:number=len;
+		// this could be changed in exporter
+		var i:number = len;
 		while(i--){
 			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[start_index*2 + i*2]);
 			target._sessionID = start_index + i;
@@ -377,29 +377,29 @@ class Timeline
 		}
 	}
 
-	public update_childs(sourceMovieClip:MovieClip, start_index:number, len:number):void
+	public update_childs(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
-		var register_objects:Array<DisplayObject>=[];
-		var props_cnt:number;
 		var props_start_idx:number;
+		var props_len:number;
+		var props_end_index:number;
 		var value_start_index:number;
 		var props_type:number;
 		var doit:boolean;
-		for(var i:number = 0; i < len; i++) {
-			var childID:number=this.update_child_stream[start_index + i];
-			//var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(childID);
-			var target:DisplayObject = sourceMovieClip.getChildAtSessionID(childID);//target._sessionID);
-			if (target!=null) {
+		var end_index:number = start_index + len;
+		for(var i:number = start_index; i < end_index; i++) {
+			var childID:number = this.update_child_stream[i];
+			var target:DisplayObject = sourceMovieClip.getChildAtSessionID(childID);
+			if (target != null) {
 				doit = true;
 				// check if the child is active + not blocked by script
 				if (target.adapter && target.adapter.isBlockedByScript())
 					doit = false;
-				props_start_idx = this.update_child_props_indices_stream[start_index + i];
-				props_cnt = this.update_child_props_length_stream[start_index + i];
-
-				for(var p:number = 0; p < props_cnt; p++) {
-					props_type = this.property_type_stream[props_start_idx + p];
-					value_start_index = this.property_index_stream[props_start_idx + p];
+				props_start_idx = this.update_child_props_indices_stream[i];
+				props_len = this.update_child_props_length_stream[i];
+				props_end_index = props_start_idx + props_len;
+				for(var p:number = props_start_idx; p < props_end_index; p++) {
+					props_type = this.property_type_stream[p];
+					value_start_index = this.property_index_stream[p];
 					switch(props_type){
 						case 0:
 							break;
@@ -442,7 +442,7 @@ class Timeline
 							var mask:DisplayObject;
 							var masks:Array<DisplayObject> = new Array<DisplayObject>();
 							for(var m:number = 0; m < mask_length; m++){
-								mask = masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);//sourceMovieClip.getPotentialChildInstance();
+								mask = masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);
 								if(mask==null)
 									throw "mask object not found !";
 								mask.mouseEnabled = false;
@@ -490,10 +490,6 @@ class Timeline
 								target._iMatrix3D = new_matrix;
 							}
 							break;
-						case 200:
-							//todo: remove once runtime does not need id for mask anymore
-							//target._iMaskID = childID;
-							break;
 						default:
 							break;
 
@@ -501,7 +497,6 @@ class Timeline
 				}
 			}
 		}
-		return;
 	}
 }
 
