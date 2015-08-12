@@ -5,7 +5,6 @@ import Error						= require("awayjs-core/lib/errors/Error");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import Partition					= require("awayjs-display/lib/partition/Partition");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
@@ -51,16 +50,6 @@ class LightProbe extends LightBase implements IEntity
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
 		throw new Error("Object projection matrices are not supported for LightProbe objects!");
-	}
-
-	public _pRegisterEntity(partition:Partition)
-	{
-		partition._iRegisterLightProbe(this);
-	}
-
-	public _pUnregisterEntity(partition:Partition)
-	{
-		partition._iUnregisterLightProbe(this);
 	}
 }
 

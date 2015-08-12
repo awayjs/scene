@@ -24,14 +24,13 @@ import OrientationMode				= require("awayjs-display/lib/base/OrientationMode");
 import IBitmapDrawable				= require("awayjs-display/lib/base/IBitmapDrawable");
 import Transform					= require("awayjs-display/lib/base/Transform");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
-import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
 import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
 
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
@@ -188,13 +187,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pParent:DisplayObjectContainer;
 	public _pSceneTransform:Matrix3D = new Matrix3D();
 	public _pSceneTransformDirty:boolean;
-	public _pIsEntity:boolean;
-    public _iMaskID:number = -1;
-    public _iMasks:DisplayObject[] = null;
+	public _pIsEntity:boolean = false;
+	public _pIsContainer:boolean = false;
 	public _sessionID:number = -1;
 
-	private _explicitPartition:Partition;
-	public _pImplicitPartition:Partition;
+	private _explicitPartition:PartitionBase;
+	public _pImplicitPartition:PartitionBase;
 
 	private _sceneTransformChanged:DisplayObjectEvent;
 	private _sceneChanged:DisplayObjectEvent;
@@ -208,7 +206,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _scenePosition:Vector3D = new Vector3D();
 	private _scenePositionDirty:boolean;
 	private _explicitVisibility:boolean = true;
+	private _explicitMaskId:number = -1;
+	private _explicitMasks:Array<DisplayObject>;
 	public _pImplicitVisibility:boolean = true;
+	public _pImplicitMaskId:number = -1;
+	public _pImplicitMasks:Array<Array<DisplayObject>>;
+	public _pImplicitMaskIds:Array<Array<number>> = new Array<Array<number>>();
 	private _explicitMouseEnabled:boolean = true;
 	public _pImplicitMouseEnabled:boolean = true;
 	private _listenToSceneTransformChanged:boolean;
@@ -684,6 +687,14 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	}
 
 	/**
+	 *
+	 */
+	public get isContainer()
+	{
+		return this._pIsContainer;
+	}
+
+	/**
 	 * Returns a LoaderInfo object containing information about loading the file
 	 * to which this display object belongs. The <code>loaderInfo</code> property
 	 * is defined only for the root display object of a SWF file or for a loaded
@@ -835,12 +846,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get partition():Partition
+	public get partition():PartitionBase
 	{
 		return this._explicitPartition;
 	}
 
-	public set partition(value:Partition)
+	public set partition(value:PartitionBase)
 	{
 		if (this._explicitPartition == value)
 			return;
@@ -848,6 +859,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._explicitPartition = value;
 
 		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null, this._pScene);
+
+		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 	}
 
 	/**
@@ -1340,6 +1353,43 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._pUpdateImplicitVisibility(this._pParent? this._pParent._iIsVisible() : true);
 	}
 
+	public get maskId():number
+	{
+		return this._explicitMaskId;
+	}
+
+	public set maskId(value:number)
+	{
+		if (this._explicitMaskId == value)
+			return;
+
+		this._explicitMaskId = value;
+
+		this._pUpdateImplicitMaskId(this._pParent? this._pParent._iAssignedMaskId() : -1);
+	}
+
+	public get masks():Array<DisplayObject>
+	{
+		return this._explicitMasks;
+	}
+
+	public set masks(value:Array<DisplayObject>)
+	{
+		if (this._explicitMasks == value)
+			return;
+
+		this._explicitMasks = value;
+
+		if (this._explicitMasks != null && this._explicitMasks.length) {
+			var len:number = this._explicitMasks.length;
+			for (var i:number = 0; i < len; i++)
+				this._explicitMasks[i].maskId = this._explicitMasks[i].id;
+		}
+
+
+		this._pUpdateImplicitMasks(this._pParent? this._pParent._iAssignedMasks() : null);
+	}
+
 	/**
 	 * Indicates the width of the display object, in pixels. The width is
 	 * calculated based on the bounds of the content of the display object. When
@@ -1530,10 +1580,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			newInstance = new DisplayObject();
 
 		newInstance.pivot = this.pivot;
-		newInstance._iMatrix3D = this._iMatrix3D;
-		//newInstance.name="";
-		newInstance._iMaskID = this._iMaskID;
-		newInstance._iMasks = this._iMasks? this._iMasks.concat() : null;
+		newInstance._iMatrix3D = this._iMatrix3D
+		//newInstance.name = this.name;
+
+		newInstance.maskId = this._explicitMaskId;
+		newInstance.masks = this.masks? this.masks.concat() : null;
 
 		if (this._adapter)
 			newInstance.adapter = this._adapter.clone(newInstance);
@@ -2165,7 +2216,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public get _iAssignedPartition():Partition
+	public get _iAssignedPartition():PartitionBase
 	{
 		return this._pImplicitPartition;
 	}
@@ -2226,11 +2277,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
         if (value) {
 			this._pUpdateImplicitMouseEnabled(value.mouseChildren && value._pImplicitMouseEnabled);
 			this._pUpdateImplicitVisibility(value._iIsVisible());
+			this._pUpdateImplicitMaskId(value._iAssignedMaskId());
+			this._pUpdateImplicitMasks(value._iAssignedMasks());
 			this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
             value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
 		} else {
 			this._pUpdateImplicitMouseEnabled(true);
 			this._pUpdateImplicitVisibility(true);
+			this._pUpdateImplicitMaskId(-1);
+			this._pUpdateImplicitMasks(null);
 			this._pUpdateImplicitPartition(null, null);
 		}
 
@@ -2276,20 +2331,16 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @protected
 	 */
-	public _pUpdateImplicitPartition(partition:Partition, scene:Scene)
+	public _pUpdateImplicitPartition(partition:PartitionBase, scene:Scene)
 	{
 		var sceneChanged:boolean = this._pScene != scene;
-
-		if (sceneChanged && this._pScene)
-			this._pScene.dispatchEvent(new SceneEvent(SceneEvent.REMOVED_FROM_SCENE, this));
 
 		if (this._pScene && this._pImplicitPartition) {
 			//unregister partition from current scene
 			this._pScene._iUnregisterPartition(this._pImplicitPartition);
 
 			//unregister entity from current partition
-			if (this._pIsEntity)
-				this._pUnregisterEntity(this._pImplicitPartition);
+			this._pImplicitPartition._iUnregisterEntity(this);
 		}
 
 		// assign parent implicit partition if no explicit one is given
@@ -2304,12 +2355,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pScene._iRegisterPartition(this._pImplicitPartition);
 
 			//register entity with new partition
-			if (this._pIsEntity)
-				this._pRegisterEntity(this._pImplicitPartition);
+			this._pImplicitPartition._iRegisterEntity(this);
 		}
-
-		if (sceneChanged && this._pScene)
-			this._pScene.dispatchEvent(new SceneEvent(SceneEvent.ADDED_TO_SCENE, this));
 
 		if (sceneChanged) {
 			if (!this._pIgnoreTransform)
@@ -2325,6 +2372,40 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pUpdateImplicitVisibility(value:boolean)
 	{
 		this._pImplicitVisibility = this._explicitVisibility && value;
+	}
+
+	/**
+	 * @protected
+	 */
+	public _pUpdateImplicitMaskId(value:number)
+	{
+		this._pImplicitMaskId = (value != -1)? value : this._explicitMaskId;
+	}
+
+	/**
+	 * @protected
+	 */
+	public _pUpdateImplicitMasks(value:Array<Array<DisplayObject>>)
+	{
+		this._pImplicitMasks = (value != null)? (this._explicitMasks != null)? value.concat([this._explicitMasks]) : value.concat() : (this._explicitMasks != null)? [this._explicitMasks] : null;
+
+		this._pImplicitMaskIds.length = 0;
+
+		if (this._pImplicitMasks && this._pImplicitMasks.length) {
+			var numLayers:number = this._pImplicitMasks.length;
+			var numChildren:number;
+			var implicitChildren:Array<DisplayObject>;
+			var implicitChildIds:Array<number>;
+			for (var i:number = 0; i < numLayers; i++) {
+				implicitChildren = this._pImplicitMasks[i];
+				numChildren = implicitChildren.length;
+				implicitChildIds = new Array<number>();
+				for (var j:number = 0; j < numChildren; j++)
+					implicitChildIds.push(implicitChildren[j].maskId);
+
+				this._pImplicitMaskIds.push(implicitChildIds);
+			}
+		}
 	}
 
 	/**
@@ -2446,6 +2527,28 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		return this._pImplicitVisibility;
 	}
+
+	/**
+	 * @internal
+	 */
+	public _iAssignedMaskId():number
+	{
+		return this._pImplicitMaskId;
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iAssignedMasks():Array<Array<DisplayObject>>
+	{
+		return this._pImplicitMasks;
+	}
+
+	public _iMasksConfig():Array<Array<number>>
+	{
+		return this._pImplicitMaskIds;
+	}
+
 
 	/**
 	 * @internal
@@ -2595,16 +2698,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._entityNodes.splice(index, 1);
 
 		return entityNode;
-	}
-
-	public _pRegisterEntity(partition:Partition)
-	{
-		throw new AbstractMethodError();
-	}
-
-	public _pUnregisterEntity(partition:Partition)
-	{
-		throw new AbstractMethodError();
 	}
 
 	public _pInvalidateBounds()

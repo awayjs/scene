@@ -1,32 +1,25 @@
-import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
-
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import BasicPartition				= require("awayjs-display/lib/partition/BasicPartition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
-class Scene extends EventDispatcher
+class Scene extends DisplayObjectContainer
 {
-	private _expandedPartitions:Array<Partition> = new Array<Partition>();
-	private _partitions:Array<Partition> = new Array<Partition>();
-	private _partition:Partition;
+	private _expandedPartitions:Array<PartitionBase> = new Array<PartitionBase>();
+	private _partitions:Array<PartitionBase> = new Array<PartitionBase>();
 
-	public _iSceneGraphRoot:DisplayObjectContainer;
 	public _iCollectionMark = 0;
 
-	constructor()
+	constructor(partition:PartitionBase = null)
 	{
 		super();
 
-		this._partition = new Partition(new NodeBase());
+		this.partition = partition || new BasicPartition();
 
-		this._iSceneGraphRoot = new DisplayObjectContainer();
-
-		this._iSceneGraphRoot._iSetScene(this);
-		this._iSceneGraphRoot._iIsRoot = true;
-		this._iSceneGraphRoot.partition = this._partition;
+		this._iSetScene(this);
+		this._iIsRoot = true;
 	}
 
 	public traversePartitions(traverser:CollectorBase)
@@ -42,53 +35,10 @@ class Scene extends EventDispatcher
 			this._partitions[i++].traverse(traverser);
 	}
 
-	public get partition():Partition
-	{
-		return this._iSceneGraphRoot.partition;
-	}
-
-	public set partition(value:Partition)
-	{
-		this._iSceneGraphRoot.partition = value;
-
-		this.dispatchEvent(new SceneEvent(SceneEvent.PARTITION_CHANGED, this._iSceneGraphRoot));
-	}
-
-	public contains(child:DisplayObject):boolean
-	{
-		return this._iSceneGraphRoot.contains(child);
-	}
-
-	public addChild(child:DisplayObject):DisplayObject
-	{
-		return this._iSceneGraphRoot.addChild(child);
-	}
-
-	public removeChild(child:DisplayObject)
-	{
-		this._iSceneGraphRoot.removeChild(child);
-	}
-
-	public removeChildAt(index:number)
-	{
-		this._iSceneGraphRoot.removeChildAt(index);
-	}
-
-
-	public getChildAt(index:number):DisplayObject
-	{
-		return this._iSceneGraphRoot.getChildAt(index);
-	}
-
-	public get numChildren():number
-	{
-		return this._iSceneGraphRoot.numChildren;
-	}
-
 	/**
 	 * @internal
 	 */
-	public _iRegisterPartition(partition:Partition)
+	public _iRegisterPartition(partition:PartitionBase)
 	{
 		this._expandedPartitions.push(partition);
 
@@ -100,7 +50,7 @@ class Scene extends EventDispatcher
 	/**
 	 * @internal
 	 */
-	public _iUnregisterPartition(partition:Partition)
+	public _iUnregisterPartition(partition:PartitionBase)
 	{
 		this._expandedPartitions.splice(this._expandedPartitions.indexOf(partition), 1);
 

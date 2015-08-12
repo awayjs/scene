@@ -1,3 +1,5 @@
+import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
+
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
@@ -7,8 +9,9 @@ import BoundingSphere				= require("awayjs-display/lib/bounds/BoundingSphere");
 import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import NullBounds					= require("awayjs-display/lib/bounds/NullBounds");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
+import IDisplayObjectNode			= require("awayjs-display/lib/partition/IDisplayObjectNode");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
@@ -18,41 +21,33 @@ import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 /**
  * @class away.partition.EntityNode
  */
-class EntityNode extends NodeBase
+class EntityNode extends NodeBase implements IDisplayObjectNode
 {
-	public static id:string = "entityNode";
+	public isContainerNode:boolean = false;
 
-	public _sceneGraphDepths:Array<number> = new Array<number>();
+	public _iUpdateQueueNext:IDisplayObjectNode;
 	private _pool:EntityNodePool;
-	public _entity:DisplayObject;
-	private _partition:Partition;
+	private _entity:DisplayObject;
+	private _partition:PartitionBase;
 	public _bounds:BoundingVolumeBase;
-	public _iUpdateQueueNext:EntityNode;
 
-	constructor(pool:EntityNodePool, entity:DisplayObject, partition:Partition)
+	constructor(pool:EntityNodePool, entity:DisplayObject, partition:PartitionBase)
 	{
 		super();
+
 		this._pool = pool;
 		this._entity = entity;
 		this._partition = partition;
-		this._iNumEntities = 1;
+		this.numEntities = 1;
 
 		this.updateBounds();
 
 		this.debugVisible = this._entity.debugVisible;
 	}
 
-	public get entity():DisplayObject
+	public get displayObject():DisplayObject
 	{
 		return this._entity;
-	}
-
-	public removeFromParent():void
-	{
-		if (this._iParent)
-			this._iParent.iRemoveNode(this);
-
-		this._iParent = null;
 	}
 
 	/**
@@ -61,7 +56,7 @@ class EntityNode extends NodeBase
 	 */
 	public isCastingShadow():boolean
 	{
-		return this.entity.castsShadows;
+		return this.displayObject.castsShadows;
 	}
 
 	/**
@@ -133,7 +128,7 @@ class EntityNode extends NodeBase
 	{
 		this._bounds.invalidate();
 
-		this._partition.iMarkForUpdate(this);
+		//this._partition.iMarkForUpdate(this);
 	}
 
 	public updateBounds()

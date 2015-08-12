@@ -9,7 +9,6 @@ import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import Partition					= require("awayjs-display/lib/partition/Partition");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -317,16 +316,6 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 			this._iSourcePrefab._iValidate();
 
 		renderer._iApplyRenderableOwner(this);
-	}
-
-	public _pRegisterEntity(partition:Partition)
-	{
-		partition._iRegisterEntity(this);
-	}
-
-	public _pUnregisterEntity(partition:Partition)
-	{
-		partition._iUnregisterEntity(this);
 	}
 }
 

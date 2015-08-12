@@ -1,27 +1,30 @@
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import INode						= require("awayjs-display/lib/partition/INode");
 
 /**
  * @class away.partition.NodeBase
  */
-class NodeBase
+class NodeBase implements INode
 {
 	private _debugChildrenVisible:boolean;
 	private _explicitDebugVisible:boolean;
 	public _pImplicitDebugVisible:boolean;
-	public _iParent:NodeBase;
-	public _pChildNodes:Array<NodeBase>;
+	public _pChildNodes:Array<INode> = new Array<INode>();
 	public _pNumChildNodes:number = 0;
 
 	public _pDebugEntity:IEntity;
 
-	public _iNumEntities:number = 0;
 	public _iCollectionMark:number;// = 0;
 
+	public numEntities:number = 0;
+
+	public parent:INode;
 	/**
 	 *
 	 */
@@ -37,7 +40,7 @@ class NodeBase
 
 		this._explicitDebugVisible = value;
 
-		this._iUpdateImplicitDebugVisible(this._iParent? this._iParent.debugChildrenVisible : false);
+		this._iUpdateImplicitDebugVisible(this.parent? this.parent.debugChildrenVisible : false);
 
 	}
 
@@ -60,26 +63,8 @@ class NodeBase
 	/**
 	 *
 	 */
-	public get parent():NodeBase
-	{
-		return this._iParent;
-	}
-
-	/**
-	 *
-	 * @protected
-	 */
-	public get _pNumEntities():number
-	{
-		return this._iNumEntities;
-	}
-
-	/**
-	 *
-	 */
 	constructor()
 	{
-		this._pChildNodes = new Array<NodeBase>();
 	}
 
 	/**
@@ -119,7 +104,7 @@ class NodeBase
 	 * @param entity
 	 * @returns {away.partition.NodeBase}
 	 */
-	public findPartitionForEntity(entity:IEntity):NodeBase
+	public findParentForNode(node:INode):INode
 	{
 		return this;
 	}
@@ -130,14 +115,12 @@ class NodeBase
 	 */
 	public acceptTraverser(traverser:CollectorBase)
 	{
-		if (this._pNumEntities == 0 && !this._pImplicitDebugVisible)
+		if (this.numEntities == 0 && !this._pImplicitDebugVisible)
 			return;
 
 		if (traverser.enterNode(this)) {
-			var i:number = 0;
-
-			while (i < this._pNumChildNodes)
-				this._pChildNodes[i++].acceptTraverser(traverser);
+			for (var i:number = 0; i < this._pNumChildNodes; i++)
+				this._pChildNodes[i].acceptTraverser(traverser);
 
 			if (this._pImplicitDebugVisible && traverser.isEntityCollector)
 				traverser.applyEntity(this._pDebugEntity);
@@ -161,20 +144,20 @@ class NodeBase
 	 * @param node
 	 * @internal
 	 */
-	public iAddNode(node:NodeBase)
+	public iAddNode(node:INode)
 	{
-		node._iParent = this;
-		this._iNumEntities += node._pNumEntities;
+		node.parent = this;
+		this.numEntities += node.numEntities;
 		this._pChildNodes[ this._pNumChildNodes++ ] = node;
 
 		node._iUpdateImplicitDebugVisible(this.debugChildrenVisible);
 
-		var numEntities:number = node._pNumEntities;
+		var numEntities:number = node.numEntities;
 		node = this;
 
 		do {
-			node._iNumEntities += numEntities;
-		} while ((node = node._iParent) != null);
+			node.numEntities += numEntities;
+		} while ((node = node.parent) != null);
 	}
 
 	/**
@@ -182,7 +165,7 @@ class NodeBase
 	 * @param node
 	 * @internal
 	 */
-	public iRemoveNode(node:NodeBase)
+	public iRemoveNode(node:INode)
 	{
 		var index:number = this._pChildNodes.indexOf(node);
 		this._pChildNodes[index] = this._pChildNodes[--this._pNumChildNodes];
@@ -190,15 +173,15 @@ class NodeBase
 
 		node._iUpdateImplicitDebugVisible(false);
 
-		var numEntities:number = node._pNumEntities;
+		var numEntities:number = node.numEntities;
 		node = this;
 
 		do {
-			node._pNumEntities -= numEntities;
-		} while ((node = node._iParent) != null);
+			node.numEntities -= numEntities;
+		} while ((node = node.parent) != null);
 	}
 
-	private _iUpdateImplicitDebugVisible(value:boolean)
+	public _iUpdateImplicitDebugVisible(value:boolean)
 	{
 		if (this._pImplicitDebugVisible == this._explicitDebugVisible || value)
 			return;

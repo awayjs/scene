@@ -9,7 +9,6 @@ import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IRenderOwner					= require("awayjs-display/lib/base/IRenderOwner");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import Partition					= require("awayjs-display/lib/partition/Partition");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import IRender						= require("awayjs-display/lib/pool/IRender");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
@@ -305,16 +304,6 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._renderables.splice(index, 1);
 
 		return renderable;
-	}
-
-	public _pRegisterEntity(partition:Partition)
-	{
-		partition._iRegisterSkybox(this);
-	}
-
-	public _pUnregisterEntity(partition:Partition)
-	{
-		partition._iUnregisterSkybox(this);
 	}
 }
 

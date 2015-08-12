@@ -449,7 +449,7 @@ class Timeline
 								if(mask.isAsset(DisplayObjectContainer))
 									(<DisplayObjectContainer> mask).mouseChildren = false;
 							}
-							target._iMasks = masks;
+							target.masks = masks;
 							break;
 
 						case 4:// instance name movieclip instance
@@ -492,7 +492,7 @@ class Timeline
 							break;
 						case 200:
 							//todo: remove once runtime does not need id for mask anymore
-							target._iMaskID = childID;
+							//target._iMaskID = childID;
 							break;
 						default:
 							break;

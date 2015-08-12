@@ -1,6 +1,6 @@
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
@@ -14,12 +14,7 @@ interface IEntityNodeClass
 	/**
 	 *
 	 */
-	id:string;
-
-	/**
-	 *
-	 */
-	new(pool:EntityNodePool, entity:IEntity, partition:Partition):EntityNode;
+	new(pool:EntityNodePool, entity:IEntity, partition:PartitionBase):EntityNode;
 }
 
 export = IEntityNodeClass;

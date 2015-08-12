@@ -8,7 +8,6 @@ import PerspectiveProjection		= require("awayjs-core/lib/projections/Perspective
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import Partition					= require("awayjs-display/lib/partition/Partition");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
 
@@ -261,16 +260,6 @@ class Camera extends DisplayObjectContainer implements IEntity
 			this._iSourcePrefab._iValidate();
 
 		//nothing to do here
-	}
-
-	public _pRegisterEntity(partition:Partition)
-	{
-		partition._iRegisterCamera(this);
-	}
-
-	public _pUnregisterEntity(partition:Partition)
-	{
-		partition._iUnregisterCamera(this);
 	}
 }
 

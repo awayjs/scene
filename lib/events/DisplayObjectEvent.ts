@@ -13,6 +13,11 @@ class DisplayObjectEvent extends Event
 	public static SCALE_CHANGED:string = "scaleChanged";
     public static GLOBAL_COLOR_TRANSFORM_CHANGED:string = "globalColorTransformChanged";
 
+	/**
+	 *
+	 */
+	public static PARTITION_CHANGED:string = "partitionChanged";
+
 	public object:DisplayObject;
 
 	constructor(type:string, object:DisplayObject)

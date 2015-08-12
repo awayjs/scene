@@ -6,7 +6,8 @@ import Error						= require("awayjs-core/lib/errors/Error");
 import RangeError					= require("awayjs-core/lib/errors/RangeError");
 
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
+import ContainerNode				= require("awayjs-display/lib/partition/ContainerNode");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 
 /**
@@ -34,9 +35,11 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 {
 	public static assetType:string = "[asset DisplayObjectContainer]";
 
+	private _containerNodes:Array<ContainerNode> = new Array<ContainerNode>();
 	private _mouseChildren:boolean = true;
 	private _depths:Array<number> = new Array<number>();
 	private _nextHighestDepth:number = 0;
+	private _nextHighestDepthDirty:boolean;
 	private _children:Array<DisplayObject> = new Array<DisplayObject>();
 	public _iIsRoot:boolean;
 
@@ -120,6 +123,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	constructor()
 	{
 		super();
+
+		this._pIsContainer = true;
 	}
 
 	/**
@@ -166,34 +171,22 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		if (child._pParent)
 			child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
 
-		var len:number = this._depths.length;
-		var index:number = len;
-		
-		while (index--)
-			if (this._depths[index] < depth)
-				break;
+		var index = this.getDepthIndexInternal(depth);
 
-		index++;
-
-		if (index < len) {
-			//if replace flag & depths match current depth, remove the existing child
-			if (this._depths[index] == depth) {
-				if (replace) {
-					this.removeChildAt(index);
-				} else {
-					//move depth of existing child up by 1
-					this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
-				}
+		if (index != -1) {
+			if (replace) {
+				this.removeChildAt(index);
+			} else {
+				//move depth of existing child up by 1
+				this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
 			}
-
-			this._children.splice(index, 0, child);
-			this._depths.splice(index, 0, depth);
-		} else {
-			this._children.push(child);
-			this._depths.push(depth);
-
-			this._nextHighestDepth = depth + 1;
 		}
+
+		if (this._nextHighestDepth < depth + 1)
+			this._nextHighestDepth = depth + 1;
+
+		this._children.push(child);
+		this._depths.push(depth);
 
 		child.iSetParent(this);
 
@@ -233,7 +226,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public addChildAt(child:DisplayObject, index:number):DisplayObject
 	{
-		return this.addChildAtDepth(child, (index < this._children.length)? this._depths[index] : this._nextHighestDepth, false);
+		return this.addChildAtDepth(child, (index < this._depths.length)? this._depths[index] : this.getNextHighestDepth(), false);
 	}
 
 	public addChildren(...childarray:Array<DisplayObject>)
@@ -362,6 +355,9 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 	public getNextHighestDepth()
 	{
+		if (this._nextHighestDepthDirty)
+			this._updateNextHighestDepth();
+
 		return this._nextHighestDepth;
 	}
 
@@ -642,10 +638,34 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			this._children[i]._pUpdateImplicitVisibility(this._pImplicitVisibility);
 	}
 
+
 	/**
 	 * @protected
 	 */
-	public _pUpdateImplicitPartition(value:Partition, scene:Scene)
+	public _pUpdateImplicitMaskId(value:number)
+	{
+		super._pUpdateImplicitMaskId(value);
+
+		var len:number = this._children.length;
+		for (var i:number = 0; i < len; ++i)
+			this._children[i]._pUpdateImplicitMaskId(this._pImplicitMaskId);
+	}
+	/**
+	 * @protected
+	 */
+	public _pUpdateImplicitMasks(value:Array<Array<DisplayObject>>)
+	{
+		super._pUpdateImplicitMasks(value);
+
+		var len:number = this._children.length;
+		for (var i:number = 0; i < len; ++i)
+			this._children[i]._pUpdateImplicitMasks(this._pImplicitMasks);
+	}
+
+	/**
+	 * @protected
+	 */
+	public _pUpdateImplicitPartition(value:PartitionBase, scene:Scene)
 	{
 		super._pUpdateImplicitPartition(value, scene);
 
@@ -662,23 +682,31 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	private removeChildAtInternal(index:number):DisplayObject
 	{
 		var child:DisplayObject = this._children.splice(index, 1)[0];
-		this._depths.splice(index, 1);
+		var depth:number = this._depths.splice(index, 1)[0];
 
-		//if child is the last in array, update next highest depth
-		if (index == this._children.length)
-			this._nextHighestDepth = this._depths[index - 1] + 1;
+		//update next highest depth
+		if (this._nextHighestDepth == depth + 1)
+			this._nextHighestDepthDirty = true;
 
 		return child;
 	}
 	
 	private getDepthIndexInternal(depth:number /*int*/):number
 	{
-		var index:number = this._depths.indexOf(depth);
+		return this._depths.indexOf(depth);
+	}
 
-		if (index == -1)
-			throw new ArgumentError("No child at specified depth");
+	private _updateNextHighestDepth()
+	{
+		this._nextHighestDepthDirty = false;
 
-		return index;
+		this._nextHighestDepth = 0;
+		var len:number = this._depths.length;
+		for (var i:number = 0; i < len; i++)
+			if (this._nextHighestDepth < this._depths[i])
+				this._nextHighestDepth = this._depths[i];
+
+		this._nextHighestDepth += 1;
 	}
 	
 	/**
@@ -699,14 +727,14 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
 	{
-		if(this._iMaskID!==-1 && !masksFlag)return;
+		if(this.maskId !== -1 && !masksFlag)return;
 		if(this.visible==false)return;
 		for(var i:number = 0; i < this.numChildren; i++)
 		{
 			var child:DisplayObject = this.getChildAt(i);
 			var childHit:boolean = child.hitTestPoint(x,y, shapeFlag, masksFlag);
 			if(childHit) {
-				var all_masks:Array<DisplayObject> = this._iMasks;
+				var all_masks:Array<DisplayObject> = this.masks;
 				if(all_masks){
 					for (var mi_cnt:number = 0; mi_cnt < all_masks.length; mi_cnt++){
 						var mask_child:DisplayObject = all_masks[mi_cnt];
@@ -724,6 +752,22 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		return false;
 	}
 
+	public _iAddContainerNode(entityNode:ContainerNode):ContainerNode
+	{
+		this._containerNodes.push(entityNode);
+
+		return entityNode;
+	}
+
+
+	public _iRemoveContainerNode(entityNode:ContainerNode):ContainerNode
+	{
+		var index:number = this._containerNodes.indexOf(entityNode);
+
+		this._containerNodes.splice(index, 1);
+
+		return entityNode;
+	}
 }
 
 export = DisplayObjectContainer;

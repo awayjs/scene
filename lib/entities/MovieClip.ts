@@ -8,7 +8,6 @@ import Mesh = require("awayjs-display/lib/entities/Mesh");
 import Billboard = require("awayjs-display/lib/entities/Billboard");
 
 import MouseEvent = require("awayjs-display/lib/events/MouseEvent");
-import SceneEvent = require("awayjs-display/lib/events/SceneEvent");
 
 import IMovieClipAdapter		= require("awayjs-display/lib/adapters/IMovieClipAdapter");
 import Timeline = require("awayjs-display/lib/base/Timeline");
@@ -414,7 +413,7 @@ class MovieClip extends DisplayObjectContainer
         for (var i = 0; i < depth; ++i)
             str += "--";
 
-        str += " " + target.name + " = " + target._iMaskID;
+        str += " " + target.name + " = " + target.maskId;
         console.log(str);
     }
 

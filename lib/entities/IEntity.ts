@@ -11,7 +11,7 @@ import Scene						= require("awayjs-display/lib/containers/Scene");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
@@ -32,6 +32,10 @@ interface IEntity extends IAsset
 	scaleX:number;
 	scaleY:number;
 	scaleZ:number;
+
+	_iMasksConfig():Array<Array<number>>;
+
+	_iAssignedMaskId():number;
 
 	/**
 	 *
@@ -116,12 +120,7 @@ interface IEntity extends IAsset
 	/**
 	 * @internal
 	 */
-	_iAssignedPartition:Partition;
-
-    /**
-     * @internal
-     */
-    _iMaskID:number;
+	_iAssignedPartition:PartitionBase;
 
 	/**
 	 * //TODO
@@ -137,12 +136,17 @@ interface IEntity extends IAsset
 	/**
 	 * @internal
 	 */
-	_iIsMouseEnabled():boolean
+	_iIsMouseEnabled():boolean;
 
 	/**
 	 * @internal
 	 */
-	_iIsVisible():boolean
+	_iIsVisible():boolean;
+
+	/**
+	 * @internal
+	 */
+	_iAssignedMasks():Array<Array<DisplayObject>>;
 
 	/**
 	 * @internal

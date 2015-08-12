@@ -4,7 +4,6 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import Partition					= require("awayjs-display/lib/partition/Partition");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import CubeMapShadowMapper			= require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
@@ -120,16 +119,6 @@ class PointLight extends LightBase implements IEntity
 		target.prepend(m);
 
 		return target;
-	}
-
-	public _pRegisterEntity(partition:Partition)
-	{
-		partition._iRegisterPointLight(this);
-	}
-
-	public _pUnregisterEntity(partition:Partition)
-	{
-		partition._iUnregisterPointLight(this);
 	}
 }
 

@@ -1,7 +1,9 @@
+import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
+
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import DirectionalLight						= require("awayjs-display/lib/entities/DirectionalLight");
+import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
@@ -9,7 +11,7 @@ import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
  */
 class DirectionalLightNode extends EntityNode
 {
-	public static id:string = "directionalLightNode";
+	public static assetClass:IAssetClass = DirectionalLight;
 
 	private _directionalLight:DirectionalLight;
 
@@ -17,7 +19,7 @@ class DirectionalLightNode extends EntityNode
 	 *
 	 * @param directionalLight
 	 */
-	constructor(pool:EntityNodePool, directionalLight:DirectionalLight, partition:Partition)
+	constructor(pool:EntityNodePool, directionalLight:DirectionalLight, partition:PartitionBase)
 	{
 		super(pool, directionalLight, partition);
 

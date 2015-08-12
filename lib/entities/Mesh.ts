@@ -13,7 +13,6 @@ import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
 import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import Partition					= require("awayjs-display/lib/partition/Partition");
 import SubMeshPool					= require("awayjs-display/lib/pool/SubMeshPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -317,8 +316,8 @@ class Mesh extends DisplayObjectContainer implements IEntity
         //this is of course no proper cloning
         //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
         clone.extra = this.extra;
-		clone._iMaskID = this._iMaskID;
-		clone._iMasks = this._iMasks? this._iMasks.concat() : null;
+		clone.maskId = this.maskId;
+		clone.masks = this.masks? this.masks.concat() : null;
 
         var len:number = this._subMeshes.length;
         for (var i:number = 0; i < len; ++i)
@@ -601,15 +600,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			this._subMeshes[i]._iInvalidateRenderableGeometry();
 	}
 
-	public _pRegisterEntity(partition:Partition)
-	{
-		partition._iRegisterEntity(this);
-	}
-
-	public _pUnregisterEntity(partition:Partition)
-	{
-		partition._iUnregisterEntity(this);
-	}
 	/**
 	 * Evaluates the display object to see if it overlaps or intersects with the
 	 * point specified by the <code>x</code> and <code>y</code> parameters. The
@@ -629,7 +619,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
 	{
 		// if this is a mask, directly return false
-		if(this._iMaskID!==-1 && !masksFlag)return false;
+		if(this.maskId !== -1 && !masksFlag)return false;
 
 		// if this is invisible, all children should be invisible too.
 		// todo: is the above statement correct for awayjs visible-property ?
@@ -648,7 +638,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 					if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
 
 						// if the mesh is masked, we need to check if 1 mask will collide
-						var all_masks:Array<DisplayObject> = this._iMasks;
+						var all_masks:Array<DisplayObject> = this.masks;
 						if (all_masks) {
 							var all_hir_masks:Array<DisplayObject> = this["hierarchicalMasks"];
 							//todo: check if there will be cases when no hirarchical masks have been collected and assigned yet.

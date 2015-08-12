@@ -13,7 +13,7 @@ import RaycastPicker				= require("awayjs-display/lib/pick/RaycastPicker");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
-import SceneEvent					= require("awayjs-display/lib/events/SceneEvent");
+import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import RendererEvent				= require("awayjs-display/lib/events/RendererEvent");
 import MouseManager					= require("awayjs-display/lib/managers/MouseManager");
 
@@ -53,7 +53,7 @@ class View
 	private _viewportDirty:boolean = true;
 	private _scissorDirty:boolean = true;
 
-	private _onScenePartitionChangedDelegate:(event:SceneEvent) => void;
+	private _onPartitionChangedDelegate:(event:DisplayObjectEvent) => void;
 	private _onProjectionChangedDelegate:(event:CameraEvent) => void;
 	private _onViewportUpdatedDelegate:(event:RendererEvent) => void;
 	private _onScissorUpdatedDelegate:(event:RendererEvent) => void;
@@ -77,10 +77,10 @@ class View
 	 */
 	constructor(renderer:IRenderer, scene:Scene = null, camera:Camera = null)
 	{
-		this._onScenePartitionChangedDelegate = (event:SceneEvent) => this.onScenePartitionChanged(event);
-		this._onProjectionChangedDelegate = (event:CameraEvent) => this.onProjectionChanged(event);
-		this._onViewportUpdatedDelegate = (event:RendererEvent) => this.onViewportUpdated(event);
-		this._onScissorUpdatedDelegate = (event:RendererEvent) => this.onScissorUpdated(event);
+		this._onPartitionChangedDelegate = (event:DisplayObjectEvent) => this._onPartitionChanged(event);
+		this._onProjectionChangedDelegate = (event:CameraEvent) => this._onProjectionChanged(event);
+		this._onViewportUpdatedDelegate = (event:RendererEvent) => this._onViewportUpdated(event);
+		this._onScissorUpdatedDelegate = (event:RendererEvent) => this._onScissorUpdated(event);
 
 		this.scene = scene || new Scene();
 		this.camera = camera || new Camera();
@@ -99,16 +99,6 @@ class View
 
 //			if (this._shareContext)
 //				this._mouse3DManager.addViewLayer(this);
-	}
-
-	/**
-	 *
-	 * @param e
-	 */
-	private onScenePartitionChanged(event:SceneEvent)
-	{
-		if (this._pCamera)
-			this._pScene.partition._iRegisterCamera(this._pCamera);
 	}
 
 	public layeredView:boolean; //TODO: something to enable this correctly
@@ -271,7 +261,7 @@ class View
 			this._pEntityCollector.camera = this._pCamera;
 
 		if (this._pScene)
-			this._pScene.partition._iRegisterCamera(this._pCamera);
+			this._pScene.partition._iRegisterEntity(this._pCamera);
 
 		this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
 		this._scissorDirty = true;
@@ -296,14 +286,14 @@ class View
 			return;
 
 		if (this._pScene)
-			this._pScene.removeEventListener(SceneEvent.PARTITION_CHANGED, this._onScenePartitionChangedDelegate);
+			this._pScene.removeEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
 
 		this._pScene = value;
 
-		this._pScene.addEventListener(SceneEvent.PARTITION_CHANGED, this._onScenePartitionChangedDelegate);
+		this._pScene.addEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
 
 		if (this._pCamera)
-			this._pScene.partition._iRegisterCamera(this._pCamera);
+			this._pScene.partition._iRegisterEntity(this._pCamera);
 	}
 
 	/**
@@ -514,10 +504,21 @@ class View
 		return this._pEntityCollector;
 	}
 
+
+	/**
+	 *
+	 * @param e
+	 */
+	private _onPartitionChanged(event:DisplayObjectEvent)
+	{
+		if (this._pCamera)
+			this._pScene.partition._iRegisterEntity(this._pCamera);
+	}
+
 	/**
 	 *
 	 */
-	private onProjectionChanged(event:CameraEvent)
+	private _onProjectionChanged(event:CameraEvent)
 	{
 		this._scissorDirty = true;
 		this._viewportDirty = true;
@@ -526,7 +527,7 @@ class View
 	/**
 	 *
 	 */
-	private onViewportUpdated(event:RendererEvent)
+	private _onViewportUpdated(event:RendererEvent)
 	{
 		this._viewportDirty = true;
 	}
@@ -534,7 +535,7 @@ class View
 	/**
 	 *
 	 */
-	private onScissorUpdated(event:RendererEvent)
+	private _onScissorUpdated(event:RendererEvent)
 	{
 		this._scissorDirty = true;
 	}

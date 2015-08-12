@@ -1,8 +1,9 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
+import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
 
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import Partition					= require("awayjs-display/lib/partition/Partition");
+import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
 import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
@@ -22,7 +23,7 @@ class SkyboxNode extends EntityNode
 	 * Creates a new SkyboxNode object.
 	 * @param skyBox The Skybox to be contained in the node.
 	 */
-	constructor(pool:EntityNodePool, skyBox:Skybox, partition:Partition)
+	constructor(pool:EntityNodePool, skyBox:Skybox, partition:PartitionBase)
 	{
 		super(pool, skyBox, partition);
 
