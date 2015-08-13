@@ -2526,192 +2526,6 @@ declare module "awayjs-display/lib/base/Timeline" {
 	
 }
 
-declare module "awayjs-display/lib/base/TriangleSubGeometry" {
-	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import Float4Attributes = require("awayjs-core/lib/attributes/Float4Attributes");
-	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
-	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
-	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	/**
-	 * @class away.base.TriangleSubGeometry
-	 */
-	class TriangleSubGeometry extends SubGeometryBase {
-	    static assetType: string;
-	    private _numVertices;
-	    private _faceNormalsDirty;
-	    private _faceTangentsDirty;
-	    private _positions;
-	    private _normals;
-	    private _tangents;
-	    private _uvs;
-	    private _secondaryUVs;
-	    private _jointIndices;
-	    private _jointWeights;
-	    private _useCondensedIndices;
-	    private _condensedIndexLookUp;
-	    private _jointsPerVertex;
-	    private _autoDeriveNormals;
-	    private _autoDeriveTangents;
-	    private _autoDeriveUVs;
-	    private _faceNormals;
-	    private _faceTangents;
-	    assetType: string;
-	    numVertices: number;
-	    /**
-	     * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
-	     * by condensing the number of joint index values required per mesh. Only applicable to
-	     * skeleton animations that utilise more than one mesh object. Defaults to false.
-	     */
-	    useCondensedIndices: boolean;
-	    /**
-	     *
-	     */
-	    jointsPerVertex: number;
-	    /**
-	     * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-	     * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-	     * in cases where UV data is explicitly defined or the material does not require UV data.
-	     */
-	    autoDeriveUVs: boolean;
-	    /**
-	     * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
-	     * explicitly.
-	     */
-	    autoDeriveNormals: boolean;
-	    /**
-	     * True if the vertex tangents should be derived from the geometry, false if the vertex normals are set
-	     * explicitly.
-	     */
-	    autoDeriveTangents: boolean;
-	    /**
-	     *
-	     */
-	    positions: Float3Attributes;
-	    /**
-	     *
-	     */
-	    normals: Float3Attributes;
-	    /**
-	     *
-	     */
-	    tangents: Float3Attributes;
-	    /**
-	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
-	     */
-	    faceNormals: Float4Attributes;
-	    /**
-	     * The raw data of the face tangets, in the same order as the faces are listed in the index list.
-	     */
-	    faceTangents: Float3Attributes;
-	    /**
-	     *
-	     */
-	    uvs: Float2Attributes;
-	    /**
-	     *
-	     */
-	    secondaryUVs: Float2Attributes;
-	    /**
-	     *
-	     */
-	    jointIndices: AttributesView;
-	    /**
-	     *
-	     */
-	    jointWeights: AttributesView;
-	    condensedIndexLookUp: Array<number>;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedBuffer?: AttributesBuffer);
-	    getBoundingPositions(): Float32Array;
-	    hitTestPoint(x: number, y: number, z: number): boolean;
-	    /**
-	     *
-	     */
-	    setPositions(array: Array<number>, offset?: number): any;
-	    setPositions(float32Array: Float32Array, offset?: number): any;
-	    setPositions(float3Attributes: Float3Attributes, offset?: number): any;
-	    /**
-	     * Updates the vertex normals based on the geometry.
-	     */
-	    setNormals(array: Array<number>, offset?: number): any;
-	    setNormals(float32Array: Float32Array, offset?: number): any;
-	    setNormals(float3Attributes: Float3Attributes, offset?: number): any;
-	    /**
-	     * Updates the vertex tangents based on the geometry.
-	     */
-	    setTangents(array: Array<number>, offset?: number): any;
-	    setTangents(float32Array: Float32Array, offset?: number): any;
-	    setTangents(float3Attributes: Float3Attributes, offset?: number): any;
-	    /**
-	     * Updates the uvs based on the geometry.
-	     */
-	    setUVs(array: Array<number>, offset?: number): any;
-	    setUVs(float32Array: Float32Array, offset?: number): any;
-	    setUVs(float2Attributes: Float2Attributes, offset?: number): any;
-	    /**
-	     * Updates the secondary uvs based on the geometry.
-	     */
-	    setSecondaryUVs(array: Array<number>, offset?: number): any;
-	    setSecondaryUVs(float32Array: Float32Array, offset?: number): any;
-	    setSecondaryUVs(float2Attributes: Float2Attributes, offset?: number): any;
-	    /**
-	     * Updates the joint indices
-	     */
-	    setJointIndices(array: Array<number>, offset?: number): any;
-	    setJointIndices(float32Array: Float32Array, offset?: number): any;
-	    setJointIndices(attributesView: AttributesView, offset?: number): any;
-	    /**
-	     * Updates the joint weights.
-	     */
-	    setJointWeights(array: Array<number>, offset?: number): any;
-	    setJointWeights(float32Array: Float32Array, offset?: number): any;
-	    setJointWeights(attributesView: AttributesView, offset?: number): any;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Updates the face indices of the TriangleSubGeometry.
-	     *
-	     * @param indices The face indices to upload.
-	     */
-	    setIndices(array: Array<number>, offset?: number): any;
-	    setIndices(uint16Array: Uint16Array, offset?: number): any;
-	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): TriangleSubGeometry;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Updates the tangents for each face.
-	     */
-	    private updateFaceTangents();
-	    /**
-	     * Updates the normals for each face.
-	     */
-	    private updateFaceNormals();
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	}
-	export = TriangleSubGeometry;
-	
-}
-
 declare module "awayjs-display/lib/base/Transform" {
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
@@ -2942,6 +2756,192 @@ declare module "awayjs-display/lib/base/Transform" {
 	    moveDown(distance: number): void;
 	}
 	export = Transform;
+	
+}
+
+declare module "awayjs-display/lib/base/TriangleSubGeometry" {
+	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+	import Float4Attributes = require("awayjs-core/lib/attributes/Float4Attributes");
+	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
+	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
+	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	/**
+	 * @class away.base.TriangleSubGeometry
+	 */
+	class TriangleSubGeometry extends SubGeometryBase {
+	    static assetType: string;
+	    private _numVertices;
+	    private _faceNormalsDirty;
+	    private _faceTangentsDirty;
+	    private _positions;
+	    private _normals;
+	    private _tangents;
+	    private _uvs;
+	    private _secondaryUVs;
+	    private _jointIndices;
+	    private _jointWeights;
+	    private _useCondensedIndices;
+	    private _condensedIndexLookUp;
+	    private _jointsPerVertex;
+	    private _autoDeriveNormals;
+	    private _autoDeriveTangents;
+	    private _autoDeriveUVs;
+	    private _faceNormals;
+	    private _faceTangents;
+	    assetType: string;
+	    numVertices: number;
+	    /**
+	     * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
+	     * by condensing the number of joint index values required per mesh. Only applicable to
+	     * skeleton animations that utilise more than one mesh object. Defaults to false.
+	     */
+	    useCondensedIndices: boolean;
+	    /**
+	     *
+	     */
+	    jointsPerVertex: number;
+	    /**
+	     * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
+	     * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
+	     * in cases where UV data is explicitly defined or the material does not require UV data.
+	     */
+	    autoDeriveUVs: boolean;
+	    /**
+	     * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
+	     * explicitly.
+	     */
+	    autoDeriveNormals: boolean;
+	    /**
+	     * True if the vertex tangents should be derived from the geometry, false if the vertex normals are set
+	     * explicitly.
+	     */
+	    autoDeriveTangents: boolean;
+	    /**
+	     *
+	     */
+	    positions: Float3Attributes;
+	    /**
+	     *
+	     */
+	    normals: Float3Attributes;
+	    /**
+	     *
+	     */
+	    tangents: Float3Attributes;
+	    /**
+	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
+	     */
+	    faceNormals: Float4Attributes;
+	    /**
+	     * The raw data of the face tangets, in the same order as the faces are listed in the index list.
+	     */
+	    faceTangents: Float3Attributes;
+	    /**
+	     *
+	     */
+	    uvs: Float2Attributes;
+	    /**
+	     *
+	     */
+	    secondaryUVs: Float2Attributes;
+	    /**
+	     *
+	     */
+	    jointIndices: AttributesView;
+	    /**
+	     *
+	     */
+	    jointWeights: AttributesView;
+	    condensedIndexLookUp: Array<number>;
+	    /**
+	     *
+	     */
+	    constructor(concatenatedBuffer?: AttributesBuffer);
+	    getBoundingPositions(): Float32Array;
+	    hitTestPoint(x: number, y: number, z: number): boolean;
+	    /**
+	     *
+	     */
+	    setPositions(array: Array<number>, offset?: number): any;
+	    setPositions(float32Array: Float32Array, offset?: number): any;
+	    setPositions(float3Attributes: Float3Attributes, offset?: number): any;
+	    /**
+	     * Updates the vertex normals based on the geometry.
+	     */
+	    setNormals(array: Array<number>, offset?: number): any;
+	    setNormals(float32Array: Float32Array, offset?: number): any;
+	    setNormals(float3Attributes: Float3Attributes, offset?: number): any;
+	    /**
+	     * Updates the vertex tangents based on the geometry.
+	     */
+	    setTangents(array: Array<number>, offset?: number): any;
+	    setTangents(float32Array: Float32Array, offset?: number): any;
+	    setTangents(float3Attributes: Float3Attributes, offset?: number): any;
+	    /**
+	     * Updates the uvs based on the geometry.
+	     */
+	    setUVs(array: Array<number>, offset?: number): any;
+	    setUVs(float32Array: Float32Array, offset?: number): any;
+	    setUVs(float2Attributes: Float2Attributes, offset?: number): any;
+	    /**
+	     * Updates the secondary uvs based on the geometry.
+	     */
+	    setSecondaryUVs(array: Array<number>, offset?: number): any;
+	    setSecondaryUVs(float32Array: Float32Array, offset?: number): any;
+	    setSecondaryUVs(float2Attributes: Float2Attributes, offset?: number): any;
+	    /**
+	     * Updates the joint indices
+	     */
+	    setJointIndices(array: Array<number>, offset?: number): any;
+	    setJointIndices(float32Array: Float32Array, offset?: number): any;
+	    setJointIndices(attributesView: AttributesView, offset?: number): any;
+	    /**
+	     * Updates the joint weights.
+	     */
+	    setJointWeights(array: Array<number>, offset?: number): any;
+	    setJointWeights(float32Array: Float32Array, offset?: number): any;
+	    setJointWeights(attributesView: AttributesView, offset?: number): any;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     * Updates the face indices of the TriangleSubGeometry.
+	     *
+	     * @param indices The face indices to upload.
+	     */
+	    setIndices(array: Array<number>, offset?: number): any;
+	    setIndices(uint16Array: Uint16Array, offset?: number): any;
+	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
+	    /**
+	     * Clones the current object
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): TriangleSubGeometry;
+	    scaleUV(scaleU?: number, scaleV?: number): void;
+	    /**
+	     * Scales the geometry.
+	     * @param scale The amount by which to scale.
+	     */
+	    scale(scale: number): void;
+	    applyTransformation(transform: Matrix3D): void;
+	    /**
+	     * Updates the tangents for each face.
+	     */
+	    private updateFaceTangents();
+	    /**
+	     * Updates the normals for each face.
+	     */
+	    private updateFaceNormals();
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	}
+	export = TriangleSubGeometry;
 	
 }
 
@@ -10741,6 +10741,32 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	
 }
 
+declare module "awayjs-display/lib/text/TextInteractionMode" {
+	/**
+	 * A class that defines the Interactive mode of a text field object.
+	 *
+	 * @see away.entities.TextField#textInteractionMode
+	 */
+	class TextInteractionMode {
+	    /**
+	     * The text field's default interaction mode is NORMAL and it varies across
+	     * platform. On Desktop, the normal mode implies that the text field is in
+	     * scrollable + selection mode. On Mobile platforms like Android, normal mode
+	     * implies that the text field can only be scrolled but the text can not be
+	     * selected.
+	     */
+	    static NORMAL: string;
+	    /**
+	     * On mobile platforms like Android, the text field starts in normal mode
+	     * (which implies scroll and non-selectable mode). The user can switch to
+	     * selection mode through the in-built context menu of the text field object.
+	     */
+	    static SELECTION: string;
+	}
+	export = TextInteractionMode;
+	
+}
+
 declare module "awayjs-display/lib/text/TextLineMetrics" {
 	/**
 	 * The TextLineMetrics class contains information about the text position and
@@ -10804,32 +10830,6 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	    constructor(x?: number, width?: number, height?: number, ascent?: number, descent?: number, leading?: number);
 	}
 	export = TextLineMetrics;
-	
-}
-
-declare module "awayjs-display/lib/text/TextInteractionMode" {
-	/**
-	 * A class that defines the Interactive mode of a text field object.
-	 *
-	 * @see away.entities.TextField#textInteractionMode
-	 */
-	class TextInteractionMode {
-	    /**
-	     * The text field's default interaction mode is NORMAL and it varies across
-	     * platform. On Desktop, the normal mode implies that the text field is in
-	     * scrollable + selection mode. On Mobile platforms like Android, normal mode
-	     * implies that the text field can only be scrolled but the text can not be
-	     * selected.
-	     */
-	    static NORMAL: string;
-	    /**
-	     * On mobile platforms like Android, the text field starts in normal mode
-	     * (which implies scroll and non-selectable mode). The user can switch to
-	     * selection mode through the in-built context menu of the text field object.
-	     */
-	    static SELECTION: string;
-	}
-	export = TextInteractionMode;
 	
 }
 
@@ -11014,46 +11014,6 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	
 }
 
-declare module "awayjs-display/lib/traverse/RaycastCollector" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
-	 * considered intersecting with the defined ray.
-	 *
-	 * @see away.partition.Partition
-	 * @see away.entities.IEntity
-	 *
-	 * @class away.traverse.RaycastCollector
-	 */
-	class RaycastCollector extends CollectorBase {
-	    private _rayPosition;
-	    private _rayDirection;
-	    _iCollectionMark: number;
-	    /**
-	     * Provides the starting position of the ray.
-	     */
-	    rayPosition: Vector3D;
-	    /**
-	     * Provides the direction vector of the ray.
-	     */
-	    rayDirection: Vector3D;
-	    /**
-	     * Creates a new RaycastCollector object.
-	     */
-	    constructor();
-	    /**
-	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
-	     *
-	     * @param node The Partition3DNode object to frustum-test.
-	     */
-	    enterNode(node: NodeBase): boolean;
-	}
-	export = RaycastCollector;
-	
-}
-
 declare module "awayjs-display/lib/traverse/EntityCollector" {
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -11122,6 +11082,46 @@ declare module "awayjs-display/lib/traverse/EntityCollector" {
 	    clear(): void;
 	}
 	export = EntityCollector;
+	
+}
+
+declare module "awayjs-display/lib/traverse/RaycastCollector" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
+	 * considered intersecting with the defined ray.
+	 *
+	 * @see away.partition.Partition
+	 * @see away.entities.IEntity
+	 *
+	 * @class away.traverse.RaycastCollector
+	 */
+	class RaycastCollector extends CollectorBase {
+	    private _rayPosition;
+	    private _rayDirection;
+	    _iCollectionMark: number;
+	    /**
+	     * Provides the starting position of the ray.
+	     */
+	    rayPosition: Vector3D;
+	    /**
+	     * Provides the direction vector of the ray.
+	     */
+	    rayDirection: Vector3D;
+	    /**
+	     * Creates a new RaycastCollector object.
+	     */
+	    constructor();
+	    /**
+	     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	     *
+	     * @param node The Partition3DNode object to frustum-test.
+	     */
+	    enterNode(node: NodeBase): boolean;
+	}
+	export = RaycastCollector;
 	
 }
 
