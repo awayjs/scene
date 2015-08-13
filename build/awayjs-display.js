@@ -302,7 +302,8 @@ var CurveSubGeometry = (function (_super) {
             var nodes = this.cells[cell];
             if (nodes == null)
                 return false;
-            for (var k = 0; k < nodes.length; k += 3) {
+            var nodeCount = nodes.length;
+            for (var k = 0; k < nodeCount; k += 3) {
                 id0 = nodes[k];
                 id1 = nodes[k + 1];
                 id2 = nodes[k + 2];
@@ -6291,19 +6292,21 @@ var DisplayObjectContainer = (function (_super) {
     DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
         if (masksFlag === void 0) { masksFlag = false; }
-        if (this.maskId !== -1 && !masksFlag)
+        if (this._pImplicitMaskId !== -1 && !masksFlag)
             return;
-        if (this.visible == false)
+        if (this._pImplicitVisibility == false)
             return;
-        for (var i = 0; i < this.numChildren; i++) {
-            var child = this.getChildAt(i);
+        var childCount = this._children.length;
+        for (var i = 0; i < childCount; i++) {
+            var child = this._children[i];
             var childHit = child.hitTestPoint(x, y, shapeFlag, masksFlag);
             if (childHit) {
                 var all_masks = this.masks;
                 if (all_masks) {
-                    for (var mi_cnt = 0; mi_cnt < all_masks.length; mi_cnt++) {
+                    var maskCount = all_masks.length;
+                    for (var mi_cnt = 0; mi_cnt < maskCount; mi_cnt++) {
                         var mask_child = all_masks[mi_cnt];
-                        if (mask_child.parent) {
+                        if (mask_child._pParent) {
                             var childHit = mask_child.hitTestPoint(x, y, shapeFlag, true);
                             if (childHit)
                                 return true;
@@ -10271,6 +10274,8 @@ var Mesh = (function (_super) {
         _super.call(this);
         this._castsShadows = true;
         this._shareAnimationGeometry = true;
+        //temp point used in hit testing
+        this._tempPoint = new Point();
         this._pIsEntity = true;
         this._subMeshes = new Array();
         this._onGeometryBoundsInvalidDelegate = function (event) { return _this.onGeometryBoundsInvalid(event); };
@@ -10752,13 +10757,16 @@ var Mesh = (function (_super) {
         if (this.visible == false)
             return false;
         // from this point out, we can not return false, without checking collision of childs.
-        var local = this.globalToLocal(new Point(x, y));
+        this._tempPoint.setTo(x, y);
+        var local = this.globalToLocal(this._tempPoint);
         if (this.geometry) {
             if (this.getBox().contains(local.x, local.y, 0)) {
                 if (!shapeFlag)
                     return true;
-                for (var j = 0; j < this.geometry.subGeometries.length; j++) {
-                    if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
+                var subGeometries = this.geometry.subGeometries;
+                var subGeometriesCount = subGeometries.length;
+                for (var j = 0; j < subGeometriesCount; j++) {
+                    if (subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
                         // if the mesh is masked, we need to check if 1 mask will collide
                         var all_masks = this.masks;
                         if (all_masks) {
@@ -10767,9 +10775,10 @@ var Mesh = (function (_super) {
                             if (all_hir_masks) {
                                 all_masks = all_hir_masks;
                             }
-                            for (var mi_cnt = 0; mi_cnt < all_masks.length; mi_cnt++) {
+                            var maskCount = all_masks.length;
+                            for (var mi_cnt = 0; mi_cnt < maskCount; mi_cnt++) {
                                 var mask_child = all_masks[mi_cnt];
-                                if (mask_child.parent) {
+                                if (mask_child._pParent) {
                                     var childHit = mask_child.hitTestPoint(x, y, shapeFlag, true);
                                     if (childHit)
                                         return true;
