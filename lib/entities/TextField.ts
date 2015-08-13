@@ -3,6 +3,7 @@ import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
 import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
@@ -640,8 +641,18 @@ class TextField extends Mesh
 	 * 
 	 * @default 0(0x000000)
 	 */
-	public textColor:number /*int*/;
+	public _textColor:number /*int*/;
 
+	get textColor(){
+		return this._textColor;
+	}
+	set textColor(value:number){
+		this._textColor=value;
+		if(this.colorTransform==null){
+			this.colorTransform=new ColorTransform();
+		}
+		this.colorTransform.color=value;
+	}
 
 	/**
 	 * The interaction mode property, Default value is
@@ -755,11 +766,10 @@ class TextField extends Mesh
 
 		var vertices:Array<number> = new Array<number>();
 
-		var additional_margin_x:number=2;
-		var additional_margin_y:number=2;
-		font_chars_scale
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
+		var additional_margin_x:number=(this._textFormat.size * this._textFormat.font_table.offset_x);
+		var additional_margin_y:number=(this._textFormat.size * this._textFormat.font_table.offset_y);
 		var y_offset:number=additional_margin_y;
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;

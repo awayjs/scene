@@ -2,9 +2,11 @@ import MovieClip					= require("awayjs-display/lib/entities/MovieClip");
 
 class FrameScriptManager
 {
+	// queues pass1 of scripts.
 	private static _queued_mcs:Array<MovieClip> = [];
 	private static _queued_scripts:Array<Function> = [];
 
+	// queues pass2 of scripts. this will be inserted in reversed order into pass1 queue right before something should be added to pass1
 	private static _queued_mcs_pass2:Array<MovieClip> = [];
 	private static _queued_scripts_pass2:Array<Function> = [];
 
@@ -52,6 +54,9 @@ class FrameScriptManager
 
 	public static execute_queue():void
 	{
+		if(this._queued_mcs.length==0 && this._queued_mcs_pass2.length==0)
+			return;
+
 		var i=this._queued_mcs_pass2.length;
 		while(i--){
 			this._queued_mcs.push(this._queued_mcs_pass2[i]);

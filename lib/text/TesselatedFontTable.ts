@@ -22,6 +22,8 @@ class TesselatedFontTable extends AssetBase
 	public _font_chars_dic:Object;
 	private _font_em_size:number;
 	private _whitespace_width:number;
+	private _offset_x:number;
+	private _offset_y:number;
 	private _charDictDirty:Boolean;
 	//TODO test shader picking
 //		public get shaderPickingDetails():boolean
@@ -38,6 +40,8 @@ class TesselatedFontTable extends AssetBase
 		super();
 		this._font_chars = new Array<TesselatedFontChar>();
 		this._font_chars_dic = new Object();
+		this._offset_x=0;
+		this._offset_y=0;
 	}
 
 	/**
@@ -48,6 +52,21 @@ class TesselatedFontTable extends AssetBase
 
 	}
 
+	get offset_x():number {
+		return this._offset_x;
+	}
+
+	set offset_x(value:number){
+		this._offset_x=value;
+	}
+
+	get offset_y():number {
+		return this._offset_y;
+	}
+
+	set offset_y(value:number){
+		this._offset_y=value;
+	}
 	public get_font_chars():Array<TesselatedFontChar>
 	{
 		return this._font_chars

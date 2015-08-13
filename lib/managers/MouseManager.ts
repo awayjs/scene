@@ -4,6 +4,7 @@ import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import View							= require("awayjs-display/lib/containers/View");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import AwayMouseEvent				= require("awayjs-display/lib/events/MouseEvent");
+import FrameScriptManager			= require("awayjs-display/lib/managers/FrameScriptManager");
 
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
@@ -78,7 +79,7 @@ class MouseManager
 		}
 
 		 // Fire mouse move events here if forceMouseMove is on.
-		if (forceMouseMove && this._iCollidingObject)
+		 if (forceMouseMove && this._iCollidingObject)
 			this.queueDispatch( this._mouseMove, this._mouseMoveEvent);
 
 		var event:AwayMouseEvent;
@@ -97,6 +98,10 @@ class MouseManager
 
 				dispatcher = dispatcher.parent;
 			}
+			// not totally sure, but i think just calling it is easier and cheaper than any options for that
+			// if nothing is queued, the function will return directly anyway
+			FrameScriptManager.execute_queue();
+
 		}
 
 
