@@ -727,31 +727,29 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
 	{
-		if(this._pImplicitMaskId !== -1 && !masksFlag)return;
-		if(this._pImplicitVisibility==false)return;
-		var childCount:number = this._children.length;
-		for(var i:number = 0; i < childCount; i++)
-		{
-			var child:DisplayObject = this._children[i];
-			var childHit:boolean = child.hitTestPoint(x,y, shapeFlag, masksFlag);
-			if(childHit) {
-				var all_masks:Array<DisplayObject> = this.masks;
-				if(all_masks){
-					var maskCount:number = all_masks.length;
-					for (var mi_cnt:number = 0; mi_cnt < maskCount; mi_cnt++){
-						var mask_child:DisplayObject = all_masks[mi_cnt];
-						if(mask_child._pParent){
-							var childHit:boolean = mask_child.hitTestPoint(x,y, shapeFlag, true);
-							if(childHit) return true;
-						}
-					}
-				}
-				else{
-					return true;
+		if(this._pImplicitMaskId !== -1 && !masksFlag)
+			return;
+
+		if(!this._pImplicitVisibility)
+			return;
+
+		var masks:Array<DisplayObject> = this.masks;
+
+		if (masks) {
+			var numMasks:number = masks.length;
+			var maskHit:boolean = false;
+			for (var i:number = 0; i < numMasks; i++) {
+				if (masks[i].hitTestPoint(x, y, shapeFlag, true)) {
+					maskHit = true;
+					break;
 				}
 			}
+
+			if (!maskHit)
+				return false;
 		}
-		return false;
+
+		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag)
 	}
 
 	public _iAddContainerNode(entityNode:ContainerNode):ContainerNode
@@ -769,6 +767,16 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		this._containerNodes.splice(index, 1);
 
 		return entityNode;
+	}
+
+	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
+	{
+		var numChildren:number = this.numChildren;
+		for(var i:number = 0; i < numChildren; i++)
+			if(this._children[i].hitTestPoint(x,y, shapeFlag, masksFlag))
+				return true;
+
+		return false;
 	}
 }
 

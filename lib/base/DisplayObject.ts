@@ -285,6 +285,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
     private _onColorTransformChangedDelegate:(event:Event) => void;
     private _inheritColorTransform:boolean = false;
 
+	//temp vector used in global to local
+	private _tempVector3D:Vector3D = new Vector3D();
 
 	/**
 	 * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -1726,7 +1728,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public globalToLocal(point:Point):Point
 	{
-		var pos:Vector3D = this.inverseSceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+		this._tempVector3D.setTo(point.x, point.y, 0);
+		var pos:Vector3D = this.inverseSceneTransform.transformVector(this._tempVector3D);
+
 		return new Point(pos.x, pos.y);
 	}
 
@@ -1977,7 +1981,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public localToGlobal(point:Point):Point
 	{
-		var pos:Vector3D = this.sceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+		this._tempVector3D.setTo(point.x, point.y, 0);
+		var pos:Vector3D = this.sceneTransform.transformVector(this._tempVector3D);
+
 		return new Point(pos.x, pos.y);
 	}
 

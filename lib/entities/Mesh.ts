@@ -603,73 +603,29 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 
-	/**
-	 * Evaluates the display object to see if it overlaps or intersects with the
-	 * point specified by the <code>x</code> and <code>y</code> parameters. The
-	 * <code>x</code> and <code>y</code> parameters specify a point in the
-	 * coordinate space of the Scene, not the display object container that
-	 * contains the display object(unless that display object container is the
-	 * Scene).
-	 *
-	 * @param x         The <i>x</i> coordinate to test against this object.
-	 * @param y         The <i>y</i> coordinate to test against this object.
-	 * @param shapeFlag Whether to check against the actual pixels of the object
-	 *                 (<code>true</code>) or the bounding box
-	 *                 (<code>false</code>).
-	 * @return <code>true</code> if the display object overlaps or intersects
-	 *         with the specified point; <code>false</code> otherwise.
-	 */
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
+	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
-		// if this is a mask, directly return false
-		if(this.maskId !== -1 && !masksFlag)return false;
-
-		// if this is invisible, all children should be invisible too.
-		// todo: is the above statement correct for awayjs visible-property ?
-		if(this.visible==false)return false;
+		if(super._hitTestPointInternal(x, y, shapeFlag, masksFlag))
+			return true;
 
 		// from this point out, we can not return false, without checking collision of childs.
 		this._tempPoint.setTo(x,y);
 		var local:Point = this.globalToLocal(this._tempPoint);
 
-		if(this.geometry) {
+
+		if(this._geometry) {
 			if(this.getBox().contains(local.x, local.y, 0)){
+				//early out for non-shape tests
 				if (!shapeFlag)
 					return true;
-				var subGeometries:Array<SubGeometryBase> = this.geometry.subGeometries;
+
+				var subGeometries:Array<SubGeometryBase> = this._geometry.subGeometries;
 				var subGeometriesCount:number = subGeometries.length;
-				for(var j:number = 0; j < subGeometriesCount; j++) {
-					if (subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
-
-						// if the mesh is masked, we need to check if 1 mask will collide
-						var all_masks:Array<DisplayObject> = this.masks;
-						if (all_masks) {
-							var all_hir_masks:Array<DisplayObject> = this["hierarchicalMasks"];
-							//todo: check if there will be cases when no hirarchical masks have been collected and assigned yet.
-							if (all_hir_masks){
-								all_masks = all_hir_masks;
-							}
-							var maskCount:number = all_masks.length;
-							for (var mi_cnt:number = 0; mi_cnt < maskCount; mi_cnt++) {
-								var mask_child:DisplayObject = all_masks[mi_cnt];
-								if (mask_child._pParent) {
-									var childHit:boolean = mask_child.hitTestPoint(x, y, shapeFlag, true);
-									if (childHit)return true;
-								}
-							}
-						}
-						else{
-							return true;
-
-						}
-					}
-				}
+				for(var j:number = 0; j < subGeometriesCount; j++)
+					if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
+						return true;
 			}
 		}
-
-		var hit:boolean = false;
-		hit = super.hitTestPoint(x, y, shapeFlag, masksFlag);
-		if(hit)	return true;
 
 		return false;
 	}

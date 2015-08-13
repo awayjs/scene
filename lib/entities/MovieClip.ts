@@ -359,7 +359,7 @@ class MovieClip extends DisplayObjectContainer
         var len = this.numChildren;
         for (var i = 0; i <  len; ++i) {
             var child = this.getChildAt(i);
-            if (child instanceof MovieClip)
+            if (child.isAsset(MovieClip))
                 (<MovieClip>child).advanceFrame();
         }
     }
@@ -376,7 +376,7 @@ class MovieClip extends DisplayObjectContainer
         for (var i = 0; i < len; i++) {
             var child = this.getChildAt(i);
 
-            if (child instanceof MovieClip)
+            if (child.isAsset(MovieClip))
                 (<MovieClip>child).logHierarchy(depth + 1);
             else
                 this.printHierarchyName(depth + 1, child);
