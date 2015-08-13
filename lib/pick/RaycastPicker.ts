@@ -1,5 +1,7 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
+
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import View							= require("awayjs-display/lib/containers/View");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
@@ -18,6 +20,9 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
  */
 class RaycastPicker implements IPicker
 {
+	private _x:number;
+	private _y:number;
+	private _view:View;
 	private _findClosestCollision:boolean;
 	private _raycastCollector:RaycastCollector;
 	private _ignoredEntities = [];
@@ -59,6 +64,10 @@ class RaycastPicker implements IPicker
 	 */
 	public getViewCollision(x:number, y:number, view:View):PickingCollisionVO
 	{
+		this._x = x;
+		this._y = y;
+		this._view = view;
+
 		//update ray
 		var rayPosition:Vector3D = view.unproject(x, y, 0);
 		var rayDirection:Vector3D = view.unproject(x, y, 1).subtract(rayPosition);
@@ -176,7 +185,7 @@ class RaycastPicker implements IPicker
 				// to enable the detection of a corresponsding triangle collision.
 				// Therefore, bounds collisions with a ray origin inside its bounds can be ignored
 				// if it has been established that there is NO triangle collider to test
-				if (!pickingCollisionVO.rayOriginIsInsideBounds) {
+				if (!pickingCollisionVO.rayOriginIsInsideBounds && this.getMasksCollision(entity._iAssignedMasks()) ) {
 					this.updateLocalPosition(pickingCollisionVO);
 					return pickingCollisionVO;
 				}
@@ -185,6 +194,35 @@ class RaycastPicker implements IPicker
 
 		return bestCollisionVO;
 	}
+
+	private getMasksCollision(masks:Array<Array<DisplayObject>>)
+	{
+		//horrible hack for 2d masks
+		if (masks != null) {
+			var position:Vector3D = this._view.unproject(this._x, this._y, 1000);
+			var numLayers:number = masks.length;
+			var children:Array<DisplayObject>;
+			var numChildren:number;
+			var layerHit:boolean;
+			for (var i:number = 0; i < numLayers; i++) {
+				children = masks[i];
+				numChildren = children.length;
+				layerHit = false;
+				for (var j:number = 0; j < numChildren; j++) {
+					if (children[j].hitTestPoint(position.x, position.y, true, true)) {
+						layerHit = true;
+						break;
+					}
+				}
+
+				if (!layerHit)
+					return false;
+			}
+		}
+
+		return true;
+	}
+
 
 	private updateLocalPosition(pickingCollisionVO:PickingCollisionVO)
 	{

@@ -9324,6 +9324,9 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	 * @class away.pick.RaycastPicker
 	 */
 	class RaycastPicker implements IPicker {
+	    private _x;
+	    private _y;
+	    private _view;
 	    private _findClosestCollision;
 	    private _raycastCollector;
 	    private _ignoredEntities;
@@ -9354,6 +9357,7 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	    private isIgnored(entity);
 	    private sortOnNearT(entity1, entity2);
 	    private getPickingCollisionVO(collector);
+	    private getMasksCollision(masks);
 	    private updateLocalPosition(pickingCollisionVO);
 	    dispose(): void;
 	}
