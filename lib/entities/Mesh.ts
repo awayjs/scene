@@ -39,6 +39,8 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	private _onSubGeometryAddedDelegate:(event:GeometryEvent) => void;
 	private _onSubGeometryRemovedDelegate:(event:GeometryEvent) => void;
 
+	//temp point used in hit testing
+	private _tempPoint:Point = new Point();
 	/**
 	 * Defines the animator of the mesh. Act on the mesh's geometry.  Default value is <code>null</code>.
 	 */
@@ -600,6 +602,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			this._subMeshes[i]._iInvalidateRenderableGeometry();
 	}
 
+
 	/**
 	 * Evaluates the display object to see if it overlaps or intersects with the
 	 * point specified by the <code>x</code> and <code>y</code> parameters. The
@@ -626,16 +629,17 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		if(this.visible==false)return false;
 
 		// from this point out, we can not return false, without checking collision of childs.
-		
-		var local:Point = this.globalToLocal(new Point(x,y));
+		this._tempPoint.setTo(x,y);
+		var local:Point = this.globalToLocal(this._tempPoint);
 
 		if(this.geometry) {
 			if(this.getBox().contains(local.x, local.y, 0)){
 				if (!shapeFlag)
 					return true;
-
-				for(var j:number = 0; j < this.geometry.subGeometries.length; j++) {
-					if (this.geometry.subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
+				var subGeometries:Array<SubGeometryBase> = this.geometry.subGeometries;
+				var subGeometriesCount:number = subGeometries.length;
+				for(var j:number = 0; j < subGeometriesCount; j++) {
+					if (subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
 
 						// if the mesh is masked, we need to check if 1 mask will collide
 						var all_masks:Array<DisplayObject> = this.masks;
@@ -645,9 +649,10 @@ class Mesh extends DisplayObjectContainer implements IEntity
 							if (all_hir_masks){
 								all_masks = all_hir_masks;
 							}
-							for (var mi_cnt:number = 0; mi_cnt < all_masks.length; mi_cnt++) {
+							var maskCount:number = all_masks.length;
+							for (var mi_cnt:number = 0; mi_cnt < maskCount; mi_cnt++) {
 								var mask_child:DisplayObject = all_masks[mi_cnt];
-								if (mask_child.parent) {
+								if (mask_child._pParent) {
 									var childHit:boolean = mask_child.hitTestPoint(x, y, shapeFlag, true);
 									if (childHit)return true;
 								}

@@ -267,8 +267,8 @@ class CurveSubGeometry extends SubGeometryBase
 			var nodes:Array<number> = this.cells[cell];
 			if (nodes == null) return false;
 
-
-			for (var k:number = 0; k < nodes.length; k += 3) {
+			var nodeCount:number = nodes.length;
+			for (var k:number = 0; k < nodeCount; k += 3) {
 				id0 = nodes[k];
 				id1 = nodes[k + 1];
 				id2 = nodes[k + 2];

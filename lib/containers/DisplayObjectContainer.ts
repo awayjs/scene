@@ -727,18 +727,20 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
 	{
-		if(this.maskId !== -1 && !masksFlag)return;
-		if(this.visible==false)return;
-		for(var i:number = 0; i < this.numChildren; i++)
+		if(this._pImplicitMaskId !== -1 && !masksFlag)return;
+		if(this._pImplicitVisibility==false)return;
+		var childCount:number = this._children.length;
+		for(var i:number = 0; i < childCount; i++)
 		{
-			var child:DisplayObject = this.getChildAt(i);
+			var child:DisplayObject = this._children[i];
 			var childHit:boolean = child.hitTestPoint(x,y, shapeFlag, masksFlag);
 			if(childHit) {
 				var all_masks:Array<DisplayObject> = this.masks;
 				if(all_masks){
-					for (var mi_cnt:number = 0; mi_cnt < all_masks.length; mi_cnt++){
+					var maskCount:number = all_masks.length;
+					for (var mi_cnt:number = 0; mi_cnt < maskCount; mi_cnt++){
 						var mask_child:DisplayObject = all_masks[mi_cnt];
-						if(mask_child.parent){
+						if(mask_child._pParent){
 							var childHit:boolean = mask_child.hitTestPoint(x,y, shapeFlag, true);
 							if(childHit) return true;
 						}
