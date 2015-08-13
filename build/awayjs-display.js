@@ -4367,12 +4367,13 @@ var Timeline = (function () {
                             var mask;
                             var masks = new Array();
                             for (var m = 0; m < mask_length; m++) {
-                                mask = masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);
-                                if (mask == null)
-                                    throw "mask object not found !";
-                                mask.mouseEnabled = false;
-                                if (mask.isAsset(DisplayObjectContainer))
-                                    mask.mouseChildren = false;
+                                mask = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);
+                                if (mask) {
+                                    masks[m] = mask;
+                                    mask.mouseEnabled = false;
+                                    if (mask.isAsset(DisplayObjectContainer))
+                                        mask.mouseChildren = false;
+                                }
                             }
                             target.masks = masks;
                             break;
