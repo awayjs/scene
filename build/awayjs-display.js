@@ -829,6 +829,8 @@ var DisplayObject = (function (_super) {
         this._entityNodes = new Array();
         this._globalColorTransform = new ColorTransform();
         this._inheritColorTransform = false;
+        //temp vector used in global to local
+        this._tempVector3D = new Vector3D();
         /**
          *
          */
@@ -1975,7 +1977,8 @@ var DisplayObject = (function (_super) {
      * @return A Point object with coordinates relative to the display object.
      */
     DisplayObject.prototype.globalToLocal = function (point) {
-        var pos = this.inverseSceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+        this._tempVector3D.setTo(point.x, point.y, 0);
+        var pos = this.inverseSceneTransform.transformVector(this._tempVector3D);
         return new Point(pos.x, pos.y);
     };
     /**
@@ -2196,7 +2199,8 @@ var DisplayObject = (function (_super) {
      * @return A Point object with coordinates relative to the Scene.
      */
     DisplayObject.prototype.localToGlobal = function (point) {
-        var pos = this.sceneTransform.transformVector(new Vector3D(point.x, point.y, 0));
+        this._tempVector3D.setTo(point.x, point.y, 0);
+        var pos = this.sceneTransform.transformVector(this._tempVector3D);
         return new Point(pos.x, pos.y);
     };
     /**
@@ -6294,31 +6298,22 @@ var DisplayObjectContainer = (function (_super) {
         if (masksFlag === void 0) { masksFlag = false; }
         if (this._pImplicitMaskId !== -1 && !masksFlag)
             return;
-        if (this._pImplicitVisibility == false)
+        if (!this._pImplicitVisibility)
             return;
-        var childCount = this._children.length;
-        for (var i = 0; i < childCount; i++) {
-            var child = this._children[i];
-            var childHit = child.hitTestPoint(x, y, shapeFlag, masksFlag);
-            if (childHit) {
-                var all_masks = this.masks;
-                if (all_masks) {
-                    var maskCount = all_masks.length;
-                    for (var mi_cnt = 0; mi_cnt < maskCount; mi_cnt++) {
-                        var mask_child = all_masks[mi_cnt];
-                        if (mask_child._pParent) {
-                            var childHit = mask_child.hitTestPoint(x, y, shapeFlag, true);
-                            if (childHit)
-                                return true;
-                        }
-                    }
-                }
-                else {
-                    return true;
+        var masks = this.masks;
+        if (masks) {
+            var numMasks = masks.length;
+            var maskHit = false;
+            for (var i = 0; i < numMasks; i++) {
+                if (masks[i].hitTestPoint(x, y, shapeFlag, true)) {
+                    maskHit = true;
+                    break;
                 }
             }
+            if (!maskHit)
+                return false;
         }
-        return false;
+        return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
     };
     DisplayObjectContainer.prototype._iAddContainerNode = function (entityNode) {
         this._containerNodes.push(entityNode);
@@ -6328,6 +6323,13 @@ var DisplayObjectContainer = (function (_super) {
         var index = this._containerNodes.indexOf(entityNode);
         this._containerNodes.splice(index, 1);
         return entityNode;
+    };
+    DisplayObjectContainer.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
+        var numChildren = this.numChildren;
+        for (var i = 0; i < numChildren; i++)
+            if (this._children[i].hitTestPoint(x, y, shapeFlag, masksFlag))
+                return true;
+        return false;
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
     return DisplayObjectContainer;
@@ -10730,72 +10732,24 @@ var Mesh = (function (_super) {
         for (var i = 0; i < len; ++i)
             this._subMeshes[i]._iInvalidateRenderableGeometry();
     };
-    /**
-     * Evaluates the display object to see if it overlaps or intersects with the
-     * point specified by the <code>x</code> and <code>y</code> parameters. The
-     * <code>x</code> and <code>y</code> parameters specify a point in the
-     * coordinate space of the Scene, not the display object container that
-     * contains the display object(unless that display object container is the
-     * Scene).
-     *
-     * @param x         The <i>x</i> coordinate to test against this object.
-     * @param y         The <i>y</i> coordinate to test against this object.
-     * @param shapeFlag Whether to check against the actual pixels of the object
-     *                 (<code>true</code>) or the bounding box
-     *                 (<code>false</code>).
-     * @return <code>true</code> if the display object overlaps or intersects
-     *         with the specified point; <code>false</code> otherwise.
-     */
-    Mesh.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
-        if (shapeFlag === void 0) { shapeFlag = false; }
-        if (masksFlag === void 0) { masksFlag = false; }
-        // if this is a mask, directly return false
-        if (this.maskId !== -1 && !masksFlag)
-            return false;
-        // if this is invisible, all children should be invisible too.
-        // todo: is the above statement correct for awayjs visible-property ?
-        if (this.visible == false)
-            return false;
+    Mesh.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
+        if (_super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag))
+            return true;
         // from this point out, we can not return false, without checking collision of childs.
         this._tempPoint.setTo(x, y);
         var local = this.globalToLocal(this._tempPoint);
-        if (this.geometry) {
+        if (this._geometry) {
             if (this.getBox().contains(local.x, local.y, 0)) {
+                //early out for non-shape tests
                 if (!shapeFlag)
                     return true;
-                var subGeometries = this.geometry.subGeometries;
+                var subGeometries = this._geometry.subGeometries;
                 var subGeometriesCount = subGeometries.length;
-                for (var j = 0; j < subGeometriesCount; j++) {
-                    if (subGeometries[j].hitTestPoint(local.x, local.y, 0)) {
-                        // if the mesh is masked, we need to check if 1 mask will collide
-                        var all_masks = this.masks;
-                        if (all_masks) {
-                            var all_hir_masks = this["hierarchicalMasks"];
-                            //todo: check if there will be cases when no hirarchical masks have been collected and assigned yet.
-                            if (all_hir_masks) {
-                                all_masks = all_hir_masks;
-                            }
-                            var maskCount = all_masks.length;
-                            for (var mi_cnt = 0; mi_cnt < maskCount; mi_cnt++) {
-                                var mask_child = all_masks[mi_cnt];
-                                if (mask_child._pParent) {
-                                    var childHit = mask_child.hitTestPoint(x, y, shapeFlag, true);
-                                    if (childHit)
-                                        return true;
-                                }
-                            }
-                        }
-                        else {
-                            return true;
-                        }
-                    }
-                }
+                for (var j = 0; j < subGeometriesCount; j++)
+                    if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
+                        return true;
             }
         }
-        var hit = false;
-        hit = _super.prototype.hitTestPoint.call(this, x, y, shapeFlag, masksFlag);
-        if (hit)
-            return true;
         return false;
     };
     Mesh.assetType = "[asset Mesh]";
@@ -11097,7 +11051,7 @@ var MovieClip = (function (_super) {
         var len = this.numChildren;
         for (var i = 0; i < len; ++i) {
             var child = this.getChildAt(i);
-            if (child instanceof MovieClip)
+            if (child.isAsset(MovieClip))
                 child.advanceFrame();
         }
     };
@@ -11108,7 +11062,7 @@ var MovieClip = (function (_super) {
         var len = this.numChildren;
         for (var i = 0; i < len; i++) {
             var child = this.getChildAt(i);
-            if (child instanceof MovieClip)
+            if (child.isAsset(MovieClip))
                 child.logHierarchy(depth + 1);
             else
                 this.printHierarchyName(depth + 1, child);
