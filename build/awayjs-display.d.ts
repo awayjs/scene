@@ -7015,6 +7015,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     *
 	     * @default 0(0x000000)
 	     */
+	    _textColor: number;
 	    textColor: number;
 	    /**
 	     * The interaction mode property, Default value is
@@ -10374,6 +10375,8 @@ declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	    _font_chars_dic: Object;
 	    private _font_em_size;
 	    private _whitespace_width;
+	    private _offset_x;
+	    private _offset_y;
 	    private _charDictDirty;
 	    /**
 	     * Creates a new TesselatedFont object
@@ -10383,6 +10386,8 @@ declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	     *
 	     */
 	    dispose(): void;
+	    offset_x: number;
+	    offset_y: number;
 	    get_font_chars(): Array<TesselatedFontChar>;
 	    get_font_em_size(): number;
 	    set_whitespace_width(value: number): void;

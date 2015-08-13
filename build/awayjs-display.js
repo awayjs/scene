@@ -11551,6 +11551,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
+var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Geometry = require("awayjs-display/lib/base/Geometry");
@@ -11788,6 +11789,20 @@ var TextField = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(TextField.prototype, "textColor", {
+        get: function () {
+            return this._textColor;
+        },
+        set: function (value) {
+            this._textColor = value;
+            if (this.colorTransform == null) {
+                this.colorTransform = new ColorTransform();
+            }
+            this.colorTransform.color = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(TextField.prototype, "textInteractionMode", {
         /**
          * The interaction mode property, Default value is
@@ -11840,10 +11855,9 @@ var TextField = (function (_super) {
         if (this._text == "")
             return;
         var vertices = new Array();
-        var additional_margin_x = 2;
-        var additional_margin_y = 2;
-        font_chars_scale;
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+        var additional_margin_x = (this._textFormat.size * this._textFormat.font_table.offset_x);
+        var additional_margin_y = (this._textFormat.size * this._textFormat.font_table.offset_y);
         var y_offset = additional_margin_y;
         var prev_char = null;
         var j = 0;
@@ -12316,7 +12330,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13055,6 +13069,8 @@ var FrameScriptManager = (function () {
         this._queued_scripts_pass2.push(script);
     };
     FrameScriptManager.execute_queue = function () {
+        if (this._queued_mcs.length == 0 && this._queued_mcs_pass2.length == 0)
+            return;
         var i = this._queued_mcs_pass2.length;
         while (i--) {
             this._queued_mcs.push(this._queued_mcs_pass2[i]);
@@ -13082,8 +13098,10 @@ var FrameScriptManager = (function () {
         this._queued_mcs = [];
         this._queued_scripts = [];
     };
+    // queues pass1 of scripts.
     FrameScriptManager._queued_mcs = [];
     FrameScriptManager._queued_scripts = [];
+    // queues pass2 of scripts. this will be inserted in reversed order into pass1 queue right before something should be added to pass1
     FrameScriptManager._queued_mcs_pass2 = [];
     FrameScriptManager._queued_scripts_pass2 = [];
     FrameScriptManager._active_intervals = new Object(); // maps id to function
@@ -13095,6 +13113,7 @@ module.exports = FrameScriptManager;
 },{}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayMouseEvent = require("awayjs-display/lib/events/MouseEvent");
+var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
  * it provides a manager class for detecting mouse hits on scene objects and sending out mouse events.
@@ -13153,6 +13172,9 @@ var MouseManager = (function () {
                     dispatcher.dispatchEvent(event);
                 dispatcher = dispatcher.parent;
             }
+            // not totally sure, but i think just calling it is easier and cheaper than any options for that
+            // if nothing is queued, the function will return directly anyway
+            FrameScriptManager.execute_queue();
         }
         this._queuedEvents.length = 0;
         this._previousCollidingObject = this._iCollidingObject;
@@ -13317,7 +13339,7 @@ var MouseManager = (function () {
 })();
 module.exports = MouseManager;
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent"}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayTouchEvent = require("awayjs-display/lib/events/TouchEvent");
 var TouchManager = (function () {
@@ -19516,12 +19538,34 @@ var TesselatedFontTable = (function (_super) {
         _super.call(this);
         this._font_chars = new Array();
         this._font_chars_dic = new Object();
+        this._offset_x = 0;
+        this._offset_y = 0;
     }
     /**
      *
      */
     TesselatedFontTable.prototype.dispose = function () {
     };
+    Object.defineProperty(TesselatedFontTable.prototype, "offset_x", {
+        get: function () {
+            return this._offset_x;
+        },
+        set: function (value) {
+            this._offset_x = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TesselatedFontTable.prototype, "offset_y", {
+        get: function () {
+            return this._offset_y;
+        },
+        set: function (value) {
+            this._offset_y = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     TesselatedFontTable.prototype.get_font_chars = function () {
         return this._font_chars;
     };
