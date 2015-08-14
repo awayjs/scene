@@ -11831,8 +11831,8 @@ var TextField = (function (_super) {
             return;
         var vertices = new Array();
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-        var additional_margin_x = (this._textFormat.size * this._textFormat.font_table.offset_x);
-        var additional_margin_y = (this._textFormat.size * this._textFormat.font_table.offset_y);
+        var additional_margin_x = this._textFormat.font_table.offset_x;
+        var additional_margin_y = this._textFormat.font_table.offset_y;
         var y_offset = additional_margin_y;
         var prev_char = null;
         var j = 0;

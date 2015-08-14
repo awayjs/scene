@@ -227,24 +227,6 @@ declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	
 }
 
-declare module "awayjs-display/lib/base/AlignmentMode" {
-	/**
-	 *
-	 */
-	class AlignmentMode {
-	    /**
-	     *
-	     */
-	    static REGISTRATION_POINT: string;
-	    /**
-	     *
-	     */
-	    static PIVOT_POINT: string;
-	}
-	export = AlignmentMode;
-	
-}
-
 declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
@@ -352,6 +334,24 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
 	export = CurveSubGeometry;
+	
+}
+
+declare module "awayjs-display/lib/base/AlignmentMode" {
+	/**
+	 *
+	 */
+	class AlignmentMode {
+	    /**
+	     *
+	     */
+	    static REGISTRATION_POINT: string;
+	    /**
+	     *
+	     */
+	    static PIVOT_POINT: string;
+	}
+	export = AlignmentMode;
 	
 }
 
@@ -10822,30 +10822,6 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	
 }
 
-declare module "awayjs-display/lib/textures/Single2DTexture" {
-	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
-	import Image2D = require("awayjs-core/lib/data/Image2D");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class Single2DTexture extends TextureBase {
-	    static assetType: string;
-	    private _sampler2D;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     * @returns {Image2D}
-	     */
-	    sampler2D: Sampler2D;
-	    constructor(source: Sampler2D);
-	    constructor(source: Image2D);
-	}
-	export = Single2DTexture;
-	
-}
-
 declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
 	import ImageCube = require("awayjs-core/lib/data/ImageCube");
@@ -10867,6 +10843,30 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	    constructor(source: ImageCube);
 	}
 	export = SingleCubeTexture;
+	
+}
+
+declare module "awayjs-display/lib/textures/Single2DTexture" {
+	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class Single2DTexture extends TextureBase {
+	    static assetType: string;
+	    private _sampler2D;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {Image2D}
+	     */
+	    sampler2D: Sampler2D;
+	    constructor(source: Sampler2D);
+	    constructor(source: Image2D);
+	}
+	export = Single2DTexture;
 	
 }
 
@@ -10905,18 +10905,6 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    _setSize(width: number, height: number): void;
 	}
 	export = TextureBase;
-	
-}
-
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
 	
 }
 
@@ -11000,6 +10988,18 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = CollectorBase;
+	
+}
+
+declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.CSSEntityCollector
+	 */
+	class CSSEntityCollector extends CollectorBase {
+	    constructor();
+	}
+	export = CSSEntityCollector;
 	
 }
 
@@ -11131,31 +11131,6 @@ declare module "awayjs-display/lib/traverse/ShadowCasterCollector" {
 	
 }
 
-declare module "awayjs-display/lib/utils/Cast" {
-	import Image2D = require("awayjs-core/lib/data/Image2D");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-	/**
-	 * Helper class for casting assets to usable objects
-	 */
-	class Cast {
-	    private static _colorNames;
-	    private static _hexChars;
-	    private static _notClasses;
-	    private static _classes;
-	    static string(data: any): string;
-	    static byteArray(data: any): ByteArray;
-	    private static isHex(str);
-	    static tryColor(data: any): number;
-	    static color(data: any): number;
-	    static tryClass(name: string): any;
-	    static image2D(data: any): Image2D;
-	    static bitmapTexture(data: any): Single2DTexture;
-	}
-	export = Cast;
-	
-}
-
 declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Short2Attributes = require("awayjs-core/lib/attributes/Short2Attributes");
@@ -11183,6 +11158,31 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	    static getSubVertices(vertexBuffer: AttributesBuffer, indexMappings: Array<number>): AttributesBuffer;
 	}
 	export = SubGeometryUtils;
+	
+}
+
+declare module "awayjs-display/lib/utils/Cast" {
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+	/**
+	 * Helper class for casting assets to usable objects
+	 */
+	class Cast {
+	    private static _colorNames;
+	    private static _hexChars;
+	    private static _notClasses;
+	    private static _classes;
+	    static string(data: any): string;
+	    static byteArray(data: any): ByteArray;
+	    private static isHex(str);
+	    static tryColor(data: any): number;
+	    static color(data: any): number;
+	    static tryClass(name: string): any;
+	    static image2D(data: any): Image2D;
+	    static bitmapTexture(data: any): Single2DTexture;
+	}
+	export = Cast;
 	
 }
 
