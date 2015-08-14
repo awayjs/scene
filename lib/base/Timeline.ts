@@ -491,6 +491,10 @@ class Timeline
 								target._iMatrix3D = new_matrix;
 							}
 							break;
+						case 200:// displaytransform
+							target.maskMode=true;
+							break;
+
 						default:
 							break;
 
