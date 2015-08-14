@@ -4425,6 +4425,9 @@ var Timeline = (function () {
                                 target._iMatrix3D = new_matrix;
                             }
                             break;
+                        case 200:
+                            target.maskMode = true;
+                            break;
                         default:
                             break;
                     }
