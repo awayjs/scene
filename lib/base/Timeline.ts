@@ -217,7 +217,7 @@ class Timeline
 			// before we do that, we need to clear the childlist
 /*
 			while(i--){
-				child = target_mc.getChildAt(i);
+				child = target_mc._children[i];
 				if(child.adapter)child.adapter.freeFromScript();
 				target_mc.adapter.unregisterScriptObject(child);
 				target_mc.removeChild(child);
@@ -229,7 +229,7 @@ class Timeline
 		}
 
 		while (i--) {
-			child = target_mc.getChildAt(i);
+			child = target_mc._children[i];
 			if (jump_gap) { // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 				target_mc.removeChild(child);
 			} else if (jump_forward) { // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
@@ -290,7 +290,7 @@ class Timeline
 		// childs that are alive on both frames get removed from the target_child_sessionIDS + target_childs_dic
 		i = target_mc.numChildren;
 		while (i--) {
-			child=target_mc.getChildAt(i);
+			child = target_mc._children[i];
 			if (target_child_sessionIDS[child._sessionID]) {
 				target_childs_dic[target_child_sessionIDS[child._sessionID]] = null;
 				target_child_sessionIDS[child._sessionID] = null;
@@ -304,6 +304,7 @@ class Timeline
 			child = target_childs_dic[key];
 			if(child) {
 				child._sessionID = target_sessionIDs_dic[key];
+				child.maskMode = false;
 				target_mc.addChildAtDepth(child, parseInt(key));
 			}
 		}

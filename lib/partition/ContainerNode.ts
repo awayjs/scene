@@ -92,7 +92,7 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
 
         if (!node.isContainerNode && node.displayObject.isContainer) {
             this._pEntityNode = node;
-        } else if (node.displayObject.maskId != -1) {
+        } else if (node.displayObject.maskMode) {
             this._childMasks.push(node);
             this._numChildMasks = this._childMasks.length;
         } else {
@@ -135,7 +135,7 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
     {
         if (!node.isContainerNode && node.displayObject.isContainer) {
             this._pEntityNode = null;
-        } else if (node.displayObject.maskId != -1) {
+        } else if (node.displayObject.maskMode) {
             this._childMasks.splice(this._childMasks.indexOf(node), 1);
             this._numChildMasks = this._childMasks.length;
         } else {

@@ -284,6 +284,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
     private _onGlobalColorTransformChangedDelegate:(event:DisplayObjectEvent) => void;
     private _onColorTransformChangedDelegate:(event:Event) => void;
     private _inheritColorTransform:boolean = false;
+	private _maskMode:boolean;
 
 	//temp vector used in global to local
 	private _tempVector3D:Vector3D = new Vector3D();
@@ -747,6 +748,22 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public mask:DisplayObject;
 
+	public get maskMode():boolean
+	{
+		return this._maskMode;
+	}
+
+	public set maskMode(value:boolean)
+	{
+		if (this._maskMode == value)
+			return;
+
+		this._maskMode = value;
+
+		this._explicitMaskId = value? this.id : -1;
+
+		this._pUpdateImplicitMaskId(this._pParent? this._pParent._iAssignedMaskId() : -1);
+	}
 	/**
 	 * Specifies whether this object receives mouse, or other user input,
 	 * messages. The default value is <code>true</code>, which means that by
@@ -1355,21 +1372,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._pUpdateImplicitVisibility(this._pParent? this._pParent._iIsVisible() : true);
 	}
 
-	public get maskId():number
-	{
-		return this._explicitMaskId;
-	}
-
-	public set maskId(value:number)
-	{
-		if (this._explicitMaskId == value)
-			return;
-
-		this._explicitMaskId = value;
-
-		this._pUpdateImplicitMaskId(this._pParent? this._pParent._iAssignedMaskId() : -1);
-	}
-
 	public get masks():Array<DisplayObject>
 	{
 		return this._explicitMasks;
@@ -1382,10 +1384,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMasks = value;
 
-		if (this._explicitMasks != null && this._explicitMasks.length) {
-			var len:number = this._explicitMasks.length;
+		if (value != null && value.length) {
+			var len:number = value.length;
 			for (var i:number = 0; i < len; i++)
-				this._explicitMasks[i].maskId = this._explicitMasks[i].id;
+				value[i].maskMode = true;
 		}
 
 
@@ -1585,8 +1587,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		newInstance._iMatrix3D = this._iMatrix3D
 		//newInstance.name = this.name;
 
-		newInstance.maskId = this._explicitMaskId;
-		newInstance.masks = this.masks? this.masks.concat() : null;
+		newInstance.maskMode = this._maskMode;
+		newInstance.masks = this._explicitMasks? this._explicitMasks.concat() : null;
 
 		if (this._adapter)
 			newInstance.adapter = this._adapter.clone(newInstance);
@@ -1893,6 +1895,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, maskFlag = false):boolean
 	{
 		return false;
+	}
+
+	public isMask():boolean
+	{
+		return this._explicitMaskId == -1;
 	}
 
 	/**
@@ -2407,7 +2414,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				numChildren = implicitChildren.length;
 				implicitChildIds = new Array<number>();
 				for (var j:number = 0; j < numChildren; j++)
-					implicitChildIds.push(implicitChildren[j].maskId);
+					implicitChildIds.push(implicitChildren[j].id);
 
 				this._pImplicitMaskIds.push(implicitChildIds);
 			}

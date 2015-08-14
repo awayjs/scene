@@ -1265,7 +1265,7 @@ class TextField extends Mesh
 		//this is of course no proper cloning
 		//maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
 		clone.extra = this.extra;
-		clone.maskId = this.maskId;
+		clone.maskMode = this.maskMode;
 		clone.masks = this.masks? this.masks.concat() : null;
 
 		//var len:number = this._subMeshes.length;
@@ -1273,10 +1273,9 @@ class TextField extends Mesh
 		//	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
 
 
-		var len = this.numChildren;
-		var i;
-		for (i = 0; i < len; ++i)
-			clone.addChild(this.getChildAt(i).clone());
+		var len:number = this.numChildren;
+		for (var i:number = 0; i < len; ++i)
+			clone.addChild(this._children[i].clone());
 
 		//if (this._animator)
 		//	clone.animator = this._animator.clone();

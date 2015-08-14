@@ -133,14 +133,13 @@ class MovieClip extends DisplayObjectContainer
 
     public exit_frame():void
     {
-
         this._skipAdvance = false;
-        var i:number=this.numChildren;
-        while (i--){
-            var child:DisplayObject=this.getChildAt(i);
-            if(child.isAsset(MovieClip)){
+        var i:number = this.numChildren;
+        var child:DisplayObject;
+        while (i--) {
+            child = this._children[i];
+            if(child.isAsset(MovieClip))
                 (<MovieClip>child).exit_frame();
-            }
         }
     }
     public reset():void
@@ -356,11 +355,12 @@ class MovieClip extends DisplayObjectContainer
 
     private advanceChildren()
     {
-        var len = this.numChildren;
-        for (var i = 0; i <  len; ++i) {
-            var child = this.getChildAt(i);
+        var len:number = this.numChildren;
+        var child:DisplayObject;
+        for (var i:number = 0; i <  len; ++i) {
+            child = this._children[i];
             if (child.isAsset(MovieClip))
-                (<MovieClip>child).advanceFrame();
+                (<MovieClip> child).advanceFrame();
         }
     }
 
@@ -373,11 +373,12 @@ class MovieClip extends DisplayObjectContainer
         this.printHierarchyName(depth, this);
 
         var len = this.numChildren;
-        for (var i = 0; i < len; i++) {
-            var child = this.getChildAt(i);
+        var child:DisplayObject;
+        for (var i:number = 0; i < len; i++) {
+            var child = this._children[i];
 
             if (child.isAsset(MovieClip))
-                (<MovieClip>child).logHierarchy(depth + 1);
+                (<MovieClip> child).logHierarchy(depth + 1);
             else
                 this.printHierarchyName(depth + 1, child);
         }
@@ -389,7 +390,7 @@ class MovieClip extends DisplayObjectContainer
         for (var i = 0; i < depth; ++i)
             str += "--";
 
-        str += " " + target.name + " = " + target.maskId;
+        str += " " + target.name + " = " + target.id;
         console.log(str);
     }
 

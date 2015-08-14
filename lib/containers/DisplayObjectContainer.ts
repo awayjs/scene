@@ -40,7 +40,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	private _depths:Array<number> = new Array<number>();
 	private _nextHighestDepth:number = 0;
 	private _nextHighestDepthDirty:boolean;
-	private _children:Array<DisplayObject> = new Array<DisplayObject>();
+	public _children:Array<DisplayObject> = new Array<DisplayObject>();
 	public _iIsRoot:boolean;
 
 	/**

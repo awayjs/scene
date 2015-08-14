@@ -42,7 +42,7 @@ class Shape extends DisplayObject
 		clone.pivot = this.pivot;
 		clone._iMatrix3D = this._iMatrix3D;
 		clone.name = name;
-		clone.maskId = this.maskId;
+		clone.maskMode = this.maskMode;
 		clone.masks = this.masks? this.masks.concat() : null;
 		clone._graphics = this._graphics;
 		return clone;
