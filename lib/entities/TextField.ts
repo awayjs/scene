@@ -768,8 +768,8 @@ class TextField extends Mesh
 
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
-		var additional_margin_x:number=(this._textFormat.size * this._textFormat.font_table.offset_x);
-		var additional_margin_y:number=(this._textFormat.size * this._textFormat.font_table.offset_y);
+		var additional_margin_x:number= this._textFormat.font_table.offset_x;
+		var additional_margin_y:number= this._textFormat.font_table.offset_y;
 		var y_offset:number=additional_margin_y;
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
