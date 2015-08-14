@@ -2280,7 +2280,7 @@ var DisplayObject = (function (_super) {
             this.colorTransform.clear();
         //this.name="";
         this.masks = null;
-        this.maskId = -1;
+        this.maskMode = false;
         this.pInvalidateSceneTransform();
     };
     /**
@@ -4261,7 +4261,6 @@ var Timeline = (function () {
             child = target_childs_dic[key];
             if (child) {
                 child._sessionID = target_sessionIDs_dic[key];
-                child.maskMode = false;
                 target_mc.addChildAtDepth(child, parseInt(key));
             }
         }

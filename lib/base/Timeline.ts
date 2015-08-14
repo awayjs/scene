@@ -304,7 +304,6 @@ class Timeline
 			child = target_childs_dic[key];
 			if(child) {
 				child._sessionID = target_sessionIDs_dic[key];
-				child.maskMode = false;
 				target_mc.addChildAtDepth(child, parseInt(key));
 			}
 		}
