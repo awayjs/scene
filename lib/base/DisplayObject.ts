@@ -2072,6 +2072,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if(this.colorTransform)
 			this.colorTransform.clear();
 		//this.name="";
+		this.masks=null;
+		this.maskId=-1;
 		this.pInvalidateSceneTransform();
 	}
 	/**
