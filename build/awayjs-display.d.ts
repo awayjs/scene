@@ -2403,6 +2403,59 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	
 }
 
+declare module "awayjs-display/lib/base/Timeline" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class Timeline {
+	    _labels: Object;
+	    _framescripts: Object;
+	    _framescripts_translated: Object;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_f32_mtx_all: ArrayBufferView;
+	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
+	    properties_stream_f32_mtx_pos: ArrayBufferView;
+	    properties_stream_f32_ct: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
+	    private _potentialPrototypes;
+	    numKeyFrames: number;
+	    constructor();
+	    init(): void;
+	    get_framescript(keyframe_index: number): string;
+	    add_framescript(value: string, keyframe_index: number): void;
+	    private regexIndexOf(str, regex, startpos);
+	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
+	    numFrames: number;
+	    getPotentialChildPrototype(id: number): DisplayObject;
+	    getKeyframeIndexForFrameIndex(frame_index: number): number;
+	    getPotentialChilds(): Array<DisplayObject>;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    registerPotentialChild(prototype: DisplayObject): void;
+	    jumpToLabel(target_mc: MovieClip, label: string): void;
+	    gotoFrame(target_mc: MovieClip, value: number): void;
+	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	}
+	export = Timeline;
+	
+}
+
 declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
@@ -2473,59 +2526,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    _iGetExplicitMaterial(): MaterialBase;
 	}
 	export = SubMeshBase;
-	
-}
-
-declare module "awayjs-display/lib/base/Timeline" {
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class Timeline {
-	    _labels: Object;
-	    _framescripts: Object;
-	    _framescripts_translated: Object;
-	    keyframe_indices: Array<number>;
-	    keyframe_firstframes: Array<number>;
-	    keyframe_constructframes: Array<number>;
-	    keyframe_durations: ArrayBufferView;
-	    frame_command_indices: ArrayBufferView;
-	    frame_recipe: ArrayBufferView;
-	    command_index_stream: ArrayBufferView;
-	    command_length_stream: ArrayBufferView;
-	    add_child_stream: ArrayBufferView;
-	    remove_child_stream: ArrayBufferView;
-	    update_child_stream: ArrayBufferView;
-	    update_child_props_length_stream: ArrayBufferView;
-	    update_child_props_indices_stream: ArrayBufferView;
-	    property_index_stream: ArrayBufferView;
-	    property_type_stream: ArrayBufferView;
-	    properties_stream_int: ArrayBufferView;
-	    properties_stream_f32_mtx_all: ArrayBufferView;
-	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
-	    properties_stream_f32_mtx_pos: ArrayBufferView;
-	    properties_stream_f32_ct: ArrayBufferView;
-	    properties_stream_strings: Array<string>;
-	    private _potentialPrototypes;
-	    numKeyFrames: number;
-	    constructor();
-	    init(): void;
-	    get_framescript(keyframe_index: number): string;
-	    add_framescript(value: string, keyframe_index: number): void;
-	    private regexIndexOf(str, regex, startpos);
-	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
-	    numFrames: number;
-	    getPotentialChildPrototype(id: number): DisplayObject;
-	    getKeyframeIndexForFrameIndex(frame_index: number): number;
-	    getPotentialChilds(): Array<DisplayObject>;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    registerPotentialChild(prototype: DisplayObject): void;
-	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number): void;
-	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
-	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	}
-	export = Timeline;
 	
 }
 
@@ -2992,6 +2992,31 @@ declare module "awayjs-display/lib/base/TriangleSubMesh" {
 	
 }
 
+declare module "awayjs-display/lib/bounds/BoundingSphere" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	class BoundingSphere extends BoundingVolumeBase {
+	    private _sphere;
+	    private _radius;
+	    private _centerX;
+	    private _centerY;
+	    private _centerZ;
+	    private _prefab;
+	    constructor(entity: IEntity);
+	    nullify(): void;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
+	}
+	export = BoundingSphere;
+	
+}
+
 declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
 	import Box = require("awayjs-core/lib/geom/Box");
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
@@ -3039,31 +3064,6 @@ declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
 	
 }
 
-declare module "awayjs-display/lib/bounds/BoundingSphere" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	class BoundingSphere extends BoundingVolumeBase {
-	    private _sphere;
-	    private _radius;
-	    private _centerX;
-	    private _centerY;
-	    private _centerZ;
-	    private _prefab;
-	    constructor(entity: IEntity);
-	    nullify(): void;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
-	}
-	export = BoundingSphere;
-	
-}
-
 declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -3107,20 +3107,6 @@ declare module "awayjs-display/lib/bounds/BoundsType" {
 	    static NULL: string;
 	}
 	export = BoundsType;
-	
-}
-
-declare module "awayjs-display/lib/bounds/NullBounds" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	class NullBounds extends BoundingVolumeBase {
-	    private _alwaysIn;
-	    constructor(alwaysIn?: boolean);
-	    clone(): BoundingVolumeBase;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    classifyToPlane(plane: Plane3D): number;
-	}
-	export = NullBounds;
 	
 }
 
@@ -3528,6 +3514,20 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	}
 	export = DisplayObjectContainer;
+	
+}
+
+declare module "awayjs-display/lib/bounds/NullBounds" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	class NullBounds extends BoundingVolumeBase {
+	    private _alwaysIn;
+	    constructor(alwaysIn?: boolean);
+	    clone(): BoundingVolumeBase;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    classifyToPlane(plane: Plane3D): number;
+	}
+	export = NullBounds;
 	
 }
 
