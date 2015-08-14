@@ -2275,6 +2275,8 @@ var DisplayObject = (function (_super) {
         if (this.colorTransform)
             this.colorTransform.clear();
         //this.name="";
+        this.masks = null;
+        this.maskId = -1;
         this.pInvalidateSceneTransform();
     };
     /**
