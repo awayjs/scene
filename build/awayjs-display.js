@@ -1179,6 +1179,20 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DisplayObject.prototype, "maskMode", {
+        get: function () {
+            return this._maskMode;
+        },
+        set: function (value) {
+            if (this._maskMode == value)
+                return;
+            this._maskMode = value;
+            this._explicitMaskId = value ? this.id : -1;
+            this._pUpdateImplicitMaskId(this._pParent ? this._pParent._iAssignedMaskId() : -1);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObject.prototype, "mouseEnabled", {
         /**
          * Specifies whether this object receives mouse, or other user input,
@@ -1676,19 +1690,6 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(DisplayObject.prototype, "maskId", {
-        get: function () {
-            return this._explicitMaskId;
-        },
-        set: function (value) {
-            if (this._explicitMaskId == value)
-                return;
-            this._explicitMaskId = value;
-            this._pUpdateImplicitMaskId(this._pParent ? this._pParent._iAssignedMaskId() : -1);
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(DisplayObject.prototype, "masks", {
         get: function () {
             return this._explicitMasks;
@@ -1697,10 +1698,10 @@ var DisplayObject = (function (_super) {
             if (this._explicitMasks == value)
                 return;
             this._explicitMasks = value;
-            if (this._explicitMasks != null && this._explicitMasks.length) {
-                var len = this._explicitMasks.length;
+            if (value != null && value.length) {
+                var len = value.length;
                 for (var i = 0; i < len; i++)
-                    this._explicitMasks[i].maskId = this._explicitMasks[i].id;
+                    value[i].maskMode = true;
             }
             this._pUpdateImplicitMasks(this._pParent ? this._pParent._iAssignedMasks() : null);
         },
@@ -1857,8 +1858,8 @@ var DisplayObject = (function (_super) {
         newInstance.pivot = this.pivot;
         newInstance._iMatrix3D = this._iMatrix3D;
         //newInstance.name = this.name;
-        newInstance.maskId = this._explicitMaskId;
-        newInstance.masks = this.masks ? this.masks.concat() : null;
+        newInstance.maskMode = this._maskMode;
+        newInstance.masks = this._explicitMasks ? this._explicitMasks.concat() : null;
         if (this._adapter)
             newInstance.adapter = this._adapter.clone(newInstance);
         if (this._transform.colorTransform)
@@ -2127,6 +2128,9 @@ var DisplayObject = (function (_super) {
         if (shapeFlag === void 0) { shapeFlag = false; }
         if (maskFlag === void 0) { maskFlag = false; }
         return false;
+    };
+    DisplayObject.prototype.isMask = function () {
+        return this._explicitMaskId == -1;
     };
     /**
      * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
@@ -2542,7 +2546,7 @@ var DisplayObject = (function (_super) {
                 numChildren = implicitChildren.length;
                 implicitChildIds = new Array();
                 for (var j = 0; j < numChildren; j++)
-                    implicitChildIds.push(implicitChildren[j].maskId);
+                    implicitChildIds.push(implicitChildren[j].id);
                 this._pImplicitMaskIds.push(implicitChildIds);
             }
         }
@@ -4188,7 +4192,7 @@ var Timeline = (function () {
         if (jump_forward && start_construct_idx == target_keyframe_idx) {
         }
         while (i--) {
-            child = target_mc.getChildAt(i);
+            child = target_mc._children[i];
             if (jump_gap) {
                 target_mc.removeChild(child);
             }
@@ -4241,7 +4245,7 @@ var Timeline = (function () {
         // childs that are alive on both frames get removed from the target_child_sessionIDS + target_childs_dic
         i = target_mc.numChildren;
         while (i--) {
-            child = target_mc.getChildAt(i);
+            child = target_mc._children[i];
             if (target_child_sessionIDS[child._sessionID]) {
                 target_childs_dic[target_child_sessionIDS[child._sessionID]] = null;
                 target_child_sessionIDS[child._sessionID] = null;
@@ -4255,6 +4259,7 @@ var Timeline = (function () {
             child = target_childs_dic[key];
             if (child) {
                 child._sessionID = target_sessionIDs_dic[key];
+                child.maskMode = false;
                 target_mc.addChildAtDepth(child, parseInt(key));
             }
         }
@@ -10510,14 +10515,14 @@ var Mesh = (function (_super) {
         //this is of course no proper cloning
         //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
         clone.extra = this.extra;
-        clone.maskId = this.maskId;
+        clone.maskMode = this.maskMode;
         clone.masks = this.masks ? this.masks.concat() : null;
         var len = this._subMeshes.length;
         for (var i = 0; i < len; ++i)
             clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
         len = this.numChildren;
         for (i = 0; i < len; ++i)
-            clone.addChild(this.getChildAt(i).clone());
+            clone.addChild(this._children[i].clone());
         if (this._animator)
             clone.animator = this._animator.clone();
     };
@@ -10885,11 +10890,11 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.exit_frame = function () {
         this._skipAdvance = false;
         var i = this.numChildren;
+        var child;
         while (i--) {
-            var child = this.getChildAt(i);
-            if (child.isAsset(MovieClip)) {
+            child = this._children[i];
+            if (child.isAsset(MovieClip))
                 child.exit_frame();
-            }
         }
     };
     MovieClip.prototype.reset = function () {
@@ -11049,8 +11054,9 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.advanceChildren = function () {
         var len = this.numChildren;
+        var child;
         for (var i = 0; i < len; ++i) {
-            var child = this.getChildAt(i);
+            child = this._children[i];
             if (child.isAsset(MovieClip))
                 child.advanceFrame();
         }
@@ -11060,8 +11066,9 @@ var MovieClip = (function (_super) {
         if (depth === void 0) { depth = 0; }
         this.printHierarchyName(depth, this);
         var len = this.numChildren;
+        var child;
         for (var i = 0; i < len; i++) {
-            var child = this.getChildAt(i);
+            var child = this._children[i];
             if (child.isAsset(MovieClip))
                 child.logHierarchy(depth + 1);
             else
@@ -11072,7 +11079,7 @@ var MovieClip = (function (_super) {
         var str = "";
         for (var i = 0; i < depth; ++i)
             str += "--";
-        str += " " + target.name + " = " + target.maskId;
+        str += " " + target.name + " = " + target.id;
         console.log(str);
     };
     MovieClip.assetType = "[asset MovieClip]";
@@ -11229,7 +11236,7 @@ var Shape = (function (_super) {
         clone.pivot = this.pivot;
         clone._iMatrix3D = this._iMatrix3D;
         clone.name = name;
-        clone.maskId = this.maskId;
+        clone.maskMode = this.maskMode;
         clone.masks = this.masks ? this.masks.concat() : null;
         clone._graphics = this._graphics;
         return clone;
@@ -12272,15 +12279,14 @@ var TextField = (function (_super) {
         //this is of course no proper cloning
         //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
         clone.extra = this.extra;
-        clone.maskId = this.maskId;
+        clone.maskMode = this.maskMode;
         clone.masks = this.masks ? this.masks.concat() : null;
         //var len:number = this._subMeshes.length;
         //for (var i:number = 0; i < len; ++i)
         //	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
         var len = this.numChildren;
-        var i;
-        for (i = 0; i < len; ++i)
-            clone.addChild(this.getChildAt(i).clone());
+        for (var i = 0; i < len; ++i)
+            clone.addChild(this._children[i].clone());
         //if (this._animator)
         //	clone.animator = this._animator.clone();
         clone.textWidth = this.textWidth;
@@ -15204,7 +15210,7 @@ var ContainerNode = (function (_super) {
         if (!node.isContainerNode && node.displayObject.isContainer) {
             this._pEntityNode = node;
         }
-        else if (node.displayObject.maskId != -1) {
+        else if (node.displayObject.maskMode) {
             this._childMasks.push(node);
             this._numChildMasks = this._childMasks.length;
         }
@@ -15242,7 +15248,7 @@ var ContainerNode = (function (_super) {
         if (!node.isContainerNode && node.displayObject.isContainer) {
             this._pEntityNode = null;
         }
-        else if (node.displayObject.maskId != -1) {
+        else if (node.displayObject.maskMode) {
             this._childMasks.splice(this._childMasks.indexOf(node), 1);
             this._numChildMasks = this._childMasks.length;
         }

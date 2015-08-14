@@ -653,6 +653,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _onGlobalColorTransformChangedDelegate;
 	    private _onColorTransformChangedDelegate;
 	    private _inheritColorTransform;
+	    private _maskMode;
 	    private _tempVector3D;
 	    /**
 	     * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -944,6 +945,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * <code>null</code>.</p>
 	     */
 	    mask: DisplayObject;
+	    maskMode: boolean;
 	    /**
 	     * Specifies whether this object receives mouse, or other user input,
 	     * messages. The default value is <code>true</code>, which means that by
@@ -1258,7 +1260,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * InteractiveObject instance, it cannot be clicked.
 	     */
 	    visible: boolean;
-	    maskId: number;
 	    masks: Array<DisplayObject>;
 	    /**
 	     * Indicates the width of the display object, in pixels. The width is
@@ -1448,6 +1449,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
 	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean;
+	    isMask(): boolean;
 	    /**
 	     * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	     *
@@ -3157,7 +3159,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    private _depths;
 	    private _nextHighestDepth;
 	    private _nextHighestDepthDirty;
-	    private _children;
+	    _children: Array<DisplayObject>;
 	    _iIsRoot: boolean;
 	    /**
 	     *
