@@ -49,23 +49,18 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
      */
     public acceptTraverser(traverser:CollectorBase)
     {
-        if (this.numEntities == 0 && !this._pImplicitDebugVisible)
+        if (this.numEntities == 0)
             return;
 
-        if (traverser.enterNode(this)) {
-            if (this._pEntityNode)
-                this._pEntityNode.acceptTraverser(traverser);
+        if (this._pEntityNode)
+            this._pEntityNode.acceptTraverser(traverser);
 
-            var i:number;
-            for (i = 0; i < this._numChildMasks; i++)
-                this._childMasks[i].acceptTraverser(traverser);
+        var i:number;
+        for (i = 0; i < this._numChildMasks; i++)
+            this._childMasks[i].acceptTraverser(traverser);
 
-            for (i = 0; i < this._pNumChildNodes; i++)
-                this._pChildNodes[i].acceptTraverser(traverser);
-
-            if (this._pImplicitDebugVisible && traverser.isEntityCollector)
-                traverser.applyEntity(this._pDebugEntity);
-        }
+        for (i = 0; i < this._pNumChildNodes; i++)
+            this._pChildNodes[i].acceptTraverser(traverser);
     }
 
     /**

@@ -170,7 +170,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
 	public _adapter:IDisplayObjectAdapter;
 	private _queuedEvents:Array<Event> = new Array<Event>();
-	private _elementsDirty:boolean;
+	public _elementsDirty:boolean;
 	private _loaderInfo:LoaderInfo;
 	private _mouseX:number;
 	private _mouseY:number;
@@ -2633,7 +2633,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @private
 	 */
-	private invalidatePosition()
+	public invalidatePosition()
 	{
 		if (this._positionDirty)
 			return;

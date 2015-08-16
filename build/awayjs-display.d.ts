@@ -95,6 +95,18 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	
 }
 
+declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
+	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	interface IMovieClipAdapter extends IDisplayObjectAdapter {
+	    evalScript(str: string): Function;
+	    registerScriptObject(child: DisplayObject): void;
+	    unregisterScriptObject(child: DisplayObject): void;
+	}
+	export = IMovieClipAdapter;
+	
+}
+
 declare module "awayjs-display/lib/animators/IAnimationSet" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AnimationNodeBase = require("awayjs-display/lib/animators/nodes/AnimationNodeBase");
@@ -138,18 +150,6 @@ declare module "awayjs-display/lib/animators/IAnimationSet" {
 	    cancelGPUCompatibility(): any;
 	}
 	export = IAnimationSet;
-	
-}
-
-declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
-	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	interface IMovieClipAdapter extends IDisplayObjectAdapter {
-	    evalScript(str: string): Function;
-	    registerScriptObject(child: DisplayObject): void;
-	    unregisterScriptObject(child: DisplayObject): void;
-	}
-	export = IMovieClipAdapter;
 	
 }
 
@@ -557,7 +557,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity {
 	    _adapter: IDisplayObjectAdapter;
 	    private _queuedEvents;
-	    private _elementsDirty;
+	    _elementsDirty: boolean;
 	    private _loaderInfo;
 	    private _mouseX;
 	    private _mouseY;
@@ -1689,7 +1689,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @private
 	     */
-	    private invalidatePosition();
+	    invalidatePosition(): void;
 	    /**
 	     * @private
 	     */
@@ -2519,7 +2519,7 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    getPotentialChildInstance(id: number): DisplayObject;
 	    registerPotentialChild(prototype: DisplayObject): void;
 	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number): void;
+	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: Boolean): void;
 	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
 	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
 	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;

@@ -167,7 +167,7 @@ class Timeline
 	}
 
 
-	public gotoFrame(target_mc:MovieClip, value:number)
+	public gotoFrame(target_mc:MovieClip, value:number, skip_script:Boolean=false)
 	{
 		var frameIndex:number = target_mc.currentFrameIndex;
 
@@ -181,11 +181,11 @@ class Timeline
 
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
 			target_mc.set_currentFrameIndex(value);
-			this.constructNextFrame(target_mc, true, true);
+			this.constructNextFrame(target_mc, !skip_script, true);
 			return;
 		}
 
-		if (firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+		if ((!skip_script) && (firstframe == value)) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
@@ -401,14 +401,20 @@ class Timeline
 						case 1:// displaytransform
 							if (doit) {
 								value_start_index *= 6;
-								var new_matrix:Matrix3D = target._iMatrix3D || new Matrix3D();
+								var new_matrix:Matrix3D = target._iMatrix3D;
 								new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[value_start_index++];
 								new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[value_start_index++];
 								new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[value_start_index++];
 								new_matrix.rawData[5] = this.properties_stream_f32_mtx_all[value_start_index++];
 								new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[value_start_index++];
 								new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[value_start_index];
-								target._iMatrix3D = new_matrix;
+
+								target.x = new_matrix.rawData[12];
+								target.y = new_matrix.rawData[13];
+
+								target._elementsDirty = true;
+
+								target.pInvalidateSceneTransform();
 							}
 							break;
 
@@ -466,21 +472,21 @@ class Timeline
 						case 11:// displaytransform
 							if (doit) {
 								value_start_index *= 4;
-								var new_matrix:Matrix3D = target._iMatrix3D || new Matrix3D();
+								var new_matrix:Matrix3D = target._iMatrix3D;
 								new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
 								new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
 								new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
 								new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[value_start_index];
-								target._iMatrix3D = new_matrix;
+								target._elementsDirty = true;
+
+								target.pInvalidateSceneTransform();
 							}
 							break;
 						case 12:// displaytransform
 							if (doit) {
 								value_start_index *= 2;
-								var new_matrix:Matrix3D = target._iMatrix3D || new Matrix3D();
-								new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[value_start_index++];
-								new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[value_start_index];
-								target._iMatrix3D = new_matrix;
+								target.x = this.properties_stream_f32_mtx_pos[value_start_index++];
+								target.y = this.properties_stream_f32_mtx_pos[value_start_index];
 							}
 							break;
 						case 200:// displaytransform

@@ -4068,7 +4068,6 @@ module.exports = SubMeshBase;
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 var Timeline = (function () {
     function Timeline() {
@@ -4159,7 +4158,8 @@ var Timeline = (function () {
         if (key_frame_index >= 0)
             target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
     };
-    Timeline.prototype.gotoFrame = function (target_mc, value) {
+    Timeline.prototype.gotoFrame = function (target_mc, value, skip_script) {
+        if (skip_script === void 0) { skip_script = false; }
         var frameIndex = target_mc.currentFrameIndex;
         if (frameIndex == value)
             return;
@@ -4168,10 +4168,10 @@ var Timeline = (function () {
         var firstframe = this.keyframe_firstframes[target_keyframe_idx];
         if (current_keyframe_idx + 1 == target_keyframe_idx) {
             target_mc.set_currentFrameIndex(value);
-            this.constructNextFrame(target_mc, true, true);
+            this.constructNextFrame(target_mc, !skip_script, true);
             return;
         }
-        if (firstframe == value)
+        if ((!skip_script) && (firstframe == value))
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         if (current_keyframe_idx == target_keyframe_idx)
             return;
@@ -4335,14 +4335,17 @@ var Timeline = (function () {
                         case 1:
                             if (doit) {
                                 value_start_index *= 6;
-                                var new_matrix = target._iMatrix3D || new Matrix3D();
+                                var new_matrix = target._iMatrix3D;
                                 new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[value_start_index++];
                                 new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[value_start_index++];
                                 new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[value_start_index++];
                                 new_matrix.rawData[5] = this.properties_stream_f32_mtx_all[value_start_index++];
                                 new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[value_start_index++];
                                 new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[value_start_index];
-                                target._iMatrix3D = new_matrix;
+                                target.x = new_matrix.rawData[12];
+                                target.y = new_matrix.rawData[13];
+                                target._elementsDirty = true;
+                                target.pInvalidateSceneTransform();
                             }
                             break;
                         case 2:
@@ -4389,27 +4392,26 @@ var Timeline = (function () {
                             sourceMovieClip.adapter.registerScriptObject(target);
                             break;
                         case 6:
-                            if (!target.adapter && target.adapter.isVisibilityByScript())
+                            if (!target.adapter || !target.adapter.isVisibilityByScript())
                                 target.visible = Boolean(value_start_index);
                             break;
                         case 11:
                             if (doit) {
                                 value_start_index *= 4;
-                                var new_matrix = target._iMatrix3D || new Matrix3D();
+                                var new_matrix = target._iMatrix3D;
                                 new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
                                 new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
                                 new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
                                 new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[value_start_index];
-                                target._iMatrix3D = new_matrix;
+                                target._elementsDirty = true;
+                                target.pInvalidateSceneTransform();
                             }
                             break;
                         case 12:
                             if (doit) {
                                 value_start_index *= 2;
-                                var new_matrix = target._iMatrix3D || new Matrix3D();
-                                new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[value_start_index++];
-                                new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[value_start_index];
-                                target._iMatrix3D = new_matrix;
+                                target.x = this.properties_stream_f32_mtx_pos[value_start_index++];
+                                target.y = this.properties_stream_f32_mtx_pos[value_start_index];
                             }
                             break;
                         case 200:
@@ -4426,7 +4428,7 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -10853,14 +10855,17 @@ var MovieClip = (function (_super) {
         set: function (value) {
             if (this._timeline.numFrames) {
                 value = Math.floor(value);
+                var skip_script = false;
                 if (value < 0)
                     value = 0;
-                else if (value >= this._timeline.numFrames)
+                else if (value >= this._timeline.numFrames) {
                     value = this._timeline.numFrames - 1;
+                    skip_script = true;
+                }
                 // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
                 this._skipAdvance = true;
                 //this._time = 0;
-                this._timeline.gotoFrame(this, value);
+                this._timeline.gotoFrame(this, value, skip_script);
                 this._currentFrameIndex = value;
             }
         },
@@ -13037,14 +13042,8 @@ var FrameScriptManager = (function () {
             mc = this._queued_mcs[i];
             if (mc.scene != null) {
                 var caller = mc.adapter ? mc.adapter : mc;
-                try {
-                    this._queued_scripts[i].call(caller);
-                }
-                catch (err) {
-                    console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
-                    console.log(err.message);
-                    throw err;
-                }
+                //	try {
+                this._queued_scripts[i].call(caller);
             }
         }
         // all scripts executed. clear all
@@ -15159,19 +15158,15 @@ var ContainerNode = (function (_super) {
      * @param traverser
      */
     ContainerNode.prototype.acceptTraverser = function (traverser) {
-        if (this.numEntities == 0 && !this._pImplicitDebugVisible)
+        if (this.numEntities == 0)
             return;
-        if (traverser.enterNode(this)) {
-            if (this._pEntityNode)
-                this._pEntityNode.acceptTraverser(traverser);
-            var i;
-            for (i = 0; i < this._numChildMasks; i++)
-                this._childMasks[i].acceptTraverser(traverser);
-            for (i = 0; i < this._pNumChildNodes; i++)
-                this._pChildNodes[i].acceptTraverser(traverser);
-            if (this._pImplicitDebugVisible && traverser.isEntityCollector)
-                traverser.applyEntity(this._pDebugEntity);
-        }
+        if (this._pEntityNode)
+            this._pEntityNode.acceptTraverser(traverser);
+        var i;
+        for (i = 0; i < this._numChildMasks; i++)
+            this._childMasks[i].acceptTraverser(traverser);
+        for (i = 0; i < this._pNumChildNodes; i++)
+            this._pChildNodes[i].acceptTraverser(traverser);
     };
     /**
      *
