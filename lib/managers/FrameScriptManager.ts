@@ -71,14 +71,14 @@ class FrameScriptManager
 			mc=this._queued_mcs[i];
 			if(mc.scene!=null) {
 				var caller = mc.adapter ? mc.adapter : mc;
-				try {
+			//	try {
 					this._queued_scripts[i].call(caller);
-				}
-				catch (err) {
+			//	}
+			/*	catch (err) {
 					console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
 					console.log(err.message);
 					throw err;
-				}
+				}*/
 			}
 		}
 		// all scripts executed. clear all

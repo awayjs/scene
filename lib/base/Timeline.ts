@@ -165,7 +165,7 @@ class Timeline
 	}
 
 
-	public gotoFrame(target_mc:MovieClip, value:number)
+	public gotoFrame(target_mc:MovieClip, value:number, skip_script:Boolean=false)
 	{
 		var frameIndex:number = target_mc.currentFrameIndex;
 
@@ -179,11 +179,11 @@ class Timeline
 
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
 			target_mc.set_currentFrameIndex(value);
-			this.constructNextFrame(target_mc, true, true);
+			this.constructNextFrame(target_mc, !skip_script, true);
 			return;
 		}
 
-		if (firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+		if ((!skip_script) && (firstframe == value)) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
