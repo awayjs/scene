@@ -49,6 +49,7 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
      */
     public acceptTraverser(traverser:CollectorBase)
     {
+        //containers nodes are for ordering only, no need to check enterNode or debugVisible
         if (this.numEntities == 0)
             return;
 

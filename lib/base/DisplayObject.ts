@@ -2633,7 +2633,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @private
 	 */
-	public invalidatePosition()
+	private invalidatePosition()
 	{
 		if (this._positionDirty)
 			return;

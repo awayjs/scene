@@ -1689,7 +1689,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @private
 	     */
-	    invalidatePosition(): void;
+	    private invalidatePosition();
 	    /**
 	     * @private
 	     */
