@@ -39,7 +39,6 @@ class MovieClip extends DisplayObjectContainer
 
     private _potentialInstances:Array<DisplayObject>;
     private _active_session_ids:Array<DisplayObject>;
-   // private _framescripts_to_execute:Array<Function>;
 
 	/**
 	 * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -87,15 +86,16 @@ class MovieClip extends DisplayObjectContainer
         this._isInit = value;
     }
 
-
     public get timeline():Timeline
     {
         return this._timeline;
     }
+
     public set timeline(value:Timeline)
     {
         this._timeline = value;
     }
+
     public get loop()
     {
         return this._loop;
@@ -111,17 +111,17 @@ class MovieClip extends DisplayObjectContainer
         return this._timeline.numFrames;
     }
 
-    public jumpToLabel(label:string) : void
+    public jumpToLabel(label:string)
     {
         // the timeline.jumpTolabel will set currentFrameIndex
         this._timeline.jumpToLabel(this, label);
     }
 
-    public get currentFrameIndex() : number
+    public get currentFrameIndex():number
     {
         return this._currentFrameIndex;
     }
-    public get constructedKeyFrameIndex() : number
+    public get constructedKeyFrameIndex():number
     {
         return this._constructedKeyFrameIndex;
     }
@@ -134,12 +134,12 @@ class MovieClip extends DisplayObjectContainer
     public exit_frame():void
     {
         this._skipAdvance = false;
-        var i:number = this.numChildren;
+
         var child:DisplayObject;
-        while (i--) {
+        for (var i:number = this.numChildren - 1; i >= 0; i--) {
             child = this._children[i];
             if(child.isAsset(MovieClip))
-                (<MovieClip>child).exit_frame();
+                (<MovieClip> child).exit_frame();
         }
     }
     public reset():void
@@ -147,18 +147,18 @@ class MovieClip extends DisplayObjectContainer
         // time only is relevant for the root mc, as it is the only one that executes the update function
         this._time = 0;
 
-        if(this.adapter)this.adapter.freeFromScript();
+        if(this.adapter)
+            this.adapter.freeFromScript();
 
         this._isPlaying = true;
 
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
-        var i:number=this.numChildren;
-        while (i--){
+        for (var i:number = this.numChildren - 1; i >= 0; i--)
             this.removeChildAt(i);
-        }
 
         this._skipAdvance = true;
+
         if (this._timeline.numFrames) {
             this._currentFrameIndex = 0;
             this._timeline.constructNextFrame(this, true, true);
@@ -325,31 +325,30 @@ class MovieClip extends DisplayObjectContainer
     public advanceFrame(skipChildren:boolean = false)
     {
         if(this._timeline.numFrames) {
-            var i;
             var oldFrameIndex = this._currentFrameIndex;
             var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
-            if (advance && oldFrameIndex == this._timeline.numFrames - 1 && !this._loop) {
+
+            if (advance && oldFrameIndex == this._timeline.numFrames - 1 && !this._loop)
                 advance = false;
-            }
+
             if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
                 this._currentFrameIndex = 0;
                 advance = false;
             }
+
             if (advance) {
-                ++this._currentFrameIndex;
-                if (this._currentFrameIndex == this._timeline.numFrames) {
-                    // looping - jump to first frame.
-                    this.currentFrameIndex=0;
-                }
-                else if (oldFrameIndex != this._currentFrameIndex){
-                    // not looping - construct next frame
+                this._currentFrameIndex++;
+                if (this._currentFrameIndex == this._timeline.numFrames) { // looping - jump to first frame.
+                    this.currentFrameIndex = 0;
+                } else if (oldFrameIndex != this._currentFrameIndex){ // not looping - construct next frame
                     this._timeline.constructNextFrame(this);
                 }
             }
+
             if (!skipChildren)
                 this.advanceChildren();
-
         }
+
         this._skipAdvance = false;
     }
 
@@ -359,6 +358,7 @@ class MovieClip extends DisplayObjectContainer
         var child:DisplayObject;
         for (var i:number = 0; i <  len; ++i) {
             child = this._children[i];
+
             if (child.isAsset(MovieClip))
                 (<MovieClip> child).advanceFrame();
         }
@@ -375,7 +375,7 @@ class MovieClip extends DisplayObjectContainer
         var len = this.numChildren;
         var child:DisplayObject;
         for (var i:number = 0; i < len; i++) {
-            var child = this._children[i];
+            child = this._children[i];
 
             if (child.isAsset(MovieClip))
                 (<MovieClip> child).logHierarchy(depth + 1);
