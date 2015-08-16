@@ -2519,7 +2519,7 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    getPotentialChildInstance(id: number): DisplayObject;
 	    registerPotentialChild(prototype: DisplayObject): void;
 	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number): void;
+	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: Boolean): void;
 	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
 	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
 	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;

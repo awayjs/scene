@@ -4160,7 +4160,8 @@ var Timeline = (function () {
         if (key_frame_index >= 0)
             target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
     };
-    Timeline.prototype.gotoFrame = function (target_mc, value) {
+    Timeline.prototype.gotoFrame = function (target_mc, value, skip_script) {
+        if (skip_script === void 0) { skip_script = false; }
         var frameIndex = target_mc.currentFrameIndex;
         if (frameIndex == value)
             return;
@@ -4169,10 +4170,10 @@ var Timeline = (function () {
         var firstframe = this.keyframe_firstframes[target_keyframe_idx];
         if (current_keyframe_idx + 1 == target_keyframe_idx) {
             target_mc.set_currentFrameIndex(value);
-            this.constructNextFrame(target_mc, true, true);
+            this.constructNextFrame(target_mc, !skip_script, true);
             return;
         }
-        if (firstframe == value)
+        if ((!skip_script) && (firstframe == value))
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         if (current_keyframe_idx == target_keyframe_idx)
             return;
@@ -10867,14 +10868,17 @@ var MovieClip = (function (_super) {
         set: function (value) {
             if (this._timeline.numFrames) {
                 value = Math.floor(value);
+                var skip_script = false;
                 if (value < 0)
                     value = 0;
-                else if (value >= this._timeline.numFrames)
+                else if (value >= this._timeline.numFrames) {
                     value = this._timeline.numFrames - 1;
+                    skip_script = true;
+                }
                 // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
                 this._skipAdvance = true;
                 //this._time = 0;
-                this._timeline.gotoFrame(this, value);
+                this._timeline.gotoFrame(this, value, skip_script);
                 this._currentFrameIndex = value;
             }
         },
@@ -13058,14 +13062,8 @@ var FrameScriptManager = (function () {
             mc = this._queued_mcs[i];
             if (mc.scene != null) {
                 var caller = mc.adapter ? mc.adapter : mc;
-                try {
-                    this._queued_scripts[i].call(caller);
-                }
-                catch (err) {
-                    console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
-                    console.log(err.message);
-                    throw err;
-                }
+                //	try {
+                this._queued_scripts[i].call(caller);
             }
         }
         // all scripts executed. clear all
