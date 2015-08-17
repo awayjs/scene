@@ -37,7 +37,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 	private _containerNodes:Array<ContainerNode> = new Array<ContainerNode>();
 	private _mouseChildren:boolean = true;
-	private _depths:Array<number> = new Array<number>();
+	private _active_depths:Object = {};
 	private _nextHighestDepth:number = 0;
 	private _nextHighestDepthDirty:boolean;
 	public _children:Array<DisplayObject> = new Array<DisplayObject>();
@@ -166,10 +166,11 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	{
 		if (child == null)
 			throw new Error("Parameter child cannot be null.");
-		
+
 		//if child already has a parent, remove it.
 		if (child._pParent)
 			child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
+
 
 		var index = this.getDepthIndexInternal(depth);
 
@@ -178,15 +179,17 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 				this.removeChildAt(index);
 			} else {
 				//move depth of existing child up by 1
-				this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
+				this.addChildAtDepth(this._children[index], depth + 1, false);
 			}
 		}
 
 		if (this._nextHighestDepth < depth + 1)
 			this._nextHighestDepth = depth + 1;
 
+		this._active_depths[depth] = child;
 		this._children.push(child);
-		this._depths.push(depth);
+
+		child._depthID = depth;
 
 		child.iSetParent(this);
 
@@ -194,7 +197,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		return child;
 	}
-	
+
 	/**
 	 * Adds a child DisplayObject instance to this DisplayObjectContainer
 	 * instance. The child is added at the index position specified. An index of
@@ -226,7 +229,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public addChildAt(child:DisplayObject, index:number):DisplayObject
 	{
-		return this.addChildAtDepth(child, (index < this._depths.length)? this._depths[index] : this.getNextHighestDepth(), false);
+		return this.addChildAtDepth(child, (index < this._children.length)? this._children[index]._depthID : this.getNextHighestDepth(), false);
 	}
 
 	public addChildren(...childarray:Array<DisplayObject>)
@@ -281,12 +284,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		while (this.numChildren > 0)
 			this.getChildAt(0).dispose();
 	}
-	
-	public getChildAtDepth(depth:number /*int*/):DisplayObject
-	{
-		return this.getChildAt(this.getDepthIndexInternal(depth));
-	}
-	
+
 	/**
 	 * Returns the child display object instance that exists at the specified
 	 * index.
@@ -346,11 +344,6 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			throw new ArgumentError("Child parameter is not a child of the caller");
 
 		return childIndex;
-	}
-
-	public getChildDepth(child:DisplayObject):number /*int*/
-	{
-		return this._depths[this.getChildIndex(child)];
 	}
 
 	public getNextHighestDepth()
@@ -417,7 +410,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	public removeChildAtDepth(depth:number /*int*/):DisplayObject
 	{
 		return this.removeChildAt(this.getDepthIndexInternal(depth));
-	}	
+	}
 
 	/**
 	 * Removes a child DisplayObject from the specified <code>index</code>
@@ -448,7 +441,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		child.iSetParent(null);
 
 		this._pInvalidateBounds();
-		
+
 		return child;
 	}
 
@@ -539,10 +532,10 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public swapChildrenAt(index1:number, index2:number)
 	{
-		var depth:number = this._depths[index2];
+		var depth:number = this._children[index2]._depthID;
 		var child:DisplayObject = this._children[index1];
 
-		this.addChildAtDepth(this._children[index2], this._depths[index1]);
+		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
 		this.addChildAtDepth(child, depth);
 	}
 
@@ -679,21 +672,27 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 *
 	 * @param child
 	 */
-	private removeChildAtInternal(index:number):DisplayObject
+	public removeChildAtInternal(index:number):DisplayObject
 	{
 		var child:DisplayObject = this._children.splice(index, 1)[0];
-		var depth:number = this._depths.splice(index, 1)[0];
 
 		//update next highest depth
-		if (this._nextHighestDepth == depth + 1)
+		if (this._nextHighestDepth == child._depthID + 1)
 			this._nextHighestDepthDirty = true;
+
+		delete this._active_depths[child._depthID];
+
+		child._depthID = -16384;
 
 		return child;
 	}
-	
+
 	private getDepthIndexInternal(depth:number /*int*/):number
 	{
-		return this._depths.indexOf(depth);
+		if (!this._active_depths[depth])
+			return -1;
+
+		return this._children.indexOf(this._active_depths[depth]);
 	}
 
 	private _updateNextHighestDepth()
@@ -701,10 +700,10 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		this._nextHighestDepthDirty = false;
 
 		this._nextHighestDepth = 0;
-		var len:number = this._depths.length;
+		var len:number = this._children.length;
 		for (var i:number = 0; i < len; i++)
-			if (this._nextHighestDepth < this._depths[i])
-				this._nextHighestDepth = this._depths[i];
+			if (this._nextHighestDepth < this._children[i]._depthID)
+				this._nextHighestDepth = this._children[i]._depthID;
 
 		this._nextHighestDepth += 1;
 	}

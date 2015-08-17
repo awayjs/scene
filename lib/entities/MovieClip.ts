@@ -37,8 +37,8 @@ class MovieClip extends DisplayObjectContainer
     private _skipAdvance : boolean;
     private _isInit : boolean;
 
-    private _potentialInstances:Array<DisplayObject>;
-    private _active_session_ids:Array<DisplayObject>;
+    private _potentialInstances:Object;
+    private _active_session_ids:Object;
 
 	/**
 	 * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -57,8 +57,8 @@ class MovieClip extends DisplayObjectContainer
     constructor(timeline:Timeline = null)
     {
         super();
-        this._active_session_ids=[];
-        this._potentialInstances = [];
+        this._active_session_ids = {};
+        this._potentialInstances = {};
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         this._isInit=true;
@@ -144,6 +144,8 @@ class MovieClip extends DisplayObjectContainer
     }
     public reset():void
     {
+        super.reset();
+
         // time only is relevant for the root mc, as it is the only one that executes the update function
         this._time = 0;
 
@@ -163,7 +165,6 @@ class MovieClip extends DisplayObjectContainer
             this._currentFrameIndex = 0;
             this._timeline.constructNextFrame(this, true, true);
         }
-
     }
 
     /*
@@ -222,40 +223,35 @@ class MovieClip extends DisplayObjectContainer
     {
         return this._active_session_ids[sessionID];
     }
+
     public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
     {
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
-        child.reset_to_init_state();// this takes care of transform and visibility
-		super.addChildAtDepth(child, depth, replace);
-        if(child.isAsset(MovieClip))(<MovieClip>child).reset();
-        this._active_session_ids[child._sessionID]=child;
+
+        child.reset();// this takes care of transform and visibility
+
+        super.addChildAtDepth(child, depth, true);
+
+        this._active_session_ids[child._sessionID] = child;
+
+
         return child;
     }
 
-    public removeChild(child:DisplayObject):DisplayObject
+    public removeChildAtInternal(index:number /*int*/):DisplayObject
     {
-        super.removeChild(child);
-        if(child.adapter)child.adapter.freeFromScript();
-        this.adapter.unregisterScriptObject(child);
-        this._active_session_ids[child._sessionID]=null;
-        return child;
-    }
+        var child:DisplayObject = super.removeChildAtInternal(index);
 
-    public removeChildAtDepth(depth:number /*int*/):DisplayObject
-    {
-        var child:DisplayObject=super.removeChildAtDepth(depth);
-        if(child.adapter)child.adapter.freeFromScript();
+        if(child.adapter)
+            child.adapter.freeFromScript();
+
         this.adapter.unregisterScriptObject(child);
-        this._active_session_ids[child._sessionID]=null;
-        return child;
-    }
-    public removeChildAt(index:number /*int*/):DisplayObject
-    {
-        var child:DisplayObject=super.removeChildAt(index);
-        if(child.adapter)child.adapter.freeFromScript();
-        this.adapter.unregisterScriptObject(child);
-        this._active_session_ids[child._sessionID]=null;
+
+        delete this._active_session_ids[child._sessionID];
+
+        child._sessionID = -1;
+
         return child;
     }
 
@@ -295,9 +291,9 @@ class MovieClip extends DisplayObjectContainer
 
     public getPotentialChildInstance(id:number) : DisplayObject
     {
-        if (!this._potentialInstances[id]) {
+        if (!this._potentialInstances[id])
             this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
-        }
+
 
         return this._potentialInstances[id];
     }

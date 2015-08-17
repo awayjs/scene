@@ -92,7 +92,7 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
             this._childMasks.push(node);
             this._numChildMasks = this._childMasks.length;
         } else {
-            var depth:number = this._container.getChildDepth(node.displayObject);
+            var depth:number = node.displayObject._depthID;
             var len:number = this._childDepths.length;
             var index:number = len;
 

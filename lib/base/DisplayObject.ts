@@ -190,6 +190,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pIsEntity:boolean = false;
 	public _pIsContainer:boolean = false;
 	public _sessionID:number = -1;
+	public _depthID:number = -16384;
 
 	private _explicitPartition:PartitionBase;
 	public _pImplicitPartition:PartitionBase;
@@ -2071,16 +2072,21 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.rotate(Vector3D.X_AXIS, angle);
 	}
 
-	public reset_to_init_state():void
+	public reset():void
 	{
-		this.visible=true;
+		this.visible = true;
+
 		if(this._iMatrix3D)
 			this._iMatrix3D.identity();
+
 		if(this.colorTransform)
 			this.colorTransform.clear();
+
 		//this.name="";
 		this.masks = null;
+
 		this.maskMode = false;
+
 		this.pInvalidateSceneTransform();
 	}
 	/**
