@@ -287,6 +287,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
     private _inheritColorTransform:boolean = false;
 	private _maskMode:boolean;
 
+	public _mouseEnabledDirty:boolean;
+	private _visibleDirty:boolean;
+	private _maskIdDirty:boolean;
+	private _masksDirty:boolean;
+
 	//temp vector used in global to local
 	private _tempVector3D:Vector3D = new Vector3D();
 
@@ -763,7 +768,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMaskId = value? this.id : -1;
 
-		this._pUpdateImplicitMaskId(this._pParent? this._pParent._iAssignedMaskId() : -1);
+		this.pInvalidateHierarchicalProperties(false, false, true, false);
 	}
 	/**
 	 * Specifies whether this object receives mouse, or other user input,
@@ -1370,7 +1375,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitVisibility = value;
 
-		this._pUpdateImplicitVisibility(this._pParent? this._pParent._iIsVisible() : true);
+		this.pInvalidateHierarchicalProperties(false, true, false, false);
 	}
 
 	public get masks():Array<DisplayObject>
@@ -1385,14 +1390,14 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMasks = value;
 
+		//make sure maskMode is set to true for all masks
 		if (value != null && value.length) {
 			var len:number = value.length;
 			for (var i:number = 0; i < len; i++)
 				value[i].maskMode = true;
 		}
 
-
-		this._pUpdateImplicitMasks(this._pParent? this._pParent._iAssignedMasks() : null);
+		this.pInvalidateHierarchicalProperties(false, false, false, true);
 	}
 
 	/**
@@ -2162,23 +2167,26 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		super.removeEventListener(type, listener);
 
-		if (this.hasEventListener(type, listener))
+		if (this.hasEventListener(type))
 			return;
 
 		switch (type) {
 			case DisplayObjectEvent.POSITION_CHANGED:
 				this._listenToPositionChanged = false;
 				break;
-
 			case DisplayObjectEvent.ROTATION_CHANGED:
 				this._listenToRotationChanged = false;
 				break;
-
 			case DisplayObjectEvent.SKEW_CHANGED:
 				this._listenToSkewChanged = false;
-
 			case DisplayObjectEvent.SCALE_CHANGED:
 				this._listenToScaleChanged = false;
+				break;
+			case DisplayObjectEvent.SCENE_CHANGED:
+				this._listenToSceneChanged = false;
+				break;
+			case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
+				this._listenToSceneTransformChanged = true;
 				break;
 		}
 	}
@@ -2289,28 +2297,34 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public iSetParent(value:DisplayObjectContainer)
 	{
-        if (this._pParent) {
+        if (this._pParent)
             this._pParent.removeEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
-        }
 
 		this._pParent = value;
 
         if (value) {
-			this._pUpdateImplicitMouseEnabled(value.mouseChildren && value._pImplicitMouseEnabled);
-			this._pUpdateImplicitVisibility(value._iIsVisible());
-			this._pUpdateImplicitMaskId(value._iAssignedMaskId());
-			this._pUpdateImplicitMasks(value._iAssignedMasks());
 			this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
             value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
 		} else {
-			this._pUpdateImplicitMouseEnabled(true);
-			this._pUpdateImplicitVisibility(true);
-			this._pUpdateImplicitMaskId(-1);
-			this._pUpdateImplicitMasks(null);
 			this._pUpdateImplicitPartition(null, null);
 		}
 
         this._invalidateGlobalColorTransform();
+	}
+
+	public pInvalidateHierarchicalProperties(mouseEnabledDirty:boolean, visibleDirty:boolean, maskIdDirty:boolean, masksDirty:boolean)
+	{
+		if (mouseEnabledDirty)
+			this._mouseEnabledDirty = true;
+
+		if (visibleDirty)
+			this._visibleDirty = true;
+
+		if (maskIdDirty)
+			this._maskIdDirty = true;
+
+		if (masksDirty)
+			this._masksDirty = true;
 	}
 
 	/**
@@ -2331,22 +2345,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._pParent)
 			this._pParent._pInvalidateBounds();
 
-		if (!this._sceneTransformChanged)
-			this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this);
-
-		this.queueDispatch(this._sceneTransformChanged);
-	}
-
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitMouseEnabled(value:boolean)
-	{
-		this._pImplicitMouseEnabled = value;
-
-		// If there is a parent and this child does not have a picking collider, use its parent's picking collider.
-		if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
-			this._pPickingCollider =  this._pParent._pPickingCollider;
+		if (this._listenToSceneTransformChanged)
+			this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
 	}
 
 	/**
@@ -2383,49 +2383,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			if (!this._pIgnoreTransform)
 				this.pInvalidateSceneTransform();
 
-			this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
-		}
-	}
+			this.pInvalidateHierarchicalProperties(true, true, true, true);
 
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitVisibility(value:boolean)
-	{
-		this._pImplicitVisibility = this._explicitVisibility && value;
-	}
-
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitMaskId(value:number)
-	{
-		this._pImplicitMaskId = (value != -1)? value : this._explicitMaskId;
-	}
-
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitMasks(value:Array<Array<DisplayObject>>)
-	{
-		this._pImplicitMasks = (value != null)? (this._explicitMasks != null)? value.concat([this._explicitMasks]) : value.concat() : (this._explicitMasks != null)? [this._explicitMasks] : null;
-
-		this._pImplicitMaskIds.length = 0;
-
-		if (this._pImplicitMasks && this._pImplicitMasks.length) {
-			var numLayers:number = this._pImplicitMasks.length;
-			var numChildren:number;
-			var implicitChildren:Array<DisplayObject>;
-			var implicitChildIds:Array<number>;
-			for (var i:number = 0; i < numLayers; i++) {
-				implicitChildren = this._pImplicitMasks[i];
-				numChildren = implicitChildren.length;
-				implicitChildIds = new Array<number>();
-				for (var j:number = 0; j < numChildren; j++)
-					implicitChildIds.push(implicitChildren[j].id);
-
-				this._pImplicitMaskIds.push(implicitChildIds);
-			}
+			if (this._listenToSceneChanged)
+				this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
 		}
 	}
 
@@ -2546,6 +2507,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iIsVisible():boolean
 	{
+		if (this._visibleDirty)
+			this._updateVisible();
+
 		return this._pImplicitVisibility;
 	}
 
@@ -2554,6 +2518,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iAssignedMaskId():number
 	{
+		if (this._maskIdDirty)
+			this._updateMaskId();
+
 		return this._pImplicitMaskId;
 	}
 
@@ -2562,11 +2529,17 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iAssignedMasks():Array<Array<DisplayObject>>
 	{
+		if (this._masksDirty)
+			this._updateMasks();
+
 		return this._pImplicitMasks;
 	}
 
 	public _iMasksConfig():Array<Array<number>>
 	{
+		if (this._masksDirty)
+			this._updateMasks();
+
 		return this._pImplicitMaskIds;
 	}
 
@@ -2576,6 +2549,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iIsMouseEnabled():boolean
 	{
+		if (this._mouseEnabledDirty)
+			this._updateMouseEnabled();
+
 		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
 	}
 
@@ -2652,7 +2628,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (!this._pivotZero)
 			this.invalidatePivot();
 
-		this.queueDispatch(this._positionChanged || (this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this)));
+		if (this._listenToPositionChanged)
+			this.queueDispatch(this._positionChanged || (this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this)));
 	}
 
 	/**
@@ -2668,7 +2645,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._rotationDirty = true;
 
-		this.queueDispatch(this._rotationChanged || (this._rotationChanged = new DisplayObjectEvent(DisplayObjectEvent.ROTATION_CHANGED, this)));
+		if (this._listenToRotationChanged)
+			this.queueDispatch(this._rotationChanged || (this._rotationChanged = new DisplayObjectEvent(DisplayObjectEvent.ROTATION_CHANGED, this)));
 	}
 
 	/**
@@ -2684,7 +2662,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._skewDirty = true;
 
-		this.queueDispatch(this._skewChanged || (this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this)));
+		if (this._listenToSkewChanged)
+			this.queueDispatch(this._skewChanged || (this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this)));
 	}
 
 	/**
@@ -2700,7 +2679,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._scaleDirty = true;
 
-		this.queueDispatch(this._scaleChanged || (this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this)));
+		if (this._listenToScaleChanged)
+			this.queueDispatch(this._scaleChanged || (this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this)));
 	}
 
 
@@ -2868,6 +2848,56 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._scaleZ = val;
 
 		this.invalidateScale();
+	}
+
+	public _updateMouseEnabled()
+	{
+		this._pImplicitMouseEnabled = (this._pParent)? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
+
+		// If there is a parent and this child does not have a picking collider, use its parent's picking collider.
+		if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
+			this._pPickingCollider =  this._pParent._pPickingCollider;
+
+		this._mouseEnabledDirty = false;
+	}
+
+	private _updateVisible()
+	{
+		this._pImplicitVisibility = (this._pParent)? this._explicitVisibility && this._pParent._iIsVisible() : this._explicitVisibility;
+
+		this._visibleDirty = false;
+	}
+
+	private _updateMaskId()
+	{
+		this._pImplicitMaskId = (this._pParent && this._pParent._iAssignedMaskId() != -1)? this._pParent._iAssignedMaskId() : this._explicitMaskId;
+
+		this._maskIdDirty = false;
+	}
+
+	private _updateMasks()
+	{
+		this._pImplicitMasks = (this._pParent && this._pParent._iAssignedMasks())? (this._explicitMasks != null)? this._pParent._iAssignedMasks().concat([this._explicitMasks]) : this._pParent._iAssignedMasks().concat() : (this._explicitMasks != null)? [this._explicitMasks] : null;
+
+		this._pImplicitMaskIds.length = 0;
+
+		if (this._pImplicitMasks && this._pImplicitMasks.length) {
+			var numLayers:number = this._pImplicitMasks.length;
+			var numChildren:number;
+			var implicitChildren:Array<DisplayObject>;
+			var implicitChildIds:Array<number>;
+			for (var i:number = 0; i < numLayers; i++) {
+				implicitChildren = this._pImplicitMasks[i];
+				numChildren = implicitChildren.length;
+				implicitChildIds = new Array<number>();
+				for (var j:number = 0; j < numChildren; j++)
+					implicitChildIds.push(implicitChildren[j].id);
+
+				this._pImplicitMaskIds.push(implicitChildIds);
+			}
+		}
+
+		this._masksDirty = false;
 	}
 }
 

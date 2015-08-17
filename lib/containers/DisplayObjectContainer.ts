@@ -74,6 +74,9 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public get mouseChildren():boolean
 	{
+		if (this._mouseEnabledDirty)
+			this._updateMouseEnabled();
+
 		return this._mouseChildren;
 	}
 
@@ -84,7 +87,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		this._mouseChildren = value;
 
-		this._pUpdateImplicitMouseEnabled(this._pParent? this._pParent._pImplicitMouseEnabled : true);
+		this.pInvalidateHierarchicalProperties(true, false, false, false);
 	}
 
 	/**
@@ -599,6 +602,17 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		}
 	}
 
+	/**
+	 * @protected
+	 */
+	public pInvalidateHierarchicalProperties(mouseEnabled:boolean, visible:boolean, maskId:boolean, masks:boolean)
+	{
+		super.pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks);
+
+		var len:number = this._children.length;
+		for (var i:number = 0; i < len; ++i)
+			this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks);
+	}
 
 	/**
 	 * @protected
@@ -610,54 +624,6 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
 			this._children[i].pInvalidateSceneTransform();
-	}
-
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitMouseEnabled(value:boolean)
-	{
-		super._pUpdateImplicitMouseEnabled(value);
-
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateImplicitMouseEnabled(this._mouseChildren && this._pImplicitMouseEnabled);
-	}
-
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitVisibility(value:boolean)
-	{
-		super._pUpdateImplicitVisibility(value);
-
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateImplicitVisibility(this._pImplicitVisibility);
-	}
-
-
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitMaskId(value:number)
-	{
-		super._pUpdateImplicitMaskId(value);
-
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateImplicitMaskId(this._pImplicitMaskId);
-	}
-	/**
-	 * @protected
-	 */
-	public _pUpdateImplicitMasks(value:Array<Array<DisplayObject>>)
-	{
-		super._pUpdateImplicitMasks(value);
-
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateImplicitMasks(this._pImplicitMasks);
 	}
 
 	/**
