@@ -791,6 +791,7 @@ var DisplayObject = (function (_super) {
         this._pIsEntity = false;
         this._pIsContainer = false;
         this._sessionID = -1;
+        this._depthID = -16384;
         this._matrix3D = new Matrix3D();
         this._inverseSceneTransform = new Matrix3D();
         this._scenePosition = new Vector3D();
@@ -2272,7 +2273,7 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.pitch = function (angle) {
         this.rotate(Vector3D.X_AXIS, angle);
     };
-    DisplayObject.prototype.reset_to_init_state = function () {
+    DisplayObject.prototype.reset = function () {
         this.visible = true;
         if (this._iMatrix3D)
             this._iMatrix3D.identity();
@@ -4171,7 +4172,7 @@ var Timeline = (function () {
             this.constructNextFrame(target_mc, !skip_script, true);
             return;
         }
-        if ((!skip_script) && (firstframe == value))
+        if (!skip_script && firstframe == value)
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         if (current_keyframe_idx == target_keyframe_idx)
             return;
@@ -4186,7 +4187,7 @@ var Timeline = (function () {
         var target_childs_dic = {};
         var target_sessionIDs_dic = {};
         var i;
-        var len;
+        var end_index;
         var k;
         var child;
         var depth;
@@ -4198,7 +4199,7 @@ var Timeline = (function () {
                 target_mc.removeChild(child);
             }
             else if (jump_forward) {
-                depth = target_mc.getChildDepth(child);
+                depth = child._depthID;
                 target_childs_dic[depth] = child;
                 target_sessionIDs_dic[depth] = child._sessionID;
             }
@@ -4214,53 +4215,43 @@ var Timeline = (function () {
             if ((frame_recipe & 2) == 2) {
                 // remove childs
                 start_index = this.command_index_stream[frame_command_idx];
-                len = this.command_length_stream[frame_command_idx++];
-                for (i = 0; i < len; i++) {
-                    depth = this.remove_child_stream[start_index + i] - 16383;
+                end_index = start_index + this.command_length_stream[frame_command_idx++];
+                for (i = start_index; i < end_index; i++) {
+                    depth = this.remove_child_stream[i] - 16383;
                     delete target_childs_dic[depth];
                     delete target_sessionIDs_dic[depth];
                 }
             }
             if ((frame_recipe & 4) == 4) {
                 start_index = this.command_index_stream[frame_command_idx];
-                len = this.command_length_stream[frame_command_idx++];
-                for (i = len - 1; i >= 0; i--) {
-                    idx = start_index * 2 + i * 2;
+                end_index = start_index + this.command_length_stream[frame_command_idx++];
+                for (i = end_index - 1; i >= start_index; i--) {
+                    idx = i * 2;
                     var target = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
                     depth = this.add_child_stream[idx + 1] - 16383;
                     target_childs_dic[depth] = target;
-                    target_sessionIDs_dic[depth] = start_index + i;
+                    target_sessionIDs_dic[depth] = i;
                 }
             }
             if ((frame_recipe & 8) == 8)
                 update_indices[update_cnt++] = frame_command_idx; // execute update command later
         }
-        //  step2: construct the final frame
-        var target_child_sessionIDS = {};
-        for (var key in target_sessionIDs_dic)
-            if (target_sessionIDs_dic[key] != null)
-                target_child_sessionIDS[target_sessionIDs_dic[key]] = key;
         for (i = target_mc.numChildren - 1; i >= 0; i--) {
             child = target_mc._children[i];
-            if (target_child_sessionIDS[child._sessionID]) {
-                delete target_childs_dic[target_child_sessionIDS[child._sessionID]];
-                delete target_sessionIDs_dic[target_child_sessionIDS[child._sessionID]];
-                target_child_sessionIDS[child._sessionID] = null;
-            }
-            else {
+            depth = child._depthID;
+            if (target_sessionIDs_dic[depth] == child._sessionID)
+                delete target_childs_dic[depth];
+            else
                 target_mc.removeChildAt(i);
-            }
         }
         for (var key in target_childs_dic) {
             child = target_childs_dic[key];
-            if (child) {
-                child._sessionID = target_sessionIDs_dic[key];
-                target_mc.addChildAtDepth(child, parseInt(key));
-            }
+            child._sessionID = target_sessionIDs_dic[key];
+            target_mc.addChildAtDepth(child, parseInt(key));
         }
         //  pass2: apply update commands for objects on stage (only if they are not blocked by script)
         var frame_command_idx;
-        len = update_indices.length;
+        var len = update_indices.length;
         for (k = 0; k < len; k++) {
             frame_command_idx = update_indices[k];
             this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx]);
@@ -4301,10 +4292,11 @@ var Timeline = (function () {
         // apply add commands in reversed order to have script exeucted in correct order.
         // this could be changed in exporter
         var idx;
-        for (var i = len - 1; i >= 0; i--) {
-            idx = (start_index + i) * 2;
+        var end_index = start_index + len;
+        for (var i = end_index - 1; i >= start_index; i--) {
+            idx = i * 2;
             var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
-            target._sessionID = start_index + i;
+            target._sessionID = i;
             sourceMovieClip.addChildAtDepth(target, this.add_child_stream[idx + 1] - 16383);
         }
     };
@@ -5730,7 +5722,7 @@ var DisplayObjectContainer = (function (_super) {
         _super.call(this);
         this._containerNodes = new Array();
         this._mouseChildren = true;
-        this._depths = new Array();
+        this._active_depths = {};
         this._nextHighestDepth = 0;
         this._children = new Array();
         this._pIsContainer = true;
@@ -5836,13 +5828,14 @@ var DisplayObjectContainer = (function (_super) {
             }
             else {
                 //move depth of existing child up by 1
-                this.addChildAtDepth(this._children[index], this._depths[index] + 1, false);
+                this.addChildAtDepth(this._children[index], depth + 1, false);
             }
         }
         if (this._nextHighestDepth < depth + 1)
             this._nextHighestDepth = depth + 1;
+        this._active_depths[depth] = child;
         this._children.push(child);
-        this._depths.push(depth);
+        child._depthID = depth;
         child.iSetParent(this);
         this._pInvalidateBounds();
         return child;
@@ -5877,7 +5870,7 @@ var DisplayObjectContainer = (function (_super) {
      *              list.
      */
     DisplayObjectContainer.prototype.addChildAt = function (child, index) {
-        return this.addChildAtDepth(child, (index < this._depths.length) ? this._depths[index] : this.getNextHighestDepth(), false);
+        return this.addChildAtDepth(child, (index < this._children.length) ? this._children[index]._depthID : this.getNextHighestDepth(), false);
     };
     DisplayObjectContainer.prototype.addChildren = function () {
         var childarray = [];
@@ -5924,9 +5917,6 @@ var DisplayObjectContainer = (function (_super) {
         this.dispose();
         while (this.numChildren > 0)
             this.getChildAt(0).dispose();
-    };
-    DisplayObjectContainer.prototype.getChildAtDepth = function (depth /*int*/) {
-        return this.getChildAt(this.getDepthIndexInternal(depth));
     };
     /**
      * Returns the child display object instance that exists at the specified
@@ -5977,9 +5967,6 @@ var DisplayObjectContainer = (function (_super) {
         if (childIndex == -1)
             throw new ArgumentError("Child parameter is not a child of the caller");
         return childIndex;
-    };
-    DisplayObjectContainer.prototype.getChildDepth = function (child) {
-        return this._depths[this.getChildIndex(child)];
     };
     DisplayObjectContainer.prototype.getNextHighestDepth = function () {
         if (this._nextHighestDepthDirty)
@@ -6144,9 +6131,9 @@ var DisplayObjectContainer = (function (_super) {
      * @throws RangeError If either index does not exist in the child list.
      */
     DisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
-        var depth = this._depths[index2];
+        var depth = this._children[index2]._depthID;
         var child = this._children[index1];
-        this.addChildAtDepth(this._children[index2], this._depths[index1]);
+        this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
         this.addChildAtDepth(child, depth);
     };
     /**
@@ -6257,22 +6244,25 @@ var DisplayObjectContainer = (function (_super) {
      */
     DisplayObjectContainer.prototype.removeChildAtInternal = function (index) {
         var child = this._children.splice(index, 1)[0];
-        var depth = this._depths.splice(index, 1)[0];
         //update next highest depth
-        if (this._nextHighestDepth == depth + 1)
+        if (this._nextHighestDepth == child._depthID + 1)
             this._nextHighestDepthDirty = true;
+        delete this._active_depths[child._depthID];
+        child._depthID = -16384;
         return child;
     };
     DisplayObjectContainer.prototype.getDepthIndexInternal = function (depth /*int*/) {
-        return this._depths.indexOf(depth);
+        if (!this._active_depths[depth])
+            return -1;
+        return this._children.indexOf(this._active_depths[depth]);
     };
     DisplayObjectContainer.prototype._updateNextHighestDepth = function () {
         this._nextHighestDepthDirty = false;
         this._nextHighestDepth = 0;
-        var len = this._depths.length;
+        var len = this._children.length;
         for (var i = 0; i < len; i++)
-            if (this._nextHighestDepth < this._depths[i])
-                this._nextHighestDepth = this._depths[i];
+            if (this._nextHighestDepth < this._children[i]._depthID)
+                this._nextHighestDepth = this._children[i]._depthID;
         this._nextHighestDepth += 1;
     };
     /**
@@ -10774,8 +10764,8 @@ var MovieClip = (function (_super) {
         if (timeline === void 0) { timeline = null; }
         _super.call(this);
         this._loop = true;
-        this._active_session_ids = [];
-        this._potentialInstances = [];
+        this._active_session_ids = {};
+        this._potentialInstances = {};
         this._currentFrameIndex = -1;
         this._constructedKeyFrameIndex = -1;
         this._isInit = true;
@@ -10892,6 +10882,7 @@ var MovieClip = (function (_super) {
         }
     };
     MovieClip.prototype.reset = function () {
+        _super.prototype.reset.call(this);
         // time only is relevant for the root mc, as it is the only one that executes the update function
         this._time = 0;
         if (this.adapter)
@@ -10935,35 +10926,18 @@ var MovieClip = (function (_super) {
         if (replace === void 0) { replace = true; }
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
-        child.reset_to_init_state(); // this takes care of transform and visibility
-        _super.prototype.addChildAtDepth.call(this, child, depth, replace);
-        if (child.isAsset(MovieClip))
-            child.reset();
+        child.reset(); // this takes care of transform and visibility
+        _super.prototype.addChildAtDepth.call(this, child, depth, true);
         this._active_session_ids[child._sessionID] = child;
         return child;
     };
-    MovieClip.prototype.removeChild = function (child) {
-        _super.prototype.removeChild.call(this, child);
+    MovieClip.prototype.removeChildAtInternal = function (index /*int*/) {
+        var child = _super.prototype.removeChildAtInternal.call(this, index);
         if (child.adapter)
             child.adapter.freeFromScript();
         this.adapter.unregisterScriptObject(child);
-        this._active_session_ids[child._sessionID] = null;
-        return child;
-    };
-    MovieClip.prototype.removeChildAtDepth = function (depth /*int*/) {
-        var child = _super.prototype.removeChildAtDepth.call(this, depth);
-        if (child.adapter)
-            child.adapter.freeFromScript();
-        this.adapter.unregisterScriptObject(child);
-        this._active_session_ids[child._sessionID] = null;
-        return child;
-    };
-    MovieClip.prototype.removeChildAt = function (index /*int*/) {
-        var child = _super.prototype.removeChildAt.call(this, index);
-        if (child.adapter)
-            child.adapter.freeFromScript();
-        this.adapter.unregisterScriptObject(child);
-        this._active_session_ids[child._sessionID] = null;
+        delete this._active_session_ids[child._sessionID];
+        child._sessionID = -1;
         return child;
     };
     Object.defineProperty(MovieClip.prototype, "assetType", {
@@ -10995,9 +10969,8 @@ var MovieClip = (function (_super) {
         this.exit_frame();
     };
     MovieClip.prototype.getPotentialChildInstance = function (id) {
-        if (!this._potentialInstances[id]) {
+        if (!this._potentialInstances[id])
             this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
-        }
         return this._potentialInstances[id];
     };
     /**
@@ -15194,7 +15167,7 @@ var ContainerNode = (function (_super) {
             this._numChildMasks = this._childMasks.length;
         }
         else {
-            var depth = this._container.getChildDepth(node.displayObject);
+            var depth = node.displayObject._depthID;
             var len = this._childDepths.length;
             var index = len;
             while (index--)

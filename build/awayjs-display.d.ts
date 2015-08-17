@@ -576,6 +576,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pIsEntity: boolean;
 	    _pIsContainer: boolean;
 	    _sessionID: number;
+	    _depthID: number;
 	    private _explicitPartition;
 	    _pImplicitPartition: PartitionBase;
 	    private _sceneTransformChanged;
@@ -1529,7 +1530,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @param    angle        The amount of rotation in degrees
 	     */
 	    pitch(angle: number): void;
-	    reset_to_init_state(): void;
+	    reset(): void;
 	    /**
 	     *
 	     */
@@ -2519,7 +2520,7 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    getPotentialChildInstance(id: number): DisplayObject;
 	    registerPotentialChild(prototype: DisplayObject): void;
 	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: Boolean): void;
+	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
 	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
 	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
 	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
@@ -3156,7 +3157,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    static assetType: string;
 	    private _containerNodes;
 	    private _mouseChildren;
-	    private _depths;
+	    private _active_depths;
 	    private _nextHighestDepth;
 	    private _nextHighestDepthDirty;
 	    _children: Array<DisplayObject>;
@@ -3300,7 +3301,6 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *
 	     */
 	    disposeWithChildren(): void;
-	    getChildAtDepth(depth: number): DisplayObject;
 	    /**
 	     * Returns the child display object instance that exists at the specified
 	     * index.
@@ -3335,7 +3335,6 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *                       object.
 	     */
 	    getChildIndex(child: DisplayObject): number;
-	    getChildDepth(child: DisplayObject): number;
 	    getNextHighestDepth(): number;
 	    /**
 	     * Returns an array of objects that lie under the specified point and are
@@ -3503,7 +3502,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *
 	     * @param child
 	     */
-	    private removeChildAtInternal(index);
+	    removeChildAtInternal(index: number): DisplayObject;
 	    private getDepthIndexInternal(depth);
 	    private _updateNextHighestDepth();
 	    /**
@@ -6259,9 +6258,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    removeButtonListeners(): void;
 	    getChildAtSessionID(sessionID: number): DisplayObject;
 	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
-	    removeChild(child: DisplayObject): DisplayObject;
-	    removeChildAtDepth(depth: number): DisplayObject;
-	    removeChildAt(index: number): DisplayObject;
+	    removeChildAtInternal(index: number): DisplayObject;
 	    assetType: string;
 	    /**
 	     * Starts playback of animation from current position
