@@ -285,6 +285,11 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			this.getChildAt(0).dispose();
 	}
 
+	public getChildAtDepth(depth:number /*int*/):DisplayObject
+	{
+		return this._active_depths[depth];
+	}
+
 	/**
 	 * Returns the child display object instance that exists at the specified
 	 * index.
