@@ -655,6 +655,10 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _onColorTransformChangedDelegate;
 	    private _inheritColorTransform;
 	    private _maskMode;
+	    _mouseEnabledDirty: boolean;
+	    private _visibleDirty;
+	    private _maskIdDirty;
+	    private _masksDirty;
 	    private _tempVector3D;
 	    /**
 	     * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -1602,6 +1606,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @internal
 	     */
 	    iSetParent(value: DisplayObjectContainer): void;
+	    pInvalidateHierarchicalProperties(mouseEnabledDirty: boolean, visibleDirty: boolean, maskIdDirty: boolean, masksDirty: boolean): void;
 	    /**
 	     * @protected
 	     */
@@ -1609,23 +1614,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @protected
 	     */
-	    _pUpdateImplicitMouseEnabled(value: boolean): void;
-	    /**
-	     * @protected
-	     */
 	    _pUpdateImplicitPartition(partition: PartitionBase, scene: Scene): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateImplicitVisibility(value: boolean): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateImplicitMaskId(value: number): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateImplicitMasks(value: Array<Array<DisplayObject>>): void;
 	    /**
 	     * @protected
 	     */
@@ -1718,6 +1707,10 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _setScaleX(val);
 	    private _setScaleY(val);
 	    private _setScaleZ(val);
+	    _updateMouseEnabled(): void;
+	    private _updateVisible();
+	    private _updateMaskId();
+	    private _updateMasks();
 	}
 	export = DisplayObject;
 	
@@ -3301,6 +3294,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *
 	     */
 	    disposeWithChildren(): void;
+	    getChildAtDepth(depth: number): DisplayObject;
 	    /**
 	     * Returns the child display object instance that exists at the specified
 	     * index.
@@ -3476,23 +3470,11 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     * @protected
 	     */
+	    pInvalidateHierarchicalProperties(mouseEnabled: boolean, visible: boolean, maskId: boolean, masks: boolean): void;
+	    /**
+	     * @protected
+	     */
 	    pInvalidateSceneTransform(): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateImplicitMouseEnabled(value: boolean): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateImplicitVisibility(value: boolean): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateImplicitMaskId(value: number): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateImplicitMasks(value: Array<Array<DisplayObject>>): void;
 	    /**
 	     * @protected
 	     */

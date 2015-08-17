@@ -1189,7 +1189,7 @@ var DisplayObject = (function (_super) {
                 return;
             this._maskMode = value;
             this._explicitMaskId = value ? this.id : -1;
-            this._pUpdateImplicitMaskId(this._pParent ? this._pParent._iAssignedMaskId() : -1);
+            this.pInvalidateHierarchicalProperties(false, false, true, false);
         },
         enumerable: true,
         configurable: true
@@ -1686,7 +1686,7 @@ var DisplayObject = (function (_super) {
             if (this._explicitVisibility == value)
                 return;
             this._explicitVisibility = value;
-            this._pUpdateImplicitVisibility(this._pParent ? this._pParent._iIsVisible() : true);
+            this.pInvalidateHierarchicalProperties(false, true, false, false);
         },
         enumerable: true,
         configurable: true
@@ -1699,12 +1699,13 @@ var DisplayObject = (function (_super) {
             if (this._explicitMasks == value)
                 return;
             this._explicitMasks = value;
+            //make sure maskMode is set to true for all masks
             if (value != null && value.length) {
                 var len = value.length;
                 for (var i = 0; i < len; i++)
                     value[i].maskMode = true;
             }
-            this._pUpdateImplicitMasks(this._pParent ? this._pParent._iAssignedMasks() : null);
+            this.pInvalidateHierarchicalProperties(false, false, false, true);
         },
         enumerable: true,
         configurable: true
@@ -2342,7 +2343,7 @@ var DisplayObject = (function (_super) {
      */
     DisplayObject.prototype.removeEventListener = function (type, listener) {
         _super.prototype.removeEventListener.call(this, type, listener);
-        if (this.hasEventListener(type, listener))
+        if (this.hasEventListener(type))
             return;
         switch (type) {
             case DisplayObjectEvent.POSITION_CHANGED:
@@ -2355,6 +2356,12 @@ var DisplayObject = (function (_super) {
                 this._listenToSkewChanged = false;
             case DisplayObjectEvent.SCALE_CHANGED:
                 this._listenToScaleChanged = false;
+                break;
+            case DisplayObjectEvent.SCENE_CHANGED:
+                this._listenToSceneChanged = false;
+                break;
+            case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
+                this._listenToSceneTransformChanged = true;
                 break;
         }
     };
@@ -2446,26 +2453,27 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype.iSetParent = function (value) {
-        if (this._pParent) {
+        if (this._pParent)
             this._pParent.removeEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
-        }
         this._pParent = value;
         if (value) {
-            this._pUpdateImplicitMouseEnabled(value.mouseChildren && value._pImplicitMouseEnabled);
-            this._pUpdateImplicitVisibility(value._iIsVisible());
-            this._pUpdateImplicitMaskId(value._iAssignedMaskId());
-            this._pUpdateImplicitMasks(value._iAssignedMasks());
             this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
             value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
         }
         else {
-            this._pUpdateImplicitMouseEnabled(true);
-            this._pUpdateImplicitVisibility(true);
-            this._pUpdateImplicitMaskId(-1);
-            this._pUpdateImplicitMasks(null);
             this._pUpdateImplicitPartition(null, null);
         }
         this._invalidateGlobalColorTransform();
+    };
+    DisplayObject.prototype.pInvalidateHierarchicalProperties = function (mouseEnabledDirty, visibleDirty, maskIdDirty, masksDirty) {
+        if (mouseEnabledDirty)
+            this._mouseEnabledDirty = true;
+        if (visibleDirty)
+            this._visibleDirty = true;
+        if (maskIdDirty)
+            this._maskIdDirty = true;
+        if (masksDirty)
+            this._masksDirty = true;
     };
     /**
      * @protected
@@ -2480,18 +2488,8 @@ var DisplayObject = (function (_super) {
             this.invalidatePartition();
         if (this._pParent)
             this._pParent._pInvalidateBounds();
-        if (!this._sceneTransformChanged)
-            this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this);
-        this.queueDispatch(this._sceneTransformChanged);
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype._pUpdateImplicitMouseEnabled = function (value) {
-        this._pImplicitMouseEnabled = value;
-        // If there is a parent and this child does not have a picking collider, use its parent's picking collider.
-        if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
-            this._pPickingCollider = this._pParent._pPickingCollider;
+        if (this._listenToSceneTransformChanged)
+            this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
     };
     /**
      * @protected
@@ -2518,40 +2516,9 @@ var DisplayObject = (function (_super) {
         if (sceneChanged) {
             if (!this._pIgnoreTransform)
                 this.pInvalidateSceneTransform();
-            this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
-        }
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype._pUpdateImplicitVisibility = function (value) {
-        this._pImplicitVisibility = this._explicitVisibility && value;
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype._pUpdateImplicitMaskId = function (value) {
-        this._pImplicitMaskId = (value != -1) ? value : this._explicitMaskId;
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype._pUpdateImplicitMasks = function (value) {
-        this._pImplicitMasks = (value != null) ? (this._explicitMasks != null) ? value.concat([this._explicitMasks]) : value.concat() : (this._explicitMasks != null) ? [this._explicitMasks] : null;
-        this._pImplicitMaskIds.length = 0;
-        if (this._pImplicitMasks && this._pImplicitMasks.length) {
-            var numLayers = this._pImplicitMasks.length;
-            var numChildren;
-            var implicitChildren;
-            var implicitChildIds;
-            for (var i = 0; i < numLayers; i++) {
-                implicitChildren = this._pImplicitMasks[i];
-                numChildren = implicitChildren.length;
-                implicitChildIds = new Array();
-                for (var j = 0; j < numChildren; j++)
-                    implicitChildIds.push(implicitChildren[j].id);
-                this._pImplicitMaskIds.push(implicitChildIds);
-            }
+            this.pInvalidateHierarchicalProperties(true, true, true, true);
+            if (this._listenToSceneChanged)
+                this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
         }
     };
     /**
@@ -2642,27 +2609,37 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype._iIsVisible = function () {
+        if (this._visibleDirty)
+            this._updateVisible();
         return this._pImplicitVisibility;
     };
     /**
      * @internal
      */
     DisplayObject.prototype._iAssignedMaskId = function () {
+        if (this._maskIdDirty)
+            this._updateMaskId();
         return this._pImplicitMaskId;
     };
     /**
      * @internal
      */
     DisplayObject.prototype._iAssignedMasks = function () {
+        if (this._masksDirty)
+            this._updateMasks();
         return this._pImplicitMasks;
     };
     DisplayObject.prototype._iMasksConfig = function () {
+        if (this._masksDirty)
+            this._updateMasks();
         return this._pImplicitMaskIds;
     };
     /**
      * @internal
      */
     DisplayObject.prototype._iIsMouseEnabled = function () {
+        if (this._mouseEnabledDirty)
+            this._updateMouseEnabled();
         return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
     };
     /**
@@ -2717,7 +2694,8 @@ var DisplayObject = (function (_super) {
             this.pInvalidateSceneTransform();
         if (!this._pivotZero)
             this.invalidatePivot();
-        this.queueDispatch(this._positionChanged || (this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this)));
+        if (this._listenToPositionChanged)
+            this.queueDispatch(this._positionChanged || (this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this)));
     };
     /**
      * @private
@@ -2729,7 +2707,8 @@ var DisplayObject = (function (_super) {
         if (this._rotationDirty)
             return;
         this._rotationDirty = true;
-        this.queueDispatch(this._rotationChanged || (this._rotationChanged = new DisplayObjectEvent(DisplayObjectEvent.ROTATION_CHANGED, this)));
+        if (this._listenToRotationChanged)
+            this.queueDispatch(this._rotationChanged || (this._rotationChanged = new DisplayObjectEvent(DisplayObjectEvent.ROTATION_CHANGED, this)));
     };
     /**
      * @private
@@ -2741,7 +2720,8 @@ var DisplayObject = (function (_super) {
         if (this._skewDirty)
             return;
         this._skewDirty = true;
-        this.queueDispatch(this._skewChanged || (this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this)));
+        if (this._listenToSkewChanged)
+            this.queueDispatch(this._skewChanged || (this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this)));
     };
     /**
      * @private
@@ -2753,7 +2733,8 @@ var DisplayObject = (function (_super) {
         if (this._scaleDirty)
             return;
         this._scaleDirty = true;
-        this.queueDispatch(this._scaleChanged || (this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this)));
+        if (this._listenToScaleChanged)
+            this.queueDispatch(this._scaleChanged || (this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this)));
     };
     DisplayObject.prototype._iAddEntityNode = function (entityNode) {
         this._entityNodes.push(entityNode);
@@ -2863,6 +2844,40 @@ var DisplayObject = (function (_super) {
             return;
         this._scaleZ = val;
         this.invalidateScale();
+    };
+    DisplayObject.prototype._updateMouseEnabled = function () {
+        this._pImplicitMouseEnabled = (this._pParent) ? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
+        // If there is a parent and this child does not have a picking collider, use its parent's picking collider.
+        if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
+            this._pPickingCollider = this._pParent._pPickingCollider;
+        this._mouseEnabledDirty = false;
+    };
+    DisplayObject.prototype._updateVisible = function () {
+        this._pImplicitVisibility = (this._pParent) ? this._explicitVisibility && this._pParent._iIsVisible() : this._explicitVisibility;
+        this._visibleDirty = false;
+    };
+    DisplayObject.prototype._updateMaskId = function () {
+        this._pImplicitMaskId = (this._pParent && this._pParent._iAssignedMaskId() != -1) ? this._pParent._iAssignedMaskId() : this._explicitMaskId;
+        this._maskIdDirty = false;
+    };
+    DisplayObject.prototype._updateMasks = function () {
+        this._pImplicitMasks = (this._pParent && this._pParent._iAssignedMasks()) ? (this._explicitMasks != null) ? this._pParent._iAssignedMasks().concat([this._explicitMasks]) : this._pParent._iAssignedMasks().concat() : (this._explicitMasks != null) ? [this._explicitMasks] : null;
+        this._pImplicitMaskIds.length = 0;
+        if (this._pImplicitMasks && this._pImplicitMasks.length) {
+            var numLayers = this._pImplicitMasks.length;
+            var numChildren;
+            var implicitChildren;
+            var implicitChildIds;
+            for (var i = 0; i < numLayers; i++) {
+                implicitChildren = this._pImplicitMasks[i];
+                numChildren = implicitChildren.length;
+                implicitChildIds = new Array();
+                for (var j = 0; j < numChildren; j++)
+                    implicitChildIds.push(implicitChildren[j].id);
+                this._pImplicitMaskIds.push(implicitChildIds);
+            }
+        }
+        this._masksDirty = false;
     };
     return DisplayObject;
 })(AssetBase);
@@ -5757,13 +5772,15 @@ var DisplayObjectContainer = (function (_super) {
          * functionality.</p>
          */
         get: function () {
+            if (this._mouseEnabledDirty)
+                this._updateMouseEnabled();
             return this._mouseChildren;
         },
         set: function (value) {
             if (this._mouseChildren == value)
                 return;
             this._mouseChildren = value;
-            this._pUpdateImplicitMouseEnabled(this._pParent ? this._pParent._pImplicitMouseEnabled : true);
+            this.pInvalidateHierarchicalProperties(true, false, false, false);
         },
         enumerable: true,
         configurable: true
@@ -5914,6 +5931,9 @@ var DisplayObjectContainer = (function (_super) {
         this.dispose();
         while (this.numChildren > 0)
             this.getChildAt(0).dispose();
+    };
+    DisplayObjectContainer.prototype.getChildAtDepth = function (depth /*int*/) {
+        return this._active_depths[depth];
     };
     /**
      * Returns the child display object instance that exists at the specified
@@ -6183,47 +6203,20 @@ var DisplayObjectContainer = (function (_super) {
     /**
      * @protected
      */
+    DisplayObjectContainer.prototype.pInvalidateHierarchicalProperties = function (mouseEnabled, visible, maskId, masks) {
+        _super.prototype.pInvalidateHierarchicalProperties.call(this, mouseEnabled, visible, maskId, masks);
+        var len = this._children.length;
+        for (var i = 0; i < len; ++i)
+            this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks);
+    };
+    /**
+     * @protected
+     */
     DisplayObjectContainer.prototype.pInvalidateSceneTransform = function () {
         _super.prototype.pInvalidateSceneTransform.call(this);
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
             this._children[i].pInvalidateSceneTransform();
-    };
-    /**
-     * @protected
-     */
-    DisplayObjectContainer.prototype._pUpdateImplicitMouseEnabled = function (value) {
-        _super.prototype._pUpdateImplicitMouseEnabled.call(this, value);
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateImplicitMouseEnabled(this._mouseChildren && this._pImplicitMouseEnabled);
-    };
-    /**
-     * @protected
-     */
-    DisplayObjectContainer.prototype._pUpdateImplicitVisibility = function (value) {
-        _super.prototype._pUpdateImplicitVisibility.call(this, value);
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateImplicitVisibility(this._pImplicitVisibility);
-    };
-    /**
-     * @protected
-     */
-    DisplayObjectContainer.prototype._pUpdateImplicitMaskId = function (value) {
-        _super.prototype._pUpdateImplicitMaskId.call(this, value);
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateImplicitMaskId(this._pImplicitMaskId);
-    };
-    /**
-     * @protected
-     */
-    DisplayObjectContainer.prototype._pUpdateImplicitMasks = function (value) {
-        _super.prototype._pUpdateImplicitMasks.call(this, value);
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateImplicitMasks(this._pImplicitMasks);
     };
     /**
      * @protected
