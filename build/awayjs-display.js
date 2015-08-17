@@ -5360,7 +5360,6 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
 var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
 var PrimitiveCubePrefab = require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
@@ -5446,8 +5445,7 @@ var AxisAlignedBoundingBox = (function (_super) {
         var cx = this._box.x + hx;
         var cy = this._box.y + hy;
         var cz = this._box.z + hz;
-        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
-        matrix.copyRawDataTo(raw);
+        var raw = matrix.rawData;
         var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
         var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
         var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
@@ -5479,7 +5477,7 @@ var AxisAlignedBoundingBox = (function (_super) {
 })(BoundingVolumeBase);
 module.exports = AxisAlignedBoundingBox;
 
-},{"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-display/lib/prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab"}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
+},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-display/lib/prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab"}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5545,8 +5543,7 @@ var BoundingSphere = (function (_super) {
         var cy = this._sphere.y;
         var cz = this._sphere.z;
         var r = this._sphere.radius;
-        var raw = new Array(16);
-        matrix.copyRawDataTo(raw);
+        var raw = matrix.rawData;
         var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
         var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
         var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
@@ -9664,10 +9661,8 @@ var Camera = (function (_super) {
         var c31, c32, c33, c34;
         var c41, c42, c43, c44;
         var p;
-        var raw = new Array(16);
-        ;
+        var raw = this.viewProjection.rawData;
         var invLen;
-        this.viewProjection.copyRawDataTo(raw);
         c11 = raw[0];
         c12 = raw[4];
         c13 = raw[8];
@@ -9840,6 +9835,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var LightBase = require("awayjs-display/lib/base/LightBase");
@@ -9897,7 +9893,7 @@ var DirectionalLight = (function (_super) {
     //override
     DirectionalLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
         if (target === void 0) { target = null; }
-        var raw = new Array();
+        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
         var m = new Matrix3D();
         m.copyFrom(entity.getRenderSceneTransform(camera));
         m.append(this.inverseSceneTransform);
@@ -9985,7 +9981,7 @@ var DirectionalLight = (function (_super) {
 })(LightBase);
 module.exports = DirectionalLight;
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/entities/IEntity":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/entities/IEntity":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/entities/LightProbe":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
@@ -11056,6 +11052,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var LightBase = require("awayjs-display/lib/base/LightBase");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
@@ -11117,7 +11114,7 @@ var PointLight = (function (_super) {
     };
     PointLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
         if (target === void 0) { target = null; }
-        var raw = new Array(16);
+        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
         var m = new Matrix3D();
         // todo: do not use lookAt on Light
         m.copyFrom(entity.getRenderSceneTransform(camera));
@@ -11151,7 +11148,7 @@ var PointLight = (function (_super) {
 })(LightBase);
 module.exports = PointLight;
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper"}],"awayjs-display/lib/entities/Shape":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper"}],"awayjs-display/lib/entities/Shape":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14733,6 +14730,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var Image2D = require("awayjs-core/lib/data/Image2D");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var FreeMatrixProjection = require("awayjs-core/lib/projections/FreeMatrixProjection");
 var Camera = require("awayjs-display/lib/entities/Camera");
 var ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
@@ -14836,7 +14834,7 @@ var DirectionalShadowMapper = (function (_super) {
         this.pUpdateCullPlanes(viewCamera);
     };
     DirectionalShadowMapper.prototype.pUpdateProjectionFromFrustumCorners = function (viewCamera, corners, matrix) {
-        var raw = new Array();
+        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
         var dir;
         var x, y, z;
         var minX, minY;
@@ -14905,7 +14903,7 @@ var DirectionalShadowMapper = (function (_super) {
 })(ShadowMapperBase);
 module.exports = DirectionalShadowMapper;
 
-},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/data/Image2D":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
