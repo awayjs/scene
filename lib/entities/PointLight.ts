@@ -1,5 +1,6 @@
 import Box							= require("awayjs-core/lib/geom/Box");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
@@ -82,7 +83,7 @@ class PointLight extends LightBase implements IEntity
 
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
-		var raw:number[] = new Array<number>(16);
+		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var m:Matrix3D = new Matrix3D();
 
 		// todo: do not use lookAt on Light

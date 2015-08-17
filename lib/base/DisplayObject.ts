@@ -1915,7 +1915,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		var yAxis:Vector3D;
 		var zAxis:Vector3D;
 		var xAxis:Vector3D;
-		var raw:Array<number>;
+		var raw:Float32Array;
 
 		if (upAxis == null)
 			upAxis = Vector3D.Y_AXIS;

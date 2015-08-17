@@ -1,5 +1,4 @@
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import PlaneClassification			= require("awayjs-core/lib/geom/PlaneClassification");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Sphere						= require("awayjs-core/lib/geom/Sphere");
@@ -90,8 +89,7 @@ class BoundingSphere extends BoundingVolumeBase
 		var cz:number = this._sphere.z;
 		var r:number = this._sphere.radius;
 
-		var raw:Array<number> = new Array<number>(16);
-		matrix.copyRawDataTo(raw);
+		var raw:Float32Array = matrix.rawData;
 
 		var m11:number = raw[0], m12:number = raw[4], m13:number = raw[8], m14:number = raw[12];
 		var m21:number = raw[1], m22:number = raw[5], m23:number = raw[9], m24:number = raw[13];

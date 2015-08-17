@@ -1,3 +1,4 @@
+import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
@@ -73,7 +74,7 @@ class DirectionalLight extends LightBase implements IEntity
 	//override
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
-		var raw:Array<number> = new Array<number>();
+		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var m:Matrix3D = new Matrix3D();
 
 		m.copyFrom(entity.getRenderSceneTransform(camera));

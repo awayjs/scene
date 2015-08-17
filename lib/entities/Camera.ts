@@ -75,10 +75,8 @@ class Camera extends DisplayObjectContainer implements IEntity
 		var c31:number, c32:number, c33:number, c34:number;
 		var c41:number, c42:number, c43:number, c44:number;
 		var p:Plane3D;
-		var raw:number[] = new Array<number>(16);
-		;//new Array(16 );away.utils.Matrix3DUtils.RAW_DATA_CONTAINER;//[];
+		var raw:Float32Array = this.viewProjection.rawData;
 		var invLen:number;
-		this.viewProjection.copyRawDataTo(raw);
 
 		c11 = raw[0];
 		c12 = raw[4];

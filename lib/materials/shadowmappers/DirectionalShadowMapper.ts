@@ -1,5 +1,6 @@
 import Image2D						= require("awayjs-core/lib/data/Image2D");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import FreeMatrixProjection			= require("awayjs-core/lib/projections/FreeMatrixProjection");
@@ -133,7 +134,7 @@ class DirectionalShadowMapper extends ShadowMapperBase
 
 	public pUpdateProjectionFromFrustumCorners(viewCamera:Camera, corners:Array<number>, matrix:Matrix3D)
 	{
-		var raw:Array<number> = new Array<number>();
+		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var dir:Vector3D;
 		var x:number, y:number, z:number;
 		var minX:number, minY:number;

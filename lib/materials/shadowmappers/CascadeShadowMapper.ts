@@ -169,7 +169,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 
 	private updateProjectionPartition(matrix:Matrix3D, splitRatio:number, texOffsetX:number, texOffsetY:number)
 	{
-		var raw:Array<number> = Matrix3DUtils.RAW_DATA_CONTAINER;
+		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var xN:number, yN:number, zN:number;
 		var xF:number, yF:number, zF:number;
 		var minX:number = Number.POSITIVE_INFINITY, minY:number = Number.POSITIVE_INFINITY, minZ:number;
