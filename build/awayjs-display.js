@@ -4322,14 +4322,15 @@ var Timeline = (function () {
                             }
                             break;
                         case 3:
-                            // mask the mc with a list of objects
-                            // a object could have multiple groups of masks, in case a graphic clip was merged into the timeline
+                            // an object could have multiple groups of masks, in case a graphic clip was merged into the timeline
                             // this is not implmeented in the runtime yet
                             // for now, a second mask-groupd would overwrite the first one
+                            var mask;
                             var masks = new Array();
                             var numMasks = this.properties_stream_int[value_start_index++];
                             for (var m = 0; m < numMasks; m++)
-                                masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);
+                                if ((mask = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++])))
+                                    masks.push(mask);
                             target.masks = masks;
                             break;
                         case 4:
@@ -4379,7 +4380,18 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
+/**
+ *
+ */
+var TouchPoint = (function () {
+    function TouchPoint() {
+    }
+    return TouchPoint;
+})();
+module.exports = TouchPoint;
+
+},{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -6925,6 +6937,7 @@ module.exports = Scene;
 
 },{"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/containers/View":[function(require,module,exports){
 var getTimer = require("awayjs-core/lib/utils/getTimer");
+var TouchPoint = require("awayjs-display/lib/base/TouchPoint");
 var Scene = require("awayjs-display/lib/containers/Scene");
 var RaycastPicker = require("awayjs-display/lib/pick/RaycastPicker");
 var Camera = require("awayjs-display/lib/entities/Camera");
@@ -6956,6 +6969,7 @@ var View = (function () {
         this._viewportDirty = true;
         this._scissorDirty = true;
         this._mousePicker = new RaycastPicker();
+        this._pTouchPoints = new Array();
         this._onPartitionChangedDelegate = function (event) { return _this._onPartitionChanged(event); };
         this._onProjectionChangedDelegate = function (event) { return _this._onProjectionChanged(event); };
         this._onViewportUpdatedDelegate = function (event) { return _this._onViewportUpdated(event); };
@@ -6987,11 +7001,32 @@ var View = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(View.prototype, "touchPoints", {
+        get: function () {
+            return this._pTouchPoints;
+        },
+        enumerable: true,
+        configurable: true
+    });
     View.prototype.getLocalMouseX = function (displayObject) {
         return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
     };
     View.prototype.getLocalMouseY = function (displayObject) {
         return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
+    };
+    View.prototype.getLocalTouchPoints = function (displayObject) {
+        var localTouchPoint;
+        var localPosition;
+        var localTouchPoints = new Array();
+        var len = this._pTouchPoints.length;
+        for (var i = 0; i < len; i++) {
+            localTouchPoint = new TouchPoint();
+            localPosition = displayObject.inverseSceneTransform.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
+            localTouchPoint.x = localPosition.x;
+            localTouchPoint.y = localPosition.y;
+            localTouchPoints.push(localTouchPoint);
+        }
+        return localTouchPoints;
     };
     Object.defineProperty(View.prototype, "htmlElement", {
         /**
@@ -7404,7 +7439,7 @@ var View = (function () {
 })();
 module.exports = View;
 
-},{"awayjs-core/lib/utils/getTimer":undefined,"awayjs-display/lib/containers/Scene":"awayjs-display/lib/containers/Scene","awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/RendererEvent":"awayjs-display/lib/events/RendererEvent","awayjs-display/lib/managers/MouseManager":"awayjs-display/lib/managers/MouseManager","awayjs-display/lib/pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
+},{"awayjs-core/lib/utils/getTimer":undefined,"awayjs-display/lib/base/TouchPoint":"awayjs-display/lib/base/TouchPoint","awayjs-display/lib/containers/Scene":"awayjs-display/lib/containers/Scene","awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/RendererEvent":"awayjs-display/lib/events/RendererEvent","awayjs-display/lib/managers/MouseManager":"awayjs-display/lib/managers/MouseManager","awayjs-display/lib/pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var ControllerBase = (function () {
     function ControllerBase(targetObject) {

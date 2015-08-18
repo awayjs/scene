@@ -2525,6 +2525,19 @@ declare module "awayjs-display/lib/base/Timeline" {
 	
 }
 
+declare module "awayjs-display/lib/base/TouchPoint" {
+	/**
+	 *
+	 */
+	class TouchPoint {
+	    x: number;
+	    y: number;
+	    id: number;
+	}
+	export = TouchPoint;
+	
+}
+
 declare module "awayjs-display/lib/base/Transform" {
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
@@ -4043,6 +4056,7 @@ declare module "awayjs-display/lib/containers/View" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import TouchPoint = require("awayjs-display/lib/base/TouchPoint");
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import IPicker = require("awayjs-display/lib/pick/IPicker");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -4071,12 +4085,15 @@ declare module "awayjs-display/lib/containers/View" {
 	    private _shareContext;
 	    _pMouseX: number;
 	    _pMouseY: number;
+	    _pTouchPoints: Array<TouchPoint>;
 	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
 	    layeredView: boolean;
 	    mouseX: number;
 	    mouseY: number;
+	    touchPoints: Array<TouchPoint>;
 	    getLocalMouseX(displayObject: DisplayObject): number;
 	    getLocalMouseY(displayObject: DisplayObject): number;
+	    getLocalTouchPoints(displayObject: DisplayObject): Array<TouchPoint>;
 	    /**
 	     *
 	     */
