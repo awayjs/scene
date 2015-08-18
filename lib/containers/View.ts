@@ -6,6 +6,7 @@ import getTimer						= require("awayjs-core/lib/utils/getTimer");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
@@ -64,6 +65,7 @@ class View
 	private _shareContext:boolean;
 	public _pMouseX:number;
 	public _pMouseY:number;
+	public _pTouchPoints:Array<TouchPoint> = new Array<TouchPoint>();
 
 	/*
 	 ***********************************************************************
@@ -113,6 +115,11 @@ class View
 		return this._pMouseY;
 	}
 
+	get touchPoints():Array<TouchPoint>
+	{
+		return this._pTouchPoints;
+	}
+
 	public getLocalMouseX(displayObject:DisplayObject):number
 	{
 		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
@@ -121,6 +128,25 @@ class View
 	public getLocalMouseY(displayObject:DisplayObject):number
 	{
 		return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
+	}
+
+	public getLocalTouchPoints(displayObject:DisplayObject):Array<TouchPoint>
+	{
+		var localTouchPoint:TouchPoint;
+		var localPosition:Vector3D;
+		var localTouchPoints:Array<TouchPoint> = new Array<TouchPoint>();
+
+		var len:number = this._pTouchPoints.length;
+		for (var i:number = 0; i < len; i++) {
+			localTouchPoint = new TouchPoint();
+			localPosition = displayObject.inverseSceneTransform.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
+			localTouchPoint.x = localPosition.x;
+			localTouchPoint.y = localPosition.y;
+			localTouchPoints.push(localTouchPoint);
+		}
+
+
+		return localTouchPoints;
 	}
 
 	/**
