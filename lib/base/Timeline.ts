@@ -389,7 +389,9 @@ class Timeline
 					value_start_index = this.property_index_stream[p];
 					switch(props_type){
 						case 0:
+
 							break;
+
 						case 1:// displaytransform
 							if (doit) {
 								value_start_index *= 6;
@@ -408,6 +410,7 @@ class Timeline
 
 								target.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 							}
+
 							break;
 
 						case 2:// colormatrix
@@ -425,30 +428,40 @@ class Timeline
 
 								target.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 							}
+
 							break;
 
-						case 3:
-							// mask the mc with a list of objects
-							// a object could have multiple groups of masks, in case a graphic clip was merged into the timeline
+						case 3: //mask the mc with a list of objects
+
+							// an object could have multiple groups of masks, in case a graphic clip was merged into the timeline
 							// this is not implmeented in the runtime yet
 							// for now, a second mask-groupd would overwrite the first one
+							var mask:DisplayObject;
 							var masks:Array<DisplayObject> = new Array<DisplayObject>();
-							var numMasks:number=this.properties_stream_int[value_start_index++];
+							var numMasks:number = this.properties_stream_int[value_start_index++];
+
+							//mask may not exist if a goto command moves the playhead to a point in the timeline after
+							//one of the masks in a mask array has already been removed. Therefore a check is needed.
 							for(var m:number = 0; m < numMasks; m++)
-								masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);
+								if((mask = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++])))
+									masks.push(mask);
 
 							target.masks = masks;
+
 							break;
 
 						case 4:// instance name movieclip instance
 							target.name = this.properties_stream_strings[value_start_index];
 							sourceMovieClip.adapter.registerScriptObject(target);
+
 							break;
+
 						case 5:// instance name button instance
 							target.name = this.properties_stream_strings[value_start_index];
 							// todo: creating the buttonlistenrs later should also be done, but for icycle i dont think this will cause problems
 							(<MovieClip>target).addButtonListeners();
 							sourceMovieClip.adapter.registerScriptObject(target);
+
 							break;
 
 						case 6://visible
@@ -456,6 +469,7 @@ class Timeline
 								target.visible = Boolean(value_start_index);
 
 							break;
+
 						case 11:// displaytransform
 							if (doit) {
 								value_start_index *= 4;
@@ -468,7 +482,9 @@ class Timeline
 
 								target.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 							}
+
 							break;
+
 						case 12:// displaytransform
 							if (doit) {
 								value_start_index *= 2;
@@ -476,8 +492,10 @@ class Timeline
 								target.y = this.properties_stream_f32_mtx_pos[value_start_index];
 							}
 							break;
+
 						case 200:// displaytransform
 							target.maskMode = true;
+
 							break;
 
 						default:
