@@ -2422,7 +2422,6 @@ var DisplayObject = (function (_super) {
             this._iSetScene(value._pScene, value._iAssignedPartition);
         else
             this._iSetScene(null, null);
-        this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
         this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
     };
     DisplayObject.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
