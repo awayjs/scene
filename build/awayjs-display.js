@@ -2425,10 +2425,11 @@ var DisplayObject = (function (_super) {
         this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
     };
     DisplayObject.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
-        if (!(this._hierarchicalPropsDirty ^ bitFlag))
+        var dif = (this._hierarchicalPropsDirty ^ bitFlag) & bitFlag;
+        if (!dif)
             return true;
         this._hierarchicalPropsDirty |= bitFlag;
-        if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
+        if (dif & HierarchicalProperties.SCENE_TRANSFORM) {
             this._inverseSceneTransformDirty = true;
             this._scenePositionDirty = true;
             if (this.isEntity)
