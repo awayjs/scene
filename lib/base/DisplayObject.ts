@@ -2261,12 +2261,13 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public pInvalidateHierarchicalProperties(bitFlag:number):boolean
 	{
-		if (!(this._hierarchicalPropsDirty ^ bitFlag))
+		var dif:number = (this._hierarchicalPropsDirty ^ bitFlag) & bitFlag;
+		if (!dif)
 			return true;
 
 		this._hierarchicalPropsDirty |= bitFlag;
 
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
+		if (dif & HierarchicalProperties.SCENE_TRANSFORM) {
 			this._inverseSceneTransformDirty = true;
 			this._scenePositionDirty = true;
 
