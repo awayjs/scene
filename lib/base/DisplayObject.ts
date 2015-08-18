@@ -713,12 +713,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMaskId = value? this.id : -1;
 
-
-		this.mouseEnabled = !value;
-		if(this.isAsset(DisplayObjectContainer))
-			(<DisplayObjectContainer> this).mouseChildren = !value;
-
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
+		this._updateMaskMode();
 	}
 	/**
 	 * Specifies whether this object receives mouse, or other user input,
@@ -2800,6 +2795,13 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
+	}
+
+	public _updateMaskMode()
+	{
+		this.mouseEnabled = !this._maskMode;
+
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
 }
 

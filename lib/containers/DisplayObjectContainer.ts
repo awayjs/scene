@@ -748,6 +748,13 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		return false;
 	}
+
+	public _updateMaskMode()
+	{
+		this.mouseChildren = !this.maskMode;
+
+		super._updateMaskMode();
+	}
 }
 
 export = DisplayObjectContainer;
