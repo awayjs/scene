@@ -5,6 +5,7 @@ import ProjectionEvent				= require("awayjs-core/lib/events/ProjectionEvent");
 import IProjection					= require("awayjs-core/lib/projections/IProjection");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
 
+import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
@@ -165,15 +166,17 @@ class Camera extends DisplayObjectContainer implements IEntity
 
 	}
 
-	/**
-	 * @protected
-	 */
-	public pInvalidateSceneTransform()
+	public pInvalidateHierarchicalProperties(bitFlag:number):boolean
 	{
-		super.pInvalidateSceneTransform();
+		if (super.pInvalidateHierarchicalProperties(bitFlag))
+			return true;
 
-		this._viewProjectionDirty = true;
-		this._frustumPlanesDirty = true;
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
+			this._viewProjectionDirty = true;
+			this._frustumPlanesDirty = true;
+		}
+
+		return false;
 	}
 
 	/**

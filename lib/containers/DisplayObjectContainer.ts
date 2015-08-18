@@ -6,6 +6,7 @@ import Error						= require("awayjs-core/lib/errors/Error");
 import RangeError					= require("awayjs-core/lib/errors/RangeError");
 
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import ContainerNode				= require("awayjs-display/lib/partition/ContainerNode");
 import Scene						= require("awayjs-display/lib/containers/Scene");
@@ -74,7 +75,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public get mouseChildren():boolean
 	{
-		if (this._mouseEnabledDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
 			this._updateMouseEnabled();
 
 		return this._mouseChildren;
@@ -87,7 +88,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		this._mouseChildren = value;
 
-		this.pInvalidateHierarchicalProperties(true, false, false, false, false);
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MOUSE_ENABLED);
 	}
 
 	/**
@@ -605,25 +606,16 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 * @protected
 	 */
-	public pInvalidateHierarchicalProperties(mouseEnabled:boolean, visible:boolean, maskId:boolean, masks:boolean, colorTransformDirty:boolean)
+	public pInvalidateHierarchicalProperties(bitFlag:number)
 	{
-		super.pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks, colorTransformDirty);
+		if (super.pInvalidateHierarchicalProperties(bitFlag))
+			return true;
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks, colorTransformDirty);
-	}
+			this._children[i].pInvalidateHierarchicalProperties(bitFlag);
 
-	/**
-	 * @protected
-	 */
-	public pInvalidateSceneTransform()
-	{
-		super.pInvalidateSceneTransform();
-
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
-			this._children[i].pInvalidateSceneTransform();
+		return false;
 	}
 
 

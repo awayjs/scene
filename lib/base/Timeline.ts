@@ -1,3 +1,4 @@
+import HierarchicalProperties			= require("awayjs-display/lib/base/HierarchicalProperties");
 import DisplayObjectContainer			= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import MovieClip						= require("awayjs-display/lib/entities/MovieClip");
 import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
@@ -407,14 +408,14 @@ class Timeline
 
 								target._elementsDirty = true;
 
-								target.pInvalidateSceneTransform();
+								target.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 							}
 							break;
 
 						case 2:// colormatrix
 							if (doit) {
 								value_start_index *= 8;
-								var new_ct:ColorTransform = target._iColorTransform || new ColorTransform();
+								var new_ct:ColorTransform = target._iColorTransform || (target._iColorTransform = new ColorTransform());
 								new_ct.redMultiplier = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.greenMultiplier = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.blueMultiplier = this.properties_stream_f32_ct[value_start_index++];
@@ -423,7 +424,8 @@ class Timeline
 								new_ct.greenOffset = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.blueOffset = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.alphaOffset = this.properties_stream_f32_ct[value_start_index];
-								target._iColorTransform = new_ct;
+
+								target.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 							}
 							break;
 
@@ -472,7 +474,7 @@ class Timeline
 								new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[value_start_index];
 								target._elementsDirty = true;
 
-								target.pInvalidateSceneTransform();
+								target.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 							}
 							break;
 						case 12:// displaytransform

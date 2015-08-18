@@ -14,6 +14,7 @@ import Event						= require("awayjs-core/lib/events/Event");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IDisplayObjectAdapter		= require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
+import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import Scene						= require("awayjs-display/lib/containers/Scene");
@@ -186,7 +187,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pScene:Scene;
 	public _pParent:DisplayObjectContainer;
 	public _pSceneTransform:Matrix3D = new Matrix3D();
-	public _pSceneTransformDirty:boolean;
 	public _pIsEntity:boolean = false;
 	public _pIsContainer:boolean = false;
 	public _sessionID:number = -1;
@@ -265,8 +265,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _sca:Vector3D = new Vector3D();
 	private _transformComponents:Array<Vector3D>;
 
-	public _pIgnoreTransform:boolean = false;
-
 	private _shaderPickingDetails:boolean;
 
 	public _pPickingCollisionVO:PickingCollisionVO;
@@ -280,15 +278,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _iSourcePrefab:PrefabBase;
 
-	private _onColorTransformChangedDelegate:(event:Event) => void;
     private _inheritColorTransform:boolean = false;
 	private _maskMode:boolean;
 
-	public _mouseEnabledDirty:boolean;
-	private _visibleDirty:boolean;
-	private _maskIdDirty:boolean;
-	private _masksDirty:boolean;
-	private _colorTransformDirty:boolean;
+	public _hierarchicalPropsDirty:number;
 
 	//temp vector used in global to local
 	private _tempVector3D:Vector3D = new Vector3D();
@@ -316,7 +309,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
     {
         this._inheritColorTransform = value;
 
-		this.pInvalidateHierarchicalProperties(false, false, false, false, true);
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
     }
 
 	/**
@@ -642,29 +635,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get ignoreTransform():boolean
-	{
-		return this._pIgnoreTransform;
-	}
-
-	public set ignoreTransform(value:boolean)
-	{
-		if (this._pIgnoreTransform == value)
-			return;
-
-		this._pIgnoreTransform = value;
-
-		if (value) {
-			this._pSceneTransform.identity();
-			this._scenePosition.setTo(0, 0, 0);
-		}
-
-		this.pInvalidateSceneTransform();
-	}
-
-	/**
-	 *
-	 */
 	public get isEntity()
 	{
 		return this._pIsEntity;
@@ -743,7 +713,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMaskId = value? this.id : -1;
 
-		this.pInvalidateHierarchicalProperties(false, false, true, false, false);
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
 	/**
 	 * Specifies whether this object receives mouse, or other user input,
@@ -1232,7 +1202,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public get sceneTransform():Matrix3D
 	{
-		if (this._pSceneTransformDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
 			this.pUpdateSceneTransform();
 
 		return this._pSceneTransform;
@@ -1350,7 +1320,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitVisibility = value;
 
-		this.pInvalidateHierarchicalProperties(false, true, false, false, false);
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.VISIBLE);
 	}
 
 	public get masks():Array<DisplayObject>
@@ -1372,7 +1342,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				value[i].maskMode = true;
 		}
 
-		this.pInvalidateHierarchicalProperties(false, false, false, true, false);
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASKS);
 	}
 
 	/**
@@ -1507,7 +1477,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		// Cached vector of transformation components used when
 		// recomposing the transform matrix in updateTransform()
 
-		this._onColorTransformChangedDelegate = (event:Event) => this.onColorTransformChanged(event);
 		this._transformComponents = new Array<Vector3D>(4);
 
 		this._transformComponents[0] = this._pos;
@@ -2249,8 +2218,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._elementsDirty = true;
 
-		if (!this._pIgnoreTransform)
-			this.pInvalidateSceneTransform();
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 	public get _iColorTransform():ColorTransform
@@ -2260,15 +2228,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public set _iColorTransform(value:ColorTransform)
 	{
-		if (this._explicitColorTransform)
-			this._explicitColorTransform.removeEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
-
 		this._explicitColorTransform = value;
 
-		if (this._explicitColorTransform)
-			this._explicitColorTransform.addEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
-
-		this.pInvalidateHierarchicalProperties(false, false, false, false, true);
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 	}
 
 	/**
@@ -2293,46 +2255,34 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._iSetScene(value._pScene, value._iAssignedPartition);
 		else
 			this._iSetScene(null, null);
+
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
 	}
 
-	public pInvalidateHierarchicalProperties(mouseEnabledDirty:boolean, visibleDirty:boolean, maskIdDirty:boolean, masksDirty:boolean, colorTransformDirty:boolean)
+	public pInvalidateHierarchicalProperties(bitFlag:number):boolean
 	{
-		if (mouseEnabledDirty)
-			this._mouseEnabledDirty = true;
+		if (!(this._hierarchicalPropsDirty ^ bitFlag))
+			return true;
 
-		if (visibleDirty)
-			this._visibleDirty = true;
+		this._hierarchicalPropsDirty |= bitFlag;
 
-		if (maskIdDirty)
-			this._maskIdDirty = true;
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
+			this._inverseSceneTransformDirty = true;
+			this._scenePositionDirty = true;
 
-		if (masksDirty)
-			this._masksDirty = true;
+			if (this.isEntity)
+				this.invalidatePartition();
 
-		if (colorTransformDirty)
-			this._colorTransformDirty = true;
-	}
+			if (this._pParent)
+				this._pParent._pInvalidateBounds();
 
-	/**
-	 * @protected
-	 */
-	public pInvalidateSceneTransform()
-	{
-		if (this._pSceneTransformDirty)
-			return;
+			if (this._listenToSceneTransformChanged)
+				this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
+		}
 
-		this._pSceneTransformDirty = !this._pIgnoreTransform;
-		this._inverseSceneTransformDirty = !this._pIgnoreTransform;
-		this._scenePositionDirty = !this._pIgnoreTransform;
-
-		if (this.isEntity)
-			this.invalidatePartition();
-
-		if (this._pParent)
-			this._pParent._pInvalidateBounds();
-
-		if (this._listenToSceneTransformChanged)
-			this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
+		return false;
 	}
 
 	/**
@@ -2365,15 +2315,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pImplicitPartition._iRegisterEntity(this);
 		}
 
-		if (sceneChanged) {
-			if (!this._pIgnoreTransform)
-				this.pInvalidateSceneTransform();
-
-			this.pInvalidateHierarchicalProperties(true, true, true, true, true);
-
-			if (this._listenToSceneChanged)
+		if (sceneChanged && this._listenToSceneChanged)
 				this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
-		}
 	}
 
 	/**
@@ -2438,7 +2381,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._rotationDirty = false;
 		this._skewDirty = false;
 		this._scaleDirty = false;
-		this._pSceneTransformDirty = false;
+
+		this._hierarchicalPropsDirty ^= HierarchicalProperties.SCENE_TRANSFORM;
 	}
 
 	public _iAddRenderable(renderable:IRenderable):IRenderable
@@ -2493,7 +2437,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iIsVisible():boolean
 	{
-		if (this._visibleDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.VISIBLE)
 			this._updateVisible();
 
 		return this._pImplicitVisibility;
@@ -2504,7 +2448,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iAssignedMaskId():number
 	{
-		if (this._maskIdDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASK_ID)
 			this._updateMaskId();
 
 		return this._pImplicitMaskId;
@@ -2515,7 +2459,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iAssignedMasks():Array<Array<DisplayObject>>
 	{
-		if (this._masksDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
 			this._updateMasks();
 
 		return this._pImplicitMasks;
@@ -2523,7 +2467,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _iMasksConfig():Array<Array<number>>
 	{
-		if (this._masksDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
 			this._updateMasks();
 
 		return this._pImplicitMaskIds;
@@ -2531,7 +2475,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _iAssignedColorTransform():ColorTransform
 	{
-		if (this._colorTransformDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.COLOR_TRANSFORM)
 			this._updateColorTransform();
 
 		return this._pImplicitColorTransform;
@@ -2543,7 +2487,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _iIsMouseEnabled():boolean
 	{
-		if (this._mouseEnabledDirty)
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
 			this._updateMouseEnabled();
 
 		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
@@ -2566,8 +2510,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._matrix3DDirty = true;
 
-		if (!this._pIgnoreTransform)
-			this.pInvalidateSceneTransform();
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 	/**
@@ -2605,8 +2548,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._positionDirty = true;
 
-		if (!this._pIgnoreTransform)
-			this.pInvalidateSceneTransform();
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 
 		if (!this._pivotZero)
 			this.invalidatePivot();
@@ -2712,11 +2654,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pSphereBounds = new Sphere();
 	}
 
-	private onColorTransformChanged(event:Event)
-	{
-		this.pInvalidateHierarchicalProperties(false, false, false, false, true);
-	}
-
 	private queueDispatch(event:Event)
 	{
 		// Store event to be dispatched later.
@@ -2803,21 +2740,21 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
 			this._pPickingCollider =  this._pParent._pPickingCollider;
 
-		this._mouseEnabledDirty = false;
+		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
 	}
 
 	private _updateVisible()
 	{
 		this._pImplicitVisibility = (this._pParent)? this._explicitVisibility && this._pParent._iIsVisible() : this._explicitVisibility;
 
-		this._visibleDirty = false;
+		this._hierarchicalPropsDirty ^= HierarchicalProperties.VISIBLE;
 	}
 
 	private _updateMaskId()
 	{
 		this._pImplicitMaskId = (this._pParent && this._pParent._iAssignedMaskId() != -1)? this._pParent._iAssignedMaskId() : this._explicitMaskId;
 
-		this._maskIdDirty = false;
+		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
 	}
 
 	private _updateMasks()
@@ -2842,7 +2779,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			}
 		}
 
-		this._masksDirty = false;
+		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASKS;
 	}
 
 	private _updateColorTransform()
@@ -2858,7 +2795,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				this._pImplicitColorTransform.clear();
 		}
 
-		this._colorTransformDirty = false;
+		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
 	}
 }
 
