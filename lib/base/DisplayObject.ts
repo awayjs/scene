@@ -2256,8 +2256,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		else
 			this._iSetScene(null, null);
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
 	}
 
