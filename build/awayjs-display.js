@@ -641,6 +641,7 @@ var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Point = require("awayjs-core/lib/geom/Point");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
+var Event = require("awayjs-core/lib/events/Event");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
@@ -802,6 +803,7 @@ var DisplayObject = (function (_super) {
         this._pImplicitMaskIds = new Array();
         this._explicitMouseEnabled = true;
         this._pImplicitMouseEnabled = true;
+        this._pImplicitColorTransform = new ColorTransform();
         this._rotationX = 0;
         this._rotationY = 0;
         this._rotationZ = 0;
@@ -828,7 +830,6 @@ var DisplayObject = (function (_super) {
         this._pIgnoreTransform = false;
         this._pRenderables = new Array();
         this._entityNodes = new Array();
-        this._globalColorTransform = new ColorTransform();
         this._inheritColorTransform = false;
         //temp vector used in global to local
         this._tempVector3D = new Vector3D();
@@ -846,7 +847,6 @@ var DisplayObject = (function (_super) {
         this.orientationMode = OrientationMode.DEFAULT;
         // Cached vector of transformation components used when
         // recomposing the transform matrix in updateTransform()
-        this._onGlobalColorTransformChangedDelegate = function (event) { return _this.onGlobalColorTransformChanged(event); };
         this._onColorTransformChangedDelegate = function (event) { return _this.onColorTransformChanged(event); };
         this._transformComponents = new Array(4);
         this._transformComponents[0] = this._pos;
@@ -880,16 +880,7 @@ var DisplayObject = (function (_super) {
         },
         set: function (value) {
             this._inheritColorTransform = value;
-            this._invalidateGlobalColorTransform();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObject.prototype, "globalColorTransform", {
-        get: function () {
-            if (this._globalColorTransformDirty)
-                this._updateGlobalColorTransform();
-            return this._globalColorTransform;
+            this.pInvalidateHierarchicalProperties(false, false, false, false, true);
         },
         enumerable: true,
         configurable: true
@@ -902,25 +893,12 @@ var DisplayObject = (function (_super) {
          * even though they are invisible.
          */
         get: function () {
-            return this._pColorTransform.alphaMultiplier;
+            return this._explicitColorTransform ? this._explicitColorTransform.alphaMultiplier : 1;
         },
         set: function (value) {
-            this._pColorTransform.alphaMultiplier = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObject.prototype, "colorTransform", {
-        get: function () {
-            return this._pColorTransform;
-        },
-        set: function (value) {
-            // TS compiler freaking out over Event.CHANGE, using literal strings for now
-            if (this._pColorTransform)
-                this._pColorTransform.removeEventListener("change", this._onColorTransformChangedDelegate);
-            this._pSetColorTransform(value);
-            if (value)
-                value.addEventListener("change", this._onColorTransformChangedDelegate);
+            if (!this._explicitColorTransform)
+                this._iColorTransform = new ColorTransform();
+            this._explicitColorTransform.alphaMultiplier = value;
         },
         enumerable: true,
         configurable: true
@@ -1189,7 +1167,7 @@ var DisplayObject = (function (_super) {
                 return;
             this._maskMode = value;
             this._explicitMaskId = value ? this.id : -1;
-            this.pInvalidateHierarchicalProperties(false, false, true, false);
+            this.pInvalidateHierarchicalProperties(false, false, true, false, false);
         },
         enumerable: true,
         configurable: true
@@ -1302,7 +1280,7 @@ var DisplayObject = (function (_super) {
             if (this._explicitPartition == value)
                 return;
             this._explicitPartition = value;
-            this._pUpdateImplicitPartition(this._pParent ? this._pParent._iAssignedPartition : null, this._pScene);
+            this._iSetScene(this._pScene, this._pParent ? this._pParent._iAssignedPartition : null);
             this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
         },
         enumerable: true,
@@ -1686,7 +1664,7 @@ var DisplayObject = (function (_super) {
             if (this._explicitVisibility == value)
                 return;
             this._explicitVisibility = value;
-            this.pInvalidateHierarchicalProperties(false, true, false, false);
+            this.pInvalidateHierarchicalProperties(false, true, false, false, false);
         },
         enumerable: true,
         configurable: true
@@ -1705,7 +1683,7 @@ var DisplayObject = (function (_super) {
                 for (var i = 0; i < len; i++)
                     value[i].maskMode = true;
             }
-            this.pInvalidateHierarchicalProperties(false, false, false, true);
+            this.pInvalidateHierarchicalProperties(false, false, false, true, false);
         },
         enumerable: true,
         configurable: true
@@ -2278,12 +2256,11 @@ var DisplayObject = (function (_super) {
         this.visible = true;
         if (this._iMatrix3D)
             this._iMatrix3D.identity();
-        if (this.colorTransform)
-            this.colorTransform.clear();
+        if (this._iColorTransform)
+            this._iColorTransform.clear();
         //this.name="";
         this.masks = null;
         this.maskMode = false;
-        this.pInvalidateSceneTransform();
     };
     /**
      *
@@ -2437,6 +2414,21 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DisplayObject.prototype, "_iColorTransform", {
+        get: function () {
+            return this._explicitColorTransform;
+        },
+        set: function (value) {
+            if (this._explicitColorTransform)
+                this._explicitColorTransform.removeEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
+            this._explicitColorTransform = value;
+            if (this._explicitColorTransform)
+                this._explicitColorTransform.addEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
+            this.pInvalidateHierarchicalProperties(false, false, false, false, true);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObject.prototype, "_iPickingCollisionVO", {
         /**
          * @internal
@@ -2453,19 +2445,13 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype.iSetParent = function (value) {
-        if (this._pParent)
-            this._pParent.removeEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
         this._pParent = value;
-        if (value) {
-            this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
-            value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
-        }
-        else {
-            this._pUpdateImplicitPartition(null, null);
-        }
-        this._invalidateGlobalColorTransform();
+        if (value)
+            this._iSetScene(value._pScene, value._iAssignedPartition);
+        else
+            this._iSetScene(null, null);
     };
-    DisplayObject.prototype.pInvalidateHierarchicalProperties = function (mouseEnabledDirty, visibleDirty, maskIdDirty, masksDirty) {
+    DisplayObject.prototype.pInvalidateHierarchicalProperties = function (mouseEnabledDirty, visibleDirty, maskIdDirty, masksDirty, colorTransformDirty) {
         if (mouseEnabledDirty)
             this._mouseEnabledDirty = true;
         if (visibleDirty)
@@ -2474,6 +2460,8 @@ var DisplayObject = (function (_super) {
             this._maskIdDirty = true;
         if (masksDirty)
             this._masksDirty = true;
+        if (colorTransformDirty)
+            this._colorTransformDirty = true;
     };
     /**
      * @protected
@@ -2494,7 +2482,7 @@ var DisplayObject = (function (_super) {
     /**
      * @protected
      */
-    DisplayObject.prototype._pUpdateImplicitPartition = function (partition, scene) {
+    DisplayObject.prototype._iSetScene = function (scene, partition) {
         var sceneChanged = this._pScene != scene;
         if (this._pScene && this._pImplicitPartition) {
             //unregister partition from current scene
@@ -2516,7 +2504,7 @@ var DisplayObject = (function (_super) {
         if (sceneChanged) {
             if (!this._pIgnoreTransform)
                 this.pInvalidateSceneTransform();
-            this.pInvalidateHierarchicalProperties(true, true, true, true);
+            this.pInvalidateHierarchicalProperties(true, true, true, true, true);
             if (this._listenToSceneChanged)
                 this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
         }
@@ -2634,6 +2622,11 @@ var DisplayObject = (function (_super) {
             this._updateMasks();
         return this._pImplicitMaskIds;
     };
+    DisplayObject.prototype._iAssignedColorTransform = function () {
+        if (this._colorTransformDirty)
+            this._updateColorTransform();
+        return this._pImplicitColorTransform;
+    };
     /**
      * @internal
      */
@@ -2641,14 +2634,6 @@ var DisplayObject = (function (_super) {
         if (this._mouseEnabledDirty)
             this._updateMouseEnabled();
         return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
-    };
-    /**
-     * @internal
-     */
-    DisplayObject.prototype._iSetScene = function (value) {
-        if (this._pScene == value)
-            return;
-        this._pUpdateImplicitPartition(this._pParent ? this._pParent._iAssignedPartition : null, value);
     };
     DisplayObject.prototype._applyRenderer = function (renderer) {
         //nothing to do here
@@ -2763,36 +2748,8 @@ var DisplayObject = (function (_super) {
         if (this._pSphereBounds == null)
             this._pSphereBounds = new Sphere();
     };
-    DisplayObject.prototype._updateGlobalColorTransform = function () {
-        if (this._inheritColorTransform && this._pParent) {
-            this._globalColorTransform.copyFrom(this._pParent.globalColorTransform);
-            if (this._pColorTransform)
-                this._globalColorTransform.prepend(this._pColorTransform);
-        }
-        else {
-            if (this._pColorTransform)
-                this._globalColorTransform.copyFrom(this._pColorTransform);
-            else
-                this._globalColorTransform.clear();
-        }
-        this._globalColorTransformDirty = false;
-    };
-    // this method is to bypass that TypeScript can't call super setters.
-    DisplayObject.prototype._pSetColorTransform = function (value) {
-        this._pColorTransform = value;
-        this._invalidateGlobalColorTransform();
-    };
-    DisplayObject.prototype._invalidateGlobalColorTransform = function () {
-        this._globalColorTransformDirty = true;
-        if (!this._globalColorTransformChanged)
-            this._globalColorTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this);
-        this.dispatchEvent(this._globalColorTransformChanged);
-    };
-    DisplayObject.prototype.onGlobalColorTransformChanged = function (event) {
-        this._invalidateGlobalColorTransform();
-    };
     DisplayObject.prototype.onColorTransformChanged = function (event) {
-        this._invalidateGlobalColorTransform();
+        this.pInvalidateHierarchicalProperties(false, false, false, false, true);
     };
     DisplayObject.prototype.queueDispatch = function (event) {
         // Store event to be dispatched later.
@@ -2879,11 +2836,25 @@ var DisplayObject = (function (_super) {
         }
         this._masksDirty = false;
     };
+    DisplayObject.prototype._updateColorTransform = function () {
+        if (this._inheritColorTransform && this._pParent) {
+            this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
+            if (this._explicitColorTransform)
+                this._pImplicitColorTransform.prepend(this._explicitColorTransform);
+        }
+        else {
+            if (this._explicitColorTransform)
+                this._pImplicitColorTransform.copyFrom(this._explicitColorTransform);
+            else
+                this._pImplicitColorTransform.clear();
+        }
+        this._colorTransformDirty = false;
+    };
     return DisplayObject;
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4029,19 +4000,6 @@ var SubMeshBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(SubMeshBase.prototype, "colorTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._colorTransform || this._pParentMesh.globalColorTransform;
-        },
-        set: function (value) {
-            this._colorTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      *
      */
@@ -4358,7 +4316,7 @@ var Timeline = (function () {
                         case 2:
                             if (doit) {
                                 value_start_index *= 8;
-                                var new_ct = target.colorTransform || new ColorTransform();
+                                var new_ct = target._iColorTransform || new ColorTransform();
                                 new_ct.redMultiplier = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.greenMultiplier = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.blueMultiplier = this.properties_stream_f32_ct[value_start_index++];
@@ -4367,7 +4325,7 @@ var Timeline = (function () {
                                 new_ct.greenOffset = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.blueOffset = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.alphaOffset = this.properties_stream_f32_ct[value_start_index];
-                                target.colorTransform = new_ct;
+                                target._iColorTransform = new_ct;
                             }
                             break;
                         case 3:
@@ -4506,6 +4464,22 @@ var Transform = (function () {
             var director = Matrix3DUtils.getForward(this._displayObject._iMatrix3D);
             director.negate();
             return director;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "colorTransform", {
+        /**
+         * A ColorTransform object containing values that universally adjust the
+         * colors in the display object.
+         *
+         * @throws TypeError The colorTransform is null when being set
+         */
+        get: function () {
+            return this._displayObject._iColorTransform;
+        },
+        set: function (val) {
+            this._displayObject._iColorTransform = val;
         },
         enumerable: true,
         configurable: true
@@ -5780,7 +5754,7 @@ var DisplayObjectContainer = (function (_super) {
             if (this._mouseChildren == value)
                 return;
             this._mouseChildren = value;
-            this.pInvalidateHierarchicalProperties(true, false, false, false);
+            this.pInvalidateHierarchicalProperties(true, false, false, false, false);
         },
         enumerable: true,
         configurable: true
@@ -6203,11 +6177,11 @@ var DisplayObjectContainer = (function (_super) {
     /**
      * @protected
      */
-    DisplayObjectContainer.prototype.pInvalidateHierarchicalProperties = function (mouseEnabled, visible, maskId, masks) {
-        _super.prototype.pInvalidateHierarchicalProperties.call(this, mouseEnabled, visible, maskId, masks);
+    DisplayObjectContainer.prototype.pInvalidateHierarchicalProperties = function (mouseEnabled, visible, maskId, masks, colorTransformDirty) {
+        _super.prototype.pInvalidateHierarchicalProperties.call(this, mouseEnabled, visible, maskId, masks, colorTransformDirty);
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
-            this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks);
+            this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks, colorTransformDirty);
     };
     /**
      * @protected
@@ -6219,13 +6193,13 @@ var DisplayObjectContainer = (function (_super) {
             this._children[i].pInvalidateSceneTransform();
     };
     /**
-     * @protected
+     * @internal
      */
-    DisplayObjectContainer.prototype._pUpdateImplicitPartition = function (value, scene) {
-        _super.prototype._pUpdateImplicitPartition.call(this, value, scene);
+    DisplayObjectContainer.prototype._iSetScene = function (value, partition) {
+        _super.prototype._iSetScene.call(this, value, partition);
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
-            this._children[i]._pUpdateImplicitPartition(this._pImplicitPartition, scene);
+            this._children[i]._iSetScene(value, partition);
     };
     /**
      * @private
@@ -6931,8 +6905,8 @@ var Scene = (function (_super) {
         this._partitions = new Array();
         this._iCollectionMark = 0;
         this.partition = partition || new BasicPartition();
-        this._iSetScene(this);
         this._iIsRoot = true;
+        this._pScene = this;
     }
     Scene.prototype.traversePartitions = function (traverser) {
         var i = 0;
@@ -10414,19 +10388,6 @@ var Mesh = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Mesh.prototype, "colorTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pColorTransform;
-        },
-        set: function (value) {
-            _super.prototype._pSetColorTransform.call(this, value);
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      *
      */
@@ -11717,10 +11678,9 @@ var TextField = (function (_super) {
         },
         set: function (value) {
             this._textColor = value;
-            if (this.colorTransform == null) {
-                this.colorTransform = new ColorTransform();
-            }
-            this.colorTransform.color = value;
+            if (!this._iColorTransform)
+                this._iColorTransform = new ColorTransform();
+            this._iColorTransform.color = value;
         },
         enumerable: true,
         configurable: true
@@ -12318,7 +12278,6 @@ var DisplayObjectEvent = (function (_super) {
     DisplayObjectEvent.ROTATION_CHANGED = "rotationChanged";
     DisplayObjectEvent.SKEW_CHANGED = "skewChanged";
     DisplayObjectEvent.SCALE_CHANGED = "scaleChanged";
-    DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED = "globalColorTransformChanged";
     /**
      *
      */

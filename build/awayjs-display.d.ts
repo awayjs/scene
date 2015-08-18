@@ -584,7 +584,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _transform;
 	    private _matrix3D;
 	    private _matrix3DDirty;
-	    _pColorTransform: ColorTransform;
 	    private _inverseSceneTransform;
 	    private _inverseSceneTransformDirty;
 	    private _scenePosition;
@@ -598,6 +597,8 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pImplicitMaskIds: Array<Array<number>>;
 	    private _explicitMouseEnabled;
 	    _pImplicitMouseEnabled: boolean;
+	    private _explicitColorTransform;
+	    _pImplicitColorTransform: ColorTransform;
 	    private _listenToSceneTransformChanged;
 	    private _listenToSceneChanged;
 	    private _positionDirty;
@@ -648,10 +649,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pRenderables: Array<IRenderable>;
 	    private _entityNodes;
 	    _iSourcePrefab: PrefabBase;
-	    private _globalColorTransformChanged;
-	    private _globalColorTransformDirty;
-	    private _globalColorTransform;
-	    private _onGlobalColorTransformChangedDelegate;
 	    private _onColorTransformChangedDelegate;
 	    private _inheritColorTransform;
 	    private _maskMode;
@@ -659,6 +656,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _visibleDirty;
 	    private _maskIdDirty;
 	    private _masksDirty;
+	    private _colorTransformDirty;
 	    private _tempVector3D;
 	    /**
 	     * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -666,7 +664,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    adapter: IDisplayObjectAdapter;
 	    inheritColorTransform: boolean;
-	    globalColorTransform: ColorTransform;
 	    /**
 	     *
 	     */
@@ -678,7 +675,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * even though they are invisible.
 	     */
 	    alpha: number;
-	    colorTransform: ColorTransform;
 	    /**
 	     * A value from the BlendMode class that specifies which blend mode to use. A
 	     * bitmap can be drawn internally in two ways. If you have a blend mode
@@ -1598,6 +1594,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @internal
 	     */
 	    _iMatrix3D: Matrix3D;
+	    _iColorTransform: ColorTransform;
 	    /**
 	     * @internal
 	     */
@@ -1606,7 +1603,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @internal
 	     */
 	    iSetParent(value: DisplayObjectContainer): void;
-	    pInvalidateHierarchicalProperties(mouseEnabledDirty: boolean, visibleDirty: boolean, maskIdDirty: boolean, masksDirty: boolean): void;
+	    pInvalidateHierarchicalProperties(mouseEnabledDirty: boolean, visibleDirty: boolean, maskIdDirty: boolean, masksDirty: boolean, colorTransformDirty: boolean): void;
 	    /**
 	     * @protected
 	     */
@@ -1614,7 +1611,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @protected
 	     */
-	    _pUpdateImplicitPartition(partition: PartitionBase, scene: Scene): void;
+	    _iSetScene(scene: Scene, partition: PartitionBase): void;
 	    /**
 	     * @protected
 	     */
@@ -1653,14 +1650,11 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    _iAssignedMasks(): Array<Array<DisplayObject>>;
 	    _iMasksConfig(): Array<Array<number>>;
+	    _iAssignedColorTransform(): ColorTransform;
 	    /**
 	     * @internal
 	     */
 	    _iIsMouseEnabled(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iSetScene(value: Scene): void;
 	    _applyRenderer(renderer: IRenderer): void;
 	    /**
 	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
@@ -1697,10 +1691,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pInvalidateBounds(): void;
 	    _pUpdateBoxBounds(): void;
 	    _pUpdateSphereBounds(): void;
-	    _updateGlobalColorTransform(): void;
-	    _pSetColorTransform(value: ColorTransform): void;
-	    _invalidateGlobalColorTransform(): void;
-	    private onGlobalColorTransformChanged(event);
 	    private onColorTransformChanged(event);
 	    private queueDispatch(event);
 	    private updateElements();
@@ -1711,6 +1701,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _updateVisible();
 	    private _updateMaskId();
 	    private _updateMasks();
+	    private _updateColorTransform();
 	}
 	export = DisplayObject;
 	
@@ -1828,7 +1819,6 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 
 declare module "awayjs-display/lib/base/IRenderableOwner" {
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
@@ -1846,10 +1836,6 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	     *
 	     */
 	    uvTransform: UVTransform;
-	    /**
-	     * Color transform of the object to be applied to the final color of the pixel in the fragment shader
-	     */
-	    colorTransform: ColorTransform;
 	    /**
 	     *
 	     * @param renderable
@@ -2400,7 +2386,6 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
@@ -2419,7 +2404,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	class SubMeshBase extends AssetBase {
 	    _pParentMesh: Mesh;
 	    _uvTransform: UVTransform;
-	    _colorTransform: ColorTransform;
 	    _iIndex: number;
 	    _material: MaterialBase;
 	    private _renderables;
@@ -2443,10 +2427,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	     *
 	     */
 	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
 	    /**
 	     * Creates a new SubMeshBase object
 	     */
@@ -3470,15 +3450,15 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     * @protected
 	     */
-	    pInvalidateHierarchicalProperties(mouseEnabled: boolean, visible: boolean, maskId: boolean, masks: boolean): void;
+	    pInvalidateHierarchicalProperties(mouseEnabled: boolean, visible: boolean, maskId: boolean, masks: boolean, colorTransformDirty: boolean): void;
 	    /**
 	     * @protected
 	     */
 	    pInvalidateSceneTransform(): void;
 	    /**
-	     * @protected
+	     * @internal
 	     */
-	    _pUpdateImplicitPartition(value: PartitionBase, scene: Scene): void;
+	    _iSetScene(value: Scene, partition: PartitionBase): void;
 	    /**
 	     * @private
 	     *
@@ -5781,6 +5761,7 @@ declare module "awayjs-display/lib/entities/DirectionalLight" {
 
 declare module "awayjs-display/lib/entities/IEntity" {
 	import Box = require("awayjs-core/lib/geom/Box");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Sphere = require("awayjs-core/lib/geom/Sphere");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -5809,6 +5790,7 @@ declare module "awayjs-display/lib/entities/IEntity" {
 	    scaleZ: number;
 	    _iMasksConfig(): Array<Array<number>>;
 	    _iAssignedMaskId(): number;
+	    _iAssignedColorTransform(): ColorTransform;
 	    /**
 	     *
 	     */
@@ -6032,7 +6014,6 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 
 declare module "awayjs-display/lib/entities/Mesh" {
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -6093,10 +6074,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     *
 	     */
 	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
 	    /**
 	     * Create a new Mesh object.
 	     *
@@ -7384,7 +7361,6 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	    static ROTATION_CHANGED: string;
 	    static SKEW_CHANGED: string;
 	    static SCALE_CHANGED: string;
-	    static GLOBAL_COLOR_TRANSFORM_CHANGED: string;
 	    /**
 	     *
 	     */
