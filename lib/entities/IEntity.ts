@@ -1,6 +1,7 @@
 import Box							= require("awayjs-core/lib/geom/Box");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Sphere							= require("awayjs-core/lib/geom/Sphere");
+import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 
@@ -36,6 +37,8 @@ interface IEntity extends IAsset
 	_iMasksConfig():Array<Array<number>>;
 
 	_iAssignedMaskId():number;
+
+	_iAssignedColorTransform():ColorTransform;
 
 	/**
 	 *

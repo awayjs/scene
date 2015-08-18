@@ -208,18 +208,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 *
-	 */
-	public get colorTransform():ColorTransform
-	{
-		return this._pColorTransform;
-	}
-
-	public set colorTransform(value:ColorTransform)
-	{
-		super._pSetColorTransform(value);
-	}
-	/**
 	 * Create a new Mesh object.
 	 *
 	 * @param geometry                    The geometry used by the mesh that provides it with its shape.

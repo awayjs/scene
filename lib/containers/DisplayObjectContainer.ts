@@ -87,7 +87,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		this._mouseChildren = value;
 
-		this.pInvalidateHierarchicalProperties(true, false, false, false);
+		this.pInvalidateHierarchicalProperties(true, false, false, false, false);
 	}
 
 	/**
@@ -605,13 +605,13 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 * @protected
 	 */
-	public pInvalidateHierarchicalProperties(mouseEnabled:boolean, visible:boolean, maskId:boolean, masks:boolean)
+	public pInvalidateHierarchicalProperties(mouseEnabled:boolean, visible:boolean, maskId:boolean, masks:boolean, colorTransformDirty:boolean)
 	{
-		super.pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks);
+		super.pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks, colorTransformDirty);
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks);
+			this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks, colorTransformDirty);
 	}
 
 	/**
@@ -626,16 +626,17 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			this._children[i].pInvalidateSceneTransform();
 	}
 
+
 	/**
-	 * @protected
+	 * @internal
 	 */
-	public _pUpdateImplicitPartition(value:PartitionBase, scene:Scene)
+	public _iSetScene(value:Scene, partition:PartitionBase)
 	{
-		super._pUpdateImplicitPartition(value, scene);
+		super._iSetScene(value, partition);
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i]._pUpdateImplicitPartition(this._pImplicitPartition, scene);
+			this._children[i]._iSetScene(value, partition);
 	}
 
 	/**

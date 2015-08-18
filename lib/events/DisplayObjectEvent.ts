@@ -11,7 +11,6 @@ class DisplayObjectEvent extends Event
 	public static ROTATION_CHANGED:string = "rotationChanged";
 	public static SKEW_CHANGED:string = "skewChanged";
 	public static SCALE_CHANGED:string = "scaleChanged";
-    public static GLOBAL_COLOR_TRANSFORM_CHANGED:string = "globalColorTransformChanged";
 
 	/**
 	 *

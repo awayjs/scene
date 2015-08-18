@@ -26,10 +26,6 @@ interface IRenderableOwner extends IAsset
 	uvTransform:UVTransform;
 
 	/**
-	 * Color transform of the object to be applied to the final color of the pixel in the fragment shader
-	 */
-	colorTransform:ColorTransform;
-	/**
 	 *
 	 * @param renderable
 	 * @private

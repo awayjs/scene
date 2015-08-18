@@ -18,8 +18,8 @@ class Scene extends DisplayObjectContainer
 
 		this.partition = partition || new BasicPartition();
 
-		this._iSetScene(this);
 		this._iIsRoot = true;
+		this._pScene = this;
 	}
 
 	public traversePartitions(traverser:CollectorBase)

@@ -643,15 +643,19 @@ class TextField extends Mesh
 	 */
 	public _textColor:number /*int*/;
 
-	get textColor(){
+	public get textColor()
+	{
 		return this._textColor;
 	}
-	set textColor(value:number){
-		this._textColor=value;
-		if(this.colorTransform==null){
-			this.colorTransform=new ColorTransform();
-		}
-		this.colorTransform.color=value;
+
+	public set textColor(value:number)
+	{
+		this._textColor = value;
+
+		if(!this._iColorTransform)
+			this._iColorTransform = new ColorTransform();
+
+		this._iColorTransform.color = value;
 	}
 
 	/**

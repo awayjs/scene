@@ -414,7 +414,7 @@ class Timeline
 						case 2:// colormatrix
 							if (doit) {
 								value_start_index *= 8;
-								var new_ct:ColorTransform = target.colorTransform || new ColorTransform();
+								var new_ct:ColorTransform = target._iColorTransform || new ColorTransform();
 								new_ct.redMultiplier = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.greenMultiplier = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.blueMultiplier = this.properties_stream_f32_ct[value_start_index++];
@@ -423,7 +423,7 @@ class Timeline
 								new_ct.greenOffset = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.blueOffset = this.properties_stream_f32_ct[value_start_index++];
 								new_ct.alphaOffset = this.properties_stream_f32_ct[value_start_index];
-								target.colorTransform = new_ct;
+								target._iColorTransform = new_ct;
 							}
 							break;
 

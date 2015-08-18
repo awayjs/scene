@@ -23,7 +23,6 @@ class SubMeshBase extends AssetBase
 {
 	public _pParentMesh:Mesh;
 	public _uvTransform:UVTransform;
-	public _colorTransform:ColorTransform;
 
 	public _iIndex:number = 0;
 
@@ -92,18 +91,7 @@ class SubMeshBase extends AssetBase
 	{
 		this._uvTransform = value;
 	}
-	/**
-	 *
-	 */
-	public get colorTransform():ColorTransform
-	{
-		return this._colorTransform || this._pParentMesh.globalColorTransform;
-	}
 
-	public set colorTransform(value:ColorTransform)
-	{
-		this._colorTransform = value;
-	}
 	/**
 	 * Creates a new SubMeshBase object
 	 */

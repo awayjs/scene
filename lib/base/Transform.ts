@@ -87,7 +87,15 @@ class Transform
 	 * 
 	 * @throws TypeError The colorTransform is null when being set
 	 */
-	public colorTransform:ColorTransform;
+	public get colorTransform():ColorTransform
+	{
+		return this._displayObject._iColorTransform;
+	}
+
+	public set colorTransform(val:ColorTransform)
+	{
+		this._displayObject._iColorTransform = val;
+	}
 
 	/**
 	 * A ColorTransform object representing the combined color transformations

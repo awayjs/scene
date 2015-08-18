@@ -200,7 +200,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _transform:Transform;
 	private _matrix3D:Matrix3D = new Matrix3D();
 	private _matrix3DDirty:boolean;
-    public _pColorTransform:ColorTransform;
 
 	private _inverseSceneTransform:Matrix3D = new Matrix3D();
 	private _inverseSceneTransformDirty:boolean;
@@ -215,6 +214,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pImplicitMaskIds:Array<Array<number>> = new Array<Array<number>>();
 	private _explicitMouseEnabled:boolean = true;
 	public _pImplicitMouseEnabled:boolean = true;
+	private _explicitColorTransform:ColorTransform;
+	public _pImplicitColorTransform:ColorTransform = new ColorTransform();
 	private _listenToSceneTransformChanged:boolean;
 	private _listenToSceneChanged:boolean;
 
@@ -279,11 +280,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _iSourcePrefab:PrefabBase;
 
-    private _globalColorTransformChanged:DisplayObjectEvent;
-    private _globalColorTransformDirty:boolean;
-    private _globalColorTransform:ColorTransform = new ColorTransform();
-    private _onGlobalColorTransformChangedDelegate:(event:DisplayObjectEvent) => void;
-    private _onColorTransformChangedDelegate:(event:Event) => void;
+	private _onColorTransformChangedDelegate:(event:Event) => void;
     private _inheritColorTransform:boolean = false;
 	private _maskMode:boolean;
 
@@ -291,6 +288,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _visibleDirty:boolean;
 	private _maskIdDirty:boolean;
 	private _masksDirty:boolean;
+	private _colorTransformDirty:boolean;
 
 	//temp vector used in global to local
 	private _tempVector3D:Vector3D = new Vector3D();
@@ -317,16 +315,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
     public set inheritColorTransform(value:boolean)
     {
         this._inheritColorTransform = value;
-        this._invalidateGlobalColorTransform();
-    }
 
-
-    public get globalColorTransform():ColorTransform
-    {
-        if (this._globalColorTransformDirty)
-            this._updateGlobalColorTransform();
-
-        return this._globalColorTransform;
+		this.pInvalidateHierarchicalProperties(false, false, false, false, true);
     }
 
 	/**
@@ -342,30 +332,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get alpha():number
     {
-        return this._pColorTransform.alphaMultiplier;
+        return this._explicitColorTransform? this._explicitColorTransform.alphaMultiplier : 1;
     }
 
     public set alpha(value:number)
     {
-        this._pColorTransform.alphaMultiplier = value;
-    }
+		if (!this._explicitColorTransform)
+			this._iColorTransform = new ColorTransform();
 
-    public get colorTransform()
-    {
-        return this._pColorTransform;
-    }
-
-    public set colorTransform(value:ColorTransform)
-    {
-        // TS compiler freaking out over Event.CHANGE, using literal strings for now
-        if (this._pColorTransform)
-            this._pColorTransform.removeEventListener("change", this._onColorTransformChangedDelegate);
-
-
-        this._pSetColorTransform(value);
-
-        if (value)
-            value.addEventListener("change", this._onColorTransformChangedDelegate);
+        this._explicitColorTransform.alphaMultiplier = value;
     }
 
 	/**
@@ -768,7 +743,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMaskId = value? this.id : -1;
 
-		this.pInvalidateHierarchicalProperties(false, false, true, false);
+		this.pInvalidateHierarchicalProperties(false, false, true, false, false);
 	}
 	/**
 	 * Specifies whether this object receives mouse, or other user input,
@@ -883,7 +858,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitPartition = value;
 
-		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null, this._pScene);
+		this._iSetScene(this._pScene, this._pParent? this._pParent._iAssignedPartition : null);
 
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 	}
@@ -1375,7 +1350,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitVisibility = value;
 
-		this.pInvalidateHierarchicalProperties(false, true, false, false);
+		this.pInvalidateHierarchicalProperties(false, true, false, false, false);
 	}
 
 	public get masks():Array<DisplayObject>
@@ -1397,7 +1372,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				value[i].maskMode = true;
 		}
 
-		this.pInvalidateHierarchicalProperties(false, false, false, true);
+		this.pInvalidateHierarchicalProperties(false, false, false, true, false);
 	}
 
 	/**
@@ -1532,8 +1507,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		// Cached vector of transformation components used when
 		// recomposing the transform matrix in updateTransform()
 
-        this._onGlobalColorTransformChangedDelegate = (event:DisplayObjectEvent) => this.onGlobalColorTransformChanged(event);
-        this._onColorTransformChangedDelegate = (event:Event) => this.onColorTransformChanged(event);
+		this._onColorTransformChangedDelegate = (event:Event) => this.onColorTransformChanged(event);
 		this._transformComponents = new Array<Vector3D>(4);
 
 		this._transformComponents[0] = this._pos;
@@ -2084,15 +2058,13 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if(this._iMatrix3D)
 			this._iMatrix3D.identity();
 
-		if(this.colorTransform)
-			this.colorTransform.clear();
+		if(this._iColorTransform)
+			this._iColorTransform.clear();
 
 		//this.name="";
 		this.masks = null;
 
 		this.maskMode = false;
-
-		this.pInvalidateSceneTransform();
 	}
 	/**
 	 *
@@ -2281,6 +2253,24 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this.pInvalidateSceneTransform();
 	}
 
+	public get _iColorTransform():ColorTransform
+	{
+		return this._explicitColorTransform;
+	}
+
+	public set _iColorTransform(value:ColorTransform)
+	{
+		if (this._explicitColorTransform)
+			this._explicitColorTransform.removeEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
+
+		this._explicitColorTransform = value;
+
+		if (this._explicitColorTransform)
+			this._explicitColorTransform.addEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
+
+		this.pInvalidateHierarchicalProperties(false, false, false, false, true);
+	}
+
 	/**
 	 * @internal
 	 */
@@ -2297,22 +2287,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public iSetParent(value:DisplayObjectContainer)
 	{
-        if (this._pParent)
-            this._pParent.removeEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
-
 		this._pParent = value;
 
-        if (value) {
-			this._pUpdateImplicitPartition(value._iAssignedPartition, value._pScene);
-            value.addEventListener(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this._onGlobalColorTransformChangedDelegate);
-		} else {
-			this._pUpdateImplicitPartition(null, null);
-		}
-
-        this._invalidateGlobalColorTransform();
+        if (value)
+			this._iSetScene(value._pScene, value._iAssignedPartition);
+		else
+			this._iSetScene(null, null);
 	}
 
-	public pInvalidateHierarchicalProperties(mouseEnabledDirty:boolean, visibleDirty:boolean, maskIdDirty:boolean, masksDirty:boolean)
+	public pInvalidateHierarchicalProperties(mouseEnabledDirty:boolean, visibleDirty:boolean, maskIdDirty:boolean, masksDirty:boolean, colorTransformDirty:boolean)
 	{
 		if (mouseEnabledDirty)
 			this._mouseEnabledDirty = true;
@@ -2325,6 +2308,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		if (masksDirty)
 			this._masksDirty = true;
+
+		if (colorTransformDirty)
+			this._colorTransformDirty = true;
 	}
 
 	/**
@@ -2352,7 +2338,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @protected
 	 */
-	public _pUpdateImplicitPartition(partition:PartitionBase, scene:Scene)
+	public _iSetScene(scene:Scene, partition:PartitionBase)
 	{
 		var sceneChanged:boolean = this._pScene != scene;
 
@@ -2383,7 +2369,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			if (!this._pIgnoreTransform)
 				this.pInvalidateSceneTransform();
 
-			this.pInvalidateHierarchicalProperties(true, true, true, true);
+			this.pInvalidateHierarchicalProperties(true, true, true, true, true);
 
 			if (this._listenToSceneChanged)
 				this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
@@ -2543,6 +2529,14 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._pImplicitMaskIds;
 	}
 
+	public _iAssignedColorTransform():ColorTransform
+	{
+		if (this._colorTransformDirty)
+			this._updateColorTransform();
+
+		return this._pImplicitColorTransform;
+	}
+
 
 	/**
 	 * @internal
@@ -2553,17 +2547,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._updateMouseEnabled();
 
 		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
-	}
-
-	/**
-	 * @internal
-	 */
-	public _iSetScene(value:Scene)
-	{
-		if (this._pScene == value)
-			return;
-
-		this._pUpdateImplicitPartition(this._pParent? this._pParent._iAssignedPartition : null, value);
 	}
 
 	public _applyRenderer(renderer:IRenderer)
@@ -2729,48 +2712,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pSphereBounds = new Sphere();
 	}
 
-    _updateGlobalColorTransform()
-    {
-        if (this._inheritColorTransform && this._pParent) {
-            this._globalColorTransform.copyFrom(this._pParent.globalColorTransform);
-            if (this._pColorTransform)
-                this._globalColorTransform.prepend(this._pColorTransform);
-        } else {
-            if (this._pColorTransform)
-                this._globalColorTransform.copyFrom(this._pColorTransform);
-            else
-                this._globalColorTransform.clear();
-        }
-
-        this._globalColorTransformDirty = false;
-    }
-
-    // this method is to bypass that TypeScript can't call super setters.
-    _pSetColorTransform(value:ColorTransform)
-    {
-        this._pColorTransform = value;
-        this._invalidateGlobalColorTransform();
-    }
-
-    _invalidateGlobalColorTransform()
-    {
-        this._globalColorTransformDirty = true;
-
-        if (!this._globalColorTransformChanged)
-            this._globalColorTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.GLOBAL_COLOR_TRANSFORM_CHANGED, this);
-
-        this.dispatchEvent(this._globalColorTransformChanged);
-    }
-
-    private onGlobalColorTransformChanged(event:DisplayObjectEvent)
-    {
-        this._invalidateGlobalColorTransform();
-    }
-
-    private onColorTransformChanged(event:Event)
-    {
-        this._invalidateGlobalColorTransform();
-    }
+	private onColorTransformChanged(event:Event)
+	{
+		this.pInvalidateHierarchicalProperties(false, false, false, false, true);
+	}
 
 	private queueDispatch(event:Event)
 	{
@@ -2898,6 +2843,22 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		this._masksDirty = false;
+	}
+
+	private _updateColorTransform()
+	{
+		if (this._inheritColorTransform && this._pParent) {
+			this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
+			if (this._explicitColorTransform)
+				this._pImplicitColorTransform.prepend(this._explicitColorTransform);
+		} else {
+			if (this._explicitColorTransform)
+				this._pImplicitColorTransform.copyFrom(this._explicitColorTransform);
+			else
+				this._pImplicitColorTransform.clear();
+		}
+
+		this._colorTransformDirty = false;
 	}
 }
 
