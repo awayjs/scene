@@ -678,7 +678,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		this._nextHighestDepth += 1;
 	}
-	
+
 	/**
 	 * Evaluates the display object to see if it overlaps or intersects with the
 	 * point specified by the <code>x</code> and <code>y</code> parameters. The

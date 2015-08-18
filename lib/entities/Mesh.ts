@@ -593,29 +593,27 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
-		if(super._hitTestPointInternal(x, y, shapeFlag, masksFlag))
-			return true;
+		if(this._geometry && this._geometry.subGeometries.length) {
+			this._tempPoint.setTo(x,y);
+			var local:Point = this.globalToLocal(this._tempPoint, this._tempPoint);
 
-		// from this point out, we can not return false, without checking collision of childs.
-		this._tempPoint.setTo(x,y);
-		var local:Point = this.globalToLocal(this._tempPoint, this._tempPoint);
+			//early out for box test
+			if(!this.getBox().contains(local.x, local.y, 0))
+				return false;
 
+			//early out for non-shape tests
+			if (!shapeFlag)
+				return true;
 
-		if(this._geometry) {
-			if(this.getBox().contains(local.x, local.y, 0)){
-				//early out for non-shape tests
-				if (!shapeFlag)
+			//ok do the geometry thing
+			var subGeometries:Array<SubGeometryBase> = this._geometry.subGeometries;
+			var subGeometriesCount:number = subGeometries.length;
+			for(var j:number = 0; j < subGeometriesCount; j++)
+				if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
 					return true;
-
-				var subGeometries:Array<SubGeometryBase> = this._geometry.subGeometries;
-				var subGeometriesCount:number = subGeometries.length;
-				for(var j:number = 0; j < subGeometriesCount; j++)
-					if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
-						return true;
-			}
 		}
 
-		return false;
+		return super._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
 }
 
