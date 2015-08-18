@@ -1391,7 +1391,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *              properties.
 	     * @return A Point object with coordinates relative to the display object.
 	     */
-	    globalToLocal(point: Point): Point;
+	    globalToLocal(point: Point, target?: Point): Point;
 	    /**
 	     * Converts a two-dimensional point from the Scene(global) coordinates to a
 	     * three-dimensional display object's(local) coordinates.
@@ -1470,7 +1470,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *              properties.
 	     * @return A Point object with coordinates relative to the Scene.
 	     */
-	    localToGlobal(point: Point): Point;
+	    localToGlobal(point: Point, target?: Point): Point;
 	    /**
 	     * Converts a three-dimensional point of the three-dimensional display
 	     * object's(local) coordinates to a three-dimensional point in the Scene

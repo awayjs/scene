@@ -829,6 +829,7 @@ var DisplayObject = (function (_super) {
         this._pRenderables = new Array();
         this._entityNodes = new Array();
         this._inheritColorTransform = false;
+        this._maskMode = false;
         //temp vector used in global to local
         this._tempVector3D = new Vector3D();
         /**
@@ -1934,10 +1935,15 @@ var DisplayObject = (function (_super) {
      *              properties.
      * @return A Point object with coordinates relative to the display object.
      */
-    DisplayObject.prototype.globalToLocal = function (point) {
+    DisplayObject.prototype.globalToLocal = function (point, target) {
+        if (target === void 0) { target = null; }
         this._tempVector3D.setTo(point.x, point.y, 0);
-        var pos = this.inverseSceneTransform.transformVector(this._tempVector3D);
-        return new Point(pos.x, pos.y);
+        var pos = this.inverseSceneTransform.transformVector(this._tempVector3D, this._tempVector3D);
+        if (!target)
+            target = new Point();
+        target.x = pos.x;
+        target.y = pos.y;
+        return target;
     };
     /**
      * Converts a two-dimensional point from the Scene(global) coordinates to a
@@ -2159,10 +2165,15 @@ var DisplayObject = (function (_super) {
      *              properties.
      * @return A Point object with coordinates relative to the Scene.
      */
-    DisplayObject.prototype.localToGlobal = function (point) {
+    DisplayObject.prototype.localToGlobal = function (point, target) {
+        if (target === void 0) { target = null; }
         this._tempVector3D.setTo(point.x, point.y, 0);
-        var pos = this.sceneTransform.transformVector(this._tempVector3D);
-        return new Point(pos.x, pos.y);
+        var pos = this.sceneTransform.transformVector(this._tempVector3D, this._tempVector3D);
+        if (!target)
+            target = new Point();
+        target.x = pos.x;
+        target.y = pos.y;
+        return target;
     };
     /**
      * Converts a three-dimensional point of the three-dimensional display
@@ -2803,7 +2814,8 @@ var DisplayObject = (function (_super) {
         this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
     };
     DisplayObject.prototype._updateMaskMode = function () {
-        this.mouseEnabled = !this._maskMode;
+        if (this.maskMode)
+            this.mouseEnabled = !this._maskMode;
         this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
     };
     return DisplayObject;
@@ -6281,7 +6293,8 @@ var DisplayObjectContainer = (function (_super) {
         return false;
     };
     DisplayObjectContainer.prototype._updateMaskMode = function () {
-        this.mouseChildren = !this.maskMode;
+        (this.maskMode);
+        this.mouseChildren = false;
         _super.prototype._updateMaskMode.call(this);
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
@@ -10702,7 +10715,7 @@ var Mesh = (function (_super) {
             return true;
         // from this point out, we can not return false, without checking collision of childs.
         this._tempPoint.setTo(x, y);
-        var local = this.globalToLocal(this._tempPoint);
+        var local = this.globalToLocal(this._tempPoint, this._tempPoint);
         if (this._geometry) {
             if (this.getBox().contains(local.x, local.y, 0)) {
                 //early out for non-shape tests
