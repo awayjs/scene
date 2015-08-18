@@ -1686,6 +1686,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _updateMaskId();
 	    private _updateMasks();
 	    private _updateColorTransform();
+	    _updateMaskMode(): void;
 	}
 	export = DisplayObject;
 	
@@ -3519,6 +3520,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    _iAddContainerNode(entityNode: ContainerNode): ContainerNode;
 	    _iRemoveContainerNode(entityNode: ContainerNode): ContainerNode;
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
+	    _updateMaskMode(): void;
 	}
 	export = DisplayObjectContainer;
 	

@@ -643,7 +643,6 @@ var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
 var Transform = require("awayjs-display/lib/base/Transform");
@@ -1145,10 +1144,7 @@ var DisplayObject = (function (_super) {
                 return;
             this._maskMode = value;
             this._explicitMaskId = value ? this.id : -1;
-            this.mouseEnabled = !value;
-            if (this.isAsset(DisplayObjectContainer))
-                this.mouseChildren = !value;
-            this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
+            this._updateMaskMode();
         },
         enumerable: true,
         configurable: true
@@ -2806,11 +2802,15 @@ var DisplayObject = (function (_super) {
         }
         this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
     };
+    DisplayObject.prototype._updateMaskMode = function () {
+        this.mouseEnabled = !this._maskMode;
+        this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
+    };
     return DisplayObject;
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -6279,6 +6279,10 @@ var DisplayObjectContainer = (function (_super) {
             if (this._children[i].hitTestPoint(x, y, shapeFlag, masksFlag))
                 return true;
         return false;
+    };
+    DisplayObjectContainer.prototype._updateMaskMode = function () {
+        this.mouseChildren = !this.maskMode;
+        _super.prototype._updateMaskMode.call(this);
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
     return DisplayObjectContainer;
