@@ -3297,6 +3297,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     */
 	    disposeWithChildren(): void;
 	    getChildAtDepth(depth: number): DisplayObject;
+	    getChildDepths(): Object;
 	    /**
 	     * Returns the child display object instance that exists at the specified
 	     * index.

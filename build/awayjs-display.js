@@ -643,6 +643,7 @@ var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
 var Transform = require("awayjs-display/lib/base/Transform");
@@ -1144,6 +1145,9 @@ var DisplayObject = (function (_super) {
                 return;
             this._maskMode = value;
             this._explicitMaskId = value ? this.id : -1;
+            this.mouseEnabled = !value;
+            if (this.isAsset(DisplayObjectContainer))
+                this.mouseChildren = !value;
             this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
         },
         enumerable: true,
@@ -2806,7 +2810,7 @@ var DisplayObject = (function (_super) {
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4032,7 +4036,6 @@ module.exports = SubMeshBase;
 
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 var Timeline = (function () {
@@ -4056,7 +4059,7 @@ var Timeline = (function () {
         var last_construct_frame = 0;
         for (ic = 0; ic < this.numKeyFrames; ic++) {
             var duration = this.keyframe_durations[(ic)];
-            if ((this.frame_recipe[ic] & 1) == 1)
+            if (this.frame_recipe[ic] & 1)
                 last_construct_frame = keyframe_cnt;
             this.keyframe_firstframes[keyframe_cnt] = frame_cnt;
             this.keyframe_constructframes[keyframe_cnt++] = last_construct_frame;
@@ -4149,8 +4152,8 @@ var Timeline = (function () {
         var start_construct_idx = break_frame_idx;
         if (jump_forward && !jump_gap)
             start_construct_idx = current_keyframe_idx + 1;
-        var target_childs_dic = {};
-        var target_sessionIDs_dic = {};
+        var child_depths = target_mc.getChildDepths();
+        var sessionID_depths = {};
         var i;
         var end_index;
         var k;
@@ -4164,9 +4167,7 @@ var Timeline = (function () {
                 target_mc.removeChild(child);
             }
             else if (jump_forward) {
-                depth = child._depthID;
-                target_childs_dic[depth] = child;
-                target_sessionIDs_dic[depth] = child._sessionID;
+                sessionID_depths[child._depthID] = child._sessionID;
             }
         }
         //  step1: only apply add/remove commands into current_childs_dic.
@@ -4177,41 +4178,41 @@ var Timeline = (function () {
             var frame_recipe = this.frame_recipe[k];
             var start_index;
             var idx;
-            if ((frame_recipe & 2) == 2) {
+            if (frame_recipe & 2) {
                 // remove childs
                 start_index = this.command_index_stream[frame_command_idx];
                 end_index = start_index + this.command_length_stream[frame_command_idx++];
                 for (i = start_index; i < end_index; i++) {
                     depth = this.remove_child_stream[i] - 16383;
-                    delete target_childs_dic[depth];
-                    delete target_sessionIDs_dic[depth];
+                    delete child_depths[depth];
+                    delete sessionID_depths[depth];
                 }
             }
-            if ((frame_recipe & 4) == 4) {
+            if (frame_recipe & 4) {
                 start_index = this.command_index_stream[frame_command_idx];
                 end_index = start_index + this.command_length_stream[frame_command_idx++];
                 for (i = end_index - 1; i >= start_index; i--) {
                     idx = i * 2;
                     var target = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
                     depth = this.add_child_stream[idx + 1] - 16383;
-                    target_childs_dic[depth] = target;
-                    target_sessionIDs_dic[depth] = i;
+                    child_depths[depth] = target;
+                    sessionID_depths[depth] = i;
                 }
             }
-            if ((frame_recipe & 8) == 8)
+            if (frame_recipe & 8)
                 update_indices[update_cnt++] = frame_command_idx; // execute update command later
         }
         for (i = target_mc.numChildren - 1; i >= 0; i--) {
             child = target_mc._children[i];
             depth = child._depthID;
-            if (target_sessionIDs_dic[depth] == child._sessionID)
-                delete target_childs_dic[depth];
+            if (sessionID_depths[depth] == child._sessionID)
+                delete sessionID_depths[depth];
             else
                 target_mc.removeChildAt(i);
         }
-        for (var key in target_childs_dic) {
-            child = target_childs_dic[key];
-            child._sessionID = target_sessionIDs_dic[key];
+        for (var key in sessionID_depths) {
+            child = child_depths[key];
+            child._sessionID = sessionID_depths[key];
             target_mc.addChildAtDepth(child, parseInt(key));
         }
         //  pass2: apply update commands for objects on stage (only if they are not blocked by script)
@@ -4235,16 +4236,16 @@ var Timeline = (function () {
             target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
             var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
             var frame_recipe = this.frame_recipe[new_keyFrameIndex];
-            if ((frame_recipe & 1) == 1) {
+            if (frame_recipe & 1) {
                 for (var i = target_mc.numChildren - 1; i >= 0; i--)
                     target_mc.removeChildAt(i);
             }
-            else if ((frame_recipe & 2) == 2) {
+            else if (frame_recipe & 2) {
                 this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
             }
-            if ((frame_recipe & 4) == 4)
+            if (frame_recipe & 4)
                 this.add_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
-            if ((frame_recipe & 8) == 8)
+            if (frame_recipe & 8)
                 this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
         }
     };
@@ -4325,17 +4326,10 @@ var Timeline = (function () {
                             // a object could have multiple groups of masks, in case a graphic clip was merged into the timeline
                             // this is not implmeented in the runtime yet
                             // for now, a second mask-groupd would overwrite the first one
-                            var mask;
                             var masks = new Array();
                             var numMasks = this.properties_stream_int[value_start_index++];
-                            for (var m = 0; m < numMasks; m++) {
-                                if ((mask = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]))) {
-                                    masks[m] = mask;
-                                    mask.mouseEnabled = false;
-                                    if (mask.isAsset(DisplayObjectContainer))
-                                        mask.mouseChildren = false;
-                                }
-                            }
+                            for (var m = 0; m < numMasks; m++)
+                                masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);
                             target.masks = masks;
                             break;
                         case 4:
@@ -4385,7 +4379,7 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -5902,6 +5896,9 @@ var DisplayObjectContainer = (function (_super) {
     DisplayObjectContainer.prototype.getChildAtDepth = function (depth /*int*/) {
         return this._active_depths[depth];
     };
+    DisplayObjectContainer.prototype.getChildDepths = function () {
+        return this._active_depths;
+    };
     /**
      * Returns the child display object instance that exists at the specified
      * index.
@@ -6197,7 +6194,9 @@ var DisplayObjectContainer = (function (_super) {
         //update next highest depth
         if (this._nextHighestDepth == child._depthID + 1)
             this._nextHighestDepthDirty = true;
-        delete this._active_depths[child._depthID];
+        //check to make sure _active_depths wasn't modified with a new child
+        if (this._active_depths[child._depthID] == this)
+            delete this._active_depths[child._depthID];
         child._depthID = -16384;
         return child;
     };
