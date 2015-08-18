@@ -641,7 +641,7 @@ var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Point = require("awayjs-core/lib/geom/Point");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
-var Event = require("awayjs-core/lib/events/Event");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
@@ -783,7 +783,6 @@ var DisplayObject = (function (_super) {
      * Creates a new <code>DisplayObject</code> instance.
      */
     function DisplayObject() {
-        var _this = this;
         _super.call(this);
         this._queuedEvents = new Array();
         this._boxBoundsInvalid = true;
@@ -827,7 +826,6 @@ var DisplayObject = (function (_super) {
         this._rot = new Vector3D();
         this._ske = new Vector3D();
         this._sca = new Vector3D();
-        this._pIgnoreTransform = false;
         this._pRenderables = new Array();
         this._entityNodes = new Array();
         this._inheritColorTransform = false;
@@ -847,7 +845,6 @@ var DisplayObject = (function (_super) {
         this.orientationMode = OrientationMode.DEFAULT;
         // Cached vector of transformation components used when
         // recomposing the transform matrix in updateTransform()
-        this._onColorTransformChangedDelegate = function (event) { return _this.onColorTransformChanged(event); };
         this._transformComponents = new Array(4);
         this._transformComponents[0] = this._pos;
         this._transformComponents[1] = this._rot;
@@ -880,7 +877,7 @@ var DisplayObject = (function (_super) {
         },
         set: function (value) {
             this._inheritColorTransform = value;
-            this.pInvalidateHierarchicalProperties(false, false, false, false, true);
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
         },
         enumerable: true,
         configurable: true
@@ -1098,26 +1095,6 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(DisplayObject.prototype, "ignoreTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pIgnoreTransform;
-        },
-        set: function (value) {
-            if (this._pIgnoreTransform == value)
-                return;
-            this._pIgnoreTransform = value;
-            if (value) {
-                this._pSceneTransform.identity();
-                this._scenePosition.setTo(0, 0, 0);
-            }
-            this.pInvalidateSceneTransform();
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(DisplayObject.prototype, "isEntity", {
         /**
          *
@@ -1167,7 +1144,7 @@ var DisplayObject = (function (_super) {
                 return;
             this._maskMode = value;
             this._explicitMaskId = value ? this.id : -1;
-            this.pInvalidateHierarchicalProperties(false, false, true, false, false);
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
         },
         enumerable: true,
         configurable: true
@@ -1571,7 +1548,7 @@ var DisplayObject = (function (_super) {
     });
     Object.defineProperty(DisplayObject.prototype, "sceneTransform", {
         get: function () {
-            if (this._pSceneTransformDirty)
+            if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
                 this.pUpdateSceneTransform();
             return this._pSceneTransform;
         },
@@ -1664,7 +1641,7 @@ var DisplayObject = (function (_super) {
             if (this._explicitVisibility == value)
                 return;
             this._explicitVisibility = value;
-            this.pInvalidateHierarchicalProperties(false, true, false, false, false);
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.VISIBLE);
         },
         enumerable: true,
         configurable: true
@@ -1683,7 +1660,7 @@ var DisplayObject = (function (_super) {
                 for (var i = 0; i < len; i++)
                     value[i].maskMode = true;
             }
-            this.pInvalidateHierarchicalProperties(false, false, false, true, false);
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASKS);
         },
         enumerable: true,
         configurable: true
@@ -2408,8 +2385,7 @@ var DisplayObject = (function (_super) {
             this.y = val.rawData[13];
             this.z = val.rawData[14];
             this._elementsDirty = true;
-            if (!this._pIgnoreTransform)
-                this.pInvalidateSceneTransform();
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
         },
         enumerable: true,
         configurable: true
@@ -2419,12 +2395,8 @@ var DisplayObject = (function (_super) {
             return this._explicitColorTransform;
         },
         set: function (value) {
-            if (this._explicitColorTransform)
-                this._explicitColorTransform.removeEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
             this._explicitColorTransform = value;
-            if (this._explicitColorTransform)
-                this._explicitColorTransform.addEventListener(Event.CHANGE, this._onColorTransformChangedDelegate);
-            this.pInvalidateHierarchicalProperties(false, false, false, false, true);
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
         },
         enumerable: true,
         configurable: true
@@ -2450,34 +2422,24 @@ var DisplayObject = (function (_super) {
             this._iSetScene(value._pScene, value._iAssignedPartition);
         else
             this._iSetScene(null, null);
+        this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+        this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
     };
-    DisplayObject.prototype.pInvalidateHierarchicalProperties = function (mouseEnabledDirty, visibleDirty, maskIdDirty, masksDirty, colorTransformDirty) {
-        if (mouseEnabledDirty)
-            this._mouseEnabledDirty = true;
-        if (visibleDirty)
-            this._visibleDirty = true;
-        if (maskIdDirty)
-            this._maskIdDirty = true;
-        if (masksDirty)
-            this._masksDirty = true;
-        if (colorTransformDirty)
-            this._colorTransformDirty = true;
-    };
-    /**
-     * @protected
-     */
-    DisplayObject.prototype.pInvalidateSceneTransform = function () {
-        if (this._pSceneTransformDirty)
-            return;
-        this._pSceneTransformDirty = !this._pIgnoreTransform;
-        this._inverseSceneTransformDirty = !this._pIgnoreTransform;
-        this._scenePositionDirty = !this._pIgnoreTransform;
-        if (this.isEntity)
-            this.invalidatePartition();
-        if (this._pParent)
-            this._pParent._pInvalidateBounds();
-        if (this._listenToSceneTransformChanged)
-            this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
+    DisplayObject.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
+        if (!(this._hierarchicalPropsDirty ^ bitFlag))
+            return true;
+        this._hierarchicalPropsDirty |= bitFlag;
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
+            this._inverseSceneTransformDirty = true;
+            this._scenePositionDirty = true;
+            if (this.isEntity)
+                this.invalidatePartition();
+            if (this._pParent)
+                this._pParent._pInvalidateBounds();
+            if (this._listenToSceneTransformChanged)
+                this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
+        }
+        return false;
     };
     /**
      * @protected
@@ -2501,13 +2463,8 @@ var DisplayObject = (function (_super) {
             //register entity with new partition
             this._pImplicitPartition._iRegisterEntity(this);
         }
-        if (sceneChanged) {
-            if (!this._pIgnoreTransform)
-                this.pInvalidateSceneTransform();
-            this.pInvalidateHierarchicalProperties(true, true, true, true, true);
-            if (this._listenToSceneChanged)
-                this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
-        }
+        if (sceneChanged && this._listenToSceneChanged)
+            this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
     };
     /**
      * @protected
@@ -2558,7 +2515,7 @@ var DisplayObject = (function (_super) {
         this._rotationDirty = false;
         this._skewDirty = false;
         this._scaleDirty = false;
-        this._pSceneTransformDirty = false;
+        this._hierarchicalPropsDirty ^= HierarchicalProperties.SCENE_TRANSFORM;
     };
     DisplayObject.prototype._iAddRenderable = function (renderable) {
         this._pRenderables.push(renderable);
@@ -2597,7 +2554,7 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype._iIsVisible = function () {
-        if (this._visibleDirty)
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.VISIBLE)
             this._updateVisible();
         return this._pImplicitVisibility;
     };
@@ -2605,7 +2562,7 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype._iAssignedMaskId = function () {
-        if (this._maskIdDirty)
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.MASK_ID)
             this._updateMaskId();
         return this._pImplicitMaskId;
     };
@@ -2613,17 +2570,17 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype._iAssignedMasks = function () {
-        if (this._masksDirty)
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
             this._updateMasks();
         return this._pImplicitMasks;
     };
     DisplayObject.prototype._iMasksConfig = function () {
-        if (this._masksDirty)
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
             this._updateMasks();
         return this._pImplicitMaskIds;
     };
     DisplayObject.prototype._iAssignedColorTransform = function () {
-        if (this._colorTransformDirty)
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.COLOR_TRANSFORM)
             this._updateColorTransform();
         return this._pImplicitColorTransform;
     };
@@ -2631,7 +2588,7 @@ var DisplayObject = (function (_super) {
      * @internal
      */
     DisplayObject.prototype._iIsMouseEnabled = function () {
-        if (this._mouseEnabledDirty)
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
             this._updateMouseEnabled();
         return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
     };
@@ -2647,8 +2604,7 @@ var DisplayObject = (function (_super) {
         if (this._matrix3DDirty)
             return;
         this._matrix3DDirty = true;
-        if (!this._pIgnoreTransform)
-            this.pInvalidateSceneTransform();
+        this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
     };
     /**
      * @private
@@ -2675,8 +2631,7 @@ var DisplayObject = (function (_super) {
         if (this._positionDirty)
             return;
         this._positionDirty = true;
-        if (!this._pIgnoreTransform)
-            this.pInvalidateSceneTransform();
+        this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
         if (!this._pivotZero)
             this.invalidatePivot();
         if (this._listenToPositionChanged)
@@ -2748,9 +2703,6 @@ var DisplayObject = (function (_super) {
         if (this._pSphereBounds == null)
             this._pSphereBounds = new Sphere();
     };
-    DisplayObject.prototype.onColorTransformChanged = function (event) {
-        this.pInvalidateHierarchicalProperties(false, false, false, false, true);
-    };
     DisplayObject.prototype.queueDispatch = function (event) {
         // Store event to be dispatched later.
         this._queuedEvents.push(event);
@@ -2807,15 +2759,15 @@ var DisplayObject = (function (_super) {
         // If there is a parent and this child does not have a picking collider, use its parent's picking collider.
         if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
             this._pPickingCollider = this._pParent._pPickingCollider;
-        this._mouseEnabledDirty = false;
+        this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
     };
     DisplayObject.prototype._updateVisible = function () {
         this._pImplicitVisibility = (this._pParent) ? this._explicitVisibility && this._pParent._iIsVisible() : this._explicitVisibility;
-        this._visibleDirty = false;
+        this._hierarchicalPropsDirty ^= HierarchicalProperties.VISIBLE;
     };
     DisplayObject.prototype._updateMaskId = function () {
         this._pImplicitMaskId = (this._pParent && this._pParent._iAssignedMaskId() != -1) ? this._pParent._iAssignedMaskId() : this._explicitMaskId;
-        this._maskIdDirty = false;
+        this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
     };
     DisplayObject.prototype._updateMasks = function () {
         this._pImplicitMasks = (this._pParent && this._pParent._iAssignedMasks()) ? (this._explicitMasks != null) ? this._pParent._iAssignedMasks().concat([this._explicitMasks]) : this._pParent._iAssignedMasks().concat() : (this._explicitMasks != null) ? [this._explicitMasks] : null;
@@ -2834,7 +2786,7 @@ var DisplayObject = (function (_super) {
                 this._pImplicitMaskIds.push(implicitChildIds);
             }
         }
-        this._masksDirty = false;
+        this._hierarchicalPropsDirty ^= HierarchicalProperties.MASKS;
     };
     DisplayObject.prototype._updateColorTransform = function () {
         if (this._inheritColorTransform && this._pParent) {
@@ -2848,13 +2800,13 @@ var DisplayObject = (function (_super) {
             else
                 this._pImplicitColorTransform.clear();
         }
-        this._colorTransformDirty = false;
+        this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
     };
     return DisplayObject;
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/events/Event":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2982,7 +2934,46 @@ var Geometry = (function (_super) {
 })(AssetBase);
 module.exports = Geometry;
 
-},{"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent"}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent"}],"awayjs-display/lib/base/HierarchicalProperties":[function(require,module,exports){
+/**
+ *
+ */
+var HierarchicalProperties = (function () {
+    function HierarchicalProperties() {
+    }
+    /**
+     *
+     */
+    HierarchicalProperties.MOUSE_ENABLED = 1;
+    /**
+     *
+     */
+    HierarchicalProperties.VISIBLE = 2;
+    /**
+     *
+     */
+    HierarchicalProperties.MASK_ID = 4;
+    /**
+     *
+     */
+    HierarchicalProperties.MASKS = 8;
+    /**
+     *
+     */
+    HierarchicalProperties.COLOR_TRANSFORM = 16;
+    /**
+     *
+     */
+    HierarchicalProperties.SCENE_TRANSFORM = 32;
+    /**
+     *
+     */
+    HierarchicalProperties.ALL = 63;
+    return HierarchicalProperties;
+})();
+module.exports = HierarchicalProperties;
+
+},{}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/base/IRenderOwner":[function(require,module,exports){
 
@@ -4040,6 +4031,7 @@ var SubMeshBase = (function (_super) {
 module.exports = SubMeshBase;
 
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
@@ -4310,13 +4302,13 @@ var Timeline = (function () {
                                 target.x = new_matrix.rawData[12];
                                 target.y = new_matrix.rawData[13];
                                 target._elementsDirty = true;
-                                target.pInvalidateSceneTransform();
+                                target.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
                             }
                             break;
                         case 2:
                             if (doit) {
                                 value_start_index *= 8;
-                                var new_ct = target._iColorTransform || new ColorTransform();
+                                var new_ct = target._iColorTransform || (target._iColorTransform = new ColorTransform());
                                 new_ct.redMultiplier = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.greenMultiplier = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.blueMultiplier = this.properties_stream_f32_ct[value_start_index++];
@@ -4325,7 +4317,7 @@ var Timeline = (function () {
                                 new_ct.greenOffset = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.blueOffset = this.properties_stream_f32_ct[value_start_index++];
                                 new_ct.alphaOffset = this.properties_stream_f32_ct[value_start_index];
-                                target._iColorTransform = new_ct;
+                                target.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
                             }
                             break;
                         case 3:
@@ -4369,7 +4361,7 @@ var Timeline = (function () {
                                 new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[value_start_index++];
                                 new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[value_start_index];
                                 target._elementsDirty = true;
-                                target.pInvalidateSceneTransform();
+                                target.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
                             }
                             break;
                         case 12:
@@ -4393,7 +4385,7 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -5671,6 +5663,7 @@ var ArgumentError = require("awayjs-core/lib/errors/ArgumentError");
 var Error = require("awayjs-core/lib/errors/Error");
 var RangeError = require("awayjs-core/lib/errors/RangeError");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 /**
  * The DisplayObjectContainer class is the base class for all objects that can
  * serve as display object containers on the display list. The display list
@@ -5746,7 +5739,7 @@ var DisplayObjectContainer = (function (_super) {
          * functionality.</p>
          */
         get: function () {
-            if (this._mouseEnabledDirty)
+            if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
                 this._updateMouseEnabled();
             return this._mouseChildren;
         },
@@ -5754,7 +5747,7 @@ var DisplayObjectContainer = (function (_super) {
             if (this._mouseChildren == value)
                 return;
             this._mouseChildren = value;
-            this.pInvalidateHierarchicalProperties(true, false, false, false, false);
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.MOUSE_ENABLED);
         },
         enumerable: true,
         configurable: true
@@ -6177,20 +6170,13 @@ var DisplayObjectContainer = (function (_super) {
     /**
      * @protected
      */
-    DisplayObjectContainer.prototype.pInvalidateHierarchicalProperties = function (mouseEnabled, visible, maskId, masks, colorTransformDirty) {
-        _super.prototype.pInvalidateHierarchicalProperties.call(this, mouseEnabled, visible, maskId, masks, colorTransformDirty);
+    DisplayObjectContainer.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
+        if (_super.prototype.pInvalidateHierarchicalProperties.call(this, bitFlag))
+            return true;
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
-            this._children[i].pInvalidateHierarchicalProperties(mouseEnabled, visible, maskId, masks, colorTransformDirty);
-    };
-    /**
-     * @protected
-     */
-    DisplayObjectContainer.prototype.pInvalidateSceneTransform = function () {
-        _super.prototype.pInvalidateSceneTransform.call(this);
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i].pInvalidateSceneTransform();
+            this._children[i].pInvalidateHierarchicalProperties(bitFlag);
+        return false;
     };
     /**
      * @internal
@@ -6288,7 +6274,7 @@ var DisplayObjectContainer = (function (_super) {
 })(DisplayObject);
 module.exports = DisplayObjectContainer;
 
-},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
+},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9575,6 +9561,7 @@ var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Plane3D = require("awayjs-core/lib/geom/Plane3D");
 var ProjectionEvent = require("awayjs-core/lib/events/ProjectionEvent");
 var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var CameraEvent = require("awayjs-display/lib/events/CameraEvent");
@@ -9708,13 +9695,14 @@ var Camera = (function (_super) {
         p.d = (c34 - c44) * invLen;
         this._frustumPlanesDirty = false;
     };
-    /**
-     * @protected
-     */
-    Camera.prototype.pInvalidateSceneTransform = function () {
-        _super.prototype.pInvalidateSceneTransform.call(this);
-        this._viewProjectionDirty = true;
-        this._frustumPlanesDirty = true;
+    Camera.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
+        if (_super.prototype.pInvalidateHierarchicalProperties.call(this, bitFlag))
+            return true;
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
+            this._viewProjectionDirty = true;
+            this._frustumPlanesDirty = true;
+        }
+        return false;
     };
     Object.defineProperty(Camera.prototype, "projection", {
         /**
@@ -9795,7 +9783,7 @@ var Camera = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = Camera;
 
-},{"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent"}],"awayjs-display/lib/entities/DirectionalLight":[function(require,module,exports){
+},{"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent"}],"awayjs-display/lib/entities/DirectionalLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9806,6 +9794,7 @@ var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var LightBase = require("awayjs-display/lib/base/LightBase");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 var DirectionalLight = (function (_super) {
@@ -9824,7 +9813,7 @@ var DirectionalLight = (function (_super) {
     }
     Object.defineProperty(DirectionalLight.prototype, "sceneDirection", {
         get: function () {
-            if (this._pSceneTransformDirty)
+            if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
                 this.pUpdateSceneTransform();
             return this._sceneDirection;
         },
@@ -9948,7 +9937,7 @@ var DirectionalLight = (function (_super) {
 })(LightBase);
 module.exports = DirectionalLight;
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/entities/IEntity":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/entities/IEntity":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/entities/LightProbe":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {

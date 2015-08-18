@@ -572,7 +572,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pScene: Scene;
 	    _pParent: DisplayObjectContainer;
 	    _pSceneTransform: Matrix3D;
-	    _pSceneTransformDirty: boolean;
 	    _pIsEntity: boolean;
 	    _pIsContainer: boolean;
 	    _sessionID: number;
@@ -641,7 +640,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _ske;
 	    private _sca;
 	    private _transformComponents;
-	    _pIgnoreTransform: boolean;
 	    private _shaderPickingDetails;
 	    _pPickingCollisionVO: PickingCollisionVO;
 	    _boundsType: string;
@@ -649,14 +647,9 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pRenderables: Array<IRenderable>;
 	    private _entityNodes;
 	    _iSourcePrefab: PrefabBase;
-	    private _onColorTransformChangedDelegate;
 	    private _inheritColorTransform;
 	    private _maskMode;
-	    _mouseEnabledDirty: boolean;
-	    private _visibleDirty;
-	    private _maskIdDirty;
-	    private _masksDirty;
-	    private _colorTransformDirty;
+	    _hierarchicalPropsDirty: number;
 	    private _tempVector3D;
 	    /**
 	     * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -888,10 +881,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *
 	     */
 	    inverseSceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    ignoreTransform: boolean;
 	    /**
 	     *
 	     */
@@ -1603,11 +1592,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @internal
 	     */
 	    iSetParent(value: DisplayObjectContainer): void;
-	    pInvalidateHierarchicalProperties(mouseEnabledDirty: boolean, visibleDirty: boolean, maskIdDirty: boolean, masksDirty: boolean, colorTransformDirty: boolean): void;
-	    /**
-	     * @protected
-	     */
-	    pInvalidateSceneTransform(): void;
+	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
 	    /**
 	     * @protected
 	     */
@@ -1691,7 +1676,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pInvalidateBounds(): void;
 	    _pUpdateBoxBounds(): void;
 	    _pUpdateSphereBounds(): void;
-	    private onColorTransformChanged(event);
 	    private queueDispatch(event);
 	    private updateElements();
 	    private _setScaleX(val);
@@ -1772,6 +1756,44 @@ declare module "awayjs-display/lib/base/Geometry" {
 	    iInvalidateBounds(subGeom: SubGeometryBase): void;
 	}
 	export = Geometry;
+	
+}
+
+declare module "awayjs-display/lib/base/HierarchicalProperties" {
+	/**
+	 *
+	 */
+	class HierarchicalProperties {
+	    /**
+	     *
+	     */
+	    static MOUSE_ENABLED: number;
+	    /**
+	     *
+	     */
+	    static VISIBLE: number;
+	    /**
+	     *
+	     */
+	    static MASK_ID: number;
+	    /**
+	     *
+	     */
+	    static MASKS: number;
+	    /**
+	     *
+	     */
+	    static COLOR_TRANSFORM: number;
+	    /**
+	     *
+	     */
+	    static SCENE_TRANSFORM: number;
+	    /**
+	     *
+	     */
+	    static ALL: number;
+	}
+	export = HierarchicalProperties;
 	
 }
 
@@ -3450,11 +3472,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     * @protected
 	     */
-	    pInvalidateHierarchicalProperties(mouseEnabled: boolean, visible: boolean, maskId: boolean, masks: boolean, colorTransformDirty: boolean): void;
-	    /**
-	     * @protected
-	     */
-	    pInvalidateSceneTransform(): void;
+	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
 	    /**
 	     * @internal
 	     */
@@ -5686,10 +5704,7 @@ declare module "awayjs-display/lib/entities/Camera" {
 	    private onProjectionMatrixChanged(event);
 	    frustumPlanes: Array<Plane3D>;
 	    private updateFrustum();
-	    /**
-	     * @protected
-	     */
-	    pInvalidateSceneTransform(): void;
+	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
 	    /**
 	     *
 	     */
