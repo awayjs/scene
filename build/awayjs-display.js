@@ -10711,24 +10711,23 @@ var Mesh = (function (_super) {
             this._subMeshes[i]._iInvalidateRenderableGeometry();
     };
     Mesh.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
-        if (_super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag))
-            return true;
-        // from this point out, we can not return false, without checking collision of childs.
-        this._tempPoint.setTo(x, y);
-        var local = this.globalToLocal(this._tempPoint, this._tempPoint);
-        if (this._geometry) {
-            if (this.getBox().contains(local.x, local.y, 0)) {
-                //early out for non-shape tests
-                if (!shapeFlag)
+        if (this._geometry && this._geometry.subGeometries.length) {
+            this._tempPoint.setTo(x, y);
+            var local = this.globalToLocal(this._tempPoint, this._tempPoint);
+            //early out for box test
+            if (!this.getBox().contains(local.x, local.y, 0))
+                return false;
+            //early out for non-shape tests
+            if (!shapeFlag)
+                return true;
+            //ok do the geometry thing
+            var subGeometries = this._geometry.subGeometries;
+            var subGeometriesCount = subGeometries.length;
+            for (var j = 0; j < subGeometriesCount; j++)
+                if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
                     return true;
-                var subGeometries = this._geometry.subGeometries;
-                var subGeometriesCount = subGeometries.length;
-                for (var j = 0; j < subGeometriesCount; j++)
-                    if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
-                        return true;
-            }
         }
-        return false;
+        return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
     };
     Mesh.assetType = "[asset Mesh]";
     return Mesh;
