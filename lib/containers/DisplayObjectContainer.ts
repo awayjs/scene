@@ -294,6 +294,11 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		return this._active_depths[depth];
 	}
 
+	public getChildDepths():Object
+	{
+		return this._active_depths;
+	}
+
 	/**
 	 * Returns the child display object instance that exists at the specified
 	 * index.
@@ -644,7 +649,9 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		if (this._nextHighestDepth == child._depthID + 1)
 			this._nextHighestDepthDirty = true;
 
-		delete this._active_depths[child._depthID];
+		//check to make sure _active_depths wasn't modified with a new child
+		if (this._active_depths[child._depthID] == this)
+			delete this._active_depths[child._depthID];
 
 		child._depthID = -16384;
 

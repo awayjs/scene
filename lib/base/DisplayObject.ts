@@ -713,6 +713,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMaskId = value? this.id : -1;
 
+
+		this.mouseEnabled = !value;
+		if(this.isAsset(DisplayObjectContainer))
+			(<DisplayObjectContainer> this).mouseChildren = !value;
+
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
 	/**

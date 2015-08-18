@@ -77,7 +77,7 @@ class Timeline
 		for(ic = 0; ic < this.numKeyFrames; ic++){
 			var duration=this.keyframe_durations[(ic)];
 
-			if((this.frame_recipe[ic] & 1) == 1)
+			if(this.frame_recipe[ic] & 1)
 				last_construct_frame = keyframe_cnt;
 
 			this.keyframe_firstframes[keyframe_cnt] = frame_cnt;
@@ -205,8 +205,8 @@ class Timeline
 		if (jump_forward && !jump_gap) // in case we jump forward, but not jump a gap, we start at current_keyframe_idx +1
 			start_construct_idx = current_keyframe_idx + 1;
 
-		var target_childs_dic:Object = {};
-		var target_sessionIDs_dic:Object = {};
+		var child_depths = target_mc.getChildDepths();
+		var sessionID_depths:Object = {};
 		var i:number;
 		var end_index:number;
 		var k:number;
@@ -236,9 +236,7 @@ class Timeline
 			if (jump_gap) { // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 				target_mc.removeChild(child);
 			} else if (jump_forward) { // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-				depth = child._depthID;
-				target_childs_dic[depth] = child;
-				target_sessionIDs_dic[depth] = child._sessionID;
+				sessionID_depths[child._depthID] = child._sessionID;
 			}
 		}
 
@@ -251,18 +249,18 @@ class Timeline
 			var start_index:number;
 			var idx:number;
 
-			if ((frame_recipe & 2) == 2) {
+			if (frame_recipe & 2) {
 				// remove childs
 				start_index = this.command_index_stream[frame_command_idx];
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
 				for (i = start_index; i < end_index; i++) {
 					depth = this.remove_child_stream[i] - 16383;
-					delete target_childs_dic[depth];
-					delete target_sessionIDs_dic[depth];
+					delete child_depths[depth];
+					delete sessionID_depths[depth];
 				}
 			}
 
-			if ((frame_recipe & 4) == 4) {
+			if (frame_recipe & 4) {
 				start_index = this.command_index_stream[frame_command_idx];
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
 				// apply add commands in reversed order to have script exeucted in correct order.
@@ -272,12 +270,12 @@ class Timeline
 					var target:DisplayObject = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
 
 					depth = this.add_child_stream[idx + 1] - 16383;
-					target_childs_dic[depth] = target;
-					target_sessionIDs_dic[depth] = i;
+					child_depths[depth] = target;
+					sessionID_depths[depth] = i;
 				}
 			}
 
-			if ((frame_recipe & 8) == 8)
+			if (frame_recipe & 8)
 				update_indices[update_cnt++] = frame_command_idx;// execute update command later
 		}
 
@@ -289,15 +287,15 @@ class Timeline
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
 			depth = child._depthID;
-			if (target_sessionIDs_dic[depth] == child._sessionID)
-				delete target_childs_dic[depth];
+			if (sessionID_depths[depth] == child._sessionID)
+				delete sessionID_depths[depth];
 			else
 				target_mc.removeChildAt(i);
 		}
 
-		for (var key in target_childs_dic) {
-			child = target_childs_dic[key];
-			child._sessionID = target_sessionIDs_dic[key];
+		for (var key in sessionID_depths) {
+			child = child_depths[key];
+			child._sessionID = sessionID_depths[key];
 			target_mc.addChildAtDepth(child, parseInt(key));
 		}
 
@@ -328,17 +326,17 @@ class Timeline
 			var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
 			var frame_recipe = this.frame_recipe[new_keyFrameIndex];
 
-			if((frame_recipe & 1) == 1) {
+			if(frame_recipe & 1) {
 				for (var i:number = target_mc.numChildren - 1; i >= 0; i--)
 					target_mc.removeChildAt(i);
-			} else if ((frame_recipe & 2)==2) {
+			} else if (frame_recipe & 2) {
 				this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
 			}
 
-			if((frame_recipe & 4)==4)
+			if(frame_recipe & 4)
 				this.add_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
 
-			if((frame_recipe & 8)==8)
+			if(frame_recipe & 8)
 				this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
 		}
 	}
@@ -434,17 +432,11 @@ class Timeline
 							// a object could have multiple groups of masks, in case a graphic clip was merged into the timeline
 							// this is not implmeented in the runtime yet
 							// for now, a second mask-groupd would overwrite the first one
-							var mask:DisplayObject;
 							var masks:Array<DisplayObject> = new Array<DisplayObject>();
 							var numMasks:number=this.properties_stream_int[value_start_index++];
-							for(var m:number = 0; m < numMasks; m++){
-								if((mask = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]))) {
-									masks[m] = mask;
-									mask.mouseEnabled = false;
-									if(mask.isAsset(DisplayObjectContainer))
-										(<DisplayObjectContainer> mask).mouseChildren = false;
-								}
-							}
+							for(var m:number = 0; m < numMasks; m++)
+								masks[m] = sourceMovieClip.getChildAtSessionID(this.properties_stream_int[value_start_index++]);
+
 							target.masks = masks;
 							break;
 
