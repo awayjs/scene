@@ -598,7 +598,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		// from this point out, we can not return false, without checking collision of childs.
 		this._tempPoint.setTo(x,y);
-		var local:Point = this.globalToLocal(this._tempPoint);
+		var local:Point = this.globalToLocal(this._tempPoint, this._tempPoint);
 
 
 		if(this._geometry) {

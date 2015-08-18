@@ -279,7 +279,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _iSourcePrefab:PrefabBase;
 
     private _inheritColorTransform:boolean = false;
-	private _maskMode:boolean;
+	private _maskMode:boolean = false;
 
 	public _hierarchicalPropsDirty:number;
 
@@ -1677,12 +1677,18 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 *              properties.
 	 * @return A Point object with coordinates relative to the display object.
 	 */
-	public globalToLocal(point:Point):Point
+	public globalToLocal(point:Point, target:Point = null):Point
 	{
 		this._tempVector3D.setTo(point.x, point.y, 0);
-		var pos:Vector3D = this.inverseSceneTransform.transformVector(this._tempVector3D);
+		var pos:Vector3D = this.inverseSceneTransform.transformVector(this._tempVector3D, this._tempVector3D);
 
-		return new Point(pos.x, pos.y);
+		if (!target)
+			target = new Point();
+
+		target.x = pos.x;
+		target.y = pos.y;
+
+		return target;
 	}
 
 	/**
@@ -1935,12 +1941,18 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 *              properties.
 	 * @return A Point object with coordinates relative to the Scene.
 	 */
-	public localToGlobal(point:Point):Point
+	public localToGlobal(point:Point, target:Point = null):Point
 	{
 		this._tempVector3D.setTo(point.x, point.y, 0);
-		var pos:Vector3D = this.sceneTransform.transformVector(this._tempVector3D);
+		var pos:Vector3D = this.sceneTransform.transformVector(this._tempVector3D, this._tempVector3D);
 
-		return new Point(pos.x, pos.y);
+		if (!target)
+			target = new Point();
+
+		target.x = pos.x;
+		target.y = pos.y;
+
+		return target;
 	}
 
 	/**
@@ -2799,7 +2811,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _updateMaskMode()
 	{
-		this.mouseEnabled = !this._maskMode;
+		if (this.maskMode)
+			this.mouseEnabled = !this._maskMode;
 
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
