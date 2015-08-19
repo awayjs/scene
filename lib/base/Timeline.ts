@@ -186,8 +186,6 @@ class Timeline
 			return;
 		}
 
-		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
-			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
 			return;
@@ -243,6 +241,7 @@ class Timeline
 		//  step1: only apply add/remove commands into current_childs_dic.
 		var update_indices:Array<number> = [];// store a list of updatecommand_indices, so we dont have to read frame_recipe again
 		var update_cnt = 0;
+		var targetFrame_first_sessionID:number=0;
 		for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
 			var frame_command_idx:number = this.frame_command_indices[k];
 			var frame_recipe:number = this.frame_recipe[k];
@@ -273,6 +272,9 @@ class Timeline
 					child_depths[depth] = target;
 					sessionID_depths[depth] = i;
 				}
+				if(k==target_keyframe_idx){
+					targetFrame_first_sessionID=start_index;
+				}
 			}
 
 			if (frame_recipe & 8)
@@ -293,10 +295,26 @@ class Timeline
 				target_mc.removeChildAt(i);
 		}
 
+		// we need to addchild the objects that was added befor targetframe first
+		// than we can add the script of the targetframe
+		// than we can addchild objects added on targetframe
+
 		for (var key in sessionID_depths) {
-			child = child_depths[key];
-			child._sessionID = sessionID_depths[key];
-			target_mc.addChildAtDepth(child, parseInt(key));
+			if(parseInt(key)<targetFrame_first_sessionID){
+				child = child_depths[key];
+				child._sessionID = sessionID_depths[key];
+				target_mc.addChildAtDepth(child, parseInt(key));
+			}
+		}
+		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
+
+		for (var key in sessionID_depths) {
+			if(parseInt(key)>=targetFrame_first_sessionID) {
+				child = child_depths[key];
+				child._sessionID = sessionID_depths[key];
+				target_mc.addChildAtDepth(child, parseInt(key));
+			}
 		}
 
 		//  pass2: apply update commands for objects on stage (only if they are not blocked by script)
@@ -493,9 +511,12 @@ class Timeline
 							}
 							break;
 
-						case 200:// displaytransform
+						case 200:
 							target.maskMode = true;
+							break;
 
+						case 201:
+							target.masks = null;
 							break;
 
 						default:
