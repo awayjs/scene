@@ -249,6 +249,7 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
+	import Box = require("awayjs-core/lib/geom/Box");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -305,12 +306,10 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    private conversionX;
 	    private conversionY;
 	    private minx;
-	    private maxx;
 	    private miny;
-	    private maxy;
 	    private getCell(x, y);
-	    private buildGrid();
-	    hitTestPoint(x: number, y: number, z: number): boolean;
+	    private buildGrid(box);
+	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
 	    /**
 	     *
 	     */
@@ -617,7 +616,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _listenToRotationChanged;
 	    private _listenToSkewChanged;
 	    private _listenToScaleChanged;
-	    private _zOffset;
 	    _width: number;
 	    _height: number;
 	    _depth: number;
@@ -1592,7 +1590,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @internal
 	     */
 	    iSetParent(value: DisplayObjectContainer): void;
-	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
+	    pInvalidateHierarchicalProperties(propDirty: number): boolean;
 	    /**
 	     * @protected
 	     */
@@ -2322,6 +2320,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
+	import Box = require("awayjs-core/lib/geom/Box");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import Geometry = require("awayjs-display/lib/base/Geometry");
@@ -2393,7 +2392,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	    scale(scale: number): void;
 	    scaleUV(scaleU?: number, scaleV?: number): void;
 	    getBoundingPositions(): Float32Array;
-	    hitTestPoint(x: number, y: number, z: number): boolean;
+	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
 	    private notifyIndicesUpdate();
 	    private notifyIndicesDispose();
 	    notifyVerticesUpdate(attributesView: AttributesView): void;
@@ -2534,6 +2533,7 @@ declare module "awayjs-display/lib/base/TouchPoint" {
 	    x: number;
 	    y: number;
 	    id: number;
+	    constructor(x: number, y: number, id: number);
 	}
 	export = TouchPoint;
 	
@@ -6224,9 +6224,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    private _onMouseUp;
 	    private _time;
 	    private _currentFrameIndex;
-	    private _constructedKeyFrameIndex;
 	    private _isPlaying;
-	    private _loop;
 	    private _enterFrame;
 	    private _skipAdvance;
 	    private _isInit;
@@ -6240,14 +6238,20 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    constructor(timeline?: Timeline);
 	    isInit: boolean;
 	    timeline: Timeline;
+	    /**
+	     *
+	     */
 	    loop: boolean;
 	    numFrames: number;
 	    jumpToLabel(label: string): void;
-	    currentFrameIndex: number;
+	    /**
+	     * the current index of the current active frame
+	     */
 	    constructedKeyFrameIndex: number;
 	    exit_frame(): void;
 	    reset(): void;
 	    set_currentFrameIndex(value: number): void;
+	    currentFrameIndex: number;
 	    addButtonListeners(): void;
 	    removeButtonListeners(): void;
 	    getChildAtSessionID(sessionID: number): DisplayObject;
@@ -6450,15 +6454,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
 	}
 	export = Skybox;
-	
-}
-
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
 	
 }
 
@@ -7369,6 +7364,15 @@ declare module "awayjs-display/lib/entities/TextField" {
 	
 }
 
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
+
 declare module "awayjs-display/lib/events/CameraEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -7468,42 +7472,6 @@ declare module "awayjs-display/lib/events/MaterialEvent" {
 	    constructor(type: string);
 	}
 	export = MaterialEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	/**
-	 * Dispatched to notify changes in a sub geometry object's state.
-	 *
-	 * @class away.events.RenderableOwnerEvent
-	 * @see away.core.base.Geometry
-	 */
-	class RenderableOwnerEvent extends Event {
-	    /**
-	     * Dispatched when a Renderable owners's render object owner has been updated.
-	     */
-	    static RENDER_OWNER_UPDATED: string;
-	    private _renderOwner;
-	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param dataType An optional data type of the vertex data being updated.
-	     */
-	    constructor(type: string, renderOwner: IRenderOwner);
-	    /**
-	     * The renderobject owner of the renderable owner.
-	     */
-	    renderOwner: IRenderOwner;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): Event;
-	}
-	export = RenderableOwnerEvent;
 	
 }
 
@@ -7651,6 +7619,42 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	    sceneNormal: Vector3D;
 	}
 	export = MouseEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
+	/**
+	 * Dispatched to notify changes in a sub geometry object's state.
+	 *
+	 * @class away.events.RenderableOwnerEvent
+	 * @see away.core.base.Geometry
+	 */
+	class RenderableOwnerEvent extends Event {
+	    /**
+	     * Dispatched when a Renderable owners's render object owner has been updated.
+	     */
+	    static RENDER_OWNER_UPDATED: string;
+	    private _renderOwner;
+	    /**
+	     * Create a new GeometryEvent
+	     * @param type The event type.
+	     * @param dataType An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, renderOwner: IRenderOwner);
+	    /**
+	     * The renderobject owner of the renderable owner.
+	     */
+	    renderOwner: IRenderOwner;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): Event;
+	}
+	export = RenderableOwnerEvent;
 	
 }
 
@@ -8507,22 +8511,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" 
 	
 }
 
-declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
-	    private _coverageRatio;
-	    constructor(coverageRatio?: number);
-	    /**
-	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
-	     */
-	    coverageRatio: number;
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	}
-	export = NearDirectionalShadowMapper;
-	
-}
-
 declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
@@ -8555,6 +8543,22 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	    pUpdateProjectionFromFrustumCorners(viewCamera: Camera, corners: Array<number>, matrix: Matrix3D): void;
 	}
 	export = DirectionalShadowMapper;
+	
+}
+
+declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
+	    private _coverageRatio;
+	    constructor(coverageRatio?: number);
+	    /**
+	     * A value between 0 and 1 to indicate the ratio of the view frustum that needs to be covered by the shadow map.
+	     */
+	    coverageRatio: number;
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	}
+	export = NearDirectionalShadowMapper;
 	
 }
 

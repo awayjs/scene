@@ -202,38 +202,13 @@ var CurveSubGeometry = (function (_super) {
             return -1;
         return index_x + index_y * this.devisions;
     };
-    CurveSubGeometry.prototype.buildGrid = function () {
-        //calculate bounds, ideally via bounding box already computed
-        //if not just loop through and generate min/max
-        var positions = this.positions.get(this._numVertices);
-        var posDim = this.positions.dimensions;
-        this.minx = Number.MAX_VALUE;
-        this.maxx = -Number.MAX_VALUE;
-        this.miny = Number.MAX_VALUE;
-        this.maxy = -Number.MAX_VALUE;
-        for (var k = 0; k < positions.length; k += 3) {
-            var x = positions[k];
-            var y = positions[k + 1];
-            if (x < this.minx)
-                this.minx = x;
-            if (x > this.maxx)
-                this.maxx = x;
-            if (y < this.miny)
-                this.miny = y;
-            if (y > this.maxy)
-                this.maxy = y;
-        }
-        var width = this.maxx - this.minx;
-        var height = this.maxy - this.miny;
+    CurveSubGeometry.prototype.buildGrid = function (box) {
+        this.minx = box.x;
+        this.miny = box.y;
         //now we have bounds start creating grid cells and filling
-        var maxDevisions = 32;
-        this.devisions = Math.ceil(Math.sqrt(this.numVertices));
-        this.devisions = Math.min(this.devisions, maxDevisions);
-        var numCells = this.devisions * this.devisions;
-        var cellWidth = width / this.devisions;
-        var cellHeight = height / this.devisions;
-        this.conversionX = 1 / cellWidth;
-        this.conversionY = 1 / cellHeight;
+        this.devisions = Math.min(Math.ceil(Math.sqrt(this._numVertices)), 32);
+        this.conversionX = this.devisions / box.width;
+        this.conversionY = this.devisions / box.height;
         var id0;
         var id1;
         var id2;
@@ -243,7 +218,9 @@ var CurveSubGeometry = (function (_super) {
         var by;
         var cx;
         var cy;
-        this.cells = new Array(numCells);
+        this.cells = new Array(this.devisions * this.devisions);
+        var positions = this.positions.get(this._numVertices);
+        var posDim = this.positions.dimensions;
         for (var k = 0; k < this._numVertices; k += 3) {
             id0 = k + 2;
             id1 = k + 1;
@@ -255,29 +232,21 @@ var CurveSubGeometry = (function (_super) {
             cx = positions[id2 * posDim];
             cy = positions[id2 * posDim + 1];
             //subtractions to push into positive space
-            var left = Math.min(ax, bx, cx) - this.minx;
-            var right = Math.max(ax, bx, cx) - this.minx;
-            var top = Math.min(ay, by, cy) - this.miny;
-            var bottom = Math.max(ay, by, cy) - this.miny;
-            var min_index_x = Math.floor(left * this.conversionX);
-            var min_index_y = Math.floor(top * this.conversionY);
-            var max_index_x = Math.floor(right * this.conversionX);
-            var max_index_y = Math.floor(bottom * this.conversionY);
+            var min_index_x = Math.floor((Math.min(ax, bx, cx) - this.minx) * this.conversionX);
+            var min_index_y = Math.floor((Math.min(ay, by, cy) - this.miny) * this.conversionY);
+            var max_index_x = Math.floor((Math.max(ax, bx, cx) - this.minx) * this.conversionX);
+            var max_index_y = Math.floor((Math.max(ay, by, cy) - this.miny) * this.conversionY);
             for (var i = min_index_x; i <= max_index_x; i++) {
                 for (var j = min_index_y; j <= max_index_y; j++) {
                     var index = i + j * this.devisions;
-                    var nodes = this.cells[index];
-                    if (nodes == null) {
-                        nodes = new Array();
-                        this.cells[index] = nodes;
-                    }
+                    var nodes = this.cells[index] || (this.cells[index] = new Array());
                     //push in the triangle ids
                     nodes.push(id0, id1, id2);
                 }
             }
         }
     };
-    CurveSubGeometry.prototype.hitTestPoint = function (x, y, z) {
+    CurveSubGeometry.prototype.hitTestPoint = function (x, y, z, box) {
         var posDim = this.positions.dimensions;
         var curveDim = this.curves.dimensions;
         var positions = this.positions.get(this._numVertices);
@@ -293,9 +262,8 @@ var CurveSubGeometry = (function (_super) {
         var cy;
         //hard coded min vertex count to bother using a grid for
         if (this.numVertices > 150) {
-            if (this.cells == null) {
-                this.buildGrid();
-            }
+            if (this.cells == null)
+                this.buildGrid(box);
             var cell = this.getCell(x, y);
             if (cell == -1)
                 return false;
@@ -313,16 +281,13 @@ var CurveSubGeometry = (function (_super) {
                 by = positions[id1 * posDim + 1];
                 cx = positions[id2 * posDim];
                 cy = positions[id2 * posDim + 1];
-                //console.log(ax, ay, bx, by, cx, cy);
                 //from a to p
                 var dx = ax - x;
                 var dy = ay - y;
                 //edge normal (a-b)
                 var nx = by - ay;
                 var ny = -(bx - ax);
-                //console.log(ax,ay,bx,by,cx,cy);
                 var dot = (dx * nx) + (dy * ny);
-                //console.log("dot a",dot);
                 if (dot > 0)
                     continue;
                 dx = bx - x;
@@ -330,7 +295,6 @@ var CurveSubGeometry = (function (_super) {
                 nx = cy - by;
                 ny = -(cx - bx);
                 dot = (dx * nx) + (dy * ny);
-                //console.log("dot b",dot);
                 if (dot > 0)
                     continue;
                 dx = cx - x;
@@ -338,7 +302,6 @@ var CurveSubGeometry = (function (_super) {
                 nx = ay - cy;
                 ny = -(ax - cx);
                 dot = (dx * nx) + (dy * ny);
-                //console.log("dot c",dot);
                 if (dot > 0)
                     continue;
                 var curvex = curves[id0 * curveDim];
@@ -359,12 +322,10 @@ var CurveSubGeometry = (function (_super) {
                     var vv = w;
                     var d = uu * uu - vv;
                     var az = positions[id0 * posDim + 2];
-                    if (d > 0 && az == -1) {
+                    if (d > 0 && az == -1)
                         continue;
-                    }
-                    else if (d < 0 && az == 1) {
+                    else if (d < 0 && az == 1)
                         continue;
-                    }
                 }
                 return true;
             }
@@ -389,7 +350,6 @@ var CurveSubGeometry = (function (_super) {
             var ny = -(bx - ax);
             //console.log(ax,ay,bx,by,cx,cy);
             var dot = (dx * nx) + (dy * ny);
-            //console.log("dot a",dot);
             if (dot > 0)
                 continue;
             dx = bx - x;
@@ -397,7 +357,6 @@ var CurveSubGeometry = (function (_super) {
             nx = cy - by;
             ny = -(cx - bx);
             dot = (dx * nx) + (dy * ny);
-            //console.log("dot b",dot);
             if (dot > 0)
                 continue;
             dx = cx - x;
@@ -405,7 +364,6 @@ var CurveSubGeometry = (function (_super) {
             nx = ay - cy;
             ny = -(ax - cx);
             dot = (dx * nx) + (dy * ny);
-            //console.log("dot c",dot);
             if (dot > 0)
                 continue;
             var curvex = curves[id0 * curveDim];
@@ -808,7 +766,6 @@ var DisplayObject = (function (_super) {
         this._rotationZ = 0;
         this._eulers = new Vector3D();
         this._flipY = new Matrix3D();
-        this._zOffset = 0;
         this._skewX = 0;
         this._skewY = 0;
         this._skewZ = 0;
@@ -844,6 +801,10 @@ var DisplayObject = (function (_super) {
          *
          */
         this.orientationMode = OrientationMode.DEFAULT;
+        /**
+         *
+         */
+        this.zOffset = 0;
         // Cached vector of transformation components used when
         // recomposing the transform matrix in updateTransform()
         this._transformComponents = new Array(4);
@@ -877,6 +838,8 @@ var DisplayObject = (function (_super) {
             return this._inheritColorTransform;
         },
         set: function (value) {
+            if (this._inheritColorTransform == value)
+                return;
             this._inheritColorTransform = value;
             this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
         },
@@ -1767,19 +1730,6 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(DisplayObject.prototype, "zOffset", {
-        /**
-         *
-         */
-        get: function () {
-            return this._zOffset;
-        },
-        set: function (value) {
-            this._zOffset = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      *
      */
@@ -2435,12 +2385,12 @@ var DisplayObject = (function (_super) {
             this._iSetScene(null, null);
         this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
     };
-    DisplayObject.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
-        var dif = (this._hierarchicalPropsDirty ^ bitFlag) & bitFlag;
-        if (!dif)
+    DisplayObject.prototype.pInvalidateHierarchicalProperties = function (propDirty) {
+        var newPropDirty = (this._hierarchicalPropsDirty ^ propDirty) & propDirty;
+        if (!newPropDirty)
             return true;
-        this._hierarchicalPropsDirty |= bitFlag;
-        if (dif & HierarchicalProperties.SCENE_TRANSFORM) {
+        this._hierarchicalPropsDirty |= propDirty;
+        if (newPropDirty & HierarchicalProperties.SCENE_TRANSFORM) {
             this._inverseSceneTransformDirty = true;
             this._scenePositionDirty = true;
             if (this.isEntity)
@@ -3872,7 +3822,7 @@ var SubGeometryBase = (function (_super) {
     SubGeometryBase.prototype.getBoundingPositions = function () {
         throw new AbstractMethodError();
     };
-    SubGeometryBase.prototype.hitTestPoint = function (x, y, z) {
+    SubGeometryBase.prototype.hitTestPoint = function (x, y, z, box) {
         throw new AbstractMethodError();
     };
     SubGeometryBase.prototype.notifyIndicesUpdate = function () {
@@ -4413,7 +4363,10 @@ module.exports = Timeline;
  *
  */
 var TouchPoint = (function () {
-    function TouchPoint() {
+    function TouchPoint(x, y, id) {
+        this.x = x;
+        this.y = y;
+        this.id = id;
     }
     return TouchPoint;
 })();
@@ -7048,16 +7001,12 @@ var View = (function () {
         return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
     };
     View.prototype.getLocalTouchPoints = function (displayObject) {
-        var localTouchPoint;
         var localPosition;
         var localTouchPoints = new Array();
         var len = this._pTouchPoints.length;
         for (var i = 0; i < len; i++) {
-            localTouchPoint = new TouchPoint();
             localPosition = displayObject.inverseSceneTransform.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
-            localTouchPoint.x = localPosition.x;
-            localTouchPoint.y = localPosition.y;
-            localTouchPoints.push(localTouchPoint);
+            localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._pTouchPoints[i].id));
         }
         return localTouchPoints;
     };
@@ -10730,8 +10679,9 @@ var Mesh = (function (_super) {
         if (this._geometry && this._geometry.subGeometries.length) {
             this._tempPoint.setTo(x, y);
             var local = this.globalToLocal(this._tempPoint, this._tempPoint);
+            var box;
             //early out for box test
-            if (!this.getBox().contains(local.x, local.y, 0))
+            if (!(box = this.getBox()).contains(local.x, local.y, 0))
                 return false;
             //early out for non-shape tests
             if (!shapeFlag)
@@ -10740,7 +10690,7 @@ var Mesh = (function (_super) {
             var subGeometries = this._geometry.subGeometries;
             var subGeometriesCount = subGeometries.length;
             for (var j = 0; j < subGeometriesCount; j++)
-                if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
+                if (subGeometries[j].hitTestPoint(local.x, local.y, 0, box))
                     return true;
         }
         return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
@@ -10768,11 +10718,14 @@ var MovieClip = (function (_super) {
         var _this = this;
         if (timeline === void 0) { timeline = null; }
         _super.call(this);
-        this._loop = true;
+        /**
+         *
+         */
+        this.loop = true;
         this._active_session_ids = {};
         this._potentialInstances = {};
         this._currentFrameIndex = -1;
-        this._constructedKeyFrameIndex = -1;
+        this.constructedKeyFrameIndex = -1;
         this._isInit = true;
         this._isPlaying = true; // auto-play
         this._isButton = false;
@@ -10819,16 +10772,6 @@ var MovieClip = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(MovieClip.prototype, "loop", {
-        get: function () {
-            return this._loop;
-        },
-        set: function (value) {
-            this._loop = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(MovieClip.prototype, "numFrames", {
         get: function () {
             return this._timeline.numFrames;
@@ -10840,43 +10783,6 @@ var MovieClip = (function (_super) {
         // the timeline.jumpTolabel will set currentFrameIndex
         this._timeline.jumpToLabel(this, label);
     };
-    Object.defineProperty(MovieClip.prototype, "currentFrameIndex", {
-        get: function () {
-            return this._currentFrameIndex;
-        },
-        /*
-        * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
-         */
-        set: function (value) {
-            if (this._timeline.numFrames) {
-                value = Math.floor(value);
-                var skip_script = false;
-                if (value < 0)
-                    value = 0;
-                else if (value >= this._timeline.numFrames) {
-                    value = this._timeline.numFrames - 1;
-                    skip_script = true;
-                }
-                // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
-                this._skipAdvance = true;
-                //this._time = 0;
-                this._timeline.gotoFrame(this, value, skip_script);
-                this._currentFrameIndex = value;
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MovieClip.prototype, "constructedKeyFrameIndex", {
-        get: function () {
-            return this._constructedKeyFrameIndex;
-        },
-        set: function (value) {
-            this._constructedKeyFrameIndex = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     MovieClip.prototype.exit_frame = function () {
         this._skipAdvance = false;
         var child;
@@ -10894,7 +10800,7 @@ var MovieClip = (function (_super) {
             this.adapter.freeFromScript();
         this._isPlaying = true;
         this._currentFrameIndex = -1;
-        this._constructedKeyFrameIndex = -1;
+        this.constructedKeyFrameIndex = -1;
         for (var i = this.numChildren - 1; i >= 0; i--)
             this.removeChildAt(i);
         this._skipAdvance = true;
@@ -10910,6 +10816,36 @@ var MovieClip = (function (_super) {
         this._skipAdvance = true;
         this._currentFrameIndex = value;
     };
+    Object.defineProperty(MovieClip.prototype, "currentFrameIndex", {
+        /*
+        * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
+         */
+        get: function () {
+            return this._currentFrameIndex;
+        },
+        set: function (value) {
+            if (this._currentFrameIndex == value)
+                return;
+            if (this._timeline.numFrames) {
+                value = Math.floor(value);
+                var skip_script = false;
+                if (value < 0) {
+                    value = 0;
+                }
+                else if (value >= this._timeline.numFrames) {
+                    value = this._timeline.numFrames - 1;
+                    skip_script = true;
+                }
+                // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
+                this._skipAdvance = true;
+                //this._time = 0;
+                this._timeline.gotoFrame(this, value, skip_script);
+            }
+            this._currentFrameIndex = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     MovieClip.prototype.addButtonListeners = function () {
         this._isButton = true;
         this.stop();
@@ -10969,7 +10905,9 @@ var MovieClip = (function (_super) {
         this.dispatchEvent(this._enterFrame);
         // after we executed the onEnter, we might have some script that needs executing
         FrameScriptManager.execute_queue();
+        // now we execute any intervals queued
         FrameScriptManager.execute_intervals();
+        // finally, we execute any scripts that were added from intervals
         FrameScriptManager.execute_queue();
         this.exit_frame();
     };
@@ -10987,7 +10925,7 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.clone = function (newInstance) {
         if (newInstance === void 0) { newInstance = null; }
         newInstance = _super.prototype.clone.call(this, newInstance || new MovieClip(this._timeline));
-        newInstance._loop = this._loop;
+        newInstance.loop = this.loop;
         return newInstance;
     };
     MovieClip.prototype.iSetParent = function (value) {
@@ -10996,20 +10934,12 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }
         if (this._timeline.numFrames) {
-            var oldFrameIndex = this._currentFrameIndex;
-            var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
-            if (advance && oldFrameIndex == this._timeline.numFrames - 1 && !this._loop)
-                advance = false;
-            if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
-                this._currentFrameIndex = 0;
-                advance = false;
-            }
-            if (advance) {
+            if (((this._isPlaying && !this._skipAdvance) || this._currentFrameIndex == -1) && (this._currentFrameIndex != this._timeline.numFrames - 1 || this.loop)) {
                 this._currentFrameIndex++;
                 if (this._currentFrameIndex == this._timeline.numFrames) {
                     this.currentFrameIndex = 0;
                 }
-                else if (oldFrameIndex != this._currentFrameIndex) {
+                else {
                     this._timeline.constructNextFrame(this);
                 }
             }
@@ -13041,6 +12971,7 @@ module.exports = FrameScriptManager;
 
 },{}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var TouchPoint = require("awayjs-display/lib/base/TouchPoint");
 var AwayMouseEvent = require("awayjs-display/lib/events/MouseEvent");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
 /**
@@ -13129,6 +13060,7 @@ var MouseManager = (function () {
         view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
         view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
         view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
+        view.htmlElement.addEventListener("touchmove", this.onMouseMoveDelegate);
         view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
         view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
         view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
@@ -13142,6 +13074,7 @@ var MouseManager = (function () {
         view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
         view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
         view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
+        view.htmlElement.removeEventListener("touchmove", this.onMouseMoveDelegate);
         view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
         view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
         view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
@@ -13160,8 +13093,8 @@ var MouseManager = (function () {
             event.ctrlKey = sourceEvent.ctrlKey;
             event.altKey = sourceEvent.altKey;
             event.shiftKey = sourceEvent.shiftKey;
-            event.screenX = sourceEvent.clientX;
-            event.screenY = sourceEvent.clientY;
+            event.screenX = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches[0].clientX;
+            event.screenY = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches[0].clientY;
         }
         if (collider == null)
             collider = this._iCollidingObject;
@@ -13195,6 +13128,7 @@ var MouseManager = (function () {
     // Listeners.
     // ---------------------------------------------------------------------
     MouseManager.prototype.onMouseMove = function (event) {
+        event.preventDefault();
         this.updateColliders(event);
         if (this._iCollidingObject)
             this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
@@ -13249,7 +13183,16 @@ var MouseManager = (function () {
         var len = this._viewLookup.length;
         for (var i = 0; i < len; i++) {
             view = this._viewLookup[i];
+            view._pTouchPoints.length = 0;
             bounds = view.htmlElement.getBoundingClientRect();
+            if (event.touches) {
+                var touch;
+                var len = event.touches.length;
+                for (var i = 0; i < len; i++) {
+                    touch = event.touches[i];
+                    view._pTouchPoints.push(new TouchPoint(touch.clientX + bounds.left, touch.clientY + bounds.top, touch.identifier));
+                }
+            }
             if (mouseX < bounds.left || mouseX > bounds.right || mouseY < bounds.top || mouseY > bounds.bottom) {
                 view._pMouseX = null;
                 view._pMouseY = null;
@@ -13268,7 +13211,7 @@ var MouseManager = (function () {
 })();
 module.exports = MouseManager;
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/TouchPoint":"awayjs-display/lib/base/TouchPoint","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var AwayTouchEvent = require("awayjs-display/lib/events/TouchEvent");
 var TouchManager = (function () {
