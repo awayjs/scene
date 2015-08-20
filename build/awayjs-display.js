@@ -100,8 +100,8 @@ var CurveSubGeometry = (function (_super) {
         this._autoDeriveUVs = false;
         this._scaleU = 1;
         this._scaleV = 1;
-        //TODO - generate this dyanamically based on num tris
-        this.devisions = 32;
+        //used for hittesting geometry
+        this.cells = new Array();
         this._positions = this._concatenatedBuffer ? this._concatenatedBuffer.getView(0) || new Float3Attributes(this._concatenatedBuffer) : new Float3Attributes();
         this._curves = this._concatenatedBuffer ? this._concatenatedBuffer.getView(1) || new Float2Attributes(this._concatenatedBuffer) : new Float2Attributes();
         this._numVertices = this._positions.count;
@@ -193,207 +193,6 @@ var CurveSubGeometry = (function (_super) {
     });
     CurveSubGeometry.prototype.getBoundingPositions = function () {
         return this._positions.get(this._numVertices);
-    };
-    CurveSubGeometry.prototype.getCell = function (x, y) {
-        var index_x = Math.floor((x - this.minx) * this.conversionX);
-        var index_y = Math.floor((y - this.miny) * this.conversionY);
-        //out of bounds
-        if (index_x < 0 || index_x > this.devisions || index_y < 0 || index_y > this.devisions)
-            return -1;
-        return index_x + index_y * this.devisions;
-    };
-    CurveSubGeometry.prototype.buildGrid = function (box) {
-        this.minx = box.x;
-        this.miny = box.y;
-        //now we have bounds start creating grid cells and filling
-        this.devisions = Math.min(Math.ceil(Math.sqrt(this._numVertices)), 32);
-        this.conversionX = this.devisions / box.width;
-        this.conversionY = this.devisions / box.height;
-        var id0;
-        var id1;
-        var id2;
-        var ax;
-        var ay;
-        var bx;
-        var by;
-        var cx;
-        var cy;
-        this.cells = new Array(this.devisions * this.devisions);
-        var positions = this.positions.get(this._numVertices);
-        var posDim = this.positions.dimensions;
-        for (var k = 0; k < this._numVertices; k += 3) {
-            id0 = k + 2;
-            id1 = k + 1;
-            id2 = k + 0;
-            ax = positions[id0 * posDim];
-            ay = positions[id0 * posDim + 1];
-            bx = positions[id1 * posDim];
-            by = positions[id1 * posDim + 1];
-            cx = positions[id2 * posDim];
-            cy = positions[id2 * posDim + 1];
-            //subtractions to push into positive space
-            var min_index_x = Math.floor((Math.min(ax, bx, cx) - this.minx) * this.conversionX);
-            var min_index_y = Math.floor((Math.min(ay, by, cy) - this.miny) * this.conversionY);
-            var max_index_x = Math.floor((Math.max(ax, bx, cx) - this.minx) * this.conversionX);
-            var max_index_y = Math.floor((Math.max(ay, by, cy) - this.miny) * this.conversionY);
-            for (var i = min_index_x; i <= max_index_x; i++) {
-                for (var j = min_index_y; j <= max_index_y; j++) {
-                    var index = i + j * this.devisions;
-                    var nodes = this.cells[index] || (this.cells[index] = new Array());
-                    //push in the triangle ids
-                    nodes.push(id0, id1, id2);
-                }
-            }
-        }
-    };
-    CurveSubGeometry.prototype.hitTestPoint = function (x, y, z, box) {
-        var posDim = this.positions.dimensions;
-        var curveDim = this.curves.dimensions;
-        var positions = this.positions.get(this._numVertices);
-        var curves = this.curves.get(this._numVertices);
-        var id0;
-        var id1;
-        var id2;
-        var ax;
-        var ay;
-        var bx;
-        var by;
-        var cx;
-        var cy;
-        //hard coded min vertex count to bother using a grid for
-        if (this.numVertices > 150) {
-            if (this.cells == null)
-                this.buildGrid(box);
-            var cell = this.getCell(x, y);
-            if (cell == -1)
-                return false;
-            var nodes = this.cells[cell];
-            if (nodes == null)
-                return false;
-            var nodeCount = nodes.length;
-            for (var k = 0; k < nodeCount; k += 3) {
-                id0 = nodes[k];
-                id1 = nodes[k + 1];
-                id2 = nodes[k + 2];
-                ax = positions[id0 * posDim];
-                ay = positions[id0 * posDim + 1];
-                bx = positions[id1 * posDim];
-                by = positions[id1 * posDim + 1];
-                cx = positions[id2 * posDim];
-                cy = positions[id2 * posDim + 1];
-                //from a to p
-                var dx = ax - x;
-                var dy = ay - y;
-                //edge normal (a-b)
-                var nx = by - ay;
-                var ny = -(bx - ax);
-                var dot = (dx * nx) + (dy * ny);
-                if (dot > 0)
-                    continue;
-                dx = bx - x;
-                dy = by - y;
-                nx = cy - by;
-                ny = -(cx - bx);
-                dot = (dx * nx) + (dy * ny);
-                if (dot > 0)
-                    continue;
-                dx = cx - x;
-                dy = cy - y;
-                nx = ay - cy;
-                ny = -(ax - cx);
-                dot = (dx * nx) + (dy * ny);
-                if (dot > 0)
-                    continue;
-                var curvex = curves[id0 * curveDim];
-                //check if not solid
-                if (curvex != 2) {
-                    var v0x = bx - ax;
-                    var v0y = by - ay;
-                    var v1x = cx - ax;
-                    var v1y = cy - ay;
-                    var v2x = x - ax;
-                    var v2y = y - ay;
-                    var den = v0x * v1y - v1x * v0y;
-                    var v = (v2x * v1y - v1x * v2y) / den;
-                    var w = (v0x * v2y - v2x * v0y) / den;
-                    //var u:number = 1 - v - w;	//commented out as inlined away
-                    //here be dragons
-                    var uu = 0.5 * v + w;
-                    var vv = w;
-                    var d = uu * uu - vv;
-                    var az = positions[id0 * posDim + 2];
-                    if (d > 0 && az == -1)
-                        continue;
-                    else if (d < 0 && az == 1)
-                        continue;
-                }
-                return true;
-            }
-            return false;
-        }
-        for (var k = 0; k < this._numVertices; k += 3) {
-            id0 = k + 2;
-            id1 = k + 1;
-            id2 = k + 0;
-            ax = positions[id0 * posDim];
-            ay = positions[id0 * posDim + 1];
-            bx = positions[id1 * posDim];
-            by = positions[id1 * posDim + 1];
-            cx = positions[id2 * posDim];
-            cy = positions[id2 * posDim + 1];
-            //console.log(ax, ay, bx, by, cx, cy);
-            //from a to p
-            var dx = ax - x;
-            var dy = ay - y;
-            //edge normal (a-b)
-            var nx = by - ay;
-            var ny = -(bx - ax);
-            //console.log(ax,ay,bx,by,cx,cy);
-            var dot = (dx * nx) + (dy * ny);
-            if (dot > 0)
-                continue;
-            dx = bx - x;
-            dy = by - y;
-            nx = cy - by;
-            ny = -(cx - bx);
-            dot = (dx * nx) + (dy * ny);
-            if (dot > 0)
-                continue;
-            dx = cx - x;
-            dy = cy - y;
-            nx = ay - cy;
-            ny = -(ax - cx);
-            dot = (dx * nx) + (dy * ny);
-            if (dot > 0)
-                continue;
-            var curvex = curves[id0 * curveDim];
-            //check if not solid
-            if (curvex != 2) {
-                var v0x = bx - ax;
-                var v0y = by - ay;
-                var v1x = cx - ax;
-                var v1y = cy - ay;
-                var v2x = x - ax;
-                var v2y = y - ay;
-                var den = v0x * v1y - v1x * v0y;
-                var v = (v2x * v1y - v1x * v2y) / den;
-                var w = (v0x * v2y - v2x * v0y) / den;
-                //var u:number = 1 - v - w;	//commented out as inlined away
-                //here be dragons
-                var uu = 0.5 * v + w;
-                var vv = w;
-                var d = uu * uu - vv;
-                var az = positions[id0 * posDim + 2];
-                if (d > 0 && az == -1) {
-                    continue;
-                }
-                else if (d < 0 && az == 1) {
-                    continue;
-                }
-            }
-            return true;
-        }
-        return false;
     };
     CurveSubGeometry.prototype.setPositions = function (values, offset) {
         if (offset === void 0) { offset = 0; }
@@ -10245,6 +10044,7 @@ var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var SubMeshPool = require("awayjs-display/lib/pool/SubMeshPool");
+var SubGeometryUtils = require("awayjs-display/lib/utils/SubGeometryUtils");
 /**
  * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
@@ -10707,8 +10507,8 @@ var Mesh = (function (_super) {
             //ok do the geometry thing
             var subGeometries = this._geometry.subGeometries;
             var subGeometriesCount = subGeometries.length;
-            for (var j = 0; j < subGeometriesCount; j++)
-                if (subGeometries[j].hitTestPoint(local.x, local.y, 0, box))
+            for (var i = 0; i < subGeometriesCount; i++)
+                if (SubGeometryUtils.hitTestCurveGeometry(local.x, local.y, 0, box, subGeometries[i]))
                     return true;
         }
         return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
@@ -10718,7 +10518,7 @@ var Mesh = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool"}],"awayjs-display/lib/entities/MovieClip":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool","awayjs-display/lib/utils/SubGeometryUtils":"awayjs-display/lib/utils/SubGeometryUtils"}],"awayjs-display/lib/entities/MovieClip":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -21062,6 +20862,192 @@ var SubGeometryUtils = (function () {
         vertexBuffer = new AttributesBuffer(stride, len);
         vertexBuffer.bufferView = splitVerts;
         return vertexBuffer;
+    };
+    //TODO - generate this dyanamically based on num tris
+    SubGeometryUtils.hitTestCurveGeometry = function (x, y, z, boundingBox, curveSubGeometry) {
+        var positionAttributes = curveSubGeometry.positions;
+        var curveAttributes = curveSubGeometry.curves;
+        var count = curveSubGeometry.numVertices;
+        var posDim = positionAttributes.dimensions;
+        var curveDim = curveAttributes.dimensions;
+        var positions = positionAttributes.get(count);
+        var curves = curveAttributes.get(count);
+        var id0;
+        var id1;
+        var id2;
+        var ax;
+        var ay;
+        var bx;
+        var by;
+        var cx;
+        var cy;
+        //hard coded min vertex count to bother using a grid for
+        if (count > 150) {
+            var cells = curveSubGeometry.cells;
+            var divisions = cells.length ? curveSubGeometry.divisions : (curveSubGeometry.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
+            var conversionX = divisions / boundingBox.width;
+            var conversionY = divisions / boundingBox.height;
+            var minx = boundingBox.x;
+            var miny = boundingBox.y;
+            if (!cells.length) {
+                //now we have bounds start creating grid cells and filling
+                cells.length = divisions * divisions;
+                for (var k = 0; k < count; k += 3) {
+                    id0 = k + 2;
+                    id1 = k + 1;
+                    id2 = k + 0;
+                    ax = positions[id0 * posDim];
+                    ay = positions[id0 * posDim + 1];
+                    bx = positions[id1 * posDim];
+                    by = positions[id1 * posDim + 1];
+                    cx = positions[id2 * posDim];
+                    cy = positions[id2 * posDim + 1];
+                    //subtractions to push into positive space
+                    var min_index_x = Math.floor((Math.min(ax, bx, cx) - minx) * conversionX);
+                    var min_index_y = Math.floor((Math.min(ay, by, cy) - miny) * conversionY);
+                    var max_index_x = Math.floor((Math.max(ax, bx, cx) - minx) * conversionX);
+                    var max_index_y = Math.floor((Math.max(ay, by, cy) - miny) * conversionY);
+                    for (var i = min_index_x; i <= max_index_x; i++) {
+                        for (var j = min_index_y; j <= max_index_y; j++) {
+                            var index = i + j * divisions;
+                            var nodes = cells[index] || (cells[index] = new Array());
+                            //push in the triangle ids
+                            nodes.push(id0, id1, id2);
+                        }
+                    }
+                }
+            }
+            var index_x = Math.floor((x - minx) * conversionX);
+            var index_y = Math.floor((y - miny) * conversionY);
+            if ((index_x < 0 || index_x > divisions || index_y < 0 || index_y > divisions))
+                return false;
+            var nodes = cells[index_x + index_y * divisions];
+            if (nodes == null)
+                return false;
+            var nodeCount = nodes.length;
+            for (var k = 0; k < nodeCount; k += 3) {
+                id0 = nodes[k];
+                id1 = nodes[k + 1];
+                id2 = nodes[k + 2];
+                ax = positions[id0 * posDim];
+                ay = positions[id0 * posDim + 1];
+                bx = positions[id1 * posDim];
+                by = positions[id1 * posDim + 1];
+                cx = positions[id2 * posDim];
+                cy = positions[id2 * posDim + 1];
+                //from a to p
+                var dx = ax - x;
+                var dy = ay - y;
+                //edge normal (a-b)
+                var nx = by - ay;
+                var ny = -(bx - ax);
+                var dot = (dx * nx) + (dy * ny);
+                if (dot > 0)
+                    continue;
+                dx = bx - x;
+                dy = by - y;
+                nx = cy - by;
+                ny = -(cx - bx);
+                dot = (dx * nx) + (dy * ny);
+                if (dot > 0)
+                    continue;
+                dx = cx - x;
+                dy = cy - y;
+                nx = ay - cy;
+                ny = -(ax - cx);
+                dot = (dx * nx) + (dy * ny);
+                if (dot > 0)
+                    continue;
+                var curvex = curves[id0 * curveDim];
+                //check if not solid
+                if (curvex != 2) {
+                    var v0x = bx - ax;
+                    var v0y = by - ay;
+                    var v1x = cx - ax;
+                    var v1y = cy - ay;
+                    var v2x = x - ax;
+                    var v2y = y - ay;
+                    var den = v0x * v1y - v1x * v0y;
+                    var v = (v2x * v1y - v1x * v2y) / den;
+                    var w = (v0x * v2y - v2x * v0y) / den;
+                    //var u:number = 1 - v - w;	//commented out as inlined away
+                    //here be dragons
+                    var uu = 0.5 * v + w;
+                    var vv = w;
+                    var d = uu * uu - vv;
+                    var az = positions[id0 * posDim + 2];
+                    if (d > 0 && az == -1)
+                        continue;
+                    else if (d < 0 && az == 1)
+                        continue;
+                }
+                return true;
+            }
+            return false;
+        }
+        for (var k = 0; k < count; k += 3) {
+            id0 = k + 2;
+            id1 = k + 1;
+            id2 = k + 0;
+            ax = positions[id0 * posDim];
+            ay = positions[id0 * posDim + 1];
+            bx = positions[id1 * posDim];
+            by = positions[id1 * posDim + 1];
+            cx = positions[id2 * posDim];
+            cy = positions[id2 * posDim + 1];
+            //console.log(ax, ay, bx, by, cx, cy);
+            //from a to p
+            var dx = ax - x;
+            var dy = ay - y;
+            //edge normal (a-b)
+            var nx = by - ay;
+            var ny = -(bx - ax);
+            //console.log(ax,ay,bx,by,cx,cy);
+            var dot = (dx * nx) + (dy * ny);
+            if (dot > 0)
+                continue;
+            dx = bx - x;
+            dy = by - y;
+            nx = cy - by;
+            ny = -(cx - bx);
+            dot = (dx * nx) + (dy * ny);
+            if (dot > 0)
+                continue;
+            dx = cx - x;
+            dy = cy - y;
+            nx = ay - cy;
+            ny = -(ax - cx);
+            dot = (dx * nx) + (dy * ny);
+            if (dot > 0)
+                continue;
+            var curvex = curves[id0 * curveDim];
+            //check if not solid
+            if (curvex != 2) {
+                var v0x = bx - ax;
+                var v0y = by - ay;
+                var v1x = cx - ax;
+                var v1y = cy - ay;
+                var v2x = x - ax;
+                var v2y = y - ay;
+                var den = v0x * v1y - v1x * v0y;
+                var v = (v2x * v1y - v1x * v2y) / den;
+                var w = (v0x * v2y - v2x * v0y) / den;
+                //var u:number = 1 - v - w;	//commented out as inlined away
+                //here be dragons
+                var uu = 0.5 * v + w;
+                var vv = w;
+                var d = uu * uu - vv;
+                var az = positions[id0 * posDim + 2];
+                if (d > 0 && az == -1) {
+                    continue;
+                }
+                else if (d < 0 && az == 1) {
+                    continue;
+                }
+            }
+            return true;
+        }
+        return false;
     };
     SubGeometryUtils.LIMIT_VERTS = 0xffff;
     SubGeometryUtils.LIMIT_INDICES = 0xffffff;

@@ -249,7 +249,6 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
-	import Box = require("awayjs-core/lib/geom/Box");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -268,6 +267,8 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    private _autoDeriveUVs;
 	    private _scaleU;
 	    private _scaleV;
+	    cells: Array<Array<number>>;
+	    divisions: number;
 	    assetType: string;
 	    numVertices: number;
 	    /**
@@ -301,15 +302,6 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	     */
 	    constructor(concatenatedBuffer?: AttributesBuffer);
 	    getBoundingPositions(): Float32Array;
-	    private cells;
-	    private devisions;
-	    private conversionX;
-	    private conversionY;
-	    private minx;
-	    private miny;
-	    private getCell(x, y);
-	    private buildGrid(box);
-	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
 	    /**
 	     *
 	     */
@@ -10428,6 +10420,31 @@ declare module "awayjs-display/lib/text/TextFieldAutoSize" {
 	
 }
 
+declare module "awayjs-display/lib/text/TextFieldType" {
+	/**
+	 * The TextFieldType class is an enumeration of constant values used in setting the
+	 * <code>type</code> property of the TextField class.
+	 *
+	 * @see away.entities.TextField#type
+	 */
+	class TextFieldType {
+	    /**
+	     * Used to specify a <code>dynamic</code> TextField.
+	     */
+	    static DYNAMIC: string;
+	    /**
+	     * Used to specify an <code>input</code> TextField.
+	     */
+	    static INPUT: string;
+	    /**
+	     * Used to specify an <code>static</code> TextField.
+	     */
+	    static STATIC: string;
+	}
+	export = TextFieldType;
+	
+}
+
 declare module "awayjs-display/lib/text/TextFormat" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -10667,31 +10684,6 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	    assetType: string;
 	}
 	export = TextFormat;
-	
-}
-
-declare module "awayjs-display/lib/text/TextFieldType" {
-	/**
-	 * The TextFieldType class is an enumeration of constant values used in setting the
-	 * <code>type</code> property of the TextField class.
-	 *
-	 * @see away.entities.TextField#type
-	 */
-	class TextFieldType {
-	    /**
-	     * Used to specify a <code>dynamic</code> TextField.
-	     */
-	    static DYNAMIC: string;
-	    /**
-	     * Used to specify an <code>input</code> TextField.
-	     */
-	    static INPUT: string;
-	    /**
-	     * Used to specify an <code>static</code> TextField.
-	     */
-	    static STATIC: string;
-	}
-	export = TextFieldType;
 	
 }
 
@@ -11161,6 +11153,8 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import Float4Attributes = require("awayjs-core/lib/attributes/Float4Attributes");
 	import Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Box = require("awayjs-core/lib/geom/Box");
+	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 	class SubGeometryUtils {
 	    private static LIMIT_VERTS;
 	    private static LIMIT_INDICES;
@@ -11177,6 +11171,7 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	    static getSubIndices(indexAttributes: Short2Attributes, numVertices: number, indexMappings: Array<number>, indexOffset?: number): AttributesBuffer;
 	    static getSubIndices(indexAttributes: Short3Attributes, numVertices: number, indexMappings: Array<number>, indexOffset?: number): AttributesBuffer;
 	    static getSubVertices(vertexBuffer: AttributesBuffer, indexMappings: Array<number>): AttributesBuffer;
+	    static hitTestCurveGeometry(x: number, y: number, z: number, boundingBox: Box, curveSubGeometry: CurveSubGeometry): boolean;
 	}
 	export = SubGeometryUtils;
 	
