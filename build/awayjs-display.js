@@ -4007,20 +4007,24 @@ var Timeline = (function () {
                 }
             }
         }
+        // we need to addchild the objects that was added befor targetframe first
+        // than we can add the script of the targetframe
+        // than we can addchild objects added on targetframe
+        var id;
         for (var key in sessionID_depths) {
-            if (parseInt(key) < targetFrame_first_sessionID) {
+            if ((id = sessionID_depths[key]) < targetFrame_first_sessionID) {
                 child = child_depths[key];
-                child._sessionID = sessionID_depths[key];
-                target_mc.addChildAtDepth(child, parseInt(key));
+                child._sessionID = id;
+                target_mc.addChildAtDepth(child, Number(key));
             }
         }
         if (!skip_script && firstframe == value)
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         for (var key in sessionID_depths) {
-            if (parseInt(key) >= targetFrame_first_sessionID) {
+            if ((id = sessionID_depths[key]) >= targetFrame_first_sessionID) {
                 child = child_depths[key];
-                child._sessionID = sessionID_depths[key];
-                target_mc.addChildAtDepth(child, parseInt(key));
+                child._sessionID = id;
+                target_mc.addChildAtDepth(child, Number(key));
             }
         }
         //  pass2: apply update commands for objects on stage (only if they are not blocked by script)

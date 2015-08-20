@@ -9140,6 +9140,75 @@ declare module "awayjs-display/lib/pick/IPickingCollider" {
 	
 }
 
+declare module "awayjs-display/lib/pick/JSPickingCollider" {
+	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
+	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
+	import Billboard = require("awayjs-display/lib/entities/Billboard");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * Pure JS picking collider for display objects. Used with the <code>RaycastPicker</code> picking object.
+	 *
+	 * @see away.base.DisplayObject#pickingCollider
+	 * @see away.pick.RaycastPicker
+	 *
+	 * @class away.pick.JSPickingCollider
+	 */
+	class JSPickingCollider implements IPickingCollider {
+	    private _findClosestCollision;
+	    /**
+	     * Creates a new <code>JSPickingCollider</code> object.
+	     *
+	     * @param findClosestCollision Determines whether the picking collider searches for the closest collision along the ray. Defaults to false.
+	     */
+	    constructor(findClosestCollision?: boolean);
+	    /**
+	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
+	     *
+	     * @param billboard The billboard instance to be tested.
+	     * @param pickingCollisionVO The collision object used to store the collision results
+	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	     * @param findClosest
+	     */
+	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    /**
+	     * Tests a <code>TriangleSubGeometry</code> object for a collision with the picking ray.
+	     *
+	     * @param triangleSubGeometry
+	     * @param material
+	     * @param pickingCollisionVO
+	     * @param shortestCollisionDistance
+	     * @returns {boolean}
+	     */
+	    testTriangleCollision(triangleSubGeometry: TriangleSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    /**
+	     * Tests a <code>CurveSubGeometry</code> object for a collision with the picking ray.
+	     *
+	     * @param triangleSubGeometry
+	     * @param material
+	     * @param pickingCollisionVO
+	     * @param shortestCollisionDistance
+	     * @returns {boolean}
+	     */
+	    testCurveCollision(curveSubGeometry: CurveSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    /**
+	     * Tests a <code>LineSubGeometry</code> object for a collision with the picking ray.
+	     *
+	     * @param triangleSubGeometry
+	     * @param material
+	     * @param pickingCollisionVO
+	     * @param shortestCollisionDistance
+	     * @returns {boolean}
+	     */
+	    testLineCollision(lineSubGeometry: LineSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    private _getCollisionUV(indices, uvData, triangleIndex, v, w, u, uvDim);
+	}
+	export = JSPickingCollider;
+	
+}
+
 declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -9215,75 +9284,6 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	    constructor(displayObject: DisplayObject);
 	}
 	export = PickingCollisionVO;
-	
-}
-
-declare module "awayjs-display/lib/pick/JSPickingCollider" {
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
-	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
-	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
-	import Billboard = require("awayjs-display/lib/entities/Billboard");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * Pure JS picking collider for display objects. Used with the <code>RaycastPicker</code> picking object.
-	 *
-	 * @see away.base.DisplayObject#pickingCollider
-	 * @see away.pick.RaycastPicker
-	 *
-	 * @class away.pick.JSPickingCollider
-	 */
-	class JSPickingCollider implements IPickingCollider {
-	    private _findClosestCollision;
-	    /**
-	     * Creates a new <code>JSPickingCollider</code> object.
-	     *
-	     * @param findClosestCollision Determines whether the picking collider searches for the closest collision along the ray. Defaults to false.
-	     */
-	    constructor(findClosestCollision?: boolean);
-	    /**
-	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
-	     *
-	     * @param billboard The billboard instance to be tested.
-	     * @param pickingCollisionVO The collision object used to store the collision results
-	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
-	     * @param findClosest
-	     */
-	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    /**
-	     * Tests a <code>TriangleSubGeometry</code> object for a collision with the picking ray.
-	     *
-	     * @param triangleSubGeometry
-	     * @param material
-	     * @param pickingCollisionVO
-	     * @param shortestCollisionDistance
-	     * @returns {boolean}
-	     */
-	    testTriangleCollision(triangleSubGeometry: TriangleSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    /**
-	     * Tests a <code>CurveSubGeometry</code> object for a collision with the picking ray.
-	     *
-	     * @param triangleSubGeometry
-	     * @param material
-	     * @param pickingCollisionVO
-	     * @param shortestCollisionDistance
-	     * @returns {boolean}
-	     */
-	    testCurveCollision(curveSubGeometry: CurveSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    /**
-	     * Tests a <code>LineSubGeometry</code> object for a collision with the picking ray.
-	     *
-	     * @param triangleSubGeometry
-	     * @param material
-	     * @param pickingCollisionVO
-	     * @param shortestCollisionDistance
-	     * @returns {boolean}
-	     */
-	    testLineCollision(lineSubGeometry: LineSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    private _getCollisionUV(indices, uvData, triangleIndex, v, w, u, uvDim);
-	}
-	export = JSPickingCollider;
 	
 }
 
