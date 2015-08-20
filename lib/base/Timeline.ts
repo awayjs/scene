@@ -296,6 +296,32 @@ class Timeline
 				target_mc.removeChildAt(i);
 		}
 
+		// the objects that are now child of target_mc, are alive on both frames
+		// if we jump back, or we jump a gap forward, we want to reset all objects (but not the timelines of the mcs)
+		if((!jump_forward)||(jump_gap)){
+			for (i = target_mc.numChildren - 1; i >= 0; i--) {
+				child = target_mc._children[i];
+				if(child.adapter ) {
+					if (!child.adapter.isBlockedByScript()) {
+						if (child._iMatrix3D) {
+							child._iMatrix3D.identity();
+							child._iMatrix3D = child._iMatrix3D;
+						}
+						if (child._iColorTransform) {
+							child._iColorTransform.clear();
+							child._iColorTransform = child._iColorTransform;
+						}
+						//this.name="";
+						child.masks = null;
+						child.maskMode = false;
+					}
+					if (!child.adapter.isVisibilityByScript()) {
+						child.visible = true;
+					}
+				}
+			}
+		}
+
 		// we need to addchild the objects that was added befor targetframe first
 		// than we can add the script of the targetframe
 		// than we can addchild objects added on targetframe
