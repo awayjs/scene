@@ -82,6 +82,18 @@ declare module "awayjs-display/lib/IRenderer" {
 	
 }
 
+declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
+	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	interface IMovieClipAdapter extends IDisplayObjectAdapter {
+	    evalScript(str: string): Function;
+	    registerScriptObject(child: DisplayObject): void;
+	    unregisterScriptObject(child: DisplayObject): void;
+	}
+	export = IMovieClipAdapter;
+	
+}
+
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -92,18 +104,6 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	    clone(newAdaptee: DisplayObject): IDisplayObjectAdapter;
 	}
 	export = IDisplayObjectAdapter;
-	
-}
-
-declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
-	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	interface IMovieClipAdapter extends IDisplayObjectAdapter {
-	    evalScript(str: string): Function;
-	    registerScriptObject(child: DisplayObject): void;
-	    unregisterScriptObject(child: DisplayObject): void;
-	}
-	export = IMovieClipAdapter;
 	
 }
 
@@ -9721,6 +9721,78 @@ declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
 	
 }
 
+declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A Cube primitive prefab.
+	 */
+	class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset {
+	    private _width;
+	    private _height;
+	    private _depth;
+	    private _tile6;
+	    private _segmentsW;
+	    private _segmentsH;
+	    private _segmentsD;
+	    /**
+	     * Creates a new Cube object.
+	     * @param width The size of the cube along its X-axis.
+	     * @param height The size of the cube along its Y-axis.
+	     * @param depth The size of the cube along its Z-axis.
+	     * @param segmentsW The number of segments that make up the cube along the X-axis.
+	     * @param segmentsH The number of segments that make up the cube along the Y-axis.
+	     * @param segmentsD The number of segments that make up the cube along the Z-axis.
+	     * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
+	     */
+	    constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
+	    /**
+	     * The size of the cube along its X-axis.
+	     */
+	    width: number;
+	    /**
+	     * The size of the cube along its Y-axis.
+	     */
+	    height: number;
+	    /**
+	     * The size of the cube along its Z-axis.
+	     */
+	    depth: number;
+	    /**
+	     * The type of uv mapping to use. When false, the entire image is mapped on each face.
+	     * When true, a texture will be subdivided in a 3x2 grid, each used for a single face.
+	     * Reading the tiles from left to right, top to bottom they represent the faces of the
+	     * cube in the following order: bottom, top, back, left, front, right. This creates
+	     * several shared edges (between the top, front, left and right faces) which simplifies
+	     * texture painting.
+	     */
+	    tile6: boolean;
+	    /**
+	     * The number of segments that make up the cube along the X-axis. Defaults to 1.
+	     */
+	    segmentsW: number;
+	    /**
+	     * The number of segments that make up the cube along the Y-axis. Defaults to 1.
+	     */
+	    segmentsH: number;
+	    /**
+	     * The number of segments that make up the cube along the Z-axis. Defaults to 1.
+	     */
+	    segmentsD: number;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	}
+	export = PrimitiveCubePrefab;
+	
+}
+
 declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
@@ -9795,78 +9867,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveCylinderPrefab;
-	
-}
-
-declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A Cube primitive prefab.
-	 */
-	class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset {
-	    private _width;
-	    private _height;
-	    private _depth;
-	    private _tile6;
-	    private _segmentsW;
-	    private _segmentsH;
-	    private _segmentsD;
-	    /**
-	     * Creates a new Cube object.
-	     * @param width The size of the cube along its X-axis.
-	     * @param height The size of the cube along its Y-axis.
-	     * @param depth The size of the cube along its Z-axis.
-	     * @param segmentsW The number of segments that make up the cube along the X-axis.
-	     * @param segmentsH The number of segments that make up the cube along the Y-axis.
-	     * @param segmentsD The number of segments that make up the cube along the Z-axis.
-	     * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
-	     */
-	    constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
-	    /**
-	     * The size of the cube along its X-axis.
-	     */
-	    width: number;
-	    /**
-	     * The size of the cube along its Y-axis.
-	     */
-	    height: number;
-	    /**
-	     * The size of the cube along its Z-axis.
-	     */
-	    depth: number;
-	    /**
-	     * The type of uv mapping to use. When false, the entire image is mapped on each face.
-	     * When true, a texture will be subdivided in a 3x2 grid, each used for a single face.
-	     * Reading the tiles from left to right, top to bottom they represent the faces of the
-	     * cube in the following order: bottom, top, back, left, front, right. This creates
-	     * several shared edges (between the top, front, left and right faces) which simplifies
-	     * texture painting.
-	     */
-	    tile6: boolean;
-	    /**
-	     * The number of segments that make up the cube along the X-axis. Defaults to 1.
-	     */
-	    segmentsW: number;
-	    /**
-	     * The number of segments that make up the cube along the Y-axis. Defaults to 1.
-	     */
-	    segmentsH: number;
-	    /**
-	     * The number of segments that make up the cube along the Z-axis. Defaults to 1.
-	     */
-	    segmentsD: number;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	}
-	export = PrimitiveCubePrefab;
 	
 }
 
