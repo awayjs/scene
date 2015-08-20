@@ -301,15 +301,18 @@ class Timeline
 		if((!jump_forward)||(jump_gap)){
 			for (i = target_mc.numChildren - 1; i >= 0; i--) {
 				child = target_mc._children[i];
-				if(child.adapter ) {
+				if(child.adapter) {
 					if (!child.adapter.isBlockedByScript()) {
 						if (child._iMatrix3D) {
 							child._iMatrix3D.identity();
-							child._iMatrix3D = child._iMatrix3D;
+							child.x = child._iMatrix3D.rawData[12];
+							child.y = child._iMatrix3D.rawData[13];
+							child._elementsDirty = true;
+							child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 						}
 						if (child._iColorTransform) {
 							child._iColorTransform.clear();
-							child._iColorTransform = child._iColorTransform;
+							child.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 						}
 						//this.name="";
 						child.masks = null;
