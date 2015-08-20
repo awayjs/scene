@@ -780,7 +780,7 @@ class TextField extends Mesh
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
 		var k:number = 0;
-		var textlines:Array<string> = this.text.toString().split("\n");
+		var textlines:Array<string> = this.text.toString().split("\\n");
 		for (var tl = 0; tl < textlines.length; tl++) {
 			var line_width:number = 0;
 			var c_cnt:number = 0;
