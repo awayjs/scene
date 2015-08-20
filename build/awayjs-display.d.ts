@@ -82,18 +82,6 @@ declare module "awayjs-display/lib/IRenderer" {
 	
 }
 
-declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
-	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	interface IMovieClipAdapter extends IDisplayObjectAdapter {
-	    evalScript(str: string): Function;
-	    registerScriptObject(child: DisplayObject): void;
-	    unregisterScriptObject(child: DisplayObject): void;
-	}
-	export = IMovieClipAdapter;
-	
-}
-
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -104,6 +92,18 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	    clone(newAdaptee: DisplayObject): IDisplayObjectAdapter;
 	}
 	export = IDisplayObjectAdapter;
+	
+}
+
+declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
+	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	interface IMovieClipAdapter extends IDisplayObjectAdapter {
+	    evalScript(str: string): Function;
+	    registerScriptObject(child: DisplayObject): void;
+	    unregisterScriptObject(child: DisplayObject): void;
+	}
+	export = IMovieClipAdapter;
 	
 }
 
@@ -6340,125 +6340,6 @@ declare module "awayjs-display/lib/entities/Shape" {
 	
 }
 
-declare module "awayjs-display/lib/entities/Skybox" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IRender = require("awayjs-display/lib/pool/IRender");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
-	/**
-	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
-	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
-	 * the sky box is always as large as possible without being clipped.
-	 */
-	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner {
-	    static assetType: string;
-	    private _cubeMap;
-	    _pAlphaThreshold: number;
-	    private _animationSet;
-	    _pLightPicker: LightPickerBase;
-	    _pBlendMode: string;
-	    private _renders;
-	    private _renderables;
-	    private _uvTransform;
-	    private _colorTransform;
-	    private _owners;
-	    private _mipmap;
-	    private _smooth;
-	    private _animator;
-	    /**
-	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	     * invisible or entirely opaque, often used with textures for foliage, etc.
-	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	     */
-	    alphaThreshold: number;
-	    /**
-	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
-	     */
-	    mipmap: boolean;
-	    /**
-	     * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
-	     */
-	    smooth: boolean;
-	    /**
-	     * The light picker used by the material to provide lights to the material if it supports lighting.
-	     *
-	     * @see LightPickerBase
-	     * @see StaticLightPicker
-	     */
-	    lightPicker: LightPickerBase;
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
-	     * <ul>
-	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-	     * <li>BlendMode.MULTIPLY</li>
-	     * <li>BlendMode.ADD</li>
-	     * <li>BlendMode.ALPHA</li>
-	     * </ul>
-	     */
-	    blendMode: string;
-	    _pInvalidateRender(): void;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    _pIinvalidatePasses(): void;
-	    /**
-	     * A list of the IRenderableOwners that use this material
-	     *
-	     * @private
-	     */
-	    iOwners: Array<IRenderableOwner>;
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	    * The cube texture to use as the skybox.
-	    */
-	    cubeMap: SingleCubeTexture;
-	    /**
-	     * Create a new Skybox object.
-	     *
-	     * @param material	The material with which to render the Skybox.
-	     */
-	    constructor(cubeMap?: SingleCubeTexture);
-	    assetType: string;
-	    castsShadows: boolean;
-	    /**
-	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	     * could be used by other materials and will not be disposed.
-	     */
-	    dispose(): void;
-	    _applyRenderer(renderer: IRenderer): void;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
-	}
-	export = Skybox;
-	
-}
-
 declare module "awayjs-display/lib/entities/TextField" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -7366,6 +7247,125 @@ declare module "awayjs-display/lib/entities/TextField" {
 	
 }
 
+declare module "awayjs-display/lib/entities/Skybox" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IRender = require("awayjs-display/lib/pool/IRender");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+	/**
+	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
+	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
+	 * the sky box is always as large as possible without being clipped.
+	 */
+	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner {
+	    static assetType: string;
+	    private _cubeMap;
+	    _pAlphaThreshold: number;
+	    private _animationSet;
+	    _pLightPicker: LightPickerBase;
+	    _pBlendMode: string;
+	    private _renders;
+	    private _renderables;
+	    private _uvTransform;
+	    private _colorTransform;
+	    private _owners;
+	    private _mipmap;
+	    private _smooth;
+	    private _animator;
+	    /**
+	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	     * invisible or entirely opaque, often used with textures for foliage, etc.
+	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	     */
+	    alphaThreshold: number;
+	    /**
+	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
+	     */
+	    mipmap: boolean;
+	    /**
+	     * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
+	     */
+	    smooth: boolean;
+	    /**
+	     * The light picker used by the material to provide lights to the material if it supports lighting.
+	     *
+	     * @see LightPickerBase
+	     * @see StaticLightPicker
+	     */
+	    lightPicker: LightPickerBase;
+	    /**
+	     *
+	     */
+	    animationSet: IAnimationSet;
+	    /**
+	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	     * <ul>
+	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	     * <li>BlendMode.MULTIPLY</li>
+	     * <li>BlendMode.ADD</li>
+	     * <li>BlendMode.ALPHA</li>
+	     * </ul>
+	     */
+	    blendMode: string;
+	    _pInvalidateRender(): void;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    _pIinvalidatePasses(): void;
+	    /**
+	     * A list of the IRenderableOwners that use this material
+	     *
+	     * @private
+	     */
+	    iOwners: Array<IRenderableOwner>;
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     *
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	    * The cube texture to use as the skybox.
+	    */
+	    cubeMap: SingleCubeTexture;
+	    /**
+	     * Create a new Skybox object.
+	     *
+	     * @param material	The material with which to render the Skybox.
+	     */
+	    constructor(cubeMap?: SingleCubeTexture);
+	    assetType: string;
+	    castsShadows: boolean;
+	    /**
+	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
+	     * could be used by other materials and will not be disposed.
+	     */
+	    dispose(): void;
+	    _applyRenderer(renderer: IRenderer): void;
+	    _iAddRender(render: IRender): IRender;
+	    _iRemoveRender(render: IRender): IRender;
+	    _iAddRenderable(renderable: IRenderable): IRenderable;
+	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	}
+	export = Skybox;
+	
+}
+
 declare module "awayjs-display/lib/errors/CastError" {
 	import Error = require("awayjs-core/lib/errors/Error");
 	class CastError extends Error {
@@ -7388,28 +7388,6 @@ declare module "awayjs-display/lib/events/CameraEvent" {
 	    camera: Camera;
 	}
 	export = CameraEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/DisplayObjectEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class DisplayObjectEvent extends Event {
-	    static VISIBLITY_UPDATED: string;
-	    static SCENETRANSFORM_CHANGED: string;
-	    static SCENE_CHANGED: string;
-	    static POSITION_CHANGED: string;
-	    static ROTATION_CHANGED: string;
-	    static SKEW_CHANGED: string;
-	    static SCALE_CHANGED: string;
-	    /**
-	     *
-	     */
-	    static PARTITION_CHANGED: string;
-	    object: DisplayObject;
-	    constructor(type: string, object: DisplayObject);
-	}
-	export = DisplayObjectEvent;
 	
 }
 
@@ -7453,6 +7431,28 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	    clone(): Event;
 	}
 	export = GeometryEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/DisplayObjectEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class DisplayObjectEvent extends Event {
+	    static VISIBLITY_UPDATED: string;
+	    static SCENETRANSFORM_CHANGED: string;
+	    static SCENE_CHANGED: string;
+	    static POSITION_CHANGED: string;
+	    static ROTATION_CHANGED: string;
+	    static SKEW_CHANGED: string;
+	    static SCALE_CHANGED: string;
+	    /**
+	     *
+	     */
+	    static PARTITION_CHANGED: string;
+	    object: DisplayObject;
+	    constructor(type: string, object: DisplayObject);
+	}
+	export = DisplayObjectEvent;
 	
 }
 
