@@ -1,6 +1,7 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
 import View							= require("awayjs-display/lib/containers/View");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import AwayMouseEvent				= require("awayjs-display/lib/events/MouseEvent");
@@ -134,6 +135,7 @@ class MouseManager
 		view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
 		view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
 		view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
+		view.htmlElement.addEventListener("touchmove", this.onMouseMoveDelegate);
 		view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
 		view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
 		view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
@@ -150,6 +152,7 @@ class MouseManager
 		view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
 		view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
 		view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
+		view.htmlElement.removeEventListener("touchmove", this.onMouseMoveDelegate);
 		view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
 		view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
 		view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
@@ -164,15 +167,15 @@ class MouseManager
 	// Private.
 	// ---------------------------------------------------------------------
 
-	private queueDispatch(event:AwayMouseEvent, sourceEvent:MouseEvent, collider:PickingCollisionVO = null)
+	private queueDispatch(event:AwayMouseEvent, sourceEvent, collider:PickingCollisionVO = null)
 	{
 		// 2D properties.
 		if (sourceEvent) {
 			event.ctrlKey = sourceEvent.ctrlKey;
 			event.altKey = sourceEvent.altKey;
 			event.shiftKey = sourceEvent.shiftKey;
-			event.screenX = sourceEvent.clientX;
-			event.screenY = sourceEvent.clientY;
+			event.screenX = (sourceEvent.clientX != null)? sourceEvent.clientX : sourceEvent.changedTouches[0].clientX;
+			event.screenY = (sourceEvent.clientY != null)? sourceEvent.clientY : sourceEvent.changedTouches[0].clientY;
 		}
 
 		if (collider == null)
@@ -211,6 +214,8 @@ class MouseManager
 
 	private onMouseMove(event:MouseEvent)
 	{
+		event.preventDefault();
+
 		this.updateColliders(event);
 
 		if (this._iCollidingObject)
@@ -296,13 +301,25 @@ class MouseManager
 		var len:number = this._viewLookup.length;
 		for (var i:number = 0; i < len; i++) {
 			view = this._viewLookup[i];
+			view._pTouchPoints.length = 0;
 			bounds = view.htmlElement.getBoundingClientRect();
+
+			if (event.touches) {
+				var touch;
+				var len:number = event.touches.length;
+				for (var i:number = 0; i < len; i++) {
+					touch = event.touches[i];
+					view._pTouchPoints.push(new TouchPoint(touch.clientX + bounds.left, touch.clientY + bounds.top, touch.identifier));
+				}
+			}
+
 			if (mouseX < bounds.left || mouseX > bounds.right || mouseY < bounds.top || mouseY > bounds.bottom) {
 				view._pMouseX = null;
 				view._pMouseY = null;
 			} else {
 				view._pMouseX = mouseX + bounds.left;
 				view._pMouseY = mouseY + bounds.top;
+
 				view.updateCollider();
 
 				if (view.layeredView && this._iCollidingObject)

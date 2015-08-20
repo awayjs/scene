@@ -27,10 +27,8 @@ class MovieClip extends DisplayObjectContainer
 
     private _time:number;// the current time inside the animation
     private _currentFrameIndex:number;// the current frame
-    private _constructedKeyFrameIndex:number;// the current index of the current active frame
 
     private _isPlaying:boolean;// false if paused or stopped
-    private _loop:boolean = true;
 
     // not sure if needed
     private _enterFrame:Event;
@@ -60,7 +58,7 @@ class MovieClip extends DisplayObjectContainer
         this._active_session_ids = {};
         this._potentialInstances = {};
         this._currentFrameIndex = -1;
-        this._constructedKeyFrameIndex = -1;
+        this.constructedKeyFrameIndex = -1;
         this._isInit=true;
         this._isPlaying = true; // auto-play
         this._isButton=false;
@@ -96,15 +94,10 @@ class MovieClip extends DisplayObjectContainer
         this._timeline = value;
     }
 
-    public get loop()
-    {
-        return this._loop;
-    }
-
-    public set loop(value:boolean)
-    {
-        this._loop = value;
-    }
+    /**
+     *
+     */
+    public loop:boolean = true;
 
     public get numFrames() : number
     {
@@ -117,19 +110,10 @@ class MovieClip extends DisplayObjectContainer
         this._timeline.jumpToLabel(this, label);
     }
 
-    public get currentFrameIndex():number
-    {
-        return this._currentFrameIndex;
-    }
-    public get constructedKeyFrameIndex():number
-    {
-        return this._constructedKeyFrameIndex;
-    }
-
-    public set constructedKeyFrameIndex(value : number)
-    {
-        this._constructedKeyFrameIndex = value;
-    }
+    /**
+     * the current index of the current active frame
+     */
+    public constructedKeyFrameIndex:number;
 
     public exit_frame():void
     {
@@ -155,7 +139,7 @@ class MovieClip extends DisplayObjectContainer
         this._isPlaying = true;
 
         this._currentFrameIndex = -1;
-        this._constructedKeyFrameIndex = -1;
+        this.constructedKeyFrameIndex = -1;
         for (var i:number = this.numChildren - 1; i >= 0; i--)
             this.removeChildAt(i);
 
@@ -177,14 +161,21 @@ class MovieClip extends DisplayObjectContainer
     /*
     * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
      */
+    public get currentFrameIndex():number
+    {
+        return this._currentFrameIndex;
+    }
+
     public set currentFrameIndex(value : number)
     {
         if(this._timeline.numFrames) {
             value = Math.floor(value);
-            var skip_script:boolean=false;
-            if (value < 0)
+
+            var skip_script:boolean = false;
+
+            if (value < 0) {
                 value = 0;
-            else if (value >= this._timeline.numFrames){
+            } else if (value >= this._timeline.numFrames) {
                 value = this._timeline.numFrames - 1;
                 skip_script=true;
             }
@@ -274,16 +265,20 @@ class MovieClip extends DisplayObjectContainer
     public update()
     {
         this.advanceFrame();
+
         // after we advanced the scenegraph, we might have some script that needs executing
         FrameScriptManager.execute_queue();
 
         // now we want to execute the onEnter
         this.dispatchEvent(this._enterFrame);
+
         // after we executed the onEnter, we might have some script that needs executing
         FrameScriptManager.execute_queue();
 
-
+        // now we execute any intervals queued
         FrameScriptManager.execute_intervals();
+
+        // finally, we execute any scripts that were added from intervals
         FrameScriptManager.execute_queue();
 
         this.exit_frame();
@@ -311,7 +306,7 @@ class MovieClip extends DisplayObjectContainer
     {
         newInstance = <MovieClip> super.clone(newInstance || new MovieClip(this._timeline));
 
-        newInstance._loop = this._loop;
+        newInstance.loop = this.loop;
 
         return newInstance;
     }
@@ -325,10 +320,7 @@ class MovieClip extends DisplayObjectContainer
     {
         if(this._timeline.numFrames) {
             var oldFrameIndex = this._currentFrameIndex;
-            var advance = (this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1;
-
-            if (advance && oldFrameIndex == this._timeline.numFrames - 1 && !this._loop)
-                advance = false;
+            var advance = ((this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1) && oldFrameIndex == this._timeline.numFrames - 1 && !this.loop;
 
             if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
                 this._currentFrameIndex = 0;

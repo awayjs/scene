@@ -596,9 +596,10 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		if(this._geometry && this._geometry.subGeometries.length) {
 			this._tempPoint.setTo(x,y);
 			var local:Point = this.globalToLocal(this._tempPoint, this._tempPoint);
+			var box:Box;
 
 			//early out for box test
-			if(!this.getBox().contains(local.x, local.y, 0))
+			if(!(box = this.getBox()).contains(local.x, local.y, 0))
 				return false;
 
 			//early out for non-shape tests
@@ -609,7 +610,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			var subGeometries:Array<SubGeometryBase> = this._geometry.subGeometries;
 			var subGeometriesCount:number = subGeometries.length;
 			for(var j:number = 0; j < subGeometriesCount; j++)
-				if (subGeometries[j].hitTestPoint(local.x, local.y, 0))
+				if (subGeometries[j].hitTestPoint(local.x, local.y, 0, box))
 					return true;
 		}
 

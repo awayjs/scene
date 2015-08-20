@@ -132,19 +132,14 @@ class View
 
 	public getLocalTouchPoints(displayObject:DisplayObject):Array<TouchPoint>
 	{
-		var localTouchPoint:TouchPoint;
 		var localPosition:Vector3D;
 		var localTouchPoints:Array<TouchPoint> = new Array<TouchPoint>();
 
 		var len:number = this._pTouchPoints.length;
 		for (var i:number = 0; i < len; i++) {
-			localTouchPoint = new TouchPoint();
 			localPosition = displayObject.inverseSceneTransform.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
-			localTouchPoint.x = localPosition.x;
-			localTouchPoint.y = localPosition.y;
-			localTouchPoints.push(localTouchPoint);
+			localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._pTouchPoints[i].id));
 		}
-
 
 		return localTouchPoints;
 	}

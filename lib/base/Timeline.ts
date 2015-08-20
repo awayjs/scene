@@ -143,10 +143,11 @@ class Timeline
 		return this.keyframe_indices[frame_index];
 	}
 
-	public getPotentialChilds() : Array<DisplayObject>
+	public getPotentialChilds():Array<DisplayObject>
 	{
 		return this._potentialPrototypes;
 	}
+
 	public getPotentialChildInstance(id:number) : DisplayObject
 	{
 		var this_clone:DisplayObject=this._potentialPrototypes[id].clone();
@@ -159,12 +160,12 @@ class Timeline
 		var id = this._potentialPrototypes.length;
 		this._potentialPrototypes[id] = prototype;
 	}
+
 	public jumpToLabel(target_mc:MovieClip, label:string) : void
 	{
 		var key_frame_index:number = this._labels[label];
 		if(key_frame_index>=0)
 			target_mc.currentFrameIndex=this.keyframe_firstframes[key_frame_index];
-
 	}
 
 

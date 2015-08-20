@@ -3,6 +3,7 @@ import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
 import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
 import Short3Attributes				= require("awayjs-core/lib/attributes/Short3Attributes");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import Box							= require("awayjs-core/lib/geom/Box");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
@@ -176,7 +177,7 @@ class SubGeometryBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public hitTestPoint(x:number, y:number, z:number):boolean
+	public hitTestPoint(x:number, y:number, z:number, box:Box):boolean
 	{
 		throw new AbstractMethodError();
 	}

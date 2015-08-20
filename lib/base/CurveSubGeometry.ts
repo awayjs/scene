@@ -2,6 +2,7 @@ import AttributesBuffer				= require("awayjs-core/lib/attributes/AttributesBuffe
 import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
 import Short3Attributes				= require("awayjs-core/lib/attributes/Short3Attributes");
+import Box							= require("awayjs-core/lib/geom/Box");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
@@ -131,9 +132,7 @@ class CurveSubGeometry extends SubGeometryBase
 	private conversionX:number;
 	private conversionY:number;
 	private minx:number;
-	private maxx:number;
 	private miny:number;
-	private maxy:number;
 
 	private getCell(x:number, y:number):number
 	{
@@ -145,41 +144,17 @@ class CurveSubGeometry extends SubGeometryBase
 
 		return  index_x + index_y * this.devisions;
 	}
-	private buildGrid():void
+
+	private buildGrid(box:Box):void
 	{
-		//calculate bounds, ideally via bounding box already computed
-		//if not just loop through and generate min/max
-		var positions:Float32Array = this.positions.get(this._numVertices);
-		var posDim:number = this.positions.dimensions;
-		this.minx = Number.MAX_VALUE;
-		this.maxx = -Number.MAX_VALUE;
-		this.miny = Number.MAX_VALUE;
-		this.maxy = -Number.MAX_VALUE;
-		for(var k:number = 0; k < positions.length; k+=3)
-		{
-			var x:number = positions[k];
-			var y:number = positions[k + 1];
-
-			if(x < this.minx) this.minx = x;
-			if(x > this.maxx) this.maxx = x;
-			if(y < this.miny) this.miny = y;
-			if(y > this.maxy) this.maxy = y;
-		}
-
-		var width:number = this.maxx - this.minx;
-		var height:number = this.maxy - this.miny;
-
+		this.minx = box.x;
+		this.miny = box.y;
 
 		//now we have bounds start creating grid cells and filling
-		var maxDevisions:number = 32;
-		this.devisions = Math.ceil(Math.sqrt(this.numVertices));
-		this.devisions = Math.min(this.devisions, maxDevisions);
-		var numCells:number = this.devisions * this.devisions;
-		var cellWidth:number = width/this.devisions;
-		var cellHeight:number = height/this.devisions;
+		this.devisions = Math.min(Math.ceil(Math.sqrt(this._numVertices)), 32);
 
-		this.conversionX = 1/cellWidth;
-		this.conversionY = 1/cellHeight;
+		this.conversionX = this.devisions/box.width;
+		this.conversionY = this.devisions/box.height;
 
 		var id0:number;
 		var id1:number;
@@ -192,7 +167,10 @@ class CurveSubGeometry extends SubGeometryBase
 		var cx:number;
 		var cy:number;
 
-		this.cells = new Array<Array<number>>(numCells);
+		this.cells = new Array<Array<number>>(this.devisions * this.devisions);
+
+		var positions:Float32Array = this.positions.get(this._numVertices);
+		var posDim:number = this.positions.dimensions;
 
 		for(var k:number = 0; k < this._numVertices; k+=3) {
 			id0 = k + 2;
@@ -207,36 +185,25 @@ class CurveSubGeometry extends SubGeometryBase
 			cy = positions[id2 * posDim + 1];
 
 			//subtractions to push into positive space
-			var left:number = Math.min(ax, bx, cx)-this.minx;
-			var right:number = Math.max(ax, bx, cx)-this.minx;
-			var top:number = Math.min(ay, by, cy)-this.miny;
-			var bottom:number = Math.max(ay, by, cy)-this.miny;
+			var min_index_x:number = Math.floor((Math.min(ax, bx, cx) - this.minx)*this.conversionX);
+			var min_index_y:number = Math.floor((Math.min(ay, by, cy) - this.miny)*this.conversionY);
 
-			var min_index_x:number = Math.floor(left * this.conversionX);
-			var min_index_y:number = Math.floor(top * this.conversionY);
-
-			var max_index_x:number = Math.floor(right * this.conversionX);
-			var max_index_y:number = Math.floor(bottom * this.conversionY);
+			var max_index_x:number = Math.floor((Math.max(ax, bx, cx) - this.minx)*this.conversionX);
+			var max_index_y:number = Math.floor((Math.max(ay, by, cy) - this.miny)*this.conversionY);
 
 
-			for (var i : number = min_index_x; i <= max_index_x; i++)
-			{
-				for (var j : number = min_index_y; j <= max_index_y; j++)
-				{
-					var index:number = i + j * this.devisions;
-					var nodes:Array<number> = this.cells[index];
-					if(nodes == null)
-					{
-						nodes = new Array<number>();
-						this.cells[index] = nodes;
-					}
+			for (var i:number = min_index_x; i <= max_index_x; i++) {
+				for (var j:number = min_index_y; j <= max_index_y; j++) {
+					var index:number = i + j*this.devisions;
+					var nodes:Array<number> = this.cells[index] || (this.cells[index] = new Array<number>());
+
 					//push in the triangle ids
 					nodes.push(id0, id1, id2);
 				}
 			}
 		}
 	}
-	public hitTestPoint(x:number, y:number, z:number):boolean {
+	public hitTestPoint(x:number, y:number, z:number, box:Box):boolean {
 		var posDim:number = this.positions.dimensions;
 		var curveDim:number = this.curves.dimensions;
 
@@ -255,17 +222,20 @@ class CurveSubGeometry extends SubGeometryBase
 		var cy:number;
 
 		//hard coded min vertex count to bother using a grid for
-		if(this.numVertices > 150){
+		if (this.numVertices > 150) {
 
+			if (this.cells == null)
+				this.buildGrid(box);
 
-			if (this.cells == null) {
-				this.buildGrid();
-			}
 			var cell:number = this.getCell(x, y);
-			if (cell == -1) return false;
+
+			if (cell == -1)
+				return false;
 
 			var nodes:Array<number> = this.cells[cell];
-			if (nodes == null) return false;
+
+			if (nodes == null)
+				return false;
 
 			var nodeCount:number = nodes.length;
 			for (var k:number = 0; k < nodeCount; k += 3) {
@@ -280,8 +250,6 @@ class CurveSubGeometry extends SubGeometryBase
 				cx = positions[id2 * posDim];
 				cy = positions[id2 * posDim + 1];
 
-				//console.log(ax, ay, bx, by, cx, cy);
-
 				//from a to p
 				var dx:number = ax - x;
 				var dy:number = ay - y;
@@ -290,11 +258,10 @@ class CurveSubGeometry extends SubGeometryBase
 				var nx:number = by - ay;
 				var ny:number = -(bx - ax);
 
-				//console.log(ax,ay,bx,by,cx,cy);
-
 				var dot:number = (dx * nx) + (dy * ny);
-				//console.log("dot a",dot);
-				if (dot > 0) continue;
+
+				if (dot > 0)
+					continue;
 
 				dx = bx - x;
 				dy = by - y;
@@ -302,8 +269,9 @@ class CurveSubGeometry extends SubGeometryBase
 				ny = -(cx - bx);
 
 				dot = (dx * nx) + (dy * ny);
-				//console.log("dot b",dot);
-				if (dot > 0) continue;
+
+				if (dot > 0)
+					continue;
 
 				dx = cx - x;
 				dy = cy - y;
@@ -311,10 +279,12 @@ class CurveSubGeometry extends SubGeometryBase
 				ny = -(ax - cx);
 
 				dot = (dx * nx) + (dy * ny);
-				//console.log("dot c",dot);
-				if (dot > 0) continue;
+
+				if (dot > 0)
+					continue;
 
 				var curvex:number = curves[id0 * curveDim];
+
 				//check if not solid
 				if (curvex != 2) {
 
@@ -335,22 +305,20 @@ class CurveSubGeometry extends SubGeometryBase
 					var vv:number = w;
 
 					var d:number = uu * uu - vv;
-
 					var az:number = positions[id0 * posDim + 2];
-					if (d > 0 && az == -1) {
+
+					if (d > 0 && az == -1)
 						continue;
-					} else if (d < 0 && az == 1) {
+					else if (d < 0 && az == 1)
 						continue;
-					}
 				}
 				return true;
 			}
 			return false;
 		}
-		//brute force
 
-		for(var k:number = 0; k < this._numVertices; k+=3)
-		{
+		//brute force
+		for(var k:number = 0; k < this._numVertices; k += 3) {
 			id0 = k + 2;
 			id1 = k + 1;
 			id2 = k + 0;
@@ -375,8 +343,9 @@ class CurveSubGeometry extends SubGeometryBase
 			//console.log(ax,ay,bx,by,cx,cy);
 
 			var dot:number = (dx * nx) + (dy * ny);
-			//console.log("dot a",dot);
-			if (dot > 0) continue;
+
+			if (dot > 0)
+				continue;
 
 			dx = bx - x;
 			dy = by - y;
@@ -384,8 +353,9 @@ class CurveSubGeometry extends SubGeometryBase
 			ny = -(cx - bx);
 
 			dot = (dx * nx) + (dy * ny);
-			//console.log("dot b",dot);
-			if (dot > 0) continue;
+
+			if (dot > 0)
+				continue;
 
 			dx = cx - x;
 			dy = cy - y;
@@ -393,10 +363,12 @@ class CurveSubGeometry extends SubGeometryBase
 			ny = -(ax - cx);
 
 			dot = (dx * nx) + (dy * ny);
-			//console.log("dot c",dot);
-			if (dot > 0) continue;
+
+			if (dot > 0)
+				continue;
 
 			var curvex:number = curves[id0 * curveDim];
+
 			//check if not solid
 			if (curvex != 2) {
 

@@ -239,7 +239,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _listenToRotationChanged:boolean;
 	private _listenToSkewChanged:boolean;
 	private _listenToScaleChanged:boolean;
-	private _zOffset:number = 0;
 
 	public _width:number;
 	public _height:number;
@@ -1457,15 +1456,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get zOffset():number
-	{
-		return this._zOffset;
-	}
-
-	public set zOffset(value:number)
-	{
-		this._zOffset = value;
-	}
+	public zOffset:number = 0;
 
 	/**
 	 * Creates a new <code>DisplayObject</code> instance.
@@ -2271,15 +2262,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
 	}
 
-	public pInvalidateHierarchicalProperties(bitFlag:number):boolean
+	public pInvalidateHierarchicalProperties(propDirty:number):boolean
 	{
-		var dif:number = (this._hierarchicalPropsDirty ^ bitFlag) & bitFlag;
-		if (!dif)
+		var newPropDirty:number = (this._hierarchicalPropsDirty ^ propDirty) & propDirty;
+		if (!newPropDirty)
 			return true;
 
-		this._hierarchicalPropsDirty |= bitFlag;
+		this._hierarchicalPropsDirty |= propDirty;
 
-		if (dif & HierarchicalProperties.SCENE_TRANSFORM) {
+		if (newPropDirty & HierarchicalProperties.SCENE_TRANSFORM) {
 			this._inverseSceneTransformDirty = true;
 			this._scenePositionDirty = true;
 
