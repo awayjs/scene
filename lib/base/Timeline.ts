@@ -331,24 +331,13 @@ class Timeline
 
 		var id:number;
 		for (var key in sessionID_depths) {
-			if((id = sessionID_depths[key]) < targetFrame_first_sessionID){
-				child = child_depths[key];
-				child._sessionID = id;
-				target_mc.addChildAtDepth(child, Number(key));
-			}
+			child = child_depths[key];
+			child._sessionID = sessionID_depths[key];
+			target_mc.addChildAtDepth(child, Number(key));
 		}
 
 		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
-
-		//TODO: do we need this?
-		for (var key in sessionID_depths) {
-			if((id = sessionID_depths[key]) >= targetFrame_first_sessionID) {
-				child = child_depths[key];
-				child._sessionID = id;
-				target_mc.addChildAtDepth(child, Number(key));
-			}
-		}
 
 		//  pass2: apply update commands for objects on stage (only if they are not blocked by script)
 		var frame_command_idx:number;
