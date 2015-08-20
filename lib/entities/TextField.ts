@@ -678,6 +678,7 @@ class TextField extends Mesh
 	{
 		return this._textWidth;
 	}
+
 	public set textWidth(value:number)
 	{
 		this._textWidth = value;
@@ -690,6 +691,7 @@ class TextField extends Mesh
 	{
 		return this._textHeight;
 	}
+
 	public set textHeight(value:number)
 	{
 		this._textHeight = value;
@@ -1244,51 +1246,26 @@ class TextField extends Mesh
 		return false;
 	}
 
-    public clone() : DisplayObject
+    public clone():TextField
     {
-        var clone = new TextField();
-        this._iCopyToTextField(clone);
-        return clone;
+		var newInstance:TextField = new TextField();
+
+		this.copyTo(newInstance);
+
+		return newInstance;
     }
 
-    public _iCopyToTextField(clone:TextField):void
-    {
-		clone.geometry = new Geometry();
-		//clone.material = this._material;
-		clone._iMatrix3D = this._iMatrix3D;
-		clone.pivot = this.pivot;
-		clone.partition = this.partition;
-		clone.boundsType = this.boundsType;
 
+	public copyTo(newInstance:TextField)
+	{
+		super.copyTo(newInstance);
 
-		clone.name = this.name;
-		clone.castsShadows = this.castsShadows;
-		clone.shareAnimationGeometry = this.shareAnimationGeometry;
-		clone.mouseEnabled = this.mouseEnabled;
-		clone.mouseChildren = this.mouseChildren;
-		//this is of course no proper cloning
-		//maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
-		clone.extra = this.extra;
-		clone.maskMode = this.maskMode;
-		clone.masks = this.masks? this.masks.concat() : null;
-
-		//var len:number = this._subMeshes.length;
-		//for (var i:number = 0; i < len; ++i)
-		//	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
-
-
-		var len:number = this.numChildren;
-		for (var i:number = 0; i < len; ++i)
-			clone.addChild(this._children[i].clone());
-
-		//if (this._animator)
-		//	clone.animator = this._animator.clone();
-		clone.textWidth=this.textWidth;
-		clone.textHeight=this.textHeight;
-       	clone.textFormat = this._textFormat;
-        //clone.textColor = clone.textColor;
-       	clone.text = this._text;
-    }
+		newInstance.textWidth = this._textWidth;
+		newInstance.textHeight = this._textHeight;
+		newInstance.textFormat = this._textFormat;
+		//newInstance.textColor = this._textColor;
+		newInstance.text = this._text;
+	}
 }
 
 export = TextField;

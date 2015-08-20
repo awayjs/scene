@@ -246,19 +246,24 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 *
 	 */
-	public clone(newInstance:DisplayObjectContainer = null):DisplayObject
+	public clone():DisplayObjectContainer
 	{
-		newInstance = <DisplayObjectContainer> super.clone(newInstance || new DisplayObjectContainer());
+		var newInstance:DisplayObjectContainer = new DisplayObjectContainer();
 
-		newInstance.partition = this.partition;
-		newInstance.mouseEnabled = this.mouseEnabled;
-		newInstance.mouseChildren = this.mouseChildren;
+		this.copyTo(newInstance);
+
+		return newInstance;
+	}
+
+	public copyTo(newInstance:DisplayObjectContainer)
+	{
+		super.copyTo(newInstance);
+
+		newInstance.mouseChildren = this._mouseChildren;
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
 			newInstance.addChild(this._children[i].clone());
-
-		return newInstance;
 	}
 
 	/**

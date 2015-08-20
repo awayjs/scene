@@ -279,47 +279,30 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 * var clone : Mesh = new Mesh(original.geometry, original.material);
 	 * </code>
 	 */
-	public clone():DisplayObject
+	public clone():Mesh
 	{
-		var clone:Mesh = new Mesh(null, null);
+		var newInstance:Mesh = new Mesh(this._geometry, this._material);
 
-        this._iCopyToMesh(clone);
+		this.copyTo(newInstance);
 
-		return clone;
+		return newInstance;
 	}
 
-    public _iCopyToMesh(clone:Mesh):void
-    {
-        clone.geometry = this._geometry;
-        clone.material = this._material;
-        clone._iMatrix3D = this._iMatrix3D;
-        clone.pivot = this.pivot;
-        clone.partition = this.partition;
-        clone.boundsType = this.boundsType;
+	public copyTo(newInstance:Mesh)
+	{
+		super.copyTo(newInstance);
 
-
-        clone.name = this.name;
-        clone.castsShadows = this.castsShadows;
-        clone.shareAnimationGeometry = this.shareAnimationGeometry;
-        clone.mouseEnabled = this.mouseEnabled;
-        clone.mouseChildren = this.mouseChildren;
-        //this is of course no proper cloning
-        //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
-        clone.extra = this.extra;
-		clone.maskMode = this.maskMode;
-		clone.masks = this.masks? this.masks.concat() : null;
+		newInstance.geometry = this._geometry;
+		newInstance.material = this._material;
+		newInstance.castsShadows = this._castsShadows;
+		newInstance.shareAnimationGeometry = this._shareAnimationGeometry;
 
         var len:number = this._subMeshes.length;
         for (var i:number = 0; i < len; ++i)
-            clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
-
-
-        len = this.numChildren;
-        for (i = 0; i < len; ++i)
-            clone.addChild(this._children[i].clone());
+			newInstance._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
 
         if (this._animator)
-            clone.animator = this._animator.clone();
+			newInstance.animator = this._animator.clone();
     }
 
 	/**

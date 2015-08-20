@@ -305,16 +305,25 @@ class MovieClip extends DisplayObjectContainer
         this._isPlaying = false;
     }
 
-    public clone(newInstance:MovieClip = null) : DisplayObject
+    public clone():MovieClip
     {
-        newInstance = <MovieClip> super.clone(newInstance || new MovieClip(this._timeline));
+        var newInstance:MovieClip = new MovieClip(this._timeline);
 
-        newInstance.loop = this.loop;
+        this.copyTo(newInstance);
 
         return newInstance;
     }
 
-	public iSetParent(value:DisplayObjectContainer)
+    public copyTo(newInstance:MovieClip)
+    {
+        super.copyTo(newInstance);
+
+        newInstance.timeline = this._timeline;
+        newInstance.loop = this.loop;
+    }
+
+
+    public iSetParent(value:DisplayObjectContainer)
 	{
 		super.iSetParent(value);
 	}

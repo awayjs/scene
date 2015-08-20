@@ -1521,25 +1521,35 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public clone(newInstance:DisplayObject = null):DisplayObject
+	public clone():DisplayObject
 	{
-		if (!newInstance)
-			newInstance = new DisplayObject();
+		var newInstance:DisplayObject = new DisplayObject();
 
-		newInstance.pivot = this.pivot;
-		newInstance._iMatrix3D = this._iMatrix3D
-		//newInstance.name = this.name;
+		this.copyTo(newInstance);
 
+		return newInstance;
+	}
+
+	public copyTo(newInstance:DisplayObject)
+	{
+		newInstance.partition = this._explicitPartition;
+		newInstance.boundsType = this._boundsType;
+		newInstance.pivot = this._pivot;
+		newInstance.name = this._pName;
+		newInstance.mouseEnabled = this._explicitMouseEnabled;
+		newInstance.extra = this.extra;
 		newInstance.maskMode = this._maskMode;
-		newInstance.masks = this._explicitMasks? this._explicitMasks.concat() : null;
+
+		if (this._explicitMasks)
+			newInstance.masks = this._explicitMasks;
+
+		newInstance._iMatrix3D = this._iMatrix3D;
 
 		if (this._adapter)
 			newInstance.adapter = this._adapter.clone(newInstance);
 
 		if (this._transform.colorTransform)
 			newInstance.transform.colorTransform = this._transform.colorTransform.clone();
-
-		return newInstance;
 	}
 
 	/**
