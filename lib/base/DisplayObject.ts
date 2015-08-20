@@ -306,6 +306,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
     public set inheritColorTransform(value:boolean)
     {
+		if (this._inheritColorTransform == value)
+			return;
+
         this._inheritColorTransform = value;
 
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);

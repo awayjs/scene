@@ -166,8 +166,11 @@ class MovieClip extends DisplayObjectContainer
         return this._currentFrameIndex;
     }
 
-    public set currentFrameIndex(value : number)
+    public set currentFrameIndex(value:number)
     {
+        if (this._currentFrameIndex == value)
+            return;
+
         if(this._timeline.numFrames) {
             value = Math.floor(value);
 
@@ -185,8 +188,9 @@ class MovieClip extends DisplayObjectContainer
             //this._time = 0;
 
             this._timeline.gotoFrame(this, value, skip_script);
-            this._currentFrameIndex = value;
         }
+
+        this._currentFrameIndex = value;
     }
 
     public addButtonListeners()
@@ -225,7 +229,6 @@ class MovieClip extends DisplayObjectContainer
         super.addChildAtDepth(child, depth, true);
 
         this._active_session_ids[child._sessionID] = child;
-
 
         return child;
     }
@@ -319,19 +322,11 @@ class MovieClip extends DisplayObjectContainer
     public advanceFrame(skipChildren:boolean = false)
     {
         if(this._timeline.numFrames) {
-            var oldFrameIndex = this._currentFrameIndex;
-            var advance = ((this._isPlaying && !this._skipAdvance) || oldFrameIndex == -1) && oldFrameIndex == this._timeline.numFrames - 1 && !this.loop;
-
-            if (advance && oldFrameIndex == 0 && this._timeline.numFrames == 1) {
-                this._currentFrameIndex = 0;
-                advance = false;
-            }
-
-            if (advance) {
+            if (((this._isPlaying && !this._skipAdvance) || this._currentFrameIndex == -1) && (this._currentFrameIndex != this._timeline.numFrames - 1 || this.loop)) {
                 this._currentFrameIndex++;
                 if (this._currentFrameIndex == this._timeline.numFrames) { // looping - jump to first frame.
                     this.currentFrameIndex = 0;
-                } else if (oldFrameIndex != this._currentFrameIndex){ // not looping - construct next frame
+                } else { // not looping - construct next frame
                     this._timeline.constructNextFrame(this);
                 }
             }
