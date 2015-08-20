@@ -16,6 +16,7 @@ import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayO
 import SubMeshPool					= require("awayjs-display/lib/pool/SubMeshPool");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils");
 
 /**
  * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
@@ -592,8 +593,8 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			//ok do the geometry thing
 			var subGeometries:Array<SubGeometryBase> = this._geometry.subGeometries;
 			var subGeometriesCount:number = subGeometries.length;
-			for(var j:number = 0; j < subGeometriesCount; j++)
-				if (subGeometries[j].hitTestPoint(local.x, local.y, 0, box))
+			for(var i:number = 0; i < subGeometriesCount; i++)
+				if (SubGeometryUtils.hitTestCurveGeometry(local.x, local.y, 0, box, <CurveSubGeometry> subGeometries[i]))
 					return true;
 		}
 
