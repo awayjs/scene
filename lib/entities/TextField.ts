@@ -1260,6 +1260,9 @@ class TextField extends Mesh
 	{
 		super.copyTo(newInstance);
 
+		// each textfield needs its own geometry.
+		newInstance.geometry=new Geometry();
+
 		newInstance.textWidth = this._textWidth;
 		newInstance.textHeight = this._textHeight;
 		newInstance.textFormat = this._textFormat;
