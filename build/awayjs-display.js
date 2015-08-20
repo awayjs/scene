@@ -1759,20 +1759,26 @@ var DisplayObject = (function (_super) {
     /**
      *
      */
-    DisplayObject.prototype.clone = function (newInstance) {
-        if (newInstance === void 0) { newInstance = null; }
-        if (!newInstance)
-            newInstance = new DisplayObject();
-        newInstance.pivot = this.pivot;
-        newInstance._iMatrix3D = this._iMatrix3D;
-        //newInstance.name = this.name;
+    DisplayObject.prototype.clone = function () {
+        var newInstance = new DisplayObject();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    DisplayObject.prototype.copyTo = function (newInstance) {
+        newInstance.partition = this._explicitPartition;
+        newInstance.boundsType = this._boundsType;
+        newInstance.pivot = this._pivot;
+        newInstance.name = this._pName;
+        newInstance.mouseEnabled = this._explicitMouseEnabled;
+        newInstance.extra = this.extra;
         newInstance.maskMode = this._maskMode;
-        newInstance.masks = this._explicitMasks ? this._explicitMasks.concat() : null;
+        if (this._explicitMasks)
+            newInstance.masks = this._explicitMasks;
+        newInstance._iMatrix3D = this._iMatrix3D;
         if (this._adapter)
             newInstance.adapter = this._adapter.clone(newInstance);
         if (this._transform.colorTransform)
             newInstance.transform.colorTransform = this._transform.colorTransform.clone();
-        return newInstance;
     };
     /**
      *
@@ -5852,16 +5858,17 @@ var DisplayObjectContainer = (function (_super) {
     /**
      *
      */
-    DisplayObjectContainer.prototype.clone = function (newInstance) {
-        if (newInstance === void 0) { newInstance = null; }
-        newInstance = _super.prototype.clone.call(this, newInstance || new DisplayObjectContainer());
-        newInstance.partition = this.partition;
-        newInstance.mouseEnabled = this.mouseEnabled;
-        newInstance.mouseChildren = this.mouseChildren;
+    DisplayObjectContainer.prototype.clone = function () {
+        var newInstance = new DisplayObjectContainer();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    DisplayObjectContainer.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.mouseChildren = this._mouseChildren;
         var len = this._children.length;
         for (var i = 0; i < len; ++i)
             newInstance.addChild(this._children[i].clone());
-        return newInstance;
     };
     /**
      * Determines whether the specified display object is a child of the
@@ -10434,35 +10441,21 @@ var Mesh = (function (_super) {
      * </code>
      */
     Mesh.prototype.clone = function () {
-        var clone = new Mesh(null, null);
-        this._iCopyToMesh(clone);
-        return clone;
+        var newInstance = new Mesh(this._geometry, this._material);
+        this.copyTo(newInstance);
+        return newInstance;
     };
-    Mesh.prototype._iCopyToMesh = function (clone) {
-        clone.geometry = this._geometry;
-        clone.material = this._material;
-        clone._iMatrix3D = this._iMatrix3D;
-        clone.pivot = this.pivot;
-        clone.partition = this.partition;
-        clone.boundsType = this.boundsType;
-        clone.name = this.name;
-        clone.castsShadows = this.castsShadows;
-        clone.shareAnimationGeometry = this.shareAnimationGeometry;
-        clone.mouseEnabled = this.mouseEnabled;
-        clone.mouseChildren = this.mouseChildren;
-        //this is of course no proper cloning
-        //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
-        clone.extra = this.extra;
-        clone.maskMode = this.maskMode;
-        clone.masks = this.masks ? this.masks.concat() : null;
+    Mesh.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.geometry = this._geometry;
+        newInstance.material = this._material;
+        newInstance.castsShadows = this._castsShadows;
+        newInstance.shareAnimationGeometry = this._shareAnimationGeometry;
         var len = this._subMeshes.length;
         for (var i = 0; i < len; ++i)
-            clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
-        len = this.numChildren;
-        for (i = 0; i < len; ++i)
-            clone.addChild(this._children[i].clone());
+            newInstance._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
         if (this._animator)
-            clone.animator = this._animator.clone();
+            newInstance.animator = this._animator.clone();
     };
     /**
      * //TODO
@@ -10922,11 +10915,15 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.stop = function () {
         this._isPlaying = false;
     };
-    MovieClip.prototype.clone = function (newInstance) {
-        if (newInstance === void 0) { newInstance = null; }
-        newInstance = _super.prototype.clone.call(this, newInstance || new MovieClip(this._timeline));
-        newInstance.loop = this.loop;
+    MovieClip.prototype.clone = function () {
+        var newInstance = new MovieClip(this._timeline);
+        this.copyTo(newInstance);
         return newInstance;
+    };
+    MovieClip.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.timeline = this._timeline;
+        newInstance.loop = this.loop;
     };
     MovieClip.prototype.iSetParent = function (value) {
         _super.prototype.iSetParent.call(this, value);
@@ -12156,40 +12153,17 @@ var TextField = (function (_super) {
         return false;
     };
     TextField.prototype.clone = function () {
-        var clone = new TextField();
-        this._iCopyToTextField(clone);
-        return clone;
+        var newInstance = new TextField();
+        this.copyTo(newInstance);
+        return newInstance;
     };
-    TextField.prototype._iCopyToTextField = function (clone) {
-        clone.geometry = new Geometry();
-        //clone.material = this._material;
-        clone._iMatrix3D = this._iMatrix3D;
-        clone.pivot = this.pivot;
-        clone.partition = this.partition;
-        clone.boundsType = this.boundsType;
-        clone.name = this.name;
-        clone.castsShadows = this.castsShadows;
-        clone.shareAnimationGeometry = this.shareAnimationGeometry;
-        clone.mouseEnabled = this.mouseEnabled;
-        clone.mouseChildren = this.mouseChildren;
-        //this is of course no proper cloning
-        //maybe use this instead?: http://blog.another-d-mention.ro/programming/how-to-clone-duplicate-an-object-in-actionscript-3/
-        clone.extra = this.extra;
-        clone.maskMode = this.maskMode;
-        clone.masks = this.masks ? this.masks.concat() : null;
-        //var len:number = this._subMeshes.length;
-        //for (var i:number = 0; i < len; ++i)
-        //	clone._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
-        var len = this.numChildren;
-        for (var i = 0; i < len; ++i)
-            clone.addChild(this._children[i].clone());
-        //if (this._animator)
-        //	clone.animator = this._animator.clone();
-        clone.textWidth = this.textWidth;
-        clone.textHeight = this.textHeight;
-        clone.textFormat = this._textFormat;
-        //clone.textColor = clone.textColor;
-        clone.text = this._text;
+    TextField.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.textWidth = this._textWidth;
+        newInstance.textHeight = this._textHeight;
+        newInstance.textFormat = this._textFormat;
+        //newInstance.textColor = this._textColor;
+        newInstance.text = this._text;
     };
     TextField.assetType = "[asset TextField]";
     return TextField;
