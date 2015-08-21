@@ -204,7 +204,7 @@ class Timeline
 		if (jump_forward && !jump_gap) // in case we jump forward, but not jump a gap, we start at current_keyframe_idx +1
 			start_construct_idx = current_keyframe_idx + 1;
 
-		var child_depths = target_mc.getChildDepths();
+		var child_depths = {};//target_mc.getChildDepths();
 		var sessionID_depths:Object = {};
 		var i:number;
 		var end_index:number;
@@ -236,6 +236,7 @@ class Timeline
 				target_mc.removeChild(child);
 			} else if (jump_forward) { // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
 				sessionID_depths[child._depthID] = child._sessionID;
+				child_depths[child._depthID]=child;
 			}
 		}
 
@@ -290,8 +291,11 @@ class Timeline
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
 			depth = child._depthID;
-			if (sessionID_depths[depth] == child._sessionID)
+			if (sessionID_depths[depth] == child._sessionID) {
 				delete sessionID_depths[depth];
+				delete child_depths[depth];
+			}
+
 			else
 				target_mc.removeChildAt(i);
 		}

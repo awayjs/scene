@@ -655,7 +655,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			this._nextHighestDepthDirty = true;
 
 		//check to make sure _active_depths wasn't modified with a new child
-		if (this._active_depths[child._depthID] == this)
+		if (this._active_depths[child._depthID] == child)
 			delete this._active_depths[child._depthID];
 
 		child._depthID = -16384;
