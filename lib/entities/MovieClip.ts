@@ -330,10 +330,11 @@ class MovieClip extends DisplayObjectContainer
 
     public advanceFrame(skipChildren:boolean = false)
     {
-        if(this._timeline.numFrames) {
-            if (((this._isPlaying && !this._skipAdvance) || this._currentFrameIndex == -1) && (this._currentFrameIndex != this._timeline.numFrames - 1 || this.loop)) {
+        var numFrames:number = this._timeline.numFrames;
+        if(numFrames) {
+            if (((this._isPlaying && !this._skipAdvance) || this._currentFrameIndex == -1) && (this._currentFrameIndex != numFrames - 1 || this.loop)) {
                 this._currentFrameIndex++;
-                if (this._currentFrameIndex == this._timeline.numFrames) { // looping - jump to first frame.
+                if (this._currentFrameIndex == numFrames) { // looping - jump to first frame.
                     this.currentFrameIndex = 0;
                 } else { // not looping - construct next frame
                     this._timeline.constructNextFrame(this);

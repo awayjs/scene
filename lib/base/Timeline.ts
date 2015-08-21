@@ -204,41 +204,23 @@ class Timeline
 		if (jump_forward && !jump_gap) // in case we jump forward, but not jump a gap, we start at current_keyframe_idx +1
 			start_construct_idx = current_keyframe_idx + 1;
 
-		var child_depths = {};//target_mc.getChildDepths();
-		var sessionID_depths:Object = {};
 		var i:number;
 		var end_index:number;
 		var k:number;
 		var child:DisplayObject;
 		var depth:number;
 
-		if (jump_forward && start_construct_idx == target_keyframe_idx){
-			// if we jump back, we dont want this shortcut, because we need to compare targetframe vs currentframe
+		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
+			for (i = target_mc.numChildren - 1; i >= 0; i--)
+				target_mc.removeChild(target_mc._children[i]);
 
-			// shortcut: if the targetframe is the breakframe itself, we can just call constructNextFrame
-			// before we do that, we need to clear the childlist
-/*
-			while(i--){
-				child = target_mc._children[i];
-				if(child.adapter)child.adapter.freeFromScript();
-				target_mc.adapter.unregisterScriptObject(child);
-				target_mc.removeChild(child);
-			}
-			target_mc.set_currentFrameIndex(value);
-			this.constructNextFrame(target_mc, false);
-			return;
-			*/
-		}
+		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
+		if (!jump_forward)
+			target_mc.resetDepths();
 
-		for (i = target_mc.numChildren - 1; i >= 0; i--) {
-			child = target_mc._children[i];
-			if (jump_gap) { // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
-				target_mc.removeChild(child);
-			} else if (jump_forward) { // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-				sessionID_depths[child._depthID] = child._sessionID;
-				child_depths[child._depthID]=child;
-			}
-		}
+		// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
+		var child_depths:Object = target_mc.getChildDepths();
+		var sessionID_depths:Object = target_mc.getSessionIDDepths();
 
 		//  step1: only apply add/remove commands into current_childs_dic.
 		var update_indices:Array<number> = [];// store a list of updatecommand_indices, so we dont have to read frame_recipe again
@@ -268,10 +250,10 @@ class Timeline
 				// this could be changed in exporter
 				for (i = end_index - 1; i >= start_index; i--) {
 					idx = i*2;
-					var target:DisplayObject = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
+					child = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
 
 					depth = this.add_child_stream[idx + 1] - 16383;
-					child_depths[depth] = target;
+					child_depths[depth] = child;
 					sessionID_depths[depth] = i;
 				}
 				if(k==target_keyframe_idx){
@@ -287,24 +269,12 @@ class Timeline
 
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
-		// childs that are alive on both frames get removed from the target_childs_dic
+		// childs that are alive on both frames are reset if we are jumping back
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
-			depth = child._depthID;
-			if (sessionID_depths[depth] == child._sessionID) {
-				delete sessionID_depths[depth];
-				delete child_depths[depth];
-			}
-
-			else
+			if (sessionID_depths[child._depthID] != child._sessionID) {
 				target_mc.removeChildAt(i);
-		}
-
-		// the objects that are now child of target_mc, are alive on both frames
-		// if we jump back, or we jump a gap forward, we want to reset all objects (but not the timelines of the mcs)
-		if((!jump_forward)||(jump_gap)){
-			for (i = target_mc.numChildren - 1; i >= 0; i--) {
-				child = target_mc._children[i];
+			} else if (!jump_forward) {
 				if(child.adapter) {
 					if (!child.adapter.isBlockedByScript()) {
 						if (child._iMatrix3D) {
@@ -329,15 +299,15 @@ class Timeline
 			}
 		}
 
-		// we need to addchild the objects that was added befor targetframe first
+		// now we need to addchild the objects that were added before targetframe first
 		// than we can add the script of the targetframe
 		// than we can addchild objects added on targetframe
-
-		var id:number;
 		for (var key in sessionID_depths) {
 			child = child_depths[key];
-			child._sessionID = sessionID_depths[key];
-			target_mc.addChildAtDepth(child, Number(key));
+			if (child._sessionID == -1) {
+				child._sessionID = sessionID_depths[key];
+				target_mc.addChildAtDepth(child, Number(key));
+			}
 		}
 
 		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
