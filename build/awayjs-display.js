@@ -3918,13 +3918,12 @@ var Timeline = (function () {
         if (jump_forward && !jump_gap)
             start_construct_idx = current_keyframe_idx + 1;
         var i;
-        var end_index;
         var k;
         var child;
         var depth;
         if (jump_gap)
             for (i = target_mc.numChildren - 1; i >= 0; i--)
-                target_mc.removeChild(target_mc._children[i]);
+                target_mc.removeChildAt(i);
         //if we jump back, we want to reset all objects (but not the timelines of the mcs)
         if (!jump_forward)
             target_mc.resetDepths();
@@ -3934,12 +3933,14 @@ var Timeline = (function () {
         //  step1: only apply add/remove commands into current_childs_dic.
         var update_indices = []; // store a list of updatecommand_indices, so we dont have to read frame_recipe again
         var update_cnt = 0;
-        var targetFrame_first_sessionID = 0;
+        var frame_command_idx;
+        var frame_recipe;
+        var start_index;
+        var end_index;
+        var idx;
         for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
-            var frame_command_idx = this.frame_command_indices[k];
-            var frame_recipe = this.frame_recipe[k];
-            var start_index;
-            var idx;
+            frame_command_idx = this.frame_command_indices[k];
+            frame_recipe = this.frame_recipe[k];
             if (frame_recipe & 2) {
                 // remove childs
                 start_index = this.command_index_stream[frame_command_idx];
@@ -3959,9 +3960,6 @@ var Timeline = (function () {
                     depth = this.add_child_stream[idx + 1] - 16383;
                     child_depths[depth] = child;
                     sessionID_depths[depth] = i;
-                }
-                if (k == target_keyframe_idx) {
-                    targetFrame_first_sessionID = start_index;
                 }
             }
             if (frame_recipe & 8)
