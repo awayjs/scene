@@ -205,14 +205,13 @@ class Timeline
 			start_construct_idx = current_keyframe_idx + 1;
 
 		var i:number;
-		var end_index:number;
 		var k:number;
 		var child:DisplayObject;
 		var depth:number;
 
 		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 			for (i = target_mc.numChildren - 1; i >= 0; i--)
-				target_mc.removeChild(target_mc._children[i]);
+				target_mc.removeChildAt(i);
 
 		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
 		if (!jump_forward)
@@ -225,12 +224,14 @@ class Timeline
 		//  step1: only apply add/remove commands into current_childs_dic.
 		var update_indices:Array<number> = [];// store a list of updatecommand_indices, so we dont have to read frame_recipe again
 		var update_cnt = 0;
-		var targetFrame_first_sessionID:number=0;
+		var frame_command_idx:number;
+		var frame_recipe:number;
+		var start_index:number;
+		var end_index:number;
+		var idx:number;
 		for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
-			var frame_command_idx:number = this.frame_command_indices[k];
-			var frame_recipe:number = this.frame_recipe[k];
-			var start_index:number;
-			var idx:number;
+			frame_command_idx = this.frame_command_indices[k];
+			frame_recipe = this.frame_recipe[k];
 
 			if (frame_recipe & 2) {
 				// remove childs
@@ -255,9 +256,6 @@ class Timeline
 					depth = this.add_child_stream[idx + 1] - 16383;
 					child_depths[depth] = child;
 					sessionID_depths[depth] = i;
-				}
-				if(k==target_keyframe_idx){
-					targetFrame_first_sessionID=start_index;
 				}
 			}
 
