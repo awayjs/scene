@@ -3917,7 +3917,7 @@ var Timeline = (function () {
         var start_construct_idx = break_frame_idx;
         if (jump_forward && !jump_gap)
             start_construct_idx = current_keyframe_idx + 1;
-        var child_depths = target_mc.getChildDepths();
+        var child_depths = {}; //target_mc.getChildDepths();
         var sessionID_depths = {};
         var i;
         var end_index;
@@ -3933,6 +3933,7 @@ var Timeline = (function () {
             }
             else if (jump_forward) {
                 sessionID_depths[child._depthID] = child._sessionID;
+                child_depths[child._depthID] = child;
             }
         }
         //  step1: only apply add/remove commands into current_childs_dic.
@@ -3974,8 +3975,10 @@ var Timeline = (function () {
         for (i = target_mc.numChildren - 1; i >= 0; i--) {
             child = target_mc._children[i];
             depth = child._depthID;
-            if (sessionID_depths[depth] == child._sessionID)
+            if (sessionID_depths[depth] == child._sessionID) {
                 delete sessionID_depths[depth];
+                delete child_depths[depth];
+            }
             else
                 target_mc.removeChildAt(i);
         }
@@ -6017,7 +6020,7 @@ var DisplayObjectContainer = (function (_super) {
         if (this._nextHighestDepth == child._depthID + 1)
             this._nextHighestDepthDirty = true;
         //check to make sure _active_depths wasn't modified with a new child
-        if (this._active_depths[child._depthID] == this)
+        if (this._active_depths[child._depthID] == child)
             delete this._active_depths[child._depthID];
         child._depthID = -16384;
         return child;
