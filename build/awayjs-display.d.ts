@@ -2765,50 +2765,6 @@ declare module "awayjs-display/lib/base/Transform" {
 	
 }
 
-declare module "awayjs-display/lib/base/TriangleSubMesh" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * TriangleSubMesh wraps a TriangleSubGeometry as a scene graph instantiation. A TriangleSubMesh is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.TriangleSubMesh
-	 */
-	class TriangleSubMesh extends SubMeshBase implements ISubMesh {
-	    static assetType: string;
-	    static assetClass: IAssetClass;
-	    private _subGeometry;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
-	     */
-	    subGeometry: TriangleSubGeometry;
-	    /**
-	     * Creates a new TriangleSubMesh object
-	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
-	     * @param parentMesh The Mesh object to which this TriangleSubMesh belongs.
-	     * @param material An optional material used to render this TriangleSubMesh.
-	     */
-	    constructor(subGeometry: TriangleSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	}
-	export = TriangleSubMesh;
-	
-}
-
 declare module "awayjs-display/lib/base/TriangleSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
@@ -2995,28 +2951,47 @@ declare module "awayjs-display/lib/base/TriangleSubGeometry" {
 	
 }
 
-declare module "awayjs-display/lib/bounds/BoundingSphere" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+declare module "awayjs-display/lib/base/TriangleSubMesh" {
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
+	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
+	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	class BoundingSphere extends BoundingVolumeBase {
-	    private _sphere;
-	    private _radius;
-	    private _centerX;
-	    private _centerY;
-	    private _centerZ;
-	    private _prefab;
-	    constructor(entity: IEntity);
-	    nullify(): void;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * TriangleSubMesh wraps a TriangleSubGeometry as a scene graph instantiation. A TriangleSubMesh is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.TriangleSubMesh
+	 */
+	class TriangleSubMesh extends SubMeshBase implements ISubMesh {
+	    static assetType: string;
+	    static assetClass: IAssetClass;
+	    private _subGeometry;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
+	     */
+	    subGeometry: TriangleSubGeometry;
+	    /**
+	     * Creates a new TriangleSubMesh object
+	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
+	     * @param parentMesh The Mesh object to which this TriangleSubMesh belongs.
+	     * @param material An optional material used to render this TriangleSubMesh.
+	     */
+	    constructor(subGeometry: TriangleSubGeometry, parentMesh: Mesh, material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    dispose(): void;
 	}
-	export = BoundingSphere;
+	export = TriangleSubMesh;
 	
 }
 
@@ -3067,6 +3042,31 @@ declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
 	
 }
 
+declare module "awayjs-display/lib/bounds/BoundingSphere" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	class BoundingSphere extends BoundingVolumeBase {
+	    private _sphere;
+	    private _radius;
+	    private _centerX;
+	    private _centerY;
+	    private _centerZ;
+	    private _prefab;
+	    constructor(entity: IEntity);
+	    nullify(): void;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
+	}
+	export = BoundingSphere;
+	
+}
+
 declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -3113,6 +3113,20 @@ declare module "awayjs-display/lib/bounds/BoundsType" {
 	
 }
 
+declare module "awayjs-display/lib/bounds/NullBounds" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	class NullBounds extends BoundingVolumeBase {
+	    private _alwaysIn;
+	    constructor(alwaysIn?: boolean);
+	    clone(): BoundingVolumeBase;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    classifyToPlane(plane: Plane3D): number;
+	}
+	export = NullBounds;
+	
+}
+
 declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -3145,7 +3159,8 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    static assetType: string;
 	    private _containerNodes;
 	    private _mouseChildren;
-	    private _active_depths;
+	    private _active_childs;
+	    private _active_sessionIDs;
 	    private _nextHighestDepth;
 	    private _nextHighestDepthDirty;
 	    _children: Array<DisplayObject>;
@@ -3290,8 +3305,11 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *
 	     */
 	    disposeWithChildren(): void;
+	    getSessionIDAtDepth(depth: number): number;
 	    getChildAtDepth(depth: number): DisplayObject;
 	    getChildDepths(): Object;
+	    getSessionIDDepths(): Object;
+	    resetDepths(): void;
 	    /**
 	     * Returns the child display object instance that exists at the specified
 	     * index.
@@ -3503,20 +3521,6 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    _updateMaskMode(): void;
 	}
 	export = DisplayObjectContainer;
-	
-}
-
-declare module "awayjs-display/lib/bounds/NullBounds" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	class NullBounds extends BoundingVolumeBase {
-	    private _alwaysIn;
-	    constructor(alwaysIn?: boolean);
-	    clone(): BoundingVolumeBase;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    classifyToPlane(plane: Plane3D): number;
-	}
-	export = NullBounds;
 	
 }
 
@@ -5381,6 +5385,36 @@ declare module "awayjs-display/lib/draw/InterpolationMethod" {
 	
 }
 
+declare module "awayjs-display/lib/draw/JointStyle" {
+	/**
+	 * The JointStyle class is an enumeration of constant values that specify the
+	 * joint style to use in drawing lines. These constants are provided for use
+	 * as values in the <code>joints</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
+	 * three types of joints: miter, round, and bevel, as the following example
+	 * shows:
+	 */
+	class JointStyle {
+	    /**
+	     * Specifies beveled joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static BEVEL: string;
+	    /**
+	     * Specifies mitered joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static MITER: string;
+	    /**
+	     * Specifies round joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	}
+	export = JointStyle;
+	
+}
+
 declare module "awayjs-display/lib/draw/LineScaleMode" {
 	/**
 	 * The LineScaleMode class provides values for the <code>scaleMode</code>
@@ -5420,36 +5454,6 @@ declare module "awayjs-display/lib/draw/LineScaleMode" {
 	    static VERTICAL: string;
 	}
 	export = LineScaleMode;
-	
-}
-
-declare module "awayjs-display/lib/draw/JointStyle" {
-	/**
-	 * The JointStyle class is an enumeration of constant values that specify the
-	 * joint style to use in drawing lines. These constants are provided for use
-	 * as values in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
-	 * three types of joints: miter, round, and bevel, as the following example
-	 * shows:
-	 */
-	class JointStyle {
-	    /**
-	     * Specifies beveled joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static BEVEL: string;
-	    /**
-	     * Specifies mitered joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static MITER: string;
-	    /**
-	     * Specifies round joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	}
-	export = JointStyle;
 	
 }
 
@@ -6041,80 +6045,6 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	
 }
 
-declare module "awayjs-display/lib/entities/MovieClip" {
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
-	import Timeline = require("awayjs-display/lib/base/Timeline");
-	class MovieClip extends DisplayObjectContainer {
-	    static assetType: string;
-	    private _timeline;
-	    private _isButton;
-	    private _onMouseOver;
-	    private _onMouseOut;
-	    private _onMouseDown;
-	    private _onMouseUp;
-	    private _time;
-	    private _currentFrameIndex;
-	    private _isPlaying;
-	    private _enterFrame;
-	    private _skipAdvance;
-	    private _isInit;
-	    private _potentialInstances;
-	    private _active_session_ids;
-	    /**
-	     * adapter is used to provide MovieClip to scripts taken from different platforms
-	     * setter typically managed by factory
-	     */
-	    adapter: IMovieClipAdapter;
-	    constructor(timeline?: Timeline);
-	    isInit: boolean;
-	    timeline: Timeline;
-	    /**
-	     *
-	     */
-	    loop: boolean;
-	    numFrames: number;
-	    jumpToLabel(label: string): void;
-	    /**
-	     * the current index of the current active frame
-	     */
-	    constructedKeyFrameIndex: number;
-	    exit_frame(): void;
-	    reset(): void;
-	    set_currentFrameIndex(value: number): void;
-	    currentFrameIndex: number;
-	    addButtonListeners(): void;
-	    removeButtonListeners(): void;
-	    getChildAtSessionID(sessionID: number): DisplayObject;
-	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
-	    removeChildAtInternal(index: number): DisplayObject;
-	    assetType: string;
-	    /**
-	     * Starts playback of animation from current position
-	     */
-	    play(): void;
-	    /**
-	     * should be called right before the call to away3d-render.
-	     */
-	    update(): void;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    /**
-	     * Stop playback of animation and hold current position
-	     */
-	    stop(): void;
-	    clone(): MovieClip;
-	    copyTo(newInstance: MovieClip): void;
-	    iSetParent(value: DisplayObjectContainer): void;
-	    advanceFrame(skipChildren?: boolean): void;
-	    private advanceChildren();
-	    logHierarchy(depth?: number): void;
-	    printHierarchyName(depth: number, target: DisplayObject): void;
-	}
-	export = MovieClip;
-	
-}
-
 declare module "awayjs-display/lib/entities/Mesh" {
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
@@ -6273,6 +6203,80 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	}
 	export = Mesh;
+	
+}
+
+declare module "awayjs-display/lib/entities/MovieClip" {
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
+	import Timeline = require("awayjs-display/lib/base/Timeline");
+	class MovieClip extends DisplayObjectContainer {
+	    static assetType: string;
+	    private _timeline;
+	    private _isButton;
+	    private _onMouseOver;
+	    private _onMouseOut;
+	    private _onMouseDown;
+	    private _onMouseUp;
+	    private _time;
+	    private _currentFrameIndex;
+	    private _isPlaying;
+	    private _enterFrame;
+	    private _skipAdvance;
+	    private _isInit;
+	    private _potentialInstances;
+	    private _active_session_ids;
+	    /**
+	     * adapter is used to provide MovieClip to scripts taken from different platforms
+	     * setter typically managed by factory
+	     */
+	    adapter: IMovieClipAdapter;
+	    constructor(timeline?: Timeline);
+	    isInit: boolean;
+	    timeline: Timeline;
+	    /**
+	     *
+	     */
+	    loop: boolean;
+	    numFrames: number;
+	    jumpToLabel(label: string): void;
+	    /**
+	     * the current index of the current active frame
+	     */
+	    constructedKeyFrameIndex: number;
+	    exit_frame(): void;
+	    reset(): void;
+	    set_currentFrameIndex(value: number): void;
+	    currentFrameIndex: number;
+	    addButtonListeners(): void;
+	    removeButtonListeners(): void;
+	    getChildAtSessionID(sessionID: number): DisplayObject;
+	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
+	    removeChildAtInternal(index: number): DisplayObject;
+	    assetType: string;
+	    /**
+	     * Starts playback of animation from current position
+	     */
+	    play(): void;
+	    /**
+	     * should be called right before the call to away3d-render.
+	     */
+	    update(): void;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    /**
+	     * Stop playback of animation and hold current position
+	     */
+	    stop(): void;
+	    clone(): MovieClip;
+	    copyTo(newInstance: MovieClip): void;
+	    iSetParent(value: DisplayObjectContainer): void;
+	    advanceFrame(skipChildren?: boolean): void;
+	    private advanceChildren();
+	    logHierarchy(depth?: number): void;
+	    printHierarchyName(depth: number, target: DisplayObject): void;
+	}
+	export = MovieClip;
 	
 }
 
@@ -6448,15 +6452,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
 	}
 	export = Skybox;
-	
-}
-
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
-	}
-	export = CastError;
 	
 }
 
@@ -7364,6 +7359,15 @@ declare module "awayjs-display/lib/entities/TextField" {
 	    copyTo(newInstance: TextField): void;
 	}
 	export = TextField;
+	
+}
+
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
 	
 }
 
@@ -10184,35 +10188,6 @@ declare module "awayjs-display/lib/sort/RenderableNullSort" {
 	
 }
 
-declare module "awayjs-display/lib/text/AntiAliasType" {
-	/**
-	 * The AntiAliasType class provides values for anti-aliasing in the
-	 * away.text.TextField class.
-	 */
-	class AntiAliasType {
-	    /**
-	     * Sets anti-aliasing to advanced anti-aliasing. Advanced anti-aliasing
-	     * allows font faces to be rendered at very high quality at small sizes. It
-	     * is best used with applications that have a lot of small text. Advanced
-	     * anti-aliasing is not recommended for very large fonts(larger than 48
-	     * points). This constant is used for the <code>antiAliasType</code> property
-	     * in the TextField class. Use the syntax
-	     * <code>AntiAliasType.ADVANCED</code>.
-	     */
-	    static ADVANCED: string;
-	    /**
-	     * Sets anti-aliasing to the anti-aliasing that is used in Flash Player 7 and
-	     * earlier. This setting is recommended for applications that do not have a
-	     * lot of text. This constant is used for the <code>antiAliasType</code>
-	     * property in the TextField class. Use the syntax
-	     * <code>AntiAliasType.NORMAL</code>.
-	     */
-	    static NORMAL: string;
-	}
-	export = AntiAliasType;
-	
-}
-
 declare module "awayjs-display/lib/text/Font" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -10248,6 +10223,35 @@ declare module "awayjs-display/lib/text/Font" {
 	    get_font_table(style_name: string): FontTable;
 	}
 	export = Font;
+	
+}
+
+declare module "awayjs-display/lib/text/AntiAliasType" {
+	/**
+	 * The AntiAliasType class provides values for anti-aliasing in the
+	 * away.text.TextField class.
+	 */
+	class AntiAliasType {
+	    /**
+	     * Sets anti-aliasing to advanced anti-aliasing. Advanced anti-aliasing
+	     * allows font faces to be rendered at very high quality at small sizes. It
+	     * is best used with applications that have a lot of small text. Advanced
+	     * anti-aliasing is not recommended for very large fonts(larger than 48
+	     * points). This constant is used for the <code>antiAliasType</code> property
+	     * in the TextField class. Use the syntax
+	     * <code>AntiAliasType.ADVANCED</code>.
+	     */
+	    static ADVANCED: string;
+	    /**
+	     * Sets anti-aliasing to the anti-aliasing that is used in Flash Player 7 and
+	     * earlier. This setting is recommended for applications that do not have a
+	     * lot of text. This constant is used for the <code>antiAliasType</code>
+	     * property in the TextField class. Use the syntax
+	     * <code>AntiAliasType.NORMAL</code>.
+	     */
+	    static NORMAL: string;
+	}
+	export = AntiAliasType;
 	
 }
 

@@ -3917,25 +3917,20 @@ var Timeline = (function () {
         var start_construct_idx = break_frame_idx;
         if (jump_forward && !jump_gap)
             start_construct_idx = current_keyframe_idx + 1;
-        var child_depths = {}; //target_mc.getChildDepths();
-        var sessionID_depths = {};
         var i;
         var end_index;
         var k;
         var child;
         var depth;
-        if (jump_forward && start_construct_idx == target_keyframe_idx) {
-        }
-        for (i = target_mc.numChildren - 1; i >= 0; i--) {
-            child = target_mc._children[i];
-            if (jump_gap) {
-                target_mc.removeChild(child);
-            }
-            else if (jump_forward) {
-                sessionID_depths[child._depthID] = child._sessionID;
-                child_depths[child._depthID] = child;
-            }
-        }
+        if (jump_gap)
+            for (i = target_mc.numChildren - 1; i >= 0; i--)
+                target_mc.removeChild(target_mc._children[i]);
+        //if we jump back, we want to reset all objects (but not the timelines of the mcs)
+        if (!jump_forward)
+            target_mc.resetDepths();
+        // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
+        var child_depths = target_mc.getChildDepths();
+        var sessionID_depths = target_mc.getSessionIDDepths();
         //  step1: only apply add/remove commands into current_childs_dic.
         var update_indices = []; // store a list of updatecommand_indices, so we dont have to read frame_recipe again
         var update_cnt = 0;
@@ -3960,9 +3955,9 @@ var Timeline = (function () {
                 end_index = start_index + this.command_length_stream[frame_command_idx++];
                 for (i = end_index - 1; i >= start_index; i--) {
                     idx = i * 2;
-                    var target = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
+                    child = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
                     depth = this.add_child_stream[idx + 1] - 16383;
-                    child_depths[depth] = target;
+                    child_depths[depth] = child;
                     sessionID_depths[depth] = i;
                 }
                 if (k == target_keyframe_idx) {
@@ -3974,19 +3969,10 @@ var Timeline = (function () {
         }
         for (i = target_mc.numChildren - 1; i >= 0; i--) {
             child = target_mc._children[i];
-            depth = child._depthID;
-            if (sessionID_depths[depth] == child._sessionID) {
-                delete sessionID_depths[depth];
-                delete child_depths[depth];
-            }
-            else
+            if (sessionID_depths[child._depthID] != child._sessionID) {
                 target_mc.removeChildAt(i);
-        }
-        // the objects that are now child of target_mc, are alive on both frames
-        // if we jump back, or we jump a gap forward, we want to reset all objects (but not the timelines of the mcs)
-        if ((!jump_forward) || (jump_gap)) {
-            for (i = target_mc.numChildren - 1; i >= 0; i--) {
-                child = target_mc._children[i];
+            }
+            else if (!jump_forward) {
                 if (child.adapter) {
                     if (!child.adapter.isBlockedByScript()) {
                         if (child._iMatrix3D) {
@@ -4010,14 +3996,12 @@ var Timeline = (function () {
                 }
             }
         }
-        // we need to addchild the objects that was added befor targetframe first
-        // than we can add the script of the targetframe
-        // than we can addchild objects added on targetframe
-        var id;
         for (var key in sessionID_depths) {
             child = child_depths[key];
-            child._sessionID = sessionID_depths[key];
-            target_mc.addChildAtDepth(child, Number(key));
+            if (child._sessionID == -1) {
+                child._sessionID = sessionID_depths[key];
+                target_mc.addChildAtDepth(child, Number(key));
+            }
         }
         if (!skip_script && firstframe == value)
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
@@ -5519,7 +5503,8 @@ var DisplayObjectContainer = (function (_super) {
         _super.call(this);
         this._containerNodes = new Array();
         this._mouseChildren = true;
-        this._active_depths = {};
+        this._active_childs = {};
+        this._active_sessionIDs = {};
         this._nextHighestDepth = 0;
         this._children = new Array();
         this._pIsContainer = true;
@@ -5632,7 +5617,8 @@ var DisplayObjectContainer = (function (_super) {
         }
         if (this._nextHighestDepth < depth + 1)
             this._nextHighestDepth = depth + 1;
-        this._active_depths[depth] = child;
+        this._active_childs[depth] = child;
+        this._active_sessionIDs[depth] = child._sessionID;
         this._children.push(child);
         child._depthID = depth;
         child.iSetParent(this);
@@ -5718,11 +5704,21 @@ var DisplayObjectContainer = (function (_super) {
         while (this.numChildren > 0)
             this.getChildAt(0).dispose();
     };
-    DisplayObjectContainer.prototype.getChildAtDepth = function (depth /*int*/) {
-        return this._active_depths[depth];
+    DisplayObjectContainer.prototype.getSessionIDAtDepth = function (depth) {
+        return this._active_sessionIDs[depth];
+    };
+    DisplayObjectContainer.prototype.getChildAtDepth = function (depth) {
+        return this._active_childs[depth];
     };
     DisplayObjectContainer.prototype.getChildDepths = function () {
-        return this._active_depths;
+        return this._active_childs;
+    };
+    DisplayObjectContainer.prototype.getSessionIDDepths = function () {
+        return this._active_sessionIDs;
+    };
+    DisplayObjectContainer.prototype.resetDepths = function () {
+        this._active_childs = {};
+        this._active_sessionIDs = {};
     };
     /**
      * Returns the child display object instance that exists at the specified
@@ -6019,16 +6015,19 @@ var DisplayObjectContainer = (function (_super) {
         //update next highest depth
         if (this._nextHighestDepth == child._depthID + 1)
             this._nextHighestDepthDirty = true;
-        //check to make sure _active_depths wasn't modified with a new child
-        if (this._active_depths[child._depthID] == child)
-            delete this._active_depths[child._depthID];
+        //check to make sure _active_sessionIDs wasn't modified with a new child
+        if (this._active_sessionIDs[child._depthID] == child._sessionID) {
+            delete this._active_sessionIDs[child._depthID];
+            delete this._active_childs[child._depthID];
+        }
         child._depthID = -16384;
+        child._sessionID = -1;
         return child;
     };
     DisplayObjectContainer.prototype.getDepthIndexInternal = function (depth /*int*/) {
-        if (!this._active_depths[depth])
+        if (!this._active_childs[depth])
             return -1;
-        return this._children.indexOf(this._active_depths[depth]);
+        return this._children.indexOf(this._active_childs[depth]);
     };
     DisplayObjectContainer.prototype._updateNextHighestDepth = function () {
         this._nextHighestDepthDirty = false;
@@ -10756,10 +10755,11 @@ var MovieClip = (function (_super) {
     };
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }
-        if (this._timeline.numFrames) {
-            if (((this._isPlaying && !this._skipAdvance) || this._currentFrameIndex == -1) && (this._currentFrameIndex != this._timeline.numFrames - 1 || this.loop)) {
+        var numFrames = this._timeline.numFrames;
+        if (numFrames) {
+            if (((this._isPlaying && !this._skipAdvance) || this._currentFrameIndex == -1) && (this._currentFrameIndex != numFrames - 1 || this.loop)) {
                 this._currentFrameIndex++;
-                if (this._currentFrameIndex == this._timeline.numFrames) {
+                if (this._currentFrameIndex == numFrames) {
                     this.currentFrameIndex = 0;
                 }
                 else {
