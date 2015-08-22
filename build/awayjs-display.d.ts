@@ -227,6 +227,24 @@ declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	
 }
 
+declare module "awayjs-display/lib/base/AlignmentMode" {
+	/**
+	 *
+	 */
+	class AlignmentMode {
+	    /**
+	     *
+	     */
+	    static REGISTRATION_POINT: string;
+	    /**
+	     *
+	     */
+	    static PIVOT_POINT: string;
+	}
+	export = AlignmentMode;
+	
+}
+
 declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
@@ -1662,24 +1680,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _updateMaskMode(): void;
 	}
 	export = DisplayObject;
-	
-}
-
-declare module "awayjs-display/lib/base/AlignmentMode" {
-	/**
-	 *
-	 */
-	class AlignmentMode {
-	    /**
-	     *
-	     */
-	    static REGISTRATION_POINT: string;
-	    /**
-	     *
-	     */
-	    static PIVOT_POINT: string;
-	}
-	export = AlignmentMode;
 	
 }
 
@@ -3159,8 +3159,8 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    static assetType: string;
 	    private _containerNodes;
 	    private _mouseChildren;
-	    private _active_childs;
-	    private _active_sessionIDs;
+	    private _depth_childs;
+	    private _depth_sessionIDs;
 	    private _nextHighestDepth;
 	    private _nextHighestDepthDirty;
 	    _children: Array<DisplayObject>;
@@ -5385,6 +5385,36 @@ declare module "awayjs-display/lib/draw/InterpolationMethod" {
 	
 }
 
+declare module "awayjs-display/lib/draw/JointStyle" {
+	/**
+	 * The JointStyle class is an enumeration of constant values that specify the
+	 * joint style to use in drawing lines. These constants are provided for use
+	 * as values in the <code>joints</code> parameter of the
+	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
+	 * three types of joints: miter, round, and bevel, as the following example
+	 * shows:
+	 */
+	class JointStyle {
+	    /**
+	     * Specifies beveled joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static BEVEL: string;
+	    /**
+	     * Specifies mitered joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static MITER: string;
+	    /**
+	     * Specifies round joints in the <code>joints</code> parameter of the
+	     * <code>flash.display.Graphics.lineStyle()</code> method.
+	     */
+	    static ROUND: string;
+	}
+	export = JointStyle;
+	
+}
+
 declare module "awayjs-display/lib/draw/LineScaleMode" {
 	/**
 	 * The LineScaleMode class provides values for the <code>scaleMode</code>
@@ -5424,36 +5454,6 @@ declare module "awayjs-display/lib/draw/LineScaleMode" {
 	    static VERTICAL: string;
 	}
 	export = LineScaleMode;
-	
-}
-
-declare module "awayjs-display/lib/draw/JointStyle" {
-	/**
-	 * The JointStyle class is an enumeration of constant values that specify the
-	 * joint style to use in drawing lines. These constants are provided for use
-	 * as values in the <code>joints</code> parameter of the
-	 * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
-	 * three types of joints: miter, round, and bevel, as the following example
-	 * shows:
-	 */
-	class JointStyle {
-	    /**
-	     * Specifies beveled joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static BEVEL: string;
-	    /**
-	     * Specifies mitered joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static MITER: string;
-	    /**
-	     * Specifies round joints in the <code>joints</code> parameter of the
-	     * <code>flash.display.Graphics.lineStyle()</code> method.
-	     */
-	    static ROUND: string;
-	}
-	export = JointStyle;
 	
 }
 
@@ -5555,6 +5555,149 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 	    static POSITIVE: string;
 	}
 	export = TriangleCulling;
+	
+}
+
+declare module "awayjs-display/lib/entities/Billboard" {
+	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * The Billboard class represents display objects that represent bitmap images.
+	 * These can be images that you load with the <code>flash.Assets</code> or
+	 * <code>flash.display.Loader</code> classes, or they can be images that you
+	 * create with the <code>Billboard()</code> constructor.
+	 *
+	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
+	 * object that contains a reference to a Image2D object. After you create a
+	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
+	 * method of the parent DisplayObjectContainer instance to place the bitmap on
+	 * the display list.</p>
+	 *
+	 * <p>A Billboard object can share its Image2D reference among several Billboard
+	 * objects, independent of translation or rotation properties. Because you can
+	 * create multiple Billboard objects that reference the same Image2D object,
+	 * multiple display objects can use the same complex Image2D object without
+	 * incurring the memory overhead of a Image2D object for each display
+	 * object instance.</p>
+	 *
+	 * <p>A Image2D object can be drawn to the screen by a Billboard object in one
+	 * of two ways: by using the default hardware renderer with a single hardware surface,
+	 * or by using the slower software renderer when 3D acceleration is not available.</p>
+	 *
+	 * <p>If you would prefer to perform a batch rendering command, rather than using a
+	 * single surface for each Billboard object, you can also draw to the screen using the
+	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
+	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
+	 * objects.</code></p>
+	 *
+	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
+	 * class, so it cannot dispatch mouse events. However, you can use the
+	 * <code>addEventListener()</code> method of the display object container that
+	 * contains the Billboard object.</p>
+	 */
+	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
+	    static assetType: string;
+	    private _animator;
+	    private _billboardWidth;
+	    private _billboardHeight;
+	    private _billboardRect;
+	    private _material;
+	    private _uvTransform;
+	    private _colorTransform;
+	    private _parentColorTransform;
+	    private onSizeChangedDelegate;
+	    /**
+	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * The Image2D object being referenced.
+	     */
+	    image2D: Image2D;
+	    /**
+	     *
+	     */
+	    billboardRect: Rectangle;
+	    /**
+	     *
+	     */
+	    billboardHeight: number;
+	    /**
+	     *
+	     */
+	    billboardWidth: number;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    /**
+	     * Controls whether or not the Billboard object is snapped to the nearest pixel.
+	     * This value is ignored in the native and HTML5 targets.
+	     * The PixelSnapping class includes possible values:
+	     * <ul>
+	     *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
+	     *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
+	     * the nearest pixel, independent of transformation.</li>
+	     *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
+	     * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
+	     * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
+	     * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
+	     * When targeting Flash Player, this value allows the image to be drawn as fast
+	     * as possible using the internal vector renderer.</li>
+	     * </ul>
+	     */
+	    pixelSnapping: string;
+	    /**
+	     * Controls whether or not the bitmap is smoothed when scaled. If
+	     * <code>true</code>, the bitmap is smoothed when scaled. If
+	     * <code>false</code>, the bitmap is not smoothed when scaled.
+	     */
+	    smoothing: boolean;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    /**
+	     *
+	     */
+	    colorTransform: ColorTransform;
+	    parentColorTransform: ColorTransform;
+	    private _applyColorTransform();
+	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
+	    /**
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    clone(): DisplayObject;
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
+	    /**
+	     * @private
+	     */
+	    private onSizeChanged(event);
+	    _applyRenderer(renderer: IRenderer): void;
+	}
+	export = Billboard;
 	
 }
 
@@ -6083,7 +6226,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    private _skipAdvance;
 	    private _isInit;
 	    private _potentialInstances;
-	    private _active_session_ids;
+	    private _sessionID_childs;
 	    /**
 	     * adapter is used to provide MovieClip to scripts taken from different platforms
 	     * setter typically managed by factory
@@ -9258,146 +9401,30 @@ declare module "awayjs-display/lib/pool/EntityListItem" {
 	
 }
 
-declare module "awayjs-display/lib/entities/Billboard" {
-	import Image2D = require("awayjs-core/lib/data/Image2D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+declare module "awayjs-display/lib/pool/EntityListItemPool" {
+	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
 	/**
-	 * The Billboard class represents display objects that represent bitmap images.
-	 * These can be images that you load with the <code>flash.Assets</code> or
-	 * <code>flash.display.Loader</code> classes, or they can be images that you
-	 * create with the <code>Billboard()</code> constructor.
-	 *
-	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
-	 * object that contains a reference to a Image2D object. After you create a
-	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
-	 * method of the parent DisplayObjectContainer instance to place the bitmap on
-	 * the display list.</p>
-	 *
-	 * <p>A Billboard object can share its Image2D reference among several Billboard
-	 * objects, independent of translation or rotation properties. Because you can
-	 * create multiple Billboard objects that reference the same Image2D object,
-	 * multiple display objects can use the same complex Image2D object without
-	 * incurring the memory overhead of a Image2D object for each display
-	 * object instance.</p>
-	 *
-	 * <p>A Image2D object can be drawn to the screen by a Billboard object in one
-	 * of two ways: by using the default hardware renderer with a single hardware surface,
-	 * or by using the slower software renderer when 3D acceleration is not available.</p>
-	 *
-	 * <p>If you would prefer to perform a batch rendering command, rather than using a
-	 * single surface for each Billboard object, you can also draw to the screen using the
-	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
-	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
-	 * objects.</code></p>
-	 *
-	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
-	 * class, so it cannot dispatch mouse events. However, you can use the
-	 * <code>addEventListener()</code> method of the display object container that
-	 * contains the Billboard object.</p>
+	 * @class away.pool.EntityListItemPool
 	 */
-	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
-	    static assetType: string;
-	    private _animator;
-	    private _billboardWidth;
-	    private _billboardHeight;
-	    private _billboardRect;
-	    private _material;
-	    private _uvTransform;
-	    private _colorTransform;
-	    private _parentColorTransform;
-	    private onSizeChangedDelegate;
-	    /**
-	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
+	class EntityListItemPool {
+	    private _pool;
+	    private _index;
+	    private _poolSize;
 	    /**
 	     *
 	     */
-	    assetType: string;
-	    /**
-	     * The Image2D object being referenced.
-	     */
-	    image2D: Image2D;
+	    constructor();
 	    /**
 	     *
 	     */
-	    billboardRect: Rectangle;
+	    getItem(): EntityListItem;
 	    /**
 	     *
 	     */
-	    billboardHeight: number;
-	    /**
-	     *
-	     */
-	    billboardWidth: number;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     * Controls whether or not the Billboard object is snapped to the nearest pixel.
-	     * This value is ignored in the native and HTML5 targets.
-	     * The PixelSnapping class includes possible values:
-	     * <ul>
-	     *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
-	     *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
-	     * the nearest pixel, independent of transformation.</li>
-	     *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
-	     * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
-	     * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
-	     * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
-	     * When targeting Flash Player, this value allows the image to be drawn as fast
-	     * as possible using the internal vector renderer.</li>
-	     * </ul>
-	     */
-	    pixelSnapping: string;
-	    /**
-	     * Controls whether or not the bitmap is smoothed when scaled. If
-	     * <code>true</code>, the bitmap is smoothed when scaled. If
-	     * <code>false</code>, the bitmap is not smoothed when scaled.
-	     */
-	    smoothing: boolean;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    parentColorTransform: ColorTransform;
-	    private _applyColorTransform();
-	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    clone(): DisplayObject;
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
-	    /**
-	     * @private
-	     */
-	    private onSizeChanged(event);
-	    _applyRenderer(renderer: IRenderer): void;
+	    freeAll(): void;
+	    dispose(): void;
 	}
-	export = Billboard;
+	export = EntityListItemPool;
 	
 }
 
@@ -10118,33 +10145,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
-	
-}
-
-declare module "awayjs-display/lib/pool/EntityListItemPool" {
-	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
-	/**
-	 * @class away.pool.EntityListItemPool
-	 */
-	class EntityListItemPool {
-	    private _pool;
-	    private _index;
-	    private _poolSize;
-	    /**
-	     *
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    getItem(): EntityListItem;
-	    /**
-	     *
-	     */
-	    freeAll(): void;
-	    dispose(): void;
-	}
-	export = EntityListItemPool;
 	
 }
 
