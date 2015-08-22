@@ -10569,14 +10569,16 @@ var MovieClip = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    MovieClip.prototype.clear_textclones = function () {
-        for (var key in this._potentialInstances) {
-            if (this._potentialInstances[key] != null) {
-                if (this._potentialInstances[key].isAsset(TextField)) {
-                    this._potentialInstances[key] = null;
-                }
-                else if (this._potentialInstances[key].isAsset(MovieClip)) {
-                    this._potentialInstances[key].clear_textclones();
+    MovieClip.prototype.reset_textclones = function () {
+        if (this.timeline) {
+            for (var key in this._potentialInstances) {
+                if (this._potentialInstances[key] != null) {
+                    if (this._potentialInstances[key].isAsset(TextField)) {
+                        this._potentialInstances[key].text = this.timeline.getPotentialChildPrototype(key).text;
+                    }
+                    else if (this._potentialInstances[key].isAsset(MovieClip)) {
+                        this._potentialInstances[key].reset_textclones();
+                    }
                 }
             }
         }
