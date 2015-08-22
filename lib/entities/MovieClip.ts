@@ -77,15 +77,17 @@ class MovieClip extends DisplayObjectContainer
     }
 
 
-    public clear_textclones()
+    public reset_textclones()
     {
-        for (var key in this._potentialInstances){
-            if(this._potentialInstances[key]!=null) {
-                if (this._potentialInstances[key].isAsset(TextField)) {
-                    this._potentialInstances[key] = null;
-                }
-                else if (this._potentialInstances[key].isAsset(MovieClip)) {
-                    (<MovieClip>this._potentialInstances[key]).clear_textclones();
+        if(this.timeline) {
+            for (var key in this._potentialInstances) {
+                if (this._potentialInstances[key] != null) {
+                    if (this._potentialInstances[key].isAsset(TextField)) {
+                        (<TextField>this._potentialInstances[key]).text = (<TextField>this.timeline.getPotentialChildPrototype(key)).text;
+                    }
+                    else if (this._potentialInstances[key].isAsset(MovieClip)) {
+                        (<MovieClip>this._potentialInstances[key]).reset_textclones();
+                    }
                 }
             }
         }
