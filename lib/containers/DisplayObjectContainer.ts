@@ -38,8 +38,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 	private _containerNodes:Array<ContainerNode> = new Array<ContainerNode>();
 	private _mouseChildren:boolean = true;
-	private _active_childs:Object = {};
-	private _active_sessionIDs:Object = {};
+	private _depth_childs:Object = {};
+	private _depth_sessionIDs:Object = {};
 	private _nextHighestDepth:number = 0;
 	private _nextHighestDepthDirty:boolean;
 	public _children:Array<DisplayObject> = new Array<DisplayObject>();
@@ -191,8 +191,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		if (this._nextHighestDepth < depth + 1)
 			this._nextHighestDepth = depth + 1;
 
-		this._active_childs[depth] = child;
-		this._active_sessionIDs[depth] = child._sessionID;
+		this._depth_childs[depth] = child;
+		this._depth_sessionIDs[depth] = child._sessionID;
 		this._children.push(child);
 
 		child._depthID = depth;
@@ -298,31 +298,31 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 	public getSessionIDAtDepth(depth:number):number
 	{
-		return this._active_sessionIDs[depth];
+		return this._depth_sessionIDs[depth];
 	}
 
 	public getChildAtDepth(depth:number):DisplayObject
 	{
-		return this._active_childs[depth];
+		return this._depth_childs[depth];
 	}
 
 
 	public getChildDepths():Object
 	{
-		return this._active_childs;
+		return this._depth_childs;
 	}
 
 	public getSessionIDDepths():Object
 	{
-		return this._active_sessionIDs;
+		return this._depth_sessionIDs;
 	}
-	
+
 	public resetDepths()
 	{
-		this._active_childs = {};
-		this._active_sessionIDs = {};
+		this._depth_childs = {};
+		this._depth_sessionIDs = {};
 	}
-	
+
 
 	/**
 	 * Returns the child display object instance that exists at the specified
@@ -674,10 +674,10 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		if (this._nextHighestDepth == child._depthID + 1)
 			this._nextHighestDepthDirty = true;
 
-		//check to make sure _active_sessionIDs wasn't modified with a new child
-		if (this._active_sessionIDs[child._depthID] == child._sessionID) {
-			delete this._active_sessionIDs[child._depthID];
-			delete this._active_childs[child._depthID];
+		//check to make sure _depth_sessionIDs wasn't modified with a new child
+		if (this._depth_sessionIDs[child._depthID] == child._sessionID) {
+			delete this._depth_sessionIDs[child._depthID];
+			delete this._depth_childs[child._depthID];
 		}
 
 		child._depthID = -16384;
@@ -688,10 +688,10 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 	private getDepthIndexInternal(depth:number /*int*/):number
 	{
-		if (!this._active_childs[depth])
+		if (!this._depth_childs[depth])
 			return -1;
 
-		return this._children.indexOf(this._active_childs[depth]);
+		return this._children.indexOf(this._depth_childs[depth]);
 	}
 
 	private _updateNextHighestDepth()

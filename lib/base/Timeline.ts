@@ -218,8 +218,8 @@ class Timeline
 			target_mc.resetDepths();
 
 		// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-		var child_depths:Object = target_mc.getChildDepths();
-		var sessionID_depths:Object = target_mc.getSessionIDDepths();
+		var depth_childs:Object = target_mc.getChildDepths();
+		var depth_sessionIDs:Object = target_mc.getSessionIDDepths();
 
 		//  step1: only apply add/remove commands into current_childs_dic.
 		var update_indices:Array<number> = [];// store a list of updatecommand_indices, so we dont have to read frame_recipe again
@@ -239,8 +239,8 @@ class Timeline
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
 				for (i = start_index; i < end_index; i++) {
 					depth = this.remove_child_stream[i] - 16383;
-					delete child_depths[depth];
-					delete sessionID_depths[depth];
+					delete depth_childs[depth];
+					delete depth_sessionIDs[depth];
 				}
 			}
 
@@ -254,8 +254,8 @@ class Timeline
 					child = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
 
 					depth = this.add_child_stream[idx + 1] - 16383;
-					child_depths[depth] = child;
-					sessionID_depths[depth] = i;
+					depth_childs[depth] = child;
+					depth_sessionIDs[depth] = i;
 				}
 			}
 
@@ -270,7 +270,7 @@ class Timeline
 		// childs that are alive on both frames are reset if we are jumping back
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
-			if (sessionID_depths[child._depthID] != child._sessionID) {
+			if (depth_sessionIDs[child._depthID] != child._sessionID) {
 				target_mc.removeChildAt(i);
 			} else if (!jump_forward) {
 				if(child.adapter) {
@@ -300,10 +300,10 @@ class Timeline
 		// now we need to addchild the objects that were added before targetframe first
 		// than we can add the script of the targetframe
 		// than we can addchild objects added on targetframe
-		for (var key in sessionID_depths) {
-			child = child_depths[key];
+		for (var key in depth_sessionIDs) {
+			child = depth_childs[key];
 			if (child._sessionID == -1) {
-				child._sessionID = sessionID_depths[key];
+				child._sessionID = depth_sessionIDs[key];
 				target_mc.addChildAtDepth(child, Number(key));
 			}
 		}

@@ -37,7 +37,7 @@ class MovieClip extends DisplayObjectContainer
     private _isInit : boolean;
 
     private _potentialInstances:Object;
-    private _active_session_ids:Object;
+    private _sessionID_childs:Object;
 
 	/**
 	 * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -56,7 +56,7 @@ class MovieClip extends DisplayObjectContainer
     constructor(timeline:Timeline = null)
     {
         super();
-        this._active_session_ids = {};
+        this._sessionID_childs = {};
         this._potentialInstances = {};
         this._currentFrameIndex = -1;
         this.constructedKeyFrameIndex = -1;
@@ -232,7 +232,7 @@ class MovieClip extends DisplayObjectContainer
 
     public getChildAtSessionID(sessionID:number):DisplayObject
     {
-        return this._active_session_ids[sessionID];
+        return this._sessionID_childs[sessionID];
     }
 
     public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
@@ -244,13 +244,15 @@ class MovieClip extends DisplayObjectContainer
 
         super.addChildAtDepth(child, depth, true);
 
-        this._active_session_ids[child._sessionID] = child;
+        this._sessionID_childs[child._sessionID] = child;
 
         return child;
     }
 
     public removeChildAtInternal(index:number /*int*/):DisplayObject
     {
+        delete this._sessionID_childs[this._children[index]._sessionID];
+
         var child:DisplayObject = super.removeChildAtInternal(index);
 
         if(child.adapter)
@@ -258,9 +260,6 @@ class MovieClip extends DisplayObjectContainer
 
         this.adapter.unregisterScriptObject(child);
 
-        delete this._active_session_ids[child._sessionID];
-
-        child._sessionID = -1;
 
         return child;
     }
