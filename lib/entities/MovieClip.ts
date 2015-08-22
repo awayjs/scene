@@ -6,12 +6,13 @@ import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayOb
 import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 import Mesh = require("awayjs-display/lib/entities/Mesh");
 import Billboard = require("awayjs-display/lib/entities/Billboard");
+import TextField = require("awayjs-display/lib/entities/TextField");
 
-import MouseEvent = require("awayjs-display/lib/events/MouseEvent");
+import MouseEvent               = require("awayjs-display/lib/events/MouseEvent");
 
 import IMovieClipAdapter		= require("awayjs-display/lib/adapters/IMovieClipAdapter");
-import Timeline = require("awayjs-display/lib/base/Timeline");
-import FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
+import Timeline                 = require("awayjs-display/lib/base/Timeline");
+import FrameScriptManager       = require("awayjs-display/lib/managers/FrameScriptManager");
 
 class MovieClip extends DisplayObjectContainer
 {
@@ -73,6 +74,21 @@ class MovieClip extends DisplayObjectContainer
         this._onMouseUp = (event:MouseEvent) => this.currentFrameIndex = this.currentFrameIndex == 0? 0 : 1;
 
         this._timeline = timeline || new Timeline();
+    }
+
+
+    public clear_textclones()
+    {
+        for (var key in this._potentialInstances){
+            if(this._potentialInstances[key]!=null) {
+                if (this._potentialInstances[key].isAsset(TextField)) {
+                    this._potentialInstances[key] = null;
+                }
+                else if (this._potentialInstances[key].isAsset(MovieClip)) {
+                    (<MovieClip>this._potentialInstances[key]).clear_textclones();
+                }
+            }
+        }
     }
 
     public get isInit():boolean
