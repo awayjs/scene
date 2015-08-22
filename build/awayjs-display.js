@@ -10525,6 +10525,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var Event = require("awayjs-core/lib/events/Event");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+var TextField = require("awayjs-display/lib/entities/TextField");
 var MouseEvent = require("awayjs-display/lib/events/MouseEvent");
 var Timeline = require("awayjs-display/lib/base/Timeline");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
@@ -10568,6 +10569,18 @@ var MovieClip = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    MovieClip.prototype.clear_textclones = function () {
+        for (var key in this._potentialInstances) {
+            if (this._potentialInstances[key] != null) {
+                if (this._potentialInstances[key].isAsset(TextField)) {
+                    this._potentialInstances[key] = null;
+                }
+                else if (this._potentialInstances[key].isAsset(MovieClip)) {
+                    this._potentialInstances[key].clear_textclones();
+                }
+            }
+        }
+    };
     Object.defineProperty(MovieClip.prototype, "isInit", {
         get: function () {
             return this._isInit;
@@ -10804,7 +10817,7 @@ var MovieClip = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = MovieClip;
 
-},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/base/Timeline":"awayjs-display/lib/base/Timeline","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/events/Event":undefined,"awayjs-display/lib/base/Timeline":"awayjs-display/lib/base/Timeline","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/entities/TextField":"awayjs-display/lib/entities/TextField","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
