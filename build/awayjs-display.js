@@ -3908,6 +3908,8 @@ var Timeline = (function () {
             return;
         }
         if (current_keyframe_idx == target_keyframe_idx)
+            //if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+            //	this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
             return;
         var break_frame_idx = this.keyframe_constructframes[target_keyframe_idx];
         //we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
@@ -3994,6 +3996,8 @@ var Timeline = (function () {
                 }
             }
         }
+        if (!skip_script && firstframe == value)
+            this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         for (var key in depth_sessionIDs) {
             child = depth_childs[key];
             if (child._sessionID == -1) {
@@ -4001,8 +4005,6 @@ var Timeline = (function () {
                 target_mc.addChildAtDepth(child, Number(key));
             }
         }
-        if (!skip_script && firstframe == value)
-            this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         //  pass2: apply update commands for objects on stage (only if they are not blocked by script)
         var frame_command_idx;
         var len = update_indices.length;
@@ -11255,6 +11257,7 @@ var __extends = this.__extends || function (d, b) {
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var Geometry = require("awayjs-display/lib/base/Geometry");
@@ -11498,9 +11501,11 @@ var TextField = (function (_super) {
         },
         set: function (value) {
             this._textColor = value;
+            console.log("textcolor = " + value);
             if (!this._iColorTransform)
                 this._iColorTransform = new ColorTransform();
             this._iColorTransform.color = value;
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
         },
         enumerable: true,
         configurable: true
@@ -11564,59 +11569,103 @@ var TextField = (function (_super) {
         var prev_char = null;
         var j = 0;
         var k = 0;
+        var whitespace_width = (this._textFormat.font_table.get_whitespace_width() * char_scale);
         var textlines = this.text.toString().split("\\n");
+        var final_lines_chars = [];
+        var final_lines_char_scale = [];
+        var final_lines_width = [];
         for (var tl = 0; tl < textlines.length; tl++) {
-            var line_width = 0;
-            var c_cnt = 0;
-            var font_chars = [];
-            var font_chars_scale = [];
-            for (var i = 0; i < textlines[tl].length; i++) {
-                char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-                var this_char = this._textFormat.font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
-                if (this_char == null) {
-                    if (this._textFormat.fallback_font_table) {
-                        char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
-                        this_char = this._textFormat.fallback_font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
+            final_lines_chars.push([]);
+            final_lines_char_scale.push([]);
+            final_lines_width.push(0);
+            var words = textlines[tl].split(" ");
+            for (var i = 0; i < words.length; i++) {
+                var word_width = 0;
+                var word_chars = [];
+                var word_chars_scale = [];
+                var c_cnt = 0;
+                for (var w = 0; w < words[i].length; w++) {
+                    char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+                    var this_char = this._textFormat.font_table.get_subgeo_for_char(words[i].charCodeAt(w).toString());
+                    if (this_char == null) {
+                        if (this._textFormat.fallback_font_table) {
+                            char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
+                            this_char = this._textFormat.fallback_font_table.get_subgeo_for_char(words[i].charCodeAt(w).toString());
+                        }
                     }
-                }
-                if (this_char != null) {
-                    var this_subGeom = this_char.subgeom;
-                    if (this_subGeom != null) {
-                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-                        var kerning_value = 0;
-                        if (prev_char != null) {
-                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
-                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-                                    kerning_value = prev_char.kerningValues[k];
-                                    break;
+                    if (this_char != null) {
+                        var this_subGeom = this_char.subgeom;
+                        if (this_subGeom != null) {
+                            // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                            var kerning_value = 0;
+                            if (prev_char != null) {
+                                for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                    if (prev_char.kerningCharCodes[k] == words[i].charCodeAt(w)) {
+                                        kerning_value = prev_char.kerningValues[k];
+                                        break;
+                                    }
                                 }
                             }
+                            word_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
                         }
-                        line_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                        else {
+                            // if no char-geometry was found, we insert a "space"
+                            word_width += whitespace_width;
+                        }
                     }
                     else {
                         // if no char-geometry was found, we insert a "space"
-                        line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
+                        //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                        word_width += whitespace_width;
                     }
+                    word_chars_scale[c_cnt] = char_scale;
+                    word_chars[c_cnt++] = this_char;
+                }
+                if ((final_lines_width[final_lines_width.length - 1] + word_width) <= this.textWidth) {
+                    for (var fw = 0; fw < word_chars_scale.length; fw++) {
+                        final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+                        final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+                    }
+                    final_lines_width[final_lines_width.length - 1] += word_width;
                 }
                 else {
-                    // if no char-geometry was found, we insert a "space"
-                    //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-                    line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
+                    // word does not fit
+                    // todo respect multiline and autowrapping properties.
+                    // right now we just pretend everything has autowrapping and multiline
+                    final_lines_chars.push([]);
+                    final_lines_char_scale.push([]);
+                    final_lines_width.push(0);
+                    for (var fw = 0; fw < word_chars_scale.length; fw++) {
+                        final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+                        final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+                    }
+                    final_lines_width[final_lines_width.length - 1] = word_width;
                 }
-                font_chars_scale[c_cnt] = char_scale;
-                font_chars[c_cnt++] = this_char;
+                if (i < (words.length - 1)) {
+                    if ((final_lines_width[final_lines_width.length - 1] + whitespace_width) <= this.textWidth) {
+                        final_lines_chars[final_lines_chars.length - 1].push(null);
+                        final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
+                        final_lines_width[final_lines_width.length - 1] += whitespace_width;
+                    }
+                    else {
+                        final_lines_chars.push([null]);
+                        final_lines_char_scale.push([char_scale]);
+                        final_lines_width.push(whitespace_width);
+                    }
+                }
             }
+        }
+        for (var i = 0; i < final_lines_chars.length; i++) {
             var x_offset = additional_margin_x;
             if (this._textFormat.align == "center") {
-                x_offset = (this._textWidth - line_width) / 2;
+                x_offset = (this._textWidth - final_lines_width[i]) / 2;
             }
             else if (this._textFormat.align == "right") {
-                x_offset = (this._textWidth - line_width) - additional_margin_x;
+                x_offset = (this._textWidth - final_lines_width[i]) - additional_margin_x;
             }
-            for (var i = 0; i < textlines[tl].length; i++) {
-                var this_char = font_chars[i];
-                char_scale = font_chars_scale[i];
+            for (var t = 0; t < final_lines_chars[i].length; t++) {
+                var this_char = final_lines_chars[i][t];
+                char_scale = final_lines_char_scale[i][t];
                 if (this_char != null) {
                     var this_subGeom = this_char.subgeom;
                     if (this_subGeom != null) {
@@ -11645,14 +11694,14 @@ var TextField = (function (_super) {
                     }
                     else {
                         // if no char-geometry was found, we insert a "space"
-                        x_offset += this._textFormat.font_table.get_whitespace_width() * char_scale;
+                        x_offset += whitespace_width;
                     }
                 }
                 else {
-                    x_offset += this._textFormat.font_table.get_whitespace_width() * char_scale;
+                    x_offset += whitespace_width;
                 }
             }
-            y_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+            y_offset += (this._textFormat.font_table.get_font_em_size() * char_scale);
         }
         var attributesView = new AttributesView(Float32Array, 7);
         attributesView.set(vertices);
@@ -12007,7 +12056,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

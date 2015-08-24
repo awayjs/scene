@@ -1912,52 +1912,6 @@ declare module "awayjs-display/lib/base/ISubMeshClass" {
 	
 }
 
-declare module "awayjs-display/lib/base/LightBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	class LightBase extends DisplayObjectContainer {
-	    static assetType: string;
-	    private _color;
-	    private _colorR;
-	    private _colorG;
-	    private _colorB;
-	    private _ambientColor;
-	    private _ambient;
-	    _iAmbientR: number;
-	    _iAmbientG: number;
-	    _iAmbientB: number;
-	    private _specular;
-	    _iSpecularR: number;
-	    _iSpecularG: number;
-	    _iSpecularB: number;
-	    private _diffuse;
-	    _iDiffuseR: number;
-	    _iDiffuseG: number;
-	    _iDiffuseB: number;
-	    private _castsShadows;
-	    private _shadowMapper;
-	    constructor();
-	    castsShadows: boolean;
-	    pCreateShadowMapper(): ShadowMapperBase;
-	    specular: number;
-	    diffuse: number;
-	    color: number;
-	    ambient: number;
-	    ambientColor: number;
-	    private updateAmbient();
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    assetType: string;
-	    private updateSpecular();
-	    private updateDiffuse();
-	    shadowMapper: ShadowMapperBase;
-	}
-	export = LightBase;
-	
-}
-
 declare module "awayjs-display/lib/base/LineSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
@@ -2033,6 +1987,52 @@ declare module "awayjs-display/lib/base/LineSubGeometry" {
 	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
 	export = LineSubGeometry;
+	
+}
+
+declare module "awayjs-display/lib/base/LightBase" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	class LightBase extends DisplayObjectContainer {
+	    static assetType: string;
+	    private _color;
+	    private _colorR;
+	    private _colorG;
+	    private _colorB;
+	    private _ambientColor;
+	    private _ambient;
+	    _iAmbientR: number;
+	    _iAmbientG: number;
+	    _iAmbientB: number;
+	    private _specular;
+	    _iSpecularR: number;
+	    _iSpecularG: number;
+	    _iSpecularB: number;
+	    private _diffuse;
+	    _iDiffuseR: number;
+	    _iDiffuseG: number;
+	    _iDiffuseB: number;
+	    private _castsShadows;
+	    private _shadowMapper;
+	    constructor();
+	    castsShadows: boolean;
+	    pCreateShadowMapper(): ShadowMapperBase;
+	    specular: number;
+	    diffuse: number;
+	    color: number;
+	    ambient: number;
+	    ambientColor: number;
+	    private updateAmbient();
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    assetType: string;
+	    private updateSpecular();
+	    private updateDiffuse();
+	    shadowMapper: ShadowMapperBase;
+	}
+	export = LightBase;
 	
 }
 
@@ -2398,6 +2398,59 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	
 }
 
+declare module "awayjs-display/lib/base/Timeline" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class Timeline {
+	    _labels: Object;
+	    _framescripts: Object;
+	    _framescripts_translated: Object;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_f32_mtx_all: ArrayBufferView;
+	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
+	    properties_stream_f32_mtx_pos: ArrayBufferView;
+	    properties_stream_f32_ct: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
+	    private _potentialPrototypes;
+	    numKeyFrames: number;
+	    constructor();
+	    init(): void;
+	    get_framescript(keyframe_index: number): string;
+	    add_framescript(value: string, keyframe_index: number): void;
+	    private regexIndexOf(str, regex, startpos);
+	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
+	    numFrames: number;
+	    getPotentialChildPrototype(id: number): DisplayObject;
+	    getKeyframeIndexForFrameIndex(frame_index: number): number;
+	    getPotentialChilds(): Array<DisplayObject>;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    registerPotentialChild(prototype: DisplayObject): void;
+	    jumpToLabel(target_mc: MovieClip, label: string): void;
+	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
+	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	}
+	export = Timeline;
+	
+}
+
 declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
@@ -2465,59 +2518,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	
 }
 
-declare module "awayjs-display/lib/base/Timeline" {
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class Timeline {
-	    _labels: Object;
-	    _framescripts: Object;
-	    _framescripts_translated: Object;
-	    keyframe_indices: Array<number>;
-	    keyframe_firstframes: Array<number>;
-	    keyframe_constructframes: Array<number>;
-	    keyframe_durations: ArrayBufferView;
-	    frame_command_indices: ArrayBufferView;
-	    frame_recipe: ArrayBufferView;
-	    command_index_stream: ArrayBufferView;
-	    command_length_stream: ArrayBufferView;
-	    add_child_stream: ArrayBufferView;
-	    remove_child_stream: ArrayBufferView;
-	    update_child_stream: ArrayBufferView;
-	    update_child_props_length_stream: ArrayBufferView;
-	    update_child_props_indices_stream: ArrayBufferView;
-	    property_index_stream: ArrayBufferView;
-	    property_type_stream: ArrayBufferView;
-	    properties_stream_int: ArrayBufferView;
-	    properties_stream_f32_mtx_all: ArrayBufferView;
-	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
-	    properties_stream_f32_mtx_pos: ArrayBufferView;
-	    properties_stream_f32_ct: ArrayBufferView;
-	    properties_stream_strings: Array<string>;
-	    private _potentialPrototypes;
-	    numKeyFrames: number;
-	    constructor();
-	    init(): void;
-	    get_framescript(keyframe_index: number): string;
-	    add_framescript(value: string, keyframe_index: number): void;
-	    private regexIndexOf(str, regex, startpos);
-	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
-	    numFrames: number;
-	    getPotentialChildPrototype(id: number): DisplayObject;
-	    getKeyframeIndexForFrameIndex(frame_index: number): number;
-	    getPotentialChilds(): Array<DisplayObject>;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    registerPotentialChild(prototype: DisplayObject): void;
-	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
-	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
-	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	}
-	export = Timeline;
-	
-}
-
 declare module "awayjs-display/lib/base/TouchPoint" {
 	/**
 	 *
@@ -2529,6 +2529,239 @@ declare module "awayjs-display/lib/base/TouchPoint" {
 	    constructor(x: number, y: number, id: number);
 	}
 	export = TouchPoint;
+	
+}
+
+declare module "awayjs-display/lib/base/Transform" {
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * The Transform class provides access to color adjustment properties and two-
+	 * or three-dimensional transformation objects that can be applied to a
+	 * display object. During the transformation, the color or the orientation and
+	 * position of a display object is adjusted(offset) from the current values
+	 * or coordinates to new values or coordinates. The Transform class also
+	 * collects data about color and two-dimensional matrix transformations that
+	 * are applied to a display object and all of its parent objects. You can
+	 * access these combined transformations through the
+	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
+	 * properties.
+	 *
+	 * <p>To apply color transformations: create a ColorTransform object, set the
+	 * color adjustments using the object's methods and properties, and then
+	 * assign the <code>colorTransformation</code> property of the
+	 * <code>transform</code> property of the display object to the new
+	 * ColorTransformation object.</p>
+	 *
+	 * <p>To apply two-dimensional transformations: create a Matrix object, set
+	 * the matrix's two-dimensional transformation, and then assign the
+	 * <code>transform.matrix</code> property of the display object to the new
+	 * Matrix object.</p>
+	 *
+	 * <p>To apply three-dimensional transformations: start with a
+	 * three-dimensional display object. A three-dimensional display object has a
+	 * <code>z</code> property value other than zero. You do not need to create
+	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
+	 * is created automatically when you assign a <code>z</code> value to a
+	 * display object. You can access the display object's Matrix3D object through
+	 * the display object's <code>transform</code> property. Using the methods of
+	 * the Matrix3D class, you can add to or modify the existing transformation
+	 * settings. Also, you can create a custom Matrix3D object, set the custom
+	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
+	 * object to the display object using the <code>transform.matrix</code>
+	 * property.</p>
+	 *
+	 * <p>To modify a perspective projection of the stage or root object: use the
+	 * <code>transform.matrix</code> property of the root display object to gain
+	 * access to the PerspectiveProjection object. Or, apply different perspective
+	 * projection properties to a display object by setting the perspective
+	 * projection properties of the display object's parent. The child display
+	 * object inherits the new properties. Specifically, create a
+	 * PerspectiveProjection object and set its properties, then assign the
+	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
+	 * property of the parent display object's <code>transform</code> property.
+	 * The specified projection transformation then applies to all the display
+	 * object's three-dimensional children.</p>
+	 *
+	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
+	 * perspective transformations, do not assign both to a display object at the
+	 * same time. Use the PerspectiveProjection object for focal length and
+	 * projection center changes. For more control over the perspective
+	 * transformation, create a perspective projection Matrix3D object.</p>
+	 */
+	class Transform {
+	    private _displayObject;
+	    private _concatenatedColorTransform;
+	    private _concatenatedMatrix;
+	    private _pixelBounds;
+	    _position: Vector3D;
+	    /**
+	     *
+	     */
+	    backVector: Vector3D;
+	    /**
+	     * A ColorTransform object containing values that universally adjust the
+	     * colors in the display object.
+	     *
+	     * @throws TypeError The colorTransform is null when being set
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * A ColorTransform object representing the combined color transformations
+	     * applied to the display object and all of its parent objects, back to the
+	     * root level. If different color transformations have been applied at
+	     * different levels, all of those transformations are concatenated into one
+	     * ColorTransform object for this property.
+	     */
+	    concatenatedColorTransform: ColorTransform;
+	    /**
+	     * A Matrix object representing the combined transformation matrixes of the
+	     * display object and all of its parent objects, back to the root level. If
+	     * different transformation matrixes have been applied at different levels,
+	     * all of those matrixes are concatenated into one matrix for this property.
+	     * Also, for resizeable SWF content running in the browser, this property
+	     * factors in the difference between stage coordinates and window coordinates
+	     * due to window resizing. Thus, the property converts local coordinates to
+	     * window coordinates, which may not be the same coordinate space as that of
+	     * the Stage.
+	     */
+	    concatenatedMatrix: Matrix;
+	    /**
+	     *
+	     */
+	    downVector: Vector3D;
+	    /**
+	     *
+	     */
+	    forwardVector: Vector3D;
+	    /**
+	     *
+	     */
+	    leftVector: Vector3D;
+	    /**
+	     * A Matrix object containing values that alter the scaling, rotation, and
+	     * translation of the display object.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     *
+	     * @throws TypeError The matrix is null when being set
+	     */
+	    matrix: Matrix;
+	    /**
+	     * Provides access to the Matrix3D object of a three-dimensional display
+	     * object. The Matrix3D object represents a transformation matrix that
+	     * determines the display object's position and orientation. A Matrix3D
+	     * object can also perform perspective projection.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     */
+	    matrix3D: Matrix3D;
+	    /**
+	     * Provides access to the PerspectiveProjection object of a three-dimensional
+	     * display object. The PerspectiveProjection object can be used to modify the
+	     * perspective transformation of the stage or to assign a perspective
+	     * transformation to all the three-dimensional children of a display object.
+	     *
+	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
+	     * a default PerspectiveProjection object is assigned to the root object.</p>
+	     */
+	    perspectiveProjection: PerspectiveProjection;
+	    /**
+	     * A Rectangle object that defines the bounding rectangle of the display
+	     * object on the stage.
+	     */
+	    pixelBounds: Rectangle;
+	    /**
+	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    position: Vector3D;
+	    /**
+	     *
+	     */
+	    rightVector: Vector3D;
+	    /**
+	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    rotation: Vector3D;
+	    /**
+	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    scale: Vector3D;
+	    /**
+	     *
+	     */
+	    upVector: Vector3D;
+	    constructor(displayObject: DisplayObject);
+	    /**
+	     * Returns a Matrix3D object, which can transform the space of a specified
+	     * display object in relation to the current display object's space. You can
+	     * use the <code>getRelativeMatrix3D()</code> method to move one
+	     * three-dimensional display object relative to another three-dimensional
+	     * display object.
+	     *
+	     * @param relativeTo The display object relative to which the transformation
+	     *                   occurs. To get a Matrix3D object relative to the stage,
+	     *                   set the parameter to the <code>root</code> or
+	     *                   <code>stage</code> object. To get the world-relative
+	     *                   matrix of the display object, set the parameter to a
+	     *                   display object that has a perspective transformation
+	     *                   applied to it.
+	     * @return A Matrix3D object that can be used to transform the space from the
+	     *         <code>relativeTo</code> display object to the current display
+	     *         object space.
+	     */
+	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
+	    /**
+	     * Moves the 3d object forwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveForward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveBackward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveLeft(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveRight(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveUp(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveDown(distance: number): void;
+	}
+	export = Transform;
 	
 }
 
@@ -2834,28 +3067,6 @@ declare module "awayjs-display/lib/bounds/BoundingSphere" {
 	
 }
 
-declare module "awayjs-display/lib/bounds/BoundsType" {
-	/**
-	 *
-	 */
-	class BoundsType {
-	    /**
-	     *
-	     */
-	    static SPHERE: string;
-	    /**
-	     *
-	     */
-	    static AXIS_ALIGNED_BOX: string;
-	    /**
-	     *
-	     */
-	    static NULL: string;
-	}
-	export = BoundsType;
-	
-}
-
 declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -2877,6 +3088,28 @@ declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
 	    _pCreateBoundsPrimitive(): Mesh;
 	}
 	export = BoundingVolumeBase;
+	
+}
+
+declare module "awayjs-display/lib/bounds/BoundsType" {
+	/**
+	 *
+	 */
+	class BoundsType {
+	    /**
+	     *
+	     */
+	    static SPHERE: string;
+	    /**
+	     *
+	     */
+	    static AXIS_ALIGNED_BOX: string;
+	    /**
+	     *
+	     */
+	    static NULL: string;
+	}
+	export = BoundsType;
 	
 }
 
@@ -3796,239 +4029,6 @@ declare module "awayjs-display/lib/containers/Loader" {
 	
 }
 
-declare module "awayjs-display/lib/base/Transform" {
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * The Transform class provides access to color adjustment properties and two-
-	 * or three-dimensional transformation objects that can be applied to a
-	 * display object. During the transformation, the color or the orientation and
-	 * position of a display object is adjusted(offset) from the current values
-	 * or coordinates to new values or coordinates. The Transform class also
-	 * collects data about color and two-dimensional matrix transformations that
-	 * are applied to a display object and all of its parent objects. You can
-	 * access these combined transformations through the
-	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
-	 * properties.
-	 *
-	 * <p>To apply color transformations: create a ColorTransform object, set the
-	 * color adjustments using the object's methods and properties, and then
-	 * assign the <code>colorTransformation</code> property of the
-	 * <code>transform</code> property of the display object to the new
-	 * ColorTransformation object.</p>
-	 *
-	 * <p>To apply two-dimensional transformations: create a Matrix object, set
-	 * the matrix's two-dimensional transformation, and then assign the
-	 * <code>transform.matrix</code> property of the display object to the new
-	 * Matrix object.</p>
-	 *
-	 * <p>To apply three-dimensional transformations: start with a
-	 * three-dimensional display object. A three-dimensional display object has a
-	 * <code>z</code> property value other than zero. You do not need to create
-	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
-	 * is created automatically when you assign a <code>z</code> value to a
-	 * display object. You can access the display object's Matrix3D object through
-	 * the display object's <code>transform</code> property. Using the methods of
-	 * the Matrix3D class, you can add to or modify the existing transformation
-	 * settings. Also, you can create a custom Matrix3D object, set the custom
-	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
-	 * object to the display object using the <code>transform.matrix</code>
-	 * property.</p>
-	 *
-	 * <p>To modify a perspective projection of the stage or root object: use the
-	 * <code>transform.matrix</code> property of the root display object to gain
-	 * access to the PerspectiveProjection object. Or, apply different perspective
-	 * projection properties to a display object by setting the perspective
-	 * projection properties of the display object's parent. The child display
-	 * object inherits the new properties. Specifically, create a
-	 * PerspectiveProjection object and set its properties, then assign the
-	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
-	 * property of the parent display object's <code>transform</code> property.
-	 * The specified projection transformation then applies to all the display
-	 * object's three-dimensional children.</p>
-	 *
-	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
-	 * perspective transformations, do not assign both to a display object at the
-	 * same time. Use the PerspectiveProjection object for focal length and
-	 * projection center changes. For more control over the perspective
-	 * transformation, create a perspective projection Matrix3D object.</p>
-	 */
-	class Transform {
-	    private _displayObject;
-	    private _concatenatedColorTransform;
-	    private _concatenatedMatrix;
-	    private _pixelBounds;
-	    _position: Vector3D;
-	    /**
-	     *
-	     */
-	    backVector: Vector3D;
-	    /**
-	     * A ColorTransform object containing values that universally adjust the
-	     * colors in the display object.
-	     *
-	     * @throws TypeError The colorTransform is null when being set
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * A ColorTransform object representing the combined color transformations
-	     * applied to the display object and all of its parent objects, back to the
-	     * root level. If different color transformations have been applied at
-	     * different levels, all of those transformations are concatenated into one
-	     * ColorTransform object for this property.
-	     */
-	    concatenatedColorTransform: ColorTransform;
-	    /**
-	     * A Matrix object representing the combined transformation matrixes of the
-	     * display object and all of its parent objects, back to the root level. If
-	     * different transformation matrixes have been applied at different levels,
-	     * all of those matrixes are concatenated into one matrix for this property.
-	     * Also, for resizeable SWF content running in the browser, this property
-	     * factors in the difference between stage coordinates and window coordinates
-	     * due to window resizing. Thus, the property converts local coordinates to
-	     * window coordinates, which may not be the same coordinate space as that of
-	     * the Stage.
-	     */
-	    concatenatedMatrix: Matrix;
-	    /**
-	     *
-	     */
-	    downVector: Vector3D;
-	    /**
-	     *
-	     */
-	    forwardVector: Vector3D;
-	    /**
-	     *
-	     */
-	    leftVector: Vector3D;
-	    /**
-	     * A Matrix object containing values that alter the scaling, rotation, and
-	     * translation of the display object.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     *
-	     * @throws TypeError The matrix is null when being set
-	     */
-	    matrix: Matrix;
-	    /**
-	     * Provides access to the Matrix3D object of a three-dimensional display
-	     * object. The Matrix3D object represents a transformation matrix that
-	     * determines the display object's position and orientation. A Matrix3D
-	     * object can also perform perspective projection.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     */
-	    matrix3D: Matrix3D;
-	    /**
-	     * Provides access to the PerspectiveProjection object of a three-dimensional
-	     * display object. The PerspectiveProjection object can be used to modify the
-	     * perspective transformation of the stage or to assign a perspective
-	     * transformation to all the three-dimensional children of a display object.
-	     *
-	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
-	     * a default PerspectiveProjection object is assigned to the root object.</p>
-	     */
-	    perspectiveProjection: PerspectiveProjection;
-	    /**
-	     * A Rectangle object that defines the bounding rectangle of the display
-	     * object on the stage.
-	     */
-	    pixelBounds: Rectangle;
-	    /**
-	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    position: Vector3D;
-	    /**
-	     *
-	     */
-	    rightVector: Vector3D;
-	    /**
-	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    rotation: Vector3D;
-	    /**
-	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    scale: Vector3D;
-	    /**
-	     *
-	     */
-	    upVector: Vector3D;
-	    constructor(displayObject: DisplayObject);
-	    /**
-	     * Returns a Matrix3D object, which can transform the space of a specified
-	     * display object in relation to the current display object's space. You can
-	     * use the <code>getRelativeMatrix3D()</code> method to move one
-	     * three-dimensional display object relative to another three-dimensional
-	     * display object.
-	     *
-	     * @param relativeTo The display object relative to which the transformation
-	     *                   occurs. To get a Matrix3D object relative to the stage,
-	     *                   set the parameter to the <code>root</code> or
-	     *                   <code>stage</code> object. To get the world-relative
-	     *                   matrix of the display object, set the parameter to a
-	     *                   display object that has a perspective transformation
-	     *                   applied to it.
-	     * @return A Matrix3D object that can be used to transform the space from the
-	     *         <code>relativeTo</code> display object to the current display
-	     *         object space.
-	     */
-	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
-	    /**
-	     * Moves the 3d object forwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveForward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveBackward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveLeft(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveRight(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveUp(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveDown(distance: number): void;
-	}
-	export = Transform;
-	
-}
-
 declare module "awayjs-display/lib/containers/Scene" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
@@ -4305,6 +4305,23 @@ declare module "awayjs-display/lib/controllers/FirstPersonController" {
 	
 }
 
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
+	
+}
+
 declare module "awayjs-display/lib/controllers/HoverController" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
@@ -4400,23 +4417,6 @@ declare module "awayjs-display/lib/controllers/HoverController" {
 	    update(interpolate?: boolean): void;
 	}
 	export = HoverController;
-	
-}
-
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
 	
 }
 
