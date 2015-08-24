@@ -189,6 +189,8 @@ class Timeline
 
 
 		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
+			//if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+			//	this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 			return;
 
 		var break_frame_idx:number = this.keyframe_constructframes[target_keyframe_idx];
@@ -297,6 +299,8 @@ class Timeline
 			}
 		}
 
+		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 		// now we need to addchild the objects that were added before targetframe first
 		// than we can add the script of the targetframe
 		// than we can addchild objects added on targetframe
@@ -308,8 +312,6 @@ class Timeline
 			}
 		}
 
-		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
-			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 		//  pass2: apply update commands for objects on stage (only if they are not blocked by script)
 		var frame_command_idx:number;

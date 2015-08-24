@@ -6,7 +6,7 @@ import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-
+import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
 import GridFitType					= require("awayjs-display/lib/text/GridFitType");
@@ -651,11 +651,12 @@ class TextField extends Mesh
 	public set textColor(value:number)
 	{
 		this._textColor = value;
-
+		console.log("textcolor = "+value);
 		if(!this._iColorTransform)
 			this._iColorTransform = new ColorTransform();
 
 		this._iColorTransform.color = value;
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 	}
 
 	/**
@@ -780,62 +781,113 @@ class TextField extends Mesh
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
 		var k:number = 0;
+		var whitespace_width=(this._textFormat.font_table.get_whitespace_width() * char_scale);
 		var textlines:Array<string> = this.text.toString().split("\\n");
+		var final_lines_chars:Array<Array<TesselatedFontChar>> = [];
+		var final_lines_char_scale:Array<Array<number>> = [];
+		var final_lines_width:Array<number> = [];
 		for (var tl = 0; tl < textlines.length; tl++) {
-			var line_width:number = 0;
-			var c_cnt:number = 0;
-			var font_chars:Array<TesselatedFontChar> = [];
-			var font_chars_scale:Array<number> =[];
-			for (var i = 0; i < textlines[tl].length; i++) {
-				char_scale=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
-				var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
-				if(this_char == null) {
-					if(this._textFormat.fallback_font_table) {
-						char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
-						this_char = this._textFormat.fallback_font_table.get_subgeo_for_char(textlines[tl].charCodeAt(i).toString());
-					}
-				}
 
-				if (this_char != null) {
-					var this_subGeom:CurveSubGeometry = this_char.subgeom;
-					if (this_subGeom != null) {
-						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-						var kerning_value:number = 0;
-						if (prev_char != null) {
-							for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
-								if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-									kerning_value = prev_char.kerningValues[k];
-									break;
+			final_lines_chars.push([]);
+			final_lines_char_scale.push([]);
+			final_lines_width.push(0);
+
+
+			var words:Array<string> = textlines[tl].split(" ");
+			for (var i = 0; i < words.length; i++) {
+				var word_width:number = 0;
+				var word_chars:Array<TesselatedFontChar> = [];
+				var word_chars_scale:Array<number> = [];
+				var c_cnt:number = 0;
+				for (var w = 0; w < words[i].length; w++) {
+					char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+					var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(words[i].charCodeAt(w).toString());
+					if (this_char == null) {
+						if (this._textFormat.fallback_font_table) {
+							char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
+							this_char = this._textFormat.fallback_font_table.get_subgeo_for_char(words[i].charCodeAt(w).toString());
+						}
+					}
+					if (this_char != null) {
+						var this_subGeom:CurveSubGeometry = this_char.subgeom;
+						if (this_subGeom != null) {
+							// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+							var kerning_value:number = 0;
+							if (prev_char != null) {
+								for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
+									if (prev_char.kerningCharCodes[k] == words[i].charCodeAt(w)) {
+										kerning_value = prev_char.kerningValues[k];
+										break;
+									}
 								}
 							}
+							word_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
 						}
-						line_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+						else {
+							// if no char-geometry was found, we insert a "space"
+							word_width += whitespace_width;
+						}
 					}
 					else {
 						// if no char-geometry was found, we insert a "space"
-						line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
+						//x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+						word_width += whitespace_width;
 					}
+					word_chars_scale[c_cnt] = char_scale;
+					word_chars[c_cnt++] = this_char;
+				}
+
+				if ((final_lines_width[final_lines_width.length - 1] + word_width) <= this.textWidth) {
+					// if line can hold this word without breaking the bounds, we can just add all chars
+					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
+						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+					}
+					final_lines_width[final_lines_width.length - 1] += word_width;
 				}
 				else {
-					// if no char-geometry was found, we insert a "space"
-					//x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-					line_width += this._textFormat.font_table.get_whitespace_width() * char_scale;
+					// word does not fit
+					// todo respect multiline and autowrapping properties.
+					// right now we just pretend everything has autowrapping and multiline
+					final_lines_chars.push([]);
+					final_lines_char_scale.push([]);
+					final_lines_width.push(0);
+					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
+						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+					}
+					final_lines_width[final_lines_width.length - 1] = word_width;
 				}
-				font_chars_scale[c_cnt]=char_scale;
-				font_chars[c_cnt++]=this_char;
+
+				if (i < (words.length - 1)) {
+					if ((final_lines_width[final_lines_width.length - 1] + whitespace_width) <= this.textWidth) {
+						final_lines_chars[final_lines_chars.length - 1].push(null);
+						final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
+						final_lines_width[final_lines_width.length - 1] += whitespace_width;
+					}
+					else {
+						final_lines_chars.push([null]);
+						final_lines_char_scale.push([char_scale]);
+						final_lines_width.push(whitespace_width);
+					}
+				}
 			}
+		}
+
+		for (var i = 0; i < final_lines_chars.length; i++) {
+
 			var x_offset:number=additional_margin_x;
 			if(this._textFormat.align=="center"){
-				x_offset=(this._textWidth-line_width)/2;
+				x_offset=(this._textWidth-final_lines_width[i])/2;
 			}
 			else if(this._textFormat.align=="right"){
-				x_offset=(this._textWidth-line_width)-additional_margin_x;
+				x_offset=(this._textWidth-final_lines_width[i])-additional_margin_x;
 			}
 			//console.log("this._textFormat.align="+this._textFormat.align);
 			//console.log("this._width="+this._width);
-			for (var i = 0; i < textlines[tl].length; i++) {
-				var this_char:TesselatedFontChar = font_chars[i];
-				char_scale = font_chars_scale[i];
+			for (var t = 0; t < final_lines_chars[i].length; t++) {
+				var this_char:TesselatedFontChar = final_lines_chars[i][t];
+				char_scale = final_lines_char_scale[i][t];
 				if (this_char != null) {
 					var this_subGeom:CurveSubGeometry = this_char.subgeom;
 					if (this_subGeom != null) {
@@ -864,14 +916,14 @@ class TextField extends Mesh
 					}
 					else {
 						// if no char-geometry was found, we insert a "space"
-						x_offset+=this._textFormat.font_table.get_whitespace_width() * char_scale;
+						x_offset+=whitespace_width;
 					}
 				}
 				else{
-					x_offset+=this._textFormat.font_table.get_whitespace_width() * char_scale;
+					x_offset+=whitespace_width;
 				}
 			}
-			y_offset+=this._textFormat.font_table.get_font_em_size() * char_scale;
+			y_offset+=(this._textFormat.font_table.get_font_em_size() * char_scale);
 
 		}
 		var attributesView:AttributesView = new AttributesView(Float32Array, 7);
