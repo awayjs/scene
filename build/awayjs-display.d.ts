@@ -1790,22 +1790,6 @@ declare module "awayjs-display/lib/base/HierarchicalProperties" {
 	
 }
 
-declare module "awayjs-display/lib/base/IBitmapDrawable" {
-	/**
-	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
-	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
-	 * objects are of type BitmapData or DisplayObject.
-	 *
-	 * @see away.base.BitmapData#draw()
-	 * @see away.base.BitmapData
-	 * @see away.base.DisplayObject
-	 */
-	interface IBitmapDrawable {
-	}
-	export = IBitmapDrawable;
-	
-}
-
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -1829,6 +1813,22 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	    _iRemoveRender(render: IRender): IRender;
 	}
 	export = IRenderOwner;
+	
+}
+
+declare module "awayjs-display/lib/base/IBitmapDrawable" {
+	/**
+	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
+	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
+	 * objects are of type BitmapData or DisplayObject.
+	 *
+	 * @see away.base.BitmapData#draw()
+	 * @see away.base.BitmapData
+	 * @see away.base.DisplayObject
+	 */
+	interface IBitmapDrawable {
+	}
+	export = IBitmapDrawable;
 	
 }
 
@@ -2310,70 +2310,92 @@ declare module "awayjs-display/lib/base/OrientationMode" {
 	
 }
 
-declare module "awayjs-display/lib/base/TouchPoint" {
+declare module "awayjs-display/lib/base/SubGeometryBase" {
+	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
+	import Box = require("awayjs-core/lib/geom/Box");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import Geometry = require("awayjs-display/lib/base/Geometry");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import ISubGeometryVO = require("awayjs-display/lib/vos/ISubGeometryVO");
 	/**
-	 *
+	 * @class away.base.TriangleSubGeometry
 	 */
-	class TouchPoint {
-	    x: number;
-	    y: number;
-	    id: number;
-	    constructor(x: number, y: number, id: number);
+	class SubGeometryBase extends AssetBase {
+	    private _subGeometryVO;
+	    _pIndices: Short3Attributes;
+	    private _numElements;
+	    _concatenatedBuffer: AttributesBuffer;
+	    private _indicesUpdated;
+	    _verticesDirty: Object;
+	    _verticesUpdated: Object;
+	    concatenatedBuffer: AttributesBuffer;
+	    /**
+	     * The raw index data that define the faces.
+	     */
+	    indices: Short3Attributes;
+	    /**
+	     * The total amount of triangles in the TriangleSubGeometry.
+	     */
+	    numElements: number;
+	    numVertices: number;
+	    /**
+	     *
+	     */
+	    constructor(concatenatedBuffer?: AttributesBuffer);
+	    /**
+	     *
+	     */
+	    invalidate(): void;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     * Updates the face indices of the TriangleSubGeometry.
+	     *
+	     * @param indices The face indices to upload.
+	     */
+	    setIndices(array: Array<number>, offset?: number): any;
+	    setIndices(uint16Array: Uint16Array, offset?: number): any;
+	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
+	    /**
+	     * @protected
+	     */
+	    pInvalidateBounds(): void;
+	    /**
+	     * The Geometry object that 'owns' this TriangleSubGeometry object.
+	     *
+	     * @private
+	     */
+	    parentGeometry: Geometry;
+	    /**
+	     * Clones the current object
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): SubGeometryBase;
+	    applyTransformation(transform: Matrix3D): void;
+	    /**
+	     * Scales the geometry.
+	     * @param scale The amount by which to scale.
+	     */
+	    scale(scale: number): void;
+	    scaleUV(scaleU?: number, scaleV?: number): void;
+	    getBoundingPositions(): Float32Array;
+	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
+	    private notifyIndicesUpdate();
+	    private notifyIndicesDispose();
+	    notifyVerticesUpdate(attributesView: AttributesView): void;
+	    notifyVerticesDispose(attributesView: AttributesView): void;
+	    _iAddSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
+	    _iRemoveSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
-	export = TouchPoint;
-	
-}
-
-declare module "awayjs-display/lib/base/Timeline" {
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class Timeline {
-	    _labels: Object;
-	    _framescripts: Object;
-	    _framescripts_translated: Object;
-	    keyframe_indices: Array<number>;
-	    keyframe_firstframes: Array<number>;
-	    keyframe_constructframes: Array<number>;
-	    keyframe_durations: ArrayBufferView;
-	    frame_command_indices: ArrayBufferView;
-	    frame_recipe: ArrayBufferView;
-	    command_index_stream: ArrayBufferView;
-	    command_length_stream: ArrayBufferView;
-	    add_child_stream: ArrayBufferView;
-	    remove_child_stream: ArrayBufferView;
-	    update_child_stream: ArrayBufferView;
-	    update_child_props_length_stream: ArrayBufferView;
-	    update_child_props_indices_stream: ArrayBufferView;
-	    property_index_stream: ArrayBufferView;
-	    property_type_stream: ArrayBufferView;
-	    properties_stream_int: ArrayBufferView;
-	    properties_stream_f32_mtx_all: ArrayBufferView;
-	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
-	    properties_stream_f32_mtx_pos: ArrayBufferView;
-	    properties_stream_f32_ct: ArrayBufferView;
-	    properties_stream_strings: Array<string>;
-	    private _potentialPrototypes;
-	    numKeyFrames: number;
-	    constructor();
-	    init(): void;
-	    get_framescript(keyframe_index: number): string;
-	    add_framescript(value: string, keyframe_index: number): void;
-	    private regexIndexOf(str, regex, startpos);
-	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
-	    numFrames: number;
-	    getPotentialChildPrototype(id: number): DisplayObject;
-	    getKeyframeIndexForFrameIndex(frame_index: number): number;
-	    getPotentialChilds(): Array<DisplayObject>;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    registerPotentialChild(prototype: DisplayObject): void;
-	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
-	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
-	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	}
-	export = Timeline;
+	export = SubGeometryBase;
 	
 }
 
@@ -2441,6 +2463,306 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    _iGetExplicitMaterial(): MaterialBase;
 	}
 	export = SubMeshBase;
+	
+}
+
+declare module "awayjs-display/lib/base/Timeline" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class Timeline {
+	    _labels: Object;
+	    _framescripts: Object;
+	    _framescripts_translated: Object;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_f32_mtx_all: ArrayBufferView;
+	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
+	    properties_stream_f32_mtx_pos: ArrayBufferView;
+	    properties_stream_f32_ct: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
+	    private _potentialPrototypes;
+	    numKeyFrames: number;
+	    constructor();
+	    init(): void;
+	    get_framescript(keyframe_index: number): string;
+	    add_framescript(value: string, keyframe_index: number): void;
+	    private regexIndexOf(str, regex, startpos);
+	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
+	    numFrames: number;
+	    getPotentialChildPrototype(id: number): DisplayObject;
+	    getKeyframeIndexForFrameIndex(frame_index: number): number;
+	    getPotentialChilds(): Array<DisplayObject>;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    registerPotentialChild(prototype: DisplayObject): void;
+	    jumpToLabel(target_mc: MovieClip, label: string): void;
+	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
+	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	}
+	export = Timeline;
+	
+}
+
+declare module "awayjs-display/lib/base/TouchPoint" {
+	/**
+	 *
+	 */
+	class TouchPoint {
+	    x: number;
+	    y: number;
+	    id: number;
+	    constructor(x: number, y: number, id: number);
+	}
+	export = TouchPoint;
+	
+}
+
+declare module "awayjs-display/lib/base/Transform" {
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * The Transform class provides access to color adjustment properties and two-
+	 * or three-dimensional transformation objects that can be applied to a
+	 * display object. During the transformation, the color or the orientation and
+	 * position of a display object is adjusted(offset) from the current values
+	 * or coordinates to new values or coordinates. The Transform class also
+	 * collects data about color and two-dimensional matrix transformations that
+	 * are applied to a display object and all of its parent objects. You can
+	 * access these combined transformations through the
+	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
+	 * properties.
+	 *
+	 * <p>To apply color transformations: create a ColorTransform object, set the
+	 * color adjustments using the object's methods and properties, and then
+	 * assign the <code>colorTransformation</code> property of the
+	 * <code>transform</code> property of the display object to the new
+	 * ColorTransformation object.</p>
+	 *
+	 * <p>To apply two-dimensional transformations: create a Matrix object, set
+	 * the matrix's two-dimensional transformation, and then assign the
+	 * <code>transform.matrix</code> property of the display object to the new
+	 * Matrix object.</p>
+	 *
+	 * <p>To apply three-dimensional transformations: start with a
+	 * three-dimensional display object. A three-dimensional display object has a
+	 * <code>z</code> property value other than zero. You do not need to create
+	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
+	 * is created automatically when you assign a <code>z</code> value to a
+	 * display object. You can access the display object's Matrix3D object through
+	 * the display object's <code>transform</code> property. Using the methods of
+	 * the Matrix3D class, you can add to or modify the existing transformation
+	 * settings. Also, you can create a custom Matrix3D object, set the custom
+	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
+	 * object to the display object using the <code>transform.matrix</code>
+	 * property.</p>
+	 *
+	 * <p>To modify a perspective projection of the stage or root object: use the
+	 * <code>transform.matrix</code> property of the root display object to gain
+	 * access to the PerspectiveProjection object. Or, apply different perspective
+	 * projection properties to a display object by setting the perspective
+	 * projection properties of the display object's parent. The child display
+	 * object inherits the new properties. Specifically, create a
+	 * PerspectiveProjection object and set its properties, then assign the
+	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
+	 * property of the parent display object's <code>transform</code> property.
+	 * The specified projection transformation then applies to all the display
+	 * object's three-dimensional children.</p>
+	 *
+	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
+	 * perspective transformations, do not assign both to a display object at the
+	 * same time. Use the PerspectiveProjection object for focal length and
+	 * projection center changes. For more control over the perspective
+	 * transformation, create a perspective projection Matrix3D object.</p>
+	 */
+	class Transform {
+	    private _displayObject;
+	    private _concatenatedColorTransform;
+	    private _concatenatedMatrix;
+	    private _pixelBounds;
+	    _position: Vector3D;
+	    /**
+	     *
+	     */
+	    backVector: Vector3D;
+	    /**
+	     * A ColorTransform object containing values that universally adjust the
+	     * colors in the display object.
+	     *
+	     * @throws TypeError The colorTransform is null when being set
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * A ColorTransform object representing the combined color transformations
+	     * applied to the display object and all of its parent objects, back to the
+	     * root level. If different color transformations have been applied at
+	     * different levels, all of those transformations are concatenated into one
+	     * ColorTransform object for this property.
+	     */
+	    concatenatedColorTransform: ColorTransform;
+	    /**
+	     * A Matrix object representing the combined transformation matrixes of the
+	     * display object and all of its parent objects, back to the root level. If
+	     * different transformation matrixes have been applied at different levels,
+	     * all of those matrixes are concatenated into one matrix for this property.
+	     * Also, for resizeable SWF content running in the browser, this property
+	     * factors in the difference between stage coordinates and window coordinates
+	     * due to window resizing. Thus, the property converts local coordinates to
+	     * window coordinates, which may not be the same coordinate space as that of
+	     * the Stage.
+	     */
+	    concatenatedMatrix: Matrix;
+	    /**
+	     *
+	     */
+	    downVector: Vector3D;
+	    /**
+	     *
+	     */
+	    forwardVector: Vector3D;
+	    /**
+	     *
+	     */
+	    leftVector: Vector3D;
+	    /**
+	     * A Matrix object containing values that alter the scaling, rotation, and
+	     * translation of the display object.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     *
+	     * @throws TypeError The matrix is null when being set
+	     */
+	    matrix: Matrix;
+	    /**
+	     * Provides access to the Matrix3D object of a three-dimensional display
+	     * object. The Matrix3D object represents a transformation matrix that
+	     * determines the display object's position and orientation. A Matrix3D
+	     * object can also perform perspective projection.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     */
+	    matrix3D: Matrix3D;
+	    /**
+	     * Provides access to the PerspectiveProjection object of a three-dimensional
+	     * display object. The PerspectiveProjection object can be used to modify the
+	     * perspective transformation of the stage or to assign a perspective
+	     * transformation to all the three-dimensional children of a display object.
+	     *
+	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
+	     * a default PerspectiveProjection object is assigned to the root object.</p>
+	     */
+	    perspectiveProjection: PerspectiveProjection;
+	    /**
+	     * A Rectangle object that defines the bounding rectangle of the display
+	     * object on the stage.
+	     */
+	    pixelBounds: Rectangle;
+	    /**
+	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    position: Vector3D;
+	    /**
+	     *
+	     */
+	    rightVector: Vector3D;
+	    /**
+	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    rotation: Vector3D;
+	    /**
+	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    scale: Vector3D;
+	    /**
+	     *
+	     */
+	    upVector: Vector3D;
+	    constructor(displayObject: DisplayObject);
+	    /**
+	     * Returns a Matrix3D object, which can transform the space of a specified
+	     * display object in relation to the current display object's space. You can
+	     * use the <code>getRelativeMatrix3D()</code> method to move one
+	     * three-dimensional display object relative to another three-dimensional
+	     * display object.
+	     *
+	     * @param relativeTo The display object relative to which the transformation
+	     *                   occurs. To get a Matrix3D object relative to the stage,
+	     *                   set the parameter to the <code>root</code> or
+	     *                   <code>stage</code> object. To get the world-relative
+	     *                   matrix of the display object, set the parameter to a
+	     *                   display object that has a perspective transformation
+	     *                   applied to it.
+	     * @return A Matrix3D object that can be used to transform the space from the
+	     *         <code>relativeTo</code> display object to the current display
+	     *         object space.
+	     */
+	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
+	    /**
+	     * Moves the 3d object forwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveForward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveBackward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveLeft(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveRight(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveUp(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveDown(distance: number): void;
+	}
+	export = Transform;
 	
 }
 
@@ -2803,403 +3125,6 @@ declare module "awayjs-display/lib/bounds/NullBounds" {
 	    classifyToPlane(plane: Plane3D): number;
 	}
 	export = NullBounds;
-	
-}
-
-declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
-	import Point = require("awayjs-core/lib/geom/Point");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	import ContainerNode = require("awayjs-display/lib/partition/ContainerNode");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	/**
-	 * The DisplayObjectContainer class is the base class for all objects that can
-	 * serve as display object containers on the display list. The display list
-	 * manages all objects displayed in the Flash runtimes. Use the
-	 * DisplayObjectContainer class to arrange the display objects in the display
-	 * list. Each DisplayObjectContainer object has its own child list for
-	 * organizing the z-order of the objects. The z-order is the front-to-back
-	 * order that determines which object is drawn in front, which is behind, and
-	 * so on.
-	 *
-	 * <p>DisplayObject is an abstract base class; therefore, you cannot call
-	 * DisplayObject directly. Invoking <code>new DisplayObject()</code> throws an
-	 * <code>ArgumentError</code> exception.</p>
-	 * The DisplayObjectContainer class is an abstract base class for all objects
-	 * that can contain child objects. It cannot be instantiated directly; calling
-	 * the <code>new DisplayObjectContainer()</code> constructor throws an
-	 * <code>ArgumentError</code> exception.
-	 *
-	 * <p>For more information, see the "Display Programming" chapter of the
-	 * <i>ActionScript 3.0 Developer's Guide</i>.</p>
-	 */
-	class DisplayObjectContainer extends DisplayObject implements IAsset {
-	    static assetType: string;
-	    private _containerNodes;
-	    private _mouseChildren;
-	    private _depth_childs;
-	    private _depth_sessionIDs;
-	    private _nextHighestDepth;
-	    private _nextHighestDepthDirty;
-	    _children: Array<DisplayObject>;
-	    _iIsRoot: boolean;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * Determines whether or not the children of the object are mouse, or user
-	     * input device, enabled. If an object is enabled, a user can interact with
-	     * it by using a mouse or user input device. The default is
-	     * <code>true</code>.
-	     *
-	     * <p>This property is useful when you create a button with an instance of
-	     * the Sprite class(instead of using the SimpleButton class). When you use a
-	     * Sprite instance to create a button, you can choose to decorate the button
-	     * by using the <code>addChild()</code> method to add additional Sprite
-	     * instances. This process can cause unexpected behavior with mouse events
-	     * because the Sprite instances you add as children can become the target
-	     * object of a mouse event when you expect the parent instance to be the
-	     * target object. To ensure that the parent instance serves as the target
-	     * objects for mouse events, you can set the <code>mouseChildren</code>
-	     * property of the parent instance to <code>false</code>.</p>
-	     *
-	     * <p> No event is dispatched by setting this property. You must use the
-	     * <code>addEventListener()</code> method to create interactive
-	     * functionality.</p>
-	     */
-	    mouseChildren: boolean;
-	    /**
-	     * Returns the number of children of this object.
-	     */
-	    numChildren: number;
-	    /**
-	     * Determines whether the children of the object are tab enabled. Enables or
-	     * disables tabbing for the children of the object. The default is
-	     * <code>true</code>.
-	     *
-	     * <p><b>Note:</b> Do not use the <code>tabChildren</code> property with
-	     * Flex. Instead, use the
-	     * <code>mx.core.UIComponent.hasFocusableChildren</code> property.</p>
-	     *
-	     * @throws IllegalOperationError Calling this property of the Stage object
-	     *                               throws an exception. The Stage object does
-	     *                               not implement this property.
-	     */
-	    tabChildren: boolean;
-	    /**
-	     * Calling the <code>new DisplayObjectContainer()</code> constructor throws
-	     * an <code>ArgumentError</code> exception. You <i>can</i>, however, call
-	     * constructors for the following subclasses of DisplayObjectContainer:
-	     * <ul>
-	     *   <li><code>new Loader()</code></li>
-	     *   <li><code>new Sprite()</code></li>
-	     *   <li><code>new MovieClip()</code></li>
-	     * </ul>
-	     */
-	    constructor();
-	    /**
-	     * Adds a child DisplayObject instance to this DisplayObjectContainer
-	     * instance. The child is added to the front(top) of all other children in
-	     * this DisplayObjectContainer instance.(To add a child to a specific index
-	     * position, use the <code>addChildAt()</code> method.)
-	     *
-	     * <p>If you add a child object that already has a different display object
-	     * container as a parent, the object is removed from the child list of the
-	     * other display object container. </p>
-	     *
-	     * <p><b>Note:</b> The command <code>stage.addChild()</code> can cause
-	     * problems with a published SWF file, including security problems and
-	     * conflicts with other loaded SWF files. There is only one Stage within a
-	     * Flash runtime instance, no matter how many SWF files you load into the
-	     * runtime. So, generally, objects should not be added to the Stage,
-	     * directly, at all. The only object the Stage should contain is the root
-	     * object. Create a DisplayObjectContainer to contain all of the items on the
-	     * display list. Then, if necessary, add that DisplayObjectContainer instance
-	     * to the Stage.</p>
-	     *
-	     * @param child The DisplayObject instance to add as a child of this
-	     *              DisplayObjectContainer instance.
-	     * @return The DisplayObject instance that you pass in the <code>child</code>
-	     *         parameter.
-	     * @throws ArgumentError Throws if the child is the same as the parent. Also
-	     *                       throws if the caller is a child(or grandchild etc.)
-	     *                       of the child being added.
-	     * @event added Dispatched when a display object is added to the display
-	     *              list.
-	     */
-	    addChild(child: DisplayObject): DisplayObject;
-	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
-	    /**
-	     * Adds a child DisplayObject instance to this DisplayObjectContainer
-	     * instance. The child is added at the index position specified. An index of
-	     * 0 represents the back(bottom) of the display list for this
-	     * DisplayObjectContainer object.
-	     *
-	     * <p>For example, the following example shows three display objects, labeled
-	     * a, b, and c, at index positions 0, 2, and 1, respectively:</p>
-	     *
-	     * <p>If you add a child object that already has a different display object
-	     * container as a parent, the object is removed from the child list of the
-	     * other display object container. </p>
-	     *
-	     * @param child The DisplayObject instance to add as a child of this
-	     *              DisplayObjectContainer instance.
-	     * @param index The index position to which the child is added. If you
-	     *              specify a currently occupied index position, the child object
-	     *              that exists at that position and all higher positions are
-	     *              moved up one position in the child list.
-	     * @return The DisplayObject instance that you pass in the <code>child</code>
-	     *         parameter.
-	     * @throws ArgumentError Throws if the child is the same as the parent. Also
-	     *                       throws if the caller is a child(or grandchild etc.)
-	     *                       of the child being added.
-	     * @throws RangeError    Throws if the index position does not exist in the
-	     *                       child list.
-	     * @event added Dispatched when a display object is added to the display
-	     *              list.
-	     */
-	    addChildAt(child: DisplayObject, index: number): DisplayObject;
-	    addChildren(...childarray: Array<DisplayObject>): void;
-	    /**
-	     *
-	     */
-	    clone(): DisplayObjectContainer;
-	    copyTo(newInstance: DisplayObjectContainer): void;
-	    /**
-	     * Determines whether the specified display object is a child of the
-	     * DisplayObjectContainer instance or the instance itself. The search
-	     * includes the entire display list including this DisplayObjectContainer
-	     * instance. Grandchildren, great-grandchildren, and so on each return
-	     * <code>true</code>.
-	     *
-	     * @param child The child object to test.
-	     * @return <code>true</code> if the <code>child</code> object is a child of
-	     *         the DisplayObjectContainer or the container itself; otherwise
-	     *         <code>false</code>.
-	     */
-	    contains(child: DisplayObject): boolean;
-	    /**
-	     *
-	     */
-	    disposeWithChildren(): void;
-	    getSessionIDAtDepth(depth: number): number;
-	    getChildAtDepth(depth: number): DisplayObject;
-	    getChildDepths(): Object;
-	    getSessionIDDepths(): Object;
-	    resetDepths(): void;
-	    /**
-	     * Returns the child display object instance that exists at the specified
-	     * index.
-	     *
-	     * @param index The index position of the child object.
-	     * @return The child display object at the specified index position.
-	     * @throws RangeError    Throws if the index does not exist in the child
-	     *                       list.
-	     */
-	    getChildAt(index: number): DisplayObject;
-	    /**
-	     * Returns the child display object that exists with the specified name. If
-	     * more that one child display object has the specified name, the method
-	     * returns the first object in the child list.
-	     *
-	     * <p>The <code>getChildAt()</code> method is faster than the
-	     * <code>getChildByName()</code> method. The <code>getChildAt()</code> method
-	     * accesses a child from a cached array, whereas the
-	     * <code>getChildByName()</code> method has to traverse a linked list to
-	     * access a child.</p>
-	     *
-	     * @param name The name of the child to return.
-	     * @return The child display object with the specified name.
-	     */
-	    getChildByName(name: string): DisplayObject;
-	    /**
-	     * Returns the index position of a <code>child</code> DisplayObject instance.
-	     *
-	     * @param child The DisplayObject instance to identify.
-	     * @return The index position of the child display object to identify.
-	     * @throws ArgumentError Throws if the child parameter is not a child of this
-	     *                       object.
-	     */
-	    getChildIndex(child: DisplayObject): number;
-	    getNextHighestDepth(): number;
-	    /**
-	     * Returns an array of objects that lie under the specified point and are
-	     * children(or grandchildren, and so on) of this DisplayObjectContainer
-	     * instance. Any child objects that are inaccessible for security reasons are
-	     * omitted from the returned array. To determine whether this security
-	     * restriction affects the returned array, call the
-	     * <code>areInaccessibleObjectsUnderPoint()</code> method.
-	     *
-	     * <p>The <code>point</code> parameter is in the coordinate space of the
-	     * Stage, which may differ from the coordinate space of the display object
-	     * container(unless the display object container is the Stage). You can use
-	     * the <code>globalToLocal()</code> and the <code>localToGlobal()</code>
-	     * methods to convert points between these coordinate spaces.</p>
-	     *
-	     * @param point The point under which to look.
-	     * @return An array of objects that lie under the specified point and are
-	     *         children(or grandchildren, and so on) of this
-	     *         DisplayObjectContainer instance.
-	     */
-	    getObjectsUnderPoint(point: Point): Array<DisplayObject>;
-	    /**
-	     * Removes the specified <code>child</code> DisplayObject instance from the
-	     * child list of the DisplayObjectContainer instance. The <code>parent</code>
-	     * property of the removed child is set to <code>null</code> , and the object
-	     * is garbage collected if no other references to the child exist. The index
-	     * positions of any display objects above the child in the
-	     * DisplayObjectContainer are decreased by 1.
-	     *
-	     * <p>The garbage collector reallocates unused memory space. When a variable
-	     * or object is no longer actively referenced or stored somewhere, the
-	     * garbage collector sweeps through and wipes out the memory space it used to
-	     * occupy if no other references to it exist.</p>
-	     *
-	     * @param child The DisplayObject instance to remove.
-	     * @return The DisplayObject instance that you pass in the <code>child</code>
-	     *         parameter.
-	     * @throws ArgumentError Throws if the child parameter is not a child of this
-	     *                       object.
-	     */
-	    removeChild(child: DisplayObject): DisplayObject;
-	    removeChildAtDepth(depth: number): DisplayObject;
-	    /**
-	     * Removes a child DisplayObject from the specified <code>index</code>
-	     * position in the child list of the DisplayObjectContainer. The
-	     * <code>parent</code> property of the removed child is set to
-	     * <code>null</code>, and the object is garbage collected if no other
-	     * references to the child exist. The index positions of any display objects
-	     * above the child in the DisplayObjectContainer are decreased by 1.
-	     *
-	     * <p>The garbage collector reallocates unused memory space. When a variable
-	     * or object is no longer actively referenced or stored somewhere, the
-	     * garbage collector sweeps through and wipes out the memory space it used to
-	     * occupy if no other references to it exist.</p>
-	     *
-	     * @param index The child index of the DisplayObject to remove.
-	     * @return The DisplayObject instance that was removed.
-	     * @throws RangeError    Throws if the index does not exist in the child
-	     *                       list.
-	     * @throws SecurityError This child display object belongs to a sandbox to
-	     *                       which the calling object does not have access. You
-	     *                       can avoid this situation by having the child movie
-	     *                       call the <code>Security.allowDomain()</code> method.
-	     */
-	    removeChildAt(index: number): DisplayObject;
-	    /**
-	     * Removes all <code>child</code> DisplayObject instances from the child list
-	     * of the DisplayObjectContainer instance. The <code>parent</code> property
-	     * of the removed children is set to <code>null</code>, and the objects are
-	     * garbage collected if no other references to the children exist.
-	     *
-	     * The garbage collector reallocates unused memory space. When a variable or
-	     * object is no longer actively referenced or stored somewhere, the garbage
-	     * collector sweeps through and wipes out the memory space it used to occupy
-	     * if no other references to it exist.
-	     *
-	     * @param beginIndex The beginning position. A value smaller than 0 throws a RangeError.
-	     * @param endIndex The ending position. A value smaller than 0 throws a RangeError.
-	     * @throws RangeError    Throws if the beginIndex or endIndex positions do
-	     *                       not exist in the child list.
-	     */
-	    removeChildren(beginIndex?: number, endIndex?: number): void;
-	    /**
-	     * Changes the position of an existing child in the display object container.
-	     * This affects the layering of child objects. For example, the following
-	     * example shows three display objects, labeled a, b, and c, at index
-	     * positions 0, 1, and 2, respectively:
-	     *
-	     * <p>When you use the <code>setChildIndex()</code> method and specify an
-	     * index position that is already occupied, the only positions that change
-	     * are those in between the display object's former and new position. All
-	     * others will stay the same. If a child is moved to an index LOWER than its
-	     * current index, all children in between will INCREASE by 1 for their index
-	     * reference. If a child is moved to an index HIGHER than its current index,
-	     * all children in between will DECREASE by 1 for their index reference. For
-	     * example, if the display object container in the previous example is named
-	     * <code>container</code>, you can swap the position of the display objects
-	     * labeled a and b by calling the following code:</p>
-	     *
-	     * <p>This code results in the following arrangement of objects:</p>
-	     *
-	     * @param child The child DisplayObject instance for which you want to change
-	     *              the index number.
-	     * @param index The resulting index number for the <code>child</code> display
-	     *              object.
-	     * @throws ArgumentError Throws if the child parameter is not a child of this
-	     *                       object.
-	     * @throws RangeError    Throws if the index does not exist in the child
-	     *                       list.
-	     */
-	    setChildIndex(child: DisplayObject, index: number): void;
-	    /**
-	     * Swaps the z-order (front-to-back order) of the two specified child
-	     * objects. All other child objects in the display object container remain in
-	     * the same index positions.
-	     *
-	     * @param child1 The first child object.
-	     * @param child2 The second child object.
-	     * @throws ArgumentError Throws if either child parameter is not a child of
-	     *                       this object.
-	     */
-	    swapChildren(child1: DisplayObject, child2: DisplayObject): void;
-	    /**
-	     * Swaps the z-order(front-to-back order) of the child objects at the two
-	     * specified index positions in the child list. All other child objects in
-	     * the display object container remain in the same index positions.
-	     *
-	     * @param index1 The index position of the first child object.
-	     * @param index2 The index position of the second child object.
-	     * @throws RangeError If either index does not exist in the child list.
-	     */
-	    swapChildrenAt(index1: number, index2: number): void;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    /**
-	     * @protected
-	     */
-	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iSetScene(value: Scene, partition: PartitionBase): void;
-	    /**
-	     * @private
-	     *
-	     * @param child
-	     */
-	    removeChildAtInternal(index: number): DisplayObject;
-	    private getDepthIndexInternal(depth);
-	    private _updateNextHighestDepth();
-	    /**
-	     * Evaluates the display object to see if it overlaps or intersects with the
-	     * point specified by the <code>x</code> and <code>y</code> parameters. The
-	     * <code>x</code> and <code>y</code> parameters specify a point in the
-	     * coordinate space of the Scene, not the display object container that
-	     * contains the display object(unless that display object container is the
-	     * Scene).
-	     *
-	     * @param x         The <i>x</i> coordinate to test against this object.
-	     * @param y         The <i>y</i> coordinate to test against this object.
-	     * @param shapeFlag Whether to check against the actual pixels of the object
-	     *                 (<code>true</code>) or the bounding box
-	     *                 (<code>false</code>).
-	     * @return <code>true</code> if the display object overlaps or intersects
-	     *         with the specified point; <code>false</code> otherwise.
-	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
-	    _iAddContainerNode(entityNode: ContainerNode): ContainerNode;
-	    _iRemoveContainerNode(entityNode: ContainerNode): ContainerNode;
-	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
-	    _updateMaskMode(): void;
-	}
-	export = DisplayObjectContainer;
 	
 }
 
@@ -3708,6 +3633,403 @@ declare module "awayjs-display/lib/containers/Loader" {
 	
 }
 
+declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
+	import Point = require("awayjs-core/lib/geom/Point");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+	import ContainerNode = require("awayjs-display/lib/partition/ContainerNode");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	/**
+	 * The DisplayObjectContainer class is the base class for all objects that can
+	 * serve as display object containers on the display list. The display list
+	 * manages all objects displayed in the Flash runtimes. Use the
+	 * DisplayObjectContainer class to arrange the display objects in the display
+	 * list. Each DisplayObjectContainer object has its own child list for
+	 * organizing the z-order of the objects. The z-order is the front-to-back
+	 * order that determines which object is drawn in front, which is behind, and
+	 * so on.
+	 *
+	 * <p>DisplayObject is an abstract base class; therefore, you cannot call
+	 * DisplayObject directly. Invoking <code>new DisplayObject()</code> throws an
+	 * <code>ArgumentError</code> exception.</p>
+	 * The DisplayObjectContainer class is an abstract base class for all objects
+	 * that can contain child objects. It cannot be instantiated directly; calling
+	 * the <code>new DisplayObjectContainer()</code> constructor throws an
+	 * <code>ArgumentError</code> exception.
+	 *
+	 * <p>For more information, see the "Display Programming" chapter of the
+	 * <i>ActionScript 3.0 Developer's Guide</i>.</p>
+	 */
+	class DisplayObjectContainer extends DisplayObject implements IAsset {
+	    static assetType: string;
+	    private _containerNodes;
+	    private _mouseChildren;
+	    private _depth_childs;
+	    private _depth_sessionIDs;
+	    private _nextHighestDepth;
+	    private _nextHighestDepthDirty;
+	    _children: Array<DisplayObject>;
+	    _iIsRoot: boolean;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * Determines whether or not the children of the object are mouse, or user
+	     * input device, enabled. If an object is enabled, a user can interact with
+	     * it by using a mouse or user input device. The default is
+	     * <code>true</code>.
+	     *
+	     * <p>This property is useful when you create a button with an instance of
+	     * the Sprite class(instead of using the SimpleButton class). When you use a
+	     * Sprite instance to create a button, you can choose to decorate the button
+	     * by using the <code>addChild()</code> method to add additional Sprite
+	     * instances. This process can cause unexpected behavior with mouse events
+	     * because the Sprite instances you add as children can become the target
+	     * object of a mouse event when you expect the parent instance to be the
+	     * target object. To ensure that the parent instance serves as the target
+	     * objects for mouse events, you can set the <code>mouseChildren</code>
+	     * property of the parent instance to <code>false</code>.</p>
+	     *
+	     * <p> No event is dispatched by setting this property. You must use the
+	     * <code>addEventListener()</code> method to create interactive
+	     * functionality.</p>
+	     */
+	    mouseChildren: boolean;
+	    /**
+	     * Returns the number of children of this object.
+	     */
+	    numChildren: number;
+	    /**
+	     * Determines whether the children of the object are tab enabled. Enables or
+	     * disables tabbing for the children of the object. The default is
+	     * <code>true</code>.
+	     *
+	     * <p><b>Note:</b> Do not use the <code>tabChildren</code> property with
+	     * Flex. Instead, use the
+	     * <code>mx.core.UIComponent.hasFocusableChildren</code> property.</p>
+	     *
+	     * @throws IllegalOperationError Calling this property of the Stage object
+	     *                               throws an exception. The Stage object does
+	     *                               not implement this property.
+	     */
+	    tabChildren: boolean;
+	    /**
+	     * Calling the <code>new DisplayObjectContainer()</code> constructor throws
+	     * an <code>ArgumentError</code> exception. You <i>can</i>, however, call
+	     * constructors for the following subclasses of DisplayObjectContainer:
+	     * <ul>
+	     *   <li><code>new Loader()</code></li>
+	     *   <li><code>new Sprite()</code></li>
+	     *   <li><code>new MovieClip()</code></li>
+	     * </ul>
+	     */
+	    constructor();
+	    /**
+	     * Adds a child DisplayObject instance to this DisplayObjectContainer
+	     * instance. The child is added to the front(top) of all other children in
+	     * this DisplayObjectContainer instance.(To add a child to a specific index
+	     * position, use the <code>addChildAt()</code> method.)
+	     *
+	     * <p>If you add a child object that already has a different display object
+	     * container as a parent, the object is removed from the child list of the
+	     * other display object container. </p>
+	     *
+	     * <p><b>Note:</b> The command <code>stage.addChild()</code> can cause
+	     * problems with a published SWF file, including security problems and
+	     * conflicts with other loaded SWF files. There is only one Stage within a
+	     * Flash runtime instance, no matter how many SWF files you load into the
+	     * runtime. So, generally, objects should not be added to the Stage,
+	     * directly, at all. The only object the Stage should contain is the root
+	     * object. Create a DisplayObjectContainer to contain all of the items on the
+	     * display list. Then, if necessary, add that DisplayObjectContainer instance
+	     * to the Stage.</p>
+	     *
+	     * @param child The DisplayObject instance to add as a child of this
+	     *              DisplayObjectContainer instance.
+	     * @return The DisplayObject instance that you pass in the <code>child</code>
+	     *         parameter.
+	     * @throws ArgumentError Throws if the child is the same as the parent. Also
+	     *                       throws if the caller is a child(or grandchild etc.)
+	     *                       of the child being added.
+	     * @event added Dispatched when a display object is added to the display
+	     *              list.
+	     */
+	    addChild(child: DisplayObject): DisplayObject;
+	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
+	    /**
+	     * Adds a child DisplayObject instance to this DisplayObjectContainer
+	     * instance. The child is added at the index position specified. An index of
+	     * 0 represents the back(bottom) of the display list for this
+	     * DisplayObjectContainer object.
+	     *
+	     * <p>For example, the following example shows three display objects, labeled
+	     * a, b, and c, at index positions 0, 2, and 1, respectively:</p>
+	     *
+	     * <p>If you add a child object that already has a different display object
+	     * container as a parent, the object is removed from the child list of the
+	     * other display object container. </p>
+	     *
+	     * @param child The DisplayObject instance to add as a child of this
+	     *              DisplayObjectContainer instance.
+	     * @param index The index position to which the child is added. If you
+	     *              specify a currently occupied index position, the child object
+	     *              that exists at that position and all higher positions are
+	     *              moved up one position in the child list.
+	     * @return The DisplayObject instance that you pass in the <code>child</code>
+	     *         parameter.
+	     * @throws ArgumentError Throws if the child is the same as the parent. Also
+	     *                       throws if the caller is a child(or grandchild etc.)
+	     *                       of the child being added.
+	     * @throws RangeError    Throws if the index position does not exist in the
+	     *                       child list.
+	     * @event added Dispatched when a display object is added to the display
+	     *              list.
+	     */
+	    addChildAt(child: DisplayObject, index: number): DisplayObject;
+	    addChildren(...childarray: Array<DisplayObject>): void;
+	    /**
+	     *
+	     */
+	    clone(): DisplayObjectContainer;
+	    copyTo(newInstance: DisplayObjectContainer): void;
+	    /**
+	     * Determines whether the specified display object is a child of the
+	     * DisplayObjectContainer instance or the instance itself. The search
+	     * includes the entire display list including this DisplayObjectContainer
+	     * instance. Grandchildren, great-grandchildren, and so on each return
+	     * <code>true</code>.
+	     *
+	     * @param child The child object to test.
+	     * @return <code>true</code> if the <code>child</code> object is a child of
+	     *         the DisplayObjectContainer or the container itself; otherwise
+	     *         <code>false</code>.
+	     */
+	    contains(child: DisplayObject): boolean;
+	    /**
+	     *
+	     */
+	    disposeWithChildren(): void;
+	    getSessionIDAtDepth(depth: number): number;
+	    getChildAtDepth(depth: number): DisplayObject;
+	    getChildDepths(): Object;
+	    getSessionIDDepths(): Object;
+	    resetDepths(): void;
+	    /**
+	     * Returns the child display object instance that exists at the specified
+	     * index.
+	     *
+	     * @param index The index position of the child object.
+	     * @return The child display object at the specified index position.
+	     * @throws RangeError    Throws if the index does not exist in the child
+	     *                       list.
+	     */
+	    getChildAt(index: number): DisplayObject;
+	    /**
+	     * Returns the child display object that exists with the specified name. If
+	     * more that one child display object has the specified name, the method
+	     * returns the first object in the child list.
+	     *
+	     * <p>The <code>getChildAt()</code> method is faster than the
+	     * <code>getChildByName()</code> method. The <code>getChildAt()</code> method
+	     * accesses a child from a cached array, whereas the
+	     * <code>getChildByName()</code> method has to traverse a linked list to
+	     * access a child.</p>
+	     *
+	     * @param name The name of the child to return.
+	     * @return The child display object with the specified name.
+	     */
+	    getChildByName(name: string): DisplayObject;
+	    /**
+	     * Returns the index position of a <code>child</code> DisplayObject instance.
+	     *
+	     * @param child The DisplayObject instance to identify.
+	     * @return The index position of the child display object to identify.
+	     * @throws ArgumentError Throws if the child parameter is not a child of this
+	     *                       object.
+	     */
+	    getChildIndex(child: DisplayObject): number;
+	    getNextHighestDepth(): number;
+	    /**
+	     * Returns an array of objects that lie under the specified point and are
+	     * children(or grandchildren, and so on) of this DisplayObjectContainer
+	     * instance. Any child objects that are inaccessible for security reasons are
+	     * omitted from the returned array. To determine whether this security
+	     * restriction affects the returned array, call the
+	     * <code>areInaccessibleObjectsUnderPoint()</code> method.
+	     *
+	     * <p>The <code>point</code> parameter is in the coordinate space of the
+	     * Stage, which may differ from the coordinate space of the display object
+	     * container(unless the display object container is the Stage). You can use
+	     * the <code>globalToLocal()</code> and the <code>localToGlobal()</code>
+	     * methods to convert points between these coordinate spaces.</p>
+	     *
+	     * @param point The point under which to look.
+	     * @return An array of objects that lie under the specified point and are
+	     *         children(or grandchildren, and so on) of this
+	     *         DisplayObjectContainer instance.
+	     */
+	    getObjectsUnderPoint(point: Point): Array<DisplayObject>;
+	    /**
+	     * Removes the specified <code>child</code> DisplayObject instance from the
+	     * child list of the DisplayObjectContainer instance. The <code>parent</code>
+	     * property of the removed child is set to <code>null</code> , and the object
+	     * is garbage collected if no other references to the child exist. The index
+	     * positions of any display objects above the child in the
+	     * DisplayObjectContainer are decreased by 1.
+	     *
+	     * <p>The garbage collector reallocates unused memory space. When a variable
+	     * or object is no longer actively referenced or stored somewhere, the
+	     * garbage collector sweeps through and wipes out the memory space it used to
+	     * occupy if no other references to it exist.</p>
+	     *
+	     * @param child The DisplayObject instance to remove.
+	     * @return The DisplayObject instance that you pass in the <code>child</code>
+	     *         parameter.
+	     * @throws ArgumentError Throws if the child parameter is not a child of this
+	     *                       object.
+	     */
+	    removeChild(child: DisplayObject): DisplayObject;
+	    removeChildAtDepth(depth: number): DisplayObject;
+	    /**
+	     * Removes a child DisplayObject from the specified <code>index</code>
+	     * position in the child list of the DisplayObjectContainer. The
+	     * <code>parent</code> property of the removed child is set to
+	     * <code>null</code>, and the object is garbage collected if no other
+	     * references to the child exist. The index positions of any display objects
+	     * above the child in the DisplayObjectContainer are decreased by 1.
+	     *
+	     * <p>The garbage collector reallocates unused memory space. When a variable
+	     * or object is no longer actively referenced or stored somewhere, the
+	     * garbage collector sweeps through and wipes out the memory space it used to
+	     * occupy if no other references to it exist.</p>
+	     *
+	     * @param index The child index of the DisplayObject to remove.
+	     * @return The DisplayObject instance that was removed.
+	     * @throws RangeError    Throws if the index does not exist in the child
+	     *                       list.
+	     * @throws SecurityError This child display object belongs to a sandbox to
+	     *                       which the calling object does not have access. You
+	     *                       can avoid this situation by having the child movie
+	     *                       call the <code>Security.allowDomain()</code> method.
+	     */
+	    removeChildAt(index: number): DisplayObject;
+	    /**
+	     * Removes all <code>child</code> DisplayObject instances from the child list
+	     * of the DisplayObjectContainer instance. The <code>parent</code> property
+	     * of the removed children is set to <code>null</code>, and the objects are
+	     * garbage collected if no other references to the children exist.
+	     *
+	     * The garbage collector reallocates unused memory space. When a variable or
+	     * object is no longer actively referenced or stored somewhere, the garbage
+	     * collector sweeps through and wipes out the memory space it used to occupy
+	     * if no other references to it exist.
+	     *
+	     * @param beginIndex The beginning position. A value smaller than 0 throws a RangeError.
+	     * @param endIndex The ending position. A value smaller than 0 throws a RangeError.
+	     * @throws RangeError    Throws if the beginIndex or endIndex positions do
+	     *                       not exist in the child list.
+	     */
+	    removeChildren(beginIndex?: number, endIndex?: number): void;
+	    /**
+	     * Changes the position of an existing child in the display object container.
+	     * This affects the layering of child objects. For example, the following
+	     * example shows three display objects, labeled a, b, and c, at index
+	     * positions 0, 1, and 2, respectively:
+	     *
+	     * <p>When you use the <code>setChildIndex()</code> method and specify an
+	     * index position that is already occupied, the only positions that change
+	     * are those in between the display object's former and new position. All
+	     * others will stay the same. If a child is moved to an index LOWER than its
+	     * current index, all children in between will INCREASE by 1 for their index
+	     * reference. If a child is moved to an index HIGHER than its current index,
+	     * all children in between will DECREASE by 1 for their index reference. For
+	     * example, if the display object container in the previous example is named
+	     * <code>container</code>, you can swap the position of the display objects
+	     * labeled a and b by calling the following code:</p>
+	     *
+	     * <p>This code results in the following arrangement of objects:</p>
+	     *
+	     * @param child The child DisplayObject instance for which you want to change
+	     *              the index number.
+	     * @param index The resulting index number for the <code>child</code> display
+	     *              object.
+	     * @throws ArgumentError Throws if the child parameter is not a child of this
+	     *                       object.
+	     * @throws RangeError    Throws if the index does not exist in the child
+	     *                       list.
+	     */
+	    setChildIndex(child: DisplayObject, index: number): void;
+	    /**
+	     * Swaps the z-order (front-to-back order) of the two specified child
+	     * objects. All other child objects in the display object container remain in
+	     * the same index positions.
+	     *
+	     * @param child1 The first child object.
+	     * @param child2 The second child object.
+	     * @throws ArgumentError Throws if either child parameter is not a child of
+	     *                       this object.
+	     */
+	    swapChildren(child1: DisplayObject, child2: DisplayObject): void;
+	    /**
+	     * Swaps the z-order(front-to-back order) of the child objects at the two
+	     * specified index positions in the child list. All other child objects in
+	     * the display object container remain in the same index positions.
+	     *
+	     * @param index1 The index position of the first child object.
+	     * @param index2 The index position of the second child object.
+	     * @throws RangeError If either index does not exist in the child list.
+	     */
+	    swapChildrenAt(index1: number, index2: number): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    /**
+	     * @protected
+	     */
+	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iSetScene(value: Scene, partition: PartitionBase): void;
+	    /**
+	     * @private
+	     *
+	     * @param child
+	     */
+	    removeChildAtInternal(index: number): DisplayObject;
+	    private getDepthIndexInternal(depth);
+	    private _updateNextHighestDepth();
+	    /**
+	     * Evaluates the display object to see if it overlaps or intersects with the
+	     * point specified by the <code>x</code> and <code>y</code> parameters. The
+	     * <code>x</code> and <code>y</code> parameters specify a point in the
+	     * coordinate space of the Scene, not the display object container that
+	     * contains the display object(unless that display object container is the
+	     * Scene).
+	     *
+	     * @param x         The <i>x</i> coordinate to test against this object.
+	     * @param y         The <i>y</i> coordinate to test against this object.
+	     * @param shapeFlag Whether to check against the actual pixels of the object
+	     *                 (<code>true</code>) or the bounding box
+	     *                 (<code>false</code>).
+	     * @return <code>true</code> if the display object overlaps or intersects
+	     *         with the specified point; <code>false</code> otherwise.
+	     */
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
+	    _iAddContainerNode(entityNode: ContainerNode): ContainerNode;
+	    _iRemoveContainerNode(entityNode: ContainerNode): ContainerNode;
+	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
+	    _updateMaskMode(): void;
+	}
+	export = DisplayObjectContainer;
+	
+}
+
 declare module "awayjs-display/lib/containers/Scene" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
@@ -3728,6 +4050,166 @@ declare module "awayjs-display/lib/containers/Scene" {
 	    _iUnregisterPartition(partition: PartitionBase): void;
 	}
 	export = Scene;
+	
+}
+
+declare module "awayjs-display/lib/containers/View" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import TouchPoint = require("awayjs-display/lib/base/TouchPoint");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import IPicker = require("awayjs-display/lib/pick/IPicker");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	class View {
+	    _pScene: Scene;
+	    _pCamera: Camera;
+	    _pEntityCollector: CollectorBase;
+	    _pRenderer: IRenderer;
+	    private _aspectRatio;
+	    private _width;
+	    private _height;
+	    private _time;
+	    private _deltaTime;
+	    private _backgroundColor;
+	    private _backgroundAlpha;
+	    private _viewportDirty;
+	    private _scissorDirty;
+	    private _onPartitionChangedDelegate;
+	    private _onProjectionChangedDelegate;
+	    private _onViewportUpdatedDelegate;
+	    private _onScissorUpdatedDelegate;
+	    private _mouseManager;
+	    private _mousePicker;
+	    private _htmlElement;
+	    private _shareContext;
+	    _pMouseX: number;
+	    _pMouseY: number;
+	    _pTouchPoints: Array<TouchPoint>;
+	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
+	    layeredView: boolean;
+	    mouseX: number;
+	    mouseY: number;
+	    touchPoints: Array<TouchPoint>;
+	    getLocalMouseX(displayObject: DisplayObject): number;
+	    getLocalMouseY(displayObject: DisplayObject): number;
+	    getLocalTouchPoints(displayObject: DisplayObject): Array<TouchPoint>;
+	    /**
+	     *
+	     */
+	    htmlElement: HTMLDivElement;
+	    /**
+	     *
+	     */
+	    renderer: IRenderer;
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    backgroundColor: number;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    /**
+	     *
+	     * @param value
+	     */
+	    backgroundAlpha: number;
+	    /**
+	     *
+	     * @returns {Camera3D}
+	     */
+	    /**
+	     * Set camera that's used to render the scene for this viewport
+	     */
+	    camera: Camera;
+	    /**
+	     *
+	     * @returns {away.containers.Scene3D}
+	     */
+	    /**
+	     * Set the scene that's used to render for this viewport
+	     */
+	    scene: Scene;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    deltaTime: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    mousePicker: IPicker;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    visible: boolean;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    renderedFacesCount: number;
+	    /**
+	     * Renders the view.
+	     */
+	    render(): void;
+	    /**
+	     *
+	     */
+	    pUpdateTime(): void;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     *
+	     */
+	    iEntityCollector: CollectorBase;
+	    /**
+	     *
+	     * @param e
+	     */
+	    private _onPartitionChanged(event);
+	    /**
+	     *
+	     */
+	    private _onProjectionChanged(event);
+	    /**
+	     *
+	     */
+	    private _onViewportUpdated(event);
+	    /**
+	     *
+	     */
+	    private _onScissorUpdated(event);
+	    project(point3d: Vector3D): Vector3D;
+	    unproject(sX: number, sY: number, sZ: number): Vector3D;
+	    getRay(sX: number, sY: number, sZ: number): Vector3D;
+	    forceMouseMove: boolean;
+	    updateCollider(): void;
+	}
+	export = View;
 	
 }
 
@@ -3996,95 +4478,6 @@ declare module "awayjs-display/lib/controllers/SpringController" {
 	    update(interpolate?: boolean): void;
 	}
 	export = SpringController;
-	
-}
-
-declare module "awayjs-display/lib/base/SubGeometryBase" {
-	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
-	import Box = require("awayjs-core/lib/geom/Box");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import ISubGeometryVO = require("awayjs-display/lib/vos/ISubGeometryVO");
-	/**
-	 * @class away.base.TriangleSubGeometry
-	 */
-	class SubGeometryBase extends AssetBase {
-	    private _subGeometryVO;
-	    _pIndices: Short3Attributes;
-	    private _numElements;
-	    _concatenatedBuffer: AttributesBuffer;
-	    private _indicesUpdated;
-	    _verticesDirty: Object;
-	    _verticesUpdated: Object;
-	    concatenatedBuffer: AttributesBuffer;
-	    /**
-	     * The raw index data that define the faces.
-	     */
-	    indices: Short3Attributes;
-	    /**
-	     * The total amount of triangles in the TriangleSubGeometry.
-	     */
-	    numElements: number;
-	    numVertices: number;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedBuffer?: AttributesBuffer);
-	    /**
-	     *
-	     */
-	    invalidate(): void;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Updates the face indices of the TriangleSubGeometry.
-	     *
-	     * @param indices The face indices to upload.
-	     */
-	    setIndices(array: Array<number>, offset?: number): any;
-	    setIndices(uint16Array: Uint16Array, offset?: number): any;
-	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
-	    /**
-	     * @protected
-	     */
-	    pInvalidateBounds(): void;
-	    /**
-	     * The Geometry object that 'owns' this TriangleSubGeometry object.
-	     *
-	     * @private
-	     */
-	    parentGeometry: Geometry;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): SubGeometryBase;
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    getBoundingPositions(): Float32Array;
-	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
-	    private notifyIndicesUpdate();
-	    private notifyIndicesDispose();
-	    notifyVerticesUpdate(attributesView: AttributesView): void;
-	    notifyVerticesDispose(attributesView: AttributesView): void;
-	    _iAddSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
-	    _iRemoveSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	}
-	export = SubGeometryBase;
 	
 }
 
@@ -6064,239 +6457,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	
 }
 
-declare module "awayjs-display/lib/base/Transform" {
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * The Transform class provides access to color adjustment properties and two-
-	 * or three-dimensional transformation objects that can be applied to a
-	 * display object. During the transformation, the color or the orientation and
-	 * position of a display object is adjusted(offset) from the current values
-	 * or coordinates to new values or coordinates. The Transform class also
-	 * collects data about color and two-dimensional matrix transformations that
-	 * are applied to a display object and all of its parent objects. You can
-	 * access these combined transformations through the
-	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
-	 * properties.
-	 *
-	 * <p>To apply color transformations: create a ColorTransform object, set the
-	 * color adjustments using the object's methods and properties, and then
-	 * assign the <code>colorTransformation</code> property of the
-	 * <code>transform</code> property of the display object to the new
-	 * ColorTransformation object.</p>
-	 *
-	 * <p>To apply two-dimensional transformations: create a Matrix object, set
-	 * the matrix's two-dimensional transformation, and then assign the
-	 * <code>transform.matrix</code> property of the display object to the new
-	 * Matrix object.</p>
-	 *
-	 * <p>To apply three-dimensional transformations: start with a
-	 * three-dimensional display object. A three-dimensional display object has a
-	 * <code>z</code> property value other than zero. You do not need to create
-	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
-	 * is created automatically when you assign a <code>z</code> value to a
-	 * display object. You can access the display object's Matrix3D object through
-	 * the display object's <code>transform</code> property. Using the methods of
-	 * the Matrix3D class, you can add to or modify the existing transformation
-	 * settings. Also, you can create a custom Matrix3D object, set the custom
-	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
-	 * object to the display object using the <code>transform.matrix</code>
-	 * property.</p>
-	 *
-	 * <p>To modify a perspective projection of the stage or root object: use the
-	 * <code>transform.matrix</code> property of the root display object to gain
-	 * access to the PerspectiveProjection object. Or, apply different perspective
-	 * projection properties to a display object by setting the perspective
-	 * projection properties of the display object's parent. The child display
-	 * object inherits the new properties. Specifically, create a
-	 * PerspectiveProjection object and set its properties, then assign the
-	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
-	 * property of the parent display object's <code>transform</code> property.
-	 * The specified projection transformation then applies to all the display
-	 * object's three-dimensional children.</p>
-	 *
-	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
-	 * perspective transformations, do not assign both to a display object at the
-	 * same time. Use the PerspectiveProjection object for focal length and
-	 * projection center changes. For more control over the perspective
-	 * transformation, create a perspective projection Matrix3D object.</p>
-	 */
-	class Transform {
-	    private _displayObject;
-	    private _concatenatedColorTransform;
-	    private _concatenatedMatrix;
-	    private _pixelBounds;
-	    _position: Vector3D;
-	    /**
-	     *
-	     */
-	    backVector: Vector3D;
-	    /**
-	     * A ColorTransform object containing values that universally adjust the
-	     * colors in the display object.
-	     *
-	     * @throws TypeError The colorTransform is null when being set
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * A ColorTransform object representing the combined color transformations
-	     * applied to the display object and all of its parent objects, back to the
-	     * root level. If different color transformations have been applied at
-	     * different levels, all of those transformations are concatenated into one
-	     * ColorTransform object for this property.
-	     */
-	    concatenatedColorTransform: ColorTransform;
-	    /**
-	     * A Matrix object representing the combined transformation matrixes of the
-	     * display object and all of its parent objects, back to the root level. If
-	     * different transformation matrixes have been applied at different levels,
-	     * all of those matrixes are concatenated into one matrix for this property.
-	     * Also, for resizeable SWF content running in the browser, this property
-	     * factors in the difference between stage coordinates and window coordinates
-	     * due to window resizing. Thus, the property converts local coordinates to
-	     * window coordinates, which may not be the same coordinate space as that of
-	     * the Stage.
-	     */
-	    concatenatedMatrix: Matrix;
-	    /**
-	     *
-	     */
-	    downVector: Vector3D;
-	    /**
-	     *
-	     */
-	    forwardVector: Vector3D;
-	    /**
-	     *
-	     */
-	    leftVector: Vector3D;
-	    /**
-	     * A Matrix object containing values that alter the scaling, rotation, and
-	     * translation of the display object.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     *
-	     * @throws TypeError The matrix is null when being set
-	     */
-	    matrix: Matrix;
-	    /**
-	     * Provides access to the Matrix3D object of a three-dimensional display
-	     * object. The Matrix3D object represents a transformation matrix that
-	     * determines the display object's position and orientation. A Matrix3D
-	     * object can also perform perspective projection.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     */
-	    matrix3D: Matrix3D;
-	    /**
-	     * Provides access to the PerspectiveProjection object of a three-dimensional
-	     * display object. The PerspectiveProjection object can be used to modify the
-	     * perspective transformation of the stage or to assign a perspective
-	     * transformation to all the three-dimensional children of a display object.
-	     *
-	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
-	     * a default PerspectiveProjection object is assigned to the root object.</p>
-	     */
-	    perspectiveProjection: PerspectiveProjection;
-	    /**
-	     * A Rectangle object that defines the bounding rectangle of the display
-	     * object on the stage.
-	     */
-	    pixelBounds: Rectangle;
-	    /**
-	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    position: Vector3D;
-	    /**
-	     *
-	     */
-	    rightVector: Vector3D;
-	    /**
-	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    rotation: Vector3D;
-	    /**
-	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    scale: Vector3D;
-	    /**
-	     *
-	     */
-	    upVector: Vector3D;
-	    constructor(displayObject: DisplayObject);
-	    /**
-	     * Returns a Matrix3D object, which can transform the space of a specified
-	     * display object in relation to the current display object's space. You can
-	     * use the <code>getRelativeMatrix3D()</code> method to move one
-	     * three-dimensional display object relative to another three-dimensional
-	     * display object.
-	     *
-	     * @param relativeTo The display object relative to which the transformation
-	     *                   occurs. To get a Matrix3D object relative to the stage,
-	     *                   set the parameter to the <code>root</code> or
-	     *                   <code>stage</code> object. To get the world-relative
-	     *                   matrix of the display object, set the parameter to a
-	     *                   display object that has a perspective transformation
-	     *                   applied to it.
-	     * @return A Matrix3D object that can be used to transform the space from the
-	     *         <code>relativeTo</code> display object to the current display
-	     *         object space.
-	     */
-	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
-	    /**
-	     * Moves the 3d object forwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveForward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveBackward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveLeft(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveRight(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveUp(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveDown(distance: number): void;
-	}
-	export = Transform;
-	
-}
-
 declare module "awayjs-display/lib/entities/TextField" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -7204,6 +7364,15 @@ declare module "awayjs-display/lib/entities/TextField" {
 	
 }
 
+declare module "awayjs-display/lib/errors/CastError" {
+	import Error = require("awayjs-core/lib/errors/Error");
+	class CastError extends Error {
+	    constructor(message: string);
+	}
+	export = CastError;
+	
+}
+
 declare module "awayjs-display/lib/events/CameraEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -7905,192 +8074,6 @@ declare module "awayjs-display/lib/materials/LightSources" {
 	
 }
 
-declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
-	/**
-	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
-	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
-	 * extended to provide more application-specific dynamic selection of lights.
-	 *
-	 * @see StaticLightPicker
-	 */
-	class LightPickerBase extends AssetBase implements IAsset {
-	    static assetType: string;
-	    _pNumPointLights: number;
-	    _pNumDirectionalLights: number;
-	    _pNumCastingPointLights: number;
-	    _pNumCastingDirectionalLights: number;
-	    _pNumLightProbes: number;
-	    _pAllPickedLights: Array<LightBase>;
-	    _pPointLights: Array<PointLight>;
-	    _pCastingPointLights: Array<PointLight>;
-	    _pDirectionalLights: Array<DirectionalLight>;
-	    _pCastingDirectionalLights: Array<DirectionalLight>;
-	    _pLightProbes: Array<LightProbe>;
-	    _pLightProbeWeights: Array<number>;
-	    /**
-	     * Creates a new LightPickerBase object.
-	     */
-	    constructor();
-	    /**
-	     * Disposes resources used by the light picker.
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    assetType: string;
-	    /**
-	     * The maximum amount of directional lights that will be provided.
-	     */
-	    numDirectionalLights: number;
-	    /**
-	     * The maximum amount of point lights that will be provided.
-	     */
-	    numPointLights: number;
-	    /**
-	     * The maximum amount of directional lights that cast shadows.
-	     */
-	    numCastingDirectionalLights: number;
-	    /**
-	     * The amount of point lights that cast shadows.
-	     */
-	    numCastingPointLights: number;
-	    /**
-	     * The maximum amount of light probes that will be provided.
-	     */
-	    numLightProbes: number;
-	    /**
-	     * The collected point lights to be used for shading.
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights to be used for shading.
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected point lights that cast shadows to be used for shading.
-	     */
-	    castingPointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights that cast shadows to be used for shading.
-	     */
-	    castingDirectionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected light probes to be used for shading.
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     * The weights for each light probe, defining their influence on the object.
-	     */
-	    lightProbeWeights: Array<number>;
-	    /**
-	     * A collection of all the collected lights.
-	     */
-	    allPickedLights: Array<LightBase>;
-	    /**
-	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
-	     */
-	    collectLights(renderable: IRenderable): void;
-	    /**
-	     * Updates the weights for the light probes, based on the renderable's position relative to them.
-	     * @param renderable The renderble for which to calculate the light probes' influence.
-	     */
-	    private updateProbeWeights(renderable);
-	}
-	export = LightPickerBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
-	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
-	 * occur.
-	 */
-	class StaticLightPicker extends LightPickerBase {
-	    private _lights;
-	    private _onCastShadowChangeDelegate;
-	    /**
-	     * Creates a new StaticLightPicker object.
-	     * @param lights The lights to be used for shading.
-	     */
-	    constructor(lights: any);
-	    /**
-	     * The lights used for shading.
-	     */
-	    lights: Array<any>;
-	    /**
-	     * Remove configuration change listeners on the lights.
-	     */
-	    private clearListeners();
-	    /**
-	     * Notifies the material of a configuration change.
-	     */
-	    private onCastShadowChange(event);
-	    /**
-	     * Called when a directional light's shadow casting configuration changes.
-	     */
-	    private updateDirectionalCasting(light);
-	    /**
-	     * Called when a point light's shadow casting configuration changes.
-	     */
-	    private updatePointCasting(light);
-	}
-	export = StaticLightPicker;
-	
-}
-
-declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Event = require("awayjs-core/lib/events/Event");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-	class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher {
-	    _pScissorRects: Rectangle[];
-	    private _pScissorRectsInvalid;
-	    private _splitRatios;
-	    private _numCascades;
-	    private _depthCameras;
-	    private _depthLenses;
-	    private _texOffsetsX;
-	    private _texOffsetsY;
-	    private _changeDispatcher;
-	    private _nearPlaneDistances;
-	    constructor(numCascades?: number);
-	    getSplitRatio(index: number): number;
-	    setSplitRatio(index: number, value: number): void;
-	    getDepthProjections(partition: number): Matrix3D;
-	    private init();
-	    _pSetDepthMapSize(value: number): void;
-	    private invalidateScissorRects();
-	    numCascades: number;
-	    pDrawDepthMap(target: Single2DTexture, scene: Scene, renderer: IRenderer): void;
-	    private updateScissorRects();
-	    pUpdateDepthProjection(viewCamera: Camera): void;
-	    private updateProjectionPartition(matrix, splitRatio, texOffsetX, texOffsetY);
-	    addEventListener(type: string, listener: Function): void;
-	    removeEventListener(type: string, listener: Function): void;
-	    dispatchEvent(event: Event): void;
-	    hasEventListener(type: string): boolean;
-	    _iNearPlaneDistances: Array<number>;
-	}
-	export = CascadeShadowMapper;
-	
-}
-
 declare module "awayjs-display/lib/materials/MaterialBase" {
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
@@ -8321,6 +8304,192 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	
 }
 
+declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import PointLight = require("awayjs-display/lib/entities/PointLight");
+	/**
+	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
+	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
+	 * extended to provide more application-specific dynamic selection of lights.
+	 *
+	 * @see StaticLightPicker
+	 */
+	class LightPickerBase extends AssetBase implements IAsset {
+	    static assetType: string;
+	    _pNumPointLights: number;
+	    _pNumDirectionalLights: number;
+	    _pNumCastingPointLights: number;
+	    _pNumCastingDirectionalLights: number;
+	    _pNumLightProbes: number;
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
+	    /**
+	     * Creates a new LightPickerBase object.
+	     */
+	    constructor();
+	    /**
+	     * Disposes resources used by the light picker.
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    assetType: string;
+	    /**
+	     * The maximum amount of directional lights that will be provided.
+	     */
+	    numDirectionalLights: number;
+	    /**
+	     * The maximum amount of point lights that will be provided.
+	     */
+	    numPointLights: number;
+	    /**
+	     * The maximum amount of directional lights that cast shadows.
+	     */
+	    numCastingDirectionalLights: number;
+	    /**
+	     * The amount of point lights that cast shadows.
+	     */
+	    numCastingPointLights: number;
+	    /**
+	     * The maximum amount of light probes that will be provided.
+	     */
+	    numLightProbes: number;
+	    /**
+	     * The collected point lights to be used for shading.
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights to be used for shading.
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected point lights that cast shadows to be used for shading.
+	     */
+	    castingPointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights that cast shadows to be used for shading.
+	     */
+	    castingDirectionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected light probes to be used for shading.
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     * The weights for each light probe, defining their influence on the object.
+	     */
+	    lightProbeWeights: Array<number>;
+	    /**
+	     * A collection of all the collected lights.
+	     */
+	    allPickedLights: Array<LightBase>;
+	    /**
+	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
+	     */
+	    collectLights(renderable: IRenderable): void;
+	    /**
+	     * Updates the weights for the light probes, based on the renderable's position relative to them.
+	     * @param renderable The renderble for which to calculate the light probes' influence.
+	     */
+	    private updateProbeWeights(renderable);
+	}
+	export = LightPickerBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
+	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
+	 * occur.
+	 */
+	class StaticLightPicker extends LightPickerBase {
+	    private _lights;
+	    private _onCastShadowChangeDelegate;
+	    /**
+	     * Creates a new StaticLightPicker object.
+	     * @param lights The lights to be used for shading.
+	     */
+	    constructor(lights: any);
+	    /**
+	     * The lights used for shading.
+	     */
+	    lights: Array<any>;
+	    /**
+	     * Remove configuration change listeners on the lights.
+	     */
+	    private clearListeners();
+	    /**
+	     * Notifies the material of a configuration change.
+	     */
+	    private onCastShadowChange(event);
+	    /**
+	     * Called when a directional light's shadow casting configuration changes.
+	     */
+	    private updateDirectionalCasting(light);
+	    /**
+	     * Called when a point light's shadow casting configuration changes.
+	     */
+	    private updatePointCasting(light);
+	}
+	export = StaticLightPicker;
+	
+}
+
+declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import Event = require("awayjs-core/lib/events/Event");
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
+	class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher {
+	    _pScissorRects: Rectangle[];
+	    private _pScissorRectsInvalid;
+	    private _splitRatios;
+	    private _numCascades;
+	    private _depthCameras;
+	    private _depthLenses;
+	    private _texOffsetsX;
+	    private _texOffsetsY;
+	    private _changeDispatcher;
+	    private _nearPlaneDistances;
+	    constructor(numCascades?: number);
+	    getSplitRatio(index: number): number;
+	    setSplitRatio(index: number, value: number): void;
+	    getDepthProjections(partition: number): Matrix3D;
+	    private init();
+	    _pSetDepthMapSize(value: number): void;
+	    private invalidateScissorRects();
+	    numCascades: number;
+	    pDrawDepthMap(target: Single2DTexture, scene: Scene, renderer: IRenderer): void;
+	    private updateScissorRects();
+	    pUpdateDepthProjection(viewCamera: Camera): void;
+	    private updateProjectionPartition(matrix, splitRatio, texOffsetX, texOffsetY);
+	    addEventListener(type: string, listener: Function): void;
+	    removeEventListener(type: string, listener: Function): void;
+	    dispatchEvent(event: Event): void;
+	    hasEventListener(type: string): boolean;
+	    _iNearPlaneDistances: Array<number>;
+	}
+	export = CascadeShadowMapper;
+	
+}
+
 declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -8440,6 +8609,26 @@ declare module "awayjs-display/lib/partition/BasicPartition" {
 	
 }
 
+declare module "awayjs-display/lib/partition/CameraNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+	/**
+	 * @class away.partition.CameraNode
+	 */
+	class CameraNode extends EntityNode {
+	    constructor(pool: EntityNodePool, camera: Camera, partition: PartitionBase);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	}
+	export = CameraNode;
+	
+}
+
 declare module "awayjs-display/lib/partition/ContainerNode" {
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -8524,6 +8713,46 @@ declare module "awayjs-display/lib/partition/DirectionalLightNode" {
 	
 }
 
+declare module "awayjs-display/lib/partition/IDisplayObjectNode" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import INode = require("awayjs-display/lib/partition/INode");
+	/**
+	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
+	 * create node objects in the partition pipeline that represent the contents of a Entity
+	 *
+	 * @class away.pool.IDisplayObjectNode
+	 */
+	interface IDisplayObjectNode extends INode {
+	    _iUpdateQueueNext: IDisplayObjectNode;
+	    displayObject: DisplayObject;
+	    isContainerNode: boolean;
+	}
+	export = IDisplayObjectNode;
+	
+}
+
+declare module "awayjs-display/lib/partition/INode" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
+	 * create node objects in the partition pipeline that represent the contents of a Entity
+	 *
+	 * @class away.pool.IDisplayObjectNode
+	 */
+	interface INode {
+	    parent: INode;
+	    numEntities: number;
+	    debugChildrenVisible: boolean;
+	    _iUpdateImplicitDebugVisible(value: boolean): any;
+	    acceptTraverser(traverser: CollectorBase): any;
+	    iAddNode(node: INode): any;
+	    iRemoveNode(node: INode): any;
+	    findParentForNode(node: INode): INode;
+	}
+	export = INode;
+	
+}
+
 declare module "awayjs-display/lib/partition/EntityNode" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -8576,46 +8805,6 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	    updateBounds(): void;
 	}
 	export = EntityNode;
-	
-}
-
-declare module "awayjs-display/lib/partition/IDisplayObjectNode" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import INode = require("awayjs-display/lib/partition/INode");
-	/**
-	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
-	 * create node objects in the partition pipeline that represent the contents of a Entity
-	 *
-	 * @class away.pool.IDisplayObjectNode
-	 */
-	interface IDisplayObjectNode extends INode {
-	    _iUpdateQueueNext: IDisplayObjectNode;
-	    displayObject: DisplayObject;
-	    isContainerNode: boolean;
-	}
-	export = IDisplayObjectNode;
-	
-}
-
-declare module "awayjs-display/lib/partition/INode" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
-	 * create node objects in the partition pipeline that represent the contents of a Entity
-	 *
-	 * @class away.pool.IDisplayObjectNode
-	 */
-	interface INode {
-	    parent: INode;
-	    numEntities: number;
-	    debugChildrenVisible: boolean;
-	    _iUpdateImplicitDebugVisible(value: boolean): any;
-	    acceptTraverser(traverser: CollectorBase): any;
-	    iAddNode(node: INode): any;
-	    iRemoveNode(node: INode): any;
-	    findParentForNode(node: INode): INode;
-	}
-	export = INode;
 	
 }
 
@@ -9380,166 +9569,6 @@ declare module "awayjs-display/lib/pool/IRenderable" {
 	
 }
 
-declare module "awayjs-display/lib/containers/View" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import TouchPoint = require("awayjs-display/lib/base/TouchPoint");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import IPicker = require("awayjs-display/lib/pick/IPicker");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	class View {
-	    _pScene: Scene;
-	    _pCamera: Camera;
-	    _pEntityCollector: CollectorBase;
-	    _pRenderer: IRenderer;
-	    private _aspectRatio;
-	    private _width;
-	    private _height;
-	    private _time;
-	    private _deltaTime;
-	    private _backgroundColor;
-	    private _backgroundAlpha;
-	    private _viewportDirty;
-	    private _scissorDirty;
-	    private _onPartitionChangedDelegate;
-	    private _onProjectionChangedDelegate;
-	    private _onViewportUpdatedDelegate;
-	    private _onScissorUpdatedDelegate;
-	    private _mouseManager;
-	    private _mousePicker;
-	    private _htmlElement;
-	    private _shareContext;
-	    _pMouseX: number;
-	    _pMouseY: number;
-	    _pTouchPoints: Array<TouchPoint>;
-	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
-	    layeredView: boolean;
-	    mouseX: number;
-	    mouseY: number;
-	    touchPoints: Array<TouchPoint>;
-	    getLocalMouseX(displayObject: DisplayObject): number;
-	    getLocalMouseY(displayObject: DisplayObject): number;
-	    getLocalTouchPoints(displayObject: DisplayObject): Array<TouchPoint>;
-	    /**
-	     *
-	     */
-	    htmlElement: HTMLDivElement;
-	    /**
-	     *
-	     */
-	    renderer: IRenderer;
-	    /**
-	     *
-	     */
-	    shareContext: boolean;
-	    /**
-	     *
-	     */
-	    backgroundColor: number;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    /**
-	     *
-	     * @param value
-	     */
-	    backgroundAlpha: number;
-	    /**
-	     *
-	     * @returns {Camera3D}
-	     */
-	    /**
-	     * Set camera that's used to render the scene for this viewport
-	     */
-	    camera: Camera;
-	    /**
-	     *
-	     * @returns {away.containers.Scene3D}
-	     */
-	    /**
-	     * Set the scene that's used to render for this viewport
-	     */
-	    scene: Scene;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    deltaTime: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    mousePicker: IPicker;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    visible: boolean;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    renderedFacesCount: number;
-	    /**
-	     * Renders the view.
-	     */
-	    render(): void;
-	    /**
-	     *
-	     */
-	    pUpdateTime(): void;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     *
-	     */
-	    iEntityCollector: CollectorBase;
-	    /**
-	     *
-	     * @param e
-	     */
-	    private _onPartitionChanged(event);
-	    /**
-	     *
-	     */
-	    private _onProjectionChanged(event);
-	    /**
-	     *
-	     */
-	    private _onViewportUpdated(event);
-	    /**
-	     *
-	     */
-	    private _onScissorUpdated(event);
-	    project(point3d: Vector3D): Vector3D;
-	    unproject(sX: number, sY: number, sZ: number): Vector3D;
-	    getRay(sX: number, sY: number, sZ: number): Vector3D;
-	    forceMouseMove: boolean;
-	    updateCollider(): void;
-	}
-	export = View;
-	
-}
-
 declare module "awayjs-display/lib/pool/ITextureVO" {
 	/**
 	 * ITextureVO is an interface for classes that are used in the rendering pipeline to render the
@@ -9690,12 +9719,75 @@ declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
 	
 }
 
-declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
-	    constructor(message: string);
+declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+	/**
+	 * A Cube primitive prefab.
+	 */
+	class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset {
+	    private _width;
+	    private _height;
+	    private _depth;
+	    private _tile6;
+	    private _segmentsW;
+	    private _segmentsH;
+	    private _segmentsD;
+	    /**
+	     * Creates a new Cube object.
+	     * @param width The size of the cube along its X-axis.
+	     * @param height The size of the cube along its Y-axis.
+	     * @param depth The size of the cube along its Z-axis.
+	     * @param segmentsW The number of segments that make up the cube along the X-axis.
+	     * @param segmentsH The number of segments that make up the cube along the Y-axis.
+	     * @param segmentsD The number of segments that make up the cube along the Z-axis.
+	     * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
+	     */
+	    constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
+	    /**
+	     * The size of the cube along its X-axis.
+	     */
+	    width: number;
+	    /**
+	     * The size of the cube along its Y-axis.
+	     */
+	    height: number;
+	    /**
+	     * The size of the cube along its Z-axis.
+	     */
+	    depth: number;
+	    /**
+	     * The type of uv mapping to use. When false, the entire image is mapped on each face.
+	     * When true, a texture will be subdivided in a 3x2 grid, each used for a single face.
+	     * Reading the tiles from left to right, top to bottom they represent the faces of the
+	     * cube in the following order: bottom, top, back, left, front, right. This creates
+	     * several shared edges (between the top, front, left and right faces) which simplifies
+	     * texture painting.
+	     */
+	    tile6: boolean;
+	    /**
+	     * The number of segments that make up the cube along the X-axis. Defaults to 1.
+	     */
+	    segmentsW: number;
+	    /**
+	     * The number of segments that make up the cube along the Y-axis. Defaults to 1.
+	     */
+	    segmentsH: number;
+	    /**
+	     * The number of segments that make up the cube along the Z-axis. Defaults to 1.
+	     */
+	    segmentsD: number;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
 	}
-	export = CastError;
+	export = PrimitiveCubePrefab;
 	
 }
 
@@ -10084,23 +10176,17 @@ declare module "awayjs-display/lib/sort/RenderableMergeSort" {
 	
 }
 
-declare module "awayjs-display/lib/partition/CameraNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+declare module "awayjs-display/lib/sort/RenderableNullSort" {
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
 	/**
-	 * @class away.partition.CameraNode
+	 * @class away.sort.NullSort
 	 */
-	class CameraNode extends EntityNode {
-	    constructor(pool: EntityNodePool, camera: Camera, partition: PartitionBase);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
+	class RenderableNullSort implements IEntitySorter {
+	    sortBlendedRenderables(head: IRenderable): IRenderable;
+	    sortOpaqueRenderables(head: IRenderable): IRenderable;
 	}
-	export = CameraNode;
+	export = RenderableNullSort;
 	
 }
 
@@ -10258,78 +10344,6 @@ declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	
 }
 
-declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
-	/**
-	 * A Cube primitive prefab.
-	 */
-	class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset {
-	    private _width;
-	    private _height;
-	    private _depth;
-	    private _tile6;
-	    private _segmentsW;
-	    private _segmentsH;
-	    private _segmentsD;
-	    /**
-	     * Creates a new Cube object.
-	     * @param width The size of the cube along its X-axis.
-	     * @param height The size of the cube along its Y-axis.
-	     * @param depth The size of the cube along its Z-axis.
-	     * @param segmentsW The number of segments that make up the cube along the X-axis.
-	     * @param segmentsH The number of segments that make up the cube along the Y-axis.
-	     * @param segmentsD The number of segments that make up the cube along the Z-axis.
-	     * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
-	     */
-	    constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
-	    /**
-	     * The size of the cube along its X-axis.
-	     */
-	    width: number;
-	    /**
-	     * The size of the cube along its Y-axis.
-	     */
-	    height: number;
-	    /**
-	     * The size of the cube along its Z-axis.
-	     */
-	    depth: number;
-	    /**
-	     * The type of uv mapping to use. When false, the entire image is mapped on each face.
-	     * When true, a texture will be subdivided in a 3x2 grid, each used for a single face.
-	     * Reading the tiles from left to right, top to bottom they represent the faces of the
-	     * cube in the following order: bottom, top, back, left, front, right. This creates
-	     * several shared edges (between the top, front, left and right faces) which simplifies
-	     * texture painting.
-	     */
-	    tile6: boolean;
-	    /**
-	     * The number of segments that make up the cube along the X-axis. Defaults to 1.
-	     */
-	    segmentsW: number;
-	    /**
-	     * The number of segments that make up the cube along the Y-axis. Defaults to 1.
-	     */
-	    segmentsH: number;
-	    /**
-	     * The number of segments that make up the cube along the Z-axis. Defaults to 1.
-	     */
-	    segmentsD: number;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
-	}
-	export = PrimitiveCubePrefab;
-	
-}
-
 declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
@@ -10376,6 +10390,39 @@ declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
 	}
 	export = TesselatedFontTable;
+	
+}
+
+declare module "awayjs-display/lib/text/TextFieldAutoSize" {
+	/**
+	 * The TextFieldAutoSize class is an enumeration of constant values used in
+	 * setting the <code>autoSize</code> property of the TextField class.
+	 */
+	class TextFieldAutoSize {
+	    /**
+	     * Specifies that the text is to be treated as center-justified text. Any
+	     * resizing of a single line of a text field is equally distributed to both
+	     * the right and left sides.
+	     */
+	    static CENTER: string;
+	    /**
+	     * Specifies that the text is to be treated as left-justified text, meaning
+	     * that the left side of the text field remains fixed and any resizing of a
+	     * single line is on the right side.
+	     */
+	    static LEFT: string;
+	    /**
+	     * Specifies that no resizing is to occur.
+	     */
+	    static NONE: string;
+	    /**
+	     * Specifies that the text is to be treated as right-justified text, meaning
+	     * that the right side of the text field remains fixed and any resizing of a
+	     * single line is on the left side.
+	     */
+	    static RIGHT: string;
+	}
+	export = TextFieldAutoSize;
 	
 }
 
@@ -10817,17 +10864,41 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	
 }
 
-declare module "awayjs-display/lib/sort/RenderableNullSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+declare module "awayjs-display/lib/textures/TextureBase" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import ITextureVO = require("awayjs-display/lib/pool/ITextureVO");
 	/**
-	 * @class away.sort.NullSort
+	 *
 	 */
-	class RenderableNullSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
+	class TextureBase extends AssetBase implements IAsset {
+	    private _textureVO;
+	    _width: number;
+	    _height: number;
+	    width: number;
+	    height: number;
+	    /**
+	     *
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    invalidateContent(): void;
+	    /**
+	     *
+	     * @private
+	     */
+	    invalidateSize(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    dispose(): void;
+	    _iAddTextureVO(textureVO: ITextureVO): ITextureVO;
+	    _iRemoveTextureVO(textureVO: ITextureVO): ITextureVO;
+	    _setSize(width: number, height: number): void;
 	}
-	export = RenderableNullSort;
+	export = TextureBase;
 	
 }
 
@@ -10840,6 +10911,89 @@ declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
 	    constructor();
 	}
 	export = CSSEntityCollector;
+	
+}
+
+declare module "awayjs-display/lib/traverse/CollectorBase" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Scene = require("awayjs-display/lib/containers/Scene");
+	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
+	import EntityListItemPool = require("awayjs-display/lib/pool/EntityListItemPool");
+	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	/**
+	 * @class away.traverse.CollectorBase
+	 */
+	class CollectorBase {
+	    scene: Scene;
+	    _pEntityHead: EntityListItem;
+	    _pEntityListItemPool: EntityListItemPool;
+	    _pCamera: Camera;
+	    private _customCullPlanes;
+	    private _cullPlanes;
+	    private _numCullPlanes;
+	    _pNumEntities: number;
+	    _pNumInteractiveEntities: number;
+	    isEntityCollector: boolean;
+	    constructor();
+	    /**
+	     *
+	     */
+	    camera: Camera;
+	    /**
+	     *
+	     */
+	    cullPlanes: Array<Plane3D>;
+	    /**
+	     *
+	     */
+	    entityHead: EntityListItem;
+	    /**
+	     *
+	     */
+	    numEntities: number;
+	    /**
+	     *
+	     */
+	    numInteractiveEntities: number;
+	    /**
+	     *
+	     */
+	    clear(): void;
+	    /**
+	     *
+	     * @param node
+	     * @returns {boolean}
+	     */
+	    enterNode(node: NodeBase): boolean;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyDirectionalLight(entity: IEntity): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyEntity(entity: IEntity): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyLightProbe(entity: IEntity): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyPointLight(entity: IEntity): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applySkybox(entity: IEntity): void;
+	}
+	export = CollectorBase;
 	
 }
 
@@ -10996,27 +11150,6 @@ declare module "awayjs-display/lib/utils/Cast" {
 	
 }
 
-declare module "awayjs-display/lib/vos/ISubGeometryVO" {
-	/**
-	 * ISubGeometryVO is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a texture
-	 *
-	 * @class away.pool.ISubGeometryVO
-	 */
-	interface ISubGeometryVO {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidate(): any;
-	}
-	export = ISubGeometryVO;
-	
-}
-
 declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Short2Attributes = require("awayjs-core/lib/attributes/Short2Attributes");
@@ -11050,157 +11183,24 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	
 }
 
-declare module "awayjs-display/lib/text/TextFieldAutoSize" {
+declare module "awayjs-display/lib/vos/ISubGeometryVO" {
 	/**
-	 * The TextFieldAutoSize class is an enumeration of constant values used in
-	 * setting the <code>autoSize</code> property of the TextField class.
-	 */
-	class TextFieldAutoSize {
-	    /**
-	     * Specifies that the text is to be treated as center-justified text. Any
-	     * resizing of a single line of a text field is equally distributed to both
-	     * the right and left sides.
-	     */
-	    static CENTER: string;
-	    /**
-	     * Specifies that the text is to be treated as left-justified text, meaning
-	     * that the left side of the text field remains fixed and any resizing of a
-	     * single line is on the right side.
-	     */
-	    static LEFT: string;
-	    /**
-	     * Specifies that no resizing is to occur.
-	     */
-	    static NONE: string;
-	    /**
-	     * Specifies that the text is to be treated as right-justified text, meaning
-	     * that the right side of the text field remains fixed and any resizing of a
-	     * single line is on the left side.
-	     */
-	    static RIGHT: string;
-	}
-	export = TextFieldAutoSize;
-	
-}
-
-declare module "awayjs-display/lib/textures/TextureBase" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import ITextureVO = require("awayjs-display/lib/pool/ITextureVO");
-	/**
+	 * ISubGeometryVO is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a texture
 	 *
+	 * @class away.pool.ISubGeometryVO
 	 */
-	class TextureBase extends AssetBase implements IAsset {
-	    private _textureVO;
-	    _width: number;
-	    _height: number;
-	    width: number;
-	    height: number;
+	interface ISubGeometryVO {
 	    /**
 	     *
 	     */
-	    constructor();
+	    dispose(): any;
 	    /**
 	     *
 	     */
-	    invalidateContent(): void;
-	    /**
-	     *
-	     * @private
-	     */
-	    invalidateSize(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    dispose(): void;
-	    _iAddTextureVO(textureVO: ITextureVO): ITextureVO;
-	    _iRemoveTextureVO(textureVO: ITextureVO): ITextureVO;
-	    _setSize(width: number, height: number): void;
+	    invalidate(): any;
 	}
-	export = TextureBase;
-	
-}
-
-declare module "awayjs-display/lib/traverse/CollectorBase" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
-	import EntityListItemPool = require("awayjs-display/lib/pool/EntityListItemPool");
-	import NodeBase = require("awayjs-display/lib/partition/NodeBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * @class away.traverse.CollectorBase
-	 */
-	class CollectorBase {
-	    scene: Scene;
-	    _pEntityHead: EntityListItem;
-	    _pEntityListItemPool: EntityListItemPool;
-	    _pCamera: Camera;
-	    private _customCullPlanes;
-	    private _cullPlanes;
-	    private _numCullPlanes;
-	    _pNumEntities: number;
-	    _pNumInteractiveEntities: number;
-	    isEntityCollector: boolean;
-	    constructor();
-	    /**
-	     *
-	     */
-	    camera: Camera;
-	    /**
-	     *
-	     */
-	    cullPlanes: Array<Plane3D>;
-	    /**
-	     *
-	     */
-	    entityHead: EntityListItem;
-	    /**
-	     *
-	     */
-	    numEntities: number;
-	    /**
-	     *
-	     */
-	    numInteractiveEntities: number;
-	    /**
-	     *
-	     */
-	    clear(): void;
-	    /**
-	     *
-	     * @param node
-	     * @returns {boolean}
-	     */
-	    enterNode(node: NodeBase): boolean;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyDirectionalLight(entity: IEntity): void;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyEntity(entity: IEntity): void;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyLightProbe(entity: IEntity): void;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyPointLight(entity: IEntity): void;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applySkybox(entity: IEntity): void;
-	}
-	export = CollectorBase;
+	export = ISubGeometryVO;
 	
 }
 

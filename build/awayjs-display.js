@@ -21059,6 +21059,8 @@ var SubGeometryUtils = (function () {
                 id0 = nodes[k];
                 id1 = nodes[k + 1];
                 id2 = nodes[k + 2];
+                if (id2 == index)
+                    continue;
                 ax = positions[id0 * posDim];
                 ay = positions[id0 * posDim + 1];
                 bx = positions[id1 * posDim];
@@ -21120,6 +21122,8 @@ var SubGeometryUtils = (function () {
             id0 = k + 2;
             id1 = k + 1;
             id2 = k + 0;
+            if (id2 == index)
+                continue;
             ax = positions[id0 * posDim];
             ay = positions[id0 * posDim + 1];
             bx = positions[id1 * posDim];
