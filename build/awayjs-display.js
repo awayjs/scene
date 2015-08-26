@@ -102,6 +102,7 @@ var CurveSubGeometry = (function (_super) {
         this._scaleV = 1;
         //used for hittesting geometry
         this.cells = new Array();
+        this.lastCollisionIndex = -1;
         this._positions = this._concatenatedBuffer ? this._concatenatedBuffer.getView(0) || new Float3Attributes(this._concatenatedBuffer) : new Float3Attributes();
         this._curves = this._concatenatedBuffer ? this._concatenatedBuffer.getView(1) || new Float2Attributes(this._concatenatedBuffer) : new Float2Attributes();
         this._numVertices = this._positions.count;
@@ -20943,6 +20944,73 @@ var SubGeometryUtils = (function () {
         var by;
         var cx;
         var cy;
+        var index = curveSubGeometry.lastCollisionIndex;
+        if (index != -1 && index < count) {
+            precheck: {
+                id0 = index + 2;
+                id1 = index + 1;
+                id2 = index + 0;
+                ax = positions[id0 * posDim];
+                ay = positions[id0 * posDim + 1];
+                bx = positions[id1 * posDim];
+                by = positions[id1 * posDim + 1];
+                cx = positions[id2 * posDim];
+                cy = positions[id2 * posDim + 1];
+                //console.log(ax, ay, bx, by, cx, cy);
+                //from a to p
+                var dx = ax - x;
+                var dy = ay - y;
+                //edge normal (a-b)
+                var nx = by - ay;
+                var ny = -(bx - ax);
+                //console.log(ax,ay,bx,by,cx,cy);
+                var dot = (dx * nx) + (dy * ny);
+                if (dot > 0)
+                    break precheck;
+                dx = bx - x;
+                dy = by - y;
+                nx = cy - by;
+                ny = -(cx - bx);
+                dot = (dx * nx) + (dy * ny);
+                if (dot > 0)
+                    break precheck;
+                dx = cx - x;
+                dy = cy - y;
+                nx = ay - cy;
+                ny = -(ax - cx);
+                dot = (dx * nx) + (dy * ny);
+                if (dot > 0)
+                    break precheck;
+                var curvex = curves[id0 * curveDim];
+                //check if not solid
+                if (curvex != 2) {
+                    var v0x = bx - ax;
+                    var v0y = by - ay;
+                    var v1x = cx - ax;
+                    var v1y = cy - ay;
+                    var v2x = x - ax;
+                    var v2y = y - ay;
+                    var den = v0x * v1y - v1x * v0y;
+                    var v = (v2x * v1y - v1x * v2y) / den;
+                    var w = (v0x * v2y - v2x * v0y) / den;
+                    //var u:number = 1 - v - w;	//commented out as inlined away
+                    //here be dragons
+                    var uu = 0.5 * v + w;
+                    var vv = w;
+                    var d = uu * uu - vv;
+                    var az = positions[id0 * posDim + 2];
+                    if (d > 0 && az == -1) {
+                        break precheck;
+                        ;
+                    }
+                    else if (d < 0 && az == 1) {
+                        break precheck;
+                        ;
+                    }
+                }
+                return true;
+            }
+        }
         //hard coded min vertex count to bother using a grid for
         if (count > 150) {
             var cells = curveSubGeometry.cells;
@@ -21043,6 +21111,7 @@ var SubGeometryUtils = (function () {
                     else if (d < 0 && az == 1)
                         continue;
                 }
+                curveSubGeometry.lastCollisionIndex = id2;
                 return true;
             }
             return false;
@@ -21107,6 +21176,7 @@ var SubGeometryUtils = (function () {
                     continue;
                 }
             }
+            curveSubGeometry.lastCollisionIndex = id2;
             return true;
         }
         return false;
