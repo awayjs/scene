@@ -609,6 +609,95 @@ class SubGeometryUtils
 		var cx:number;
 		var cy:number;
 
+		var index:number = curveSubGeometry.lastCollisionIndex;
+		if(index != -1 && index < count)
+		{
+			precheck:
+			{
+				id0 = index + 2;
+				id1 = index + 1;
+				id2 = index + 0;
+
+				ax = positions[id0 * posDim];
+				ay = positions[id0 * posDim + 1];
+				bx = positions[id1 * posDim];
+				by = positions[id1 * posDim + 1];
+				cx = positions[id2 * posDim];
+				cy = positions[id2 * posDim + 1];
+
+				//console.log(ax, ay, bx, by, cx, cy);
+
+				//from a to p
+				var dx:number = ax - x;
+				var dy:number = ay - y;
+
+				//edge normal (a-b)
+				var nx:number = by - ay;
+				var ny:number = -(bx - ax);
+
+				//console.log(ax,ay,bx,by,cx,cy);
+
+				var dot:number = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					break precheck;
+
+				dx = bx - x;
+				dy = by - y;
+				nx = cy - by;
+				ny = -(cx - bx);
+
+				dot = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					break precheck;
+
+				dx = cx - x;
+				dy = cy - y;
+				nx = ay - cy;
+				ny = -(ax - cx);
+
+				dot = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					break precheck;
+
+				var curvex:number = curves[id0 * curveDim];
+
+				//check if not solid
+				if (curvex != 2) {
+
+					var v0x:number = bx - ax;
+					var v0y:number = by - ay;
+					var v1x:number = cx - ax;
+					var v1y:number = cy - ay;
+					var v2x:number = x - ax;
+					var v2y:number = y - ay;
+
+					var den:number = v0x * v1y - v1x * v0y;
+					var v:number = (v2x * v1y - v1x * v2y) / den;
+					var w:number = (v0x * v2y - v2x * v0y) / den;
+					//var u:number = 1 - v - w;	//commented out as inlined away
+
+					//here be dragons
+					var uu:number = 0.5 * v + w;
+					var vv:number = w;
+
+					var d:number = uu * uu - vv;
+
+					var az:number = positions[id0 * posDim + 2];
+					if (d > 0 && az == -1) {
+						break precheck;;
+					} else if (d < 0 && az == 1) {
+						break precheck;;
+					}
+				}
+				return true;
+			}
+		}
+
+
+
 		//hard coded min vertex count to bother using a grid for
 		if (count > 150) {
 			var cells:Array<Array<number>> = curveSubGeometry.cells;
@@ -741,6 +830,7 @@ class SubGeometryUtils
 					else if (d < 0 && az == 1)
 						continue;
 				}
+				curveSubGeometry.lastCollisionIndex = id2;
 				return true;
 			}
 			return false;
@@ -826,6 +916,7 @@ class SubGeometryUtils
 					continue;
 				}
 			}
+			curveSubGeometry.lastCollisionIndex = id2;
 			return true;
 		}
 		return false;

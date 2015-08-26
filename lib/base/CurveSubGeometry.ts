@@ -32,7 +32,7 @@ class CurveSubGeometry extends SubGeometryBase
 
 	//used for hittesting geometry
 	public cells:Array<Array<number>> = new Array<Array<number>>();
-
+	public lastCollisionIndex:number = -1;
 	public divisions:number;
 
 	public get assetType():string
