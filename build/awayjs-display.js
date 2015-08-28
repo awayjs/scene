@@ -192,8 +192,14 @@ var CurveSubGeometry = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    CurveSubGeometry.prototype.getBoundingPositions = function () {
-        return this._positions.get(this._numVertices);
+    CurveSubGeometry.prototype.getBoxBounds = function (target) {
+        if (target === void 0) { target = null; }
+        return SubGeometryUtils.getCurveGeometryBoxBounds(this._positions, target, this._numVertices);
+    };
+    CurveSubGeometry.prototype.getSphereBounds = function (center, target) {
+        if (target === void 0) { target = null; }
+        //TODO bounding calculations for triangles
+        return target;
     };
     CurveSubGeometry.prototype.setPositions = function (values, offset) {
         if (offset === void 0) { offset = 0; }
@@ -3003,8 +3009,15 @@ var LineSubGeometry = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    LineSubGeometry.prototype.getBoundingPositions = function () {
-        return this._positions.get(this._numVertices);
+    LineSubGeometry.prototype.getBoxBounds = function (target) {
+        if (target === void 0) { target = null; }
+        //TODO bounding calculations for lines
+        return target;
+    };
+    LineSubGeometry.prototype.getSphereBounds = function (center, target) {
+        if (target === void 0) { target = null; }
+        //TODO bounding calculations for lines
+        return target;
     };
     LineSubGeometry.prototype.setPositions = function (values, offset) {
         if (offset === void 0) { offset = 0; }
@@ -3625,7 +3638,12 @@ var SubGeometryBase = (function (_super) {
         if (scaleU === void 0) { scaleU = 1; }
         if (scaleV === void 0) { scaleV = 1; }
     };
-    SubGeometryBase.prototype.getBoundingPositions = function () {
+    SubGeometryBase.prototype.getBoxBounds = function (target) {
+        if (target === void 0) { target = null; }
+        throw new AbstractMethodError();
+    };
+    SubGeometryBase.prototype.getSphereBounds = function (center, target) {
+        if (target === void 0) { target = null; }
         throw new AbstractMethodError();
     };
     SubGeometryBase.prototype.hitTestPoint = function (x, y, z, box) {
@@ -4754,8 +4772,13 @@ var TriangleSubGeometry = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    TriangleSubGeometry.prototype.getBoundingPositions = function () {
-        return this._positions.get(this._numVertices);
+    TriangleSubGeometry.prototype.getBoxBounds = function (target) {
+        if (target === void 0) { target = null; }
+        return SubGeometryUtils.getTriangleGeometryBoxBounds(this._positions, target, this._numVertices);
+    };
+    TriangleSubGeometry.prototype.getSphereBounds = function (center, target) {
+        if (target === void 0) { target = null; }
+        return SubGeometryUtils.getTriangleGeometrySphereBounds(this._positions, center, target, this._numVertices);
     };
     TriangleSubGeometry.prototype.hitTestPoint = function (x, y, z) {
         return true;
@@ -5948,39 +5971,27 @@ var DisplayObjectContainer = (function (_super) {
         _super.prototype._pUpdateBoxBounds.call(this);
         var min;
         var max;
-        var minX, minY, minZ;
-        var maxX, maxY, maxZ;
+        var boxMin;
+        var boxMax;
         var box;
         var numChildren = this._children.length;
         if (numChildren > 0) {
             for (var i = 0; i < numChildren; ++i) {
                 box = this._children[i].getBox(this);
                 if (i == 0) {
-                    maxX = box.width + (minX = box.x);
-                    maxY = box.height + (minY = box.y);
-                    maxZ = box.depth + (minZ = box.z);
+                    min = SIMD.Float32x4(box.x, box.y, box.z, 0.0);
+                    max = SIMD.Float32x4.add(SIMD.Float32x4(box.width, box.height, box.depth, 0.0), min);
                 }
                 else {
-                    max = box.width + (min = box.x);
-                    if (min < minX)
-                        minX = min;
-                    if (max > maxX)
-                        maxX = max;
-                    max = box.height + (min = box.y);
-                    if (min < minY)
-                        minY = min;
-                    if (max > maxY)
-                        maxY = max;
-                    max = box.depth + (min = box.z);
-                    if (min < minZ)
-                        minZ = min;
-                    if (max > maxZ)
-                        maxZ = max;
+                    boxMin = SIMD.Float32x4(box.x, box.y, box.z, 0.0);
+                    boxMax = SIMD.Float32x4.add(SIMD.Float32x4(box.width, box.height, box.depth, 0.0), boxMin);
+                    min = SIMD.Float32x4.minNum(boxMin, min);
+                    max = SIMD.Float32x4.maxNum(boxMax, max);
                 }
             }
-            this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
-            this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
-            this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
+            this._pBoxBounds.width = SIMD.Float32x4.extractLane(max, 0) - (this._pBoxBounds.x = SIMD.Float32x4.extractLane(min, 0));
+            this._pBoxBounds.height = SIMD.Float32x4.extractLane(max, 1) - (this._pBoxBounds.y = SIMD.Float32x4.extractLane(min, 1));
+            this._pBoxBounds.height = SIMD.Float32x4.extractLane(max, 2) - (this._pBoxBounds.y = SIMD.Float32x4.extractLane(min, 2));
         }
         else {
             this._pBoxBounds.setEmpty();
@@ -10040,8 +10051,8 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var Point = require("awayjs-core/lib/geom/Point");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var Geometry = require("awayjs-display/lib/base/Geometry");
-var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var SubMeshPool = require("awayjs-display/lib/pool/SubMeshPool");
@@ -10299,104 +10310,23 @@ var Mesh = (function (_super) {
      */
     Mesh.prototype._pUpdateBoxBounds = function () {
         _super.prototype._pUpdateBoxBounds.call(this);
-        var i, j, p, len;
         var subGeoms = this._geometry.subGeometries;
-        var subGeom;
-        var boundingPositions;
-        var numSubGeoms = subGeoms.length;
-        var minX, minY, minZ;
-        var maxX, maxY, maxZ;
-        var tmp_maxZ, tmp_minZ;
-        if (numSubGeoms > 0) {
-            i = 0;
-            subGeom = subGeoms[0];
-            boundingPositions = subGeom.getBoundingPositions();
-            if (this.numChildren) {
-                maxX = this._pBoxBounds.width + (minX = this._pBoxBounds.x);
-                maxY = this._pBoxBounds.height + (minY = this._pBoxBounds.y);
-                maxZ = this._pBoxBounds.depth + (minZ = this._pBoxBounds.z);
-                tmp_maxZ = this._pBoxBounds.depth + (tmp_minZ = this._pBoxBounds.z);
-            }
-            else {
-                minX = maxX = boundingPositions[i];
-                minY = maxY = boundingPositions[i + 1];
-                if (subGeom.isAsset(CurveSubGeometry)) {
-                    minZ = maxZ = 0;
-                    tmp_minZ = tmp_maxZ = 0;
-                }
-                else {
-                    tmp_minZ = tmp_maxZ = boundingPositions[i + 2];
-                }
-            }
-            for (j = 0; j < numSubGeoms; j++) {
-                subGeom = subGeoms[j];
-                boundingPositions = subGeom.getBoundingPositions();
-                len = boundingPositions.length;
-                for (i = 0; i < len; i += 3) {
-                    p = boundingPositions[i];
-                    if (p < minX)
-                        minX = p;
-                    else if (p > maxX)
-                        maxX = p;
-                    p = boundingPositions[i + 1];
-                    if (p < minY)
-                        minY = p;
-                    else if (p > maxY)
-                        maxY = p;
-                    p = boundingPositions[i + 2];
-                    if (p < tmp_minZ)
-                        tmp_minZ = p;
-                    else if (p > tmp_maxZ)
-                        tmp_maxZ = p;
-                }
-                if (!(subGeom.isAsset(CurveSubGeometry))) {
-                    minZ = tmp_minZ;
-                    maxZ = tmp_maxZ;
-                }
-            }
-            this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
-            this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
-            this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
-        }
+        var len = subGeoms.length;
+        for (var i = 0; i < len; i++)
+            this._pBoxBounds = subGeoms[i].getBoxBounds(this._pBoxBounds);
     };
     Mesh.prototype._pUpdateSphereBounds = function () {
         _super.prototype._pUpdateSphereBounds.call(this);
         var box = this.getBox();
-        var centerX = box.x + box.width / 2;
-        var centerY = box.y + box.height / 2;
-        var centerZ = box.z + box.depth / 2;
-        var i, j, p, len;
+        if (!this._center)
+            this._center = new Vector3D();
+        this._center.x = box.x + box.width / 2;
+        this._center.y = box.y + box.height / 2;
+        this._center.z = box.z + box.depth / 2;
         var subGeoms = this._geometry.subGeometries;
-        var subGeom;
-        var boundingPositions;
-        var numSubGeoms = subGeoms.length;
-        var maxRadiusSquared = 0;
-        var radiusSquared;
-        var distanceX;
-        var distanceY;
-        var distanceZ;
-        if (numSubGeoms > 0) {
-            i = 0;
-            subGeom = subGeoms[0];
-            boundingPositions = subGeom.getBoundingPositions();
-            for (j = 0; j < numSubGeoms; j++) {
-                subGeom = subGeoms[j];
-                boundingPositions = subGeom.getBoundingPositions();
-                len = boundingPositions.length;
-                for (i = 0; i < len; i += 3) {
-                    distanceX = boundingPositions[i] - centerX;
-                    distanceY = boundingPositions[i + 1] - centerY;
-                    distanceZ = boundingPositions[i + 2] - centerZ;
-                    radiusSquared = distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ;
-                    if (maxRadiusSquared < radiusSquared)
-                        maxRadiusSquared = radiusSquared;
-                }
-            }
-        }
-        this._pSphereBounds.x = centerX;
-        this._pSphereBounds.y = centerY;
-        this._pSphereBounds.z = centerZ;
-        this._pSphereBounds.radius = Math.sqrt(maxRadiusSquared);
+        var len = subGeoms.length;
+        for (var i = 0; i < len; i++)
+            this._pSphereBounds = subGeoms[i].getSphereBounds(this._center, this._pSphereBounds);
     };
     /**
      * //TODO
@@ -10519,7 +10449,7 @@ var Mesh = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool","awayjs-display/lib/utils/SubGeometryUtils":"awayjs-display/lib/utils/SubGeometryUtils"}],"awayjs-display/lib/entities/MovieClip":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool","awayjs-display/lib/utils/SubGeometryUtils":"awayjs-display/lib/utils/SubGeometryUtils"}],"awayjs-display/lib/entities/MovieClip":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -20479,6 +20409,8 @@ var Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 var Float4Attributes = require("awayjs-core/lib/attributes/Float4Attributes");
 var Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var Box = require("awayjs-core/lib/geom/Box");
+var Sphere = require("awayjs-core/lib/geom/Sphere");
 var SubGeometryUtils = (function () {
     function SubGeometryUtils() {
     }
@@ -21185,6 +21117,70 @@ var SubGeometryUtils = (function () {
         }
         return false;
     };
+    SubGeometryUtils.getCurveGeometryBoxBounds = function (positionAttributes, output, count, offset) {
+        if (offset === void 0) { offset = 0; }
+        var positions = positionAttributes.get(count, offset);
+        var posDim = positionAttributes.dimensions;
+        var posDim2 = posDim * 2;
+        if (output == null)
+            output = new Box();
+        var p;
+        var min = SIMD.Float32x4(output.x, output.y, output.x, output.y);
+        var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.width, output.height), min);
+        var len = positions.length;
+        for (var i = 0; i < len; i += posDim2) {
+            p = (i + posDim == len) ? SIMD.Float32x4(positions[i], positions[i + 1], 0.0, 0.0) : SIMD.Float32x4(positions[i], positions[i + 1], positions[i + posDim], positions[i + posDim + 1]);
+            min = SIMD.Float32x4.minNum(p, min);
+            max = SIMD.Float32x4.maxNum(p, max);
+        }
+        output.width = Math.max(SIMD.Float32x4.extractLane(max, 0), SIMD.Float32x4.extractLane(max, 2)) - (output.x = Math.min(SIMD.Float32x4.extractLane(min, 0), SIMD.Float32x4.extractLane(min, 2)));
+        output.height = Math.max(SIMD.Float32x4.extractLane(max, 1), SIMD.Float32x4.extractLane(max, 3)) - (output.y = Math.min(SIMD.Float32x4.extractLane(min, 1), SIMD.Float32x4.extractLane(min, 3)));
+        return output;
+    };
+    SubGeometryUtils.getTriangleGeometryBoxBounds = function (positionAttributes, output, count, offset) {
+        if (offset === void 0) { offset = 0; }
+        var positions = positionAttributes.get(count, offset);
+        var posDim = positionAttributes.dimensions;
+        if (output == null)
+            output = new Box();
+        var p;
+        var min = SIMD.Float32x4(output.x, output.y, output.z, 0.0);
+        var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.depth, 0.0), min);
+        var len = positions.length;
+        for (var i = 0; i < len; i += posDim) {
+            p = SIMD.Float32x4(positions[i], positions[i + 1], positions[i + 2], 0.0);
+            min = SIMD.Float32x4.minNum(p, min);
+            max = SIMD.Float32x4.maxNum(p, max);
+        }
+        output.width = SIMD.Float32x4.extractLane(max, 0) - (output.x = SIMD.Float32x4.extractLane(min, 0));
+        output.height = SIMD.Float32x4.extractLane(max, 1) - (output.y = SIMD.Float32x4.extractLane(min, 1));
+        output.depth = SIMD.Float32x4.extractLane(max, 2) - (output.z = SIMD.Float32x4.extractLane(min, 2));
+        return output;
+    };
+    SubGeometryUtils.getTriangleGeometrySphereBounds = function (positionAttributes, center, output, count, offset) {
+        if (offset === void 0) { offset = 0; }
+        var positions = positionAttributes.get(count, offset);
+        var posDim = positionAttributes.dimensions;
+        if (output == null)
+            output = new Sphere();
+        var maxRadiusSquared = 0;
+        var radiusSquared;
+        var c = SIMD.Float32x4(center.x, center.y, center.z, 0.0);
+        var d;
+        var len = positions.length;
+        for (var i = 0; i < len; i += posDim) {
+            d = SIMD.Float32x4.sub(SIMD.Float32x4(positions[i], positions[i + 1], positions[i + 2], 0.0), c);
+            d = SIMD.Float32x4.mul(d, d);
+            radiusSquared = SIMD.Float32x4.extractLane(d, 0) + SIMD.Float32x4.extractLane(d, 1) + SIMD.Float32x4.extractLane(d, 2);
+            if (maxRadiusSquared < radiusSquared)
+                maxRadiusSquared = radiusSquared;
+        }
+        output.x = center.x;
+        output.y = center.y;
+        output.z = center.z;
+        output.radius = Math.sqrt(maxRadiusSquared);
+        return output;
+    };
     SubGeometryUtils.LIMIT_VERTS = 0xffff;
     SubGeometryUtils.LIMIT_INDICES = 0xffffff;
     SubGeometryUtils._indexSwap = new Array();
@@ -21192,7 +21188,7 @@ var SubGeometryUtils = (function () {
 })();
 module.exports = SubGeometryUtils;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/vos/ISubGeometryVO":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/vos/ISubGeometryVO":[function(require,module,exports){
 
 },{}]},{},[])
 
