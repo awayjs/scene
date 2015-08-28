@@ -3,6 +3,9 @@ import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
 import Byte4Attributes				= require("awayjs-core/lib/attributes/Byte4Attributes");
 import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float1Attributes				= require("awayjs-core/lib/attributes/Float1Attributes");
+import Box							= require("awayjs-core/lib/geom/Box");
+import Sphere						= require("awayjs-core/lib/geom/Sphere");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -77,9 +80,16 @@ class LineSubGeometry extends SubGeometryBase
 		this._positions = new AttributesView(Float32Array, 6, concatenatedBuffer);
 	}
 
-	public getBoundingPositions():Float32Array
+	public getBoxBounds(target:Box = null):Box
 	{
-		return <Float32Array> this._positions.get(this._numVertices);
+		//TODO bounding calculations for lines
+		return target;
+	}
+
+	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
+	{
+		//TODO bounding calculations for lines
+		return target;
 	}
 
 	/**

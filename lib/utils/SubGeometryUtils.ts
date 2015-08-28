@@ -9,7 +9,10 @@ import Byte4Attributes			= require("awayjs-core/lib/attributes/Byte4Attributes")
 import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
 import Box							= require("awayjs-core/lib/geom/Box");
+import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+
+declare var SIMD:any;
 
 class SubGeometryUtils
 {
@@ -925,6 +928,91 @@ class SubGeometryUtils
 		}
 		return false;
 	}
+
+	public static getCurveGeometryBoxBounds(positionAttributes:Float3Attributes, output:Box, count:number, offset:number = 0):Box
+	{
+		var positions:Float32Array = positionAttributes.get(count, offset);
+		var posDim:number = positionAttributes.dimensions;
+		var posDim2:number = posDim*2;
+
+		if (output == null)
+			output = new Box();
+
+		var p;
+		var min = SIMD.Float32x4(output.x, output.y, output.x, output.y);
+		var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.width, output.height), min);
+
+		var len:number = positions.length;
+		for (var i:number = 0; i < len; i += posDim2) { //double-up the 2d calculations
+			p = (i + posDim == len)? SIMD.Float32x4(positions[i], positions[i+1], 0.0, 0.0) : SIMD.Float32x4(positions[i], positions[i+1], positions[i+posDim], positions[i+posDim+1]);
+			min = SIMD.Float32x4.minNum(p, min);
+			max = SIMD.Float32x4.maxNum(p, max);
+		}
+
+		output.width = Math.max(SIMD.Float32x4.extractLane(max, 0),SIMD.Float32x4.extractLane(max, 2)) - (output.x = Math.min(SIMD.Float32x4.extractLane(min, 0), SIMD.Float32x4.extractLane(min, 2)));
+		output.height = Math.max(SIMD.Float32x4.extractLane(max, 1), SIMD.Float32x4.extractLane(max, 3)) - (output.y = Math.min(SIMD.Float32x4.extractLane(min, 1), SIMD.Float32x4.extractLane(min, 3)));
+
+		return output;
+	}
+
+
+	public static getTriangleGeometryBoxBounds(positionAttributes:Float3Attributes, output:Box, count:number, offset:number = 0):Box
+	{
+		var positions:Float32Array = positionAttributes.get(count, offset);
+		var posDim:number = positionAttributes.dimensions;
+
+		if (output == null)
+			output = new Box();
+
+		var p;
+		var min = SIMD.Float32x4(output.x, output.y, output.z, 0.0);
+		var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.depth, 0.0), min);
+
+		var len:number = positions.length;
+		for (var i:number = 0; i < len; i += posDim) {
+			p = SIMD.Float32x4(positions[i], positions[i+1], positions[i+2], 0.0);
+			min = SIMD.Float32x4.minNum(p, min);
+			max = SIMD.Float32x4.maxNum(p, max);
+		}
+
+		output.width = SIMD.Float32x4.extractLane(max, 0) - (output.x = SIMD.Float32x4.extractLane(min, 0));
+		output.height = SIMD.Float32x4.extractLane(max, 1) - (output.y = SIMD.Float32x4.extractLane(min, 1));
+		output.depth = SIMD.Float32x4.extractLane(max, 2) - (output.z = SIMD.Float32x4.extractLane(min, 2));
+
+		return output;
+	}
+
+	public static getTriangleGeometrySphereBounds(positionAttributes:Float3Attributes, center:Vector3D, output:Sphere, count:number, offset:number = 0):Sphere
+	{
+		var positions:Float32Array = positionAttributes.get(count, offset);
+		var posDim:number = positionAttributes.dimensions;
+
+		if (output == null)
+			output = new Sphere();
+
+		var maxRadiusSquared:number = 0;
+		var radiusSquared:number;
+		var c = SIMD.Float32x4(center.x, center.y, center.z, 0.0);
+		var d;
+
+		var len:number = positions.length;
+		for (var i:number = 0; i < len; i += posDim) {
+			d = SIMD.Float32x4.sub(SIMD.Float32x4(positions[i], positions[i+1], positions[i+2], 0.0), c);
+			d = SIMD.Float32x4.mul(d, d);
+			radiusSquared = SIMD.Float32x4.extractLane(d, 0)  + SIMD.Float32x4.extractLane(d, 1) + SIMD.Float32x4.extractLane(d, 2);
+
+			if (maxRadiusSquared < radiusSquared)
+				maxRadiusSquared = radiusSquared;
+		}
+
+		output.x = center.x;
+		output.y = center.y;
+		output.z = center.z;
+		output.radius = Math.sqrt(maxRadiusSquared);
+
+		return output;
+	}
+
 }
 
 export = SubGeometryUtils;

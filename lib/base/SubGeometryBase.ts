@@ -4,7 +4,9 @@ import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attribute
 import Short3Attributes				= require("awayjs-core/lib/attributes/Short3Attributes");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Box							= require("awayjs-core/lib/geom/Box");
+import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
@@ -172,7 +174,12 @@ class SubGeometryBase extends AssetBase
 
 	}
 
-	public getBoundingPositions():Float32Array
+	public getBoxBounds(target:Box = null):Box
+	{
+		throw new AbstractMethodError();
+	}
+
+	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
 	{
 		throw new AbstractMethodError();
 	}

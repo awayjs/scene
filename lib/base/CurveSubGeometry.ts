@@ -3,7 +3,9 @@ import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attribute
 import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
 import Short3Attributes				= require("awayjs-core/lib/attributes/Short3Attributes");
 import Box							= require("awayjs-core/lib/geom/Box");
+import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -125,9 +127,15 @@ class CurveSubGeometry extends SubGeometryBase
 		this._numVertices = this._positions.count;
 	}
 
-	public getBoundingPositions():Float32Array
+	public getBoxBounds(target:Box = null):Box
 	{
-		return this._positions.get(this._numVertices);
+		return SubGeometryUtils.getCurveGeometryBoxBounds(this._positions, target, this._numVertices);
+	}
+
+	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
+	{
+		//TODO bounding calculations for triangles
+		return target;
 	}
 
 	/**

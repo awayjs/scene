@@ -2,6 +2,7 @@
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Point						= require("awayjs-core/lib/geom/Point");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -18,6 +19,8 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils");
 
+declare var SIMD:any;
+
 /**
  * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
@@ -29,6 +32,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 	private _uvTransform:UVTransform;
 
+	private _center:Vector3D;
 	private _subMeshes:Array<ISubMesh>;
 	private _geometry:Geometry;
 	private _material:MaterialBase;
@@ -326,73 +330,10 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	{
 		super._pUpdateBoxBounds();
 
-		var i:number, j:number, p:number, len:number;
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
-		var subGeom:SubGeometryBase;
-		var boundingPositions:Float32Array;
-		var numSubGeoms:number = subGeoms.length;
-		var minX:number, minY:number, minZ:number;
-		var maxX:number, maxY:number, maxZ:number;
-		var tmp_maxZ:number, tmp_minZ:number;
-
-		if (numSubGeoms > 0) {
-			i = 0;
-			subGeom = subGeoms[0];
-			boundingPositions = subGeom.getBoundingPositions();
-
-			if (this.numChildren) {
-				maxX = this._pBoxBounds.width + (minX = this._pBoxBounds.x);
-				maxY = this._pBoxBounds.height + (minY = this._pBoxBounds.y);
-				maxZ = this._pBoxBounds.depth + (minZ = this._pBoxBounds.z);
-				tmp_maxZ = this._pBoxBounds.depth + (tmp_minZ = this._pBoxBounds.z);
-			} else {
-				minX = maxX = boundingPositions[i];
-				minY = maxY = boundingPositions[i + 1];
-				if(subGeom.isAsset(CurveSubGeometry)){
-					minZ = maxZ = 0;
-					tmp_minZ = tmp_maxZ = 0;
-				}
-				else{
-					tmp_minZ = tmp_maxZ = boundingPositions[i + 2];
-				}
-			}
-
-			for (j = 0; j < numSubGeoms; j++) {
-				subGeom = subGeoms[j];
-				boundingPositions = subGeom.getBoundingPositions();
-				len = boundingPositions.length;
-				for (i = 0; i < len; i+=3) {
-					p = boundingPositions[i];
-					if (p < minX)
-						minX = p;
-					else if (p > maxX)
-						maxX = p;
-
-					p = boundingPositions[i + 1];
-
-					if (p < minY)
-						minY = p;
-					else if (p > maxY)
-						maxY = p;
-
-					p = boundingPositions[i + 2];
-
-					if (p < tmp_minZ)
-						tmp_minZ = p;
-					else if (p > tmp_maxZ)
-						tmp_maxZ = p;
-				}
-				if(!(subGeom.isAsset(CurveSubGeometry))){
-					minZ = tmp_minZ;
-					maxZ = tmp_maxZ;
-				}
-
-			}
-
-			this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
-			this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
-			this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
-		}
+		var len:number = subGeoms.length;
+		for (var i:number = 0; i < len; i++)
+			this._pBoxBounds = subGeoms[i].getBoxBounds(this._pBoxBounds);
 	}
 
 
@@ -401,46 +342,18 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		super._pUpdateSphereBounds();
 
 		var box:Box = this.getBox();
-		var centerX:number = box.x + box.width/2;
-		var centerY:number = box.y + box.height/2;
-		var centerZ:number = box.z + box.depth/2;
 
-		var i:number, j:number, p:number, len:number;
+		if (!this._center)
+			this._center = new Vector3D();
+
+		this._center.x = box.x + box.width/2;
+		this._center.y = box.y + box.height/2;
+		this._center.z = box.z + box.depth/2;
+
 		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
-		var subGeom:SubGeometryBase;
-		var boundingPositions:Float32Array;
-		var numSubGeoms:number = subGeoms.length;
-		var maxRadiusSquared:number = 0;
-		var radiusSquared:number;
-		var distanceX:number;
-		var distanceY:number;
-		var distanceZ:number;
-
-		if (numSubGeoms > 0) {
-			i = 0;
-			subGeom = subGeoms[0];
-			boundingPositions = subGeom.getBoundingPositions();
-			for (j = 0; j < numSubGeoms; j++) {
-				subGeom = subGeoms[j];
-				boundingPositions = subGeom.getBoundingPositions();
-				len = boundingPositions.length;
-
-				for (i = 0; i < len; i += 3) {
-					distanceX = boundingPositions[i] - centerX;
-					distanceY = boundingPositions[i + 1] - centerY;
-					distanceZ = boundingPositions[i + 2] - centerZ;
-					radiusSquared = distanceX*distanceX + distanceY*distanceY + distanceZ*distanceZ;
-
-					if (maxRadiusSquared < radiusSquared)
-						maxRadiusSquared = radiusSquared;
-				}
-			}
-		}
-
-		this._pSphereBounds.x = centerX;
-		this._pSphereBounds.y = centerY;
-		this._pSphereBounds.z = centerZ;
-		this._pSphereBounds.radius = Math.sqrt(maxRadiusSquared);
+		var len:number = subGeoms.length;
+		for (var i:number = 0; i < len; i++)
+			this._pSphereBounds = subGeoms[i].getSphereBounds(this._center, this._pSphereBounds);
 	}
 
 	/**
