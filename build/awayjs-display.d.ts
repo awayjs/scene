@@ -1322,10 +1322,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    dispose(): void;
 	    /**
-	     * @inheritDoc
-	     */
-	    disposeAsset(): void;
-	    /**
 	     * Returns a rectangle that defines the area of the display object relative
 	     * to the coordinate system of the <code>targetCoordinateSpace</code> object.
 	     * Consider the following code, which shows how the rectangle returned can
@@ -3321,7 +3317,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     *
 	     */
-	    disposeWithChildren(): void;
+	    dispose(): void;
 	    getSessionIDAtDepth(depth: number): number;
 	    getChildAtDepth(depth: number): DisplayObject;
 	    getChildDepths(): Object;
@@ -6140,11 +6136,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * @inheritDoc
 	     */
 	    dispose(): void;
-	    /**
-	     * Disposes mesh including the animator and children. This is a merely a convenience method.
-	     * @return
-	     */
-	    disposeWithAnimatorAndChildren(): void;
 	    /**
 	     * Clones this Mesh instance along with all it's children, while re-using the same
 	     * material, geometry and animation set. The returned result will be a copy of this mesh,
