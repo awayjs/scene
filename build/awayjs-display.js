@@ -3902,9 +3902,6 @@ var Timeline = (function () {
     Timeline.prototype.getKeyframeIndexForFrameIndex = function (frame_index) {
         return this.keyframe_indices[frame_index];
     };
-    Timeline.prototype.getPotentialChilds = function () {
-        return this._potentialPrototypes;
-    };
     Timeline.prototype.getPotentialChildInstance = function (id) {
         var this_clone = this._potentialPrototypes[id].clone();
         this_clone.name = "";
@@ -10761,6 +10758,13 @@ var MovieClip = (function (_super) {
             str += "--";
         str += " " + target.name + " = " + target.id;
         console.log(str);
+    };
+    MovieClip.prototype._clearInterfaces = function () {
+        _super.prototype._clearInterfaces.call(this);
+        for (var key in this._potentialInstances) {
+            this._potentialInstances[key].dispose();
+            delete this._potentialInstances[key];
+        }
     };
     MovieClip.assetType = "[asset MovieClip]";
     return MovieClip;

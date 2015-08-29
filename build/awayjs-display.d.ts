@@ -2519,7 +2519,6 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    numFrames: number;
 	    getPotentialChildPrototype(id: number): DisplayObject;
 	    getKeyframeIndexForFrameIndex(frame_index: number): number;
-	    getPotentialChilds(): Array<DisplayObject>;
 	    getPotentialChildInstance(id: number): DisplayObject;
 	    registerPotentialChild(prototype: DisplayObject): void;
 	    jumpToLabel(target_mc: MovieClip, label: string): void;
@@ -6297,6 +6296,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    private advanceChildren();
 	    logHierarchy(depth?: number): void;
 	    printHierarchyName(depth: number, target: DisplayObject): void;
+	    _clearInterfaces(): void;
 	}
 	export = MovieClip;
 	
@@ -8324,46 +8324,6 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	
 }
 
-declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
-	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
-	 * occur.
-	 */
-	class StaticLightPicker extends LightPickerBase {
-	    private _lights;
-	    private _onCastShadowChangeDelegate;
-	    /**
-	     * Creates a new StaticLightPicker object.
-	     * @param lights The lights to be used for shading.
-	     */
-	    constructor(lights: any);
-	    /**
-	     * The lights used for shading.
-	     */
-	    lights: Array<any>;
-	    /**
-	     * Remove configuration change listeners on the lights.
-	     */
-	    private clearListeners();
-	    /**
-	     * Notifies the material of a configuration change.
-	     */
-	    private onCastShadowChange(event);
-	    /**
-	     * Called when a directional light's shadow casting configuration changes.
-	     */
-	    private updateDirectionalCasting(light);
-	    /**
-	     * Called when a point light's shadow casting configuration changes.
-	     */
-	    private updatePointCasting(light);
-	}
-	export = StaticLightPicker;
-	
-}
-
 declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -8464,6 +8424,46 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	    private updateProbeWeights(renderable);
 	}
 	export = LightPickerBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
+	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
+	 * occur.
+	 */
+	class StaticLightPicker extends LightPickerBase {
+	    private _lights;
+	    private _onCastShadowChangeDelegate;
+	    /**
+	     * Creates a new StaticLightPicker object.
+	     * @param lights The lights to be used for shading.
+	     */
+	    constructor(lights: any);
+	    /**
+	     * The lights used for shading.
+	     */
+	    lights: Array<any>;
+	    /**
+	     * Remove configuration change listeners on the lights.
+	     */
+	    private clearListeners();
+	    /**
+	     * Notifies the material of a configuration change.
+	     */
+	    private onCastShadowChange(event);
+	    /**
+	     * Called when a directional light's shadow casting configuration changes.
+	     */
+	    private updateDirectionalCasting(light);
+	    /**
+	     * Called when a point light's shadow casting configuration changes.
+	     */
+	    private updatePointCasting(light);
+	}
+	export = StaticLightPicker;
 	
 }
 
