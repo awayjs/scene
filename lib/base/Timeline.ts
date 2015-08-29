@@ -143,11 +143,6 @@ class Timeline
 		return this.keyframe_indices[frame_index];
 	}
 
-	public getPotentialChilds():Array<DisplayObject>
-	{
-		return this._potentialPrototypes;
-	}
-
 	public getPotentialChildInstance(id:number) : DisplayObject
 	{
 		var this_clone:DisplayObject=this._potentialPrototypes[id].clone();

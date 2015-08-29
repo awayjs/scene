@@ -407,6 +407,15 @@ class MovieClip extends DisplayObjectContainer
         console.log(str);
     }
 
+    public _clearInterfaces()
+    {
+        super._clearInterfaces();
 
+        //clear out potential instances
+        for (var key in this._potentialInstances) {
+            this._potentialInstances[key].dispose();
+            delete this._potentialInstances[key];
+        }
+    }
 }
 export = MovieClip;
