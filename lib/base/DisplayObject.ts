@@ -1563,14 +1563,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	}
 
 	/**
-	 * @inheritDoc
-	 */
-	public disposeAsset()
-	{
-		this.dispose();
-	}
-
-	/**
 	 * Returns a rectangle that defines the area of the display object relative
 	 * to the coordinate system of the <code>targetCoordinateSpace</code> object.
 	 * Consider the following code, which shows how the rectangle returned can
