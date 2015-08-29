@@ -289,12 +289,12 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 *
 	 */
-	public disposeWithChildren()
+	public dispose()
 	{
-		this.dispose();
+		super.dispose();
 
-		while (this.numChildren > 0)
-			this.getChildAt(0).dispose();
+		for (var i:number = this._children.length - 1; i >= 0; i--)
+			this._children[i].dispose();
 	}
 
 	public getSessionIDAtDepth(depth:number):number
@@ -589,32 +589,72 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	{
 		super._pUpdateBoxBounds();
 
-		var min;
-		var max;
-		var boxMin;
-		var boxMax;
-
 		var box:Box;
 		var numChildren:number = this._children.length;
 
 		if (numChildren > 0) {
-			for (var i:number = 0; i < numChildren; ++i) {
-				box = this._children[i].getBox(this);
+			//use SIMD where available
+			if (SIMD) {
+				var minP;
+				var maxP;
+				var minB;
+				var maxB;
 
-				if (i == 0) {
-					min = SIMD.Float32x4(box.x, box.y, box.z, 0.0);
-					max = SIMD.Float32x4.add(SIMD.Float32x4(box.width, box.height, box.depth, 0.0), min);
-				} else {
-					boxMin = SIMD.Float32x4(box.x, box.y, box.z, 0.0);
-					boxMax = SIMD.Float32x4.add(SIMD.Float32x4(box.width, box.height, box.depth, 0.0), boxMin);
-					min = SIMD.Float32x4.minNum(boxMin, min);
-					max = SIMD.Float32x4.maxNum(boxMax, max);
+				for (var i:number = 0; i < numChildren; ++i) {
+					box = this._children[i].getBox(this);
+
+					if (i == 0) {
+						minP = SIMD.Float32x4(box.x, box.y, box.z, 0.0);
+						maxP = SIMD.Float32x4.add(SIMD.Float32x4(box.width, box.height, box.depth, 0.0), minP);
+					} else {
+						minB = SIMD.Float32x4(box.x, box.y, box.z, 0.0);
+						maxB = SIMD.Float32x4.add(SIMD.Float32x4(box.width, box.height, box.depth, 0.0), minB);
+						minP = SIMD.Float32x4.minNum(minB, minP);
+						maxP = SIMD.Float32x4.maxNum(maxB, maxP);
+					}
 				}
-			}
 
-			this._pBoxBounds.width = SIMD.Float32x4.extractLane(max, 0) - (this._pBoxBounds.x = SIMD.Float32x4.extractLane(min, 0));
-			this._pBoxBounds.height = SIMD.Float32x4.extractLane(max, 1) - (this._pBoxBounds.y = SIMD.Float32x4.extractLane(min, 1));
-			this._pBoxBounds.height = SIMD.Float32x4.extractLane(max, 2) - (this._pBoxBounds.y = SIMD.Float32x4.extractLane(min, 2));
+				this._pBoxBounds.width = SIMD.Float32x4.extractLane(maxP, 0) - (this._pBoxBounds.x = SIMD.Float32x4.extractLane(minP, 0));
+				this._pBoxBounds.height = SIMD.Float32x4.extractLane(maxP, 1) - (this._pBoxBounds.y = SIMD.Float32x4.extractLane(minP, 1));
+				this._pBoxBounds.depth = SIMD.Float32x4.extractLane(maxP, 2) - (this._pBoxBounds.z = SIMD.Float32x4.extractLane(minP, 2));
+			} else {
+				var min:number;
+				var max:number;
+				var minX:number, minY:number, minZ:number;
+				var maxX:number, maxY:number, maxZ:number;
+
+				for (var i:number = 0; i < numChildren; ++i) {
+					box = this._children[i].getBox(this);
+
+					if (i == 0) {
+						maxX = box.width + (minX = box.x);
+						maxY = box.height + (minY = box.y);
+						maxZ = box.depth + (minZ = box.z);
+					} else {
+						max = box.width + (min = box.x);
+						if (min < minX)
+							minX = min;
+						if (max > maxX)
+							maxX = max;
+
+						max = box.height + (min = box.y);
+						if (min < minY)
+							minY = min;
+						if (max > maxY)
+							maxY = max;
+
+						max = box.depth + (min = box.z);
+						if (min < minZ)
+							minZ = min;
+						if (max > maxZ)
+							maxZ = max;
+					}
+				}
+
+				this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+				this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+				this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
+			}
 		} else {
 			this._pBoxBounds.setEmpty();
 		}

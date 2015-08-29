@@ -262,7 +262,6 @@ class MovieClip extends DisplayObjectContainer
 
         this.adapter.unregisterScriptObject(child);
 
-
         return child;
     }
 

@@ -19,8 +19,6 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils");
 
-declare var SIMD:any;
-
 /**
  * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
@@ -254,17 +252,8 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		this.material = null;
 		this.geometry = null;
-	}
 
-	/**
-	 * Disposes mesh including the animator and children. This is a merely a convenience method.
-	 * @return
-	 */
-	public disposeWithAnimatorAndChildren()
-	{
-		this.disposeWithChildren();
-
-		 if (this._animator)
+		if (this._animator)
 			this._animator.dispose();
 	}
 
