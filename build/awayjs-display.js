@@ -1592,8 +1592,6 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.dispose = function () {
         if (this.parent)
             this.parent.removeChild(this);
-        while (this._pRenderables.length)
-            this._pRenderables[0].dispose();
     };
     /**
      * @inheritDoc
@@ -2224,6 +2222,8 @@ var DisplayObject = (function (_super) {
             this._pScene._iUnregisterPartition(this._pImplicitPartition);
             //unregister entity from current partition
             this._pImplicitPartition._iUnregisterEntity(this);
+            //gc associated objects
+            this._clearInterfaces();
         }
         // assign parent implicit partition if no explicit one is given
         this._pImplicitPartition = this._explicitPartition || partition;
@@ -2454,8 +2454,7 @@ var DisplayObject = (function (_super) {
         return entityNode;
     };
     DisplayObject.prototype._iRemoveEntityNode = function (entityNode) {
-        var index = this._entityNodes.indexOf(entityNode);
-        this._entityNodes.splice(index, 1);
+        this._entityNodes.splice(this._entityNodes.indexOf(entityNode), 1);
         return entityNode;
     };
     DisplayObject.prototype._pInvalidateBounds = function () {
@@ -2577,8 +2576,15 @@ var DisplayObject = (function (_super) {
     };
     DisplayObject.prototype._updateMaskMode = function () {
         if (this.maskMode)
-            this.mouseEnabled = !this._maskMode;
+            this.mouseEnabled = false;
         this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
+    };
+    DisplayObject.prototype._clearInterfaces = function () {
+        var i;
+        for (i = this._entityNodes.length - 1; i >= 0; i--)
+            this._entityNodes[i].dispose();
+        for (i = this._pRenderables.length - 1; i >= 0; i--)
+            this._pRenderables[i].dispose();
     };
     return DisplayObject;
 })(AssetBase);
@@ -3786,10 +3792,6 @@ var SubMeshBase = (function (_super) {
      */
     SubMeshBase.prototype.dispose = function () {
         this.material = null;
-        var len = this._renderables.length;
-        for (var i = 0; i < len; i++)
-            this._renderables[i].dispose();
-        this._renderables = new Array();
     };
     /**
      *
@@ -3815,6 +3817,10 @@ var SubMeshBase = (function (_super) {
     };
     SubMeshBase.prototype._iGetExplicitMaterial = function () {
         return this._material;
+    };
+    SubMeshBase.prototype._clearInterfaces = function () {
+        for (var i = this._renderables.length - 1; i >= 0; i--)
+            this._renderables[i].dispose();
     };
     return SubMeshBase;
 })(AssetBase);
@@ -6088,14 +6094,13 @@ var DisplayObjectContainer = (function (_super) {
         }
         return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
     };
-    DisplayObjectContainer.prototype._iAddContainerNode = function (entityNode) {
-        this._containerNodes.push(entityNode);
-        return entityNode;
+    DisplayObjectContainer.prototype._iAddContainerNode = function (containerNode) {
+        this._containerNodes.push(containerNode);
+        return containerNode;
     };
-    DisplayObjectContainer.prototype._iRemoveContainerNode = function (entityNode) {
-        var index = this._containerNodes.indexOf(entityNode);
-        this._containerNodes.splice(index, 1);
-        return entityNode;
+    DisplayObjectContainer.prototype._iRemoveContainerNode = function (containerNode) {
+        this._containerNodes.splice(this._containerNodes.indexOf(containerNode), 1);
+        return containerNode;
     };
     DisplayObjectContainer.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
         var numChildren = this.numChildren;
@@ -6105,9 +6110,14 @@ var DisplayObjectContainer = (function (_super) {
         return false;
     };
     DisplayObjectContainer.prototype._updateMaskMode = function () {
-        (this.maskMode);
-        this.mouseChildren = false;
+        if (this.maskMode)
+            this.mouseChildren = false;
         _super.prototype._updateMaskMode.call(this);
+    };
+    DisplayObjectContainer.prototype._clearInterfaces = function () {
+        _super.prototype._clearInterfaces.call(this);
+        for (var i = this._containerNodes.length - 1; i >= 0; i--)
+            this._containerNodes[i].dispose();
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
     return DisplayObjectContainer;
@@ -10443,6 +10453,12 @@ var Mesh = (function (_super) {
                     return true;
         }
         return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
+    };
+    Mesh.prototype._clearInterfaces = function () {
+        _super.prototype._clearInterfaces.call(this);
+        var len = this._subMeshes.length;
+        for (var i = 0; i < len; i++)
+            this._subMeshes[i]._clearInterfaces();
     };
     Mesh.assetType = "[asset Mesh]";
     return Mesh;
@@ -14883,16 +14899,6 @@ var ContainerNode = (function (_super) {
     };
     /**
      *
-     * @param entity
-     * @returns {away.partition.NodeBase}
-     */
-    ContainerNode.prototype.findParentForNode = function (node) {
-        if (!node.isContainerNode && node.displayObject.isContainer)
-            return this._pool.getItem(node.displayObject);
-        return this._pool.getItem(node.displayObject.parent);
-    };
-    /**
-     *
      * @param node
      * @internal
      */
@@ -14929,6 +14935,10 @@ var ContainerNode = (function (_super) {
         do {
             node.numEntities += numEntities;
         } while ((node = node.parent) != null);
+    };
+    ContainerNode.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this._pool.disposeItem(this._container);
     };
     /**
      *
@@ -15064,6 +15074,10 @@ var EntityNode = (function (_super) {
             if (this._pImplicitDebugVisible && traverser.isEntityCollector)
                 traverser.applyEntity(this._pDebugEntity);
         }
+    };
+    EntityNode.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this._pool.disposeItem(this._entity);
     };
     /**
      * @inheritDoc
@@ -15223,13 +15237,10 @@ var NodeBase = (function () {
     NodeBase.prototype.isCastingShadow = function () {
         return true;
     };
-    /**
-     *
-     * @param entity
-     * @returns {away.partition.NodeBase}
-     */
-    NodeBase.prototype.findParentForNode = function (node) {
-        return this;
+    NodeBase.prototype.dispose = function () {
+        this.parent = null;
+        for (var i = 0; i < this._pNumChildNodes; i++)
+            this._pChildNodes[i].dispose();
     };
     /**
      *
@@ -15359,6 +15370,14 @@ var PartitionBase = (function () {
         if (!this._updateQueue)
             this._updatesMade = false;
     };
+    /**
+     *
+     * @param entity
+     * @returns {away.partition.NodeBase}
+     */
+    PartitionBase.prototype.findParentForNode = function (node) {
+        return this._rootNode;
+    };
     PartitionBase.prototype.updateEntities = function () {
         var node = this._updateQueue;
         while (node) {
@@ -15373,7 +15392,7 @@ var PartitionBase = (function () {
         this._updateQueue = null;
         this._updatesMade = false;
         do {
-            targetNode = this._rootNode.findParentForNode(node);
+            targetNode = this.findParentForNode(node);
             if (node.parent != targetNode) {
                 if (node.parent)
                     node.parent.iRemoveNode(node);
@@ -15395,7 +15414,7 @@ var PartitionBase = (function () {
      */
     PartitionBase.prototype._iUnregisterEntity = function (displayObject) {
         if (displayObject.isEntity)
-            this.iRemoveEntity(this._entityNodePool.disposeItem(displayObject));
+            this.iRemoveEntity(this._entityNodePool.getItem(displayObject));
     };
     return PartitionBase;
 })();
@@ -15455,13 +15474,26 @@ var ContainerNodePool = require("awayjs-display/lib/pool/ContainerNodePool");
  */
 var SceneGraphPartition = (function (_super) {
     __extends(SceneGraphPartition, _super);
-    function SceneGraphPartition(rootContainer) {
+    function SceneGraphPartition() {
         _super.call(this);
         this._containerNodePool = new ContainerNodePool(this);
-        this._rootNode = this._containerNodePool.getItem(rootContainer);
     }
     SceneGraphPartition.prototype.traverse = function (traverser) {
         _super.prototype.traverse.call(this, traverser);
+    };
+    /**
+     *
+     * @param entity
+     * @returns {away.partition.NodeBase}
+     */
+    SceneGraphPartition.prototype.findParentForNode = function (node) {
+        if (node.displayObject.partition == this || node.displayObject._iIsRoot) {
+            this._rootNode = node;
+            return null;
+        }
+        if (!node.isContainerNode && node.displayObject.isContainer)
+            return this._containerNodePool.getItem(node.displayObject);
+        return this._containerNodePool.getItem(node.displayObject.parent);
     };
     /**
      * @internal
@@ -15477,7 +15509,7 @@ var SceneGraphPartition = (function (_super) {
     SceneGraphPartition.prototype._iUnregisterEntity = function (displayObject) {
         _super.prototype._iUnregisterEntity.call(this, displayObject);
         if (displayObject.isContainer)
-            this.iRemoveEntity(this._containerNodePool.disposeItem(displayObject));
+            this.iRemoveEntity(this._containerNodePool.getItem(displayObject));
     };
     return SceneGraphPartition;
 })(PartitionBase);
@@ -16062,12 +16094,8 @@ var ContainerNodePool = (function () {
      * @param entity
      */
     ContainerNodePool.prototype.disposeItem = function (displayObjectContainer) {
-        var containerNode = this._containerNodePool[displayObjectContainer.id];
-        if (containerNode) {
-            displayObjectContainer._iRemoveContainerNode(containerNode);
-            delete this._containerNodePool[displayObjectContainer.id];
-        }
-        return containerNode;
+        displayObjectContainer._iRemoveContainerNode(this._containerNodePool[displayObjectContainer.id]);
+        delete this._containerNodePool[displayObjectContainer.id];
     };
     ContainerNodePool._classPool = new Object();
     return ContainerNodePool;
@@ -16172,12 +16200,8 @@ var EntityNodePool = (function () {
      * @param entity
      */
     EntityNodePool.prototype.disposeItem = function (displayObject) {
-        var entityNode = this._entityNodePool[displayObject.id];
-        if (entityNode) {
-            displayObject._iRemoveEntityNode(entityNode);
-            delete this._entityNodePool[displayObject.id];
-        }
-        return entityNode;
+        displayObject._iRemoveEntityNode(this._entityNodePool[displayObject.id]);
+        delete this._entityNodePool[displayObject.id];
     };
     /**
      *
