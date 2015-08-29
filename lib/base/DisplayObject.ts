@@ -169,6 +169,7 @@ import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
  */
 class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
+	public _iIsRoot:boolean;
 	public _adapter:IDisplayObjectAdapter;
 	private _queuedEvents:Array<Event> = new Array<Event>();
 	public _elementsDirty:boolean;
@@ -1559,9 +1560,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this.parent)
 			this.parent.removeChild(this);
-
-		while (this._pRenderables.length)
-			this._pRenderables[0].dispose();
 	}
 
 	/**
@@ -2313,6 +2311,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 			//unregister entity from current partition
 			this._pImplicitPartition._iUnregisterEntity(this);
+
+			//gc associated objects
+			this._clearInterfaces();
 		}
 
 		// assign parent implicit partition if no explicit one is given
@@ -2331,7 +2332,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		if (sceneChanged && this._listenToSceneChanged)
-				this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
+			this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
 	}
 
 	/**
@@ -2634,9 +2635,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _iRemoveEntityNode(entityNode:EntityNode):EntityNode
 	{
-		var index:number = this._entityNodes.indexOf(entityNode);
-
-		this._entityNodes.splice(index, 1);
+		this._entityNodes.splice(this._entityNodes.indexOf(entityNode), 1);
 
 		return entityNode;
 	}
@@ -2816,9 +2815,20 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _updateMaskMode()
 	{
 		if (this.maskMode)
-			this.mouseEnabled = !this._maskMode;
+			this.mouseEnabled = false;
 
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
+	}
+
+	public _clearInterfaces()
+	{
+		var i:number;
+
+		for (i = this._entityNodes.length - 1; i >= 0; i--)
+			this._entityNodes[i].dispose();
+
+		for (i = this._pRenderables.length - 1; i >= 0; i--)
+			this._pRenderables[i].dispose();
 	}
 }
 

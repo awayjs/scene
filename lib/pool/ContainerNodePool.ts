@@ -38,17 +38,11 @@ class ContainerNodePool
 	 *
 	 * @param entity
 	 */
-	public disposeItem(displayObjectContainer:DisplayObjectContainer):ContainerNode
+	public disposeItem(displayObjectContainer:DisplayObjectContainer)
 	{
-		var containerNode:ContainerNode = this._containerNodePool[displayObjectContainer.id];
+		displayObjectContainer._iRemoveContainerNode(this._containerNodePool[displayObjectContainer.id]);
 
-		if (containerNode) {
-			displayObjectContainer._iRemoveContainerNode(containerNode);
-
-			delete this._containerNodePool[displayObjectContainer.id];
-		}
-
-		return containerNode;
+		delete this._containerNodePool[displayObjectContainer.id];
 	}
 }
 

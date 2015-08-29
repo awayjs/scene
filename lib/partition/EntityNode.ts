@@ -87,6 +87,14 @@ class EntityNode extends NodeBase implements IDisplayObjectNode
 		}
 	}
 
+
+	public dispose()
+	{
+		super.dispose();
+
+		this._pool.disposeItem(this._entity);
+	}
+
 	/**
 	 * @inheritDoc
 	 */

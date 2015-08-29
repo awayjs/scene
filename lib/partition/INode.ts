@@ -17,14 +17,13 @@ interface INode
 
 	_iUpdateImplicitDebugVisible(value:boolean);
 
-
 	acceptTraverser(traverser:CollectorBase);
 
 	iAddNode(node:INode);
 
 	iRemoveNode(node:INode);
 
-	findParentForNode(node:INode):INode;
+	dispose();
 }
 
 export = INode;

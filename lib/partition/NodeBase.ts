@@ -99,14 +99,12 @@ class NodeBase implements INode
 		return true;
 	}
 
-	/**
-	 *
-	 * @param entity
-	 * @returns {away.partition.NodeBase}
-	 */
-	public findParentForNode(node:INode):INode
+	public dispose()
 	{
-		return this;
+		this.parent = null;
+
+		for (var i:number = 0; i < this._pNumChildNodes; i++)
+			this._pChildNodes[i].dispose();
 	}
 
 	/**

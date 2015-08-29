@@ -45,7 +45,6 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	private _nextHighestDepth:number = 0;
 	private _nextHighestDepthDirty:boolean;
 	public _children:Array<DisplayObject> = new Array<DisplayObject>();
-	public _iIsRoot:boolean;
 
 	/**
 	 *
@@ -738,21 +737,19 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag)
 	}
 
-	public _iAddContainerNode(entityNode:ContainerNode):ContainerNode
+	public _iAddContainerNode(containerNode:ContainerNode):ContainerNode
 	{
-		this._containerNodes.push(entityNode);
+		this._containerNodes.push(containerNode);
 
-		return entityNode;
+		return containerNode;
 	}
 
 
-	public _iRemoveContainerNode(entityNode:ContainerNode):ContainerNode
+	public _iRemoveContainerNode(containerNode:ContainerNode):ContainerNode
 	{
-		var index:number = this._containerNodes.indexOf(entityNode);
+		this._containerNodes.splice(this._containerNodes.indexOf(containerNode), 1);
 
-		this._containerNodes.splice(index, 1);
-
-		return entityNode;
+		return containerNode;
 	}
 
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
@@ -767,10 +764,18 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 	public _updateMaskMode()
 	{
-		(this.maskMode)
+		if (this.maskMode)
 			this.mouseChildren = false;
 
 		super._updateMaskMode();
+	}
+
+	public _clearInterfaces()
+	{
+		super._clearInterfaces();
+
+		for (var i:number = this._containerNodes.length - 1; i >= 0; i--)
+			this._containerNodes[i].dispose();
 	}
 }
 

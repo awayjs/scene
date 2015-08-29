@@ -513,6 +513,15 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		return super._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
+
+	public _clearInterfaces()
+	{
+		super._clearInterfaces();
+
+		var len:number = this._subMeshes.length;
+		for (var i:number = 0; i < len; i++)
+			this._subMeshes[i]._clearInterfaces();
+	}
 }
 
 export = Mesh;

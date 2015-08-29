@@ -75,6 +75,16 @@ class PartitionBase
 			this._updatesMade = false;
 	}
 
+	/**
+	 *
+	 * @param entity
+	 * @returns {away.partition.NodeBase}
+	 */
+	public findParentForNode(node:INode):INode
+	{
+		return this._rootNode;
+	}
+
 	private updateEntities()
 	{
 		var node:IDisplayObjectNode = this._updateQueue;
@@ -92,7 +102,7 @@ class PartitionBase
 		this._updatesMade = false;
 
 		do {
-			targetNode = this._rootNode.findParentForNode(node);
+			targetNode = this.findParentForNode(node);
 
 			if (node.parent != targetNode) {
 				if (node.parent)
@@ -121,7 +131,7 @@ class PartitionBase
 	public _iUnregisterEntity(displayObject:DisplayObject)
 	{
 		if (displayObject.isEntity)
-			this.iRemoveEntity(this._entityNodePool.disposeItem(displayObject));
+			this.iRemoveEntity(this._entityNodePool.getItem(displayObject));
 	}
 }
 

@@ -106,12 +106,6 @@ class SubMeshBase extends AssetBase
 	public dispose()
 	{
 		this.material = null;
-
-		var len:number = this._renderables.length;
-		for (var i:number = 0; i < len; i++)
-			this._renderables[i].dispose();
-
-		this._renderables = new Array<IRenderable>();
 	}
 
 	/**
@@ -151,6 +145,12 @@ class SubMeshBase extends AssetBase
 	public _iGetExplicitMaterial():MaterialBase
 	{
 		return this._material;
+	}
+
+	public _clearInterfaces()
+	{
+		for (var i:number = this._renderables.length - 1; i >= 0; i--)
+			this._renderables[i].dispose();
 	}
 }
 

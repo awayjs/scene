@@ -66,19 +66,6 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
 
     /**
      *
-     * @param entity
-     * @returns {away.partition.NodeBase}
-     */
-    public findParentForNode(node:IDisplayObjectNode):INode
-    {
-        if (!node.isContainerNode && node.displayObject.isContainer)
-            return this._pool.getItem(<DisplayObjectContainer> node.displayObject);
-
-        return this._pool.getItem(node.displayObject.parent);
-    }
-
-    /**
-     *
      * @param node
      * @internal
      */
@@ -120,6 +107,13 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
         do {
             node.numEntities += numEntities;
         } while ((node = <EntityNode> node.parent) != null);
+    }
+
+    public dispose()
+    {
+        super.dispose();
+
+        this._pool.disposeItem(this._container);
     }
 
     /**
