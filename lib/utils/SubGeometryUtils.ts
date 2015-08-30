@@ -8,9 +8,11 @@ import Float4Attributes			= require("awayjs-core/lib/attributes/Float4Attributes
 import Byte4Attributes			= require("awayjs-core/lib/attributes/Byte4Attributes");
 import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import Box							= require("awayjs-core/lib/geom/Box");
-import Sphere						= require("awayjs-core/lib/geom/Sphere");
-import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+import Box						= require("awayjs-core/lib/geom/Box");
+import Sphere					= require("awayjs-core/lib/geom/Sphere");
+import Extensions				= require("awayjs-core/lib/utils/Extensions");
+
+import CurveSubGeometry			= require("awayjs-display/lib/base/CurveSubGeometry");
 
 declare var SIMD:any;
 
@@ -938,7 +940,7 @@ class SubGeometryUtils
 		if (output == null)
 			output = new Box();
 
-		if (SIMD) {
+		if (Extensions.SIMD) {
 			var p;
 			var min = SIMD.Float32x4(output.x, output.y, output.x, output.y);
 			var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.width, output.height), min);

@@ -4,6 +4,7 @@ import IAsset						= require("awayjs-core/lib/library/IAsset");
 import ArgumentError				= require("awayjs-core/lib/errors/ArgumentError");
 import Error						= require("awayjs-core/lib/errors/Error");
 import RangeError					= require("awayjs-core/lib/errors/RangeError");
+import Extensions					= require("awayjs-core/lib/utils/Extensions");
 
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
@@ -569,7 +570,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 		if (numChildren > 0) {
 			//use SIMD where available
-			if (SIMD) {
+			if (Extensions.SIMD) {
 				var minP;
 				var maxP;
 				var minB;
