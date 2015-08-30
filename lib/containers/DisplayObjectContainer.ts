@@ -41,7 +41,6 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	private _containerNodes:Array<ContainerNode> = new Array<ContainerNode>();
 	private _mouseChildren:boolean = true;
 	private _depth_childs:Object = {};
-	private _depth_sessionIDs:Object = {};
 	private _nextHighestDepth:number = 0;
 	private _nextHighestDepthDirty:boolean;
 	public _children:Array<DisplayObject> = new Array<DisplayObject>();
@@ -193,7 +192,6 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			this._nextHighestDepth = depth + 1;
 
 		this._depth_childs[depth] = child;
-		this._depth_sessionIDs[depth] = child._sessionID;
 		this._children.push(child);
 
 		child._depthID = depth;
@@ -293,37 +291,14 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	{
 		super.dispose();
 
-		for (var i:number = this._children.length - 1; i >= 0; i--)
-			this._children[i].dispose();
-	}
-
-	public getSessionIDAtDepth(depth:number):number
-	{
-		return this._depth_sessionIDs[depth];
+		//for (var i:number = this._children.length - 1; i >= 0; i--)
+		//	this._children[i].dispose();
 	}
 
 	public getChildAtDepth(depth:number):DisplayObject
 	{
 		return this._depth_childs[depth];
 	}
-
-
-	public getChildDepths():Object
-	{
-		return this._depth_childs;
-	}
-
-	public getSessionIDDepths():Object
-	{
-		return this._depth_sessionIDs;
-	}
-
-	public resetDepths()
-	{
-		this._depth_childs = {};
-		this._depth_sessionIDs = {};
-	}
-
 
 	/**
 	 * Returns the child display object instance that exists at the specified
@@ -701,14 +676,9 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		if (this._nextHighestDepth == child._depthID + 1)
 			this._nextHighestDepthDirty = true;
 
-		//check to make sure _depth_sessionIDs wasn't modified with a new child
-		if (this._depth_sessionIDs[child._depthID] == child._sessionID) {
-			delete this._depth_sessionIDs[child._depthID];
-			delete this._depth_childs[child._depthID];
-		}
+		delete this._depth_childs[child._depthID];
 
 		child._depthID = -16384;
-		child._sessionID = -1;
 
 		return child;
 	}
@@ -814,7 +784,12 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	{
 		super._clearInterfaces();
 
-		for (var i:number = this._containerNodes.length - 1; i >= 0; i--)
+		var i:number;
+
+		for (i = this._children.length - 1; i >= 0; i--)
+			this._children[i]._clearInterfaces();
+
+		for (i = this._containerNodes.length - 1; i >= 0; i--)
 			this._containerNodes[i].dispose();
 	}
 }

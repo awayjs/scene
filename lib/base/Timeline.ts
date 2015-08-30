@@ -204,7 +204,6 @@ class Timeline
 		var i:number;
 		var k:number;
 		var child:DisplayObject;
-		var depth:number;
 
 		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 			for (i = target_mc.numChildren - 1; i >= 0; i--)
@@ -212,10 +211,9 @@ class Timeline
 
 		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
 		if (!jump_forward)
-			target_mc.resetDepths();
+			target_mc.resetSessionIDs();
 
 		// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-		var depth_childs:Object = target_mc.getChildDepths();
 		var depth_sessionIDs:Object = target_mc.getSessionIDDepths();
 
 		//  step1: only apply add/remove commands into current_childs_dic.
@@ -225,7 +223,6 @@ class Timeline
 		var frame_recipe:number;
 		var start_index:number;
 		var end_index:number;
-		var idx:number;
 		for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
 			frame_command_idx = this.frame_command_indices[k];
 			frame_recipe = this.frame_recipe[k];
@@ -234,11 +231,8 @@ class Timeline
 				// remove childs
 				start_index = this.command_index_stream[frame_command_idx];
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
-				for (i = start_index; i < end_index; i++) {
-					depth = this.remove_child_stream[i] - 16383;
-					delete depth_childs[depth];
-					delete depth_sessionIDs[depth];
-				}
+				for (i = start_index; i < end_index; i++)
+					delete depth_sessionIDs[this.remove_child_stream[i] - 16383];
 			}
 
 			if (frame_recipe & 4) {
@@ -246,14 +240,8 @@ class Timeline
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
 				// apply add commands in reversed order to have script exeucted in correct order.
 				// this could be changed in exporter
-				for (i = end_index - 1; i >= start_index; i--) {
-					idx = i*2;
-					child = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
-
-					depth = this.add_child_stream[idx + 1] - 16383;
-					depth_childs[depth] = child;
-					depth_sessionIDs[depth] = i;
-				}
+				for (i = end_index - 1; i >= start_index; i--)
+					depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
 			}
 
 			if (frame_recipe & 8)
@@ -264,7 +252,7 @@ class Timeline
 
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
-		// childs that are alive on both frames are reset if we are jumping back
+		// childs that are alive on both frames have their properties reset if we are jumping back
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
 			if (depth_sessionIDs[child._depthID] != child._sessionID) {
@@ -300,7 +288,7 @@ class Timeline
 		// than we can add the script of the targetframe
 		// than we can addchild objects added on targetframe
 		for (var key in depth_sessionIDs) {
-			child = depth_childs[key];
+			child = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
 			if (child._sessionID == -1) {
 				child._sessionID = depth_sessionIDs[key];
 				target_mc.addChildAtDepth(child, Number(key));

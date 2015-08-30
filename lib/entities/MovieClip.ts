@@ -20,24 +20,25 @@ class MovieClip extends DisplayObjectContainer
 
     private _timeline:Timeline;
 
-    private _isButton:boolean;
+    private _isButton:boolean = false;
     private _onMouseOver:(event:MouseEvent) => void;
     private _onMouseOut:(event:MouseEvent) => void;
     private _onMouseDown:(event:MouseEvent) => void;
     private _onMouseUp:(event:MouseEvent) => void;
 
-    private _time:number;// the current time inside the animation
-    private _currentFrameIndex:number;// the current frame
+    private _time:number = 0;// the current time inside the animation
+    private _currentFrameIndex:number = -1;// the current frame
 
-    private _isPlaying:boolean;// false if paused or stopped
+    private _isPlaying:boolean = true;// false if paused or stopped
 
     // not sure if needed
     private _enterFrame:Event;
     private _skipAdvance : boolean;
-    private _isInit : boolean;
+    private _isInit:boolean = true;
 
-    private _potentialInstances:Object;
-    private _sessionID_childs:Object;
+    private _potentialInstances:Object = {};
+    private _depth_sessionIDs:Object = {};
+    private _sessionID_childs:Object = {};
 
 	/**
 	 * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -56,16 +57,9 @@ class MovieClip extends DisplayObjectContainer
     constructor(timeline:Timeline = null)
     {
         super();
-        this._sessionID_childs = {};
-        this._potentialInstances = {};
-        this._currentFrameIndex = -1;
-        this.constructedKeyFrameIndex = -1;
-        this._isInit=true;
-        this._isPlaying = true; // auto-play
-        this._isButton=false;
 
-        this._time = 0;
         this._enterFrame = new Event(Event.ENTER_FRAME);
+
         this.inheritColorTransform = true;
 
         this._onMouseOver = (event:MouseEvent) => this.currentFrameIndex = 1;
@@ -131,7 +125,7 @@ class MovieClip extends DisplayObjectContainer
     /**
      * the current index of the current active frame
      */
-    public constructedKeyFrameIndex:number;
+    public constructedKeyFrameIndex:number = -1;
 
     public exit_frame():void
     {
@@ -167,6 +161,12 @@ class MovieClip extends DisplayObjectContainer
             this._currentFrameIndex = 0;
             this._timeline.constructNextFrame(this, true, true);
         }
+    }
+
+
+    public resetSessionIDs()
+    {
+        this._depth_sessionIDs = {};
     }
 
     /*
@@ -237,6 +237,11 @@ class MovieClip extends DisplayObjectContainer
         return this._sessionID_childs[sessionID];
     }
 
+    public getSessionIDDepths():Object
+    {
+        return this._depth_sessionIDs;
+    }
+
     public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
     {
         //this should be implemented for all display objects
@@ -244,7 +249,9 @@ class MovieClip extends DisplayObjectContainer
 
         child.reset();// this takes care of transform and visibility
 
-        super.addChildAtDepth(child, depth, true);
+        super.addChildAtDepth(child, depth, replace);
+
+        this._depth_sessionIDs[depth] = child._sessionID;
 
         this._sessionID_childs[child._sessionID] = child;
 
@@ -253,16 +260,22 @@ class MovieClip extends DisplayObjectContainer
 
     public removeChildAtInternal(index:number /*int*/):DisplayObject
     {
-        delete this._sessionID_childs[this._children[index]._sessionID];
+        var child:DisplayObject = this._children[index];
 
-        var child:DisplayObject = super.removeChildAtInternal(index);
+        //check to make sure _depth_sessionIDs wasn't modified with a new child
+        if (this._depth_sessionIDs[child._depthID] == child._sessionID)
+            delete this._depth_sessionIDs[child._depthID];
+
+        delete this._sessionID_childs[child._sessionID];
+
+        child._sessionID = -1;
 
         if(child.adapter)
             child.adapter.freeFromScript();
 
         this.adapter.unregisterScriptObject(child);
 
-        return child;
+        return super.removeChildAtInternal(index);
     }
 
     public get assetType():string
@@ -308,7 +321,6 @@ class MovieClip extends DisplayObjectContainer
         if (!this._potentialInstances[id])
             this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
 
-
         return this._potentialInstances[id];
     }
 
@@ -338,12 +350,6 @@ class MovieClip extends DisplayObjectContainer
         newInstance.loop = this.loop;
     }
 
-
-    public iSetParent(value:DisplayObjectContainer)
-	{
-		super.iSetParent(value);
-	}
-
     public advanceFrame(skipChildren:boolean = false)
     {
         var numFrames:number = this._timeline.numFrames;
@@ -357,27 +363,20 @@ class MovieClip extends DisplayObjectContainer
                 }
             }
 
-            if (!skipChildren)
-                this.advanceChildren();
+            if (!skipChildren) {
+                var len:number = this.numChildren;
+                var child:DisplayObject;
+                for (var i:number = 0; i <  len; ++i) {
+                    child = this._children[i];
+
+                    if (child.isAsset(MovieClip))
+                        (<MovieClip> child).advanceFrame();
+                }
+            }
         }
 
         this._skipAdvance = false;
     }
-
-    private advanceChildren()
-    {
-        var len:number = this.numChildren;
-        var child:DisplayObject;
-        for (var i:number = 0; i <  len; ++i) {
-            child = this._children[i];
-
-            if (child.isAsset(MovieClip))
-                (<MovieClip> child).advanceFrame();
-        }
-    }
-
-
-
 
 // DEBUG CODE:
     logHierarchy(depth: number = 0):void
@@ -408,13 +407,20 @@ class MovieClip extends DisplayObjectContainer
 
     public _clearInterfaces()
     {
-        super._clearInterfaces();
-
         //clear out potential instances
         for (var key in this._potentialInstances) {
-            this._potentialInstances[key].dispose();
-            delete this._potentialInstances[key];
+            var instance:DisplayObject = this._potentialInstances[key];
+
+            //only dispose instances that are not used in script ie. do not have an instance name
+            if (instance.name == "") {
+                instance.dispose();
+                delete this._potentialInstances[key];
+            } else {
+                instance._clearInterfaces();
+            }
         }
+
+        super._clearInterfaces();
     }
 }
 export = MovieClip;
