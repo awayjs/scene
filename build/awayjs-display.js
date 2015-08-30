@@ -5474,6 +5474,7 @@ var __extends = this.__extends || function (d, b) {
 var ArgumentError = require("awayjs-core/lib/errors/ArgumentError");
 var Error = require("awayjs-core/lib/errors/Error");
 var RangeError = require("awayjs-core/lib/errors/RangeError");
+var Extensions = require("awayjs-core/lib/utils/Extensions");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 /**
@@ -5944,7 +5945,7 @@ var DisplayObjectContainer = (function (_super) {
         var numChildren = this._children.length;
         if (numChildren > 0) {
             //use SIMD where available
-            if (SIMD) {
+            if (Extensions.SIMD) {
                 var minP;
                 var maxP;
                 var minB;
@@ -6124,7 +6125,7 @@ var DisplayObjectContainer = (function (_super) {
 })(DisplayObject);
 module.exports = DisplayObjectContainer;
 
-},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
+},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-core/lib/utils/Extensions":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -20452,6 +20453,7 @@ var Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var Box = require("awayjs-core/lib/geom/Box");
 var Sphere = require("awayjs-core/lib/geom/Sphere");
+var Extensions = require("awayjs-core/lib/utils/Extensions");
 var SubGeometryUtils = (function () {
     function SubGeometryUtils() {
     }
@@ -21165,7 +21167,7 @@ var SubGeometryUtils = (function () {
         var posDim2 = posDim * 2;
         if (output == null)
             output = new Box();
-        if (SIMD) {
+        if (Extensions.SIMD) {
             var p;
             var min = SIMD.Float32x4(output.x, output.y, output.x, output.y);
             var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.width, output.height), min);
@@ -21283,7 +21285,7 @@ var SubGeometryUtils = (function () {
 })();
 module.exports = SubGeometryUtils;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/vos/ISubGeometryVO":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/utils/Extensions":undefined}],"awayjs-display/lib/vos/ISubGeometryVO":[function(require,module,exports){
 
 },{}]},{},[])
 
