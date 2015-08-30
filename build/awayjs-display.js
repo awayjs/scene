@@ -3938,15 +3938,13 @@ var Timeline = (function () {
         var i;
         var k;
         var child;
-        var depth;
         if (jump_gap)
             for (i = target_mc.numChildren - 1; i >= 0; i--)
                 target_mc.removeChildAt(i);
         //if we jump back, we want to reset all objects (but not the timelines of the mcs)
         if (!jump_forward)
-            target_mc.resetDepths();
+            target_mc.resetSessionIDs();
         // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-        var depth_childs = target_mc.getChildDepths();
         var depth_sessionIDs = target_mc.getSessionIDDepths();
         //  step1: only apply add/remove commands into current_childs_dic.
         var update_indices = []; // store a list of updatecommand_indices, so we dont have to read frame_recipe again
@@ -3955,7 +3953,6 @@ var Timeline = (function () {
         var frame_recipe;
         var start_index;
         var end_index;
-        var idx;
         for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
             frame_command_idx = this.frame_command_indices[k];
             frame_recipe = this.frame_recipe[k];
@@ -3963,22 +3960,14 @@ var Timeline = (function () {
                 // remove childs
                 start_index = this.command_index_stream[frame_command_idx];
                 end_index = start_index + this.command_length_stream[frame_command_idx++];
-                for (i = start_index; i < end_index; i++) {
-                    depth = this.remove_child_stream[i] - 16383;
-                    delete depth_childs[depth];
-                    delete depth_sessionIDs[depth];
-                }
+                for (i = start_index; i < end_index; i++)
+                    delete depth_sessionIDs[this.remove_child_stream[i] - 16383];
             }
             if (frame_recipe & 4) {
                 start_index = this.command_index_stream[frame_command_idx];
                 end_index = start_index + this.command_length_stream[frame_command_idx++];
-                for (i = end_index - 1; i >= start_index; i--) {
-                    idx = i * 2;
-                    child = target_mc.getPotentialChildInstance(this.add_child_stream[idx]);
-                    depth = this.add_child_stream[idx + 1] - 16383;
-                    depth_childs[depth] = child;
-                    depth_sessionIDs[depth] = i;
-                }
+                for (i = end_index - 1; i >= start_index; i--)
+                    depth_sessionIDs[this.add_child_stream[i * 2 + 1] - 16383] = i;
             }
             if (frame_recipe & 8)
                 update_indices[update_cnt++] = frame_command_idx; // execute update command later
@@ -4015,7 +4004,7 @@ var Timeline = (function () {
         if (!skip_script && firstframe == value)
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         for (var key in depth_sessionIDs) {
-            child = depth_childs[key];
+            child = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key] * 2]);
             if (child._sessionID == -1) {
                 child._sessionID = depth_sessionIDs[key];
                 target_mc.addChildAtDepth(child, Number(key));
@@ -5525,7 +5514,6 @@ var DisplayObjectContainer = (function (_super) {
         this._containerNodes = new Array();
         this._mouseChildren = true;
         this._depth_childs = {};
-        this._depth_sessionIDs = {};
         this._nextHighestDepth = 0;
         this._children = new Array();
         this._pIsContainer = true;
@@ -5639,7 +5627,6 @@ var DisplayObjectContainer = (function (_super) {
         if (this._nextHighestDepth < depth + 1)
             this._nextHighestDepth = depth + 1;
         this._depth_childs[depth] = child;
-        this._depth_sessionIDs[depth] = child._sessionID;
         this._children.push(child);
         child._depthID = depth;
         child.iSetParent(this);
@@ -5722,24 +5709,11 @@ var DisplayObjectContainer = (function (_super) {
      */
     DisplayObjectContainer.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        for (var i = this._children.length - 1; i >= 0; i--)
-            this._children[i].dispose();
-    };
-    DisplayObjectContainer.prototype.getSessionIDAtDepth = function (depth) {
-        return this._depth_sessionIDs[depth];
+        //for (var i:number = this._children.length - 1; i >= 0; i--)
+        //	this._children[i].dispose();
     };
     DisplayObjectContainer.prototype.getChildAtDepth = function (depth) {
         return this._depth_childs[depth];
-    };
-    DisplayObjectContainer.prototype.getChildDepths = function () {
-        return this._depth_childs;
-    };
-    DisplayObjectContainer.prototype.getSessionIDDepths = function () {
-        return this._depth_sessionIDs;
-    };
-    DisplayObjectContainer.prototype.resetDepths = function () {
-        this._depth_childs = {};
-        this._depth_sessionIDs = {};
     };
     /**
      * Returns the child display object instance that exists at the specified
@@ -6061,13 +6035,8 @@ var DisplayObjectContainer = (function (_super) {
         //update next highest depth
         if (this._nextHighestDepth == child._depthID + 1)
             this._nextHighestDepthDirty = true;
-        //check to make sure _depth_sessionIDs wasn't modified with a new child
-        if (this._depth_sessionIDs[child._depthID] == child._sessionID) {
-            delete this._depth_sessionIDs[child._depthID];
-            delete this._depth_childs[child._depthID];
-        }
+        delete this._depth_childs[child._depthID];
         child._depthID = -16384;
-        child._sessionID = -1;
         return child;
     };
     DisplayObjectContainer.prototype.getDepthIndexInternal = function (depth /*int*/) {
@@ -6144,7 +6113,10 @@ var DisplayObjectContainer = (function (_super) {
     };
     DisplayObjectContainer.prototype._clearInterfaces = function () {
         _super.prototype._clearInterfaces.call(this);
-        for (var i = this._containerNodes.length - 1; i >= 0; i--)
+        var i;
+        for (i = this._children.length - 1; i >= 0; i--)
+            this._children[i]._clearInterfaces();
+        for (i = this._containerNodes.length - 1; i >= 0; i--)
             this._containerNodes[i].dispose();
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
@@ -10505,18 +10477,22 @@ var MovieClip = (function (_super) {
         var _this = this;
         if (timeline === void 0) { timeline = null; }
         _super.call(this);
+        this._isButton = false;
+        this._time = 0; // the current time inside the animation
+        this._currentFrameIndex = -1; // the current frame
+        this._isPlaying = true; // false if paused or stopped
+        this._isInit = true;
+        this._potentialInstances = {};
+        this._depth_sessionIDs = {};
+        this._sessionID_childs = {};
         /**
          *
          */
         this.loop = true;
-        this._sessionID_childs = {};
-        this._potentialInstances = {};
-        this._currentFrameIndex = -1;
+        /**
+         * the current index of the current active frame
+         */
         this.constructedKeyFrameIndex = -1;
-        this._isInit = true;
-        this._isPlaying = true; // auto-play
-        this._isButton = false;
-        this._time = 0;
         this._enterFrame = new Event(Event.ENTER_FRAME);
         this.inheritColorTransform = true;
         this._onMouseOver = function (event) { return _this.currentFrameIndex = 1; };
@@ -10610,6 +10586,9 @@ var MovieClip = (function (_super) {
             this._timeline.constructNextFrame(this, true, true);
         }
     };
+    MovieClip.prototype.resetSessionIDs = function () {
+        this._depth_sessionIDs = {};
+    };
     /*
      * Setting the currentFrameIndex without moving the playhead for this movieclip to the new position
      */
@@ -10664,22 +10643,30 @@ var MovieClip = (function (_super) {
     MovieClip.prototype.getChildAtSessionID = function (sessionID) {
         return this._sessionID_childs[sessionID];
     };
+    MovieClip.prototype.getSessionIDDepths = function () {
+        return this._depth_sessionIDs;
+    };
     MovieClip.prototype.addChildAtDepth = function (child, depth, replace) {
         if (replace === void 0) { replace = true; }
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
         child.reset(); // this takes care of transform and visibility
-        _super.prototype.addChildAtDepth.call(this, child, depth, true);
+        _super.prototype.addChildAtDepth.call(this, child, depth, replace);
+        this._depth_sessionIDs[depth] = child._sessionID;
         this._sessionID_childs[child._sessionID] = child;
         return child;
     };
     MovieClip.prototype.removeChildAtInternal = function (index /*int*/) {
-        delete this._sessionID_childs[this._children[index]._sessionID];
-        var child = _super.prototype.removeChildAtInternal.call(this, index);
+        var child = this._children[index];
+        //check to make sure _depth_sessionIDs wasn't modified with a new child
+        if (this._depth_sessionIDs[child._depthID] == child._sessionID)
+            delete this._depth_sessionIDs[child._depthID];
+        delete this._sessionID_childs[child._sessionID];
+        child._sessionID = -1;
         if (child.adapter)
             child.adapter.freeFromScript();
         this.adapter.unregisterScriptObject(child);
-        return child;
+        return _super.prototype.removeChildAtInternal.call(this, index);
     };
     Object.defineProperty(MovieClip.prototype, "assetType", {
         get: function () {
@@ -10732,9 +10719,6 @@ var MovieClip = (function (_super) {
         newInstance.timeline = this._timeline;
         newInstance.loop = this.loop;
     };
-    MovieClip.prototype.iSetParent = function (value) {
-        _super.prototype.iSetParent.call(this, value);
-    };
     MovieClip.prototype.advanceFrame = function (skipChildren) {
         if (skipChildren === void 0) { skipChildren = false; }
         var numFrames = this._timeline.numFrames;
@@ -10748,19 +10732,17 @@ var MovieClip = (function (_super) {
                     this._timeline.constructNextFrame(this);
                 }
             }
-            if (!skipChildren)
-                this.advanceChildren();
+            if (!skipChildren) {
+                var len = this.numChildren;
+                var child;
+                for (var i = 0; i < len; ++i) {
+                    child = this._children[i];
+                    if (child.isAsset(MovieClip))
+                        child.advanceFrame();
+                }
+            }
         }
         this._skipAdvance = false;
-    };
-    MovieClip.prototype.advanceChildren = function () {
-        var len = this.numChildren;
-        var child;
-        for (var i = 0; i < len; ++i) {
-            child = this._children[i];
-            if (child.isAsset(MovieClip))
-                child.advanceFrame();
-        }
     };
     // DEBUG CODE:
     MovieClip.prototype.logHierarchy = function (depth) {
@@ -10784,11 +10766,18 @@ var MovieClip = (function (_super) {
         console.log(str);
     };
     MovieClip.prototype._clearInterfaces = function () {
-        _super.prototype._clearInterfaces.call(this);
         for (var key in this._potentialInstances) {
-            this._potentialInstances[key].dispose();
-            delete this._potentialInstances[key];
+            var instance = this._potentialInstances[key];
+            //only dispose instances that are not used in script ie. do not have an instance name
+            if (instance.name == "") {
+                instance.dispose();
+                delete this._potentialInstances[key];
+            }
+            else {
+                instance._clearInterfaces();
+            }
         }
+        _super.prototype._clearInterfaces.call(this);
     };
     MovieClip.assetType = "[asset MovieClip]";
     return MovieClip;

@@ -3174,7 +3174,6 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    private _containerNodes;
 	    private _mouseChildren;
 	    private _depth_childs;
-	    private _depth_sessionIDs;
 	    private _nextHighestDepth;
 	    private _nextHighestDepthDirty;
 	    _children: Array<DisplayObject>;
@@ -3318,11 +3317,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     *
 	     */
 	    dispose(): void;
-	    getSessionIDAtDepth(depth: number): number;
 	    getChildAtDepth(depth: number): DisplayObject;
-	    getChildDepths(): Object;
-	    getSessionIDDepths(): Object;
-	    resetDepths(): void;
 	    /**
 	     * Returns the child display object instance that exists at the specified
 	     * index.
@@ -6237,6 +6232,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    private _skipAdvance;
 	    private _isInit;
 	    private _potentialInstances;
+	    private _depth_sessionIDs;
 	    private _sessionID_childs;
 	    /**
 	     * adapter is used to provide MovieClip to scripts taken from different platforms
@@ -6259,11 +6255,13 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    constructedKeyFrameIndex: number;
 	    exit_frame(): void;
 	    reset(): void;
+	    resetSessionIDs(): void;
 	    set_currentFrameIndex(value: number): void;
 	    currentFrameIndex: number;
 	    addButtonListeners(): void;
 	    removeButtonListeners(): void;
 	    getChildAtSessionID(sessionID: number): DisplayObject;
+	    getSessionIDDepths(): Object;
 	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
 	    removeChildAtInternal(index: number): DisplayObject;
 	    assetType: string;
@@ -6282,9 +6280,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    stop(): void;
 	    clone(): MovieClip;
 	    copyTo(newInstance: MovieClip): void;
-	    iSetParent(value: DisplayObjectContainer): void;
 	    advanceFrame(skipChildren?: boolean): void;
-	    private advanceChildren();
 	    logHierarchy(depth?: number): void;
 	    printHierarchyName(depth: number, target: DisplayObject): void;
 	    _clearInterfaces(): void;
