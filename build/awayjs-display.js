@@ -5966,7 +5966,8 @@ var DisplayObjectContainer = (function (_super) {
                         maxP = f32x4.max(maxB, maxP);
                     }
                 }
-                store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, store(this._pBoxBounds.rawData, 0, minP)));
+                store(this._pBoxBounds.rawData, 0, minP);
+                store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, minP));
             }
             else {
                 var min;
@@ -21188,7 +21189,8 @@ var SubGeometryUtils = (function () {
             }
             min = f32x4.min(min, f32x4.swizzle(min, 2, 3, 0, 1));
             max = f32x4.max(max, f32x4.swizzle(max, 2, 3, 0, 1));
-            store2(output.rawData, 3, f32x4.sub(max, store2(output.rawData, 0, min)));
+            store2(output.rawData, 0, min);
+            store2(output.rawData, 3, f32x4.sub(max, min));
         }
         else {
             var minX, minY, maxX, maxY;
@@ -21231,7 +21233,8 @@ var SubGeometryUtils = (function () {
                 min = f32x4.min(p, min);
                 max = f32x4.max(p, max);
             }
-            store(output.rawData, 3, f32x4.sub(max, store(output.rawData, 0, min)));
+            store(output.rawData, 0, min);
+            store(output.rawData, 3, f32x4.sub(max, min));
         }
         else {
             var pos;
