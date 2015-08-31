@@ -941,19 +941,20 @@ class SubGeometryUtils
 			output = new Box();
 
 		if (Extensions.SIMD) {
+			var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
 			var p;
-			var min = SIMD.Float32x4(output.x, output.y, output.x, output.y);
-			var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.width, output.height), min);
+			var min = f32x4(output.x, output.y, output.x, output.y);
+			var max = f32x4.add(f32x4(output.width, output.height, output.width, output.height), min);
 
 			var len:number = positions.length;
 			for (var i:number = 0; i < len; i += posDim2) { //double-up the 2d calculations
-				p = (i + posDim == len)? SIMD.Float32x4(positions[i], positions[i+1], 0.0, 0.0) : SIMD.Float32x4(positions[i], positions[i+1], positions[i+posDim], positions[i+posDim+1]);
-				min = SIMD.Float32x4.minNum(p, min);
-				max = SIMD.Float32x4.maxNum(p, max);
+				p = (i + posDim == len)? f32x4(positions[i], positions[i+1], 0.0, 0.0) : f32x4(positions[i], positions[i+1], positions[i+posDim], positions[i+posDim+1]);
+				min = f32x4.minNum(p, min);
+				max = f32x4.maxNum(p, max);
 			}
 
-			output.width = Math.max(SIMD.Float32x4.extractLane(max, 0),SIMD.Float32x4.extractLane(max, 2)) - (output.x = Math.min(SIMD.Float32x4.extractLane(min, 0), SIMD.Float32x4.extractLane(min, 2)));
-			output.height = Math.max(SIMD.Float32x4.extractLane(max, 1), SIMD.Float32x4.extractLane(max, 3)) - (output.y = Math.min(SIMD.Float32x4.extractLane(min, 1), SIMD.Float32x4.extractLane(min, 3)));
+			output.width = Math.max(f32x4.extractLane(max, 0),f32x4.extractLane(max, 2)) - (output.x = Math.min(f32x4.extractLane(min, 0), f32x4.extractLane(min, 2)));
+			output.height = Math.max(f32x4.extractLane(max, 1), f32x4.extractLane(max, 3)) - (output.y = Math.min(f32x4.extractLane(min, 1), f32x4.extractLane(min, 3)));
 
 		} else {
 			var minX, minY, maxX, maxY;
@@ -994,20 +995,21 @@ class SubGeometryUtils
 			output = new Box();
 
 		if (SIMD) {
+			var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
 			var p;
-			var min = SIMD.Float32x4(output.x, output.y, output.z, 0.0);
-			var max = SIMD.Float32x4.add(SIMD.Float32x4(output.width, output.height, output.depth, 0.0), min);
+			var min = f32x4(output.x, output.y, output.z, 0.0);
+			var max = f32x4.add(f32x4(output.width, output.height, output.depth, 0.0), min);
 
 			var len:number = positions.length;
 			for (var i:number = 0; i < len; i += posDim) {
-				p = SIMD.Float32x4(positions[i], positions[i+1], positions[i+2], 0.0);
-				min = SIMD.Float32x4.minNum(p, min);
-				max = SIMD.Float32x4.maxNum(p, max);
+				p = f32x4(positions[i], positions[i+1], positions[i+2], 0.0);
+				min = f32x4.minNum(p, min);
+				max = f32x4.maxNum(p, max);
 			}
 
-			output.width = SIMD.Float32x4.extractLane(max, 0) - (output.x = SIMD.Float32x4.extractLane(min, 0));
-			output.height = SIMD.Float32x4.extractLane(max, 1) - (output.y = SIMD.Float32x4.extractLane(min, 1));
-			output.depth = SIMD.Float32x4.extractLane(max, 2) - (output.z = SIMD.Float32x4.extractLane(min, 2));
+			output.width = f32x4.extractLane(max, 0) - (output.x = f32x4.extractLane(min, 0));
+			output.height = f32x4.extractLane(max, 1) - (output.y = f32x4.extractLane(min, 1));
+			output.depth = f32x4.extractLane(max, 2) - (output.z = f32x4.extractLane(min, 2));
 		} else {
 			var pos:number;
 			var minX:number = output.x;
@@ -1058,14 +1060,15 @@ class SubGeometryUtils
 
 		var maxRadiusSquared:number = 0;
 		var radiusSquared:number;
-		var c = SIMD.Float32x4(center.x, center.y, center.z, 0.0);
+		var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+		var c = f32x4(center.x, center.y, center.z, 0.0);
 		var d;
 
 		var len:number = positions.length;
 		for (var i:number = 0; i < len; i += posDim) {
-			d = SIMD.Float32x4.sub(SIMD.Float32x4(positions[i], positions[i+1], positions[i+2], 0.0), c);
-			d = SIMD.Float32x4.mul(d, d);
-			radiusSquared = SIMD.Float32x4.extractLane(d, 0)  + SIMD.Float32x4.extractLane(d, 1) + SIMD.Float32x4.extractLane(d, 2);
+			d = f32x4.sub(f32x4(positions[i], positions[i+1], positions[i+2], 0.0), c);
+			d = f32x4.mul(d, d);
+			radiusSquared = f32x4.extractLane(d, 0)  + f32x4.extractLane(d, 1) + f32x4.extractLane(d, 2);
 
 			if (maxRadiusSquared < radiusSquared)
 				maxRadiusSquared = radiusSquared;

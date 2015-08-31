@@ -113,7 +113,15 @@ class ContainerNode extends NodeBase implements IDisplayObjectNode
     {
         super.dispose();
 
+        this._childDepths = null;
+        this._childMasks = null;
+
         this._pool.disposeItem(this._container);
+        this._partition.iRemoveEntity(this);
+
+        this._pool = null;
+        this._container = null;
+        this._partition = null;
     }
 
     /**

@@ -102,9 +102,7 @@ class NodeBase implements INode
 	public dispose()
 	{
 		this.parent = null;
-
-		for (var i:number = 0; i < this._pNumChildNodes; i++)
-			this._pChildNodes[i].dispose();
+		this._pChildNodes = null;
 	}
 
 	/**
