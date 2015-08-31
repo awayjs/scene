@@ -593,7 +593,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 					}
 				}
 
-				store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, store(this._pBoxBounds.rawData, 0, minP)));
+				store(this._pBoxBounds.rawData, 0, minP);
+				store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, minP));
 			} else {
 				var min:number;
 				var max:number;

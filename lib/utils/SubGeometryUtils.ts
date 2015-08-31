@@ -959,7 +959,9 @@ class SubGeometryUtils
 
 			min = f32x4.min(min, f32x4.swizzle(min, 2, 3, 0, 1));
 			max = f32x4.max(max, f32x4.swizzle(max, 2, 3, 0, 1));
-			store2(output.rawData, 3, f32x4.sub(max, store2(output.rawData, 0, min)));
+
+			store2(output.rawData, 0, min);
+			store2(output.rawData, 3, f32x4.sub(max, min));
 		} else {
 			var minX, minY, maxX, maxY;
 
@@ -1013,7 +1015,8 @@ class SubGeometryUtils
 				max = f32x4.max(p, max);
 			}
 
-			store(output.rawData, 3, f32x4.sub(max, store(output.rawData, 0, min)));
+			store(output.rawData, 0, min);
+			store(output.rawData, 3, f32x4.sub(max, min));
 		} else {
 			var pos:number;
 			var minX:number = output.x;
