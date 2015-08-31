@@ -18,6 +18,8 @@ declare var SIMD:any;
 
 class SubGeometryUtils
 {
+	private static tempFloat32x4:Float32Array = new Float32Array(4);
+
 	private static LIMIT_VERTS:number = 0xffff;
 
 	private static LIMIT_INDICES:number = 0xffffff;
@@ -942,20 +944,22 @@ class SubGeometryUtils
 
 		if (Extensions.SIMD) {
 			var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+			var load2 = f32x4.loadXY || f32x4.load2;
+			var store2 = f32x4.storeXY || f32x4.store2;
 			var p;
-			var min = f32x4(output.x, output.y, output.x, output.y);
-			var max = f32x4.add(f32x4(output.width, output.height, output.width, output.height), min);
+			var min = f32x4.swizzle(load2(output.rawData, 0), 0, 1, 0, 1);
+			var max = f32x4.add(f32x4.swizzle(load2(output.rawData, 3), 0, 1, 0, 1), min);
 
 			var len:number = positions.length;
 			for (var i:number = 0; i < len; i += posDim2) { //double-up the 2d calculations
-				p = (i + posDim == len)? f32x4(positions[i], positions[i+1], 0.0, 0.0) : f32x4(positions[i], positions[i+1], positions[i+posDim], positions[i+posDim+1]);
-				min = f32x4.minNum(p, min);
-				max = f32x4.maxNum(p, max);
+				p = (i + posDim == len)? load2(positions, i) : f32x4.shuffle(load2(positions, i), load2(positions, i + posDim), 0, 1, 4, 5);
+				min = f32x4.min(p, min);
+				max = f32x4.max(p, max);
 			}
 
-			output.width = Math.max(f32x4.extractLane(max, 0),f32x4.extractLane(max, 2)) - (output.x = Math.min(f32x4.extractLane(min, 0), f32x4.extractLane(min, 2)));
-			output.height = Math.max(f32x4.extractLane(max, 1), f32x4.extractLane(max, 3)) - (output.y = Math.min(f32x4.extractLane(min, 1), f32x4.extractLane(min, 3)));
-
+			min = f32x4.min(min, f32x4.swizzle(min, 2, 3, 0, 1));
+			max = f32x4.max(max, f32x4.swizzle(max, 2, 3, 0, 1));
+			store2(output.rawData, 3, f32x4.sub(max, store2(output.rawData, 0, min)));
 		} else {
 			var minX, minY, maxX, maxY;
 
@@ -996,20 +1000,20 @@ class SubGeometryUtils
 
 		if (SIMD) {
 			var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+			var load = f32x4.loadXYZ || f32x4.load3;
+			var store = f32x4.storeXYZ || f32x4.store3;
 			var p;
-			var min = f32x4(output.x, output.y, output.z, 0.0);
-			var max = f32x4.add(f32x4(output.width, output.height, output.depth, 0.0), min);
+			var min = load(output.rawData, 0);
+			var max = f32x4.add(load(output.rawData, 3), min);
 
 			var len:number = positions.length;
 			for (var i:number = 0; i < len; i += posDim) {
-				p = f32x4(positions[i], positions[i+1], positions[i+2], 0.0);
-				min = f32x4.minNum(p, min);
-				max = f32x4.maxNum(p, max);
+				p = load(positions, i);
+				min = f32x4.min(p, min);
+				max = f32x4.max(p, max);
 			}
 
-			output.width = f32x4.extractLane(max, 0) - (output.x = f32x4.extractLane(min, 0));
-			output.height = f32x4.extractLane(max, 1) - (output.y = f32x4.extractLane(min, 1));
-			output.depth = f32x4.extractLane(max, 2) - (output.z = f32x4.extractLane(min, 2));
+			store(output.rawData, 3, f32x4.sub(max, store(output.rawData, 0, min)));
 		} else {
 			var pos:number;
 			var minX:number = output.x;
@@ -1061,14 +1065,18 @@ class SubGeometryUtils
 		var maxRadiusSquared:number = 0;
 		var radiusSquared:number;
 		var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+		var load = f32x4.loadXYZ || f32x4.load123;
+		var store = f32x4.storeXYZ || f32x4.store123;
 		var c = f32x4(center.x, center.y, center.z, 0.0);
 		var d;
+		var temp:Float32Array = SubGeometryUtils.tempFloat32x4;
 
 		var len:number = positions.length;
 		for (var i:number = 0; i < len; i += posDim) {
-			d = f32x4.sub(f32x4(positions[i], positions[i+1], positions[i+2], 0.0), c);
-			d = f32x4.mul(d, d);
-			radiusSquared = f32x4.extractLane(d, 0)  + f32x4.extractLane(d, 1) + f32x4.extractLane(d, 2);
+			d = f32x4.sub(load(positions, i), c);
+			store(temp, 0, f32x4.mul(d, d));
+
+			radiusSquared = temp[0]*temp[0] + temp[1]*temp[1] + temp[2]*temp[2];
 
 			if (maxRadiusSquared < radiusSquared)
 				maxRadiusSquared = radiusSquared;

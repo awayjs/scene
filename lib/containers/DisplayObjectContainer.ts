@@ -572,6 +572,8 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 			//use SIMD where available
 			if (Extensions.SIMD) {
 				var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+				var load = f32x4.loadXYZ || f32x4.load3;
+				var store = f32x4.storeXYZ || f32x4.store3;
 				var minP;
 				var maxP;
 				var minB;
@@ -581,19 +583,17 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 					box = this._children[i].getBox(this);
 
 					if (i == 0) {
-						minP = f32x4(box.x, box.y, box.z, 0.0);
-						maxP = f32x4.add(f32x4(box.width, box.height, box.depth, 0.0), minP);
+						minP = load(box.rawData, 0);
+						maxP = f32x4.add(load(box.rawData, 3), minP);
 					} else {
-						minB = f32x4(box.x, box.y, box.z, 0.0);
-						maxB = f32x4.add(f32x4(box.width, box.height, box.depth, 0.0), minB);
-						minP = f32x4.minNum(minB, minP);
-						maxP = f32x4.maxNum(maxB, maxP);
+						minB = load(box.rawData, 0);
+						maxB = f32x4.add(load(box.rawData, 3), minB);
+						minP = f32x4.min(minB, minP);
+						maxP = f32x4.max(maxB, maxP);
 					}
 				}
 
-				this._pBoxBounds.width = f32x4.extractLane(maxP, 0) - (this._pBoxBounds.x = f32x4.extractLane(minP, 0));
-				this._pBoxBounds.height = f32x4.extractLane(maxP, 1) - (this._pBoxBounds.y = f32x4.extractLane(minP, 1));
-				this._pBoxBounds.depth = f32x4.extractLane(maxP, 2) - (this._pBoxBounds.z = f32x4.extractLane(minP, 2));
+				store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, store(this._pBoxBounds.rawData, 0, minP)));
 			} else {
 				var min:number;
 				var max:number;
