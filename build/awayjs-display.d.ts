@@ -11174,6 +11174,7 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import Sphere = require("awayjs-core/lib/geom/Sphere");
 	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 	class SubGeometryUtils {
+	    private static tempFloat32x4;
 	    private static LIMIT_VERTS;
 	    private static LIMIT_INDICES;
 	    private static _indexSwap;

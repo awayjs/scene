@@ -5947,6 +5947,8 @@ var DisplayObjectContainer = (function (_super) {
             //use SIMD where available
             if (Extensions.SIMD) {
                 var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+                var load = f32x4.loadXYZ || f32x4.load3;
+                var store = f32x4.storeXYZ || f32x4.store3;
                 var minP;
                 var maxP;
                 var minB;
@@ -5954,19 +5956,17 @@ var DisplayObjectContainer = (function (_super) {
                 for (var i = 0; i < numChildren; ++i) {
                     box = this._children[i].getBox(this);
                     if (i == 0) {
-                        minP = f32x4(box.x, box.y, box.z, 0.0);
-                        maxP = f32x4.add(f32x4(box.width, box.height, box.depth, 0.0), minP);
+                        minP = load(box.rawData, 0);
+                        maxP = f32x4.add(load(box.rawData, 3), minP);
                     }
                     else {
-                        minB = f32x4(box.x, box.y, box.z, 0.0);
-                        maxB = f32x4.add(f32x4(box.width, box.height, box.depth, 0.0), minB);
-                        minP = f32x4.minNum(minB, minP);
-                        maxP = f32x4.maxNum(maxB, maxP);
+                        minB = load(box.rawData, 0);
+                        maxB = f32x4.add(load(box.rawData, 3), minB);
+                        minP = f32x4.min(minB, minP);
+                        maxP = f32x4.max(maxB, maxP);
                     }
                 }
-                this._pBoxBounds.width = f32x4.extractLane(maxP, 0) - (this._pBoxBounds.x = f32x4.extractLane(minP, 0));
-                this._pBoxBounds.height = f32x4.extractLane(maxP, 1) - (this._pBoxBounds.y = f32x4.extractLane(minP, 1));
-                this._pBoxBounds.depth = f32x4.extractLane(maxP, 2) - (this._pBoxBounds.z = f32x4.extractLane(minP, 2));
+                store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, store(this._pBoxBounds.rawData, 0, minP)));
             }
             else {
                 var min;
@@ -21175,17 +21175,20 @@ var SubGeometryUtils = (function () {
             output = new Box();
         if (Extensions.SIMD) {
             var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+            var load2 = f32x4.loadXY || f32x4.load2;
+            var store2 = f32x4.storeXY || f32x4.store2;
             var p;
-            var min = f32x4(output.x, output.y, output.x, output.y);
-            var max = f32x4.add(f32x4(output.width, output.height, output.width, output.height), min);
+            var min = f32x4.swizzle(load2(output.rawData, 0), 0, 1, 0, 1);
+            var max = f32x4.add(f32x4.swizzle(load2(output.rawData, 3), 0, 1, 0, 1), min);
             var len = positions.length;
             for (var i = 0; i < len; i += posDim2) {
-                p = (i + posDim == len) ? f32x4(positions[i], positions[i + 1], 0.0, 0.0) : f32x4(positions[i], positions[i + 1], positions[i + posDim], positions[i + posDim + 1]);
-                min = f32x4.minNum(p, min);
-                max = f32x4.maxNum(p, max);
+                p = (i + posDim == len) ? load2(positions, i) : f32x4.shuffle(load2(positions, i), load2(positions, i + posDim), 0, 1, 4, 5);
+                min = f32x4.min(p, min);
+                max = f32x4.max(p, max);
             }
-            output.width = Math.max(f32x4.extractLane(max, 0), f32x4.extractLane(max, 2)) - (output.x = Math.min(f32x4.extractLane(min, 0), f32x4.extractLane(min, 2)));
-            output.height = Math.max(f32x4.extractLane(max, 1), f32x4.extractLane(max, 3)) - (output.y = Math.min(f32x4.extractLane(min, 1), f32x4.extractLane(min, 3)));
+            min = f32x4.min(min, f32x4.swizzle(min, 2, 3, 0, 1));
+            max = f32x4.max(max, f32x4.swizzle(max, 2, 3, 0, 1));
+            store2(output.rawData, 3, f32x4.sub(max, store2(output.rawData, 0, min)));
         }
         else {
             var minX, minY, maxX, maxY;
@@ -21217,18 +21220,18 @@ var SubGeometryUtils = (function () {
             output = new Box();
         if (SIMD) {
             var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+            var load = f32x4.loadXYZ || f32x4.load3;
+            var store = f32x4.storeXYZ || f32x4.store3;
             var p;
-            var min = f32x4(output.x, output.y, output.z, 0.0);
-            var max = f32x4.add(f32x4(output.width, output.height, output.depth, 0.0), min);
+            var min = load(output.rawData, 0);
+            var max = f32x4.add(load(output.rawData, 3), min);
             var len = positions.length;
             for (var i = 0; i < len; i += posDim) {
-                p = f32x4(positions[i], positions[i + 1], positions[i + 2], 0.0);
-                min = f32x4.minNum(p, min);
-                max = f32x4.maxNum(p, max);
+                p = load(positions, i);
+                min = f32x4.min(p, min);
+                max = f32x4.max(p, max);
             }
-            output.width = f32x4.extractLane(max, 0) - (output.x = f32x4.extractLane(min, 0));
-            output.height = f32x4.extractLane(max, 1) - (output.y = f32x4.extractLane(min, 1));
-            output.depth = f32x4.extractLane(max, 2) - (output.z = f32x4.extractLane(min, 2));
+            store(output.rawData, 3, f32x4.sub(max, store(output.rawData, 0, min)));
         }
         else {
             var pos;
@@ -21271,13 +21274,16 @@ var SubGeometryUtils = (function () {
         var maxRadiusSquared = 0;
         var radiusSquared;
         var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
+        var load = f32x4.loadXYZ || f32x4.load123;
+        var store = f32x4.storeXYZ || f32x4.store123;
         var c = f32x4(center.x, center.y, center.z, 0.0);
         var d;
+        var temp = SubGeometryUtils.tempFloat32x4;
         var len = positions.length;
         for (var i = 0; i < len; i += posDim) {
-            d = f32x4.sub(f32x4(positions[i], positions[i + 1], positions[i + 2], 0.0), c);
-            d = f32x4.mul(d, d);
-            radiusSquared = f32x4.extractLane(d, 0) + f32x4.extractLane(d, 1) + f32x4.extractLane(d, 2);
+            d = f32x4.sub(load(positions, i), c);
+            store(temp, 0, f32x4.mul(d, d));
+            radiusSquared = temp[0] * temp[0] + temp[1] * temp[1] + temp[2] * temp[2];
             if (maxRadiusSquared < radiusSquared)
                 maxRadiusSquared = radiusSquared;
         }
@@ -21287,6 +21293,7 @@ var SubGeometryUtils = (function () {
         output.radius = Math.sqrt(maxRadiusSquared);
         return output;
     };
+    SubGeometryUtils.tempFloat32x4 = new Float32Array(4);
     SubGeometryUtils.LIMIT_VERTS = 0xffff;
     SubGeometryUtils.LIMIT_INDICES = 0xffffff;
     SubGeometryUtils._indexSwap = new Array();
