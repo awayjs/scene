@@ -651,7 +651,6 @@ class TextField extends Mesh
 	public set textColor(value:number)
 	{
 		this._textColor = value;
-		console.log("textcolor = "+value);
 		if(!this._iColorTransform)
 			this._iColorTransform = new ColorTransform();
 
