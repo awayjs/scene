@@ -5474,7 +5474,6 @@ var __extends = this.__extends || function (d, b) {
 var ArgumentError = require("awayjs-core/lib/errors/ArgumentError");
 var Error = require("awayjs-core/lib/errors/Error");
 var RangeError = require("awayjs-core/lib/errors/RangeError");
-var Extensions = require("awayjs-core/lib/utils/Extensions");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 /**
@@ -5944,65 +5943,38 @@ var DisplayObjectContainer = (function (_super) {
         var box;
         var numChildren = this._children.length;
         if (numChildren > 0) {
-            //use SIMD where available
-            if (Extensions.SIMD) {
-                var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-                var load = f32x4.loadXYZ || f32x4.load3;
-                var store = f32x4.storeXYZ || f32x4.store3;
-                var minP;
-                var maxP;
-                var minB;
-                var maxB;
-                for (var i = 0; i < numChildren; ++i) {
-                    box = this._children[i].getBox(this);
-                    if (i == 0) {
-                        minP = load(box.rawData, 0);
-                        maxP = f32x4.add(load(box.rawData, 3), minP);
-                    }
-                    else {
-                        minB = load(box.rawData, 0);
-                        maxB = f32x4.add(load(box.rawData, 3), minB);
-                        minP = f32x4.min(minB, minP);
-                        maxP = f32x4.max(maxB, maxP);
-                    }
+            var min;
+            var max;
+            var minX, minY, minZ;
+            var maxX, maxY, maxZ;
+            for (var i = 0; i < numChildren; ++i) {
+                box = this._children[i].getBox(this);
+                if (i == 0) {
+                    maxX = box.width + (minX = box.x);
+                    maxY = box.height + (minY = box.y);
+                    maxZ = box.depth + (minZ = box.z);
                 }
-                store(this._pBoxBounds.rawData, 0, minP);
-                store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, minP));
-            }
-            else {
-                var min;
-                var max;
-                var minX, minY, minZ;
-                var maxX, maxY, maxZ;
-                for (var i = 0; i < numChildren; ++i) {
-                    box = this._children[i].getBox(this);
-                    if (i == 0) {
-                        maxX = box.width + (minX = box.x);
-                        maxY = box.height + (minY = box.y);
-                        maxZ = box.depth + (minZ = box.z);
-                    }
-                    else {
-                        max = box.width + (min = box.x);
-                        if (min < minX)
-                            minX = min;
-                        if (max > maxX)
-                            maxX = max;
-                        max = box.height + (min = box.y);
-                        if (min < minY)
-                            minY = min;
-                        if (max > maxY)
-                            maxY = max;
-                        max = box.depth + (min = box.z);
-                        if (min < minZ)
-                            minZ = min;
-                        if (max > maxZ)
-                            maxZ = max;
-                    }
+                else {
+                    max = box.width + (min = box.x);
+                    if (min < minX)
+                        minX = min;
+                    if (max > maxX)
+                        maxX = max;
+                    max = box.height + (min = box.y);
+                    if (min < minY)
+                        minY = min;
+                    if (max > maxY)
+                        maxY = max;
+                    max = box.depth + (min = box.z);
+                    if (min < minZ)
+                        minZ = min;
+                    if (max > maxZ)
+                        maxZ = max;
                 }
-                this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
-                this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
-                this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
             }
+            this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+            this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+            this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
         }
         else {
             this._pBoxBounds.setEmpty();
@@ -6127,7 +6099,7 @@ var DisplayObjectContainer = (function (_super) {
 })(DisplayObject);
 module.exports = DisplayObjectContainer;
 
-},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-core/lib/utils/Extensions":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
+},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties"}],"awayjs-display/lib/containers/Loader":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -20460,7 +20432,6 @@ var Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var Box = require("awayjs-core/lib/geom/Box");
 var Sphere = require("awayjs-core/lib/geom/Sphere");
-var Extensions = require("awayjs-core/lib/utils/Extensions");
 var SubGeometryUtils = (function () {
     function SubGeometryUtils() {
     }
@@ -21174,44 +21145,24 @@ var SubGeometryUtils = (function () {
         var posDim2 = posDim * 2;
         if (output == null)
             output = new Box();
-        if (Extensions.SIMD) {
-            var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-            var load2 = f32x4.loadXY || f32x4.load2;
-            var store2 = f32x4.storeXY || f32x4.store2;
-            var p;
-            var min = f32x4.swizzle(load2(output.rawData, 0), 0, 1, 0, 1);
-            var max = f32x4.add(f32x4.swizzle(load2(output.rawData, 3), 0, 1, 0, 1), min);
-            var len = positions.length;
-            for (var i = 0; i < len; i += posDim2) {
-                p = (i + posDim == len) ? load2(positions, i) : f32x4.shuffle(load2(positions, i), load2(positions, i + posDim), 0, 1, 4, 5);
-                min = f32x4.min(p, min);
-                max = f32x4.max(p, max);
-            }
-            min = f32x4.min(min, f32x4.swizzle(min, 2, 3, 0, 1));
-            max = f32x4.max(max, f32x4.swizzle(max, 2, 3, 0, 1));
-            store2(output.rawData, 0, min);
-            store2(output.rawData, 3, f32x4.sub(max, min));
+        var minX, minY, maxX, maxY, p;
+        maxX = output.width + (minX = output.x);
+        maxY = output.height + (minY = output.y);
+        var len = positions.length;
+        for (var i = 0; i < len; i += posDim) {
+            p = positions[i];
+            if (p < minX)
+                minX = p;
+            else if (p > maxX)
+                maxX = p;
+            p = positions[i + 1];
+            if (p < minY)
+                minY = p;
+            else if (p > maxY)
+                maxY = p;
         }
-        else {
-            var minX, minY, maxX, maxY;
-            maxX = output.width + (minX = output.x);
-            maxY = output.height + (minY = output.y);
-            var len = positions.length;
-            for (var i = 0; i < len; i += posDim) {
-                p = positions[i];
-                if (p < minX)
-                    minX = p;
-                else if (p > maxX)
-                    maxX = p;
-                p = positions[i + 1];
-                if (p < minY)
-                    minY = p;
-                else if (p > maxY)
-                    maxY = p;
-            }
-            output.width = maxX - (output.x = minX);
-            output.height = maxY - (output.y = minY);
-        }
+        output.width = maxX - (output.x = minX);
+        output.height = maxY - (output.y = minY);
         return output;
     };
     SubGeometryUtils.getTriangleGeometryBoxBounds = function (positionAttributes, output, count, offset) {
@@ -21220,52 +21171,34 @@ var SubGeometryUtils = (function () {
         var posDim = positionAttributes.dimensions;
         if (output == null)
             output = new Box();
-        if (SIMD) {
-            var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-            var load = f32x4.loadXYZ || f32x4.load3;
-            var store = f32x4.storeXYZ || f32x4.store3;
-            var p;
-            var min = load(output.rawData, 0);
-            var max = f32x4.add(load(output.rawData, 3), min);
-            var len = positions.length;
-            for (var i = 0; i < len; i += posDim) {
-                p = load(positions, i);
-                min = f32x4.min(p, min);
-                max = f32x4.max(p, max);
-            }
-            store(output.rawData, 0, min);
-            store(output.rawData, 3, f32x4.sub(max, min));
+        var pos;
+        var minX = output.x;
+        var minY = output.y;
+        var minZ = output.z;
+        var maxX = output.width + minX;
+        var maxY = output.height + minY;
+        var maxZ = output.depth + minZ;
+        var len = positions.length;
+        for (var i = 0; i < len; i += posDim) {
+            pos = positions[i];
+            if (pos < minX)
+                minX = pos;
+            else if (pos > maxX)
+                maxX = pos;
+            pos = positions[i + 1];
+            if (pos < minY)
+                minY = pos;
+            else if (pos > maxY)
+                maxY = pos;
+            pos = positions[i + 2];
+            if (pos < minZ)
+                minZ = pos;
+            else if (pos > maxZ)
+                maxZ = pos;
         }
-        else {
-            var pos;
-            var minX = output.x;
-            var minY = output.y;
-            var minZ = output.z;
-            var maxX = output.width + minX;
-            var maxY = output.height + minY;
-            var maxZ = output.depth + minZ;
-            var len = positions.length;
-            for (var i = 0; i < len; i += posDim) {
-                pos = positions[i];
-                if (pos < minX)
-                    minX = pos;
-                else if (pos > maxX)
-                    maxX = pos;
-                pos = positions[i + 1];
-                if (pos < minY)
-                    minY = pos;
-                else if (pos > maxY)
-                    maxY = pos;
-                pos = positions[i + 2];
-                if (pos < minZ)
-                    minZ = pos;
-                else if (pos > maxZ)
-                    maxZ = pos;
-            }
-            output.width = maxX - (output.x = minX);
-            output.height = maxY - (output.y = minY);
-            output.depth = maxZ - (output.z = minZ);
-        }
+        output.width = maxX - (output.x = minX);
+        output.height = maxY - (output.y = minY);
+        output.depth = maxZ - (output.z = minZ);
         return output;
     };
     SubGeometryUtils.getTriangleGeometrySphereBounds = function (positionAttributes, center, output, count, offset) {
@@ -21276,17 +21209,15 @@ var SubGeometryUtils = (function () {
             output = new Sphere();
         var maxRadiusSquared = 0;
         var radiusSquared;
-        var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-        var load = f32x4.loadXYZ || f32x4.load123;
-        var store = f32x4.storeXYZ || f32x4.store123;
-        var c = f32x4(center.x, center.y, center.z, 0.0);
-        var d;
-        var temp = SubGeometryUtils.tempFloat32x4;
         var len = positions.length;
+        var distanceX;
+        var distanceY;
+        var distanceZ;
         for (var i = 0; i < len; i += posDim) {
-            d = f32x4.sub(load(positions, i), c);
-            store(temp, 0, f32x4.mul(d, d));
-            radiusSquared = temp[0] * temp[0] + temp[1] * temp[1] + temp[2] * temp[2];
+            distanceX = positions[i] - center.x;
+            distanceY = positions[i + 1] - center.y;
+            distanceZ = positions[i + 2] - center.z;
+            radiusSquared = distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ;
             if (maxRadiusSquared < radiusSquared)
                 maxRadiusSquared = radiusSquared;
         }
@@ -21304,7 +21235,7 @@ var SubGeometryUtils = (function () {
 })();
 module.exports = SubGeometryUtils;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/utils/Extensions":undefined}],"awayjs-display/lib/vos/ISubGeometryVO":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/vos/ISubGeometryVO":[function(require,module,exports){
 
 },{}]},{},[])
 
