@@ -14,8 +14,6 @@ import Extensions				= require("awayjs-core/lib/utils/Extensions");
 
 import CurveSubGeometry			= require("awayjs-display/lib/base/CurveSubGeometry");
 
-declare var SIMD:any;
-
 class SubGeometryUtils
 {
 	private static tempFloat32x4:Float32Array = new Float32Array(4);
@@ -942,51 +940,29 @@ class SubGeometryUtils
 		if (output == null)
 			output = new Box();
 
-		if (Extensions.SIMD) {
-			var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-			var load2 = f32x4.loadXY || f32x4.load2;
-			var store2 = f32x4.storeXY || f32x4.store2;
-			var p;
-			var min = f32x4.swizzle(load2(output.rawData, 0), 0, 1, 0, 1);
-			var max = f32x4.add(f32x4.swizzle(load2(output.rawData, 3), 0, 1, 0, 1), min);
+		var minX, minY, maxX, maxY, p;
 
-			var len:number = positions.length;
-			for (var i:number = 0; i < len; i += posDim2) { //double-up the 2d calculations
-				p = (i + posDim == len)? load2(positions, i) : f32x4.shuffle(load2(positions, i), load2(positions, i + posDim), 0, 1, 4, 5);
-				min = f32x4.min(p, min);
-				max = f32x4.max(p, max);
-			}
+		maxX = output.width + (minX = output.x);
+		maxY = output.height + (minY = output.y);
 
-			min = f32x4.min(min, f32x4.swizzle(min, 2, 3, 0, 1));
-			max = f32x4.max(max, f32x4.swizzle(max, 2, 3, 0, 1));
+		var len:number = positions.length;
+		for (var i:number = 0; i < len; i += posDim) {
+			p = positions[i];
+			if (p < minX)
+				minX = p;
+			else if (p > maxX)
+				maxX = p;
 
-			store2(output.rawData, 0, min);
-			store2(output.rawData, 3, f32x4.sub(max, min));
-		} else {
-			var minX, minY, maxX, maxY;
+			p = positions[i + 1];
 
-			maxX = output.width + (minX = output.x);
-			maxY = output.height + (minY = output.y);
-
-			var len:number = positions.length;
-			for (var i:number = 0; i < len; i += posDim) {
-				p = positions[i];
-				if (p < minX)
-					minX = p;
-				else if (p > maxX)
-					maxX = p;
-
-				p = positions[i + 1];
-
-				if (p < minY)
-					minY = p;
-				else if (p > maxY)
-					maxY = p;
-			}
-
-			output.width = maxX - (output.x = minX);
-			output.height = maxY - (output.y = minY);
+			if (p < minY)
+				minY = p;
+			else if (p > maxY)
+				maxY = p;
 		}
+
+		output.width = maxX - (output.x = minX);
+		output.height = maxY - (output.y = minY);
 
 		return output;
 	}
@@ -1000,59 +976,40 @@ class SubGeometryUtils
 		if (output == null)
 			output = new Box();
 
-		if (SIMD) {
-			var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-			var load = f32x4.loadXYZ || f32x4.load3;
-			var store = f32x4.storeXYZ || f32x4.store3;
-			var p;
-			var min = load(output.rawData, 0);
-			var max = f32x4.add(load(output.rawData, 3), min);
+		var pos:number;
+		var minX:number = output.x;
+		var minY:number = output.y;
+		var minZ:number = output.z;
+		var maxX:number = output.width + minX;
+		var maxY:number = output.height + minY;
+		var maxZ:number = output.depth + minZ;
 
-			var len:number = positions.length;
-			for (var i:number = 0; i < len; i += posDim) {
-				p = load(positions, i);
-				min = f32x4.min(p, min);
-				max = f32x4.max(p, max);
-			}
+		var len:number = positions.length;
+		for (var i:number = 0; i < len; i += posDim) {
+			pos = positions[i];
+			if (pos < minX)
+				minX = pos;
+			else if (pos > maxX)
+				maxX = pos;
 
-			store(output.rawData, 0, min);
-			store(output.rawData, 3, f32x4.sub(max, min));
-		} else {
-			var pos:number;
-			var minX:number = output.x;
-			var minY:number = output.y;
-			var minZ:number = output.z;
-			var maxX:number = output.width + minX;
-			var maxY:number = output.height + minY;
-			var maxZ:number = output.depth + minZ;
+			pos = positions[i + 1];
 
-			var len:number = positions.length;
-			for (var i:number = 0; i < len; i += posDim) {
-				pos = positions[i];
-				if (pos < minX)
-					minX = pos;
-				else if (pos > maxX)
-					maxX = pos;
+			if (pos < minY)
+				minY = pos;
+			else if (pos > maxY)
+				maxY = pos;
 
-				pos = positions[i + 1];
+			pos = positions[i + 2];
 
-				if (pos < minY)
-					minY = pos;
-				else if (pos > maxY)
-					maxY = pos;
-
-				pos = positions[i + 2];
-
-				if (pos < minZ)
-					minZ = pos;
-				else if (pos > maxZ)
-					maxZ = pos;
-			}
-
-			output.width = maxX - (output.x = minX);
-			output.height = maxY - (output.y = minY);
-			output.depth = maxZ - (output.z = minZ);
+			if (pos < minZ)
+				minZ = pos;
+			else if (pos > maxZ)
+				maxZ = pos;
 		}
+
+		output.width = maxX - (output.x = minX);
+		output.height = maxY - (output.y = minY);
+		output.depth = maxZ - (output.z = minZ);
 
 		return output;
 	}
@@ -1067,19 +1024,16 @@ class SubGeometryUtils
 
 		var maxRadiusSquared:number = 0;
 		var radiusSquared:number;
-		var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-		var load = f32x4.loadXYZ || f32x4.load123;
-		var store = f32x4.storeXYZ || f32x4.store123;
-		var c = f32x4(center.x, center.y, center.z, 0.0);
-		var d;
-		var temp:Float32Array = SubGeometryUtils.tempFloat32x4;
+		var len = positions.length;
+		var distanceX:number;
+		var distanceY:number;
+		var distanceZ:number;
 
-		var len:number = positions.length;
 		for (var i:number = 0; i < len; i += posDim) {
-			d = f32x4.sub(load(positions, i), c);
-			store(temp, 0, f32x4.mul(d, d));
-
-			radiusSquared = temp[0]*temp[0] + temp[1]*temp[1] + temp[2]*temp[2];
+			distanceX = positions[i] - center.x;
+			distanceY = positions[i + 1] - center.y;
+			distanceZ = positions[i + 2] - center.z;
+			radiusSquared = distanceX*distanceX + distanceY*distanceY + distanceZ*distanceZ;
 
 			if (maxRadiusSquared < radiusSquared)
 				maxRadiusSquared = radiusSquared;

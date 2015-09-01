@@ -12,8 +12,6 @@ import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import ContainerNode				= require("awayjs-display/lib/partition/ContainerNode");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 
-declare var SIMD:any;
-
 /**
  * The DisplayObjectContainer class is the base class for all objects that can
  * serve as display object containers on the display list. The display list
@@ -569,70 +567,42 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		var numChildren:number = this._children.length;
 
 		if (numChildren > 0) {
-			//use SIMD where available
-			if (Extensions.SIMD) {
-				var f32x4 = SIMD.float32x4 || SIMD.Float32x4;
-				var load = f32x4.loadXYZ || f32x4.load3;
-				var store = f32x4.storeXYZ || f32x4.store3;
-				var minP;
-				var maxP;
-				var minB;
-				var maxB;
+			var min:number;
+			var max:number;
+			var minX:number, minY:number, minZ:number;
+			var maxX:number, maxY:number, maxZ:number;
 
-				for (var i:number = 0; i < numChildren; ++i) {
-					box = this._children[i].getBox(this);
+			for (var i:number = 0; i < numChildren; ++i) {
+				box = this._children[i].getBox(this);
 
-					if (i == 0) {
-						minP = load(box.rawData, 0);
-						maxP = f32x4.add(load(box.rawData, 3), minP);
-					} else {
-						minB = load(box.rawData, 0);
-						maxB = f32x4.add(load(box.rawData, 3), minB);
-						minP = f32x4.min(minB, minP);
-						maxP = f32x4.max(maxB, maxP);
-					}
+				if (i == 0) {
+					maxX = box.width + (minX = box.x);
+					maxY = box.height + (minY = box.y);
+					maxZ = box.depth + (minZ = box.z);
+				} else {
+					max = box.width + (min = box.x);
+					if (min < minX)
+						minX = min;
+					if (max > maxX)
+						maxX = max;
+
+					max = box.height + (min = box.y);
+					if (min < minY)
+						minY = min;
+					if (max > maxY)
+						maxY = max;
+
+					max = box.depth + (min = box.z);
+					if (min < minZ)
+						minZ = min;
+					if (max > maxZ)
+						maxZ = max;
 				}
-
-				store(this._pBoxBounds.rawData, 0, minP);
-				store(this._pBoxBounds.rawData, 3, f32x4.sub(maxP, minP));
-			} else {
-				var min:number;
-				var max:number;
-				var minX:number, minY:number, minZ:number;
-				var maxX:number, maxY:number, maxZ:number;
-
-				for (var i:number = 0; i < numChildren; ++i) {
-					box = this._children[i].getBox(this);
-
-					if (i == 0) {
-						maxX = box.width + (minX = box.x);
-						maxY = box.height + (minY = box.y);
-						maxZ = box.depth + (minZ = box.z);
-					} else {
-						max = box.width + (min = box.x);
-						if (min < minX)
-							minX = min;
-						if (max > maxX)
-							maxX = max;
-
-						max = box.height + (min = box.y);
-						if (min < minY)
-							minY = min;
-						if (max > maxY)
-							maxY = max;
-
-						max = box.depth + (min = box.z);
-						if (min < minZ)
-							minZ = min;
-						if (max > maxZ)
-							maxZ = max;
-					}
-				}
-
-				this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
-				this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
-				this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
 			}
+
+			this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+			this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+			this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
 		} else {
 			this._pBoxBounds.setEmpty();
 		}
