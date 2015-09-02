@@ -656,7 +656,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		return child;
 	}
 
-	private getDepthIndexInternal(depth:number /*int*/):number
+	public getDepthIndexInternal(depth:number /*int*/):number
 	{
 		if (!this._depth_childs[depth])
 			return -1;

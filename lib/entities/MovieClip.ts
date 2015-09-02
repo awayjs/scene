@@ -249,16 +249,32 @@ class MovieClip extends DisplayObjectContainer
 
         child.reset();// this takes care of transform and visibility
 
-        super.addChildAtDepth(child, depth, replace);
-
-        this._depth_sessionIDs[depth] = child._sessionID;
-
-        this._sessionID_childs[child._sessionID] = child;
-
-        return child;
+        return super.addChildAtDepth(child, depth, replace);
     }
 
-    public removeChildAtInternal(index:number /*int*/):DisplayObject
+    public _addTimelineChildAt(child:DisplayObject, depth:number, sessionID:number):DisplayObject
+    {
+
+        this._depth_sessionIDs[depth] = child._sessionID = sessionID;
+
+        this._sessionID_childs[sessionID] = child;
+
+        return this.addChildAtDepth(child, depth);
+    }
+
+    public removeChildAtInternal(index:number):DisplayObject
+    {
+        var child:DisplayObject = this._children[index];
+
+        if(child.adapter)
+            child.adapter.freeFromScript();
+
+        this.adapter.unregisterScriptObject(child);
+
+        return super.removeChildAtInternal(index);
+    }
+
+    public _removeTimelineChildAt(index:number):DisplayObject
     {
         var child:DisplayObject = this._children[index];
 
@@ -270,12 +286,7 @@ class MovieClip extends DisplayObjectContainer
 
         child._sessionID = -1;
 
-        if(child.adapter)
-            child.adapter.freeFromScript();
-
-        this.adapter.unregisterScriptObject(child);
-
-        return super.removeChildAtInternal(index);
+        return this.removeChildAt(index);
     }
 
     public get assetType():string

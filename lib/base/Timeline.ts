@@ -174,6 +174,9 @@ class Timeline
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
 		var target_keyframe_idx:number = this.keyframe_indices[value];
 
+		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
+			return;
+
 		var firstframe:number = this.keyframe_firstframes[target_keyframe_idx];
 
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
@@ -181,12 +184,6 @@ class Timeline
 			this.constructNextFrame(target_mc, !skip_script, true);
 			return;
 		}
-
-
-		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
-			//if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
-			//	this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
-			return;
 
 		var break_frame_idx:number = this.keyframe_constructframes[target_keyframe_idx];
 
@@ -207,7 +204,7 @@ class Timeline
 
 		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 			for (i = target_mc.numChildren - 1; i >= 0; i--)
-				target_mc.removeChildAt(i);
+				target_mc._removeTimelineChildAt(i);
 
 		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
 		if (!jump_forward)
@@ -256,7 +253,7 @@ class Timeline
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
 			if (depth_sessionIDs[child._depthID] != child._sessionID) {
-				target_mc.removeChildAt(i);
+				target_mc._removeTimelineChildAt(i);
 			} else if (!jump_forward) {
 				if(child.adapter) {
 					if (!child.adapter.isBlockedByScript()) {
@@ -284,15 +281,14 @@ class Timeline
 
 		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
+
 		// now we need to addchild the objects that were added before targetframe first
 		// than we can add the script of the targetframe
 		// than we can addchild objects added on targetframe
 		for (var key in depth_sessionIDs) {
 			child = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
-			if (child._sessionID == -1) {
-				child._sessionID = depth_sessionIDs[key];
-				target_mc.addChildAtDepth(child, Number(key));
-			}
+			if (child._sessionID == -1)
+				target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
 		}
 
 
@@ -325,7 +321,7 @@ class Timeline
 
 			if(frame_recipe & 1) {
 				for (var i:number = target_mc.numChildren - 1; i >= 0; i--)
-					target_mc.removeChildAt(i);
+					target_mc._removeTimelineChildAt(i);
 			} else if (frame_recipe & 2) {
 				this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
 			}
@@ -343,7 +339,7 @@ class Timeline
 	public remove_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
 		for(var i:number = 0; i < len; i++)
-			sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
+			sourceMovieClip._removeTimelineChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[start_index + i] - 16383));
 	}
 
 
@@ -356,9 +352,7 @@ class Timeline
 		var end_index:number = start_index + len;
 		for (var i:number = end_index - 1; i >= start_index; i--) {
 			idx = i*2;
-			var target:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
-			target._sessionID = i;
-			sourceMovieClip.addChildAtDepth(target, this.add_child_stream[idx + 1] - 16383);
+			sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
 		}
 	}
 
