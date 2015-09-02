@@ -10632,6 +10632,7 @@ var MovieClip = (function (_super) {
         if (child.adapter)
             child.adapter.freeFromScript();
         this.adapter.unregisterScriptObject(child);
+        child._sessionID = -1;
         return _super.prototype.removeChildAtInternal.call(this, index);
     };
     MovieClip.prototype._removeTimelineChildAt = function (index) {
