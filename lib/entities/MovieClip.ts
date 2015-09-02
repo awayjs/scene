@@ -271,6 +271,8 @@ class MovieClip extends DisplayObjectContainer
 
         this.adapter.unregisterScriptObject(child);
 
+        child._sessionID = -1;
+
         return super.removeChildAtInternal(index);
     }
 
