@@ -279,8 +279,6 @@ class Timeline
 			}
 		}
 
-		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
-			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 		// now we need to addchild the objects that were added before targetframe first
 		// than we can add the script of the targetframe
@@ -290,6 +288,8 @@ class Timeline
 			if (child._sessionID == -1)
 				target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
 		}
+		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 
 		//  pass2: apply update commands for objects on stage (only if they are not blocked by script)
