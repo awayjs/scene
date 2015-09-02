@@ -11440,7 +11440,6 @@ var TextField = (function (_super) {
         },
         set: function (value) {
             this._textColor = value;
-            console.log("textcolor = " + value);
             if (!this._iColorTransform)
                 this._iColorTransform = new ColorTransform();
             this._iColorTransform.color = value;
