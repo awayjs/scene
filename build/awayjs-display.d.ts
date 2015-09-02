@@ -3504,7 +3504,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	     * @param child
 	     */
 	    removeChildAtInternal(index: number): DisplayObject;
-	    private getDepthIndexInternal(depth);
+	    getDepthIndexInternal(depth: number): number;
 	    private _updateNextHighestDepth();
 	    /**
 	     * Evaluates the display object to see if it overlaps or intersects with the
@@ -6212,28 +6212,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	
 }
 
-declare module "awayjs-display/lib/entities/PointLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
-	class PointLight extends LightBase implements IEntity {
-	    _pRadius: number;
-	    _pFallOff: number;
-	    _pFallOffFactor: number;
-	    constructor();
-	    pCreateShadowMapper(): CubeMapShadowMapper;
-	    radius: number;
-	    iFallOffFactor(): number;
-	    fallOff: number;
-	    _pUpdateSphereBounds(): void;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	}
-	export = PointLight;
-	
-}
-
 declare module "awayjs-display/lib/entities/MovieClip" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -6285,7 +6263,9 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    getChildAtSessionID(sessionID: number): DisplayObject;
 	    getSessionIDDepths(): Object;
 	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
+	    _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject;
 	    removeChildAtInternal(index: number): DisplayObject;
+	    _removeTimelineChildAt(index: number): DisplayObject;
 	    assetType: string;
 	    /**
 	     * Starts playback of animation from current position
@@ -6308,6 +6288,28 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    _clearInterfaces(): void;
 	}
 	export = MovieClip;
+	
+}
+
+declare module "awayjs-display/lib/entities/PointLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
+	class PointLight extends LightBase implements IEntity {
+	    _pRadius: number;
+	    _pFallOff: number;
+	    _pFallOffFactor: number;
+	    constructor();
+	    pCreateShadowMapper(): CubeMapShadowMapper;
+	    radius: number;
+	    iFallOffFactor(): number;
+	    fallOff: number;
+	    _pUpdateSphereBounds(): void;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	}
+	export = PointLight;
 	
 }
 
@@ -7665,6 +7667,17 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/RendererEvent" {
+	import Event = require("awayjs-core/lib/events/Event");
+	class RendererEvent extends Event {
+	    static VIEWPORT_UPDATED: string;
+	    static SCISSOR_UPDATED: string;
+	    constructor(type: string);
+	}
+	export = RendererEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/ResizeEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class ResizeEvent extends Event {
@@ -7676,17 +7689,6 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	    oldWidth: number;
 	}
 	export = ResizeEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/RendererEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class RendererEvent extends Event {
-	    static VIEWPORT_UPDATED: string;
-	    static SCISSOR_UPDATED: string;
-	    constructor(type: string);
-	}
-	export = RendererEvent;
 	
 }
 
@@ -8569,18 +8571,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadow
 	
 }
 
-declare module "awayjs-display/lib/partition/BasicPartition" {
-	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	/**
-	 * @class away.partition.Partition
-	 */
-	class BasicPartition extends PartitionBase {
-	    constructor();
-	}
-	export = BasicPartition;
-	
-}
-
 declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import LightBase = require("awayjs-display/lib/base/LightBase");
@@ -8613,6 +8603,18 @@ declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	    _pSetDepthMapSize(value: any): void;
 	}
 	export = ShadowMapperBase;
+	
+}
+
+declare module "awayjs-display/lib/partition/BasicPartition" {
+	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+	/**
+	 * @class away.partition.Partition
+	 */
+	class BasicPartition extends PartitionBase {
+	    constructor();
+	}
+	export = BasicPartition;
 	
 }
 
@@ -8788,6 +8790,28 @@ declare module "awayjs-display/lib/partition/IDisplayObjectNode" {
 	
 }
 
+declare module "awayjs-display/lib/partition/INode" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
+	 * create node objects in the partition pipeline that represent the contents of a Entity
+	 *
+	 * @class away.pool.IDisplayObjectNode
+	 */
+	interface INode {
+	    parent: INode;
+	    numEntities: number;
+	    debugChildrenVisible: boolean;
+	    _iUpdateImplicitDebugVisible(value: boolean): any;
+	    acceptTraverser(traverser: CollectorBase): any;
+	    iAddNode(node: INode): any;
+	    iRemoveNode(node: INode): any;
+	    dispose(): any;
+	}
+	export = INode;
+	
+}
+
 declare module "awayjs-display/lib/partition/LightProbeNode" {
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
@@ -8895,28 +8919,6 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	    _pCreateDebugEntity(): IEntity;
 	}
 	export = NodeBase;
-	
-}
-
-declare module "awayjs-display/lib/partition/INode" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
-	 * create node objects in the partition pipeline that represent the contents of a Entity
-	 *
-	 * @class away.pool.IDisplayObjectNode
-	 */
-	interface INode {
-	    parent: INode;
-	    numEntities: number;
-	    debugChildrenVisible: boolean;
-	    _iUpdateImplicitDebugVisible(value: boolean): any;
-	    acceptTraverser(traverser: CollectorBase): any;
-	    iAddNode(node: INode): any;
-	    iRemoveNode(node: INode): any;
-	    dispose(): any;
-	}
-	export = INode;
 	
 }
 
@@ -10826,30 +10828,6 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	
 }
 
-declare module "awayjs-display/lib/textures/SingleCubeTexture" {
-	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class SingleCubeTexture extends TextureBase {
-	    static assetType: string;
-	    private _samplerCube;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     * @returns {BitmapData}
-	     */
-	    samplerCube: SamplerCube;
-	    constructor(source: SamplerCube);
-	    constructor(source: ImageCube);
-	}
-	export = SingleCubeTexture;
-	
-}
-
 declare module "awayjs-display/lib/textures/Single2DTexture" {
 	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
 	import Image2D = require("awayjs-core/lib/data/Image2D");
@@ -10871,6 +10849,30 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	    constructor(source: Image2D);
 	}
 	export = Single2DTexture;
+	
+}
+
+declare module "awayjs-display/lib/textures/SingleCubeTexture" {
+	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
+	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	class SingleCubeTexture extends TextureBase {
+	    static assetType: string;
+	    private _samplerCube;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     * @returns {BitmapData}
+	     */
+	    samplerCube: SamplerCube;
+	    constructor(source: SamplerCube);
+	    constructor(source: ImageCube);
+	}
+	export = SingleCubeTexture;
 	
 }
 
@@ -11004,6 +11006,77 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = CollectorBase;
+	
+}
+
+declare module "awayjs-display/lib/traverse/EntityCollector" {
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import PointLight = require("awayjs-display/lib/entities/PointLight");
+	import Skybox = require("awayjs-display/lib/entities/Skybox");
+	/**
+	 * @class away.traverse.EntityCollector
+	 */
+	class EntityCollector extends CollectorBase {
+	    _pSkybox: Skybox;
+	    _pLights: Array<LightBase>;
+	    private _directionalLights;
+	    private _pointLights;
+	    private _lightProbes;
+	    _pNumLights: number;
+	    private _numDirectionalLights;
+	    private _numPointLights;
+	    private _numLightProbes;
+	    /**
+	     *
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     *
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     *
+	     */
+	    lights: Array<LightBase>;
+	    /**
+	     *
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     *
+	     */
+	    skyBox: Skybox;
+	    constructor();
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyDirectionalLight(entity: IEntity): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyLightProbe(entity: IEntity): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyPointLight(entity: IEntity): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applySkybox(entity: IEntity): void;
+	    /**
+	     *
+	     */
+	    clear(): void;
+	}
+	export = EntityCollector;
 	
 }
 
@@ -11146,77 +11219,6 @@ declare module "awayjs-display/lib/vos/ISubGeometryVO" {
 	    invalidate(): any;
 	}
 	export = ISubGeometryVO;
-	
-}
-
-declare module "awayjs-display/lib/traverse/EntityCollector" {
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
-	import Skybox = require("awayjs-display/lib/entities/Skybox");
-	/**
-	 * @class away.traverse.EntityCollector
-	 */
-	class EntityCollector extends CollectorBase {
-	    _pSkybox: Skybox;
-	    _pLights: Array<LightBase>;
-	    private _directionalLights;
-	    private _pointLights;
-	    private _lightProbes;
-	    _pNumLights: number;
-	    private _numDirectionalLights;
-	    private _numPointLights;
-	    private _numLightProbes;
-	    /**
-	     *
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     *
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     *
-	     */
-	    lights: Array<LightBase>;
-	    /**
-	     *
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     *
-	     */
-	    skyBox: Skybox;
-	    constructor();
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyDirectionalLight(entity: IEntity): void;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyLightProbe(entity: IEntity): void;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyPointLight(entity: IEntity): void;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applySkybox(entity: IEntity): void;
-	    /**
-	     *
-	     */
-	    clear(): void;
-	}
-	export = EntityCollector;
 	
 }
 

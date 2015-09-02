@@ -3917,16 +3917,14 @@ var Timeline = (function () {
             return;
         var current_keyframe_idx = target_mc.constructedKeyFrameIndex;
         var target_keyframe_idx = this.keyframe_indices[value];
+        if (current_keyframe_idx == target_keyframe_idx)
+            return;
         var firstframe = this.keyframe_firstframes[target_keyframe_idx];
         if (current_keyframe_idx + 1 == target_keyframe_idx) {
             target_mc.set_currentFrameIndex(value);
             this.constructNextFrame(target_mc, !skip_script, true);
             return;
         }
-        if (current_keyframe_idx == target_keyframe_idx)
-            //if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
-            //	this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
-            return;
         var break_frame_idx = this.keyframe_constructframes[target_keyframe_idx];
         //we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
         var jump_forward = (target_keyframe_idx > current_keyframe_idx);
@@ -3940,7 +3938,7 @@ var Timeline = (function () {
         var child;
         if (jump_gap)
             for (i = target_mc.numChildren - 1; i >= 0; i--)
-                target_mc.removeChildAt(i);
+                target_mc._removeTimelineChildAt(i);
         //if we jump back, we want to reset all objects (but not the timelines of the mcs)
         if (!jump_forward)
             target_mc.resetSessionIDs();
@@ -3975,7 +3973,7 @@ var Timeline = (function () {
         for (i = target_mc.numChildren - 1; i >= 0; i--) {
             child = target_mc._children[i];
             if (depth_sessionIDs[child._depthID] != child._sessionID) {
-                target_mc.removeChildAt(i);
+                target_mc._removeTimelineChildAt(i);
             }
             else if (!jump_forward) {
                 if (child.adapter) {
@@ -4005,10 +4003,8 @@ var Timeline = (function () {
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         for (var key in depth_sessionIDs) {
             child = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key] * 2]);
-            if (child._sessionID == -1) {
-                child._sessionID = depth_sessionIDs[key];
-                target_mc.addChildAtDepth(child, Number(key));
-            }
+            if (child._sessionID == -1)
+                target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
         }
         //  pass2: apply update commands for objects on stage (only if they are not blocked by script)
         var frame_command_idx;
@@ -4033,7 +4029,7 @@ var Timeline = (function () {
             var frame_recipe = this.frame_recipe[new_keyFrameIndex];
             if (frame_recipe & 1) {
                 for (var i = target_mc.numChildren - 1; i >= 0; i--)
-                    target_mc.removeChildAt(i);
+                    target_mc._removeTimelineChildAt(i);
             }
             else if (frame_recipe & 2) {
                 this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
@@ -4046,7 +4042,7 @@ var Timeline = (function () {
     };
     Timeline.prototype.remove_childs_continous = function (sourceMovieClip, start_index, len) {
         for (var i = 0; i < len; i++)
-            sourceMovieClip.removeChildAtDepth(this.remove_child_stream[start_index + i] - 16383);
+            sourceMovieClip._removeTimelineChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[start_index + i] - 16383));
     };
     // used to add childs when jumping between frames
     Timeline.prototype.add_childs_continous = function (sourceMovieClip, start_index, len) {
@@ -4056,9 +4052,7 @@ var Timeline = (function () {
         var end_index = start_index + len;
         for (var i = end_index - 1; i >= start_index; i--) {
             idx = i * 2;
-            var target = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
-            target._sessionID = i;
-            sourceMovieClip.addChildAtDepth(target, this.add_child_stream[idx + 1] - 16383);
+            sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
         }
     };
     Timeline.prototype.update_childs = function (sourceMovieClip, start_index, len) {
@@ -10626,22 +10620,28 @@ var MovieClip = (function (_super) {
         //this should be implemented for all display objects
         child.inheritColorTransform = true;
         child.reset(); // this takes care of transform and visibility
-        _super.prototype.addChildAtDepth.call(this, child, depth, replace);
-        this._depth_sessionIDs[depth] = child._sessionID;
-        this._sessionID_childs[child._sessionID] = child;
-        return child;
+        return _super.prototype.addChildAtDepth.call(this, child, depth, replace);
     };
-    MovieClip.prototype.removeChildAtInternal = function (index /*int*/) {
+    MovieClip.prototype._addTimelineChildAt = function (child, depth, sessionID) {
+        this._depth_sessionIDs[depth] = child._sessionID = sessionID;
+        this._sessionID_childs[sessionID] = child;
+        return this.addChildAtDepth(child, depth);
+    };
+    MovieClip.prototype.removeChildAtInternal = function (index) {
+        var child = this._children[index];
+        if (child.adapter)
+            child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        return _super.prototype.removeChildAtInternal.call(this, index);
+    };
+    MovieClip.prototype._removeTimelineChildAt = function (index) {
         var child = this._children[index];
         //check to make sure _depth_sessionIDs wasn't modified with a new child
         if (this._depth_sessionIDs[child._depthID] == child._sessionID)
             delete this._depth_sessionIDs[child._depthID];
         delete this._sessionID_childs[child._sessionID];
         child._sessionID = -1;
-        if (child.adapter)
-            child.adapter.freeFromScript();
-        this.adapter.unregisterScriptObject(child);
-        return _super.prototype.removeChildAtInternal.call(this, index);
+        return this.removeChildAt(index);
     };
     Object.defineProperty(MovieClip.prototype, "assetType", {
         get: function () {
