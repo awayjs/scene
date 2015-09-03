@@ -2334,6 +2334,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	 * @class away.base.TriangleSubGeometry
 	 */
 	class SubGeometryBase extends AssetBase {
+	    usages: number;
 	    private _subGeometryVO;
 	    _pIndices: Short3Attributes;
 	    private _numElements;
@@ -2403,6 +2404,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	    _iAddSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
 	    _iRemoveSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
 	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    _clearInterfaces(): void;
 	}
 	export = SubGeometryBase;
 	
@@ -2427,7 +2429,7 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	 * @class away.base.SubMeshBase
 	 */
 	class SubMeshBase extends AssetBase {
-	    _pParentMesh: Mesh;
+	    private _parentMesh;
 	    _uvTransform: UVTransform;
 	    _iIndex: number;
 	    _material: MaterialBase;
@@ -2455,7 +2457,7 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    /**
 	     * Creates a new SubMeshBase object
 	     */
-	    constructor();
+	    constructor(parentMesh: Mesh, material?: MaterialBase);
 	    /**
 	     *
 	     */

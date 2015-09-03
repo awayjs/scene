@@ -352,10 +352,9 @@ var CurveSubMesh = (function (_super) {
      */
     function CurveSubMesh(subGeometry, parentMesh, material) {
         if (material === void 0) { material = null; }
-        _super.call(this);
-        this._pParentMesh = parentMesh;
+        _super.call(this, parentMesh, material);
         this._subGeometry = subGeometry;
-        this.material = material;
+        this._subGeometry.usages++;
     }
     Object.defineProperty(CurveSubMesh.prototype, "assetType", {
         /**
@@ -382,6 +381,8 @@ var CurveSubMesh = (function (_super) {
      */
     CurveSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
+        this._subGeometry._clearInterfaces();
+        this._subGeometry = null;
     };
     CurveSubMesh.assetType = "[asset CurveSubMesh]";
     CurveSubMesh.assetClass = CurveSubGeometry;
@@ -3199,10 +3200,9 @@ var LineSubMesh = (function (_super) {
      */
     function LineSubMesh(subGeometry, parentMesh, material) {
         if (material === void 0) { material = null; }
-        _super.call(this);
-        this._pParentMesh = parentMesh;
+        _super.call(this, parentMesh, material);
         this._subGeometry = subGeometry;
-        this.material = material;
+        this._subGeometry.usages++;
     }
     Object.defineProperty(LineSubMesh.prototype, "assetType", {
         /**
@@ -3228,8 +3228,9 @@ var LineSubMesh = (function (_super) {
      *
      */
     LineSubMesh.prototype.dispose = function () {
-        this.material = null;
         _super.prototype.dispose.call(this);
+        this._subGeometry._clearInterfaces();
+        this._subGeometry = null;
     };
     LineSubMesh.assetType = "[asset LineSubMesh]";
     LineSubMesh.assetClass = LineSubGeometry;
@@ -3530,6 +3531,7 @@ var SubGeometryBase = (function (_super) {
     function SubGeometryBase(concatenatedBuffer) {
         if (concatenatedBuffer === void 0) { concatenatedBuffer = null; }
         _super.call(this);
+        this.usages = 0;
         this._subGeometryVO = new Array();
         this._numElements = 0;
         this._verticesDirty = new Object();
@@ -3684,6 +3686,13 @@ var SubGeometryBase = (function (_super) {
     SubGeometryBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollisionVO, shortestCollisionDistance) {
         throw new AbstractMethodError();
     };
+    SubGeometryBase.prototype._clearInterfaces = function () {
+        this.usages--;
+        if (!this.usages) {
+            for (var i = this._subGeometryVO.length - 1; i >= 0; i--)
+                this._subGeometryVO[i].dispose();
+        }
+    };
     return SubGeometryBase;
 })(AssetBase);
 module.exports = SubGeometryBase;
@@ -3710,10 +3719,13 @@ var SubMeshBase = (function (_super) {
     /**
      * Creates a new SubMeshBase object
      */
-    function SubMeshBase() {
+    function SubMeshBase(parentMesh, material) {
+        if (material === void 0) { material = null; }
         _super.call(this);
         this._iIndex = 0;
         this._renderables = new Array();
+        this._parentMesh = parentMesh;
+        this.material = material;
     }
     Object.defineProperty(SubMeshBase.prototype, "animator", {
         //TODO test shader picking
@@ -3726,7 +3738,7 @@ var SubMeshBase = (function (_super) {
          * The animator object that provides the state for the TriangleSubMesh's animation.
          */
         get: function () {
-            return this._pParentMesh.animator;
+            return this._parentMesh.animator;
         },
         enumerable: true,
         configurable: true
@@ -3736,7 +3748,7 @@ var SubMeshBase = (function (_super) {
          * The material used to render the current TriangleSubMesh. If set to null, its parent Mesh's material will be used instead.
          */
         get: function () {
-            return this._material || this._pParentMesh.material;
+            return this._material || this._parentMesh.material;
         },
         set: function (value) {
             if (this.material)
@@ -3753,7 +3765,7 @@ var SubMeshBase = (function (_super) {
          * The scene transform object that transforms from model to world space.
          */
         get: function () {
-            return this._pParentMesh.sceneTransform;
+            return this._parentMesh.sceneTransform;
         },
         enumerable: true,
         configurable: true
@@ -3763,7 +3775,7 @@ var SubMeshBase = (function (_super) {
          * The entity that that initially provided the IRenderable to the render pipeline (ie: the owning Mesh object).
          */
         get: function () {
-            return this._pParentMesh;
+            return this._parentMesh;
         },
         enumerable: true,
         configurable: true
@@ -3773,7 +3785,7 @@ var SubMeshBase = (function (_super) {
          *
          */
         get: function () {
-            return this._uvTransform || this._pParentMesh.uvTransform;
+            return this._uvTransform || this._parentMesh.uvTransform;
         },
         set: function (value) {
             this._uvTransform = value;
@@ -3786,6 +3798,8 @@ var SubMeshBase = (function (_super) {
      */
     SubMeshBase.prototype.dispose = function () {
         this.material = null;
+        this._parentMesh = null;
+        this._clearInterfaces();
     };
     /**
      *
@@ -3793,7 +3807,7 @@ var SubMeshBase = (function (_super) {
      * @returns {away.geom.Matrix3D}
      */
     SubMeshBase.prototype.getRenderSceneTransform = function (camera) {
-        return this._pParentMesh.getRenderSceneTransform(camera);
+        return this._parentMesh.getRenderSceneTransform(camera);
     };
     SubMeshBase.prototype._iAddRenderable = function (renderable) {
         this._renderables.push(renderable);
@@ -5108,10 +5122,9 @@ var TriangleSubMesh = (function (_super) {
      */
     function TriangleSubMesh(subGeometry, parentMesh, material) {
         if (material === void 0) { material = null; }
-        _super.call(this);
-        this._pParentMesh = parentMesh;
+        _super.call(this, parentMesh, material);
         this._subGeometry = subGeometry;
-        this.material = material;
+        this._subGeometry.usages++;
     }
     Object.defineProperty(TriangleSubMesh.prototype, "assetType", {
         /**
@@ -5138,6 +5151,8 @@ var TriangleSubMesh = (function (_super) {
      */
     TriangleSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
+        this._subGeometry._clearInterfaces();
+        this._subGeometry = null;
     };
     TriangleSubMesh.assetType = "[asset TriangleSubMesh]";
     TriangleSubMesh.assetClass = TriangleSubGeometry;
