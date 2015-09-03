@@ -6265,7 +6265,6 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
 	    _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject;
 	    removeChildAtInternal(index: number): DisplayObject;
-	    _removeTimelineChildAt(index: number): DisplayObject;
 	    assetType: string;
 	    /**
 	     * Starts playback of animation from current position
