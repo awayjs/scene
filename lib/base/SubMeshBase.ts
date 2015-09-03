@@ -21,7 +21,7 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class SubMeshBase extends AssetBase
 {
-	public _pParentMesh:Mesh;
+	private _parentMesh:Mesh;
 	public _uvTransform:UVTransform;
 
 	public _iIndex:number = 0;
@@ -41,7 +41,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get animator():IAnimator
 	{
-		return this._pParentMesh.animator;
+		return this._parentMesh.animator;
 	}
 
 	/**
@@ -49,7 +49,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get material():MaterialBase
 	{
-		return this._material || this._pParentMesh.material;
+		return this._material || this._parentMesh.material;
 	}
 
 	public set material(value:MaterialBase)
@@ -68,7 +68,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get sceneTransform():Matrix3D
 	{
-		return this._pParentMesh.sceneTransform;
+		return this._parentMesh.sceneTransform;
 	}
 
 	/**
@@ -76,7 +76,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get parentMesh():Mesh
 	{
-		return this._pParentMesh;
+		return this._parentMesh;
 	}
 
 	/**
@@ -84,7 +84,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get uvTransform():UVTransform
 	{
-		return this._uvTransform || this._pParentMesh.uvTransform;
+		return this._uvTransform || this._parentMesh.uvTransform;
 	}
 
 	public set uvTransform(value:UVTransform)
@@ -95,9 +95,12 @@ class SubMeshBase extends AssetBase
 	/**
 	 * Creates a new SubMeshBase object
 	 */
-	constructor()
+	constructor(parentMesh:Mesh, material:MaterialBase = null)
 	{
 		super();
+
+		this._parentMesh = parentMesh;
+		this.material = material;
 	}
 
 	/**
@@ -106,6 +109,9 @@ class SubMeshBase extends AssetBase
 	public dispose()
 	{
 		this.material = null;
+		this._parentMesh = null;
+
+		this._clearInterfaces();
 	}
 
 	/**
@@ -115,7 +121,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public getRenderSceneTransform(camera:Camera):Matrix3D
 	{
-		return this._pParentMesh.getRenderSceneTransform(camera);
+		return this._parentMesh.getRenderSceneTransform(camera);
 	}
 
 	public _iAddRenderable(renderable:IRenderable):IRenderable

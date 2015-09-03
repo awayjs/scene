@@ -22,6 +22,8 @@ import ISubGeometryVO				= require("awayjs-display/lib/vos/ISubGeometryVO");
  */
 class SubGeometryBase extends AssetBase
 {
+	public usages:number = 0;
+
 	private _subGeometryVO:Array<ISubGeometryVO> = new Array<ISubGeometryVO>();
 	
 	public _pIndices:Short3Attributes;
@@ -246,6 +248,16 @@ class SubGeometryBase extends AssetBase
 	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
 	{
 		throw new AbstractMethodError();
+	}
+
+	public _clearInterfaces()
+	{
+		this.usages--;
+
+		if (!this.usages) {
+			for (var i:number = this._subGeometryVO.length - 1; i >= 0; i--)
+				this._subGeometryVO[i].dispose();
+		}
 	}
 }
 

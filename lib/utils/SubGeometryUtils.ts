@@ -713,7 +713,7 @@ class SubGeometryUtils
 			var miny:number = boundingBox.y;
 
 			if (!cells.length) { //build grid
-				
+
 				//now we have bounds start creating grid cells and filling
 				cells.length = divisions * divisions;
 

@@ -48,11 +48,10 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 	 */
 	constructor(subGeometry:LineSubGeometry, parentMesh:Mesh, material:MaterialBase = null)
 	{
-		super();
+		super(parentMesh, material);
 
-		this._pParentMesh = parentMesh;
 		this._subGeometry = subGeometry;
-		this.material = material;
+		this._subGeometry.usages++;
 	}
 
 	/**
@@ -60,9 +59,10 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 	 */
 	public dispose()
 	{
-		this.material = null;
-
 		super.dispose();
+
+		this._subGeometry._clearInterfaces();
+		this._subGeometry = null;
 	}
 }
 

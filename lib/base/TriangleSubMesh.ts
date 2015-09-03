@@ -48,11 +48,10 @@ class TriangleSubMesh extends SubMeshBase implements ISubMesh
 	 */
 	constructor(subGeometry:TriangleSubGeometry, parentMesh:Mesh, material:MaterialBase = null)
 	{
-		super();
+		super(parentMesh, material);
 
-		this._pParentMesh = parentMesh;
 		this._subGeometry = subGeometry;
-		this.material = material;
+		this._subGeometry.usages++;
 	}
 
 	/**
@@ -61,6 +60,9 @@ class TriangleSubMesh extends SubMeshBase implements ISubMesh
 	public dispose()
 	{
 		super.dispose();
+
+		this._subGeometry._clearInterfaces();
+		this._subGeometry = null;
 	}
 }
 
