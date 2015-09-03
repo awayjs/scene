@@ -254,7 +254,6 @@ class MovieClip extends DisplayObjectContainer
 
     public _addTimelineChildAt(child:DisplayObject, depth:number, sessionID:number):DisplayObject
     {
-
         this._depth_sessionIDs[depth] = child._sessionID = sessionID;
 
         this._sessionID_childs[sessionID] = child;
@@ -271,15 +270,6 @@ class MovieClip extends DisplayObjectContainer
 
         this.adapter.unregisterScriptObject(child);
 
-        child._sessionID = -1;
-
-        return super.removeChildAtInternal(index);
-    }
-
-    public _removeTimelineChildAt(index:number):DisplayObject
-    {
-        var child:DisplayObject = this._children[index];
-
         //check to make sure _depth_sessionIDs wasn't modified with a new child
         if (this._depth_sessionIDs[child._depthID] == child._sessionID)
             delete this._depth_sessionIDs[child._depthID];
@@ -288,7 +278,7 @@ class MovieClip extends DisplayObjectContainer
 
         child._sessionID = -1;
 
-        return this.removeChildAt(index);
+        return super.removeChildAtInternal(index);
     }
 
     public get assetType():string

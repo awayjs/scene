@@ -204,7 +204,8 @@ class Timeline
 
 		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 			for (i = target_mc.numChildren - 1; i >= 0; i--)
-				target_mc._removeTimelineChildAt(i);
+				if (target_mc._children[i]._depthID < 0)
+					target_mc.removeChildAt(i);
 
 		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
 		if (!jump_forward)
@@ -252,28 +253,30 @@ class Timeline
 		// childs that are alive on both frames have their properties reset if we are jumping back
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
-			if (depth_sessionIDs[child._depthID] != child._sessionID) {
-				target_mc._removeTimelineChildAt(i);
-			} else if (!jump_forward) {
-				if(child.adapter) {
-					if (!child.adapter.isBlockedByScript()) {
-						if (child._iMatrix3D) {
-							child._iMatrix3D.identity();
-							child.x = child._iMatrix3D.rawData[12];
-							child.y = child._iMatrix3D.rawData[13];
-							child._elementsDirty = true;
-							child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+			if (child._depthID < 0) {
+				if (depth_sessionIDs[child._depthID] != child._sessionID) {
+					target_mc.removeChildAt(i);
+				} else if (!jump_forward) {
+					if(child.adapter) {
+						if (!child.adapter.isBlockedByScript()) {
+							if (child._iMatrix3D) {
+								child._iMatrix3D.identity();
+								child.x = child._iMatrix3D.rawData[12];
+								child.y = child._iMatrix3D.rawData[13];
+								child._elementsDirty = true;
+								child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+							}
+							if (child._iColorTransform) {
+								child._iColorTransform.clear();
+								child.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+							}
+							//this.name="";
+							child.masks = null;
+							child.maskMode = false;
 						}
-						if (child._iColorTransform) {
-							child._iColorTransform.clear();
-							child.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+						if (!child.adapter.isVisibilityByScript()) {
+							child.visible = true;
 						}
-						//this.name="";
-						child.masks = null;
-						child.maskMode = false;
-					}
-					if (!child.adapter.isVisibilityByScript()) {
-						child.visible = true;
 					}
 				}
 			}
@@ -321,7 +324,8 @@ class Timeline
 
 			if(frame_recipe & 1) {
 				for (var i:number = target_mc.numChildren - 1; i >= 0; i--)
-					target_mc._removeTimelineChildAt(i);
+					if (target_mc._children[i]._depthID < 0)
+						target_mc.removeChildAt(i);
 			} else if (frame_recipe & 2) {
 				this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
 			}
@@ -339,7 +343,7 @@ class Timeline
 	public remove_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
 		for(var i:number = 0; i < len; i++)
-			sourceMovieClip._removeTimelineChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[start_index + i] - 16383));
+			sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[start_index + i] - 16383));
 	}
 
 
@@ -352,7 +356,8 @@ class Timeline
 		var end_index:number = start_index + len;
 		for (var i:number = end_index - 1; i >= start_index; i--) {
 			idx = i*2;
-			sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
+			var child:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
+			sourceMovieClip._addTimelineChildAt(child, this.add_child_stream[idx + 1] - 16383, i);
 		}
 	}
 
