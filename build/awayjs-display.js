@@ -354,7 +354,6 @@ var CurveSubMesh = (function (_super) {
         if (material === void 0) { material = null; }
         _super.call(this, parentMesh, material);
         this._subGeometry = subGeometry;
-        this._subGeometry.usages++;
     }
     Object.defineProperty(CurveSubMesh.prototype, "assetType", {
         /**
@@ -381,7 +380,6 @@ var CurveSubMesh = (function (_super) {
      */
     CurveSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this._subGeometry._clearInterfaces();
         this._subGeometry = null;
     };
     CurveSubMesh.assetType = "[asset CurveSubMesh]";
@@ -3202,7 +3200,6 @@ var LineSubMesh = (function (_super) {
         if (material === void 0) { material = null; }
         _super.call(this, parentMesh, material);
         this._subGeometry = subGeometry;
-        this._subGeometry.usages++;
     }
     Object.defineProperty(LineSubMesh.prototype, "assetType", {
         /**
@@ -3229,7 +3226,6 @@ var LineSubMesh = (function (_super) {
      */
     LineSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this._subGeometry._clearInterfaces();
         this._subGeometry = null;
     };
     LineSubMesh.assetType = "[asset LineSubMesh]";
@@ -3531,7 +3527,6 @@ var SubGeometryBase = (function (_super) {
     function SubGeometryBase(concatenatedBuffer) {
         if (concatenatedBuffer === void 0) { concatenatedBuffer = null; }
         _super.call(this);
-        this.usages = 0;
         this._subGeometryVO = new Array();
         this._numElements = 0;
         this._verticesDirty = new Object();
@@ -3687,11 +3682,8 @@ var SubGeometryBase = (function (_super) {
         throw new AbstractMethodError();
     };
     SubGeometryBase.prototype._clearInterfaces = function () {
-        this.usages--;
-        if (!this.usages) {
-            for (var i = this._subGeometryVO.length - 1; i >= 0; i--)
-                this._subGeometryVO[i].dispose();
-        }
+        for (var i = this._subGeometryVO.length - 1; i >= 0; i--)
+            this._subGeometryVO[i].dispose();
     };
     return SubGeometryBase;
 })(AssetBase);
@@ -5124,7 +5116,6 @@ var TriangleSubMesh = (function (_super) {
         if (material === void 0) { material = null; }
         _super.call(this, parentMesh, material);
         this._subGeometry = subGeometry;
-        this._subGeometry.usages++;
     }
     Object.defineProperty(TriangleSubMesh.prototype, "assetType", {
         /**
@@ -5151,7 +5142,6 @@ var TriangleSubMesh = (function (_super) {
      */
     TriangleSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this._subGeometry._clearInterfaces();
         this._subGeometry = null;
     };
     TriangleSubMesh.assetType = "[asset TriangleSubMesh]";
@@ -10148,6 +10138,8 @@ var Mesh = (function (_super) {
             return this._geometry;
         },
         set: function (value) {
+            if (this._geometry == value)
+                return;
             var i;
             if (this._geometry) {
                 this._geometry.removeEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
@@ -11215,6 +11207,7 @@ var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
+var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 var Geometry = require("awayjs-display/lib/base/Geometry");
 var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 /**
@@ -11432,7 +11425,7 @@ var TextField = (function (_super) {
             if (this._text == value)
                 return;
             this._text = value;
-            this.reConstruct();
+            this._textGeometryDirty = true;
         },
         enumerable: true,
         configurable: true
@@ -11445,11 +11438,61 @@ var TextField = (function (_super) {
             if (this._textFormat == value)
                 return;
             this._textFormat = value;
-            this.reConstruct();
+            this._textGeometryDirty = true;
         },
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(TextField.prototype, "geometry", {
+        /**
+         * The geometry used by the mesh that provides it with its shape.
+         */
+        get: function () {
+            if (this._textGeometryDirty)
+                this.reConstruct();
+            return this._geometry;
+        },
+        set: function (value) {
+            if (this._geometry == value)
+                return;
+            var i;
+            if (this._geometry) {
+                this._geometry.removeEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
+                this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
+                this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
+                for (i = 0; i < this._subMeshes.length; ++i)
+                    this._subMeshes[i].dispose();
+                this._subMeshes.length = 0;
+            }
+            this._geometry = value;
+            if (this._geometry) {
+                this._geometry.addEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
+                this._geometry.addEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
+                this._geometry.addEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
+                var subGeoms = this._geometry.subGeometries;
+                for (i = 0; i < subGeoms.length; ++i)
+                    this.addSubMesh(subGeoms[i]);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     * @param renderer
+     *
+     * @internal
+     */
+    TextField.prototype._applyRenderer = function (renderer) {
+        // Since this getter is invoked every iteration of the render loop, and
+        // the prefab construct could affect the sub-meshes, the prefab is
+        // validated here to give it a chance to rebuild.
+        if (this._textGeometryDirty)
+            this.reConstruct();
+        var len = this._subMeshes.length;
+        for (var i = 0; i < len; i++)
+            renderer._iApplyRenderableOwner(this._subMeshes[i]);
+    };
     Object.defineProperty(TextField.prototype, "textColor", {
         get: function () {
             return this._textColor;
@@ -11505,14 +11548,32 @@ var TextField = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(TextField.prototype, "subMeshes", {
+        /**
+         * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
+         * material.
+         */
+        get: function () {
+            // Since this getter is invoked every iteration of the render loop, and
+            // the prefab construct could affect the sub-meshes, the prefab is
+            // validated here to give it a chance to rebuild.
+            if (this._textGeometryDirty)
+                this.reConstruct();
+            return this._subMeshes;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Reconstructs the Geometry for this Text-field.
      */
     TextField.prototype.reConstruct = function () {
+        this._textGeometryDirty = false;
         if (this._textFormat == null)
             return;
-        for (var i = this.geometry.subGeometries.length - 1; i >= 0; i--)
-            this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
+        var subGeoms = this._geometry.subGeometries;
+        for (var i = subGeoms.length - 1; i >= 0; i--)
+            this._geometry.removeSubGeometry(subGeoms[i]);
         if (this._text == "")
             return;
         var vertices = new Array();
@@ -11663,8 +11724,8 @@ var TextField = (function (_super) {
         attributesView.dispose();
         var curve_sub_geom = new CurveSubGeometry(attributesBuffer);
         curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
-        this.geometry.addSubGeometry(curve_sub_geom);
-        this.subMeshes[0].material = this._textFormat.material;
+        this._geometry.addSubGeometry(curve_sub_geom);
+        this._subMeshes[0].material = this._textFormat.material;
     };
     /**
      * Appends the string specified by the <code>newText</code> parameter to the
@@ -12010,7 +12071,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13659,12 +13720,7 @@ var MaterialBase = (function (_super) {
      * could be used by other materials and will not be disposed.
      */
     MaterialBase.prototype.dispose = function () {
-        var i;
-        var len;
-        len = this._renders.length;
-        for (i = 0; i < len; i++)
-            this._renders[i].dispose();
-        this._renders = new Array();
+        this._clearInterfaces();
     };
     Object.defineProperty(MaterialBase.prototype, "bothSides", {
         /**
@@ -13797,6 +13853,7 @@ var MaterialBase = (function (_super) {
         if (this._owners.length == 0) {
             this._animationSet = null;
             this.invalidateAnimation();
+            this._clearInterfaces();
         }
         owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
     };
@@ -13850,6 +13907,10 @@ var MaterialBase = (function (_super) {
     MaterialBase.prototype._iRemoveRender = function (render) {
         this._renders.splice(this._renders.indexOf(render), 1);
         return render;
+    };
+    MaterialBase.prototype._clearInterfaces = function () {
+        for (var i = this._renders.length - 1; i >= 0; i--)
+            this._renders[i].dispose();
     };
     return MaterialBase;
 })(AssetBase);

@@ -227,24 +227,6 @@ declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	
 }
 
-declare module "awayjs-display/lib/base/AlignmentMode" {
-	/**
-	 *
-	 */
-	class AlignmentMode {
-	    /**
-	     *
-	     */
-	    static REGISTRATION_POINT: string;
-	    /**
-	     *
-	     */
-	    static PIVOT_POINT: string;
-	}
-	export = AlignmentMode;
-	
-}
-
 declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
@@ -348,6 +330,24 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
 	export = CurveSubGeometry;
+	
+}
+
+declare module "awayjs-display/lib/base/AlignmentMode" {
+	/**
+	 *
+	 */
+	class AlignmentMode {
+	    /**
+	     *
+	     */
+	    static REGISTRATION_POINT: string;
+	    /**
+	     *
+	     */
+	    static PIVOT_POINT: string;
+	}
+	export = AlignmentMode;
 	
 }
 
@@ -2334,7 +2334,6 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	 * @class away.base.TriangleSubGeometry
 	 */
 	class SubGeometryBase extends AssetBase {
-	    usages: number;
 	    private _subGeometryVO;
 	    _pIndices: Short3Attributes;
 	    private _numElements;
@@ -6063,6 +6062,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import Geometry = require("awayjs-display/lib/base/Geometry");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -6075,15 +6075,15 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    static assetType: string;
 	    private _uvTransform;
 	    private _center;
-	    private _subMeshes;
-	    private _geometry;
+	    _subMeshes: Array<ISubMesh>;
+	    _geometry: Geometry;
 	    private _material;
 	    private _animator;
 	    private _castsShadows;
 	    private _shareAnimationGeometry;
-	    private _onGeometryBoundsInvalidDelegate;
-	    private _onSubGeometryAddedDelegate;
-	    private _onSubGeometryRemovedDelegate;
+	    _onGeometryBoundsInvalidDelegate: (event: GeometryEvent) => void;
+	    _onSubGeometryAddedDelegate: (event: GeometryEvent) => void;
+	    _onSubGeometryRemovedDelegate: (event: GeometryEvent) => void;
 	    private _tempPoint;
 	    /**
 	     * Defines the animator of the mesh. Act on the mesh's geometry.  Default value is <code>null</code>.
@@ -6188,7 +6188,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     *
 	     * @param subGeometry
 	     */
-	    private addSubMesh(subGeometry);
+	    addSubMesh(subGeometry: SubGeometryBase): void;
 	    /**
 	     * //TODO
 	     *
@@ -6469,6 +6469,8 @@ declare module "awayjs-display/lib/entities/Skybox" {
 
 declare module "awayjs-display/lib/entities/TextField" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import AntiAliasType = require("awayjs-display/lib/text/AntiAliasType");
 	import GridFitType = require("awayjs-display/lib/text/GridFitType");
@@ -6478,6 +6480,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	import TextInteractionMode = require("awayjs-display/lib/text/TextInteractionMode");
 	import TextLineMetrics = require("awayjs-display/lib/text/TextLineMetrics");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import Geometry = require("awayjs-display/lib/base/Geometry");
 	/**
 	 * The TextField class is used to create display objects for text display and
 	 * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -6559,6 +6562,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	 */
 	class TextField extends Mesh {
 	    static assetType: string;
+	    private _textGeometryDirty;
 	    private _bottomScrollV;
 	    private _caretIndex;
 	    private _length;
@@ -7001,6 +7005,17 @@ declare module "awayjs-display/lib/entities/TextField" {
 	    text: string;
 	    textFormat: TextFormat;
 	    /**
+	     * The geometry used by the mesh that provides it with its shape.
+	     */
+	    geometry: Geometry;
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    _applyRenderer(renderer: IRenderer): void;
+	    /**
 	     * The color of the text in a text field, in hexadecimal format. The
 	     * hexadecimal color system uses six digits to represent color values. Each
 	     * digit has 16 possible values or characters. The characters range from 0-9
@@ -7077,6 +7092,11 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * <p>The default size for a text field is 100 x 100 pixels.</p>
 	     */
 	    constructor();
+	    /**
+	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
+	     * material.
+	     */
+	    subMeshes: Array<ISubMesh>;
 	    /**
 	     * Reconstructs the Geometry for this Text-field.
 	     */
@@ -8309,6 +8329,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    _pNotifySizeChanged(): void;
 	    _iAddRender(render: IRender): IRender;
 	    _iRemoveRender(render: IRender): IRender;
+	    _clearInterfaces(): void;
 	}
 	export = MaterialBase;
 	
