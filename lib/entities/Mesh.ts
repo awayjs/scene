@@ -31,16 +31,16 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	private _uvTransform:UVTransform;
 
 	private _center:Vector3D;
-	private _subMeshes:Array<ISubMesh>;
-	private _geometry:Geometry;
+	public _subMeshes:Array<ISubMesh>;
+	public _geometry:Geometry;
 	private _material:MaterialBase;
 	private _animator:IAnimator;
 	private _castsShadows:boolean = true;
 	private _shareAnimationGeometry:boolean = true;
 
-	private _onGeometryBoundsInvalidDelegate:(event:GeometryEvent) => void;
-	private _onSubGeometryAddedDelegate:(event:GeometryEvent) => void;
-	private _onSubGeometryRemovedDelegate:(event:GeometryEvent) => void;
+	public _onGeometryBoundsInvalidDelegate:(event:GeometryEvent) => void;
+	public _onSubGeometryAddedDelegate:(event:GeometryEvent) => void;
+	public _onSubGeometryRemovedDelegate:(event:GeometryEvent) => void;
 
 	//temp point used in hit testing
 	private _tempPoint:Point = new Point();
@@ -113,6 +113,9 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 	public set geometry(value:Geometry)
 	{
+		if (this._geometry == value)
+			return;
+
 		var i:number;
 
 		if (this._geometry) {
@@ -404,7 +407,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 *
 	 * @param subGeometry
 	 */
-	private addSubMesh(subGeometry:SubGeometryBase)
+	public addSubMesh(subGeometry:SubGeometryBase)
 	{
 		var SubMeshClass:ISubMeshClass = SubMeshPool.getClass(subGeometry);
 

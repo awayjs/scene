@@ -6,6 +6,9 @@ import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+
+import IRenderer					= require("awayjs-display/lib/IRenderer");
+import ISubMesh						= require("awayjs-display/lib/base/ISubMesh");
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
@@ -16,6 +19,7 @@ import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
 import Geometry						= require("awayjs-display/lib/base/Geometry");
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
@@ -106,6 +110,7 @@ class TextField extends Mesh
 {
 	public static assetType:string = "[asset TextField]";
 
+	private _textGeometryDirty:boolean;
 	private _bottomScrollV:number;
 	private _caretIndex:number;
 	private _length:number;
@@ -140,7 +145,7 @@ class TextField extends Mesh
 	 * 
 	 * @default false
 	 */
-	public alwaysShowSelection:boolean
+	public alwaysShowSelection:boolean;
 
 	/**
 	 * The type of anti-aliasing used for this text field. Use
@@ -612,13 +617,16 @@ class TextField extends Mesh
 
 	public set text(value:string)
 	{
-		value=value.toString();
+		value = value.toString();
+
 		if (this._text == value)
 			return;
 
 		this._text = value;
-		this.reConstruct();
+
+		this._textGeometryDirty = true;
 	}
+
 	public get textFormat():TextFormat
 	{
 		return this._textFormat;
@@ -628,8 +636,74 @@ class TextField extends Mesh
 	{
 		if (this._textFormat == value)
 			return;
+
 		this._textFormat = value;
-		this.reConstruct();
+
+		this._textGeometryDirty = true;
+	}
+
+
+	/**
+	 * The geometry used by the mesh that provides it with its shape.
+	 */
+	public get geometry():Geometry
+	{
+		if (this._textGeometryDirty)
+			this.reConstruct();
+
+		return this._geometry;
+	}
+
+	public set geometry(value:Geometry)
+	{
+		if (this._geometry == value)
+			return;
+
+		var i:number;
+
+		if (this._geometry) {
+			this._geometry.removeEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
+			this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
+			this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
+
+			for (i = 0; i < this._subMeshes.length; ++i)
+				this._subMeshes[i].dispose();
+
+			this._subMeshes.length = 0;
+		}
+
+		this._geometry = value;
+
+		if (this._geometry) {
+
+			this._geometry.addEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
+			this._geometry.addEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
+			this._geometry.addEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
+
+			var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
+
+			for (i = 0; i < subGeoms.length; ++i)
+				this.addSubMesh(subGeoms[i]);
+		}
+	}
+
+	/**
+	 *
+	 * @param renderer
+	 *
+	 * @internal
+	 */
+	public _applyRenderer(renderer:IRenderer)
+	{
+		// Since this getter is invoked every iteration of the render loop, and
+		// the prefab construct could affect the sub-meshes, the prefab is
+		// validated here to give it a chance to rebuild.
+		if (this._textGeometryDirty)
+			this.reConstruct();
+
+		var len:number /*uint*/ = this._subMeshes.length;
+		for (var i:number /*uint*/ = 0; i < len; i++)
+			renderer._iApplyRenderableOwner(this._subMeshes[i]);
 	}
 
 	/**
@@ -751,7 +825,24 @@ class TextField extends Mesh
 	constructor()
 	{
 		super(new Geometry());
+
 		this.type = TextFieldType.STATIC;
+	}
+
+
+	/**
+	 * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
+	 * material.
+	 */
+	public get subMeshes():Array<ISubMesh>
+	{
+		// Since this getter is invoked every iteration of the render loop, and
+		// the prefab construct could affect the sub-meshes, the prefab is
+		// validated here to give it a chance to rebuild.
+		if (this._textGeometryDirty)
+			this.reConstruct();
+
+		return this._subMeshes;
 	}
 
 	/**
@@ -759,19 +850,19 @@ class TextField extends Mesh
 	 */
 	public reConstruct() {
 
+		this._textGeometryDirty = false;
 
-		if(this._textFormat==null)
+		if(this._textFormat == null)
 			return;
 
+		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
+		for (var i:number = subGeoms.length - 1; i>=0; i--)
+			this._geometry.removeSubGeometry(subGeoms[i]);
 
-		for (var i:number=this.geometry.subGeometries.length-1; i>=0; i--)
-			this.geometry.removeSubGeometry(this.geometry.subGeometries[i]);
-
-		if(this._text=="")
+		if(this._text == "")
 			return;
 
 		var vertices:Array<number> = new Array<number>();
-
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
 		var additional_margin_x:number= this._textFormat.font_table.offset_x;
@@ -931,8 +1022,8 @@ class TextField extends Mesh
 		attributesView.dispose();
 		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(attributesBuffer);
 		curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
-		this.geometry.addSubGeometry(curve_sub_geom);
-		this.subMeshes[0].material=this._textFormat.material;
+		this._geometry.addSubGeometry(curve_sub_geom);
+		this._subMeshes[0].material = this._textFormat.material;
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
@@ -1310,7 +1401,7 @@ class TextField extends Mesh
 		super.copyTo(newInstance);
 
 		// each textfield needs its own geometry.
-		newInstance.geometry=new Geometry();
+		newInstance.geometry = new Geometry();
 
 		newInstance.textWidth = this._textWidth;
 		newInstance.textHeight = this._textHeight;

@@ -51,7 +51,6 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 		super(parentMesh, material);
 
 		this._subGeometry = subGeometry;
-		this._subGeometry.usages++;
 	}
 
 	/**
@@ -61,7 +60,6 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 	{
 		super.dispose();
 
-		this._subGeometry._clearInterfaces();
 		this._subGeometry = null;
 	}
 }

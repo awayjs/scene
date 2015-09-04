@@ -431,14 +431,7 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	 */
 	public dispose()
 	{
-		var i:number;
-		var len:number;
-
-		len = this._renders.length;
-		for (i = 0; i < len; i++)
-			this._renders[i].dispose();
-
-		this._renders = new Array<IRender>();
+		this._clearInterfaces();
 	}
 
 	/**
@@ -589,6 +582,8 @@ class MaterialBase extends AssetBase implements IRenderOwner
 			this._animationSet = null;
 
 			this.invalidateAnimation();
+
+			this._clearInterfaces();
 		}
 
 		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
@@ -658,6 +653,12 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this._renders.splice(this._renders.indexOf(render), 1);
 
 		return render;
+	}
+
+	public _clearInterfaces()
+	{
+		for (var i:number = this._renders.length - 1; i >= 0; i--)
+			this._renders[i].dispose();
 	}
 }
 
