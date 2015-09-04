@@ -87,11 +87,12 @@ class SubGeometryBase extends AssetBase
 	 */
 	public dispose()
 	{
-		while (this._subGeometryVO.length)
-			this._subGeometryVO[0].dispose();
+		this.parentGeometry = null;
 
-		this._pIndices.dispose();
-		this._pIndices = null;
+		if (this._pIndices) {
+			this._pIndices.dispose();
+			this._pIndices = null;
+		}
 	}
 
 	/**
@@ -246,12 +247,6 @@ class SubGeometryBase extends AssetBase
 	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
 	{
 		throw new AbstractMethodError();
-	}
-
-	public _clearInterfaces()
-	{
-		for (var i:number = this._subGeometryVO.length - 1; i >= 0; i--)
-			this._subGeometryVO[i].dispose();
 	}
 }
 

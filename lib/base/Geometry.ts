@@ -23,7 +23,7 @@ class Geometry extends AssetBase implements IAsset
 {
 	public static assetType:string = "[asset Geometry]";
 
-	private _subGeometries:Array<SubGeometryBase>;
+	private _subGeometries:Array<SubGeometryBase> = new Array<SubGeometryBase>();
 
 	public get assetType():string
 	{
@@ -44,8 +44,6 @@ class Geometry extends AssetBase implements IAsset
 	constructor()
 	{
 		super();
-
-		this._subGeometries = new Array<SubGeometryBase>();
 	}
 
 	public applyTransformation(transform:Matrix3D)
@@ -79,7 +77,7 @@ class Geometry extends AssetBase implements IAsset
 	{
 		this._subGeometries.splice(this._subGeometries.indexOf(subGeometry), 1);
 
-		subGeometry.parentGeometry = null;
+		subGeometry.dispose();
 
 		if (this.hasEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED))
 			this.dispatchEvent(new GeometryEvent(GeometryEvent.SUB_GEOMETRY_REMOVED, subGeometry));
@@ -118,13 +116,10 @@ class Geometry extends AssetBase implements IAsset
 	 */
 	public dispose()
 	{
-		var numSubGeoms:number = this._subGeometries.length;
+		for (var i:number = this._subGeometries.length - 1; i>=0; i--)
+			this.removeSubGeometry(this._subGeometries[i]);
 
-		for (var i:number = 0; i < numSubGeoms; ++i) {
-			var subGeom:SubGeometryBase = this._subGeometries[0];
-			this.removeSubGeometry(subGeom);
-			subGeom.dispose();
-		}
+		this._subGeometries = null;
 	}
 
 	/**

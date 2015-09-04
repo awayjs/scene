@@ -262,8 +262,13 @@ class LineSubGeometry extends SubGeometryBase
 	{
 		super.dispose();
 
+		this._positions.dispose();
 		this._positions = null;
+
+		this._thickness.dispose();
 		this._thickness = null;
+
+		this._colors.dispose();
 		this._colors = null;
 	}
 

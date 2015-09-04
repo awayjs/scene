@@ -216,7 +216,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _explicitMouseEnabled:boolean = true;
 	public _pImplicitMouseEnabled:boolean = true;
 	private _explicitColorTransform:ColorTransform;
-	public _pImplicitColorTransform:ColorTransform = new ColorTransform();
+	public _pImplicitColorTransform:ColorTransform;
 	private _listenToSceneTransformChanged:boolean;
 	private _listenToSceneChanged:boolean;
 
@@ -1585,16 +1585,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._pSceneTransform = null;
 		this._inverseSceneTransform = null;
 
-		if (this._pPickingCollisionVO) {
-			this._pPickingCollisionVO.dispose();
-			this._pPickingCollisionVO = null;
-		}
-
 		this._explicitMasks = null;
-		this._pImplicitMasks = null;
-
 		this._explicitColorTransform = null;
-		this._pImplicitColorTransform = null;
 	}
 
 	/**
@@ -2826,8 +2818,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	private _updateColorTransform()
 	{
-		if (this._inheritColorTransform && this._pParent) {
+		if (!this._pImplicitColorTransform)
+			this._pImplicitColorTransform = new ColorTransform();
+
+		if (this._inheritColorTransform && this._pParent && this._pParent._iAssignedColorTransform()) {
 			this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
+
 			if (this._explicitColorTransform)
 				this._pImplicitColorTransform.prepend(this._explicitColorTransform);
 		} else {
@@ -2857,6 +2853,14 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		for (i = this._pRenderables.length - 1; i >= 0; i--)
 			this._pRenderables[i].dispose();
+
+		if (this._pPickingCollisionVO) {
+			this._pPickingCollisionVO.dispose();
+			this._pPickingCollisionVO = null;
+		}
+
+		this._pImplicitColorTransform = null;
+		this._pImplicitMasks = null;
 	}
 }
 
