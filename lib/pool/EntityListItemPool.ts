@@ -38,6 +38,14 @@ class EntityListItemPool
 	 */
 	public freeAll()
 	{
+		var item:EntityListItem;
+		var len:number = this._pool.length;
+		for (var i:number = 0; i < len; i++) {
+			item = this._pool[i];
+			item.entity = null;
+			item.next = null;
+		}
+
 		this._index = 0;
 	}
 

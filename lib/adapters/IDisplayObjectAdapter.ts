@@ -12,6 +12,8 @@ interface IDisplayObjectAdapter
 	freeFromScript():void;
 
 	clone(newAdaptee:DisplayObject):IDisplayObjectAdapter;
+
+	dispose();
 }
 
 export = IDisplayObjectAdapter;

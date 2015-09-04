@@ -831,6 +831,16 @@ class TextField extends Mesh
 
 
 	/**
+	 * @inheritDoc
+	 */
+	public dispose()
+	{
+		super.dispose();
+
+		this._textFormat = null;
+	}
+
+	/**
 	 * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
 	 * material.
 	 */

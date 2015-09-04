@@ -3,7 +3,6 @@ import IAssetClass				= require("awayjs-core/lib/library/IAssetClass");
 import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
 import ISubMesh					= require("awayjs-display/lib/base/ISubMesh");
 import SubMeshBase				= require("awayjs-display/lib/base/SubMeshBase");
-import SubMeshPool				= require("awayjs-display/lib/pool/SubMeshPool");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 

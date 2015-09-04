@@ -192,6 +192,9 @@ class RaycastPicker implements IPicker
 			}
 		}
 
+		//discard entities
+		this._entities.length = 0;
+
 		return bestCollisionVO;
 	}
 

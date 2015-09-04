@@ -233,8 +233,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _rotationX:number = 0;
 	private _rotationY:number = 0;
 	private _rotationZ:number = 0;
-	private _eulers:Vector3D = new Vector3D();
-	private _flipY:Matrix3D = new Matrix3D();
+	private _eulers:Vector3D;
 
 	private _listenToPositionChanged:boolean;
 	private _listenToRotationChanged:boolean;
@@ -254,10 +253,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _x:number = 0;
 	private _y:number = 0;
 	private _z:number = 0;
-	private _pivot:Vector3D = new Vector3D();
-	private _pivotScale:Vector3D = new Vector3D();
+	private _pivot:Vector3D;
+	private _pivotScale:Vector3D;
 	private _orientationMatrix:Matrix3D = new Matrix3D();
-	private _pivotZero:boolean = true;
 	private _pivotDirty:boolean;
 	private _pos:Vector3D = new Vector3D();
 	private _rot:Vector3D = new Vector3D();
@@ -481,6 +479,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get eulers():Vector3D
 	{
+		if (!this._eulers)
+			this._eulers = new Vector3D();
+
 		this._eulers.x = this.rotationX;
 		this._eulers.y = this.rotationY;
 		this._eulers.z = this.rotationZ;
@@ -860,12 +861,20 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public set pivot(pivot:Vector3D)
 	{
-		if (this._pivot.x == pivot.x && this._pivot.y == pivot.y && this._pivot.z == pivot.z)
+		if (this._pivot && this._pivot.x == pivot.x && this._pivot.y == pivot.y && this._pivot.z == pivot.z)
 			return;
 
-		this._pivot.x = pivot.x;
-		this._pivot.y = pivot.y;
-		this._pivot.z = pivot.z;
+		if (!pivot) {
+			this._pivot = null;
+			this._pivotScale = null;
+		} else {
+			if (!this._pivot)
+				this._pivot = new Vector3D();
+
+			this._pivot.x = pivot.x;
+			this._pivot.y = pivot.y;
+			this._pivot.z = pivot.z;
+		}
 
 		this.invalidatePivot();
 	}
@@ -1191,7 +1200,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get scenePosition():Vector3D
 	{
 		if (this._scenePositionDirty) {
-			if (!this._pivotZero && this.alignmentMode == AlignmentMode.PIVOT_POINT) {
+			if (this._pivot && this.alignmentMode == AlignmentMode.PIVOT_POINT) {
 				this._scenePosition = this.sceneTransform.transformVector(this._pivotScale);
 				//this._scenePosition.decrementBy(new Vector3D(this._pivot.x*this._scaleX, this._pivot.y*this._scaleY, this._pivot.z*this._scaleZ));
 			} else {
@@ -1484,8 +1493,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._matrix3D.identity();
 
-		this._flipY.appendScale(1, -1, 1);
-
 		//default bounds type
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
@@ -1560,6 +1567,27 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this._pParent)
 			this._pParent.removeChild(this);
+
+		if (this._adapter) {
+			this._adapter.dispose();
+			this._adapter = null;
+		}
+
+		this._pos = null;
+		this._rot = null;
+		this._sca = null;
+		this._ske = null;
+		this._transformComponents = null;
+		this._matrix3D = null;
+		this._pSceneTransform = null;
+		this._inverseSceneTransform = null;
+
+
+		this._explicitMasks = null;
+		this._pImplicitMasks = null;
+
+		this._explicitColorTransform = null;
+		this._pImplicitColorTransform = null;
 	}
 
 	/**
@@ -2056,7 +2084,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._orientationMatrix.recompose(comps);
 
 			//add in case of pivot
-			if (!this._pivotZero && this.alignmentMode == AlignmentMode.PIVOT_POINT)
+			if (this._pivot && this.alignmentMode == AlignmentMode.PIVOT_POINT)
 				this._orientationMatrix.prependTranslation(-this._pivot.x/this.scaleX, -this._pivot.y/this.scaleY, -this._pivot.z/this.scaleZ);
 
 			return this._orientationMatrix;
@@ -2358,7 +2386,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _pUpdatePivot()
 	{
-		if (!this._pivotZero) {
+		if (this._pivot) {
+			if (!this._pivotScale)
+				this._pivotScale = new Vector3D();
+
 			this._pivotScale.x = this._pivot.x/this._scaleX;
 			this._pivotScale.y = this._pivot.y/this._scaleY;
 			this._pivotScale.z = this._pivot.z/this._scaleZ;
@@ -2536,8 +2567,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	private invalidatePivot()
 	{
-		this._pivotZero = (this._pivot.x == 0) && (this._pivot.y == 0) && (this._pivot.z == 0);
-
 		if (this._pivotDirty)
 			return;
 
@@ -2558,7 +2587,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 
-		if (!this._pivotZero)
+		if (this._pivot)
 			this.invalidatePivot();
 
 		if (this._listenToPositionChanged)

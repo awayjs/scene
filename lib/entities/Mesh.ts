@@ -161,15 +161,17 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var len:number = this._subMeshes.length;
 		var subMesh:ISubMesh;
 
-		for (i = 0; i < len; i++)
-			if (this._material && (subMesh = this._subMeshes[i]).material == this._material)
-				this._material.iRemoveOwner(subMesh);
+		if (this._material)
+			for (i = 0; i < len; i++)
+				if ((subMesh = this._subMeshes[i]).material == this._material)
+					this._material.iRemoveOwner(subMesh);
 
 		this._material = value;
 
-		for (i = 0; i < len; i++)
-			if (this._material && (subMesh = this._subMeshes[i]).material == this._material)
-				this._material.iAddOwner(subMesh);
+		if (this._material)
+			for (i = 0; i < len; i++)
+				if ((subMesh = this._subMeshes[i]).material == this._material)
+					this._material.iAddOwner(subMesh);
 	}
 
 	/**

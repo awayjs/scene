@@ -134,9 +134,7 @@ class SubMeshBase extends AssetBase
 
 	public _iRemoveRenderable(renderable:IRenderable):IRenderable
 	{
-		var index:number = this._renderables.indexOf(renderable);
-
-		this._renderables.splice(index, 1);
+		this._renderables.splice(this._renderables.indexOf(renderable), 1);
 
 		return renderable;
 	}

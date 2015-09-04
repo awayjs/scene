@@ -70,6 +70,15 @@ class MovieClip extends DisplayObjectContainer
         this._timeline = timeline || new Timeline();
     }
 
+    public dispose()
+    {
+        super.dispose();
+
+        this._potentialInstances = null;
+        this._depth_sessionIDs = null;
+        this._sessionID_childs = null;
+    }
+
 
     public reset_textclones()
     {
