@@ -569,8 +569,6 @@ var DisplayObject = (function (_super) {
         this._rotationX = 0;
         this._rotationY = 0;
         this._rotationZ = 0;
-        this._eulers = new Vector3D();
-        this._flipY = new Matrix3D();
         this._skewX = 0;
         this._skewY = 0;
         this._skewZ = 0;
@@ -580,10 +578,7 @@ var DisplayObject = (function (_super) {
         this._x = 0;
         this._y = 0;
         this._z = 0;
-        this._pivot = new Vector3D();
-        this._pivotScale = new Vector3D();
         this._orientationMatrix = new Matrix3D();
-        this._pivotZero = true;
         this._pos = new Vector3D();
         this._rot = new Vector3D();
         this._ske = new Vector3D();
@@ -620,7 +615,6 @@ var DisplayObject = (function (_super) {
         //creation of associated transform object
         this._transform = new Transform(this);
         this._matrix3D.identity();
-        this._flipY.appendScale(1, -1, 1);
         //default bounds type
         this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
@@ -716,6 +710,8 @@ var DisplayObject = (function (_super) {
          * Defines the rotation of the 3d object as a <code>Vector3D</code> object containing euler angles for rotation around x, y and z axis.
          */
         get: function () {
+            if (!this._eulers)
+                this._eulers = new Vector3D();
             this._eulers.x = this.rotationX;
             this._eulers.y = this.rotationY;
             this._eulers.z = this.rotationZ;
@@ -1053,11 +1049,19 @@ var DisplayObject = (function (_super) {
             return this._pivot;
         },
         set: function (pivot) {
-            if (this._pivot.x == pivot.x && this._pivot.y == pivot.y && this._pivot.z == pivot.z)
+            if (this._pivot && this._pivot.x == pivot.x && this._pivot.y == pivot.y && this._pivot.z == pivot.z)
                 return;
-            this._pivot.x = pivot.x;
-            this._pivot.y = pivot.y;
-            this._pivot.z = pivot.z;
+            if (!pivot) {
+                this._pivot = null;
+                this._pivotScale = null;
+            }
+            else {
+                if (!this._pivot)
+                    this._pivot = new Vector3D();
+                this._pivot.x = pivot.x;
+                this._pivot.y = pivot.y;
+                this._pivot.z = pivot.z;
+            }
             this.invalidatePivot();
         },
         enumerable: true,
@@ -1302,7 +1306,7 @@ var DisplayObject = (function (_super) {
          */
         get: function () {
             if (this._scenePositionDirty) {
-                if (!this._pivotZero && this.alignmentMode == AlignmentMode.PIVOT_POINT) {
+                if (this._pivot && this.alignmentMode == AlignmentMode.PIVOT_POINT) {
                     this._scenePosition = this.sceneTransform.transformVector(this._pivotScale);
                 }
                 else {
@@ -1591,6 +1595,22 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.dispose = function () {
         if (this._pParent)
             this._pParent.removeChild(this);
+        if (this._adapter) {
+            this._adapter.dispose();
+            this._adapter = null;
+        }
+        this._pos = null;
+        this._rot = null;
+        this._sca = null;
+        this._ske = null;
+        this._transformComponents = null;
+        this._matrix3D = null;
+        this._pSceneTransform = null;
+        this._inverseSceneTransform = null;
+        this._explicitMasks = null;
+        this._pImplicitMasks = null;
+        this._explicitColorTransform = null;
+        this._pImplicitColorTransform = null;
     };
     /**
      * Returns a rectangle that defines the area of the display object relative
@@ -2016,7 +2036,7 @@ var DisplayObject = (function (_super) {
             scale.z = this.scaleZ;
             this._orientationMatrix.recompose(comps);
             //add in case of pivot
-            if (!this._pivotZero && this.alignmentMode == AlignmentMode.PIVOT_POINT)
+            if (this._pivot && this.alignmentMode == AlignmentMode.PIVOT_POINT)
                 this._orientationMatrix.prependTranslation(-this._pivot.x / this.scaleX, -this._pivot.y / this.scaleY, -this._pivot.z / this.scaleZ);
             return this._orientationMatrix;
         }
@@ -2254,7 +2274,9 @@ var DisplayObject = (function (_super) {
         this._matrix3DDirty = false;
     };
     DisplayObject.prototype._pUpdatePivot = function () {
-        if (!this._pivotZero) {
+        if (this._pivot) {
+            if (!this._pivotScale)
+                this._pivotScale = new Vector3D();
             this._pivotScale.x = this._pivot.x / this._scaleX;
             this._pivotScale.y = this._pivot.y / this._scaleY;
             this._pivotScale.z = this._pivot.z / this._scaleZ;
@@ -2384,7 +2406,6 @@ var DisplayObject = (function (_super) {
      * @private
      */
     DisplayObject.prototype.invalidatePivot = function () {
-        this._pivotZero = (this._pivot.x == 0) && (this._pivot.y == 0) && (this._pivot.z == 0);
         if (this._pivotDirty)
             return;
         this._pivotDirty = true;
@@ -2398,7 +2419,7 @@ var DisplayObject = (function (_super) {
             return;
         this._positionDirty = true;
         this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-        if (!this._pivotZero)
+        if (this._pivot)
             this.invalidatePivot();
         if (this._listenToPositionChanged)
             this.queueDispatch(this._positionChanged || (this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this)));
@@ -3806,8 +3827,7 @@ var SubMeshBase = (function (_super) {
         return renderable;
     };
     SubMeshBase.prototype._iRemoveRenderable = function (renderable) {
-        var index = this._renderables.indexOf(renderable);
-        this._renderables.splice(index, 1);
+        this._renderables.splice(this._renderables.indexOf(renderable), 1);
         return renderable;
     };
     SubMeshBase.prototype._iInvalidateRenderableGeometry = function () {
@@ -5713,8 +5733,8 @@ var DisplayObjectContainer = (function (_super) {
      */
     DisplayObjectContainer.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        for (var i = this._children.length - 1; i >= 0; i--)
-            this._children[i].dispose();
+        this._children = null;
+        this._depth_childs = null;
     };
     DisplayObjectContainer.prototype.getChildAtDepth = function (depth) {
         return this._depth_childs[depth];
@@ -10175,13 +10195,15 @@ var Mesh = (function (_super) {
             var i;
             var len = this._subMeshes.length;
             var subMesh;
-            for (i = 0; i < len; i++)
-                if (this._material && (subMesh = this._subMeshes[i]).material == this._material)
-                    this._material.iRemoveOwner(subMesh);
+            if (this._material)
+                for (i = 0; i < len; i++)
+                    if ((subMesh = this._subMeshes[i]).material == this._material)
+                        this._material.iRemoveOwner(subMesh);
             this._material = value;
-            for (i = 0; i < len; i++)
-                if (this._material && (subMesh = this._subMeshes[i]).material == this._material)
-                    this._material.iAddOwner(subMesh);
+            if (this._material)
+                for (i = 0; i < len; i++)
+                    if ((subMesh = this._subMeshes[i]).material == this._material)
+                        this._material.iAddOwner(subMesh);
         },
         enumerable: true,
         configurable: true
@@ -10496,6 +10518,12 @@ var MovieClip = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    MovieClip.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this._potentialInstances = null;
+        this._depth_sessionIDs = null;
+        this._sessionID_childs = null;
+    };
     MovieClip.prototype.reset_textclones = function () {
         if (this.timeline) {
             for (var key in this._potentialInstances) {
@@ -11548,6 +11576,13 @@ var TextField = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * @inheritDoc
+     */
+    TextField.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        this._textFormat = null;
+    };
     Object.defineProperty(TextField.prototype, "subMeshes", {
         /**
          * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
@@ -16095,6 +16130,8 @@ var RaycastPicker = (function () {
                 }
             }
         }
+        //discard entities
+        this._entities.length = 0;
         return bestCollisionVO;
     };
     RaycastPicker.prototype.getMasksCollision = function (masks) {
@@ -16208,6 +16245,13 @@ var EntityListItemPool = (function () {
      *
      */
     EntityListItemPool.prototype.freeAll = function () {
+        var item;
+        var len = this._pool.length;
+        for (var i = 0; i < len; i++) {
+            item = this._pool[i];
+            item.entity = null;
+            item.next = null;
+        }
         this._index = 0;
     };
     EntityListItemPool.prototype.dispose = function () {

@@ -90,6 +90,7 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	    isVisibilityByScript(): boolean;
 	    freeFromScript(): void;
 	    clone(newAdaptee: DisplayObject): IDisplayObjectAdapter;
+	    dispose(): any;
 	}
 	export = IDisplayObjectAdapter;
 	
@@ -227,6 +228,24 @@ declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	
 }
 
+declare module "awayjs-display/lib/base/AlignmentMode" {
+	/**
+	 *
+	 */
+	class AlignmentMode {
+	    /**
+	     *
+	     */
+	    static REGISTRATION_POINT: string;
+	    /**
+	     *
+	     */
+	    static PIVOT_POINT: string;
+	}
+	export = AlignmentMode;
+	
+}
+
 declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
@@ -330,24 +349,6 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
 	export = CurveSubGeometry;
-	
-}
-
-declare module "awayjs-display/lib/base/AlignmentMode" {
-	/**
-	 *
-	 */
-	class AlignmentMode {
-	    /**
-	     *
-	     */
-	    static REGISTRATION_POINT: string;
-	    /**
-	     *
-	     */
-	    static PIVOT_POINT: string;
-	}
-	export = AlignmentMode;
 	
 }
 
@@ -609,7 +610,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _rotationY;
 	    private _rotationZ;
 	    private _eulers;
-	    private _flipY;
 	    private _listenToPositionChanged;
 	    private _listenToRotationChanged;
 	    private _listenToSkewChanged;
@@ -629,7 +629,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _pivot;
 	    private _pivotScale;
 	    private _orientationMatrix;
-	    private _pivotZero;
 	    private _pivotDirty;
 	    private _pos;
 	    private _rot;
@@ -6242,6 +6241,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	     */
 	    adapter: IMovieClipAdapter;
 	    constructor(timeline?: Timeline);
+	    dispose(): void;
 	    reset_textclones(): void;
 	    isInit: boolean;
 	    timeline: Timeline;
@@ -7092,6 +7092,10 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * <p>The default size for a text field is 100 x 100 pixels.</p>
 	     */
 	    constructor();
+	    /**
+	     * @inheritDoc
+	     */
+	    dispose(): void;
 	    /**
 	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
 	     * material.
