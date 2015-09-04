@@ -1604,9 +1604,15 @@ var DisplayObject = (function (_super) {
         this._sca = null;
         this._ske = null;
         this._transformComponents = null;
+        this._transform.dispose();
+        this._transform = null;
         this._matrix3D = null;
         this._pSceneTransform = null;
         this._inverseSceneTransform = null;
+        if (this._pPickingCollisionVO) {
+            this._pPickingCollisionVO.dispose();
+            this._pPickingCollisionVO = null;
+        }
         this._explicitMasks = null;
         this._pImplicitMasks = null;
         this._explicitColorTransform = null;
@@ -4472,6 +4478,9 @@ var Transform = (function () {
         enumerable: true,
         configurable: true
     });
+    Transform.prototype.dispose = function () {
+        this._displayObject = null;
+    };
     /**
      * Returns a Matrix3D object, which can transform the space of a specified
      * display object in relation to the current display object's space. You can
@@ -15981,6 +15990,10 @@ var PickingCollisionVO = (function () {
     function PickingCollisionVO(displayObject) {
         this.displayObject = displayObject;
     }
+    PickingCollisionVO.prototype.dispose = function () {
+        this.displayObject = null;
+        this.renderableOwner = null;
+    };
     return PickingCollisionVO;
 })();
 module.exports = PickingCollisionVO;

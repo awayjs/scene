@@ -2715,6 +2715,7 @@ declare module "awayjs-display/lib/base/Transform" {
 	     */
 	    upVector: Vector3D;
 	    constructor(displayObject: DisplayObject);
+	    dispose(): void;
 	    /**
 	     * Returns a Matrix3D object, which can transform the space of a specified
 	     * display object in relation to the current display object's space. You can
@@ -9326,6 +9327,7 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	     * @param entity The entity to which this collision object belongs.
 	     */
 	    constructor(displayObject: DisplayObject);
+	    dispose(): void;
 	}
 	export = PickingCollisionVO;
 	
