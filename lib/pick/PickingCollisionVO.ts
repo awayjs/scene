@@ -91,6 +91,12 @@ class PickingCollisionVO
 		this.displayObject = displayObject;
 	}
 
+	public dispose()
+	{
+		this.displayObject = null;
+		this.renderableOwner = null;
+	}
+
 }
 
 export = PickingCollisionVO;

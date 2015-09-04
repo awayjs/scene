@@ -277,6 +277,11 @@ class Transform
 		this._displayObject = displayObject;
 	}
 
+	public dispose()
+	{
+		this._displayObject = null;
+	}
+
 	/**
 	 * Returns a Matrix3D object, which can transform the space of a specified
 	 * display object in relation to the current display object's space. You can

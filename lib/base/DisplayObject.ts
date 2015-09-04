@@ -1578,10 +1578,17 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._sca = null;
 		this._ske = null;
 		this._transformComponents = null;
+		this._transform.dispose();
+		this._transform = null;
+
 		this._matrix3D = null;
 		this._pSceneTransform = null;
 		this._inverseSceneTransform = null;
 
+		if (this._pPickingCollisionVO) {
+			this._pPickingCollisionVO.dispose();
+			this._pPickingCollisionVO = null;
+		}
 
 		this._explicitMasks = null;
 		this._pImplicitMasks = null;
