@@ -2402,7 +2402,6 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	    _iAddSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
 	    _iRemoveSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
 	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    _clearInterfaces(): void;
 	}
 	export = SubGeometryBase;
 	

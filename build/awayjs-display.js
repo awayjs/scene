@@ -565,7 +565,6 @@ var DisplayObject = (function (_super) {
         this._pImplicitMaskIds = new Array();
         this._explicitMouseEnabled = true;
         this._pImplicitMouseEnabled = true;
-        this._pImplicitColorTransform = new ColorTransform();
         this._rotationX = 0;
         this._rotationY = 0;
         this._rotationZ = 0;
@@ -1609,14 +1608,8 @@ var DisplayObject = (function (_super) {
         this._matrix3D = null;
         this._pSceneTransform = null;
         this._inverseSceneTransform = null;
-        if (this._pPickingCollisionVO) {
-            this._pPickingCollisionVO.dispose();
-            this._pPickingCollisionVO = null;
-        }
         this._explicitMasks = null;
-        this._pImplicitMasks = null;
         this._explicitColorTransform = null;
-        this._pImplicitColorTransform = null;
     };
     /**
      * Returns a rectangle that defines the area of the display object relative
@@ -2581,7 +2574,9 @@ var DisplayObject = (function (_super) {
         this._hierarchicalPropsDirty ^= HierarchicalProperties.MASKS;
     };
     DisplayObject.prototype._updateColorTransform = function () {
-        if (this._inheritColorTransform && this._pParent) {
+        if (!this._pImplicitColorTransform)
+            this._pImplicitColorTransform = new ColorTransform();
+        if (this._inheritColorTransform && this._pParent && this._pParent._iAssignedColorTransform()) {
             this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
             if (this._explicitColorTransform)
                 this._pImplicitColorTransform.prepend(this._explicitColorTransform);
@@ -2605,6 +2600,12 @@ var DisplayObject = (function (_super) {
             this._entityNodes[i].dispose();
         for (i = this._pRenderables.length - 1; i >= 0; i--)
             this._pRenderables[i].dispose();
+        if (this._pPickingCollisionVO) {
+            this._pPickingCollisionVO.dispose();
+            this._pPickingCollisionVO = null;
+        }
+        this._pImplicitColorTransform = null;
+        this._pImplicitMasks = null;
     };
     return DisplayObject;
 })(AssetBase);
@@ -2681,7 +2682,7 @@ var Geometry = (function (_super) {
      */
     Geometry.prototype.removeSubGeometry = function (subGeometry) {
         this._subGeometries.splice(this._subGeometries.indexOf(subGeometry), 1);
-        subGeometry.parentGeometry = null;
+        subGeometry.dispose();
         if (this.hasEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED))
             this.dispatchEvent(new GeometryEvent(GeometryEvent.SUB_GEOMETRY_REMOVED, subGeometry));
         this.iInvalidateBounds(subGeometry);
@@ -2710,12 +2711,9 @@ var Geometry = (function (_super) {
      * Clears all resources used by the Geometry object, including SubGeometries.
      */
     Geometry.prototype.dispose = function () {
-        var numSubGeoms = this._subGeometries.length;
-        for (var i = 0; i < numSubGeoms; ++i) {
-            var subGeom = this._subGeometries[0];
-            this.removeSubGeometry(subGeom);
-            subGeom.dispose();
-        }
+        for (var i = this._subGeometries.length - 1; i >= 0; i--)
+            this.removeSubGeometry(this._subGeometries[i]);
+        this._subGeometries = null;
     };
     /**
      * Scales the uv coordinates (tiling)
@@ -3173,8 +3171,11 @@ var LineSubGeometry = (function (_super) {
      */
     LineSubGeometry.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
+        this._positions.dispose();
         this._positions = null;
+        this._thickness.dispose();
         this._thickness = null;
+        this._colors.dispose();
         this._colors = null;
     };
     /**
@@ -3606,10 +3607,11 @@ var SubGeometryBase = (function (_super) {
      *
      */
     SubGeometryBase.prototype.dispose = function () {
-        while (this._subGeometryVO.length)
-            this._subGeometryVO[0].dispose();
-        this._pIndices.dispose();
-        this._pIndices = null;
+        this.parentGeometry = null;
+        if (this._pIndices) {
+            this._pIndices.dispose();
+            this._pIndices = null;
+        }
     };
     SubGeometryBase.prototype.setIndices = function (values, offset) {
         if (offset === void 0) { offset = 0; }
@@ -3707,10 +3709,6 @@ var SubGeometryBase = (function (_super) {
     };
     SubGeometryBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollisionVO, shortestCollisionDistance) {
         throw new AbstractMethodError();
-    };
-    SubGeometryBase.prototype._clearInterfaces = function () {
-        for (var i = this._subGeometryVO.length - 1; i >= 0; i--)
-            this._subGeometryVO[i].dispose();
     };
     return SubGeometryBase;
 })(AssetBase);
@@ -11589,6 +11587,10 @@ var TextField = (function (_super) {
      * @inheritDoc
      */
     TextField.prototype.dispose = function () {
+        //dispose material before geometry to ensure owners are deleted
+        this.material = null;
+        //textfield has a unique geometry that can be disposed here
+        this._geometry.dispose();
         _super.prototype.dispose.call(this);
         this._textFormat = null;
     };
