@@ -582,8 +582,6 @@ class MaterialBase extends AssetBase implements IRenderOwner
 			this._animationSet = null;
 
 			this.invalidateAnimation();
-
-			this._clearInterfaces();
 		}
 
 		owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
