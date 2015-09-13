@@ -12845,8 +12845,8 @@ var FrameScriptManager = (function () {
             this._queued_mcs.push(this._queued_mcs_pass2[i]);
             this._queued_scripts.push(this._queued_scripts_pass2[i]);
         }
-        this._queued_mcs_pass2 = [];
-        this._queued_scripts_pass2 = [];
+        this._queued_mcs_pass2.length = 0;
+        this._queued_scripts_pass2.length = 0;
         this._queued_mcs.push(mc);
         this._queued_scripts.push(script);
     };
@@ -12862,21 +12862,25 @@ var FrameScriptManager = (function () {
             this._queued_mcs.push(this._queued_mcs_pass2[i]);
             this._queued_scripts.push(this._queued_scripts_pass2[i]);
         }
-        this._queued_mcs_pass2 = [];
-        this._queued_scripts_pass2 = [];
+        this._queued_mcs_pass2.length = 0;
+        this._queued_scripts_pass2.length = 0;
         var mc;
         for (i = 0; i < this._queued_mcs.length; i++) {
             // during the loop we might add more scripts to the queue
             mc = this._queued_mcs[i];
             if (mc.scene != null) {
                 var caller = mc.adapter ? mc.adapter : mc;
-                //	try {
-                this._queued_scripts[i].call(caller);
+                try {
+                    this._queued_scripts[i].call(caller);
+                }
+                catch (err) {
+                    console.log("----Script error in " + (mc.name || "undefined") + "----\n", err);
+                }
             }
         }
         // all scripts executed. clear all
-        this._queued_mcs = [];
-        this._queued_scripts = [];
+        this._queued_mcs.length = 0;
+        this._queued_scripts.length = 0;
     };
     // queues pass1 of scripts.
     FrameScriptManager._queued_mcs = [];
@@ -13899,7 +13903,6 @@ var MaterialBase = (function (_super) {
         if (this._owners.length == 0) {
             this._animationSet = null;
             this.invalidateAnimation();
-            this._clearInterfaces();
         }
         owner.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
     };

@@ -10941,18 +10941,6 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	
 }
 
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
-	
-}
-
 declare module "awayjs-display/lib/traverse/CollectorBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Scene = require("awayjs-display/lib/containers/Scene");
@@ -11246,6 +11234,18 @@ declare module "awayjs-display/lib/vos/ISubGeometryVO" {
 	    invalidate(): any;
 	}
 	export = ISubGeometryVO;
+	
+}
+
+declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.CSSEntityCollector
+	 */
+	class CSSEntityCollector extends CollectorBase {
+	    constructor();
+	}
+	export = CSSEntityCollector;
 	
 }
 
