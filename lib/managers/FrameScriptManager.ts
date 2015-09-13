@@ -40,8 +40,8 @@ class FrameScriptManager
 			this._queued_mcs.push(this._queued_mcs_pass2[i]);
 			this._queued_scripts.push(this._queued_scripts_pass2[i]);
 		}
-		this._queued_mcs_pass2=[];
-		this._queued_scripts_pass2=[];
+		this._queued_mcs_pass2.length = 0;
+		this._queued_scripts_pass2.length = 0;
 		this._queued_mcs.push(mc);
 		this._queued_scripts.push(script);
 	}
@@ -62,8 +62,8 @@ class FrameScriptManager
 			this._queued_mcs.push(this._queued_mcs_pass2[i]);
 			this._queued_scripts.push(this._queued_scripts_pass2[i]);
 		}
-		this._queued_mcs_pass2=[];
-		this._queued_scripts_pass2=[];
+		this._queued_mcs_pass2.length = 0;
+		this._queued_scripts_pass2.length = 0;
 
 		var mc:MovieClip;
 		for (i = 0; i <this._queued_mcs.length; i++) {
@@ -71,19 +71,16 @@ class FrameScriptManager
 			mc=this._queued_mcs[i];
 			if(mc.scene!=null) {
 				var caller = mc.adapter ? mc.adapter : mc;
-			//	try {
+				try {
 					this._queued_scripts[i].call(caller);
-			//	}
-			/*	catch (err) {
-					console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
-					console.log(err.message);
-					throw err;
-				}*/
+				} catch (err) {
+					console.log("----Script error in " + (mc.name || "undefined") + "----\n", err);
+				}
 			}
 		}
 		// all scripts executed. clear all
-		this._queued_mcs=[];
-		this._queued_scripts=[];
+		this._queued_mcs.length = 0;
+		this._queued_scripts.length = 0;
 	}
 }
 export = FrameScriptManager;
