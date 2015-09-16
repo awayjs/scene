@@ -10714,6 +10714,8 @@ var MovieClip = (function (_super) {
         FrameScriptManager.execute_intervals();
         // finally, we execute any scripts that were added from intervals
         FrameScriptManager.execute_queue();
+        //execute any disposes as a result of framescripts
+        FrameScriptManager.execute_dispose();
         this.exit_frame();
     };
     MovieClip.prototype.getPotentialChildInstance = function (id) {
@@ -10788,7 +10790,7 @@ var MovieClip = (function (_super) {
             var instance = this._potentialInstances[key];
             //only dispose instances that are not used in script ie. do not have an instance name
             if (instance.name == "") {
-                instance.dispose();
+                FrameScriptManager.add_child_to_dispose(instance);
                 delete this._potentialInstances[key];
             }
             else {
@@ -12838,6 +12840,9 @@ var FrameScriptManager = (function () {
             this._active_intervals[key].call();
         }
     };
+    FrameScriptManager.add_child_to_dispose = function (child) {
+        this._queued_dispose.push(child);
+    };
     FrameScriptManager.add_script_to_queue = function (mc, script) {
         // whenever we queue scripts of new objects, we first inject the lists of pass2
         var i = this._queued_mcs_pass2.length;
@@ -12870,18 +12875,23 @@ var FrameScriptManager = (function () {
             mc = this._queued_mcs[i];
             if (mc.scene != null) {
                 var caller = mc.adapter ? mc.adapter : mc;
-                try {
-                    this._queued_scripts[i].call(caller);
-                }
-                catch (err) {
-                    console.log("----Script error in " + (mc.name || "undefined") + "----\n", err);
-                }
+                //	try {
+                this._queued_scripts[i].call(caller);
             }
         }
         // all scripts executed. clear all
         this._queued_mcs.length = 0;
         this._queued_scripts.length = 0;
     };
+    FrameScriptManager.execute_dispose = function () {
+        var instance;
+        for (var i = this._queued_dispose.length - 1; i >= 0; i--) {
+            this._queued_dispose[i].dispose();
+        }
+        this._queued_dispose.length = 0;
+    };
+    //queue of objects for disposal
+    FrameScriptManager._queued_dispose = new Array();
     // queues pass1 of scripts.
     FrameScriptManager._queued_mcs = [];
     FrameScriptManager._queued_scripts = [];

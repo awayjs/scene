@@ -7926,8 +7926,10 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 }
 
 declare module "awayjs-display/lib/managers/FrameScriptManager" {
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
 	class FrameScriptManager {
+	    private static _queued_dispose;
 	    private static _queued_mcs;
 	    private static _queued_scripts;
 	    private static _queued_mcs_pass2;
@@ -7937,9 +7939,11 @@ declare module "awayjs-display/lib/managers/FrameScriptManager" {
 	    static setInterval(func: any): number;
 	    static clearInterval(id: number): void;
 	    static execute_intervals(): void;
+	    static add_child_to_dispose(child: DisplayObject): void;
 	    static add_script_to_queue(mc: MovieClip, script: Function): void;
 	    static add_script_to_queue_pass2(mc: MovieClip, script: Function): void;
 	    static execute_queue(): void;
+	    static execute_dispose(): void;
 	}
 	export = FrameScriptManager;
 	
@@ -10941,6 +10945,18 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	
 }
 
+declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.CSSEntityCollector
+	 */
+	class CSSEntityCollector extends CollectorBase {
+	    constructor();
+	}
+	export = CSSEntityCollector;
+	
+}
+
 declare module "awayjs-display/lib/traverse/CollectorBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Scene = require("awayjs-display/lib/containers/Scene");
@@ -11234,18 +11250,6 @@ declare module "awayjs-display/lib/vos/ISubGeometryVO" {
 	    invalidate(): any;
 	}
 	export = ISubGeometryVO;
-	
-}
-
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
 	
 }
 
