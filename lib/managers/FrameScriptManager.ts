@@ -1,7 +1,11 @@
+import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
 import MovieClip					= require("awayjs-display/lib/entities/MovieClip");
 
 class FrameScriptManager
 {
+	//queue of objects for disposal
+	private static _queued_dispose:Array<DisplayObject> = new Array<DisplayObject>();
+
 	// queues pass1 of scripts.
 	private static _queued_mcs:Array<MovieClip> = [];
 	private static _queued_scripts:Array<Function> = [];
@@ -30,6 +34,11 @@ class FrameScriptManager
 		for(var key in this._active_intervals){
 			this._active_intervals[key].call();
 		}
+	}
+
+	public static add_child_to_dispose(child:DisplayObject)
+	{
+		this._queued_dispose.push(child);
 	}
 
 	public static add_script_to_queue(mc:MovieClip, script:Function):void
@@ -71,16 +80,30 @@ class FrameScriptManager
 			mc=this._queued_mcs[i];
 			if(mc.scene!=null) {
 				var caller = mc.adapter ? mc.adapter : mc;
-				try {
+			//	try {
 					this._queued_scripts[i].call(caller);
-				} catch (err) {
-					console.log("----Script error in " + (mc.name || "undefined") + "----\n", err);
-				}
+			//	}
+			/*	catch (err) {
+					console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
+					console.log(err.message);
+					throw err;
+				}*/
 			}
 		}
 		// all scripts executed. clear all
 		this._queued_mcs.length = 0;
 		this._queued_scripts.length = 0;
+	}
+
+	public static execute_dispose()
+	{
+		var instance:DisplayObject;
+
+		for (var i:number = this._queued_dispose.length - 1; i  >= 0; i--) {
+			this._queued_dispose[i].dispose();
+		}
+
+		this._queued_dispose.length = 0;
 	}
 }
 export = FrameScriptManager;
