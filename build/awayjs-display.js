@@ -3949,7 +3949,6 @@ var Timeline = (function () {
         var target_keyframe_idx = this.keyframe_indices[value];
         if (current_keyframe_idx == target_keyframe_idx)
             return;
-        var firstframe = this.keyframe_firstframes[target_keyframe_idx];
         if (current_keyframe_idx + 1 == target_keyframe_idx) {
             target_mc.set_currentFrameIndex(value);
             this.constructNextFrame(target_mc, !skip_script, true);
@@ -3959,13 +3958,11 @@ var Timeline = (function () {
         //we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
         var jump_forward = (target_keyframe_idx > current_keyframe_idx);
         var jump_gap = (break_frame_idx > current_keyframe_idx);
+        // in case we jump forward, but not jump a gap, we start at current_keyframe_idx + 1
         // in case we jump back or we jump a gap, we want to start constructing at BreakFrame
-        var start_construct_idx = break_frame_idx;
-        if (jump_forward && !jump_gap)
-            start_construct_idx = current_keyframe_idx + 1;
+        var start_construct_idx = (jump_forward && !jump_gap) ? current_keyframe_idx + 1 : break_frame_idx;
         var i;
         var k;
-        var child;
         if (jump_gap)
             for (i = target_mc.numChildren - 1; i >= 0; i--)
                 if (target_mc._children[i]._depthID < 0)
@@ -4001,6 +3998,11 @@ var Timeline = (function () {
             if (frame_recipe & 8)
                 update_indices[update_cnt++] = frame_command_idx; // execute update command later
         }
+        //  step2: construct the final frame
+        // check what childs are alive on both frames.
+        // childs that are not alive anymore get removed and unregistered
+        // childs that are alive on both frames have their properties reset if we are jumping back
+        var child;
         for (i = target_mc.numChildren - 1; i >= 0; i--) {
             child = target_mc._children[i];
             if (child._depthID < 0) {
@@ -4037,7 +4039,7 @@ var Timeline = (function () {
             if (child._sessionID == -1)
                 target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
         }
-        if (!skip_script && firstframe == value)
+        if (!skip_script && this.keyframe_firstframes[target_keyframe_idx] == value)
             this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
         //  pass2: apply update commands for objects on stage (only if they are not blocked by script)
         var frame_command_idx;
@@ -4083,35 +4085,27 @@ var Timeline = (function () {
         // apply add commands in reversed order to have script exeucted in correct order.
         // this could be changed in exporter
         var idx;
-        var end_index = start_index + len;
-        for (var i = end_index - 1; i >= start_index; i--) {
+        for (var i = start_index + len - 1; i >= start_index; i--) {
             idx = i * 2;
-            var child = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
-            sourceMovieClip._addTimelineChildAt(child, this.add_child_stream[idx + 1] - 16383, i);
+            sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
         }
     };
     Timeline.prototype.update_childs = function (sourceMovieClip, start_index, len) {
         var props_start_idx;
-        var props_len;
         var props_end_index;
         var value_start_index;
-        var props_type;
         var doit;
         var end_index = start_index + len;
         for (var i = start_index; i < end_index; i++) {
             var target = sourceMovieClip.getChildAtSessionID(this.update_child_stream[i]);
             if (target != null) {
-                doit = true;
                 // check if the child is active + not blocked by script
-                if (target.adapter && target.adapter.isBlockedByScript())
-                    doit = false;
+                doit = (target.adapter && target.adapter.isBlockedByScript()) ? false : true;
                 props_start_idx = this.update_child_props_indices_stream[i];
-                props_len = this.update_child_props_length_stream[i];
-                props_end_index = props_start_idx + props_len;
+                props_end_index = props_start_idx + this.update_child_props_length_stream[i];
                 for (var p = props_start_idx; p < props_end_index; p++) {
-                    props_type = this.property_type_stream[p];
                     value_start_index = this.property_index_stream[p];
-                    switch (props_type) {
+                    switch (this.property_type_stream[p]) {
                         case 0:
                             break;
                         case 1:
@@ -5739,6 +5733,8 @@ var DisplayObjectContainer = (function (_super) {
      *
      */
     DisplayObjectContainer.prototype.dispose = function () {
+        for (var i = this._children.length - 1; i >= 0; i--)
+            this.removeChild(this._children[i]);
         _super.prototype.dispose.call(this);
         this._children = null;
         this._depth_childs = null;
@@ -10622,19 +10618,18 @@ var MovieClip = (function (_super) {
         set: function (value) {
             if (this._currentFrameIndex == value)
                 return;
-            if (this._timeline.numFrames) {
-                value = Math.floor(value);
+            var numFrames = this._timeline.numFrames;
+            if (numFrames) {
                 var skip_script = false;
                 if (value < 0) {
                     value = 0;
                 }
-                else if (value >= this._timeline.numFrames) {
-                    value = this._timeline.numFrames - 1;
+                else if (value >= numFrames) {
+                    value = numFrames - 1;
                     skip_script = true;
                 }
                 // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
                 this._skipAdvance = true;
-                //this._time = 0;
                 this._timeline.gotoFrame(this, value, skip_script);
             }
             this._currentFrameIndex = value;
@@ -12884,10 +12879,9 @@ var FrameScriptManager = (function () {
         this._queued_scripts.length = 0;
     };
     FrameScriptManager.execute_dispose = function () {
-        var instance;
-        for (var i = this._queued_dispose.length - 1; i >= 0; i--) {
+        var len = this._queued_dispose.length;
+        for (var i = 0; i < len; i++)
             this._queued_dispose[i].dispose();
-        }
         this._queued_dispose.length = 0;
     };
     //queue of objects for disposal
