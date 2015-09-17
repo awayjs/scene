@@ -288,6 +288,9 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public dispose()
 	{
+		for (var i:number = this._children.length - 1; i >= 0; i--)
+			this.removeChild(this._children[i]);
+
 		super.dispose();
 
 		this._children = null;

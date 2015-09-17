@@ -97,11 +97,9 @@ class FrameScriptManager
 
 	public static execute_dispose()
 	{
-		var instance:DisplayObject;
-
-		for (var i:number = this._queued_dispose.length - 1; i  >= 0; i--) {
+		var len:number = this._queued_dispose.length;
+		for (var i:number = 0; i < len; i++)
 			this._queued_dispose[i].dispose();
-		}
 
 		this._queued_dispose.length = 0;
 	}

@@ -198,21 +198,21 @@ class MovieClip extends DisplayObjectContainer
         if (this._currentFrameIndex == value)
             return;
 
-        if(this._timeline.numFrames) {
-            value = Math.floor(value);
+        var numFrames:number = this._timeline.numFrames;
+
+        if (numFrames) {
 
             var skip_script:boolean = false;
 
             if (value < 0) {
                 value = 0;
-            } else if (value >= this._timeline.numFrames) {
-                value = this._timeline.numFrames - 1;
-                skip_script=true;
+            } else if (value >= numFrames) {
+                value = numFrames - 1;
+                skip_script = true;
             }
 
             // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
             this._skipAdvance = true;
-            //this._time = 0;
 
             this._timeline.gotoFrame(this, value, skip_script);
         }

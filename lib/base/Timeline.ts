@@ -177,8 +177,6 @@ class Timeline
 		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
 			return;
 
-		var firstframe:number = this.keyframe_firstframes[target_keyframe_idx];
-
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
 			target_mc.set_currentFrameIndex(value);
 			this.constructNextFrame(target_mc, !skip_script, true);
@@ -192,15 +190,12 @@ class Timeline
 		var jump_forward:boolean = (target_keyframe_idx > current_keyframe_idx);
 		var jump_gap:boolean = (break_frame_idx > current_keyframe_idx);
 
+		// in case we jump forward, but not jump a gap, we start at current_keyframe_idx + 1
 		// in case we jump back or we jump a gap, we want to start constructing at BreakFrame
-		var start_construct_idx:number = break_frame_idx;
-
-		if (jump_forward && !jump_gap) // in case we jump forward, but not jump a gap, we start at current_keyframe_idx +1
-			start_construct_idx = current_keyframe_idx + 1;
+		var start_construct_idx:number = (jump_forward && !jump_gap)? current_keyframe_idx + 1 : break_frame_idx;
 
 		var i:number;
 		var k:number;
-		var child:DisplayObject;
 
 		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 			for (i = target_mc.numChildren - 1; i >= 0; i--)
@@ -251,6 +246,7 @@ class Timeline
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
 		// childs that are alive on both frames have their properties reset if we are jumping back
+		var child:DisplayObject;
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
 			if (child._depthID < 0) {
@@ -291,7 +287,8 @@ class Timeline
 			if (child._sessionID == -1)
 				target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
 		}
-		if (!skip_script && firstframe == value) //frame changed. and firstframe of keyframe. execute framescript if available
+
+		if (!skip_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 
@@ -353,37 +350,30 @@ class Timeline
 		// apply add commands in reversed order to have script exeucted in correct order.
 		// this could be changed in exporter
 		var idx:number;
-		var end_index:number = start_index + len;
-		for (var i:number = end_index - 1; i >= start_index; i--) {
+		for (var i:number = start_index + len - 1; i >= start_index; i--) {
 			idx = i*2;
-			var child:DisplayObject = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
-			sourceMovieClip._addTimelineChildAt(child, this.add_child_stream[idx + 1] - 16383, i);
+			sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
 		}
 	}
 
 	public update_childs(sourceMovieClip:MovieClip, start_index:number, len:number)
 	{
 		var props_start_idx:number;
-		var props_len:number;
 		var props_end_index:number;
 		var value_start_index:number;
-		var props_type:number;
 		var doit:boolean;
 		var end_index:number = start_index + len;
 		for(var i:number = start_index; i < end_index; i++) {
 			var target:DisplayObject = sourceMovieClip.getChildAtSessionID(this.update_child_stream[i]);
 			if (target != null) {
-				doit = true;
 				// check if the child is active + not blocked by script
-				if (target.adapter && target.adapter.isBlockedByScript())
-					doit = false;
+				doit = (target.adapter && target.adapter.isBlockedByScript())? false : true;
+
 				props_start_idx = this.update_child_props_indices_stream[i];
-				props_len = this.update_child_props_length_stream[i];
-				props_end_index = props_start_idx + props_len;
+				props_end_index = props_start_idx + this.update_child_props_length_stream[i];
 				for(var p:number = props_start_idx; p < props_end_index; p++) {
-					props_type = this.property_type_stream[p];
 					value_start_index = this.property_index_stream[p];
-					switch(props_type){
+					switch(this.property_type_stream[p]){
 						case 0:
 
 							break;
