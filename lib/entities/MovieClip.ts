@@ -325,9 +325,6 @@ class MovieClip extends DisplayObjectContainer
         // finally, we execute any scripts that were added from intervals
         FrameScriptManager.execute_queue();
 
-        //execute any disposes as a result of framescripts
-        FrameScriptManager.execute_dispose();
-
         this.exit_frame();
     }
 
@@ -428,7 +425,7 @@ class MovieClip extends DisplayObjectContainer
 
             //only dispose instances that are not used in script ie. do not have an instance name
             if (instance.name == "") {
-                FrameScriptManager.add_child_to_dispose(instance);
+                instance.dispose();
                 delete this._potentialInstances[key];
             } else {
                 instance._clearInterfaces();
