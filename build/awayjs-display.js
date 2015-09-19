@@ -10709,6 +10709,8 @@ var MovieClip = (function (_super) {
         FrameScriptManager.execute_intervals();
         // finally, we execute any scripts that were added from intervals
         FrameScriptManager.execute_queue();
+        //execute any disposes as a result of framescripts
+        FrameScriptManager.execute_dispose();
         this.exit_frame();
     };
     MovieClip.prototype.getPotentialChildInstance = function (id) {
@@ -10783,7 +10785,7 @@ var MovieClip = (function (_super) {
             var instance = this._potentialInstances[key];
             //only dispose instances that are not used in script ie. do not have an instance name
             if (instance.name == "") {
-                instance.dispose();
+                FrameScriptManager.add_child_to_dispose(instance);
                 delete this._potentialInstances[key];
             }
             else {
