@@ -17,11 +17,11 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  */
 class CurveSubMesh extends SubMeshBase implements ISubMesh
 {
+	public static _available:Array<CurveSubMesh> = new Array<CurveSubMesh>();
+
 	public static assetType:string = "[asset CurveSubMesh]";
 
 	public static assetClass:IAssetClass = CurveSubGeometry;
-
-	private _subGeometry:CurveSubGeometry;
 
 	/**
 	 *
@@ -34,10 +34,7 @@ class CurveSubMesh extends SubMeshBase implements ISubMesh
 	/**
 	 * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
 	 */
-	public get subGeometry():CurveSubGeometry
-	{
-		return this._subGeometry;
-	}
+	public subGeometry:CurveSubGeometry;
 
 	/**
 	 * Creates a new CurveSubMesh object
@@ -49,7 +46,7 @@ class CurveSubMesh extends SubMeshBase implements ISubMesh
 	{
 		super(parentMesh, material);
 
-		this._subGeometry = subGeometry;
+		this.subGeometry = subGeometry;
 	}
 
 	/**
@@ -59,7 +56,9 @@ class CurveSubMesh extends SubMeshBase implements ISubMesh
 	{
 		super.dispose();
 
-		this._subGeometry = null;
+		this.subGeometry = null;
+
+		CurveSubMesh._available.push(this);
 	}
 }
 

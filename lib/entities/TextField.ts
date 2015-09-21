@@ -108,6 +108,8 @@ import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayO
  */
 class TextField extends Mesh
 {
+	private static _textFields:Array<TextField> = new Array<TextField>();
+
 	public static assetType:string = "[asset TextField]";
 
 	private _textGeometryDirty:boolean;
@@ -835,13 +837,20 @@ class TextField extends Mesh
 	 */
 	public dispose()
 	{
+		this.clear();
+
+		TextField._textFields.push(this);
+	}
+
+	public clear()
+	{
 		//dispose material before geometry to ensure owners are deleted
 		this.material = null;
 
 		//textfield has a unique geometry that can be disposed here
 		this._geometry.dispose();
 
-		super.dispose();
+		super.clear();
 
 		this._textFormat = null;
 	}
@@ -1404,7 +1413,7 @@ class TextField extends Mesh
 
     public clone():TextField
     {
-		var newInstance:TextField = new TextField();
+		var newInstance:TextField = (TextField._textFields.length)? TextField._textFields.pop() : new TextField();
 
 		this.copyTo(newInstance);
 

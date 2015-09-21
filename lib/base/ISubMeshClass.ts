@@ -13,6 +13,8 @@ import Mesh						= require("awayjs-display/lib/entities/Mesh");
  */
 interface ISubMeshClass extends IWrapperClass
 {
+	_available:Array<ISubMesh>;
+
 	/**
 	 *
 	 */

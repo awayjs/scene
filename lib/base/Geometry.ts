@@ -118,8 +118,6 @@ class Geometry extends AssetBase implements IAsset
 	{
 		for (var i:number = this._subGeometries.length - 1; i>=0; i--)
 			this.removeSubGeometry(this._subGeometries[i]);
-
-		this._subGeometries = null;
 	}
 
 	/**

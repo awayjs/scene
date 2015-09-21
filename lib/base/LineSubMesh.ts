@@ -17,11 +17,11 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  */
 class LineSubMesh extends SubMeshBase implements ISubMesh
 {
+	public static _available:Array<LineSubMesh> = new Array<LineSubMesh>();
+
 	public static assetType:string = "[asset LineSubMesh]";
 
 	public static assetClass:IAssetClass = LineSubGeometry;
-
-	private _subGeometry:LineSubGeometry;
 
 	/**
 	 *
@@ -34,10 +34,7 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 	/**
 	 * The LineSubGeometry object which provides the geometry data for this LineSubMesh.
 	 */
-	public get subGeometry():LineSubGeometry
-	{
-		return this._subGeometry;
-	}
+	public subGeometry:LineSubGeometry;
 
 	/**
 	 * Creates a new LineSubMesh object
@@ -49,7 +46,7 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 	{
 		super(parentMesh, material);
 
-		this._subGeometry = subGeometry;
+		this.subGeometry = subGeometry;
 	}
 
 	/**
@@ -59,7 +56,9 @@ class LineSubMesh extends SubMeshBase implements ISubMesh
 	{
 		super.dispose();
 
-		this._subGeometry = null;
+		this.subGeometry = null;
+
+		LineSubMesh._available.push(this);
 	}
 }
 

@@ -17,11 +17,11 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  */
 class TriangleSubMesh extends SubMeshBase implements ISubMesh
 {
+	public static _available:Array<TriangleSubMesh> = new Array<TriangleSubMesh>();
+
 	public static assetType:string = "[asset TriangleSubMesh]";
 
 	public static assetClass:IAssetClass = TriangleSubGeometry;
-
-	private _subGeometry:TriangleSubGeometry;
 
 	/**
 	 *
@@ -34,10 +34,7 @@ class TriangleSubMesh extends SubMeshBase implements ISubMesh
 	/**
 	 * The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
 	 */
-	public get subGeometry():TriangleSubGeometry
-	{
-		return this._subGeometry;
-	}
+	public subGeometry:TriangleSubGeometry;
 
 	/**
 	 * Creates a new TriangleSubMesh object
@@ -49,7 +46,7 @@ class TriangleSubMesh extends SubMeshBase implements ISubMesh
 	{
 		super(parentMesh, material);
 
-		this._subGeometry = subGeometry;
+		this.subGeometry = subGeometry;
 	}
 
 	/**
@@ -59,7 +56,9 @@ class TriangleSubMesh extends SubMeshBase implements ISubMesh
 	{
 		super.dispose();
 
-		this._subGeometry = null;
+		this.subGeometry = null;
+
+		TriangleSubMesh._available.push(this);
 	}
 }
 

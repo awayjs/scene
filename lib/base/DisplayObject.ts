@@ -1565,25 +1565,30 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public dispose()
 	{
+		this.clear();
+	}
+
+	public clear()
+	{
 		if (this._pParent)
 			this._pParent.removeChild(this);
 
-		if (this._adapter) {
-			this._adapter.dispose();
-			this._adapter = null;
-		}
+		//if (this._adapter) {
+		//	this._adapter.dispose();
+		//	this._adapter = null;
+		//}
 
-		this._pos = null;
-		this._rot = null;
-		this._sca = null;
-		this._ske = null;
-		this._transformComponents = null;
-		this._transform.dispose();
-		this._transform = null;
-
-		this._matrix3D = null;
-		this._pSceneTransform = null;
-		this._inverseSceneTransform = null;
+		//this._pos = null;
+		//this._rot = null;
+		//this._sca = null;
+		//this._ske = null;
+		//this._transformComponents = null;
+		//this._transform.dispose();
+		//this._transform = null;
+		//
+		//this._matrix3D = null;
+		//this._pSceneTransform = null;
+		//this._inverseSceneTransform = null;
 
 		this._explicitMasks = null;
 		this._explicitColorTransform = null;

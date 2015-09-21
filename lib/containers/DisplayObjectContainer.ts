@@ -286,15 +286,12 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 *
 	 */
-	public dispose()
+	public clear()
 	{
 		for (var i:number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
 
-		super.dispose();
-
-		this._children = null;
-		this._depth_childs = null;
+		super.clear();
 	}
 
 	public getChildAtDepth(depth:number):DisplayObject

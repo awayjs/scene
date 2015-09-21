@@ -21,7 +21,6 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class SubMeshBase extends AssetBase
 {
-	private _parentMesh:Mesh;
 	public _uvTransform:UVTransform;
 
 	public _iIndex:number = 0;
@@ -41,7 +40,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get animator():IAnimator
 	{
-		return this._parentMesh.animator;
+		return this.parentMesh.animator;
 	}
 
 	/**
@@ -49,7 +48,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public get material():MaterialBase
 	{
-		return this._material || this._parentMesh.material;
+		return this._material || this.parentMesh.material;
 	}
 
 	public set material(value:MaterialBase)
@@ -68,23 +67,19 @@ class SubMeshBase extends AssetBase
 	 */
 	public get sceneTransform():Matrix3D
 	{
-		return this._parentMesh.sceneTransform;
+		return this.parentMesh.sceneTransform;
 	}
 
 	/**
 	 * The entity that that initially provided the IRenderable to the render pipeline (ie: the owning Mesh object).
 	 */
-	public get parentMesh():Mesh
-	{
-		return this._parentMesh;
-	}
-
+	public parentMesh:Mesh;
 	/**
 	 *
 	 */
 	public get uvTransform():UVTransform
 	{
-		return this._uvTransform || this._parentMesh.uvTransform;
+		return this._uvTransform || this.parentMesh.uvTransform;
 	}
 
 	public set uvTransform(value:UVTransform)
@@ -99,7 +94,7 @@ class SubMeshBase extends AssetBase
 	{
 		super();
 
-		this._parentMesh = parentMesh;
+		this.parentMesh = parentMesh;
 		this.material = material;
 	}
 
@@ -109,7 +104,7 @@ class SubMeshBase extends AssetBase
 	public dispose()
 	{
 		this.material = null;
-		this._parentMesh = null;
+		this.parentMesh = null;
 
 		this._clearInterfaces();
 	}
@@ -121,7 +116,7 @@ class SubMeshBase extends AssetBase
 	 */
 	public getRenderSceneTransform(camera:Camera):Matrix3D
 	{
-		return this._parentMesh.getRenderSceneTransform(camera);
+		return this.parentMesh.getRenderSceneTransform(camera);
 	}
 
 	public _iAddRenderable(renderable:IRenderable):IRenderable

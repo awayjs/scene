@@ -8,14 +8,15 @@ import Mesh = require("awayjs-display/lib/entities/Mesh");
 import Billboard = require("awayjs-display/lib/entities/Billboard");
 import TextField = require("awayjs-display/lib/entities/TextField");
 
-import MouseEvent               = require("awayjs-display/lib/events/MouseEvent");
-
-import IMovieClipAdapter		= require("awayjs-display/lib/adapters/IMovieClipAdapter");
-import Timeline                 = require("awayjs-display/lib/base/Timeline");
-import FrameScriptManager       = require("awayjs-display/lib/managers/FrameScriptManager");
+import MouseEvent                   = require("awayjs-display/lib/events/MouseEvent");
+import IMovieClipAdapter	    	= require("awayjs-display/lib/adapters/IMovieClipAdapter");
+import Timeline                     = require("awayjs-display/lib/base/Timeline");
+import FrameScriptManager           = require("awayjs-display/lib/managers/FrameScriptManager");
 
 class MovieClip extends DisplayObjectContainer
 {
+    private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
+
     public static assetType:string = "[asset MovieClip]";
 
     private _timeline:Timeline;
@@ -72,13 +73,19 @@ class MovieClip extends DisplayObjectContainer
 
     public dispose()
     {
-        super.dispose();
+        this.clear();
 
-        this._potentialInstances = null;
-        this._depth_sessionIDs = null;
-        this._sessionID_childs = null;
+        MovieClip._movieClips.push(this);
     }
 
+    public clear()
+    {
+        super.clear();
+
+        this._potentialInstances = {};
+        this._depth_sessionIDs = {};
+        this._sessionID_childs = {};
+    }
 
     public reset_textclones()
     {
@@ -350,7 +357,7 @@ class MovieClip extends DisplayObjectContainer
 
     public clone():MovieClip
     {
-        var newInstance:MovieClip = new MovieClip(this._timeline);
+        var newInstance:MovieClip = (MovieClip._movieClips.length)? MovieClip._movieClips.pop() : new MovieClip(this._timeline);
 
         this.copyTo(newInstance);
 

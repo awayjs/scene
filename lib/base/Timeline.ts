@@ -145,8 +145,8 @@ class Timeline
 
 	public getPotentialChildInstance(id:number) : DisplayObject
 	{
-		var this_clone:DisplayObject=this._potentialPrototypes[id].clone();
-		this_clone.name="";
+		var this_clone:DisplayObject = this._potentialPrototypes[id].clone();
+		this_clone.name = "";
 		return this_clone;
 	}
 

@@ -26,6 +26,8 @@ import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils"
  */
 class Mesh extends DisplayObjectContainer implements IEntity
 {
+	private static _meshes:Array<Mesh> = new Array<Mesh>();
+
 	public static assetType:string = "[asset Mesh]";
 
 	private _uvTransform:UVTransform;
@@ -253,7 +255,14 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public dispose()
 	{
-		super.dispose();
+		this.clear();
+
+		Mesh._meshes.push(this);
+	}
+
+	public clear()
+	{
+		super.clear();
 
 		this.material = null;
 		this.geometry = null;
@@ -280,7 +289,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public clone():Mesh
 	{
-		var newInstance:Mesh = new Mesh(this._geometry, this._material);
+		var newInstance:Mesh = (Mesh._meshes.length)? Mesh._meshes.pop() : new Mesh(this._geometry, this._material);
 
 		this.copyTo(newInstance);
 
@@ -291,7 +300,9 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	{
 		super.copyTo(newInstance);
 
-		newInstance.geometry = this._geometry;
+		if (this.isAsset(Mesh))
+			newInstance.geometry = this._geometry;
+
 		newInstance.material = this._material;
 		newInstance.castsShadows = this._castsShadows;
 		newInstance.shareAnimationGeometry = this._shareAnimationGeometry;
@@ -411,9 +422,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public addSubMesh(subGeometry:SubGeometryBase)
 	{
-		var SubMeshClass:ISubMeshClass = SubMeshPool.getClass(subGeometry);
-
-		var subMesh:ISubMesh = new SubMeshClass(subGeometry, this, null);
+		var subMesh:ISubMesh = SubMeshPool.getNewSubMesh(subGeometry, this, null);
 		var len:number = this._subMeshes.length;
 
 		subMesh._iIndex = len;
