@@ -353,7 +353,7 @@ var CurveSubMesh = (function (_super) {
     function CurveSubMesh(subGeometry, parentMesh, material) {
         if (material === void 0) { material = null; }
         _super.call(this, parentMesh, material);
-        this._subGeometry = subGeometry;
+        this.subGeometry = subGeometry;
     }
     Object.defineProperty(CurveSubMesh.prototype, "assetType", {
         /**
@@ -365,23 +365,15 @@ var CurveSubMesh = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(CurveSubMesh.prototype, "subGeometry", {
-        /**
-         * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
-         */
-        get: function () {
-            return this._subGeometry;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      *
      */
     CurveSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this._subGeometry = null;
+        this.subGeometry = null;
+        CurveSubMesh._available.push(this);
     };
+    CurveSubMesh._available = new Array();
     CurveSubMesh.assetType = "[asset CurveSubMesh]";
     CurveSubMesh.assetClass = CurveSubGeometry;
     return CurveSubMesh;
@@ -1592,22 +1584,26 @@ var DisplayObject = (function (_super) {
      *
      */
     DisplayObject.prototype.dispose = function () {
+        this.clear();
+    };
+    DisplayObject.prototype.clear = function () {
         if (this._pParent)
             this._pParent.removeChild(this);
-        if (this._adapter) {
-            this._adapter.dispose();
-            this._adapter = null;
-        }
-        this._pos = null;
-        this._rot = null;
-        this._sca = null;
-        this._ske = null;
-        this._transformComponents = null;
-        this._transform.dispose();
-        this._transform = null;
-        this._matrix3D = null;
-        this._pSceneTransform = null;
-        this._inverseSceneTransform = null;
+        //if (this._adapter) {
+        //	this._adapter.dispose();
+        //	this._adapter = null;
+        //}
+        //this._pos = null;
+        //this._rot = null;
+        //this._sca = null;
+        //this._ske = null;
+        //this._transformComponents = null;
+        //this._transform.dispose();
+        //this._transform = null;
+        //
+        //this._matrix3D = null;
+        //this._pSceneTransform = null;
+        //this._inverseSceneTransform = null;
         this._explicitMasks = null;
         this._explicitColorTransform = null;
     };
@@ -2713,7 +2709,6 @@ var Geometry = (function (_super) {
     Geometry.prototype.dispose = function () {
         for (var i = this._subGeometries.length - 1; i >= 0; i--)
             this.removeSubGeometry(this._subGeometries[i]);
-        this._subGeometries = null;
     };
     /**
      * Scales the uv coordinates (tiling)
@@ -3227,7 +3222,7 @@ var LineSubMesh = (function (_super) {
     function LineSubMesh(subGeometry, parentMesh, material) {
         if (material === void 0) { material = null; }
         _super.call(this, parentMesh, material);
-        this._subGeometry = subGeometry;
+        this.subGeometry = subGeometry;
     }
     Object.defineProperty(LineSubMesh.prototype, "assetType", {
         /**
@@ -3239,23 +3234,15 @@ var LineSubMesh = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(LineSubMesh.prototype, "subGeometry", {
-        /**
-         * The LineSubGeometry object which provides the geometry data for this LineSubMesh.
-         */
-        get: function () {
-            return this._subGeometry;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      *
      */
     LineSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this._subGeometry = null;
+        this.subGeometry = null;
+        LineSubMesh._available.push(this);
     };
+    LineSubMesh._available = new Array();
     LineSubMesh.assetType = "[asset LineSubMesh]";
     LineSubMesh.assetClass = LineSubGeometry;
     return LineSubMesh;
@@ -3741,7 +3728,7 @@ var SubMeshBase = (function (_super) {
         _super.call(this);
         this._iIndex = 0;
         this._renderables = new Array();
-        this._parentMesh = parentMesh;
+        this.parentMesh = parentMesh;
         this.material = material;
     }
     Object.defineProperty(SubMeshBase.prototype, "animator", {
@@ -3755,7 +3742,7 @@ var SubMeshBase = (function (_super) {
          * The animator object that provides the state for the TriangleSubMesh's animation.
          */
         get: function () {
-            return this._parentMesh.animator;
+            return this.parentMesh.animator;
         },
         enumerable: true,
         configurable: true
@@ -3765,7 +3752,7 @@ var SubMeshBase = (function (_super) {
          * The material used to render the current TriangleSubMesh. If set to null, its parent Mesh's material will be used instead.
          */
         get: function () {
-            return this._material || this._parentMesh.material;
+            return this._material || this.parentMesh.material;
         },
         set: function (value) {
             if (this.material)
@@ -3782,17 +3769,7 @@ var SubMeshBase = (function (_super) {
          * The scene transform object that transforms from model to world space.
          */
         get: function () {
-            return this._parentMesh.sceneTransform;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(SubMeshBase.prototype, "parentMesh", {
-        /**
-         * The entity that that initially provided the IRenderable to the render pipeline (ie: the owning Mesh object).
-         */
-        get: function () {
-            return this._parentMesh;
+            return this.parentMesh.sceneTransform;
         },
         enumerable: true,
         configurable: true
@@ -3802,7 +3779,7 @@ var SubMeshBase = (function (_super) {
          *
          */
         get: function () {
-            return this._uvTransform || this._parentMesh.uvTransform;
+            return this._uvTransform || this.parentMesh.uvTransform;
         },
         set: function (value) {
             this._uvTransform = value;
@@ -3815,7 +3792,7 @@ var SubMeshBase = (function (_super) {
      */
     SubMeshBase.prototype.dispose = function () {
         this.material = null;
-        this._parentMesh = null;
+        this.parentMesh = null;
         this._clearInterfaces();
     };
     /**
@@ -3824,7 +3801,7 @@ var SubMeshBase = (function (_super) {
      * @returns {away.geom.Matrix3D}
      */
     SubMeshBase.prototype.getRenderSceneTransform = function (camera) {
-        return this._parentMesh.getRenderSceneTransform(camera);
+        return this.parentMesh.getRenderSceneTransform(camera);
     };
     SubMeshBase.prototype._iAddRenderable = function (renderable) {
         this._renderables.push(renderable);
@@ -5136,7 +5113,7 @@ var TriangleSubMesh = (function (_super) {
     function TriangleSubMesh(subGeometry, parentMesh, material) {
         if (material === void 0) { material = null; }
         _super.call(this, parentMesh, material);
-        this._subGeometry = subGeometry;
+        this.subGeometry = subGeometry;
     }
     Object.defineProperty(TriangleSubMesh.prototype, "assetType", {
         /**
@@ -5148,23 +5125,15 @@ var TriangleSubMesh = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(TriangleSubMesh.prototype, "subGeometry", {
-        /**
-         * The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
-         */
-        get: function () {
-            return this._subGeometry;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      *
      */
     TriangleSubMesh.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this._subGeometry = null;
+        this.subGeometry = null;
+        TriangleSubMesh._available.push(this);
     };
+    TriangleSubMesh._available = new Array();
     TriangleSubMesh.assetType = "[asset TriangleSubMesh]";
     TriangleSubMesh.assetClass = TriangleSubGeometry;
     return TriangleSubMesh;
@@ -5732,12 +5701,10 @@ var DisplayObjectContainer = (function (_super) {
     /**
      *
      */
-    DisplayObjectContainer.prototype.dispose = function () {
+    DisplayObjectContainer.prototype.clear = function () {
         for (var i = this._children.length - 1; i >= 0; i--)
             this.removeChild(this._children[i]);
-        _super.prototype.dispose.call(this);
-        this._children = null;
-        this._depth_childs = null;
+        _super.prototype.clear.call(this);
     };
     DisplayObjectContainer.prototype.getChildAtDepth = function (depth) {
         return this._depth_childs[depth];
@@ -10264,7 +10231,11 @@ var Mesh = (function (_super) {
      * @inheritDoc
      */
     Mesh.prototype.dispose = function () {
-        _super.prototype.dispose.call(this);
+        this.clear();
+        Mesh._meshes.push(this);
+    };
+    Mesh.prototype.clear = function () {
+        _super.prototype.clear.call(this);
         this.material = null;
         this.geometry = null;
         if (this._animator)
@@ -10287,13 +10258,14 @@ var Mesh = (function (_super) {
      * </code>
      */
     Mesh.prototype.clone = function () {
-        var newInstance = new Mesh(this._geometry, this._material);
+        var newInstance = (Mesh._meshes.length) ? Mesh._meshes.pop() : new Mesh(this._geometry, this._material);
         this.copyTo(newInstance);
         return newInstance;
     };
     Mesh.prototype.copyTo = function (newInstance) {
         _super.prototype.copyTo.call(this, newInstance);
-        newInstance.geometry = this._geometry;
+        if (this.isAsset(Mesh))
+            newInstance.geometry = this._geometry;
         newInstance.material = this._material;
         newInstance.castsShadows = this._castsShadows;
         newInstance.shareAnimationGeometry = this._shareAnimationGeometry;
@@ -10381,8 +10353,7 @@ var Mesh = (function (_super) {
      * @param subGeometry
      */
     Mesh.prototype.addSubMesh = function (subGeometry) {
-        var SubMeshClass = SubMeshPool.getClass(subGeometry);
-        var subMesh = new SubMeshClass(subGeometry, this, null);
+        var subMesh = SubMeshPool.getNewSubMesh(subGeometry, this, null);
         var len = this._subMeshes.length;
         subMesh._iIndex = len;
         this._subMeshes[len] = subMesh;
@@ -10459,6 +10430,7 @@ var Mesh = (function (_super) {
         for (var i = 0; i < len; i++)
             this._subMeshes[i]._clearInterfaces();
     };
+    Mesh._meshes = new Array();
     Mesh.assetType = "[asset Mesh]";
     return Mesh;
 })(DisplayObjectContainer);
@@ -10522,10 +10494,14 @@ var MovieClip = (function (_super) {
         configurable: true
     });
     MovieClip.prototype.dispose = function () {
-        _super.prototype.dispose.call(this);
-        this._potentialInstances = null;
-        this._depth_sessionIDs = null;
-        this._sessionID_childs = null;
+        this.clear();
+        MovieClip._movieClips.push(this);
+    };
+    MovieClip.prototype.clear = function () {
+        _super.prototype.clear.call(this);
+        this._potentialInstances = {};
+        this._depth_sessionIDs = {};
+        this._sessionID_childs = {};
     };
     MovieClip.prototype.reset_textclones = function () {
         if (this.timeline) {
@@ -10725,7 +10701,7 @@ var MovieClip = (function (_super) {
         this._isPlaying = false;
     };
     MovieClip.prototype.clone = function () {
-        var newInstance = new MovieClip(this._timeline);
+        var newInstance = (MovieClip._movieClips.length) ? MovieClip._movieClips.pop() : new MovieClip(this._timeline);
         this.copyTo(newInstance);
         return newInstance;
     };
@@ -10794,6 +10770,7 @@ var MovieClip = (function (_super) {
         }
         _super.prototype._clearInterfaces.call(this);
     };
+    MovieClip._movieClips = new Array();
     MovieClip.assetType = "[asset MovieClip]";
     return MovieClip;
 })(DisplayObjectContainer);
@@ -11584,11 +11561,15 @@ var TextField = (function (_super) {
      * @inheritDoc
      */
     TextField.prototype.dispose = function () {
+        this.clear();
+        TextField._textFields.push(this);
+    };
+    TextField.prototype.clear = function () {
         //dispose material before geometry to ensure owners are deleted
         this.material = null;
         //textfield has a unique geometry that can be disposed here
         this._geometry.dispose();
-        _super.prototype.dispose.call(this);
+        _super.prototype.clear.call(this);
         this._textFormat = null;
     };
     Object.defineProperty(TextField.prototype, "subMeshes", {
@@ -12095,7 +12076,7 @@ var TextField = (function (_super) {
         return false;
     };
     TextField.prototype.clone = function () {
-        var newInstance = new TextField();
+        var newInstance = (TextField._textFields.length) ? TextField._textFields.pop() : new TextField();
         this.copyTo(newInstance);
         return newInstance;
     };
@@ -12109,6 +12090,7 @@ var TextField = (function (_super) {
         //newInstance.textColor = this._textColor;
         newInstance.text = this._text;
     };
+    TextField._textFields = new Array();
     TextField.assetType = "[asset TextField]";
     return TextField;
 })(Mesh);
@@ -16392,6 +16374,17 @@ var CurveSubMesh = require("awayjs-display/lib/base/CurveSubMesh");
 var SubMeshPool = (function () {
     function SubMeshPool() {
     }
+    SubMeshPool.getNewSubMesh = function (subGeometry, parentMesh, material) {
+        if (material === void 0) { material = null; }
+        var subMeshClass = SubMeshPool.classPool[subGeometry.assetType];
+        if (!subMeshClass._available.length)
+            return new subMeshClass(subGeometry, parentMesh, material);
+        var newSubMesh = subMeshClass._available.pop();
+        newSubMesh.subGeometry = subGeometry;
+        newSubMesh.parentMesh = parentMesh;
+        newSubMesh.material = material;
+        return newSubMesh;
+    };
     /**
      *
      * @param subMeshClass

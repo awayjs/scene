@@ -369,9 +369,9 @@ declare module "awayjs-display/lib/base/CurveSubMesh" {
 	 * @class away.base.CurveSubMesh
 	 */
 	class CurveSubMesh extends SubMeshBase implements ISubMesh {
+	    static _available: Array<CurveSubMesh>;
 	    static assetType: string;
 	    static assetClass: IAssetClass;
-	    private _subGeometry;
 	    /**
 	     *
 	     */
@@ -1320,6 +1320,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *
 	     */
 	    dispose(): void;
+	    clear(): void;
 	    /**
 	     * Returns a rectangle that defines the area of the display object relative
 	     * to the coordinate system of the <code>targetCoordinateSpace</code> object.
@@ -1905,6 +1906,7 @@ declare module "awayjs-display/lib/base/ISubMeshClass" {
 	 * @class away.base.ISubMeshClass
 	 */
 	interface ISubMeshClass extends IWrapperClass {
+	    _available: Array<ISubMesh>;
 	    /**
 	     *
 	     */
@@ -2059,9 +2061,9 @@ declare module "awayjs-display/lib/base/LineSubMesh" {
 	 * @class away.base.LineSubMesh
 	 */
 	class LineSubMesh extends SubMeshBase implements ISubMesh {
+	    static _available: Array<LineSubMesh>;
 	    static assetType: string;
 	    static assetClass: IAssetClass;
-	    private _subGeometry;
 	    /**
 	     *
 	     */
@@ -2426,7 +2428,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	 * @class away.base.SubMeshBase
 	 */
 	class SubMeshBase extends AssetBase {
-	    private _parentMesh;
 	    _uvTransform: UVTransform;
 	    _iIndex: number;
 	    _material: MaterialBase;
@@ -2982,9 +2983,9 @@ declare module "awayjs-display/lib/base/TriangleSubMesh" {
 	 * @class away.base.TriangleSubMesh
 	 */
 	class TriangleSubMesh extends SubMeshBase implements ISubMesh {
+	    static _available: Array<TriangleSubMesh>;
 	    static assetType: string;
 	    static assetClass: IAssetClass;
-	    private _subGeometry;
 	    /**
 	     *
 	     */
@@ -3316,7 +3317,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     *
 	     */
-	    dispose(): void;
+	    clear(): void;
 	    getChildAtDepth(depth: number): DisplayObject;
 	    /**
 	     * Returns the child display object instance that exists at the specified
@@ -6071,6 +6072,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	 * of the geometry to be assigned different materials.
 	 */
 	class Mesh extends DisplayObjectContainer implements IEntity {
+	    private static _meshes;
 	    static assetType: string;
 	    private _uvTransform;
 	    private _center;
@@ -6132,6 +6134,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * @inheritDoc
 	     */
 	    dispose(): void;
+	    clear(): void;
 	    /**
 	     * Clones this Mesh instance along with all it's children, while re-using the same
 	     * material, geometry and animation set. The returned result will be a copy of this mesh,
@@ -6219,6 +6222,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
 	import Timeline = require("awayjs-display/lib/base/Timeline");
 	class MovieClip extends DisplayObjectContainer {
+	    private static _movieClips;
 	    static assetType: string;
 	    private _timeline;
 	    private _isButton;
@@ -6242,6 +6246,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    adapter: IMovieClipAdapter;
 	    constructor(timeline?: Timeline);
 	    dispose(): void;
+	    clear(): void;
 	    reset_textclones(): void;
 	    isInit: boolean;
 	    timeline: Timeline;
@@ -6561,6 +6566,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	 *                                  options
 	 */
 	class TextField extends Mesh {
+	    private static _textFields;
 	    static assetType: string;
 	    private _textGeometryDirty;
 	    private _bottomScrollV;
@@ -7096,6 +7102,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * @inheritDoc
 	     */
 	    dispose(): void;
+	    clear(): void;
 	    /**
 	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
 	     * material.
@@ -9635,12 +9642,16 @@ declare module "awayjs-display/lib/pool/ITextureVO" {
 
 declare module "awayjs-display/lib/pool/SubMeshPool" {
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import ISubMeshClass = require("awayjs-display/lib/base/ISubMeshClass");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	/**
 	 * @class away.pool.SubMeshPool
 	 */
 	class SubMeshPool {
 	    private static classPool;
+	    static getNewSubMesh(subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
 	    /**
 	     *
 	     * @param subMeshClass
