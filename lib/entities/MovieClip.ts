@@ -372,7 +372,7 @@ class MovieClip extends DisplayObjectContainer
         newInstance.loop = this.loop;
     }
 
-    public advanceFrame(skipChildren:boolean = false)
+    public advanceFrame()
     {
         var numFrames:number = this._timeline.numFrames;
         if(numFrames) {
@@ -385,15 +385,13 @@ class MovieClip extends DisplayObjectContainer
                 }
             }
 
-            if (!skipChildren) {
-                var len:number = this.numChildren;
-                var child:DisplayObject;
-                for (var i:number = 0; i <  len; ++i) {
-                    child = this._children[i];
+            var len:number = this.numChildren;
+            var child:DisplayObject;
+            for (var i:number = 0; i <  len; ++i) {
+                child = this._children[i];
 
-                    if (child.isAsset(MovieClip))
-                        (<MovieClip> child).advanceFrame();
-                }
+                if (child.isAsset(MovieClip))
+                    (<MovieClip> child).advanceFrame();
             }
         }
 
