@@ -250,14 +250,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _scaleX:number = 1;
 	private _scaleY:number = 1;
 	private _scaleZ:number = 1;
-	private _x:number = 0;
-	private _y:number = 0;
-	private _z:number = 0;
 	private _pivot:Vector3D;
 	private _pivotScale:Vector3D;
 	private _orientationMatrix:Matrix3D = new Matrix3D();
 	private _pivotDirty:boolean;
-	private _pos:Vector3D = new Vector3D();
 	private _rot:Vector3D = new Vector3D();
 	private _ske:Vector3D = new Vector3D();
 	private _sca:Vector3D = new Vector3D();
@@ -1394,15 +1390,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get x():number
 	{
-		return this._x;
+		return this._matrix3D.rawData[12];
 	}
 
 	public set x(val:number)
 	{
-		if (this._x == val)
+		if (this._matrix3D.rawData[12] == val)
 			return;
 
-		this._x = this._matrix3D.rawData[12] = val;
+		this._matrix3D.rawData[12] = val;
 
 		this.invalidatePosition();
 	}
@@ -1419,15 +1415,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get y():number
 	{
-		return this._y;
+		return this._matrix3D.rawData[13];
 	}
 
 	public set y(val:number)
 	{
-		if (this._y == val)
+		if (this._matrix3D.rawData[13] == val)
 			return;
 
-		this._y = this._matrix3D.rawData[13] = val;
+		this._matrix3D.rawData[13] = val;
 
 		this.invalidatePosition();
 	}
@@ -1453,15 +1449,15 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get z():number
 	{
-		return this._z;
+		return this._matrix3D.rawData[14];
 	}
 
 	public set z(val:number)
 	{
-		if (this._z == val)
+		if (this._matrix3D.rawData[14] == val)
 			return;
 
-		this._z = this._matrix3D.rawData[14] = val;
+		this._matrix3D.rawData[14] = val;
 
 		this.invalidatePosition();
 	}
@@ -1483,7 +1479,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._transformComponents = new Array<Vector3D>(4);
 
-		this._transformComponents[0] = this._pos;
 		this._transformComponents[1] = this._rot;
 		this._transformComponents[2] = this._ske;
 		this._transformComponents[3] = this._sca;
@@ -2021,12 +2016,14 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public moveTo(dx:number, dy:number, dz:number)
 	{
-		if (this._x == dx && this._y == dy && this._z == dz)
+		if (this._matrix3D.rawData[12] == dx && this._matrix3D.rawData[13] == dy && this._matrix3D.rawData[14] == dz)
 			return;
 
-		this.x = dx;
-		this.y = dy;
-		this.z = dz;
+		this._matrix3D.rawData[12] = dx;
+		this._matrix3D.rawData[13] = dy;
+		this._matrix3D.rawData[14] = dz;
+
+		this.invalidatePosition();
 	}
 
 	/**
@@ -2181,9 +2178,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		var x:number = axis.x, y:number = axis.y, z:number = axis.z;
 		var len:number = distance/Math.sqrt(x*x + y*y + z*z);
 
-		this.x += x*len;
-		this.y += y*len;
-		this.z += z*len;
+		this._matrix3D.rawData[12] += x*len;
+		this._matrix3D.rawData[13] += y*len;
+		this._matrix3D.rawData[14] += z*len;
+
+		this.invalidatePosition();
 	}
 
 	/**
@@ -2199,11 +2198,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._iMatrix3D.prependTranslation(x*len, y*len, z*len);
 
-		this._matrix3D.copyColumnTo(3, this._pos);
-
-		this.x = this._pos.x;
-		this.y = this._pos.y;
-		this.z = this._pos.z;
+		this.invalidatePosition();
 	}
 
 	/**
@@ -2247,16 +2242,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public set _iMatrix3D(val:Matrix3D)
 	{
-		for (var i:number = 0; i < 12; i++)
+		for (var i:number = 0; i < 15; i++)
 			this._matrix3D.rawData[i] = val.rawData[i];
-
-		this.x = val.rawData[12];
-		this.y = val.rawData[13];
-		this.z = val.rawData[14];
 
 		this._elementsDirty = true;
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this.invalidatePosition();
 	}
 
 	public get _iColorTransform():ColorTransform
@@ -2366,10 +2357,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this._elementsDirty)
 			this.updateElements();
-
-		this._pos.x = this._x;
-		this._pos.y = this._y;
-		this._pos.z = this._z;
 
 		this._rot.x = this._rotationX;
 		this._rot.y = this._rotationY;
@@ -2582,7 +2569,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @private
 	 */
-	private invalidatePosition()
+	public invalidatePosition()
 	{
 		if (this._positionDirty)
 			return;
