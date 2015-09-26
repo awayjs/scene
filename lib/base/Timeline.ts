@@ -6,13 +6,13 @@ import DisplayObject                    = require("awayjs-display/lib/base/Displ
 import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
-import FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
+import FrameScriptManager				= require("awayjs-display/lib/managers/FrameScriptManager");
 
 
 class Timeline
 {
 	private _functions:Array<(child:DisplayObject, target_mc:MovieClip, i:number) => void> = [];
-	private _doit:boolean;
+	private _blocked:boolean;
 	public _update_indices:Array<number> = [];
 	public _labels:Object;			// dictionary to store label => keyframeindex
 	public _framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
@@ -175,8 +175,8 @@ class Timeline
 	public jumpToLabel(target_mc:MovieClip, label:string) : void
 	{
 		var key_frame_index:number = this._labels[label];
-		if(key_frame_index>=0)
-			target_mc.currentFrameIndex=this.keyframe_firstframes[key_frame_index];
+		if(key_frame_index >= 0)
+			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
 	}
 
 	public gotoFrame(target_mc:MovieClip, value:number, skip_script:boolean = false)
@@ -313,12 +313,9 @@ class Timeline
 	public pass2(target_mc:MovieClip)
 	{
 		var k:number;
-		var frame_command_idx:number;
 		var len:number = this._update_indices.length;
-		for (k = 0; k < len; k++) {
-			frame_command_idx = this._update_indices[k];
-			this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx]);
-		}
+		for (k = 0; k < len; k++)
+			this.update_childs(target_mc, this._update_indices[k]);
 	}
 
 	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean = true, scriptPass1:Boolean = false)
@@ -340,50 +337,55 @@ class Timeline
 					if (target_mc._children[i]._depthID < 0)
 						target_mc.removeChildAt(i);
 			} else if (frame_recipe & 2) {
-				this.remove_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
+				this.remove_childs_continous(target_mc, frame_command_idx++);
 			}
 
 			if(frame_recipe & 4)
-				this.add_childs_continous(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++] );
+				this.add_childs_continous(target_mc, frame_command_idx++);
 
 			if(frame_recipe & 8)
-				this.update_childs(target_mc, this.command_index_stream[frame_command_idx], this.command_length_stream[frame_command_idx++]);
+				this.update_childs(target_mc, frame_command_idx++);
 		}
 	}
 
 
 
-	public remove_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
+	public remove_childs_continous(sourceMovieClip:MovieClip, frame_command_idx:number)
 	{
-		for(var i:number = 0; i < len; i++)
-			sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[start_index + i] - 16383));
+		var start_index:number = this.command_index_stream[frame_command_idx];
+		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
+		for(var i:number = start_index; i < end_index; i++)
+			sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[i] - 16383));
 	}
 
 
 	// used to add childs when jumping between frames
-	public add_childs_continous(sourceMovieClip:MovieClip, start_index:number, len:number)
+	public add_childs_continous(sourceMovieClip:MovieClip, frame_command_idx:number)
 	{
 		// apply add commands in reversed order to have script exeucted in correct order.
 		// this could be changed in exporter
 		var idx:number;
-		for (var i:number = start_index + len - 1; i >= start_index; i--) {
+		var start_index:number = this.command_index_stream[frame_command_idx];
+		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
+		for (var i:number = end_index - 1; i >= start_index; i--) {
 			idx = i*2;
 			sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
 		}
 	}
 
-	public update_childs(target_mc:MovieClip, start_index:number, len:number)
+	public update_childs(target_mc:MovieClip, frame_command_idx:number)
 	{
 		var p:number;
 		var props_start_idx:number;
 		var props_end_index:number;
-		var end_index:number = start_index + len;
+		var start_index:number = this.command_index_stream[frame_command_idx];
+		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		var child:DisplayObject;
 		for(var i:number = start_index; i < end_index; i++) {
 			child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
 			if (child) {
 				// check if the child is active + not blocked by script
-				this._doit = (child.adapter && child.adapter.isBlockedByScript())? false : true;
+				this._blocked = Boolean(child.adapter && child.adapter.isBlockedByScript());
 
 				props_start_idx = this.update_child_props_indices_stream[i];
 				props_end_index = props_start_idx + this.update_child_props_length_stream[i];
@@ -395,7 +397,7 @@ class Timeline
 
 	public update_mtx_all(child:DisplayObject, target_mc:MovieClip, i:number)
 	{
-		if (!this._doit)
+		if (this._blocked)
 			return;
 
 		i *= 6;
@@ -414,7 +416,7 @@ class Timeline
 
 	public update_colortransform(child:DisplayObject, target_mc:MovieClip, i:number)
 	{
-		if (!this._doit)
+		if (this._blocked)
 			return;
 
 		i *= 8;
@@ -472,7 +474,7 @@ class Timeline
 
 	public update_mtx_scale_rot(child:DisplayObject, target_mc:MovieClip, i:number)
 	{
-		if (!this._doit)
+		if (this._blocked)
 			return;
 
 		i *= 4;
@@ -490,7 +492,7 @@ class Timeline
 
 	public update_mtx_pos(child:DisplayObject, target_mc:MovieClip, i:number)
 	{
-		if (!this._doit)
+		if (this._blocked)
 			return;
 
 		i *= 2;

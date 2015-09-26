@@ -1,13 +1,13 @@
-import Event = require("awayjs-core/lib/events/Event");
-import AssetEvent = require("awayjs-core/lib/events/AssetEvent");
-import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-import IAsset = require("awayjs-core/lib/library/IAsset");
-import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-import Mesh = require("awayjs-display/lib/entities/Mesh");
-import Billboard = require("awayjs-display/lib/entities/Billboard");
-import TextField = require("awayjs-display/lib/entities/TextField");
+import Event                        = require("awayjs-core/lib/events/Event");
+import AssetEvent                   = require("awayjs-core/lib/events/AssetEvent");
+import ColorTransform               = require("awayjs-core/lib/geom/ColorTransform");
+import IAsset                       = require("awayjs-core/lib/library/IAsset");
 
+import DisplayObjectContainer       = require("awayjs-display/lib/containers/DisplayObjectContainer");
+import DisplayObject                = require("awayjs-display/lib/base/DisplayObject");
+import Mesh                         = require("awayjs-display/lib/entities/Mesh");
+import Billboard                    = require("awayjs-display/lib/entities/Billboard");
+import TextField                    = require("awayjs-display/lib/entities/TextField");
 import MouseEvent                   = require("awayjs-display/lib/events/MouseEvent");
 import IMovieClipAdapter	    	= require("awayjs-display/lib/adapters/IMovieClipAdapter");
 import Timeline                     = require("awayjs-display/lib/base/Timeline");
@@ -161,9 +161,10 @@ class MovieClip extends DisplayObjectContainer
 
         this._skipAdvance = MovieClip._skipAdvance;
 
-        if (this._timeline.numFrames) {
+        var numFrames:number = this._timeline.numFrames;
+        if (numFrames) {
             this._currentFrameIndex = 0;
-            this._isPlaying = Boolean(this._timeline.numFrames > 1);
+            this._isPlaying = Boolean(numFrames > 1);
             this._timeline.constructNextFrame(this, true, true);
         } else {
             this._currentFrameIndex = -1;
