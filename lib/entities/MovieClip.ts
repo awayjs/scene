@@ -15,6 +15,8 @@ import FrameScriptManager           = require("awayjs-display/lib/managers/Frame
 
 class MovieClip extends DisplayObjectContainer
 {
+    private static _skipAdvance:boolean;
+
     private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
 
     public static assetType:string = "[asset MovieClip]";
@@ -143,17 +145,6 @@ class MovieClip extends DisplayObjectContainer
      */
     public constructedKeyFrameIndex:number = -1;
 
-    public exit_frame():void
-    {
-        this._skipAdvance = false;
-
-        var child:DisplayObject;
-        for (var i:number = this.numChildren - 1; i >= 0; i--) {
-            child = this._children[i];
-            if(child.isAsset(MovieClip))
-                (<MovieClip> child).exit_frame();
-        }
-    }
     public reset():void
     {
         super.reset();
@@ -164,18 +155,18 @@ class MovieClip extends DisplayObjectContainer
         if(this.adapter)
             this.adapter.freeFromScript();
 
-        this._isPlaying = true;
-
-        this._currentFrameIndex = -1;
         this.constructedKeyFrameIndex = -1;
         for (var i:number = this.numChildren - 1; i >= 0; i--)
             this.removeChildAt(i);
 
-        this._skipAdvance = true;
+        this._skipAdvance = MovieClip._skipAdvance;
 
         if (this._timeline.numFrames) {
             this._currentFrameIndex = 0;
+            this._isPlaying = Boolean(this._timeline.numFrames > 1);
             this._timeline.constructNextFrame(this, true, true);
+        } else {
+            this._currentFrameIndex = -1;
         }
     }
 
@@ -186,13 +177,6 @@ class MovieClip extends DisplayObjectContainer
     }
 
     /*
-     * Setting the currentFrameIndex without moving the playhead for this movieclip to the new position
-     */
-    public set_currentFrameIndex(value : number) {
-        this._skipAdvance = true;
-        this._currentFrameIndex = value;
-    }
-    /*
     * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
      */
     public get currentFrameIndex():number
@@ -202,29 +186,34 @@ class MovieClip extends DisplayObjectContainer
 
     public set currentFrameIndex(value:number)
     {
-        if (this._currentFrameIndex == value)
-            return;
+        //if currentFrame is set greater than the available number of
+        //frames, the playhead is moved to the last frame in the timeline.
+        //But because the frame specified was not a keyframe, no scripts are
+        //executed, even if they exist on the last frame.
+        var skip_script:boolean = false;
 
         var numFrames:number = this._timeline.numFrames;
 
+        if (value < 0) {
+            value = 0;
+        } else if (value >= numFrames) {
+            value = numFrames - 1;
+            skip_script = true;
+        }
+
+        if (this._currentFrameIndex == value)
+            return;
+
+        this._currentFrameIndex = value;
+
         if (numFrames) {
-
-            var skip_script:boolean = false;
-
-            if (value < 0) {
-                value = 0;
-            } else if (value >= numFrames) {
-                value = numFrames - 1;
-                skip_script = true;
-            }
-
-            // on changing currentframe we do not need to set skipadvance. the advanceframe should already be happened...
-            this._skipAdvance = true;
+            //changing current frame will ignore advance command for that
+            //update's advanceFrame function, unless advanceFrame has
+            //already been executed
+            this._skipAdvance = MovieClip._skipAdvance;
 
             this._timeline.gotoFrame(this, value, skip_script);
         }
-
-        this._currentFrameIndex = value;
     }
 
     public addButtonListeners()
@@ -307,7 +296,8 @@ class MovieClip extends DisplayObjectContainer
      */
     public play()
     {
-        this._isPlaying = true;
+        if (this._timeline.numFrames > 1)
+            this._isPlaying = true;
     }
 
     /**
@@ -315,7 +305,11 @@ class MovieClip extends DisplayObjectContainer
      */
     public update()
     {
+        MovieClip._skipAdvance = true;
+
         this.advanceFrame();
+
+        MovieClip._skipAdvance = false;
 
         // after we advanced the scenegraph, we might have some script that needs executing
         FrameScriptManager.execute_queue();
@@ -334,8 +328,6 @@ class MovieClip extends DisplayObjectContainer
 
         //execute any disposes as a result of framescripts
         FrameScriptManager.execute_dispose();
-
-        this.exit_frame();
     }
 
     public getPotentialChildInstance(id:number) : DisplayObject
@@ -376,11 +368,14 @@ class MovieClip extends DisplayObjectContainer
     {
         var numFrames:number = this._timeline.numFrames;
         if(numFrames) {
-            if (((this._isPlaying && !this._skipAdvance) || this._currentFrameIndex == -1) && (this._currentFrameIndex != numFrames - 1 || this.loop)) {
-                this._currentFrameIndex++;
-                if (this._currentFrameIndex == numFrames) { // looping - jump to first frame.
-                    this.currentFrameIndex = 0;
-                } else { // not looping - construct next frame
+            if (this._isPlaying && !this._skipAdvance) {
+                if (this._currentFrameIndex == numFrames - 1) {
+                    if (this.loop) // end of loop - jump to first frame.
+                        this.currentFrameIndex = 0;
+                    else //end of timeline, stop playing
+                        this._isPlaying = false;
+                } else { // not end - construct next frame
+                    this._currentFrameIndex++;
                     this._timeline.constructNextFrame(this);
                 }
             }
