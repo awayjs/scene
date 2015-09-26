@@ -161,10 +161,10 @@ class MovieClip extends DisplayObjectContainer
 
         this._skipAdvance = MovieClip._skipAdvance;
 
-        var numFrames:number = this._timeline.numFrames;
+        var numFrames:number = this._timeline.keyframe_indices.length;
+        this._isPlaying = Boolean(numFrames > 1);
         if (numFrames) {
             this._currentFrameIndex = 0;
-            this._isPlaying = Boolean(numFrames > 1);
             this._timeline.constructNextFrame(this, true, true);
         } else {
             this._currentFrameIndex = -1;
@@ -193,7 +193,10 @@ class MovieClip extends DisplayObjectContainer
         //executed, even if they exist on the last frame.
         var skip_script:boolean = false;
 
-        var numFrames:number = this._timeline.numFrames;
+        var numFrames:number = this._timeline.keyframe_indices.length;
+
+        if (!numFrames)
+            return;
 
         if (value < 0) {
             value = 0;
@@ -207,14 +210,12 @@ class MovieClip extends DisplayObjectContainer
 
         this._currentFrameIndex = value;
 
-        if (numFrames) {
-            //changing current frame will ignore advance command for that
-            //update's advanceFrame function, unless advanceFrame has
-            //already been executed
-            this._skipAdvance = MovieClip._skipAdvance;
+        //changing current frame will ignore advance command for that
+        //update's advanceFrame function, unless advanceFrame has
+        //already been executed
+        this._skipAdvance = MovieClip._skipAdvance;
 
-            this._timeline.gotoFrame(this, value, skip_script);
-        }
+        this._timeline.gotoFrame(this, value, skip_script);
     }
 
     public addButtonListeners()
@@ -297,7 +298,7 @@ class MovieClip extends DisplayObjectContainer
      */
     public play()
     {
-        if (this._timeline.numFrames > 1)
+        if (this._timeline.keyframe_indices.length > 1)
             this._isPlaying = true;
     }
 
@@ -367,28 +368,25 @@ class MovieClip extends DisplayObjectContainer
 
     public advanceFrame()
     {
-        var numFrames:number = this._timeline.numFrames;
-        if(numFrames) {
-            if (this._isPlaying && !this._skipAdvance) {
-                if (this._currentFrameIndex == numFrames - 1) {
-                    if (this.loop) // end of loop - jump to first frame.
-                        this.currentFrameIndex = 0;
-                    else //end of timeline, stop playing
-                        this._isPlaying = false;
-                } else { // not end - construct next frame
-                    this._currentFrameIndex++;
-                    this._timeline.constructNextFrame(this);
-                }
+        if (this._isPlaying && !this._skipAdvance) {
+            if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
+                if (this.loop) // end of loop - jump to first frame.
+                    this.currentFrameIndex = 0;
+                else //end of timeline, stop playing
+                    this._isPlaying = false;
+            } else { // not end - construct next frame
+                this._currentFrameIndex++;
+                this._timeline.constructNextFrame(this);
             }
+        }
 
-            var len:number = this.numChildren;
-            var child:DisplayObject;
-            for (var i:number = 0; i <  len; ++i) {
-                child = this._children[i];
+        var len:number = this._children.length;
+        var child:DisplayObject;
+        for (var i:number = 0; i <  len; ++i) {
+            child = this._children[i];
 
-                if (child.isAsset(MovieClip))
-                    (<MovieClip> child).advanceFrame();
-            }
+            if (child.isAsset(MovieClip))
+                (<MovieClip> child).advanceFrame();
         }
 
         this._skipAdvance = false;
@@ -399,7 +397,7 @@ class MovieClip extends DisplayObjectContainer
     {
         this.printHierarchyName(depth, this);
 
-        var len = this.numChildren;
+        var len = this._children.length;
         var child:DisplayObject;
         for (var i:number = 0; i < len; i++) {
             child = this._children[i];

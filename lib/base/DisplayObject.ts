@@ -208,7 +208,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _scenePositionDirty:boolean;
 	private _explicitVisibility:boolean = true;
 	private _explicitMaskId:number = -1;
-	private _explicitMasks:Array<DisplayObject>;
+	public _explicitMasks:Array<DisplayObject>;
 	public _pImplicitVisibility:boolean = true;
 	public _pImplicitMaskId:number = -1;
 	public _pImplicitMasks:Array<Array<DisplayObject>>;

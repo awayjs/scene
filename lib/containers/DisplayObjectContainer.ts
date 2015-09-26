@@ -695,19 +695,17 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	 */
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
 	{
-		if(this._pImplicitMaskId !== -1 && !masksFlag)
-			return;
-
 		if(!this._pImplicitVisibility)
 			return;
 
-		var masks:Array<DisplayObject> = this.masks;
+		if(this._pImplicitMaskId != -1 && !masksFlag)
+			return;
 
-		if (masks) {
-			var numMasks:number = masks.length;
+		if (this._explicitMasks) {
+			var numMasks:number = this._explicitMasks.length;
 			var maskHit:boolean = false;
 			for (var i:number = 0; i < numMasks; i++) {
-				if (masks[i].hitTestPoint(x, y, shapeFlag, true)) {
+				if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
 					maskHit = true;
 					break;
 				}
@@ -737,7 +735,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
-		var numChildren:number = this.numChildren;
+		var numChildren:number = this._children.length;
 		for(var i:number = 0; i < numChildren; i++)
 			if(this._children[i].hitTestPoint(x,y, shapeFlag, masksFlag))
 				return true;
