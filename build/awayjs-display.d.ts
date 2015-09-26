@@ -623,14 +623,10 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _scaleX;
 	    private _scaleY;
 	    private _scaleZ;
-	    private _x;
-	    private _y;
-	    private _z;
 	    private _pivot;
 	    private _pivotScale;
 	    private _orientationMatrix;
 	    private _pivotDirty;
-	    private _pos;
 	    private _rot;
 	    private _ske;
 	    private _sca;
@@ -1651,7 +1647,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @private
 	     */
-	    private invalidatePosition();
+	    invalidatePosition(): void;
 	    /**
 	     * @private
 	     */
@@ -2480,6 +2476,9 @@ declare module "awayjs-display/lib/base/Timeline" {
 	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	class Timeline {
+	    private _functions;
+	    private _doit;
+	    _update_indices: Array<number>;
 	    _labels: Object;
 	    _framescripts: Object;
 	    _framescripts_translated: Object;
@@ -2519,10 +2518,22 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    registerPotentialChild(prototype: DisplayObject): void;
 	    jumpToLabel(target_mc: MovieClip, label: string): void;
 	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
+	    pass1(start_construct_idx: number, target_keyframe_idx: number, depth_sessionIDs: Object): void;
+	    pass2(target_mc: MovieClip): void;
 	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
 	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
 	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    update_childs(sourceMovieClip: MovieClip, start_index: number, len: number): void;
+	    update_childs(target_mc: MovieClip, start_index: number, len: number): void;
+	    update_mtx_all(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_colortransform(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_name(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_button_name(target: DisplayObject, sourceMovieClip: MovieClip, i: number): void;
+	    update_visibility(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_mtx_scale_rot(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_mtx_pos(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    enable_maskmode(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    remove_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
 	}
 	export = Timeline;
 	
@@ -6222,6 +6233,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
 	import Timeline = require("awayjs-display/lib/base/Timeline");
 	class MovieClip extends DisplayObjectContainer {
+	    private static _skipAdvance;
 	    private static _movieClips;
 	    static assetType: string;
 	    private _timeline;
@@ -6260,10 +6272,8 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	     * the current index of the current active frame
 	     */
 	    constructedKeyFrameIndex: number;
-	    exit_frame(): void;
 	    reset(): void;
 	    resetSessionIDs(): void;
-	    set_currentFrameIndex(value: number): void;
 	    currentFrameIndex: number;
 	    addButtonListeners(): void;
 	    removeButtonListeners(): void;
@@ -6288,7 +6298,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    stop(): void;
 	    clone(): MovieClip;
 	    copyTo(newInstance: MovieClip): void;
-	    advanceFrame(skipChildren?: boolean): void;
+	    advanceFrame(): void;
 	    logHierarchy(depth?: number): void;
 	    printHierarchyName(depth: number, target: DisplayObject): void;
 	    _clearInterfaces(): void;
