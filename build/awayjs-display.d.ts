@@ -587,7 +587,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _scenePositionDirty;
 	    private _explicitVisibility;
 	    private _explicitMaskId;
-	    private _explicitMasks;
+	    _explicitMasks: Array<DisplayObject>;
 	    _pImplicitVisibility: boolean;
 	    _pImplicitMaskId: number;
 	    _pImplicitMasks: Array<Array<DisplayObject>>;
@@ -2477,7 +2477,7 @@ declare module "awayjs-display/lib/base/Timeline" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	class Timeline {
 	    private _functions;
-	    private _doit;
+	    private _blocked;
 	    _update_indices: Array<number>;
 	    _labels: Object;
 	    _framescripts: Object;
@@ -2521,9 +2521,9 @@ declare module "awayjs-display/lib/base/Timeline" {
 	    pass1(start_construct_idx: number, target_keyframe_idx: number, depth_sessionIDs: Object): void;
 	    pass2(target_mc: MovieClip): void;
 	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
-	    remove_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    add_childs_continous(sourceMovieClip: MovieClip, start_index: number, len: number): void;
-	    update_childs(target_mc: MovieClip, start_index: number, len: number): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
+	    update_childs(target_mc: MovieClip, frame_command_idx: number): void;
 	    update_mtx_all(child: DisplayObject, target_mc: MovieClip, i: number): void;
 	    update_colortransform(child: DisplayObject, target_mc: MovieClip, i: number): void;
 	    update_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
