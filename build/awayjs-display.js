@@ -2903,14 +2903,6 @@ var LightBase = (function (_super) {
         if (target === void 0) { target = null; }
         throw new AbstractMethodError();
     };
-    Object.defineProperty(LightBase.prototype, "assetType", {
-        //@override
-        get: function () {
-            return LightBase.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
     LightBase.prototype.updateSpecular = function () {
         this._iSpecularR = this._colorR * this._specular;
         this._iSpecularG = this._colorG * this._specular;
@@ -2932,7 +2924,6 @@ var LightBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    LightBase.assetType = "[asset Light]";
     return LightBase;
 })(DisplayObjectContainer);
 module.exports = LightBase;
@@ -9645,6 +9636,13 @@ var DirectionalLight = (function (_super) {
         //default bounds type
         this._boundsType = BoundsType.NULL;
     }
+    Object.defineProperty(DirectionalLight.prototype, "assetType", {
+        get: function () {
+            return DirectionalLight.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DirectionalLight.prototype, "sceneDirection", {
         get: function () {
             if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
@@ -9767,6 +9765,7 @@ var DirectionalLight = (function (_super) {
         this._pAabbPoints[22] = maxY;
         this._pAabbPoints[23] = maxZ;
     };
+    DirectionalLight.assetType = "[light DirectionalLight]";
     return DirectionalLight;
 })(LightBase);
 module.exports = DirectionalLight;
@@ -9794,6 +9793,13 @@ var LightProbe = (function (_super) {
         //default bounds type
         this._boundsType = BoundsType.NULL;
     }
+    Object.defineProperty(LightProbe.prototype, "assetType", {
+        get: function () {
+            return LightProbe.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(LightProbe.prototype, "diffuseMap", {
         get: function () {
             return this._diffuseMap;
@@ -9819,6 +9825,7 @@ var LightProbe = (function (_super) {
         if (target === void 0) { target = null; }
         throw new Error("Object projection matrices are not supported for LightProbe objects!");
     };
+    LightProbe.assetType = "[light LightProbe]";
     return LightProbe;
 })(LightBase);
 module.exports = LightProbe;
@@ -10788,6 +10795,13 @@ var PointLight = (function (_super) {
         //default bounds type
         this._boundsType = BoundsType.SPHERE;
     }
+    Object.defineProperty(PointLight.prototype, "assetType", {
+        get: function () {
+            return PointLight.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     PointLight.prototype.pCreateShadowMapper = function () {
         return new CubeMapShadowMapper();
     };
@@ -10864,6 +10878,7 @@ var PointLight = (function (_super) {
         target.prepend(m);
         return target;
     };
+    PointLight.assetType = "[light PointLight]";
     return PointLight;
 })(LightBase);
 module.exports = PointLight;

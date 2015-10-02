@@ -1919,7 +1919,6 @@ declare module "awayjs-display/lib/base/LightBase" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 	class LightBase extends DisplayObjectContainer {
-	    static assetType: string;
 	    private _color;
 	    private _colorR;
 	    private _colorG;
@@ -1949,7 +1948,6 @@ declare module "awayjs-display/lib/base/LightBase" {
 	    ambientColor: number;
 	    private updateAmbient();
 	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    assetType: string;
 	    private updateSpecular();
 	    private updateDiffuse();
 	    shadowMapper: ShadowMapperBase;
@@ -5791,12 +5789,14 @@ declare module "awayjs-display/lib/entities/DirectionalLight" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 	class DirectionalLight extends LightBase implements IEntity {
+	    static assetType: string;
 	    private _direction;
 	    private _tmpLookAt;
 	    private _sceneDirection;
 	    private _pAabbPoints;
 	    private _projAABBPoints;
 	    constructor(xDir?: number, yDir?: number, zDir?: number);
+	    assetType: string;
 	    sceneDirection: Vector3D;
 	    direction: Vector3D;
 	    pUpdateSceneTransform(): void;
@@ -5976,9 +5976,11 @@ declare module "awayjs-display/lib/entities/LightProbe" {
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	class LightProbe extends LightBase implements IEntity {
+	    static assetType: string;
 	    private _diffuseMap;
 	    private _specularMap;
 	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
+	    assetType: string;
 	    diffuseMap: ImageCube;
 	    specularMap: ImageCube;
 	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
@@ -6314,10 +6316,12 @@ declare module "awayjs-display/lib/entities/PointLight" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
 	class PointLight extends LightBase implements IEntity {
+	    static assetType: string;
 	    _pRadius: number;
 	    _pFallOff: number;
 	    _pFallOffFactor: number;
 	    constructor();
+	    assetType: string;
 	    pCreateShadowMapper(): CubeMapShadowMapper;
 	    radius: number;
 	    iFallOffFactor(): number;
