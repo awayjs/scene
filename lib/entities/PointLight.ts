@@ -11,6 +11,8 @@ import CubeMapShadowMapper			= require("awayjs-display/lib/materials/shadowmappe
 
 class PointLight extends LightBase implements IEntity
 {
+	public static assetType:string = "[light PointLight]";
+
 	public _pRadius:number = 90000;
 	public _pFallOff:number = 100000;
 	public _pFallOffFactor:number;
@@ -25,6 +27,12 @@ class PointLight extends LightBase implements IEntity
 
 		//default bounds type
 		this._boundsType = BoundsType.SPHERE;
+	}
+
+
+	public get assetType():string
+	{
+		return PointLight.assetType;
 	}
 
 	public pCreateShadowMapper():CubeMapShadowMapper

@@ -11,6 +11,8 @@ import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowma
 
 class DirectionalLight extends LightBase implements IEntity
 {
+	public static assetType:string = "[light DirectionalLight]";
+
 	private _direction:Vector3D;
 	private _tmpLookAt:Vector3D;
 	private _sceneDirection:Vector3D;
@@ -29,6 +31,11 @@ class DirectionalLight extends LightBase implements IEntity
 
 		//default bounds type
 		this._boundsType = BoundsType.NULL;
+	}
+
+	public get assetType():string
+	{
+		return DirectionalLight.assetType;
 	}
 
 	public get sceneDirection():Vector3D

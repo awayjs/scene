@@ -10,6 +10,8 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
 
 class LightProbe extends LightBase implements IEntity
 {
+	public static assetType:string = "[light LightProbe]";
+
 	private _diffuseMap:ImageCube;
 	private _specularMap:ImageCube;
 
@@ -24,6 +26,11 @@ class LightProbe extends LightBase implements IEntity
 
 		//default bounds type
 		this._boundsType = BoundsType.NULL;
+	}
+
+	public get assetType():string
+	{
+		return LightProbe.assetType;
 	}
 
 	public get diffuseMap():ImageCube

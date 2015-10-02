@@ -9,8 +9,6 @@ import ShadowMapperBase			= require("awayjs-display/lib/materials/shadowmappers/
 
 class LightBase extends DisplayObjectContainer
 {
-	public static assetType:string = "[asset Light]";
-
 	private _color:number = 0xffffff;
 	private _colorR:number = 1;
 	private _colorG:number = 1;
@@ -152,12 +150,6 @@ class LightBase extends DisplayObjectContainer
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
 		throw new AbstractMethodError();
-	}
-
-	//@override
-	public get assetType():string
-	{
-		return LightBase.assetType;
 	}
 
 	private updateSpecular()
