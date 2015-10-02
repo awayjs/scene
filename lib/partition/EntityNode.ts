@@ -136,7 +136,7 @@ class EntityNode extends NodeBase implements IDisplayObjectNode
 	{
 		this._bounds.invalidate();
 
-		//this._partition.iMarkForUpdate(this);
+		this._partition.iMarkForUpdate(this);
 	}
 
 	public updateBounds()
