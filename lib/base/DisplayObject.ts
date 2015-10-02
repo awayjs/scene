@@ -2078,7 +2078,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
 			var comps:Array<Vector3D> = camera.sceneTransform.decompose();
 			var scale:Vector3D = comps[3];
-			comps[0] = this.scenePosition;
+			comps[0].copyFrom(this.scenePosition);
 			scale.x = this.scaleX;
 			scale.y = this.scaleY;
 			scale.z = this.scaleZ;
