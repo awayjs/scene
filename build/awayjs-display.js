@@ -2021,7 +2021,7 @@ var DisplayObject = (function (_super) {
         if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
             var comps = camera.sceneTransform.decompose();
             var scale = comps[3];
-            comps[0] = this.scenePosition;
+            comps[0].copyFrom(this.scenePosition);
             scale.x = this.scaleX;
             scale.y = this.scaleY;
             scale.z = this.scaleZ;
@@ -15205,7 +15205,7 @@ var EntityNode = (function (_super) {
     };
     EntityNode.prototype.invalidatePartition = function () {
         this._bounds.invalidate();
-        //this._partition.iMarkForUpdate(this);
+        this._partition.iMarkForUpdate(this);
     };
     EntityNode.prototype.updateBounds = function () {
         if (this._entity.boundsType == BoundsType.AXIS_ALIGNED_BOX)
