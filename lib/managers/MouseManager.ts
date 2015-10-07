@@ -291,9 +291,6 @@ class MouseManager
 
 	private updateColliders(event)
 	{
-		if (this._iUpdateDirty)
-			return;
-
 		var view:View;
 		var bounds:ClientRect;
 		var mouseX:number = (event.clientX != null)? event.clientX : event.changedTouches[0].clientX;
@@ -312,6 +309,9 @@ class MouseManager
 					view._pTouchPoints.push(new TouchPoint(touch.clientX + bounds.left, touch.clientY + bounds.top, touch.identifier));
 				}
 			}
+
+			if (this._iUpdateDirty)
+				continue;
 
 			if (mouseX < bounds.left || mouseX > bounds.right || mouseY < bounds.top || mouseY > bounds.bottom) {
 				view._pMouseX = null;

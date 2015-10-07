@@ -1,6 +1,5 @@
 ﻿import Box							= require("awayjs-core/lib/geom/Box");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Point						= require("awayjs-core/lib/geom/Point");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
