@@ -13088,8 +13088,6 @@ var MouseManager = (function () {
             this.queueDispatch(this._mouseWheel, event);
     };
     MouseManager.prototype.updateColliders = function (event) {
-        if (this._iUpdateDirty)
-            return;
         var view;
         var bounds;
         var mouseX = (event.clientX != null) ? event.clientX : event.changedTouches[0].clientX;
@@ -13107,6 +13105,8 @@ var MouseManager = (function () {
                     view._pTouchPoints.push(new TouchPoint(touch.clientX + bounds.left, touch.clientY + bounds.top, touch.identifier));
                 }
             }
+            if (this._iUpdateDirty)
+                continue;
             if (mouseX < bounds.left || mouseX > bounds.right || mouseY < bounds.top || mouseY > bounds.bottom) {
                 view._pMouseX = null;
                 view._pMouseY = null;
