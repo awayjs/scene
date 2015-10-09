@@ -230,7 +230,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _skewChanged:DisplayObjectEvent;
 	private _scaleChanged:DisplayObjectEvent;
 
-	private _rotationX:number = 0;
+	public _rotationX:number = 0;
 	private _rotationY:number = 0;
 	private _rotationZ:number = 0;
 	private _eulers:Vector3D;
@@ -2588,7 +2588,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @private
 	 */
-	private invalidateRotation(matrixDirty:boolean = true)
+	public invalidateRotation(matrixDirty:boolean = true)
 	{
 		if (matrixDirty)
 			this.invalidateMatrix3D();
@@ -2686,7 +2686,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._queuedEvents.push(event);
 	}
 
-	private updateElements()
+	public updateElements()
 	{
 		this._elementsDirty = false;
 

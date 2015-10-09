@@ -243,7 +243,7 @@ class LineSubGeometry extends SubGeometryBase
 					index += 4;
 				}
 
-				this._colors.set(values, offset*4);
+				this._colors.set(colors, offset*4);
 			}
 		} else {
 			//auto-derive colors
