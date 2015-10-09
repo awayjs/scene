@@ -3130,7 +3130,7 @@ var LineSubGeometry = (function (_super) {
                     }
                     index += 4;
                 }
-                this._colors.set(values, offset * 4);
+                this._colors.set(colors, offset * 4);
             }
         }
         else {

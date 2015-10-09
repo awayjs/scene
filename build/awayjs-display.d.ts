@@ -606,7 +606,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _rotationChanged;
 	    private _skewChanged;
 	    private _scaleChanged;
-	    private _rotationX;
+	    _rotationX: number;
 	    private _rotationY;
 	    private _rotationZ;
 	    private _eulers;
@@ -1651,7 +1651,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     * @private
 	     */
-	    private invalidateRotation(matrixDirty?);
+	    invalidateRotation(matrixDirty?: boolean): void;
 	    /**
 	     * @private
 	     */
@@ -1666,7 +1666,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pUpdateBoxBounds(): void;
 	    _pUpdateSphereBounds(): void;
 	    private queueDispatch(event);
-	    private updateElements();
+	    updateElements(): void;
 	    private _setScaleX(val);
 	    private _setScaleY(val);
 	    private _setScaleZ(val);
