@@ -6773,10 +6773,12 @@ var View = (function () {
         this.camera = camera || new Camera();
         this.renderer = renderer;
         //make sure document border is zero
-        document.body.style.margin = "0px";
-        this._htmlElement = document.createElement("div");
-        this._htmlElement.style.position = "absolute";
-        document.body.appendChild(this._htmlElement);
+        if (document) {
+            document.body.style.margin = "0px";
+            this._htmlElement = document.createElement("div");
+            this._htmlElement.style.position = "absolute";
+            document.body.appendChild(this._htmlElement);
+        }
         this._mouseManager = MouseManager.getInstance();
         this._mouseManager.registerView(this);
         //			if (this._shareContext)
@@ -6999,7 +7001,9 @@ var View = (function () {
             this._aspectRatio = this._width / this._height;
             this._pCamera.projection._iAspectRatio = this._aspectRatio;
             this._pRenderer.width = value;
-            this._htmlElement.style.width = value + "px";
+            if (this._htmlElement) {
+                this._htmlElement.style.width = value + "px";
+            }
         },
         enumerable: true,
         configurable: true
@@ -7018,7 +7022,9 @@ var View = (function () {
             this._aspectRatio = this._width / this._height;
             this._pCamera.projection._iAspectRatio = this._aspectRatio;
             this._pRenderer.height = value;
-            this._htmlElement.style.height = value + "px";
+            if (this._htmlElement) {
+                this._htmlElement.style.height = value + "px";
+            }
         },
         enumerable: true,
         configurable: true
@@ -7052,7 +7058,9 @@ var View = (function () {
             if (this._pRenderer.x == value)
                 return;
             this._pRenderer.x == value;
-            this._htmlElement.style.left = value + "px";
+            if (this._htmlElement) {
+                this._htmlElement.style.left = value + "px";
+            }
         },
         enumerable: true,
         configurable: true
@@ -7068,7 +7076,9 @@ var View = (function () {
             if (this._pRenderer.y == value)
                 return;
             this._pRenderer.y == value;
-            this._htmlElement.style.top = value + "px";
+            if (this._htmlElement) {
+                this._htmlElement.style.top = value + "px";
+            }
         },
         enumerable: true,
         configurable: true
@@ -7078,10 +7088,12 @@ var View = (function () {
          *
          */
         get: function () {
-            return (this._htmlElement.style.visibility == "visible");
+            return (this._htmlElement && this._htmlElement.style.visibility == "visible");
         },
         set: function (value) {
-            this._htmlElement.style.visibility = value ? "visible" : "hidden";
+            if (this._htmlElement) {
+                this._htmlElement.style.visibility = value ? "visible" : "hidden";
+            }
             //TODO transfer visible property to associated context (if one exists)
         },
         enumerable: true,
@@ -12970,32 +12982,36 @@ var MouseManager = (function () {
     //			_viewCount = _childDepth;
     //		}
     MouseManager.prototype.registerView = function (view) {
-        view.htmlElement.addEventListener("click", this.onClickDelegate);
-        view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
-        view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
-        view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
-        view.htmlElement.addEventListener("touchmove", this.onMouseMoveDelegate);
-        view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
-        view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
-        view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
-        view.htmlElement.addEventListener("mousewheel", this.onMouseWheelDelegate);
-        view.htmlElement.addEventListener("mouseover", this.onMouseOverDelegate);
-        view.htmlElement.addEventListener("mouseout", this.onMouseOutDelegate);
-        this._viewLookup.push(view);
+        if (view && view.htmlElement) {
+            view.htmlElement.addEventListener("click", this.onClickDelegate);
+            view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
+            view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
+            view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
+            view.htmlElement.addEventListener("touchmove", this.onMouseMoveDelegate);
+            view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
+            view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
+            view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
+            view.htmlElement.addEventListener("mousewheel", this.onMouseWheelDelegate);
+            view.htmlElement.addEventListener("mouseover", this.onMouseOverDelegate);
+            view.htmlElement.addEventListener("mouseout", this.onMouseOutDelegate);
+            this._viewLookup.push(view);
+        }
     };
     MouseManager.prototype.unregisterView = function (view) {
-        view.htmlElement.removeEventListener("click", this.onClickDelegate);
-        view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
-        view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
-        view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
-        view.htmlElement.removeEventListener("touchmove", this.onMouseMoveDelegate);
-        view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
-        view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
-        view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
-        view.htmlElement.removeEventListener("mousewheel", this.onMouseWheelDelegate);
-        view.htmlElement.removeEventListener("mouseover", this.onMouseOverDelegate);
-        view.htmlElement.removeEventListener("mouseout", this.onMouseOutDelegate);
-        this._viewLookup.slice(this._viewLookup.indexOf(view), 1);
+        if (view && view.htmlElement) {
+            view.htmlElement.removeEventListener("click", this.onClickDelegate);
+            view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
+            view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
+            view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
+            view.htmlElement.removeEventListener("touchmove", this.onMouseMoveDelegate);
+            view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
+            view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
+            view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
+            view.htmlElement.removeEventListener("mousewheel", this.onMouseWheelDelegate);
+            view.htmlElement.removeEventListener("mouseover", this.onMouseOverDelegate);
+            view.htmlElement.removeEventListener("mouseout", this.onMouseOutDelegate);
+            this._viewLookup.slice(this._viewLookup.indexOf(view), 1);
+        }
     };
     // ---------------------------------------------------------------------
     // Private.
