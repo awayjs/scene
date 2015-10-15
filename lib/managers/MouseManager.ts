@@ -131,36 +131,39 @@ class MouseManager
 
 	public registerView(view:View)
 	{
-		view.htmlElement.addEventListener("click", this.onClickDelegate);
-		view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
-		view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
-		view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
-		view.htmlElement.addEventListener("touchmove", this.onMouseMoveDelegate);
-		view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
-		view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
-		view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
-		view.htmlElement.addEventListener("mousewheel", this.onMouseWheelDelegate);
-		view.htmlElement.addEventListener("mouseover", this.onMouseOverDelegate);
-		view.htmlElement.addEventListener("mouseout", this.onMouseOutDelegate);
-
-		this._viewLookup.push(view);
+		if(view && view.htmlElement) {
+			view.htmlElement.addEventListener("click", this.onClickDelegate);
+			view.htmlElement.addEventListener("dblclick", this.onDoubleClickDelegate);
+			view.htmlElement.addEventListener("touchstart", this.onMouseDownDelegate);
+			view.htmlElement.addEventListener("mousedown", this.onMouseDownDelegate);
+			view.htmlElement.addEventListener("touchmove", this.onMouseMoveDelegate);
+			view.htmlElement.addEventListener("mousemove", this.onMouseMoveDelegate);
+			view.htmlElement.addEventListener("mouseup", this.onMouseUpDelegate);
+			view.htmlElement.addEventListener("touchend", this.onMouseUpDelegate);
+			view.htmlElement.addEventListener("mousewheel", this.onMouseWheelDelegate);
+			view.htmlElement.addEventListener("mouseover", this.onMouseOverDelegate);
+			view.htmlElement.addEventListener("mouseout", this.onMouseOutDelegate);
+			this._viewLookup.push(view);
+		}
 	}
 
 	public unregisterView(view:View)
 	{
-		view.htmlElement.removeEventListener("click", this.onClickDelegate);
-		view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
-		view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
-		view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
-		view.htmlElement.removeEventListener("touchmove", this.onMouseMoveDelegate);
-		view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
-		view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
-		view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
-		view.htmlElement.removeEventListener("mousewheel", this.onMouseWheelDelegate);
-		view.htmlElement.removeEventListener("mouseover", this.onMouseOverDelegate);
-		view.htmlElement.removeEventListener("mouseout", this.onMouseOutDelegate);
+		if(view && view.htmlElement) {
+			view.htmlElement.removeEventListener("click", this.onClickDelegate);
+			view.htmlElement.removeEventListener("dblclick", this.onDoubleClickDelegate);
+			view.htmlElement.removeEventListener("touchstart", this.onMouseDownDelegate);
+			view.htmlElement.removeEventListener("mousedown", this.onMouseDownDelegate);
+			view.htmlElement.removeEventListener("touchmove", this.onMouseMoveDelegate);
+			view.htmlElement.removeEventListener("mousemove", this.onMouseMoveDelegate);
+			view.htmlElement.removeEventListener("touchend", this.onMouseUpDelegate);
+			view.htmlElement.removeEventListener("mouseup", this.onMouseUpDelegate);
+			view.htmlElement.removeEventListener("mousewheel", this.onMouseWheelDelegate);
+			view.htmlElement.removeEventListener("mouseover", this.onMouseOverDelegate);
+			view.htmlElement.removeEventListener("mouseout", this.onMouseOutDelegate);
 
-		this._viewLookup.slice(this._viewLookup.indexOf(view), 1);
+			this._viewLookup.slice(this._viewLookup.indexOf(view), 1);
+		}
 	}
 
 	// ---------------------------------------------------------------------

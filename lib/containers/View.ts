@@ -89,12 +89,14 @@ class View
 		this.renderer = renderer;
 
 		//make sure document border is zero
-		document.body.style.margin = "0px";
+		if(document) {
+			document.body.style.margin = "0px";
 
-		this._htmlElement = document.createElement("div");
-		this._htmlElement.style.position = "absolute";
+			this._htmlElement = document.createElement("div");
+			this._htmlElement.style.position = "absolute";
 
-		document.body.appendChild(this._htmlElement);
+			document.body.appendChild(this._htmlElement);
+		}
 
 		this._mouseManager = MouseManager.getInstance();
 		this._mouseManager.registerView(this);
@@ -343,7 +345,9 @@ class View
 		this._aspectRatio = this._width/this._height;
 		this._pCamera.projection._iAspectRatio = this._aspectRatio;
 		this._pRenderer.width = value;
-		this._htmlElement.style.width = value + "px";
+		if(this._htmlElement) {
+			this._htmlElement.style.width = value + "px";
+		}
 	}
 
 	/**
@@ -363,7 +367,9 @@ class View
 		this._aspectRatio = this._width/this._height;
 		this._pCamera.projection._iAspectRatio = this._aspectRatio;
 		this._pRenderer.height = value;
-		this._htmlElement.style.height = value + "px";
+		if(this._htmlElement) {
+			this._htmlElement.style.height = value + "px";
+		}
 	}
 
 	/**
@@ -399,7 +405,9 @@ class View
 			return;
 
 		this._pRenderer.x == value;
-		this._htmlElement.style.left = value + "px";
+		if(this._htmlElement) {
+			this._htmlElement.style.left = value + "px";
+		}
 	}
 
 	/**
@@ -416,7 +424,9 @@ class View
 			return;
 
 		this._pRenderer.y == value;
-		this._htmlElement.style.top = value + "px";
+		if(this._htmlElement) {
+			this._htmlElement.style.top = value + "px";
+		}
 	}
 
 	/**
@@ -424,12 +434,14 @@ class View
 	 */
 	public get visible():boolean
 	{
-		return (this._htmlElement.style.visibility == "visible");
+		return (this._htmlElement && this._htmlElement.style.visibility == "visible");
 	}
 
 	public set visible(value:boolean)
 	{
-		this._htmlElement.style.visibility = value? "visible" : "hidden";
+		if(this._htmlElement) {
+			this._htmlElement.style.visibility = value? "visible" : "hidden";
+		}
 		//TODO transfer visible property to associated context (if one exists)
 	}
 
