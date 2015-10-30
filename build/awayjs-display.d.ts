@@ -1,3 +1,87 @@
+declare module "awayjs-display/lib/IRenderer" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	/**
+	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderer
+	 */
+	interface IRenderer extends IEventDispatcher {
+	    /**
+	     *
+	     */
+	    renderableSorter: IEntitySorter;
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    viewPort: Rectangle;
+	    /**
+	     *
+	     */
+	    scissorRect: Rectangle;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): any;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundR: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundG: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundB: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundAlpha: number;
+	    /**
+	     * @internal
+	     */
+	    _iCreateEntityCollector(): CollectorBase;
+	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
+	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
+	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
+	}
+	export = IRenderer;
+	
+}
+
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -1720,11 +1804,45 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 	
 }
 
+declare module "awayjs-display/lib/base/IRenderOwner" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRender = require("awayjs-display/lib/pool/IRender");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * IRenderOwner provides an interface for objects that can use materials.
+	 *
+	 * @interface away.base.IRenderOwner
+	 */
+	interface IRenderOwner extends IAsset {
+	    alphaThreshold: number;
+	    mipmap: boolean;
+	    smooth: boolean;
+	    imageRect: boolean;
+	    blendMode: string;
+	    lightPicker: LightPickerBase;
+	    animationSet: IAnimationSet;
+	    iOwners: Array<IRenderableOwner>;
+	    getNumImages(): number;
+	    _iAddRender(render: IRender): IRender;
+	    _iRemoveRender(render: IRender): IRender;
+	    _iAddImage(image: ImageBase): any;
+	    _iRemoveImage(image: ImageBase): any;
+	}
+	export = IRenderOwner;
+	
+}
+
 declare module "awayjs-display/lib/base/IRenderableOwner" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * IRenderableOwner provides an interface for objects that can use materials.
 	 *
@@ -1739,6 +1857,9 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	     *
 	     */
 	    uvTransform: UVTransform;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
 	    /**
 	     *
 	     * @param renderable
@@ -1753,32 +1874,6 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
 	}
 	export = IRenderableOwner;
-	
-}
-
-declare module "awayjs-display/lib/base/IRenderOwner" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRender = require("awayjs-display/lib/pool/IRender");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * IRenderOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderOwner
-	 */
-	interface IRenderOwner extends IAsset {
-	    alphaThreshold: number;
-	    mipmap: boolean;
-	    smooth: boolean;
-	    blendMode: string;
-	    lightPicker: LightPickerBase;
-	    animationSet: IAnimationSet;
-	    iOwners: Array<IRenderableOwner>;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	}
-	export = IRenderOwner;
 	
 }
 
@@ -2320,6 +2415,8 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 }
 
 declare module "awayjs-display/lib/base/SubMeshBase" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
@@ -2328,6 +2425,7 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
 	 *
@@ -2338,6 +2436,9 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	 * @class away.base.SubMeshBase
 	 */
 	class SubMeshBase extends AssetBase {
+	    private _images;
+	    private _imageIndex;
+	    private _samplers;
 	    _uvTransform: UVTransform;
 	    _iIndex: number;
 	    _material: MaterialBase;
@@ -2362,6 +2463,13 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	     *
 	     */
 	    uvTransform: UVTransform;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    addImageAt(image: ImageBase, index: number): void;
+	    removeImageAt(image: ImageBase, index: number): void;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    removeSamplerAt(texture: TextureBase, index?: number): void;
 	    /**
 	     * Creates a new SubMeshBase object
 	     */
@@ -5494,6 +5602,8 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 }
 
 declare module "awayjs-display/lib/entities/Billboard" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import Image2D = require("awayjs-core/lib/data/Image2D");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
@@ -5504,6 +5614,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * The Billboard class represents display objects that represent bitmap images.
 	 * These can be images that you load with the <code>flash.Assets</code> or
@@ -5539,6 +5650,9 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	 * contains the Billboard object.</p>
 	 */
 	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
+	    private _images;
+	    private _imageIndex;
+	    private _samplers;
 	    static assetType: string;
 	    private _animator;
 	    private _billboardWidth;
@@ -5548,7 +5662,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    private _uvTransform;
 	    private _colorTransform;
 	    private _parentColorTransform;
-	    private onSizeChangedDelegate;
+	    private onTextureChangedDelegate;
 	    /**
 	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
 	     */
@@ -5616,6 +5730,13 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	     */
 	    _pUpdateBoxBounds(): void;
 	    clone(): DisplayObject;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    addImageAt(image: ImageBase, index: number): void;
+	    removeImageAt(image: ImageBase, index: number): void;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    removeSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
 	    /**
 	     * //TODO
 	     *
@@ -5629,8 +5750,9 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    /**
 	     * @private
 	     */
-	    private onSizeChanged(event);
+	    private onTextureChanged(event);
 	    _applyRenderer(renderer: IRenderer): void;
+	    private _updateDimensions();
 	}
 	export = Billboard;
 	
@@ -5906,6 +6028,8 @@ declare module "awayjs-display/lib/entities/LightProbe" {
 }
 
 declare module "awayjs-display/lib/entities/LineSegment" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -5915,10 +6039,14 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * A Line Segment primitive.
 	 */
 	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
+	    private _images;
+	    private _imageIndex;
+	    private _samplers;
 	    static assetType: string;
 	    private _animator;
 	    private _material;
@@ -5969,6 +6097,13 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	     */
 	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
 	    dispose(): void;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    addImageAt(image: ImageBase, index: number): void;
+	    removeImageAt(image: ImageBase, index: number): void;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    removeSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
 	    /**
 	     * @protected
 	     */
@@ -5985,6 +6120,8 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 }
 
 declare module "awayjs-display/lib/entities/Mesh" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
@@ -5995,12 +6132,16 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
 	 * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
 	 * of the geometry to be assigned different materials.
 	 */
 	class Mesh extends DisplayObjectContainer implements IEntity {
+	    private _images;
+	    private _imageIndex;
+	    private _samplers;
 	    private static _meshes;
 	    static assetType: string;
 	    private _uvTransform;
@@ -6048,6 +6189,13 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     *
 	     */
 	    uvTransform: UVTransform;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    addImageAt(image: ImageBase, index: number): void;
+	    removeImageAt(image: ImageBase, index: number): void;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    removeSamplerAt(texture: TextureBase, index?: number): void;
 	    /**
 	     * Create a new Mesh object.
 	     *
@@ -6284,6 +6432,8 @@ declare module "awayjs-display/lib/entities/Shape" {
 }
 
 declare module "awayjs-display/lib/entities/Skybox" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
@@ -6297,12 +6447,16 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
 	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
 	 * the sky box is always as large as possible without being clipped.
 	 */
 	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner {
+	    private _images;
+	    private _imageCount;
+	    private _imageIndex;
 	    static assetType: string;
 	    private _cubeMap;
 	    _pAlphaThreshold: number;
@@ -6314,6 +6468,7 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    private _uvTransform;
 	    private _colorTransform;
 	    private _owners;
+	    private _imageRect;
 	    private _mipmap;
 	    private _smooth;
 	    private _animator;
@@ -6323,6 +6478,10 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
 	     */
 	    alphaThreshold: number;
+	    /**
+	     * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
+	     */
+	    imageRect: boolean;
 	    /**
 	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
 	     */
@@ -6387,6 +6546,10 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    constructor(cubeMap?: SingleCubeTexture);
 	    assetType: string;
 	    castsShadows: boolean;
+	    getNumImages(): number;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
 	    /**
 	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
 	     * could be used by other materials and will not be disposed.
@@ -6397,6 +6560,8 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    _iRemoveRender(render: IRender): IRender;
 	    _iAddRenderable(renderable: IRenderable): IRenderable;
 	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	    _iAddImage(image: ImageBase): void;
+	    _iRemoveImage(image: ImageBase): void;
 	}
 	export = Skybox;
 	
@@ -7439,7 +7604,7 @@ declare module "awayjs-display/lib/events/LightEvent" {
 declare module "awayjs-display/lib/events/MaterialEvent" {
 	import Event = require("awayjs-core/lib/events/Event");
 	class MaterialEvent extends Event {
-	    static SIZE_CHANGED: string;
+	    static TEXTURE_CHANGED: string;
 	    constructor(type: string);
 	}
 	export = MaterialEvent;
@@ -7836,90 +8001,6 @@ declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
 	
 }
 
-declare module "awayjs-display/lib/IRenderer" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	/**
-	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderer
-	 */
-	interface IRenderer extends IEventDispatcher {
-	    /**
-	     *
-	     */
-	    renderableSorter: IEntitySorter;
-	    /**
-	     *
-	     */
-	    shareContext: boolean;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    viewPort: Rectangle;
-	    /**
-	     *
-	     */
-	    scissorRect: Rectangle;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): any;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundR: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundG: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundB: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundAlpha: number;
-	    /**
-	     * @internal
-	     */
-	    _iCreateEntityCollector(): CollectorBase;
-	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
-	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
-	}
-	export = IRenderer;
-	
-}
-
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -8100,6 +8181,265 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	
 }
 
+declare module "awayjs-display/lib/materials/LightSources" {
+	/**
+	 * Enumeration class for defining which lighting types affect the specific material
+	 * lighting component (diffuse and specular). This can be useful if, for example, you
+	 * want to use light probes for diffuse global lighting, but want specular reflections from
+	 * traditional light sources without those affecting the diffuse light.
+	 *
+	 * @see away.materials.ColorMaterial.diffuseLightSources
+	 * @see away.materials.ColorMaterial.specularLightSources
+	 * @see away.materials.TextureMaterial.diffuseLightSources
+	 * @see away.materials.TextureMaterial.specularLightSources
+	 */
+	class LightSources {
+	    /**
+	     * Defines normal lights are to be used as the source for the lighting
+	     * component.
+	     */
+	    static LIGHTS: number;
+	    /**
+	     * Defines that global lighting probes are to be used as the source for the
+	     * lighting component.
+	     */
+	    static PROBES: number;
+	    /**
+	     * Defines that both normal and global lighting probes  are to be used as the
+	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
+	     */
+	    static ALL: number;
+	}
+	export = LightSources;
+	
+}
+
+declare module "awayjs-display/lib/materials/MaterialBase" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRender = require("awayjs-display/lib/pool/IRender");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	/**
+	 * MaterialBase forms an abstract base class for any material.
+	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
+	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
+	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
+	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
+	 *
+	 * Away3D provides default materials trough SinglePassMaterialBase and TriangleMaterial, which use modular
+	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
+	 * shaders, or entire new material frameworks.
+	 */
+	class MaterialBase extends AssetBase implements IRenderOwner {
+	    private _images;
+	    private _imageCount;
+	    private _imageIndex;
+	    private _colorTransform;
+	    private _pUseColorTransform;
+	    private _alphaBlending;
+	    private _alpha;
+	    private _textureChanged;
+	    private _renders;
+	    _pAlphaThreshold: number;
+	    _pAnimateUVs: boolean;
+	    private _enableLightFallOff;
+	    private _specularLightSources;
+	    private _diffuseLightSources;
+	    /**
+	     * An object to contain any extra data.
+	     */
+	    extra: Object;
+	    /**
+	     * A value that can be used by materials that only work with a given type of renderer. The renderer can test the
+	     * classification to choose which render path to use. For example, a deferred material could set this value so
+	     * that the deferred renderer knows not to take the forward rendering path.
+	     *
+	     * @private
+	     */
+	    _iClassification: string;
+	    _iBaseScreenPassIndex: number;
+	    private _bothSides;
+	    private _animationSet;
+	    /**
+	     * A list of material owners, renderables or custom Entities.
+	     */
+	    private _owners;
+	    private _alphaPremultiplied;
+	    _pBlendMode: string;
+	    private _imageRect;
+	    private _mipmap;
+	    private _smooth;
+	    private _repeat;
+	    private _color;
+	    _pTexture: TextureBase;
+	    _pLightPicker: LightPickerBase;
+	    private _onLightChangeDelegate;
+	    /**
+	     * Creates a new MaterialBase object.
+	     */
+	    constructor();
+	    /**
+	     * The alpha of the surface.
+	     */
+	    alpha: number;
+	    /**
+	     * The ColorTransform object to transform the colour of the material with. Defaults to null.
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
+	     * example when using textures of foliage, consider using alphaThreshold instead.
+	     */
+	    alphaBlending: boolean;
+	    /**
+	     *
+	     */
+	    animationSet: IAnimationSet;
+	    /**
+	     * The light picker used by the material to provide lights to the material if it supports lighting.
+	     *
+	     * @see LightPickerBase
+	     * @see StaticLightPicker
+	     */
+	    lightPicker: LightPickerBase;
+	    /**
+	     * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	     */
+	    imageRect: boolean;
+	    /**
+	     * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	     */
+	    mipmap: boolean;
+	    /**
+	     * Indicates whether or not any used textures should use smoothing. Defaults to true.
+	     */
+	    smooth: boolean;
+	    /**
+	     * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
+	     * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
+	     */
+	    repeat: boolean;
+	    /**
+	     * The diffuse reflectivity color of the surface.
+	     */
+	    color: number;
+	    /**
+	     * The texture object to use for the albedo colour.
+	     */
+	    texture: TextureBase;
+	    /**
+	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
+	     */
+	    animateUVs: boolean;
+	    /**
+	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
+	     */
+	    useColorTransform: boolean;
+	    /**
+	     * Whether or not to use fallOff and radius properties for lights. This can be used to improve performance and
+	     * compatibility for constrained mode.
+	     */
+	    enableLightFallOff: boolean;
+	    /**
+	     * Define which light source types to use for diffuse reflections. This allows choosing between regular lights
+	     * and/or light probes for diffuse reflections.
+	     *
+	     * @see away3d.materials.LightSources
+	     */
+	    diffuseLightSources: number;
+	    /**
+	     * Define which light source types to use for specular reflections. This allows choosing between regular lights
+	     * and/or light probes for specular reflections.
+	     *
+	     * @see away3d.materials.LightSources
+	     */
+	    specularLightSources: number;
+	    /**
+	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
+	     * could be used by other materials and will not be disposed.
+	     */
+	    dispose(): void;
+	    /**
+	     * Defines whether or not the material should cull triangles facing away from the camera.
+	     */
+	    bothSides: boolean;
+	    /**
+	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	     * <ul>
+	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	     * <li>BlendMode.MULTIPLY</li>
+	     * <li>BlendMode.ADD</li>
+	     * <li>BlendMode.ALPHA</li>
+	     * </ul>
+	     */
+	    blendMode: string;
+	    /**
+	     * Indicates whether visible textures (or other pixels) used by this material have
+	     * already been premultiplied. Toggle this if you are seeing black halos around your
+	     * blended alpha edges.
+	     */
+	    alphaPremultiplied: boolean;
+	    /**
+	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	     * invisible or entirely opaque, often used with textures for foliage, etc.
+	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	     */
+	    alphaThreshold: number;
+	    getNumImages(): number;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    /**
+	     * Mark an IRenderableOwner as owner of this material.
+	     * Assures we're not using the same material across renderables with different animations, since the
+	     * Programs depend on animation. This method needs to be called when a material is assigned.
+	     *
+	     * @param owner The IRenderableOwner that had this material assigned
+	     *
+	     * @internal
+	     */
+	    iAddOwner(owner: IRenderableOwner): void;
+	    /**
+	     * Removes an IRenderableOwner as owner.
+	     * @param owner
+	     *
+	     * @internal
+	     */
+	    iRemoveOwner(owner: IRenderableOwner): void;
+	    /**
+	     * A list of the IRenderableOwners that use this material
+	     *
+	     * @private
+	     */
+	    iOwners: Array<IRenderableOwner>;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    _pInvalidatePasses(): void;
+	    private invalidateAnimation();
+	    _pInvalidateRender(): void;
+	    /**
+	     * Called when the light picker's configuration changed.
+	     */
+	    private onLightsChange(event);
+	    _pNotifyTextureChanged(): void;
+	    _iAddRender(render: IRender): IRender;
+	    _iRemoveRender(render: IRender): IRender;
+	    _clearInterfaces(): void;
+	    _iAddImage(image: ImageBase): void;
+	    _iRemoveImage(image: ImageBase): void;
+	}
+	export = MaterialBase;
+	
+}
+
 declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
@@ -8240,270 +8580,6 @@ declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	    private updatePointCasting(light);
 	}
 	export = StaticLightPicker;
-	
-}
-
-declare module "awayjs-display/lib/materials/LightSources" {
-	/**
-	 * Enumeration class for defining which lighting types affect the specific material
-	 * lighting component (diffuse and specular). This can be useful if, for example, you
-	 * want to use light probes for diffuse global lighting, but want specular reflections from
-	 * traditional light sources without those affecting the diffuse light.
-	 *
-	 * @see away.materials.ColorMaterial.diffuseLightSources
-	 * @see away.materials.ColorMaterial.specularLightSources
-	 * @see away.materials.TextureMaterial.diffuseLightSources
-	 * @see away.materials.TextureMaterial.specularLightSources
-	 */
-	class LightSources {
-	    /**
-	     * Defines normal lights are to be used as the source for the lighting
-	     * component.
-	     */
-	    static LIGHTS: number;
-	    /**
-	     * Defines that global lighting probes are to be used as the source for the
-	     * lighting component.
-	     */
-	    static PROBES: number;
-	    /**
-	     * Defines that both normal and global lighting probes  are to be used as the
-	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
-	     */
-	    static ALL: number;
-	}
-	export = LightSources;
-	
-}
-
-declare module "awayjs-display/lib/materials/MaterialBase" {
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRender = require("awayjs-display/lib/pool/IRender");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	/**
-	 * MaterialBase forms an abstract base class for any material.
-	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
-	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
-	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
-	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
-	 *
-	 * Away3D provides default materials trough SinglePassMaterialBase and TriangleMaterial, which use modular
-	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
-	 * shaders, or entire new material frameworks.
-	 */
-	class MaterialBase extends AssetBase implements IRenderOwner {
-	    private _colorTransform;
-	    private _pUseColorTransform;
-	    private _frameRect;
-	    private _alphaBlending;
-	    private _alpha;
-	    private _sizeChanged;
-	    private _renders;
-	    _pAlphaThreshold: number;
-	    _pAnimateUVs: boolean;
-	    private _enableLightFallOff;
-	    private _specularLightSources;
-	    private _diffuseLightSources;
-	    /**
-	     * An object to contain any extra data.
-	     */
-	    extra: Object;
-	    /**
-	     * A value that can be used by materials that only work with a given type of renderer. The renderer can test the
-	     * classification to choose which render path to use. For example, a deferred material could set this value so
-	     * that the deferred renderer knows not to take the forward rendering path.
-	     *
-	     * @private
-	     */
-	    _iClassification: string;
-	    /**
-	     * An id for this material used to sort the renderables by shader program, which reduces Program state changes.
-	     *
-	     * @private
-	     */
-	    _iMaterialId: number;
-	    _iBaseScreenPassIndex: number;
-	    private _bothSides;
-	    private _animationSet;
-	    /**
-	     * A list of material owners, renderables or custom Entities.
-	     */
-	    private _owners;
-	    private _alphaPremultiplied;
-	    _pBlendMode: string;
-	    private _mipmap;
-	    private _smooth;
-	    private _repeat;
-	    private _color;
-	    _pTexture: TextureBase;
-	    _pLightPicker: LightPickerBase;
-	    _pHeight: number;
-	    _pWidth: number;
-	    private _onLightChangeDelegate;
-	    /**
-	     * Creates a new MaterialBase object.
-	     */
-	    constructor();
-	    /**
-	     * The alpha of the surface.
-	     */
-	    alpha: number;
-	    /**
-	     * The ColorTransform object to transform the colour of the material with. Defaults to null.
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
-	     * example when using textures of foliage, consider using alphaThreshold instead.
-	     */
-	    alphaBlending: boolean;
-	    frameRect: Rectangle;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     * The light picker used by the material to provide lights to the material if it supports lighting.
-	     *
-	     * @see LightPickerBase
-	     * @see StaticLightPicker
-	     */
-	    lightPicker: LightPickerBase;
-	    /**
-	     * Indicates whether or not any used textures should use mipmapping. Defaults to true.
-	     */
-	    mipmap: boolean;
-	    /**
-	     * Indicates whether or not any used textures should use smoothing. Defaults to true.
-	     */
-	    smooth: boolean;
-	    /**
-	     * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
-	     * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
-	     */
-	    repeat: boolean;
-	    /**
-	     * The diffuse reflectivity color of the surface.
-	     */
-	    color: number;
-	    /**
-	     * The texture object to use for the albedo colour.
-	     */
-	    texture: TextureBase;
-	    /**
-	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
-	     */
-	    animateUVs: boolean;
-	    /**
-	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
-	     */
-	    useColorTransform: boolean;
-	    /**
-	     * Whether or not to use fallOff and radius properties for lights. This can be used to improve performance and
-	     * compatibility for constrained mode.
-	     */
-	    enableLightFallOff: boolean;
-	    /**
-	     * Define which light source types to use for diffuse reflections. This allows choosing between regular lights
-	     * and/or light probes for diffuse reflections.
-	     *
-	     * @see away3d.materials.LightSources
-	     */
-	    diffuseLightSources: number;
-	    /**
-	     * Define which light source types to use for specular reflections. This allows choosing between regular lights
-	     * and/or light probes for specular reflections.
-	     *
-	     * @see away3d.materials.LightSources
-	     */
-	    specularLightSources: number;
-	    /**
-	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	     * could be used by other materials and will not be disposed.
-	     */
-	    dispose(): void;
-	    /**
-	     * Defines whether or not the material should cull triangles facing away from the camera.
-	     */
-	    bothSides: boolean;
-	    /**
-	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
-	     * <ul>
-	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-	     * <li>BlendMode.MULTIPLY</li>
-	     * <li>BlendMode.ADD</li>
-	     * <li>BlendMode.ALPHA</li>
-	     * </ul>
-	     */
-	    blendMode: string;
-	    /**
-	     * Indicates whether visible textures (or other pixels) used by this material have
-	     * already been premultiplied. Toggle this if you are seeing black halos around your
-	     * blended alpha edges.
-	     */
-	    alphaPremultiplied: boolean;
-	    /**
-	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	     * invisible or entirely opaque, often used with textures for foliage, etc.
-	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	     */
-	    alphaThreshold: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     * Mark an IRenderableOwner as owner of this material.
-	     * Assures we're not using the same material across renderables with different animations, since the
-	     * Programs depend on animation. This method needs to be called when a material is assigned.
-	     *
-	     * @param owner The IRenderableOwner that had this material assigned
-	     *
-	     * @internal
-	     */
-	    iAddOwner(owner: IRenderableOwner): void;
-	    /**
-	     * Removes an IRenderableOwner as owner.
-	     * @param owner
-	     *
-	     * @internal
-	     */
-	    iRemoveOwner(owner: IRenderableOwner): void;
-	    /**
-	     * A list of the IRenderableOwners that use this material
-	     *
-	     * @private
-	     */
-	    iOwners: Array<IRenderableOwner>;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    _pInvalidatePasses(): void;
-	    private invalidateAnimation();
-	    _pInvalidateRender(): void;
-	    /**
-	     * Called when the light picker's configuration changed.
-	     */
-	    private onLightsChange(event);
-	    _pNotifySizeChanged(): void;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	    _clearInterfaces(): void;
-	}
-	export = MaterialBase;
 	
 }
 
@@ -8669,26 +8745,6 @@ declare module "awayjs-display/lib/partition/BasicPartition" {
 	
 }
 
-declare module "awayjs-display/lib/partition/CameraNode" {
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
-	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
-	/**
-	 * @class away.partition.CameraNode
-	 */
-	class CameraNode extends EntityNode {
-	    constructor(pool: EntityNodePool, camera: Camera, partition: PartitionBase);
-	    /**
-	     * @inheritDoc
-	     */
-	    acceptTraverser(traverser: CollectorBase): void;
-	}
-	export = CameraNode;
-	
-}
-
 declare module "awayjs-display/lib/partition/ContainerNode" {
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -8732,6 +8788,26 @@ declare module "awayjs-display/lib/partition/ContainerNode" {
 	    iRemoveNode(node: IDisplayObjectNode): void;
 	}
 	export = ContainerNode;
+	
+}
+
+declare module "awayjs-display/lib/partition/CameraNode" {
+	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
+	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	import EntityNodePool = require("awayjs-display/lib/pool/EntityNodePool");
+	/**
+	 * @class away.partition.CameraNode
+	 */
+	class CameraNode extends EntityNode {
+	    constructor(pool: EntityNodePool, camera: Camera, partition: PartitionBase);
+	    /**
+	     * @inheritDoc
+	     */
+	    acceptTraverser(traverser: CollectorBase): void;
+	}
+	export = CameraNode;
 	
 }
 
@@ -10890,7 +10966,6 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class Single2DTexture extends TextureBase {
 	    static assetType: string;
-	    private _sampler2D;
 	    /**
 	     *
 	     * @returns {string}
@@ -10900,9 +10975,10 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	     *
 	     * @returns {Image2D}
 	     */
-	    sampler2D: Sampler2D;
-	    constructor(source: Sampler2D);
-	    constructor(source: Image2D);
+	    image2D: Image2D;
+	    constructor(image2D: Image2D);
+	    getImageAt(index: number): Image2D;
+	    getSamplerAt(index: number): Sampler2D;
 	}
 	export = Single2DTexture;
 	
@@ -10914,7 +10990,6 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class SingleCubeTexture extends TextureBase {
 	    static assetType: string;
-	    private _samplerCube;
 	    /**
 	     *
 	     * @returns {string}
@@ -10922,33 +10997,40 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	    assetType: string;
 	    /**
 	     *
-	     * @returns {BitmapData}
+	     * @returns {ImageCube}
 	     */
-	    samplerCube: SamplerCube;
-	    constructor(source: SamplerCube);
-	    constructor(source: ImageCube);
+	    imageCube: ImageCube;
+	    constructor(imageCube: ImageCube);
+	    getImageAt(index: number): ImageCube;
+	    getSamplerAt(index: number): SamplerCube;
 	}
 	export = SingleCubeTexture;
 	
 }
 
 declare module "awayjs-display/lib/textures/TextureBase" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
 	import ITextureVO = require("awayjs-display/lib/pool/ITextureVO");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
 	 *
 	 */
 	class TextureBase extends AssetBase implements IAsset {
+	    _images: Array<ImageBase>;
+	    _samplers: Array<SamplerBase>;
+	    _owners: Array<IRenderOwner>;
+	    _counts: Array<number>;
 	    private _textureVO;
-	    _width: number;
-	    _height: number;
-	    width: number;
-	    height: number;
 	    /**
 	     *
 	     */
 	    constructor();
+	    getImageAt(index: number): ImageBase;
+	    getSamplerAt(index: number): SamplerBase;
 	    /**
 	     *
 	     */
@@ -10964,9 +11046,30 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    dispose(): void;
 	    _iAddTextureVO(textureVO: ITextureVO): ITextureVO;
 	    _iRemoveTextureVO(textureVO: ITextureVO): ITextureVO;
-	    _setSize(width: number, height: number): void;
+	    iAddOwner(owner: MaterialBase): void;
+	    iRemoveOwner(owner: MaterialBase): void;
+	    /**
+	     *
+	     */
+	    iAddImage(image: ImageBase): void;
+	    /**
+	     *
+	     */
+	    iRemoveImage(image: ImageBase): void;
 	}
 	export = TextureBase;
+	
+}
+
+declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.CSSEntityCollector
+	 */
+	class CSSEntityCollector extends CollectorBase {
+	    constructor();
+	}
+	export = CSSEntityCollector;
 	
 }
 
@@ -11050,18 +11153,6 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = CollectorBase;
-	
-}
-
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
 	
 }
 
