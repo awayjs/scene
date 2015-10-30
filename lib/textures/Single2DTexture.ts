@@ -10,8 +10,6 @@ class Single2DTexture extends TextureBase
 {
 	public static assetType:string = "[texture Single2DTexture]";
 
-	private _sampler2D:Sampler2D;
-
 	/**
 	 *
 	 * @returns {string}
@@ -25,37 +23,48 @@ class Single2DTexture extends TextureBase
 	 *
 	 * @returns {Image2D}
 	 */
-	public get sampler2D():Sampler2D
+	public get image2D():Image2D
 	{
-		return this._sampler2D;
+		return <Image2D> this._images[0];
 	}
 
-	public set sampler2D(value:Sampler2D)
+	public set image2D(value:Image2D)
 	{
-		if (this._sampler2D == value)
+		if (this._images[0] == value)
 			return;
 
-		if (!ImageUtils.isImage2DValid(value.image2D))
-			throw new Error("Invalid sampler2DData: Width and height must be power of 2 and cannot exceed 2048");
+		if (!ImageUtils.isImage2DValid(value))
+			throw new Error("Invalid image2DData: Width and height must be power of 2 and cannot exceed 2048");
 
-		this._sampler2D = value;
+		if (this._images[0])
+			this.iRemoveImage(this._images[0]);
 
-		this._setSize(this._sampler2D.rect.width, this._sampler2D.rect.height);
+		this._images[0] = value;
+
+		if (this._images[0])
+			this.iAddImage(this._images[0]);
+
 
 		this.invalidateContent();
 	}
 
-	constructor(source:Sampler2D);
-	constructor(source:Image2D);
-	constructor(source:any)
+	constructor(image2D:Image2D)
 	{
 		super();
 
-		if (source instanceof Image2D)
-			this.sampler2D = new Sampler2D(source);
-		else
-			this.sampler2D = source;
+		this._images.length = 1;
 
+		this.image2D = image2D;
+	}
+
+	public getImageAt(index:number):Image2D
+	{
+		return <Image2D> this._images[index];
+	}
+
+	public getSamplerAt(index:number):Sampler2D
+	{
+		return <Sampler2D> this._samplers[index] || (this._samplers[index] = new Sampler2D());
 	}
 }
 

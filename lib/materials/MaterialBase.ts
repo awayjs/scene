@@ -1,4 +1,5 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
+import ImageBase					= require("awayjs-core/lib/data/ImageBase");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
@@ -33,13 +34,15 @@ import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture
  */
 class MaterialBase extends AssetBase implements IRenderOwner
 {
+	private _images:Array<ImageBase> = new Array<ImageBase>();
+	private _imageCount:Array<number> = new Array<number>();
+	private _imageIndex:Object = new Object();
 	private _colorTransform:ColorTransform;
 	private _pUseColorTransform:boolean = false;
-	private _frameRect:Rectangle;
 	private _alphaBlending:boolean = false;
 	private _alpha:number = 1;
 	
-	private _sizeChanged:MaterialEvent;
+	private _textureChanged:MaterialEvent;
 	private _renders:Array<IRender> = new Array<IRender>();
 
 	public _pAlphaThreshold:number = 0;
@@ -62,14 +65,6 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	 */
 	public _iClassification:string;
 
-
-	/**
-	 * An id for this material used to sort the renderables by shader program, which reduces Program state changes.
-	 *
-	 * @private
-	 */
-	public _iMaterialId:number = 0;
-
 	public _iBaseScreenPassIndex:number = 0;
 
 	private _bothSides:boolean = false; // update
@@ -78,12 +73,13 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	/**
 	 * A list of material owners, renderables or custom Entities.
 	 */
-	private _owners:Array<IRenderableOwner>;
+	private _owners:Array<IRenderableOwner> = new Array<IRenderableOwner>();
 
 	private _alphaPremultiplied:boolean;
 
 	public _pBlendMode:string = BlendMode.NORMAL;
 
+	private _imageRect:boolean = false;
 	private _mipmap:boolean = true;
 	private _smooth:boolean = true;
 	private _repeat:boolean = false;
@@ -91,9 +87,6 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	public _pTexture:TextureBase;
 
 	public _pLightPicker:LightPickerBase;
-
-	public _pHeight:number = 1;
-	public _pWidth:number = 1;
 
 	private _onLightChangeDelegate:(event:Event) => void;
 
@@ -103,10 +96,6 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	constructor()
 	{
 		super();
-
-		this._iMaterialId = Number(this.id);
-
-		this._owners = new Array<IRenderableOwner>();
 
 		this._onLightChangeDelegate = (event:Event) => this.onLightsChange(event);
 
@@ -175,19 +164,6 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this._pInvalidateRender();
 	}
 
-	public get frameRect():Rectangle
-	{
-		return this._frameRect;
-	}
-
-	/**
-	 *
-	 */
-	public get height():number
-	{
-		return this._pHeight;
-	}
-
 	/**
 	 *
 	 */
@@ -222,6 +198,24 @@ class MaterialBase extends AssetBase implements IRenderOwner
 			this._pLightPicker.addEventListener(Event.CHANGE, this._onLightChangeDelegate);
 
 		this._pInvalidateRender();
+	}
+
+	/**
+	 * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	 */
+	public get imageRect():boolean
+	{
+		return this._imageRect;
+	}
+
+	public set imageRect(value:boolean)
+	{
+		if (this._imageRect == value)
+			return;
+
+		this._imageRect = value;
+
+		this._pInvalidatePasses();
 	}
 
 	/**
@@ -310,24 +304,17 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		if (this._pTexture == value)
 			return;
 
+		if (this._pTexture)
+			this._pTexture.iRemoveOwner(this);
+
 		this._pTexture = value;
+
+		if (this._pTexture)
+			this._pTexture.iAddOwner(this);
 
 		this._pInvalidatePasses();
 
-		if (this._pTexture.isAsset(Single2DTexture)) {
-			var single2DTexture:Single2DTexture = <Single2DTexture> this._pTexture;
-			this._frameRect = single2DTexture.sampler2D.frameRect;
-
-			this._pHeight = single2DTexture.sampler2D.rect.height;
-			this._pWidth = single2DTexture.sampler2D.rect.width;
-		} else {
-			this._frameRect = null;
-			this._pHeight = 1;
-			this._pWidth = 1;
-		}
-
-
-		this._pNotifySizeChanged();
+		this._pNotifyTextureChanged();
 	}
 
 	/**
@@ -522,12 +509,19 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this._pInvalidatePasses();
 	}
 
-	/**
-	 *
-	 */
-	public get width():number
+	public getNumImages():number
 	{
-		return this._pWidth;
+		return this._images.length;
+	}
+
+	public getImageAt(index:number):ImageBase
+	{
+		return this._images[index];
+	}
+
+	public getImageIndex(image:ImageBase):number
+	{
+		return this._imageIndex[image.id];
 	}
 
 	//
@@ -631,12 +625,12 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this._pInvalidateRender();
 	}
 
-	public _pNotifySizeChanged()
+	public _pNotifyTextureChanged()
 	{
-		if (!this._sizeChanged)
-			this._sizeChanged = new MaterialEvent(MaterialEvent.SIZE_CHANGED);
+		if (!this._textureChanged)
+			this._textureChanged = new MaterialEvent(MaterialEvent.TEXTURE_CHANGED);
 
-		this.dispatchEvent(this._sizeChanged);
+		this.dispatchEvent(this._textureChanged);
 	}
 
 	public _iAddRender(render:IRender):IRender
@@ -657,6 +651,37 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	{
 		for (var i:number = this._renders.length - 1; i >= 0; i--)
 			this._renders[i].dispose();
+	}
+
+	public _iAddImage(image:ImageBase)
+	{
+		var index:number = this._imageIndex[image.id];
+		if (!index) {
+			this._imageIndex[image.id] = this._images.length;
+
+			this._images.push(image);
+			this._imageCount.push(1);
+		} else {
+			this._imageCount[index]--;
+		}
+	}
+
+	public _iRemoveImage(image:ImageBase)
+	{
+		var index:number = this._imageIndex[image.id];
+		if (this._imageCount[index] != 1) {
+			this._imageCount[index]--;
+		} else {
+			delete this._imageIndex[image.id];
+
+			this._images.splice(index, 1);
+			this._imageCount.splice(index, 1);
+
+			var len:number = this._images.length;
+			for (var i:number = index; i < len; i++) {
+				this._imageIndex[this._images[i].id] = i;
+			}
+		}
 	}
 }
 

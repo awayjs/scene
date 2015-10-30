@@ -1,4 +1,6 @@
-﻿import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+﻿import ImageBase					= require("awayjs-core/lib/data/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
@@ -11,12 +13,17 @@ import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 /**
  * A Line Segment primitive.
  */
 class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 {
+	private _images:Array<ImageBase> = new Array<ImageBase>();
+	private _imageIndex:Object = new Object();
+	private _samplers:Object = new Object();
+
 	public static assetType:string = "[asset LineSegment]";
 
 	private _animator:IAnimator;
@@ -169,6 +176,54 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	{
 		this._startPosition = null;
 		this._endPosition = null;
+	}
+
+
+	public getImageAt(index:number):ImageBase
+	{
+		return this._images[index] || this.material.getImageAt(index);
+	}
+
+	public getImageIndex(image:ImageBase):number
+	{
+		return this._imageIndex[image.id] || this.material.getImageIndex(image);
+	}
+
+	public addImageAt(image:ImageBase, index:number)
+	{
+		this._images[index] = image;
+		this._imageIndex[image.id] = index;
+	}
+
+	public removeImageAt(image:ImageBase, index:number)
+	{
+		this._images[index] = null;
+		delete this._imageIndex[image.id];
+	}
+
+
+	public getSamplerAt(texture:TextureBase, index:number = 0):SamplerBase
+	{
+		if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
+			return texture.getSamplerAt(index);
+
+		return this._samplers[texture.id][index];
+	}
+
+	public addSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	{
+		if (!this._samplers[texture.id])
+			this._samplers[texture.id] = new Array<SamplerBase>();
+
+		this._samplers[texture.id][index] = sampler;
+	}
+
+	public removeSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	{
+		if (!this._samplers[texture.id])
+			return;
+
+		delete this._samplers[texture.id][index];
 	}
 
 	/**

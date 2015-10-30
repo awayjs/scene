@@ -78,7 +78,7 @@ class DirectionalShadowMapper extends ShadowMapperBase
 
 		if (this._depthMap) {
 			this._explicitDepthMap = true;
-			this._pDepthMapSize = depthMap.width;
+			this._pDepthMapSize = depthMap.image2D.rect.width;
 		} else {
 			this._explicitDepthMap = false;
 		}
@@ -96,7 +96,7 @@ class DirectionalShadowMapper extends ShadowMapperBase
 		this._pCasterCollector.cullPlanes = this._pCullPlanes;
 		this._pCasterCollector.clear();
 		scene.traversePartitions(this._pCasterCollector);
-		renderer._iRender(this._pCasterCollector, target.sampler2D.image2D);
+		renderer._iRender(this._pCasterCollector, target.image2D);
 	}
 
 	//@protected

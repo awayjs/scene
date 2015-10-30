@@ -1,3 +1,5 @@
+import ImageBase					= require("awayjs-core/lib/data/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
@@ -9,6 +11,7 @@ import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
@@ -21,6 +24,9 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class SubMeshBase extends AssetBase
 {
+	private _images:Array<ImageBase> = new Array<ImageBase>();
+	private _imageIndex:Object = new Object();
+	private _samplers:Object = new Object();
 	public _uvTransform:UVTransform;
 
 	public _iIndex:number = 0;
@@ -86,6 +92,55 @@ class SubMeshBase extends AssetBase
 	{
 		this._uvTransform = value;
 	}
+
+
+	public getImageAt(index:number):ImageBase
+	{
+		return this._images[index] || this.parentMesh.getImageAt(index) || this.material.getImageAt(index);
+	}
+
+	public getImageIndex(image:ImageBase):number
+	{
+		return this._imageIndex[image.id] || this.parentMesh.getImageIndex(image) || this.material.getImageIndex(image);
+	}
+
+	public addImageAt(image:ImageBase, index:number)
+	{
+		this._images[index] = image;
+		this._imageIndex[image.id] = index;
+	}
+
+	public removeImageAt(image:ImageBase, index:number)
+	{
+		this._images[index] = null;
+		delete this._imageIndex[image.id];
+	}
+
+
+	public getSamplerAt(texture:TextureBase, index:number = 0):SamplerBase
+	{
+		if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
+			return this.parentMesh.getSamplerAt(texture, index) || texture.getSamplerAt(index);
+
+		return this._samplers[texture.id][index];
+	}
+
+	public addSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	{
+		if (!this._samplers[texture.id])
+			this._samplers[texture.id] = new Array<SamplerBase>();
+
+		this._samplers[texture.id][index] = sampler;
+	}
+
+	public removeSamplerAt(texture:TextureBase, index:number = 0)
+	{
+		if (!this._samplers[texture.id])
+			return;
+
+		delete this._samplers[texture.id][index];
+	}
+
 
 	/**
 	 * Creates a new SubMeshBase object

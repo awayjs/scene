@@ -8,8 +8,6 @@ class SingleCubeTexture extends TextureBase
 {
 	public static assetType:string = "[texture SingleCubeTexture]";
 
-	private _samplerCube:SamplerCube;
-
 	/**
 	 *
 	 * @returns {string}
@@ -21,33 +19,47 @@ class SingleCubeTexture extends TextureBase
 
 	/**
 	 *
-	 * @returns {BitmapData}
+	 * @returns {ImageCube}
 	 */
-	public get samplerCube():SamplerCube
+	public get imageCube():ImageCube
 	{
-		return this._samplerCube;
+		return <ImageCube> this._images[0];
 	}
 
-	public set samplerCube(value:SamplerCube)
+	public set imageCube(value:ImageCube)
 	{
-		if (this._samplerCube == value)
+		if (this._images[0] == value)
 			return;
 
-		this._samplerCube = value;
+		if (this._images[0])
+			this.iRemoveImage(this._images[0]);
+
+		this._images[0] = value;
+
+		if (this._images[0])
+			this.iAddImage(this._images[0]);
+
 
 		this.invalidateContent();
 	}
 
-	constructor(source:SamplerCube);
-	constructor(source:ImageCube);
-	constructor(source:any)
+	
+	constructor(imageCube:ImageCube)
 	{
 		super();
 
-		if (source instanceof ImageCube)
-			this.samplerCube = new SamplerCube(source);
-		else
-			this.samplerCube = source;
+		this.imageCube = imageCube;
+	}
+
+
+	public getImageAt(index:number):ImageCube
+	{
+		return <ImageCube> this._images[index];
+	}
+
+	public getSamplerAt(index:number):SamplerCube
+	{
+		return <SamplerCube> this._samplers[index] || (this._samplers[index] = new SamplerCube());
 	}
 }
 

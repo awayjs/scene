@@ -276,10 +276,7 @@ class Cast
 			return data;
 
 		if (data instanceof Single2DTexture)
-			data = (<Single2DTexture> data).sampler2D;
-
-		if (data instanceof Sampler2D)
-			return (<Sampler2D> data).image2D;
+			data = (<Single2DTexture> data).image2D;
 
 		throw new CastError("Can't cast to BitmapImage2D: " + data);
 	}

@@ -128,7 +128,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 		this._pCasterCollector.clear();
 		scene.traversePartitions(this._pCasterCollector);
 
-		renderer._iRenderCascades(this._pCasterCollector, target.sampler2D.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
+		renderer._iRenderCascades(this._pCasterCollector, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
 	}
 
 	private updateScissorRects()

@@ -1,4 +1,6 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
+import ImageBase					= require("awayjs-core/lib/data/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 
@@ -15,6 +17,7 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
+import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
@@ -23,6 +26,10 @@ import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeText
  */
 class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner
 {
+	private _images:Array<ImageBase> = new Array<ImageBase>();
+	private _imageCount:Array<number> = new Array<number>();
+	private _imageIndex:Object = new Object();
+
 	public static assetType:string = "[asset Skybox]";
 
 	private _cubeMap:SingleCubeTexture;
@@ -35,6 +42,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _uvTransform:UVTransform;
 	private _colorTransform:ColorTransform;
 	private _owners:Array<IRenderableOwner>;
+	private _imageRect:boolean = false;
 	private _mipmap:boolean = false;
 	private _smooth:boolean = true;
 
@@ -65,6 +73,23 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._pIinvalidatePasses();
 	}
 
+	/**
+	 * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
+	 */
+	public get imageRect():boolean
+	{
+		return this._imageRect;
+	}
+
+	public set imageRect(value:boolean)
+	{
+		if (this._imageRect == value)
+			return;
+
+		this._imageRect = value;
+
+		this._pIinvalidatePasses();
+	}
 	/**
 	 * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
 	 */
@@ -248,6 +273,27 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		return false; //TODO
 	}
 
+	public getNumImages():number
+	{
+		return this._images.length;
+	}
+
+	public getImageAt(index:number):ImageBase
+	{
+		return this._images[index];
+	}
+
+	public getImageIndex(image:ImageBase):number
+	{
+		return this._imageIndex[image.id];
+	}
+
+
+	public getSamplerAt(texture:TextureBase, index:number = 0):SamplerBase
+	{
+		return texture.getSamplerAt(index);
+	}
+
 	/**
 	 * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
 	 * could be used by other materials and will not be disposed.
@@ -304,6 +350,37 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._renderables.splice(index, 1);
 
 		return renderable;
+	}
+
+	public _iAddImage(image:ImageBase)
+	{
+		var index:number = this._imageIndex[image.id];
+		if (!index) {
+			this._imageIndex[image.id] = this._images.length;
+
+			this._images.push(image);
+			this._imageCount.push(1);
+		} else {
+			this._imageCount[index]--;
+		}
+	}
+
+	public _iRemoveImage(image:ImageBase)
+	{
+		var index:number = this._imageIndex[image.id];
+		if (this._imageCount[index] != 1) {
+			this._imageCount[index]--;
+		} else {
+			delete this._imageIndex[image.id];
+
+			this._images.splice(index, 1);
+			this._imageCount.splice(index, 1);
+
+			var len:number = this._images.length;
+			for (var i:number = index; i < len; i++) {
+				this._imageIndex[this._images[i].id] = i;
+			}
+		}
 	}
 }
 

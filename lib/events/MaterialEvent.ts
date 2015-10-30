@@ -2,7 +2,7 @@ import Event					= require("awayjs-core/lib/events/Event");
 
 class MaterialEvent extends Event
 {
-	public static SIZE_CHANGED:string = "sizeChanged";
+	public static TEXTURE_CHANGED:string = "textureChanged";
 
 	constructor(type:string)
 	{

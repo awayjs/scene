@@ -83,7 +83,7 @@ class CubeMapShadowMapper extends ShadowMapperBase
 				this._pCasterCollector.camera = this._depthCameras[i];
 				this._pCasterCollector.clear();
 				scene.traversePartitions(this._pCasterCollector);
-				renderer._iRender(this._pCasterCollector, target.samplerCube.imageCube, null, i)
+				renderer._iRender(this._pCasterCollector, target.imageCube, null, i)
 			}
 		}
 	}

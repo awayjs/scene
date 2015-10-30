@@ -1,3 +1,6 @@
+import ImageBase					= require("awayjs-core/lib/data/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
+import Sampler2D					= require("awayjs-core/lib/data/Sampler2D");
 import Image2D						= require("awayjs-core/lib/data/Image2D");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
@@ -12,6 +15,8 @@ import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
+
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -50,6 +55,10 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 {
+	private _images:Array<ImageBase> = new Array<ImageBase>();
+	private _imageIndex:Object = new Object();
+	private _samplers:Object = new Object();
+
 	public static assetType:string = "[asset Billboard]";
 
 	private _animator:IAnimator;
@@ -61,7 +70,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	private _colorTransform:ColorTransform;
 	private _parentColorTransform:ColorTransform;
 
-	private onSizeChangedDelegate:(event:MaterialEvent) => void;
+	private onTextureChangedDelegate:(event:MaterialEvent) => void;
 
 
 	/**
@@ -124,7 +133,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		if (this._material) {
 			this._material.iRemoveOwner(this);
-			this._material.removeEventListener(MaterialEvent.SIZE_CHANGED, this.onSizeChangedDelegate);
+			this._material.removeEventListener(MaterialEvent.TEXTURE_CHANGED, this.onTextureChangedDelegate);
 		}
 
 
@@ -132,7 +141,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		if (this._material) {
 			this._material.iAddOwner(this);
-			this._material.addEventListener(MaterialEvent.SIZE_CHANGED, this.onSizeChangedDelegate);
+			this._material.addEventListener(MaterialEvent.TEXTURE_CHANGED, this.onTextureChangedDelegate);
 		}
 	}
 
@@ -245,19 +254,14 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._pIsEntity = true;
 
-		this.onSizeChangedDelegate = (event:MaterialEvent) => this.onSizeChanged(event);
+		this.onTextureChangedDelegate = (event:MaterialEvent) => this.onTextureChanged(event);
 
 		this.material = material;
 
-		this._billboardWidth = material.width;
-		this._billboardHeight = material.height;
-
-		this._billboardRect = this._material.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
+		this._updateDimensions();
 
 		//default bounds type
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
-
-		this._billboardWidth = material.width;
 	}
 
 	/**
@@ -276,6 +280,60 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		var clone:Billboard = new Billboard(this.material);
 		return clone;
 	}
+
+	public getImageAt(index:number):ImageBase
+	{
+		return this._images[index] || this.material.getImageAt(index);
+	}
+
+	public getImageIndex(image:ImageBase):number
+	{
+		return this._imageIndex[image.id] || this.material.getImageIndex(image);
+	}
+
+	public addImageAt(image:ImageBase, index:number)
+	{
+		this._images[index] = image;
+		this._imageIndex[image.id] = index;
+	}
+
+	public removeImageAt(image:ImageBase, index:number)
+	{
+		this._images[index] = null;
+		delete this._imageIndex[image.id];
+	}
+
+
+	public getSamplerAt(texture:TextureBase, index:number = 0):SamplerBase
+	{
+		if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
+			return texture.getSamplerAt(index);
+
+		return this._samplers[texture.id][index];
+	}
+
+	public addSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	{
+		if (!this._samplers[texture.id])
+			this._samplers[texture.id] = new Array<SamplerBase>();
+
+		this._samplers[texture.id][index] = sampler;
+
+		if (texture == this.material.texture && !index)
+			this._updateDimensions();
+	}
+
+	public removeSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	{
+		if (!this._samplers[texture.id])
+			return;
+
+		delete this._samplers[texture.id][index];
+
+		if (texture == this.material.texture && !index)
+			this._updateDimensions();
+	}
+
 	/**
 	 * //TODO
 	 *
@@ -293,18 +351,9 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	/**
 	 * @private
 	 */
-	private onSizeChanged(event:MaterialEvent)
+	private onTextureChanged(event:MaterialEvent)
 	{
-		this._billboardWidth = this._material.width;
-		this._billboardHeight = this._material.height;
-
-		this._billboardRect = this._material.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
-
-		this._pInvalidateBounds();
-
-		var len:number = this._pRenderables.length;
-		for (var i:number = 0; i < len; i++)
-			this._pRenderables[i].invalidateGeometry();
+		this._updateDimensions();
 	}
 
 	public _applyRenderer(renderer:IRenderer)
@@ -316,6 +365,29 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 			this._iSourcePrefab._iValidate();
 
 		renderer._iApplyRenderableOwner(this);
+	}
+
+	private _updateDimensions()
+	{
+		var image:Image2D = <Image2D> this.getImageAt(0);
+
+		if (image) {
+			var sampler:Sampler2D = <Sampler2D> this.getSamplerAt(this.material.texture);
+			var rect:Rectangle = sampler.imageRect || image.rect;
+			this._billboardWidth = rect.width;
+			this._billboardHeight = rect.height;
+			this._billboardRect = sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
+		} else {
+			this._billboardWidth = 1;
+			this._billboardHeight = 1;
+			this._billboardRect = new Rectangle(0, 0, 1, 1);
+		}
+
+		this._pInvalidateBounds();
+
+		var len:number = this._pRenderables.length;
+		for (var i:number = 0; i < len; i++)
+			this._pRenderables[i].invalidateGeometry();
 	}
 }
 
