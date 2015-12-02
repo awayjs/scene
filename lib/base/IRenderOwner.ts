@@ -33,6 +33,10 @@ interface IRenderOwner extends IAsset
 
 	getNumImages():number;
 
+	getImageAt(index:number):ImageBase;
+
+	getImageIndex(image:ImageBase):number;
+
 	_iAddRender(render:IRender):IRender;
 
 	_iRemoveRender(render:IRender):IRender;

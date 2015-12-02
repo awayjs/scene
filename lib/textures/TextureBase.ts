@@ -83,7 +83,7 @@ class TextureBase extends AssetBase implements IAsset
 		return textureVO;
 	}
 
-	public iAddOwner(owner:MaterialBase)
+	public iAddOwner(owner:IRenderOwner)
 	{
 		//a texture can be used more than once in the same owner, so we check for this
 		var index:number = this._owners.indexOf(owner);
@@ -101,7 +101,7 @@ class TextureBase extends AssetBase implements IAsset
 		}
 	}
 
-	public iRemoveOwner(owner:MaterialBase)
+	public iRemoveOwner(owner:IRenderOwner)
 	{
 		var index:number = this._owners.indexOf(owner);
 

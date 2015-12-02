@@ -96,12 +96,7 @@ class SubMeshBase extends AssetBase
 
 	public getImageAt(index:number):ImageBase
 	{
-		return this._images[index] || this.parentMesh.getImageAt(index) || this.material.getImageAt(index);
-	}
-
-	public getImageIndex(image:ImageBase):number
-	{
-		return this._imageIndex[image.id] || this.parentMesh.getImageIndex(image) || this.material.getImageIndex(image);
+		return this._images[index] || this.parentMesh.getImageAt(index);
 	}
 
 	public addImageAt(image:ImageBase, index:number)

@@ -226,12 +226,12 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 	public getImageAt(index:number):ImageBase
 	{
-		return this._images[index] || this.material.getImageAt(index);
+		return this._images[index];
 	}
 
 	public getImageIndex(image:ImageBase):number
 	{
-		return this._imageIndex[image.id] || this.material.getImageIndex(image);
+		return this._imageIndex[image.id];
 	}
 
 	public addImageAt(image:ImageBase, index:number)

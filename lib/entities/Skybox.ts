@@ -14,6 +14,7 @@ import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import IRender						= require("awayjs-display/lib/pool/IRender");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
@@ -238,11 +239,18 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 	public set cubeMap(value:SingleCubeTexture)
 	{
-		//if (value && this._cubeMap && (value.format != this._cubeMap.format))
-		if (value && this._cubeMap)
-			this._pInvalidateRender();
+		if (this._cubeMap == value)
+			return;
+
+		if (this._cubeMap)
+			this._cubeMap.iRemoveOwner(this);
 
 		this._cubeMap = value;
+
+		if (this._cubeMap)
+			this._cubeMap.iAddOwner(this);
+
+		this._pIinvalidatePasses();
 	}
 
 	/**
@@ -321,6 +329,26 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		//skybox do not get collected in the standard entity list
 	}
 
+	public _pUpdateRender()
+	{
+		var len:number = this._owners.length;
+		for (var i:number = 0; i < len; i++)
+			this._owners[i].dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
+	}
+
+
+	/**
+	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	 *
+	 * @private
+	 */
+	public _pInvalidatePasses()
+	{
+		var len:number = this._renders.length;
+		for (var i:number = 0; i < len; i++)
+			this._renders[i].invalidatePasses();
+	}
+
 	public _iAddRender(render:IRender):IRender
 	{
 		this._renders.push(render);
@@ -360,6 +388,10 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 			this._images.push(image);
 			this._imageCount.push(1);
+
+			this._pInvalidatePasses();
+
+			this._pUpdateRender();
 		} else {
 			this._imageCount[index]--;
 		}
@@ -380,6 +412,10 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 			for (var i:number = index; i < len; i++) {
 				this._imageIndex[this._images[i].id] = i;
 			}
+
+			this._pInvalidatePasses();
+
+			this._pUpdateRender();
 		}
 	}
 }

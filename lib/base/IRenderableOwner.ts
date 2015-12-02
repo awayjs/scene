@@ -29,8 +29,6 @@ interface IRenderableOwner extends IAsset
 
 	getImageAt(index:number):ImageBase;
 
-	getImageIndex(image:ImageBase):number;
-
 	getSamplerAt(texture:TextureBase, index?:number):SamplerBase;
 
 	/**

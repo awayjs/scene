@@ -617,6 +617,13 @@ class MaterialBase extends AssetBase implements IRenderOwner
 			this._renders[i].invalidateRender();
 	}
 
+	public _pUpdateRender()
+	{
+		var len:number = this._owners.length;
+		for (var i:number = 0; i < len; i++)
+			this._owners[i].dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
+	}
+
 	/**
 	 * Called when the light picker's configuration changed.
 	 */
@@ -661,6 +668,10 @@ class MaterialBase extends AssetBase implements IRenderOwner
 
 			this._images.push(image);
 			this._imageCount.push(1);
+
+			this._pInvalidatePasses();
+
+			this._pUpdateRender();
 		} else {
 			this._imageCount[index]--;
 		}
@@ -681,6 +692,10 @@ class MaterialBase extends AssetBase implements IRenderOwner
 			for (var i:number = index; i < len; i++) {
 				this._imageIndex[this._images[i].id] = i;
 			}
+
+			this._pInvalidatePasses();
+
+			this._pUpdateRender();
 		}
 	}
 }
