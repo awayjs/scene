@@ -3770,10 +3770,7 @@ var SubMeshBase = (function (_super) {
         configurable: true
     });
     SubMeshBase.prototype.getImageAt = function (index) {
-        return this._images[index] || this.parentMesh.getImageAt(index) || this.material.getImageAt(index);
-    };
-    SubMeshBase.prototype.getImageIndex = function (image) {
-        return this._imageIndex[image.id] || this.parentMesh.getImageIndex(image) || this.material.getImageIndex(image);
+        return this._images[index] || this.parentMesh.getImageAt(index);
     };
     SubMeshBase.prototype.addImageAt = function (image, index) {
         this._images[index] = image;
@@ -10358,10 +10355,10 @@ var Mesh = (function (_super) {
         configurable: true
     });
     Mesh.prototype.getImageAt = function (index) {
-        return this._images[index] || this.material.getImageAt(index);
+        return this._images[index];
     };
     Mesh.prototype.getImageIndex = function (image) {
-        return this._imageIndex[image.id] || this.material.getImageIndex(image);
+        return this._imageIndex[image.id];
     };
     Mesh.prototype.addImageAt = function (image, index) {
         this._images[index] = image;
@@ -11114,6 +11111,7 @@ var __extends = this.__extends || function (d, b) {
 var BlendMode = require("awayjs-core/lib/data/BlendMode");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
@@ -11329,10 +11327,14 @@ var Skybox = (function (_super) {
             return this._cubeMap;
         },
         set: function (value) {
-            //if (value && this._cubeMap && (value.format != this._cubeMap.format))
-            if (value && this._cubeMap)
-                this._pInvalidateRender();
+            if (this._cubeMap == value)
+                return;
+            if (this._cubeMap)
+                this._cubeMap.iRemoveOwner(this);
             this._cubeMap = value;
+            if (this._cubeMap)
+                this._cubeMap.iAddOwner(this);
+            this._pIinvalidatePasses();
         },
         enumerable: true,
         configurable: true
@@ -11383,6 +11385,21 @@ var Skybox = (function (_super) {
     Skybox.prototype._applyRenderer = function (renderer) {
         //skybox do not get collected in the standard entity list
     };
+    Skybox.prototype._pUpdateRender = function () {
+        var len = this._owners.length;
+        for (var i = 0; i < len; i++)
+            this._owners[i].dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
+    };
+    /**
+     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+     *
+     * @private
+     */
+    Skybox.prototype._pInvalidatePasses = function () {
+        var len = this._renders.length;
+        for (var i = 0; i < len; i++)
+            this._renders[i].invalidatePasses();
+    };
     Skybox.prototype._iAddRender = function (render) {
         this._renders.push(render);
         return render;
@@ -11406,6 +11423,8 @@ var Skybox = (function (_super) {
             this._imageIndex[image.id] = this._images.length;
             this._images.push(image);
             this._imageCount.push(1);
+            this._pInvalidatePasses();
+            this._pUpdateRender();
         }
         else {
             this._imageCount[index]--;
@@ -11424,6 +11443,8 @@ var Skybox = (function (_super) {
             for (var i = index; i < len; i++) {
                 this._imageIndex[this._images[i].id] = i;
             }
+            this._pInvalidatePasses();
+            this._pUpdateRender();
         }
     };
     Skybox.assetType = "[asset Skybox]";
@@ -11431,7 +11452,7 @@ var Skybox = (function (_super) {
 })(DisplayObject);
 module.exports = Skybox;
 
-},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/data/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14144,6 +14165,11 @@ var MaterialBase = (function (_super) {
         for (var i = 0; i < len; i++)
             this._renders[i].invalidateRender();
     };
+    MaterialBase.prototype._pUpdateRender = function () {
+        var len = this._owners.length;
+        for (var i = 0; i < len; i++)
+            this._owners[i].dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
+    };
     /**
      * Called when the light picker's configuration changed.
      */
@@ -14173,6 +14199,8 @@ var MaterialBase = (function (_super) {
             this._imageIndex[image.id] = this._images.length;
             this._images.push(image);
             this._imageCount.push(1);
+            this._pInvalidatePasses();
+            this._pUpdateRender();
         }
         else {
             this._imageCount[index]--;
@@ -14191,6 +14219,8 @@ var MaterialBase = (function (_super) {
             for (var i = index; i < len; i++) {
                 this._imageIndex[this._images[i].id] = i;
             }
+            this._pInvalidatePasses();
+            this._pUpdateRender();
         }
     };
     return MaterialBase;

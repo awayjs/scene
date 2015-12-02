@@ -1,3 +1,87 @@
+declare module "awayjs-display/lib/IRenderer" {
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	/**
+	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderer
+	 */
+	interface IRenderer extends IEventDispatcher {
+	    /**
+	     *
+	     */
+	    renderableSorter: IEntitySorter;
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    viewPort: Rectangle;
+	    /**
+	     *
+	     */
+	    scissorRect: Rectangle;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): any;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundR: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundG: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundB: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundAlpha: number;
+	    /**
+	     * @internal
+	     */
+	    _iCreateEntityCollector(): CollectorBase;
+	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
+	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
+	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
+	}
+	export = IRenderer;
+	
+}
+
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -1720,6 +1804,39 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 	
 }
 
+declare module "awayjs-display/lib/base/IRenderOwner" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRender = require("awayjs-display/lib/pool/IRender");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * IRenderOwner provides an interface for objects that can use materials.
+	 *
+	 * @interface away.base.IRenderOwner
+	 */
+	interface IRenderOwner extends IAsset {
+	    alphaThreshold: number;
+	    mipmap: boolean;
+	    smooth: boolean;
+	    imageRect: boolean;
+	    blendMode: string;
+	    lightPicker: LightPickerBase;
+	    animationSet: IAnimationSet;
+	    iOwners: Array<IRenderableOwner>;
+	    getNumImages(): number;
+	    getImageAt(index: number): ImageBase;
+	    getImageIndex(image: ImageBase): number;
+	    _iAddRender(render: IRender): IRender;
+	    _iRemoveRender(render: IRender): IRender;
+	    _iAddImage(image: ImageBase): any;
+	    _iRemoveImage(image: ImageBase): any;
+	}
+	export = IRenderOwner;
+	
+}
+
 declare module "awayjs-display/lib/base/IRenderableOwner" {
 	import ImageBase = require("awayjs-core/lib/data/ImageBase");
 	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
@@ -1743,7 +1860,6 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	     */
 	    uvTransform: UVTransform;
 	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
 	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
 	    /**
 	     *
@@ -1759,37 +1875,6 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
 	}
 	export = IRenderableOwner;
-	
-}
-
-declare module "awayjs-display/lib/base/IRenderOwner" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRender = require("awayjs-display/lib/pool/IRender");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * IRenderOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderOwner
-	 */
-	interface IRenderOwner extends IAsset {
-	    alphaThreshold: number;
-	    mipmap: boolean;
-	    smooth: boolean;
-	    imageRect: boolean;
-	    blendMode: string;
-	    lightPicker: LightPickerBase;
-	    animationSet: IAnimationSet;
-	    iOwners: Array<IRenderableOwner>;
-	    getNumImages(): number;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	    _iAddImage(image: ImageBase): any;
-	    _iRemoveImage(image: ImageBase): any;
-	}
-	export = IRenderOwner;
 	
 }
 
@@ -2380,7 +2465,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	     */
 	    uvTransform: UVTransform;
 	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
 	    addImageAt(image: ImageBase, index: number): void;
 	    removeImageAt(image: ImageBase, index: number): void;
 	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
@@ -6472,6 +6556,13 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     */
 	    dispose(): void;
 	    _applyRenderer(renderer: IRenderer): void;
+	    _pUpdateRender(): void;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    _pInvalidatePasses(): void;
 	    _iAddRender(render: IRender): IRender;
 	    _iRemoveRender(render: IRender): IRender;
 	    _iAddRenderable(renderable: IRenderable): IRenderable;
@@ -7917,90 +8008,6 @@ declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
 	
 }
 
-declare module "awayjs-display/lib/IRenderer" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	/**
-	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderer
-	 */
-	interface IRenderer extends IEventDispatcher {
-	    /**
-	     *
-	     */
-	    renderableSorter: IEntitySorter;
-	    /**
-	     *
-	     */
-	    shareContext: boolean;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    viewPort: Rectangle;
-	    /**
-	     *
-	     */
-	    scissorRect: Rectangle;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): any;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundR: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundG: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundB: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundAlpha: number;
-	    /**
-	     * @internal
-	     */
-	    _iCreateEntityCollector(): CollectorBase;
-	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
-	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
-	}
-	export = IRenderer;
-	
-}
-
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -8178,149 +8185,6 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	    preserveAlpha: boolean;
 	}
 	export = BasicMaterial;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
-	/**
-	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
-	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
-	 * extended to provide more application-specific dynamic selection of lights.
-	 *
-	 * @see StaticLightPicker
-	 */
-	class LightPickerBase extends AssetBase implements IAsset {
-	    static assetType: string;
-	    _pNumPointLights: number;
-	    _pNumDirectionalLights: number;
-	    _pNumCastingPointLights: number;
-	    _pNumCastingDirectionalLights: number;
-	    _pNumLightProbes: number;
-	    _pAllPickedLights: Array<LightBase>;
-	    _pPointLights: Array<PointLight>;
-	    _pCastingPointLights: Array<PointLight>;
-	    _pDirectionalLights: Array<DirectionalLight>;
-	    _pCastingDirectionalLights: Array<DirectionalLight>;
-	    _pLightProbes: Array<LightProbe>;
-	    _pLightProbeWeights: Array<number>;
-	    /**
-	     * Creates a new LightPickerBase object.
-	     */
-	    constructor();
-	    /**
-	     * Disposes resources used by the light picker.
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    assetType: string;
-	    /**
-	     * The maximum amount of directional lights that will be provided.
-	     */
-	    numDirectionalLights: number;
-	    /**
-	     * The maximum amount of point lights that will be provided.
-	     */
-	    numPointLights: number;
-	    /**
-	     * The maximum amount of directional lights that cast shadows.
-	     */
-	    numCastingDirectionalLights: number;
-	    /**
-	     * The amount of point lights that cast shadows.
-	     */
-	    numCastingPointLights: number;
-	    /**
-	     * The maximum amount of light probes that will be provided.
-	     */
-	    numLightProbes: number;
-	    /**
-	     * The collected point lights to be used for shading.
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights to be used for shading.
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected point lights that cast shadows to be used for shading.
-	     */
-	    castingPointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights that cast shadows to be used for shading.
-	     */
-	    castingDirectionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected light probes to be used for shading.
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     * The weights for each light probe, defining their influence on the object.
-	     */
-	    lightProbeWeights: Array<number>;
-	    /**
-	     * A collection of all the collected lights.
-	     */
-	    allPickedLights: Array<LightBase>;
-	    /**
-	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
-	     */
-	    collectLights(renderable: IRenderable): void;
-	    /**
-	     * Updates the weights for the light probes, based on the renderable's position relative to them.
-	     * @param renderable The renderble for which to calculate the light probes' influence.
-	     */
-	    private updateProbeWeights(renderable);
-	}
-	export = LightPickerBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
-	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
-	 * occur.
-	 */
-	class StaticLightPicker extends LightPickerBase {
-	    private _lights;
-	    private _onCastShadowChangeDelegate;
-	    /**
-	     * Creates a new StaticLightPicker object.
-	     * @param lights The lights to be used for shading.
-	     */
-	    constructor(lights: any);
-	    /**
-	     * The lights used for shading.
-	     */
-	    lights: Array<any>;
-	    /**
-	     * Remove configuration change listeners on the lights.
-	     */
-	    private clearListeners();
-	    /**
-	     * Notifies the material of a configuration change.
-	     */
-	    private onCastShadowChange(event);
-	    /**
-	     * Called when a directional light's shadow casting configuration changes.
-	     */
-	    private updateDirectionalCasting(light);
-	    /**
-	     * Called when a point light's shadow casting configuration changes.
-	     */
-	    private updatePointCasting(light);
-	}
-	export = StaticLightPicker;
 	
 }
 
@@ -8568,6 +8432,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    _pInvalidatePasses(): void;
 	    private invalidateAnimation();
 	    _pInvalidateRender(): void;
+	    _pUpdateRender(): void;
 	    /**
 	     * Called when the light picker's configuration changed.
 	     */
@@ -8580,6 +8445,149 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    _iRemoveImage(image: ImageBase): void;
 	}
 	export = MaterialBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
+	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import PointLight = require("awayjs-display/lib/entities/PointLight");
+	/**
+	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
+	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
+	 * extended to provide more application-specific dynamic selection of lights.
+	 *
+	 * @see StaticLightPicker
+	 */
+	class LightPickerBase extends AssetBase implements IAsset {
+	    static assetType: string;
+	    _pNumPointLights: number;
+	    _pNumDirectionalLights: number;
+	    _pNumCastingPointLights: number;
+	    _pNumCastingDirectionalLights: number;
+	    _pNumLightProbes: number;
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
+	    /**
+	     * Creates a new LightPickerBase object.
+	     */
+	    constructor();
+	    /**
+	     * Disposes resources used by the light picker.
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    assetType: string;
+	    /**
+	     * The maximum amount of directional lights that will be provided.
+	     */
+	    numDirectionalLights: number;
+	    /**
+	     * The maximum amount of point lights that will be provided.
+	     */
+	    numPointLights: number;
+	    /**
+	     * The maximum amount of directional lights that cast shadows.
+	     */
+	    numCastingDirectionalLights: number;
+	    /**
+	     * The amount of point lights that cast shadows.
+	     */
+	    numCastingPointLights: number;
+	    /**
+	     * The maximum amount of light probes that will be provided.
+	     */
+	    numLightProbes: number;
+	    /**
+	     * The collected point lights to be used for shading.
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights to be used for shading.
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected point lights that cast shadows to be used for shading.
+	     */
+	    castingPointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights that cast shadows to be used for shading.
+	     */
+	    castingDirectionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected light probes to be used for shading.
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     * The weights for each light probe, defining their influence on the object.
+	     */
+	    lightProbeWeights: Array<number>;
+	    /**
+	     * A collection of all the collected lights.
+	     */
+	    allPickedLights: Array<LightBase>;
+	    /**
+	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
+	     */
+	    collectLights(renderable: IRenderable): void;
+	    /**
+	     * Updates the weights for the light probes, based on the renderable's position relative to them.
+	     * @param renderable The renderble for which to calculate the light probes' influence.
+	     */
+	    private updateProbeWeights(renderable);
+	}
+	export = LightPickerBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
+	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
+	 * occur.
+	 */
+	class StaticLightPicker extends LightPickerBase {
+	    private _lights;
+	    private _onCastShadowChangeDelegate;
+	    /**
+	     * Creates a new StaticLightPicker object.
+	     * @param lights The lights to be used for shading.
+	     */
+	    constructor(lights: any);
+	    /**
+	     * The lights used for shading.
+	     */
+	    lights: Array<any>;
+	    /**
+	     * Remove configuration change listeners on the lights.
+	     */
+	    private clearListeners();
+	    /**
+	     * Notifies the material of a configuration change.
+	     */
+	    private onCastShadowChange(event);
+	    /**
+	     * Called when a directional light's shadow casting configuration changes.
+	     */
+	    private updateDirectionalCasting(light);
+	    /**
+	     * Called when a point light's shadow casting configuration changes.
+	     */
+	    private updatePointCasting(light);
+	}
+	export = StaticLightPicker;
 	
 }
 
@@ -11015,7 +11023,6 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
 	import ITextureVO = require("awayjs-display/lib/pool/ITextureVO");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
 	 *
 	 */
@@ -11046,8 +11053,8 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    dispose(): void;
 	    _iAddTextureVO(textureVO: ITextureVO): ITextureVO;
 	    _iRemoveTextureVO(textureVO: ITextureVO): ITextureVO;
-	    iAddOwner(owner: MaterialBase): void;
-	    iRemoveOwner(owner: MaterialBase): void;
+	    iAddOwner(owner: IRenderOwner): void;
+	    iRemoveOwner(owner: IRenderOwner): void;
 	    /**
 	     *
 	     */
@@ -11058,6 +11065,18 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    iRemoveImage(image: ImageBase): void;
 	}
 	export = TextureBase;
+	
+}
+
+declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.CSSEntityCollector
+	 */
+	class CSSEntityCollector extends CollectorBase {
+	    constructor();
+	}
+	export = CSSEntityCollector;
 	
 }
 
@@ -11141,18 +11160,6 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = CollectorBase;
-	
-}
-
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
 	
 }
 
