@@ -37,13 +37,10 @@ class Single2DTexture extends TextureBase
 			throw new Error("Invalid image2DData: Width and height must be power of 2 and cannot exceed 2048");
 
 		if (this._images[0])
-			this.iRemoveImage(this._images[0]);
+			this.iRemoveImage(0);
 
-		this._images[0] = value;
-
-		if (this._images[0])
-			this.iAddImage(this._images[0]);
-
+		if (value)
+			this.iAddImage(value, 0);
 
 		this.invalidateContent();
 	}
@@ -55,16 +52,6 @@ class Single2DTexture extends TextureBase
 		this._images.length = 1;
 
 		this.image2D = image2D;
-	}
-
-	public getImageAt(index:number):Image2D
-	{
-		return <Image2D> this._images[index];
-	}
-
-	public getSamplerAt(index:number):Sampler2D
-	{
-		return <Sampler2D> this._samplers[index] || (this._samplers[index] = new Sampler2D());
 	}
 }
 

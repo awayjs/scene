@@ -13,13 +13,11 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  */
 class TextureBase extends AssetBase implements IAsset
 {
-	public _images:Array<ImageBase> = new Array<ImageBase>();
-	public _samplers:Array<SamplerBase> = new Array<SamplerBase>();
-
-	public _owners:Array<IRenderOwner> = new Array<IRenderOwner>();
-	public _counts:Array<number> = new Array<number>();
-
+	private _owners:Array<IRenderOwner> = new Array<IRenderOwner>();
+	private _counts:Array<number> = new Array<number>();
 	private _textureVO:Array<ITextureVO> = new Array<ITextureVO>();
+
+	public _images:Array<ImageBase> = new Array<ImageBase>();
 
 	/**
 	 *
@@ -27,16 +25,6 @@ class TextureBase extends AssetBase implements IAsset
 	constructor()
 	{
 		super();
-	}
-
-	public getImageAt(index:number):ImageBase
-	{
-		throw new AbstractMethodError();
-	}
-
-	public getSamplerAt(index:number):SamplerBase
-	{
-		throw new AbstractMethodError();
 	}
 
 	/**
@@ -99,6 +87,11 @@ class TextureBase extends AssetBase implements IAsset
 			for (var i:number = 0; i< len; i++)
 				owner._iAddImage(this._images[i]);
 		}
+
+		//add samplers
+		var len:number = this._images.length;
+		for (var i:number = 0; i< len; i++)
+			owner._iAddSampler(this._images[i].createSampler(), this, i);
 	}
 
 	public iRemoveOwner(owner:IRenderOwner)
@@ -116,27 +109,39 @@ class TextureBase extends AssetBase implements IAsset
 			for (var i:number = 0; i< len; i++)
 				owner._iRemoveImage(this._images[i]);
 		}
-	}
 
+		//add samplers
+		var len:number = this._images.length;
+		for (var i:number = 0; i< len; i++)
+			owner._iRemoveSampler(this, i);
+	}
 
 	/**
 	 *
 	 */
-	public iAddImage(image:ImageBase)
+	public iAddImage(image:ImageBase, index:number)
 	{
+		this._images[index] = image;
+
 		var len:number = this._owners.length;
-		for (var i:number = 0; i < len; i++)
+		for (var i:number = 0; i < len; i++) {
 			this._owners[i]._iAddImage(image);
+			this._owners[i]._iAddSampler(image.createSampler(), this, index);
+		}
 	}
 
 	/**
 	 *
 	 */
-	public iRemoveImage(image:ImageBase)
+	public iRemoveImage(index:number)
 	{
+		var image:ImageBase = this._images[index];
+
 		var len:number = this._owners.length;
-		for (var i:number = 0; i < len; i++)
+		for (var i:number = 0; i < len; i++) {
 			this._owners[i]._iRemoveImage(image);
+			this._owners[i]._iRemoveSampler(this, index);
+		}
 	}
 }
 

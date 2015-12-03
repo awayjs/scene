@@ -30,6 +30,8 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _images:Array<ImageBase> = new Array<ImageBase>();
 	private _imageCount:Array<number> = new Array<number>();
 	private _imageIndex:Object = new Object();
+	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
+	private _samplerIndices:Object = new Object();
 
 	public static assetType:string = "[asset Skybox]";
 
@@ -296,10 +298,22 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		return this._imageIndex[image.id];
 	}
 
-
-	public getSamplerAt(texture:TextureBase, index:number = 0):SamplerBase
+	public getNumSamplers():number
 	{
-		return texture.getSamplerAt(index);
+		return this._samplers.length;
+	}
+
+	public getSamplerAt(index:number):SamplerBase
+	{
+		return this._samplers[index];
+	}
+
+	public getSamplerIndex(texture:TextureBase, index:number = 0):number
+	{
+		if (!this._samplerIndices[texture.id])
+			this._samplerIndices[texture.id] = new Array<number>();
+
+		return this._samplerIndices[texture.id][index];
 	}
 
 	/**
@@ -417,6 +431,52 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 			this._pUpdateRender();
 		}
+	}
+
+
+	public _iAddSampler(sampler:SamplerBase, texture:TextureBase, index:number)
+	{
+		//find free sampler slot
+		var i:number = 0;
+		var len:number = this._samplers.length;
+		while (i < len) {
+			if (!this._samplers[i])
+				break;
+
+			i++;
+		}
+
+		if (!this._samplerIndices[texture.id])
+			this._samplerIndices[texture.id] = new Array<number>();
+
+		this._samplerIndices[texture.id][index] = i;
+
+		this._samplers[i] = sampler;
+
+		this._pInvalidatePasses();
+
+		this._pUpdateRender();
+	}
+
+	public _iRemoveSampler(texture:TextureBase, index:number)
+	{
+		var index:number = this._samplerIndices[texture.id][index];
+
+		this._samplers[index] = null;
+
+		//shorten samplers array if sampler at end
+		if (index == this._samplers.length - 1) {
+			while(index--) {
+				if (this._samplers[index] != null)
+					break;
+			}
+
+			this._samplers.length = index + 1;
+		}
+
+		this._pInvalidatePasses();
+
+		this._pUpdateRender();
 	}
 }
 

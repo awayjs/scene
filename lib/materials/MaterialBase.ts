@@ -1,5 +1,6 @@
 import BlendMode					= require("awayjs-core/lib/data/BlendMode");
 import ImageBase					= require("awayjs-core/lib/data/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
@@ -37,6 +38,8 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	private _images:Array<ImageBase> = new Array<ImageBase>();
 	private _imageCount:Array<number> = new Array<number>();
 	private _imageIndex:Object = new Object();
+	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
+	private _samplerIndices:Object = new Object();
 	private _colorTransform:ColorTransform;
 	private _pUseColorTransform:boolean = false;
 	private _alphaBlending:boolean = false;
@@ -524,6 +527,25 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		return this._imageIndex[image.id];
 	}
 
+
+	public getNumSamplers():number
+	{
+		return this._samplers.length;
+	}
+
+	public getSamplerAt(index:number):SamplerBase
+	{
+		return this._samplers[index];
+	}
+
+	public getSamplerIndex(texture:TextureBase, index:number = 0):number
+	{
+		if (!this._samplerIndices[texture.id])
+			this._samplerIndices[texture.id] = new Array<number>();
+
+		return this._samplerIndices[texture.id][index];
+	}
+
 	//
 	// MATERIAL MANAGEMENT
 	//
@@ -697,6 +719,52 @@ class MaterialBase extends AssetBase implements IRenderOwner
 
 			this._pUpdateRender();
 		}
+	}
+
+
+	public _iAddSampler(sampler:SamplerBase, texture:TextureBase, index:number)
+	{
+		//find free sampler slot
+		var i:number = 0;
+		var len:number = this._samplers.length;
+		while (i < len) {
+			if (!this._samplers[i])
+				break;
+
+			i++;
+		}
+
+		if (!this._samplerIndices[texture.id])
+			this._samplerIndices[texture.id] = new Array<number>();
+
+		this._samplerIndices[texture.id][index] = i;
+
+		this._samplers[i] = sampler;
+
+		this._pInvalidatePasses();
+
+		this._pUpdateRender();
+	}
+
+	public _iRemoveSampler(texture:TextureBase, index:number)
+	{
+		var index:number = this._samplerIndices[texture.id][index];
+
+		this._samplers[index] = null;
+
+		//shorten samplers array if sampler at end
+		if (index == this._samplers.length - 1) {
+			while(index--) {
+				if (this._samplers[index] != null)
+					break;
+			}
+
+			this._samplers.length = index + 1;
+		}
+
+		this._pInvalidatePasses();
+
+		this._pUpdateRender();
 	}
 }
 

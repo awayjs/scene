@@ -56,8 +56,7 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 {
 	private _images:Array<ImageBase> = new Array<ImageBase>();
-	private _imageIndex:Object = new Object();
-	private _samplers:Object = new Object();
+	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
 
 	public static assetType:string = "[asset Billboard]";
 
@@ -88,11 +87,6 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	{
 		return Billboard.assetType;
 	}
-
-	/**
-	 * The Image2D object being referenced.
-	 */
-	public image2D:Image2D; //TODO
 
 	/**
 	 *
@@ -286,52 +280,35 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		return this._images[index] || this.material.getImageAt(index);
 	}
 
-	public getImageIndex(image:ImageBase):number
-	{
-		return this._imageIndex[image.id] || this.material.getImageIndex(image);
-	}
-
 	public addImageAt(image:ImageBase, index:number)
 	{
 		this._images[index] = image;
-		this._imageIndex[image.id] = index;
 	}
 
-	public removeImageAt(image:ImageBase, index:number)
+	public removeImageAt(index:number)
 	{
 		this._images[index] = null;
-		delete this._imageIndex[image.id];
 	}
 
-
-	public getSamplerAt(texture:TextureBase, index:number = 0):SamplerBase
+	public getSamplerAt(index:number):SamplerBase
 	{
-		if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
-			return texture.getSamplerAt(index);
+		return this._samplers[index];
 
-		return this._samplers[texture.id][index];
-	}
-
-	public addSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
-	{
-		if (!this._samplers[texture.id])
-			this._samplers[texture.id] = new Array<SamplerBase>();
-
-		this._samplers[texture.id][index] = sampler;
-
-		if (texture == this.material.texture && !index)
+		if (index == 0)
 			this._updateDimensions();
 	}
 
-	public removeSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	public addSamplerAt(sampler:SamplerBase, index:number)
 	{
-		if (!this._samplers[texture.id])
-			return;
+		this._samplers[index] = sampler;
 
-		delete this._samplers[texture.id][index];
-
-		if (texture == this.material.texture && !index)
+		if (index == 0)
 			this._updateDimensions();
+	}
+
+	public removeSamplerAt(index:number)
+	{
+		this._samplers[index] = null;
 	}
 
 	/**
@@ -372,7 +349,8 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		var image:Image2D = <Image2D> this.getImageAt(0);
 
 		if (image) {
-			var sampler:Sampler2D = <Sampler2D> this.getSamplerAt(this.material.texture);
+			var index:number = this.material.getSamplerIndex(this.material.texture);
+			var sampler:Sampler2D = <Sampler2D> (this.getSamplerAt(index) || this.material.getSamplerAt(index));
 			var rect:Rectangle = sampler.imageRect || image.rect;
 			this._billboardWidth = rect.width;
 			this._billboardHeight = rect.height;

@@ -8,7 +8,6 @@ import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 /**
  * IRenderableOwner provides an interface for objects that can use materials.
@@ -29,7 +28,7 @@ interface IRenderableOwner extends IAsset
 
 	getImageAt(index:number):ImageBase;
 
-	getSamplerAt(texture:TextureBase, index?:number):SamplerBase;
+	getSamplerAt(index:number):SamplerBase;
 
 	/**
 	 *

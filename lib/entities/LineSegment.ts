@@ -21,8 +21,7 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 {
 	private _images:Array<ImageBase> = new Array<ImageBase>();
-	private _imageIndex:Object = new Object();
-	private _samplers:Object = new Object();
+	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
 
 	public static assetType:string = "[asset LineSegment]";
 
@@ -181,49 +180,33 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 	public getImageAt(index:number):ImageBase
 	{
-		return this._images[index] || this.material.getImageAt(index);
-	}
-
-	public getImageIndex(image:ImageBase):number
-	{
-		return this._imageIndex[image.id] || this.material.getImageIndex(image);
+		return this._images[index];
 	}
 
 	public addImageAt(image:ImageBase, index:number)
 	{
 		this._images[index] = image;
-		this._imageIndex[image.id] = index;
 	}
 
 	public removeImageAt(image:ImageBase, index:number)
 	{
 		this._images[index] = null;
-		delete this._imageIndex[image.id];
 	}
 
 
-	public getSamplerAt(texture:TextureBase, index:number = 0):SamplerBase
+	public getSamplerAt(index:number):SamplerBase
 	{
-		if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
-			return texture.getSamplerAt(index);
-
-		return this._samplers[texture.id][index];
+		return this._samplers[index];
 	}
 
-	public addSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	public addSamplerAt(sampler:SamplerBase, index:number)
 	{
-		if (!this._samplers[texture.id])
-			this._samplers[texture.id] = new Array<SamplerBase>();
-
-		this._samplers[texture.id][index] = sampler;
+		this._samplers[index] = sampler;
 	}
 
-	public removeSamplerAt(sampler:SamplerBase, texture:TextureBase, index:number = 0)
+	public removeSamplerAt(index:number)
 	{
-		if (!this._samplers[texture.id])
-			return;
-
-		delete this._samplers[texture.id][index];
+		this._samplers[index] = null;
 	}
 
 	/**

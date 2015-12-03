@@ -1,5 +1,6 @@
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 import ImageBase					= require("awayjs-core/lib/data/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IRender						= require("awayjs-display/lib/pool/IRender");
@@ -37,6 +38,12 @@ interface IRenderOwner extends IAsset
 
 	getImageIndex(image:ImageBase):number;
 
+	getNumSamplers():number;
+
+	getSamplerAt(index:number):SamplerBase;
+
+	getSamplerIndex(texture:TextureBase, index?:number):number;
+
 	_iAddRender(render:IRender):IRender;
 
 	_iRemoveRender(render:IRender):IRender;
@@ -44,6 +51,10 @@ interface IRenderOwner extends IAsset
 	_iAddImage(image:ImageBase);
 
 	_iRemoveImage(image:ImageBase);
+
+	_iAddSampler(sampler:SamplerBase, texture:TextureBase, index:number);
+
+	_iRemoveSampler(texture:TextureBase, index:number);
 }
 
 export = IRenderOwner;
