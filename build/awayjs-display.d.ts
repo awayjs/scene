@@ -82,6 +82,18 @@ declare module "awayjs-display/lib/IRenderer" {
 	
 }
 
+declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
+	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	interface IMovieClipAdapter extends IDisplayObjectAdapter {
+	    evalScript(str: string): Function;
+	    registerScriptObject(child: DisplayObject): void;
+	    unregisterScriptObject(child: DisplayObject): void;
+	}
+	export = IMovieClipAdapter;
+	
+}
+
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -93,18 +105,6 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	    dispose(): any;
 	}
 	export = IDisplayObjectAdapter;
-	
-}
-
-declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
-	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	interface IMovieClipAdapter extends IDisplayObjectAdapter {
-	    evalScript(str: string): Function;
-	    registerScriptObject(child: DisplayObject): void;
-	    unregisterScriptObject(child: DisplayObject): void;
-	}
-	export = IMovieClipAdapter;
 	
 }
 
@@ -1807,10 +1807,12 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
 	import IRender = require("awayjs-display/lib/pool/IRender");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * IRenderOwner provides an interface for objects that can use materials.
 	 *
@@ -1828,10 +1830,15 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	    getNumImages(): number;
 	    getImageAt(index: number): ImageBase;
 	    getImageIndex(image: ImageBase): number;
+	    getNumSamplers(): number;
+	    getSamplerAt(index: number): SamplerBase;
+	    getSamplerIndex(texture: TextureBase, index?: number): number;
 	    _iAddRender(render: IRender): IRender;
 	    _iRemoveRender(render: IRender): IRender;
 	    _iAddImage(image: ImageBase): any;
 	    _iRemoveImage(image: ImageBase): any;
+	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): any;
+	    _iRemoveSampler(texture: TextureBase, index: number): any;
 	}
 	export = IRenderOwner;
 	
@@ -1844,7 +1851,6 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * IRenderableOwner provides an interface for objects that can use materials.
 	 *
@@ -1860,7 +1866,7 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	     */
 	    uvTransform: UVTransform;
 	    getImageAt(index: number): ImageBase;
-	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    getSamplerAt(index: number): SamplerBase;
 	    /**
 	     *
 	     * @param renderable
@@ -2426,7 +2432,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
 	 *
@@ -2438,7 +2443,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	 */
 	class SubMeshBase extends AssetBase {
 	    private _images;
-	    private _imageIndex;
 	    private _samplers;
 	    _uvTransform: UVTransform;
 	    _iIndex: number;
@@ -2466,10 +2470,10 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    uvTransform: UVTransform;
 	    getImageAt(index: number): ImageBase;
 	    addImageAt(image: ImageBase, index: number): void;
-	    removeImageAt(image: ImageBase, index: number): void;
-	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
-	    removeSamplerAt(texture: TextureBase, index?: number): void;
+	    removeImageAt(index: number): void;
+	    getSamplerAt(index: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, index: number): void;
+	    removeSamplerAt(index: number): void;
 	    /**
 	     * Creates a new SubMeshBase object
 	     */
@@ -5604,7 +5608,6 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 declare module "awayjs-display/lib/entities/Billboard" {
 	import ImageBase = require("awayjs-core/lib/data/ImageBase");
 	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
-	import Image2D = require("awayjs-core/lib/data/Image2D");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -5614,7 +5617,6 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * The Billboard class represents display objects that represent bitmap images.
 	 * These can be images that you load with the <code>flash.Assets</code> or
@@ -5651,7 +5653,6 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	 */
 	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
 	    private _images;
-	    private _imageIndex;
 	    private _samplers;
 	    static assetType: string;
 	    private _animator;
@@ -5671,10 +5672,6 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	     *
 	     */
 	    assetType: string;
-	    /**
-	     * The Image2D object being referenced.
-	     */
-	    image2D: Image2D;
 	    /**
 	     *
 	     */
@@ -5731,12 +5728,11 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    _pUpdateBoxBounds(): void;
 	    clone(): DisplayObject;
 	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
 	    addImageAt(image: ImageBase, index: number): void;
-	    removeImageAt(image: ImageBase, index: number): void;
-	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
-	    removeSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    removeImageAt(index: number): void;
+	    getSamplerAt(index: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, index: number): void;
+	    removeSamplerAt(index: number): void;
 	    /**
 	     * //TODO
 	     *
@@ -6039,13 +6035,11 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * A Line Segment primitive.
 	 */
 	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
 	    private _images;
-	    private _imageIndex;
 	    private _samplers;
 	    static assetType: string;
 	    private _animator;
@@ -6098,12 +6092,11 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
 	    dispose(): void;
 	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
 	    addImageAt(image: ImageBase, index: number): void;
 	    removeImageAt(image: ImageBase, index: number): void;
-	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
-	    removeSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    getSamplerAt(index: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, index: number): void;
+	    removeSamplerAt(index: number): void;
 	    /**
 	     * @protected
 	     */
@@ -6132,7 +6125,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
 	 * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
 	 * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
@@ -6140,7 +6132,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	 */
 	class Mesh extends DisplayObjectContainer implements IEntity {
 	    private _images;
-	    private _imageIndex;
 	    private _samplers;
 	    private static _meshes;
 	    static assetType: string;
@@ -6190,12 +6181,11 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     */
 	    uvTransform: UVTransform;
 	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
 	    addImageAt(image: ImageBase, index: number): void;
 	    removeImageAt(image: ImageBase, index: number): void;
-	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
-	    removeSamplerAt(texture: TextureBase, index?: number): void;
+	    getSamplerAt(index: number): SamplerBase;
+	    addSamplerAt(sampler: SamplerBase, index: number): void;
+	    removeSamplerAt(index: number): void;
 	    /**
 	     * Create a new Mesh object.
 	     *
@@ -6457,6 +6447,8 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    private _images;
 	    private _imageCount;
 	    private _imageIndex;
+	    private _samplers;
+	    private _samplerIndices;
 	    static assetType: string;
 	    private _cubeMap;
 	    _pAlphaThreshold: number;
@@ -6549,7 +6541,9 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    getNumImages(): number;
 	    getImageAt(index: number): ImageBase;
 	    getImageIndex(image: ImageBase): number;
-	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    getNumSamplers(): number;
+	    getSamplerAt(index: number): SamplerBase;
+	    getSamplerIndex(texture: TextureBase, index?: number): number;
 	    /**
 	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
 	     * could be used by other materials and will not be disposed.
@@ -6569,6 +6563,8 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
 	    _iAddImage(image: ImageBase): void;
 	    _iRemoveImage(image: ImageBase): void;
+	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): void;
+	    _iRemoveSampler(texture: TextureBase, index: number): void;
 	}
 	export = Skybox;
 	
@@ -8223,6 +8219,7 @@ declare module "awayjs-display/lib/materials/LightSources" {
 
 declare module "awayjs-display/lib/materials/MaterialBase" {
 	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -8246,6 +8243,8 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    private _images;
 	    private _imageCount;
 	    private _imageIndex;
+	    private _samplers;
+	    private _samplerIndices;
 	    private _colorTransform;
 	    private _pUseColorTransform;
 	    private _alphaBlending;
@@ -8401,6 +8400,9 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    getNumImages(): number;
 	    getImageAt(index: number): ImageBase;
 	    getImageIndex(image: ImageBase): number;
+	    getNumSamplers(): number;
+	    getSamplerAt(index: number): SamplerBase;
+	    getSamplerIndex(texture: TextureBase, index?: number): number;
 	    /**
 	     * Mark an IRenderableOwner as owner of this material.
 	     * Assures we're not using the same material across renderables with different animations, since the
@@ -8443,6 +8445,8 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    _clearInterfaces(): void;
 	    _iAddImage(image: ImageBase): void;
 	    _iRemoveImage(image: ImageBase): void;
+	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): void;
+	    _iRemoveSampler(texture: TextureBase, index: number): void;
 	}
 	export = MaterialBase;
 	
@@ -10969,7 +10973,6 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 }
 
 declare module "awayjs-display/lib/textures/Single2DTexture" {
-	import Sampler2D = require("awayjs-core/lib/data/Sampler2D");
 	import Image2D = require("awayjs-core/lib/data/Image2D");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class Single2DTexture extends TextureBase {
@@ -10985,15 +10988,12 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	     */
 	    image2D: Image2D;
 	    constructor(image2D: Image2D);
-	    getImageAt(index: number): Image2D;
-	    getSamplerAt(index: number): Sampler2D;
 	}
 	export = Single2DTexture;
 	
 }
 
 declare module "awayjs-display/lib/textures/SingleCubeTexture" {
-	import SamplerCube = require("awayjs-core/lib/data/SamplerCube");
 	import ImageCube = require("awayjs-core/lib/data/ImageCube");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class SingleCubeTexture extends TextureBase {
@@ -11009,8 +11009,6 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	     */
 	    imageCube: ImageCube;
 	    constructor(imageCube: ImageCube);
-	    getImageAt(index: number): ImageCube;
-	    getSamplerAt(index: number): SamplerCube;
 	}
 	export = SingleCubeTexture;
 	
@@ -11018,7 +11016,6 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 
 declare module "awayjs-display/lib/textures/TextureBase" {
 	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
@@ -11027,17 +11024,14 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	 *
 	 */
 	class TextureBase extends AssetBase implements IAsset {
-	    _images: Array<ImageBase>;
-	    _samplers: Array<SamplerBase>;
-	    _owners: Array<IRenderOwner>;
-	    _counts: Array<number>;
+	    private _owners;
+	    private _counts;
 	    private _textureVO;
+	    _images: Array<ImageBase>;
 	    /**
 	     *
 	     */
 	    constructor();
-	    getImageAt(index: number): ImageBase;
-	    getSamplerAt(index: number): SamplerBase;
 	    /**
 	     *
 	     */
@@ -11058,11 +11052,11 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 	    /**
 	     *
 	     */
-	    iAddImage(image: ImageBase): void;
+	    iAddImage(image: ImageBase, index: number): void;
 	    /**
 	     *
 	     */
-	    iRemoveImage(image: ImageBase): void;
+	    iRemoveImage(index: number): void;
 	}
 	export = TextureBase;
 	

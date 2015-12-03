@@ -3706,8 +3706,7 @@ var SubMeshBase = (function (_super) {
         if (material === void 0) { material = null; }
         _super.call(this);
         this._images = new Array();
-        this._imageIndex = new Object();
-        this._samplers = new Object();
+        this._samplers = new Array();
         this._iIndex = 0;
         this._renderables = new Array();
         this.parentMesh = parentMesh;
@@ -3774,29 +3773,18 @@ var SubMeshBase = (function (_super) {
     };
     SubMeshBase.prototype.addImageAt = function (image, index) {
         this._images[index] = image;
-        this._imageIndex[image.id] = index;
     };
-    SubMeshBase.prototype.removeImageAt = function (image, index) {
+    SubMeshBase.prototype.removeImageAt = function (index) {
         this._images[index] = null;
-        delete this._imageIndex[image.id];
     };
-    SubMeshBase.prototype.getSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
-            return this.parentMesh.getSamplerAt(texture, index) || texture.getSamplerAt(index);
-        return this._samplers[texture.id][index];
+    SubMeshBase.prototype.getSamplerAt = function (index) {
+        return this._samplers[index] || this.parentMesh.getSamplerAt(index);
     };
-    SubMeshBase.prototype.addSamplerAt = function (sampler, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            this._samplers[texture.id] = new Array();
-        this._samplers[texture.id][index] = sampler;
+    SubMeshBase.prototype.addSamplerAt = function (sampler, index) {
+        this._samplers[index] = sampler;
     };
-    SubMeshBase.prototype.removeSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            return;
-        delete this._samplers[texture.id][index];
+    SubMeshBase.prototype.removeSamplerAt = function (index) {
+        this._samplers[index] = null;
     };
     /**
      *
@@ -9212,8 +9200,7 @@ var Billboard = (function (_super) {
         if (smoothing === void 0) { smoothing = false; }
         _super.call(this);
         this._images = new Array();
-        this._imageIndex = new Object();
-        this._samplers = new Object();
+        this._samplers = new Array();
         this._pIsEntity = true;
         this.onTextureChangedDelegate = function (event) { return _this.onTextureChanged(event); };
         this.material = material;
@@ -9385,38 +9372,24 @@ var Billboard = (function (_super) {
     Billboard.prototype.getImageAt = function (index) {
         return this._images[index] || this.material.getImageAt(index);
     };
-    Billboard.prototype.getImageIndex = function (image) {
-        return this._imageIndex[image.id] || this.material.getImageIndex(image);
-    };
     Billboard.prototype.addImageAt = function (image, index) {
         this._images[index] = image;
-        this._imageIndex[image.id] = index;
     };
-    Billboard.prototype.removeImageAt = function (image, index) {
+    Billboard.prototype.removeImageAt = function (index) {
         this._images[index] = null;
-        delete this._imageIndex[image.id];
     };
-    Billboard.prototype.getSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
-            return texture.getSamplerAt(index);
-        return this._samplers[texture.id][index];
-    };
-    Billboard.prototype.addSamplerAt = function (sampler, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            this._samplers[texture.id] = new Array();
-        this._samplers[texture.id][index] = sampler;
-        if (texture == this.material.texture && !index)
+    Billboard.prototype.getSamplerAt = function (index) {
+        return this._samplers[index];
+        if (index == 0)
             this._updateDimensions();
     };
-    Billboard.prototype.removeSamplerAt = function (sampler, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            return;
-        delete this._samplers[texture.id][index];
-        if (texture == this.material.texture && !index)
+    Billboard.prototype.addSamplerAt = function (sampler, index) {
+        this._samplers[index] = sampler;
+        if (index == 0)
             this._updateDimensions();
+    };
+    Billboard.prototype.removeSamplerAt = function (index) {
+        this._samplers[index] = null;
     };
     /**
      * //TODO
@@ -9447,7 +9420,8 @@ var Billboard = (function (_super) {
     Billboard.prototype._updateDimensions = function () {
         var image = this.getImageAt(0);
         if (image) {
-            var sampler = this.getSamplerAt(this.material.texture);
+            var index = this.material.getSamplerIndex(this.material.texture);
+            var sampler = (this.getSamplerAt(index) || this.material.getSamplerAt(index));
             var rect = sampler.imageRect || image.rect;
             this._billboardWidth = rect.width;
             this._billboardHeight = rect.height;
@@ -9948,8 +9922,7 @@ var LineSegment = (function (_super) {
         if (thickness === void 0) { thickness = 1; }
         _super.call(this);
         this._images = new Array();
-        this._imageIndex = new Object();
-        this._samplers = new Object();
+        this._samplers = new Array();
         this._pIsEntity = true;
         this.material = material;
         this._startPosition = startPosition;
@@ -10078,36 +10051,22 @@ var LineSegment = (function (_super) {
         this._endPosition = null;
     };
     LineSegment.prototype.getImageAt = function (index) {
-        return this._images[index] || this.material.getImageAt(index);
-    };
-    LineSegment.prototype.getImageIndex = function (image) {
-        return this._imageIndex[image.id] || this.material.getImageIndex(image);
+        return this._images[index];
     };
     LineSegment.prototype.addImageAt = function (image, index) {
         this._images[index] = image;
-        this._imageIndex[image.id] = index;
     };
     LineSegment.prototype.removeImageAt = function (image, index) {
         this._images[index] = null;
-        delete this._imageIndex[image.id];
     };
-    LineSegment.prototype.getSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
-            return texture.getSamplerAt(index);
-        return this._samplers[texture.id][index];
+    LineSegment.prototype.getSamplerAt = function (index) {
+        return this._samplers[index];
     };
-    LineSegment.prototype.addSamplerAt = function (sampler, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            this._samplers[texture.id] = new Array();
-        this._samplers[texture.id][index] = sampler;
+    LineSegment.prototype.addSamplerAt = function (sampler, index) {
+        this._samplers[index] = sampler;
     };
-    LineSegment.prototype.removeSamplerAt = function (sampler, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            return;
-        delete this._samplers[texture.id][index];
+    LineSegment.prototype.removeSamplerAt = function (index) {
+        this._samplers[index] = null;
     };
     /**
      * @protected
@@ -10185,8 +10144,7 @@ var Mesh = (function (_super) {
         if (material === void 0) { material = null; }
         _super.call(this);
         this._images = new Array();
-        this._imageIndex = new Object();
-        this._samplers = new Object();
+        this._samplers = new Array();
         this._castsShadows = true;
         this._shareAnimationGeometry = true;
         //temp point used in hit testing
@@ -10357,34 +10315,20 @@ var Mesh = (function (_super) {
     Mesh.prototype.getImageAt = function (index) {
         return this._images[index];
     };
-    Mesh.prototype.getImageIndex = function (image) {
-        return this._imageIndex[image.id];
-    };
     Mesh.prototype.addImageAt = function (image, index) {
         this._images[index] = image;
-        this._imageIndex[image.id] = index;
     };
     Mesh.prototype.removeImageAt = function (image, index) {
         this._images[index] = null;
-        delete this._imageIndex[image.id];
     };
-    Mesh.prototype.getSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id] || !this._samplers[texture.id][index])
-            return texture.getSamplerAt(index);
-        return this._samplers[texture.id][index];
+    Mesh.prototype.getSamplerAt = function (index) {
+        return this._samplers[index];
     };
-    Mesh.prototype.addSamplerAt = function (sampler, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            this._samplers[texture.id] = new Array();
-        this._samplers[texture.id][index] = sampler;
+    Mesh.prototype.addSamplerAt = function (sampler, index) {
+        this._samplers[index] = sampler;
     };
-    Mesh.prototype.removeSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            return;
-        delete this._samplers[texture.id][index];
+    Mesh.prototype.removeSamplerAt = function (index) {
+        this._samplers[index] = null;
     };
     /**
      *
@@ -11130,6 +11074,8 @@ var Skybox = (function (_super) {
         this._images = new Array();
         this._imageCount = new Array();
         this._imageIndex = new Object();
+        this._samplers = new Array();
+        this._samplerIndices = new Object();
         this._pAlphaThreshold = 0;
         this._pBlendMode = BlendMode.NORMAL;
         this._renders = new Array();
@@ -11362,9 +11308,17 @@ var Skybox = (function (_super) {
     Skybox.prototype.getImageIndex = function (image) {
         return this._imageIndex[image.id];
     };
-    Skybox.prototype.getSamplerAt = function (texture, index) {
+    Skybox.prototype.getNumSamplers = function () {
+        return this._samplers.length;
+    };
+    Skybox.prototype.getSamplerAt = function (index) {
+        return this._samplers[index];
+    };
+    Skybox.prototype.getSamplerIndex = function (texture, index) {
         if (index === void 0) { index = 0; }
-        return texture.getSamplerAt(index);
+        if (!this._samplerIndices[texture.id])
+            this._samplerIndices[texture.id] = new Array();
+        return this._samplerIndices[texture.id][index];
     };
     /**
      * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
@@ -11446,6 +11400,36 @@ var Skybox = (function (_super) {
             this._pInvalidatePasses();
             this._pUpdateRender();
         }
+    };
+    Skybox.prototype._iAddSampler = function (sampler, texture, index) {
+        //find free sampler slot
+        var i = 0;
+        var len = this._samplers.length;
+        while (i < len) {
+            if (!this._samplers[i])
+                break;
+            i++;
+        }
+        if (!this._samplerIndices[texture.id])
+            this._samplerIndices[texture.id] = new Array();
+        this._samplerIndices[texture.id][index] = i;
+        this._samplers[i] = sampler;
+        this._pInvalidatePasses();
+        this._pUpdateRender();
+    };
+    Skybox.prototype._iRemoveSampler = function (texture, index) {
+        var index = this._samplerIndices[texture.id][index];
+        this._samplers[index] = null;
+        //shorten samplers array if sampler at end
+        if (index == this._samplers.length - 1) {
+            while (index--) {
+                if (this._samplers[index] != null)
+                    break;
+            }
+            this._samplers.length = index + 1;
+        }
+        this._pInvalidatePasses();
+        this._pUpdateRender();
     };
     Skybox.assetType = "[asset Skybox]";
     return Skybox;
@@ -13693,6 +13677,8 @@ var MaterialBase = (function (_super) {
         this._images = new Array();
         this._imageCount = new Array();
         this._imageIndex = new Object();
+        this._samplers = new Array();
+        this._samplerIndices = new Object();
         this._pUseColorTransform = false;
         this._alphaBlending = false;
         this._alpha = 1;
@@ -14088,6 +14074,18 @@ var MaterialBase = (function (_super) {
     MaterialBase.prototype.getImageIndex = function (image) {
         return this._imageIndex[image.id];
     };
+    MaterialBase.prototype.getNumSamplers = function () {
+        return this._samplers.length;
+    };
+    MaterialBase.prototype.getSamplerAt = function (index) {
+        return this._samplers[index];
+    };
+    MaterialBase.prototype.getSamplerIndex = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._samplerIndices[texture.id])
+            this._samplerIndices[texture.id] = new Array();
+        return this._samplerIndices[texture.id][index];
+    };
     //
     // MATERIAL MANAGEMENT
     //
@@ -14222,6 +14220,36 @@ var MaterialBase = (function (_super) {
             this._pInvalidatePasses();
             this._pUpdateRender();
         }
+    };
+    MaterialBase.prototype._iAddSampler = function (sampler, texture, index) {
+        //find free sampler slot
+        var i = 0;
+        var len = this._samplers.length;
+        while (i < len) {
+            if (!this._samplers[i])
+                break;
+            i++;
+        }
+        if (!this._samplerIndices[texture.id])
+            this._samplerIndices[texture.id] = new Array();
+        this._samplerIndices[texture.id][index] = i;
+        this._samplers[i] = sampler;
+        this._pInvalidatePasses();
+        this._pUpdateRender();
+    };
+    MaterialBase.prototype._iRemoveSampler = function (texture, index) {
+        var index = this._samplerIndices[texture.id][index];
+        this._samplers[index] = null;
+        //shorten samplers array if sampler at end
+        if (index == this._samplers.length - 1) {
+            while (index--) {
+                if (this._samplers[index] != null)
+                    break;
+            }
+            this._samplers.length = index + 1;
+        }
+        this._pInvalidatePasses();
+        this._pUpdateRender();
     };
     return MaterialBase;
 })(AssetBase);
@@ -20009,7 +20037,6 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var Sampler2D = require("awayjs-core/lib/data/Sampler2D");
 var Error = require("awayjs-core/lib/errors/Error");
 var ImageUtils = require("awayjs-core/lib/utils/ImageUtils");
 var TextureBase = require("awayjs-display/lib/textures/TextureBase");
@@ -20045,34 +20072,26 @@ var Single2DTexture = (function (_super) {
             if (!ImageUtils.isImage2DValid(value))
                 throw new Error("Invalid image2DData: Width and height must be power of 2 and cannot exceed 2048");
             if (this._images[0])
-                this.iRemoveImage(this._images[0]);
-            this._images[0] = value;
-            if (this._images[0])
-                this.iAddImage(this._images[0]);
+                this.iRemoveImage(0);
+            if (value)
+                this.iAddImage(value, 0);
             this.invalidateContent();
         },
         enumerable: true,
         configurable: true
     });
-    Single2DTexture.prototype.getImageAt = function (index) {
-        return this._images[index];
-    };
-    Single2DTexture.prototype.getSamplerAt = function (index) {
-        return this._samplers[index] || (this._samplers[index] = new Sampler2D());
-    };
     Single2DTexture.assetType = "[texture Single2DTexture]";
     return Single2DTexture;
 })(TextureBase);
 module.exports = Single2DTexture;
 
-},{"awayjs-core/lib/data/Sampler2D":undefined,"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/utils/ImageUtils":undefined,"awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/SingleCubeTexture":[function(require,module,exports){
+},{"awayjs-core/lib/errors/Error":undefined,"awayjs-core/lib/utils/ImageUtils":undefined,"awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/SingleCubeTexture":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var SamplerCube = require("awayjs-core/lib/data/SamplerCube");
 var TextureBase = require("awayjs-display/lib/textures/TextureBase");
 var SingleCubeTexture = (function (_super) {
     __extends(SingleCubeTexture, _super);
@@ -20103,27 +20122,20 @@ var SingleCubeTexture = (function (_super) {
             if (this._images[0] == value)
                 return;
             if (this._images[0])
-                this.iRemoveImage(this._images[0]);
-            this._images[0] = value;
-            if (this._images[0])
-                this.iAddImage(this._images[0]);
+                this.iRemoveImage(0);
+            if (value)
+                this.iAddImage(value, 0);
             this.invalidateContent();
         },
         enumerable: true,
         configurable: true
     });
-    SingleCubeTexture.prototype.getImageAt = function (index) {
-        return this._images[index];
-    };
-    SingleCubeTexture.prototype.getSamplerAt = function (index) {
-        return this._samplers[index] || (this._samplers[index] = new SamplerCube());
-    };
     SingleCubeTexture.assetType = "[texture SingleCubeTexture]";
     return SingleCubeTexture;
 })(TextureBase);
 module.exports = SingleCubeTexture;
 
-},{"awayjs-core/lib/data/SamplerCube":undefined,"awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/TextureBase":[function(require,module,exports){
+},{"awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/TextureBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -20131,7 +20143,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 /**
  *
  */
@@ -20142,18 +20153,11 @@ var TextureBase = (function (_super) {
      */
     function TextureBase() {
         _super.call(this);
-        this._images = new Array();
-        this._samplers = new Array();
         this._owners = new Array();
         this._counts = new Array();
         this._textureVO = new Array();
+        this._images = new Array();
     }
-    TextureBase.prototype.getImageAt = function (index) {
-        throw new AbstractMethodError();
-    };
-    TextureBase.prototype.getSamplerAt = function (index) {
-        throw new AbstractMethodError();
-    };
     /**
      *
      */
@@ -20199,6 +20203,10 @@ var TextureBase = (function (_super) {
             for (var i = 0; i < len; i++)
                 owner._iAddImage(this._images[i]);
         }
+        //add samplers
+        var len = this._images.length;
+        for (var i = 0; i < len; i++)
+            owner._iAddSampler(this._images[i].createSampler(), this, i);
     };
     TextureBase.prototype.iRemoveOwner = function (owner) {
         var index = this._owners.indexOf(owner);
@@ -20213,28 +20221,38 @@ var TextureBase = (function (_super) {
             for (var i = 0; i < len; i++)
                 owner._iRemoveImage(this._images[i]);
         }
+        //add samplers
+        var len = this._images.length;
+        for (var i = 0; i < len; i++)
+            owner._iRemoveSampler(this, i);
     };
     /**
      *
      */
-    TextureBase.prototype.iAddImage = function (image) {
+    TextureBase.prototype.iAddImage = function (image, index) {
+        this._images[index] = image;
         var len = this._owners.length;
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; i++) {
             this._owners[i]._iAddImage(image);
+            this._owners[i]._iAddSampler(image.createSampler(), this, index);
+        }
     };
     /**
      *
      */
-    TextureBase.prototype.iRemoveImage = function (image) {
+    TextureBase.prototype.iRemoveImage = function (index) {
+        var image = this._images[index];
         var len = this._owners.length;
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; i++) {
             this._owners[i]._iRemoveImage(image);
+            this._owners[i]._iRemoveSampler(this, index);
+        }
     };
     return TextureBase;
 })(AssetBase);
 module.exports = TextureBase;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/traverse/CSSEntityCollector":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/traverse/CSSEntityCollector":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
