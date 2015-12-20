@@ -1,4 +1,4 @@
-import ImageCube					= require("awayjs-core/lib/data/ImageCube");
+import ImageCube					= require("awayjs-core/lib/image/ImageCube");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import PartialImplementationError	= require("awayjs-core/lib/errors/PartialImplementationError");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");

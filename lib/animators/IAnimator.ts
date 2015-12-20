@@ -2,7 +2,6 @@ import IAsset					= require("awayjs-core/lib/library/IAsset");
 
 import IAnimationSet			= require("awayjs-display/lib/animators/IAnimationSet");
 import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import IRenderable				= require("awayjs-display/lib/pool/IRenderable");
 import IEntity					= require("awayjs-display/lib/entities/IEntity");
 
 /**
@@ -40,13 +39,6 @@ interface IAnimator extends IAsset
 	 * @private
 	 */
 	removeOwner(mesh:IEntity);
-
-	/**
-	 * //TODO
-	 *
-	 * @param sourceSubGeometry
-	 */
-	getRenderableSubGeometry(renderable:IRenderable, sourceSubGeometry:SubGeometryBase):SubGeometryBase;
 }
 
 export = IAnimator;

@@ -1,9 +1,8 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
-import IAsset						= require("awayjs-core/lib/library/IAsset");
 
+import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
-import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
 import LightProbe					= require("awayjs-display/lib/entities/LightProbe");
@@ -16,7 +15,7 @@ import PointLight					= require("awayjs-display/lib/entities/PointLight");
  *
  * @see StaticLightPicker
  */
-class LightPickerBase extends AssetBase implements IAsset
+class LightPickerBase extends AssetBase
 {
 	public static assetType:string = "[asset LightPicker]";
 
@@ -156,19 +155,19 @@ class LightPickerBase extends AssetBase implements IAsset
 	/**
 	 * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
 	 */
-	public collectLights(renderable:IRenderable)
+	public collectLights(entity:IEntity)
 	{
-		this.updateProbeWeights(renderable);
+		this.updateProbeWeights(entity);
 	}
 
 	/**
 	 * Updates the weights for the light probes, based on the renderable's position relative to them.
 	 * @param renderable The renderble for which to calculate the light probes' influence.
 	 */
-	private updateProbeWeights(renderable:IRenderable)
+	private updateProbeWeights(entity:IEntity)
 	{
 		// todo: this will cause the same calculations to occur per TriangleSubMesh. See if this can be improved.
-		var objectPos:Vector3D = renderable.sourceEntity.scenePosition;
+		var objectPos:Vector3D = entity.scenePosition;
 		var lightPos:Vector3D;
 
 		var rx:number = objectPos.x, ry:number = objectPos.y, rz:number = objectPos.z;

@@ -1,5 +1,5 @@
-import Image2D					= require("awayjs-core/lib/data/Image2D");
-import Sampler2D				= require("awayjs-core/lib/data/Sampler2D");
+import Image2D					= require("awayjs-core/lib/image/Image2D");
+import Sampler2D				= require("awayjs-core/lib/image/Sampler2D");
 import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
 
 import CastError				= require("awayjs-display/lib/errors/CastError");

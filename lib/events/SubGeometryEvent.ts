@@ -1,5 +1,5 @@
 import AttributesView			= require("awayjs-core/lib/attributes/AttributesView");
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.
@@ -7,27 +7,27 @@ import Event					= require("awayjs-core/lib/events/Event");
  * @class away.events.SubGeometryEvent
  * @see away.core.base.Geometry
  */
-class SubGeometryEvent extends Event
+class SubGeometryEvent extends EventBase
 {
 	/**
 	 * Dispatched when a SubGeometry's index data has been updated.
 	 */
-	public static INDICES_UPDATED:string = "indicesUpdated";
+	public static INVALIDATE_INDICES:string = "invalidateIndices";
 
 	/**
 	 * Dispatched when a SubGeometry's index data has been disposed.
 	 */
-	public static INDICES_DISPOSED:string = "indicesDisposed";
+	public static CLEAR_INDICES:string = "clearIndices";
 	
 	/**
 	 * Dispatched when a SubGeometry's vertex data has been updated.
 	 */
-	public static VERTICES_UPDATED:string = "verticesUpdated";
+	public static INVALIDATE_VERTICES:string = "invalidateVertices";
 
 	/**
 	 * Dispatched when a SubGeometry's vertex data has been disposed.
 	 */
-	public static VERTICES_DISPOSED:string = "verticesDisposed";
+	public static CLEAR_VERTICES:string = "clearVertices";
 
 	
 	private _attributesView:AttributesView;
@@ -57,7 +57,7 @@ class SubGeometryEvent extends Event
 	 *
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():Event
+	public clone():SubGeometryEvent
 	{
 		return new SubGeometryEvent(this.type, this._attributesView);
 	}

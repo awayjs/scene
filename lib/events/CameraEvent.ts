@@ -1,11 +1,11 @@
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
 import Camera					= require("awayjs-display/lib/entities/Camera");
 
 /**
  * @class away.events.CameraEvent
  */
-class CameraEvent extends Event
+class CameraEvent extends EventBase
 {
 	public static PROJECTION_CHANGED:string = "projectionChanged";
 
@@ -21,6 +21,15 @@ class CameraEvent extends Event
 	public get camera():Camera
 	{
 		return this._camera;
+	}
+
+	/**
+	 * Clones the event.
+	 * @return An exact duplicate of the current object.
+	 */
+	public clone():CameraEvent
+	{
+		return new CameraEvent(this.type, this._camera);
 	}
 }
 

@@ -1,5 +1,4 @@
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
-import IAsset						= require("awayjs-core/lib/library/IAsset");
 
 import FontTable					= require("awayjs-display/lib/text/TesselatedFontTable");
 
@@ -12,7 +11,7 @@ import FontTable					= require("awayjs-display/lib/text/TesselatedFontTable");
  *
  * @class away.base.SubMeshBase
  */
-class Font extends AssetBase implements IAsset
+class Font extends AssetBase
 {
 	public static assetType:string = "[asset Font]";
 

@@ -1,5 +1,5 @@
-import SamplerCube				= require("awayjs-core/lib/data/SamplerCube");
-import ImageCube				= require("awayjs-core/lib/data/ImageCube");
+import SamplerCube				= require("awayjs-core/lib/image/SamplerCube");
+import ImageCube				= require("awayjs-core/lib/image/ImageCube");
 
 import TextureBase				= require("awayjs-display/lib/textures/TextureBase");
 
@@ -38,7 +38,7 @@ class SingleCubeTexture extends TextureBase
 			this.iAddImage(value, 0);
 
 
-		this.invalidateContent();
+		this.invalidate();
 	}
 
 	

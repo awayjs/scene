@@ -1,6 +1,6 @@
-import BlendMode					= require("awayjs-core/lib/data/BlendMode");
-import ImageBase					= require("awayjs-core/lib/data/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
+import BlendMode					= require("awayjs-core/lib/image/BlendMode");
+import ImageBase					= require("awayjs-core/lib/image/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 
@@ -11,10 +11,9 @@ import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import IRenderOwner					= require("awayjs-display/lib/base/IRenderOwner");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
-import IRender						= require("awayjs-display/lib/pool/IRender");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
+import RenderOwnerEvent				= require("awayjs-display/lib/events/RenderOwnerEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
@@ -40,8 +39,6 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _animationSet:IAnimationSet;
 	public _pLightPicker:LightPickerBase;
 	public _pBlendMode:string = BlendMode.NORMAL;
-	private _renders:Array<IRender> = new Array<IRender>();
-	private _renderables:Array<IRenderable> = new Array<IRenderable>();
 	private _uvTransform:UVTransform;
 	private _colorTransform:ColorTransform;
 	private _owners:Array<IRenderableOwner>;
@@ -73,7 +70,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._pAlphaThreshold = value;
 
-		this._pIinvalidatePasses();
+		this.invalidatePasses();
 	}
 
 	/**
@@ -91,7 +88,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._imageRect = value;
 
-		this._pIinvalidatePasses();
+		this.invalidatePasses();
 	}
 	/**
 	 * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
@@ -108,7 +105,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._mipmap = value;
 
-		this._pIinvalidatePasses();
+		this.invalidatePasses();
 	}
 
 	/**
@@ -126,7 +123,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._smooth = value;
 
-		this._pIinvalidatePasses();
+		this.invalidatePasses();
 	}
 	
 	/**
@@ -170,27 +167,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._pBlendMode = value;
 
-		this._pInvalidateRender();
+		this.invalidate();
 	}
 
-	public _pInvalidateRender()
-	{
-		var len:number = this._renders.length;
-		for (var i:number = 0; i < len; i++)
-			this._renders[i].invalidateRender();
-	}
-
-	/**
-	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	 *
-	 * @private
-	 */
-	public _pIinvalidatePasses()
-	{
-		var len:number = this._renders.length;
-		for (var i:number = 0; i < len; i++)
-			this._renders[i].invalidatePasses();
-	}
 
 	/**
 	 * A list of the IRenderableOwners that use this material
@@ -252,7 +231,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		if (this._cubeMap)
 			this._cubeMap.iAddOwner(this);
 
-		this._pIinvalidatePasses();
+		this.invalidatePasses();
 	}
 
 	/**
@@ -316,82 +295,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		return this._samplerIndices[texture.id][index];
 	}
 
-	/**
-	 * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	 * could be used by other materials and will not be disposed.
-	 */
-	public dispose()
-	{
-		var i:number;
-		var len:number;
-
-		len = this._renders.length;
-		for (i = 0; i < len; i++)
-			this._renders[i].dispose();
-
-		this._renders = new Array<IRender>();
-
-		var len:number = this._renderables.length;
-		for (var i:number = 0; i < len; i++)
-			this._renderables[i].dispose();
-
-		this._renderables = new Array<IRenderable>();
-	}
-
 	public _applyRenderer(renderer:IRenderer)
 	{
 		//skybox do not get collected in the standard entity list
-	}
-
-	public _pUpdateRender()
-	{
-		var len:number = this._owners.length;
-		for (var i:number = 0; i < len; i++)
-			this._owners[i].dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.RENDER_OWNER_UPDATED, this));
-	}
-
-
-	/**
-	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	 *
-	 * @private
-	 */
-	public _pInvalidatePasses()
-	{
-		var len:number = this._renders.length;
-		for (var i:number = 0; i < len; i++)
-			this._renders[i].invalidatePasses();
-	}
-
-	public _iAddRender(render:IRender):IRender
-	{
-		this._renders.push(render);
-
-		return render;
-	}
-
-	public _iRemoveRender(render:IRender):IRender
-	{
-		this._renders.splice(this._renders.indexOf(render), 1);
-
-		return render;
-	}
-
-	public _iAddRenderable(renderable:IRenderable):IRenderable
-	{
-		this._renderables.push(renderable);
-
-		return renderable;
-	}
-
-
-	public _iRemoveRenderable(renderable:IRenderable):IRenderable
-	{
-		var index:number = this._renderables.indexOf(renderable);
-
-		this._renderables.splice(index, 1);
-
-		return renderable;
 	}
 
 	public _iAddImage(image:ImageBase)
@@ -403,9 +309,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 			this._images.push(image);
 			this._imageCount.push(1);
 
-			this._pInvalidatePasses();
+			this.invalidatePasses();
 
-			this._pUpdateRender();
+			this.invalidateRenderOwner();
 		} else {
 			this._imageCount[index]--;
 		}
@@ -427,9 +333,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 				this._imageIndex[this._images[i].id] = i;
 			}
 
-			this._pInvalidatePasses();
+			this.invalidatePasses();
 
-			this._pUpdateRender();
+			this.invalidateRenderOwner();
 		}
 	}
 
@@ -453,9 +359,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 		this._samplers[i] = sampler;
 
-		this._pInvalidatePasses();
+		this.invalidatePasses();
 
-		this._pUpdateRender();
+		this.invalidateRenderOwner();
 	}
 
 	public _iRemoveSampler(texture:TextureBase, index:number)
@@ -474,9 +380,24 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 			this._samplers.length = index + 1;
 		}
 
-		this._pInvalidatePasses();
+		this.invalidatePasses();
 
-		this._pUpdateRender();
+		this.invalidateRenderOwner();
+	}
+
+	/**
+	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	 *
+	 * @private
+	 */
+	public invalidatePasses()
+	{
+		this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_PASSES, this));
+	}
+
+	public invalidateRenderOwner()
+	{
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 }
 

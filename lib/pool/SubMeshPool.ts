@@ -1,3 +1,5 @@
+import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
+
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import LineSubGeometry				= require("awayjs-display/lib/base/LineSubGeometry");
 import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeometry");
@@ -38,9 +40,9 @@ class SubMeshPool
 	 *
 	 * @param subMeshClass
 	 */
-	public static registerClass(subMeshClass:ISubMeshClass)
+	public static registerClass(subMeshClass:ISubMeshClass, assetClass:IAssetClass)
 	{
-		SubMeshPool.classPool[subMeshClass.assetClass.assetType] = subMeshClass;
+		SubMeshPool.classPool[assetClass.assetType] = subMeshClass;
 	}
 
 	/**
@@ -56,9 +58,9 @@ class SubMeshPool
 
 	private static addDefaults()
 	{
-		SubMeshPool.registerClass(LineSubMesh);
-		SubMeshPool.registerClass(TriangleSubMesh);
-		SubMeshPool.registerClass(CurveSubMesh);
+		SubMeshPool.registerClass(LineSubMesh, LineSubGeometry);
+		SubMeshPool.registerClass(TriangleSubMesh, TriangleSubGeometry);
+		SubMeshPool.registerClass(CurveSubMesh, CurveSubGeometry);
 	}
 }
 

@@ -1,5 +1,4 @@
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
-import IAsset						= require("awayjs-core/lib/library/IAsset");
 
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
@@ -29,7 +28,7 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-class TextFormat extends AssetBase implements IAsset
+class TextFormat extends AssetBase
 {
 	public static assetType:string = "[asset TextFormat]";
 

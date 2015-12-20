@@ -1,8 +1,7 @@
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
-class LightEvent extends Event
+class LightEvent extends EventBase
 {
-
 	public static CASTS_SHADOW_CHANGE:string = "castsShadowChange";
 
 	constructor(type:string)
@@ -11,7 +10,7 @@ class LightEvent extends Event
 	}
 
 	//@override
-	public clone():Event
+	public clone():LightEvent
 	{
 		return new LightEvent(this.type);
 	}

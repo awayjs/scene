@@ -1,7 +1,6 @@
-import Image2D						= require("awayjs-core/lib/data/Image2D");
+import Image2D						= require("awayjs-core/lib/image/Image2D");
 
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import IRender						= require("awayjs-display/lib/pool/IRender");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
@@ -63,8 +62,10 @@ class BasicMaterial extends MaterialBase
     {
         if (this._preserveAlpha == value)
             return;
+
         this._preserveAlpha = value;
-        this._pInvalidateRender();
+
+        this.invalidate();
     }
 }
 

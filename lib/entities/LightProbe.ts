@@ -1,7 +1,7 @@
-import ImageCube					= require("awayjs-core/lib/data/ImageCube");
+import ImageCube					= require("awayjs-core/lib/image/ImageCube");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import Error						= require("awayjs-core/lib/errors/Error");
+import ErrorBase					= require("awayjs-core/lib/errors/ErrorBase");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
@@ -56,7 +56,7 @@ class LightProbe extends LightBase implements IEntity
 	//@override
 	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
 	{
-		throw new Error("Object projection matrices are not supported for LightProbe objects!");
+		throw new ErrorBase("Object projection matrices are not supported for LightProbe objects!");
 	}
 }
 

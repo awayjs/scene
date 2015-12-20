@@ -1,4 +1,4 @@
-import Event						= require("awayjs-core/lib/events/Event");
+import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 
 import LightBase					= require("awayjs-display/lib/base/LightBase");
 import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
@@ -15,7 +15,7 @@ import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/L
 class StaticLightPicker extends LightPickerBase
 {
 	private _lights:Array<any>;
-	private _onCastShadowChangeDelegate:Function;
+	private _onCastShadowChangeDelegate:(event:LightEvent) => void;
 
 	/**
 	 * Creates a new StaticLightPicker object.
@@ -94,7 +94,7 @@ class StaticLightPicker extends LightPickerBase
 		this._pLightProbeWeights = new Array<number>(Math.ceil(numLightProbes/4)*4);
 
 		// notify material lights have changed
-		this.dispatchEvent(new Event(Event.CHANGE));
+		this.dispatchEvent(new AssetEvent(AssetEvent.INVALIDATE, this));
 
 	}
 
@@ -123,7 +123,7 @@ class StaticLightPicker extends LightPickerBase
 		else if (light instanceof DirectionalLight)
 			this.updateDirectionalCasting(<DirectionalLight> light);
 
-		this.dispatchEvent(new Event(Event.CHANGE));
+		this.dispatchEvent(new AssetEvent(AssetEvent.INVALIDATE, this));
 	}
 
 	/**

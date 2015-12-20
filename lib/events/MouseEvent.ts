@@ -1,6 +1,6 @@
 import Point					= require("awayjs-core/lib/geom/Point");
 import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
@@ -11,7 +11,7 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
  * TODO: we don't have screenZ data, tho this should be easy to implement
  */
-class MouseEvent extends Event
+class MouseEvent extends EventBase
 {
 	// Private.
 	public _iAllowedToPropagate:boolean = true;
@@ -188,7 +188,7 @@ class MouseEvent extends Event
 	/**
 	 * Creates a copy of the MouseEvent object and sets the value of each property to match that of the original.
 	 */
-	public clone():Event
+	public clone():MouseEvent
 	{
 		var result:MouseEvent = new MouseEvent(this.type);
 

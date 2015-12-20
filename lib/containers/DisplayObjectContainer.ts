@@ -1,8 +1,6 @@
 import Box							= require("awayjs-core/lib/geom/Box");
 import Point						= require("awayjs-core/lib/geom/Point");
-import IAsset						= require("awayjs-core/lib/library/IAsset");
 import ArgumentError				= require("awayjs-core/lib/errors/ArgumentError");
-import Error						= require("awayjs-core/lib/errors/Error");
 import RangeError					= require("awayjs-core/lib/errors/RangeError");
 import Extensions					= require("awayjs-core/lib/utils/Extensions");
 
@@ -33,7 +31,7 @@ import Scene						= require("awayjs-display/lib/containers/Scene");
  * <p>For more information, see the "Display Programming" chapter of the
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  */
-class DisplayObjectContainer extends DisplayObject implements IAsset
+class DisplayObjectContainer extends DisplayObject
 {
 	public static assetType:string = "[asset DisplayObjectContainer]";
 
@@ -169,7 +167,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
 		if (child == null)
-			throw new Error("Parameter child cannot be null.");
+			throw new ArgumentError("Parameter child cannot be null.");
 
 		//if child already has a parent, remove it.
 		if (child._pParent)
@@ -286,12 +284,12 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	/**
 	 *
 	 */
-	public clear()
+	public dispose()
 	{
 		for (var i:number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
 
-		super.clear();
+		super.dispose();
 	}
 
 	public getChildAtDepth(depth:number):DisplayObject
@@ -414,7 +412,7 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 	public removeChild(child:DisplayObject):DisplayObject
 	{
 		if (child == null)
-			throw new Error("Parameter child cannot be null");
+			throw new ArgumentError("Parameter child cannot be null");
 
 		this.removeChildAt(this.getChildIndex(child));
 
@@ -751,14 +749,14 @@ class DisplayObjectContainer extends DisplayObject implements IAsset
 		super._updateMaskMode();
 	}
 
-	public _clearInterfaces()
+	public clear()
 	{
-		super._clearInterfaces();
+		super.clear();
 
 		var i:number;
 
 		for (i = this._children.length - 1; i >= 0; i--)
-			this._children[i]._clearInterfaces();
+			this._children[i].clear();
 
 		for (i = this._containerNodes.length - 1; i >= 0; i--)
 			this._containerNodes[i].dispose();

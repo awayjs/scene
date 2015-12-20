@@ -7,7 +7,7 @@ import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefa
 /**
  * A UV Cylinder primitive mesh.
  */
-class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset
+class PrimitiveTorusPrefab extends PrimitivePrefabBase
 {
 	private _radius:number;
 	private _tubeRadius:number;

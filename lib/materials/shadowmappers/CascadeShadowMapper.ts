@@ -1,9 +1,7 @@
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import Event						= require("awayjs-core/lib/events/Event");
-import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
-import IEventDispatcher				= require("awayjs-core/lib/events/IEventDispatcher");
+import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import FreeMatrixProjection			= require("awayjs-core/lib/projections/FreeMatrixProjection");
 import IProjection					= require("awayjs-core/lib/projections/IProjection");
 
@@ -13,7 +11,7 @@ import Camera						= require("awayjs-display/lib/entities/Camera");
 import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 
-class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher
+class CascadeShadowMapper extends DirectionalShadowMapper
 {
 	public _pScissorRects:Rectangle[];
 	private _pScissorRectsInvalid:boolean = true;
@@ -26,7 +24,6 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 	private _texOffsetsX:Array<number>;
 	private _texOffsetsY:Array<number>;
 
-	private _changeDispatcher:EventDispatcher;
 	private _nearPlaneDistances:number[];
 
 	constructor(numCascades:number /*uint*/ = 3)
@@ -37,7 +34,6 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 			throw new Error("numCascades must be an integer between 1 and 4");
 
 		this._numCascades = numCascades;
-		this._changeDispatcher = new EventDispatcher(this);
 		this.init();
 	}
 
@@ -115,7 +111,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 		this._numCascades = value;
 		this.invalidateScissorRects();
 		this.init();
-		this.dispatchEvent(new Event(Event.CHANGE));
+		this.dispatchEvent(new AssetEvent(AssetEvent.INVALIDATE, this));
 	}
 
 	public pDrawDepthMap(target:Single2DTexture, scene:Scene, renderer:IRenderer)
@@ -242,26 +238,6 @@ class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispa
 		matrix.appendScale(.96, .96, 1);
 		matrix.appendTranslation(texOffsetX, texOffsetY, 0);
 		matrix.appendScale(.5, .5, 1);
-	}
-
-	public addEventListener(type:string, listener:Function)
-	{
-		this._changeDispatcher.addEventListener(type, listener);
-	}
-
-	public removeEventListener(type:string, listener:Function)
-	{
-		this._changeDispatcher.removeEventListener(type, listener);
-	}
-
-	public dispatchEvent(event:Event)
-	{
-		return this._changeDispatcher.dispatchEvent(event);
-	}
-
-	public hasEventListener(type:string):boolean
-	{
-		return this._changeDispatcher.hasEventListener(type);
 	}
 
 	get _iNearPlaneDistances():Array<number>

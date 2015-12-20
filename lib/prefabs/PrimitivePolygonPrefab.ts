@@ -5,7 +5,7 @@ import PrimitiveCylinderPrefab	= require("awayjs-display/lib/prefabs/PrimitiveCy
 /**
  * A UV RegularPolygon primitive mesh.
  */
-class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab implements IAsset
+class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab
 {
 
 	/**

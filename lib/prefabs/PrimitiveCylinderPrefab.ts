@@ -8,7 +8,7 @@ import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefa
 /**
  * A Cylinder primitive mesh.
  */
-class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset
+class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 {
 	public _pBottomRadius:number;
 	public _pSegmentsW:number;

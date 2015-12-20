@@ -8,7 +8,7 @@ import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefa
 /**
  * A UV Sphere primitive mesh.
  */
-class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset
+class PrimitiveSpherePrefab extends PrimitivePrefabBase
 {
 	private _radius:number;
 	private _segmentsW:number;

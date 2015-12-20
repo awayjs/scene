@@ -1,5 +1,5 @@
-import BitmapImage2D				= require("awayjs-core/lib/data/BitmapImage2D");
-import BitmapImageCube				= require("awayjs-core/lib/data/BitmapImageCube");
+import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
+import BitmapImageCube				= require("awayjs-core/lib/image/BitmapImageCube");
 
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");

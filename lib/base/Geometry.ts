@@ -1,5 +1,4 @@
 import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import IAsset					= require("awayjs-core/lib/library/IAsset");
 import AssetBase				= require("awayjs-core/lib/library/AssetBase");
 
 import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
@@ -19,7 +18,7 @@ import GeometryEvent			= require("awayjs-display/lib/events/GeometryEvent");
  *
  * @class Geometry
  */
-class Geometry extends AssetBase implements IAsset
+class Geometry extends AssetBase
 {
 	public static assetType:string = "[asset Geometry]";
 

@@ -1,4 +1,4 @@
-import Image2D						= require("awayjs-core/lib/data/Image2D");
+import Image2D						= require("awayjs-core/lib/image/Image2D");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");

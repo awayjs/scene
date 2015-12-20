@@ -8,7 +8,7 @@ import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefa
 /**
  * A Capsule primitive mesh.
  */
-class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset
+class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 {
 	private _radius:number;
 	private _height:number;

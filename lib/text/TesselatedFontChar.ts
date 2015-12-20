@@ -1,5 +1,3 @@
-import IAsset						= require("awayjs-core/lib/library/IAsset");
-
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");

@@ -1,10 +1,9 @@
-import IAsset					= require("awayjs-core/lib/library/IAsset");
 import AssetBase				= require("awayjs-core/lib/library/AssetBase");
 
 /**
  * Provides an abstract base class for nodes in an animation blend tree.
  */
-class AnimationNodeBase extends AssetBase implements IAsset
+class AnimationNodeBase extends AssetBase
 {
 	public static assetType:string = "[asset AnimationNodeBase]";
 

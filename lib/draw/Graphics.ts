@@ -1,4 +1,4 @@
-import BitmapImage2D			= require("awayjs-core/lib/data/BitmapImage2D");
+import BitmapImage2D			= require("awayjs-core/lib/image/BitmapImage2D");
 import Matrix					= require("awayjs-core/lib/geom/Matrix");
 
 import CapsStyle				= require("awayjs-display/lib/draw/CapsStyle");

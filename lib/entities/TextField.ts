@@ -837,22 +837,17 @@ class TextField extends Mesh
 	 */
 	public dispose()
 	{
-		this.clear();
-
-		TextField._textFields.push(this);
-	}
-
-	public clear()
-	{
 		//dispose material before geometry to ensure owners are deleted
 		this.material = null;
 
 		//textfield has a unique geometry that can be disposed here
 		this._geometry.dispose();
 
-		super.clear();
+		super.dispose();
 
 		this._textFormat = null;
+
+		TextField._textFields.push(this);
 	}
 
 	/**

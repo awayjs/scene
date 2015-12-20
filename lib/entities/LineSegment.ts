@@ -1,5 +1,5 @@
-﻿import ImageBase					= require("awayjs-core/lib/data/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
+﻿import ImageBase					= require("awayjs-core/lib/image/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
@@ -10,7 +10,7 @@ import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
+import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
@@ -65,7 +65,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._startPosition = value;
 
-		this.notifyRenderableUpdate();
+		this.invalidateGeometry();
 	}
 
 	/**
@@ -83,7 +83,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._endPosition = value;
 
-		this.notifyRenderableUpdate();
+		this.invalidateGeometry();
 	}
 
 	/**
@@ -120,7 +120,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._halfThickness = value*0.5;
 
-		this.notifyRenderableUpdate();
+		this.invalidateGeometry();
 	}
 
 	/**
@@ -170,13 +170,6 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 		//default bounds type
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
-
-	public dispose()
-	{
-		this._startPosition = null;
-		this._endPosition = null;
-	}
-
 
 	public getImageAt(index:number):ImageBase
 	{
@@ -242,11 +235,14 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	/**
 	 * @private
 	 */
-	private notifyRenderableUpdate()
+	private invalidateGeometry()
 	{
-		var len:number = this._pRenderables.length;
-		for (var i:number = 0; i < len; i++)
-			this._pRenderables[i].invalidateGeometry(); //TODO improve performance by only using one geometry for all line segments
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_GEOMETRY, this));//TODO improve performance by only using one geometry for all line segments
+	}
+
+	public invalidateRenderOwner()
+	{
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 
 	public _applyRenderer(renderer:IRenderer)

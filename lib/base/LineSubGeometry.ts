@@ -101,7 +101,7 @@ class LineSubGeometry extends SubGeometryBase
 	public setPositions(values:any, offset:number = 0)
 	{
 		if (values instanceof AttributesView) {
-			this.notifyVerticesDispose(this._positions);
+			this.clearVertices(this._positions);
 			this._positions = <AttributesView> values;
 		} else if (values) {
 			var i:number = 0;
@@ -141,7 +141,7 @@ class LineSubGeometry extends SubGeometryBase
 
 			this.setIndices(indices, offset);
 		} else {
-			this.notifyVerticesDispose(this._positions);
+			this.clearVertices(this._positions);
 			this._positions = new AttributesView(Float32Array, 6, this._concatenatedBuffer);
 		}
 
@@ -149,7 +149,7 @@ class LineSubGeometry extends SubGeometryBase
 
 		this.pInvalidateBounds();
 
-		this.notifyVerticesUpdate(this._positions);
+		this.invalidateVertices(this._positions);
 
 		this._verticesDirty[this._positions.id] = false;
 	}
@@ -190,7 +190,7 @@ class LineSubGeometry extends SubGeometryBase
 			this._thickness = null;
 		}
 
-		this.notifyVerticesUpdate(this._thickness);
+		this.invalidateVertices(this._thickness);
 
 		this._verticesDirty[this._thickness.id] = false;
 	}
@@ -209,7 +209,7 @@ class LineSubGeometry extends SubGeometryBase
 				return;
 
 			if (values instanceof Byte4Attributes) {
-				this.notifyVerticesDispose(this._colors);
+				this.clearVertices(this._colors);
 				this._colors = <Byte4Attributes> values;
 			} else {
 				if (!this._colors)
@@ -250,7 +250,7 @@ class LineSubGeometry extends SubGeometryBase
 			this._colors = SubGeometryUtils.generateColors(this._pIndices, this._colors, this._concatenatedBuffer, this._numVertices);
 		}
 
-		this.notifyVerticesUpdate(this._colors);
+		this.invalidateVertices(this._colors);
 
 		this._verticesDirty[this._colors.id] = false;
 	}

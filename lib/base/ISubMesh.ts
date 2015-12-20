@@ -19,7 +19,7 @@ interface ISubMesh extends IRenderableOwner
 
 	_iIndex:number;
 
-	_iInvalidateRenderableGeometry();
+	invalidateGeometry();
 
 	_iGetExplicitMaterial():MaterialBase;
 }

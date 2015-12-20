@@ -1,5 +1,5 @@
-import ImageBase					= require("awayjs-core/lib/data/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
+import ImageBase					= require("awayjs-core/lib/image/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
@@ -7,7 +7,6 @@ import IAsset						= require("awayjs-core/lib/library/IAsset");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 
 /**
  * IRenderableOwner provides an interface for objects that can use materials.
@@ -30,20 +29,7 @@ interface IRenderableOwner extends IAsset
 
 	getSamplerAt(index:number):SamplerBase;
 
-	/**
-	 *
-	 * @param renderable
-	 * @private
-	 */
-	_iAddRenderable(renderable:IRenderable):IRenderable;
-
-
-	/**
-	 *
-	 * @param renderable
-	 * @private
-	 */
-	_iRemoveRenderable(renderable:IRenderable):IRenderable;
+	invalidateRenderOwner();
 }
 
 export = IRenderableOwner;

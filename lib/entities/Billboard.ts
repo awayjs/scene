@@ -1,7 +1,7 @@
-import ImageBase					= require("awayjs-core/lib/data/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
-import Sampler2D					= require("awayjs-core/lib/data/Sampler2D");
-import Image2D						= require("awayjs-core/lib/data/Image2D");
+import ImageBase					= require("awayjs-core/lib/image/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
+import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
+import Image2D						= require("awayjs-core/lib/image/Image2D");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
@@ -13,7 +13,8 @@ import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import MaterialEvent				= require("awayjs-display/lib/events/MaterialEvent");
+import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
+import RenderOwnerEvent				= require("awayjs-display/lib/events/RenderOwnerEvent");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
@@ -69,7 +70,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	private _colorTransform:ColorTransform;
 	private _parentColorTransform:ColorTransform;
 
-	private onTextureChangedDelegate:(event:MaterialEvent) => void;
+	private onInvalidateTextureDelegate:(event:RenderOwnerEvent) => void;
 
 
 	/**
@@ -127,7 +128,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		if (this._material) {
 			this._material.iRemoveOwner(this);
-			this._material.removeEventListener(MaterialEvent.TEXTURE_CHANGED, this.onTextureChangedDelegate);
+			this._material.removeEventListener(RenderOwnerEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
 		}
 
 
@@ -135,7 +136,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		if (this._material) {
 			this._material.iAddOwner(this);
-			this._material.addEventListener(MaterialEvent.TEXTURE_CHANGED, this.onTextureChangedDelegate);
+			this._material.addEventListener(RenderOwnerEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
 		}
 	}
 
@@ -248,7 +249,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._pIsEntity = true;
 
-		this.onTextureChangedDelegate = (event:MaterialEvent) => this.onTextureChanged(event);
+		this.onInvalidateTextureDelegate = (event:RenderOwnerEvent) => this.onInvalidateTexture(event);
 
 		this.material = material;
 
@@ -328,7 +329,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	/**
 	 * @private
 	 */
-	private onTextureChanged(event:MaterialEvent)
+	private onInvalidateTexture(event:RenderOwnerEvent)
 	{
 		this._updateDimensions();
 	}
@@ -363,9 +364,13 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._pInvalidateBounds();
 
-		var len:number = this._pRenderables.length;
-		for (var i:number = 0; i < len; i++)
-			this._pRenderables[i].invalidateGeometry();
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_GEOMETRY, this));
+	}
+
+
+	public invalidateRenderOwner()
+	{
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 }
 

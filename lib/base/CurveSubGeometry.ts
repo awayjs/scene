@@ -150,23 +150,23 @@ class CurveSubGeometry extends SubGeometryBase
 			return;
 
 		if (values instanceof Float3Attributes) {
-			this.notifyVerticesDispose(this._positions);
+			this.clearVertices(this._positions);
 			this._positions = <Float3Attributes> values;
 		} else if (values) {
 			this._positions.set(values, offset);
 		} else {
-			this.notifyVerticesDispose(this._positions);
+			this.clearVertices(this._positions);
 			this._positions = new Float3Attributes(this._concatenatedBuffer);
 		}
 
 		this._numVertices = this._positions.count;
 
 		if (this._autoDeriveUVs)
-			this.notifyVerticesUpdate(this._uvs);
+			this.invalidateVertices(this._uvs);
 
 		this.pInvalidateBounds();
 
-		this.notifyVerticesUpdate(this._positions);
+		this.invalidateVertices(this._positions);
 
 		this._verticesDirty[this._positions.id] = false;
 	}
@@ -183,16 +183,16 @@ class CurveSubGeometry extends SubGeometryBase
 			return;
 
 		if (values instanceof Float2Attributes) {
-			this.notifyVerticesDispose(this._curves);
+			this.clearVertices(this._curves);
 			this._curves = <Float2Attributes> values;
 		} else if (values) {
 			this._curves.set(values, offset);
 		} else {
-			this.notifyVerticesDispose(this._curves);
+			this.clearVertices(this._curves);
 			this._curves = new Float2Attributes(this._concatenatedBuffer);
 		}
 
-		this.notifyVerticesUpdate(this._curves);
+		this.invalidateVertices(this._curves);
 
 		this._verticesDirty[this._curves.id] = false;
 	}
@@ -211,7 +211,7 @@ class CurveSubGeometry extends SubGeometryBase
 				return;
 
 			if (values instanceof Float2Attributes) {
-				this.notifyVerticesDispose(this._uvs);
+				this.clearVertices(this._uvs);
 				this._uvs = <Float2Attributes> values;
 			} else if (values) {
 				if (!this._uvs)
@@ -219,7 +219,7 @@ class CurveSubGeometry extends SubGeometryBase
 
 				this._uvs.set(values, offset);
 			} else if (this._uvs) {
-				this.notifyVerticesDispose(this._uvs);
+				this.clearVertices(this._uvs);
 				this._uvs = null;
 				return;
 			}
@@ -227,7 +227,7 @@ class CurveSubGeometry extends SubGeometryBase
 			this._uvs = SubGeometryUtils.generateUVs(this._pIndices, this._uvs, this._concatenatedBuffer, this._numVertices);
 		}
 
-		this.notifyVerticesUpdate(this._uvs);
+		this.invalidateVertices(this._uvs);
 
 		this._verticesDirty[this._uvs.id] = false;
 	}

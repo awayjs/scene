@@ -1,6 +1,6 @@
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
-class ResizeEvent extends Event
+class ResizeEvent extends EventBase
 {
 	public static RESIZE:string = "resize";
 
@@ -23,6 +23,16 @@ class ResizeEvent extends Event
 	public get oldWidth():number
 	{
 		return this._oldWidth;
+	}
+
+	/**
+	 * Clones the event.
+	 *
+	 * @return An exact duplicate of the current object.
+	 */
+	public clone():ResizeEvent
+	{
+		return new ResizeEvent(this.type, this._oldHeight, this._oldWidth);
 	}
 }
 

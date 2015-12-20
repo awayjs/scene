@@ -1,7 +1,5 @@
-import Event                        = require("awayjs-core/lib/events/Event");
 import AssetEvent                   = require("awayjs-core/lib/events/AssetEvent");
 import ColorTransform               = require("awayjs-core/lib/geom/ColorTransform");
-import IAsset                       = require("awayjs-core/lib/library/IAsset");
 
 import DisplayObjectContainer       = require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DisplayObject                = require("awayjs-display/lib/base/DisplayObject");
@@ -35,7 +33,7 @@ class MovieClip extends DisplayObjectContainer
     private _isPlaying:boolean = true;// false if paused or stopped
 
     // not sure if needed
-    private _enterFrame:Event;
+    private _enterFrame:AssetEvent;
     private _skipAdvance : boolean;
     private _isInit:boolean = true;
 
@@ -61,7 +59,7 @@ class MovieClip extends DisplayObjectContainer
     {
         super();
 
-        this._enterFrame = new Event(Event.ENTER_FRAME);
+        this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
 
         this.inheritColorTransform = true;
 
@@ -75,14 +73,9 @@ class MovieClip extends DisplayObjectContainer
 
     public dispose()
     {
-        this.clear();
+        super.dispose();
 
         MovieClip._movieClips.push(this);
-    }
-
-    public clear()
-    {
-        super.clear();
 
         this._potentialInstances = {};
         this._depth_sessionIDs = {};
@@ -419,7 +412,7 @@ class MovieClip extends DisplayObjectContainer
         console.log(str);
     }
 
-    public _clearInterfaces()
+    public clear()
     {
         //clear out potential instances
         for (var key in this._potentialInstances) {
@@ -430,11 +423,11 @@ class MovieClip extends DisplayObjectContainer
                 FrameScriptManager.add_child_to_dispose(instance);
                 delete this._potentialInstances[key];
             } else {
-                instance._clearInterfaces();
+                instance.clear();
             }
         }
 
-        super._clearInterfaces();
+        super.clear();
     }
 }
 export = MovieClip;

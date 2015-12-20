@@ -1,13 +1,13 @@
 import Point					= require("awayjs-core/lib/geom/Point");
 import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
 import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
 import View						= require("awayjs-display/lib/containers/View");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 
-class TouchEvent extends Event
+class TouchEvent extends EventBase
 {
 	// Private.
 	public _iAllowedToPropagate:boolean = true;
@@ -157,7 +157,7 @@ class TouchEvent extends Event
 	/**
 	 * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
 	 */
-	public clone():Event
+	public clone():TouchEvent
 	{
 		var result:TouchEvent = new TouchEvent(this.type);
 

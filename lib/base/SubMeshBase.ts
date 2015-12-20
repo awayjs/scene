@@ -1,15 +1,16 @@
-import ImageBase					= require("awayjs-core/lib/data/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
+import ImageBase					= require("awayjs-core/lib/image/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
@@ -31,7 +32,6 @@ class SubMeshBase extends AssetBase
 	public _iIndex:number = 0;
 
 	public _material:MaterialBase;
-	private _renderables:Array<IRenderable> = new Array<IRenderable>();
 
 	//TODO test shader picking
 //		public get shaderPickingDetails():boolean
@@ -141,10 +141,10 @@ class SubMeshBase extends AssetBase
 	 */
 	public dispose()
 	{
+		super.dispose();
+
 		this.material = null;
 		this.parentMesh = null;
-
-		this._clearInterfaces();
 	}
 
 	/**
@@ -157,26 +157,14 @@ class SubMeshBase extends AssetBase
 		return this.parentMesh.getRenderSceneTransform(camera);
 	}
 
-	public _iAddRenderable(renderable:IRenderable):IRenderable
+	public invalidateGeometry()
 	{
-		this._renderables.push(renderable);
-
-		return renderable;
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_GEOMETRY, this));
 	}
 
-
-	public _iRemoveRenderable(renderable:IRenderable):IRenderable
+	public invalidateRenderOwner()
 	{
-		this._renderables.splice(this._renderables.indexOf(renderable), 1);
-
-		return renderable;
-	}
-
-	public _iInvalidateRenderableGeometry()
-	{
-		var len:number = this._renderables.length;
-		for (var i:number = 0; i < len; i++)
-			this._renderables[i].invalidateGeometry();
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 
 	public _iGetExplicitMaterial():MaterialBase
@@ -184,10 +172,9 @@ class SubMeshBase extends AssetBase
 		return this._material;
 	}
 
-	public _clearInterfaces()
+	public clear()
 	{
-		for (var i:number = this._renderables.length - 1; i >= 0; i--)
-			this._renderables[i].dispose();
+		this.dispatchEvent(new AssetEvent(AssetEvent.CLEAR, this));
 	}
 }
 

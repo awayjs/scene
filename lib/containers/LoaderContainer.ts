@@ -1,39 +1,38 @@
 import AssetLibraryBundle			= require("awayjs-core/lib/library/AssetLibraryBundle");
-import LoaderSession				= require("awayjs-core/lib/library/LoaderSession");
+import Loader						= require("awayjs-core/lib/library/Loader");
 import LoaderContext				= require("awayjs-core/lib/library/LoaderContext");
 import URLRequest					= require("awayjs-core/lib/net/URLRequest");
 import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
-import IOErrorEvent					= require("awayjs-core/lib/events/IOErrorEvent");
+import URLLoaderEvent				= require("awayjs-core/lib/events/URLLoaderEvent");
 import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import ParserEvent					= require("awayjs-core/lib/events/ParserEvent");
 import ParserBase					= require("awayjs-core/lib/parsers/ParserBase");
 
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import LoaderInfo					= require("awayjs-display/lib/base/LoaderInfo");
 
 /**
- * The Loader class is used to load SWF files or image(JPG, PNG, or GIF)
+ * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)
  * files. Use the <code>load()</code> method to initiate loading. The loaded
- * display object is added as a child of the Loader object.
+ * display object is added as a child of the LoaderContainer object.
  *
  * <p>Use the URLLoader class to load text or binary data.</p>
  *
- * <p>The Loader class overrides the following methods that it inherits,
- * because a Loader object can only have one child display object - the
+ * <p>The LoaderContainer class overrides the following methods that it inherits,
+ * because a LoaderContainer object can only have one child display object - the
  * display object that it loads. Calling the following methods throws an
  * exception: <code>addChild()</code>, <code>addChildAt()</code>,
  * <code>removeChild()</code>, <code>removeChildAt()</code>, and
  * <code>setChildIndex()</code>. To remove a loaded display object, you must
- * remove the <i>Loader</i> object from its parent DisplayObjectContainer
+ * remove the <i>LoaderContainer</i> object from its parent DisplayObjectContainer
  * child array. </p>
  *
  * <p><b>Note:</b> The ActionScript 2.0 MovieClipLoader and LoadVars classes
- * are not used in ActionScript 3.0. The Loader and URLLoader classes replace
+ * are not used in ActionScript 3.0. The LoaderContainer and URLLoader classes replace
  * them.</p>
  *
- * <p>When you use the Loader class, consider the Flash Player and Adobe AIR
+ * <p>When you use the LoaderContainer class, consider the Flash Player and Adobe AIR
  * security model: </p>
  *
  * <ul>
@@ -71,12 +70,12 @@ import LoaderInfo					= require("awayjs-display/lib/base/LoaderInfo");
  * scope="external">Security</a>.</p>
  *
  * <p>When loading a SWF file from an untrusted source(such as a domain other
- * than that of the Loader object's root SWF file), you may want to define a
- * mask for the Loader object, to prevent the loaded content(which is a child
- * of the Loader object) from drawing to portions of the Stage outside of that
+ * than that of the LoaderContainer object's root SWF file), you may want to define a
+ * mask for the LoaderContainer object, to prevent the loaded content(which is a child
+ * of the LoaderContainer object) from drawing to portions of the Stage outside of that
  * mask, as shown in the following code:</p>
  */
-class Loader extends DisplayObjectContainer
+class LoaderContainer extends DisplayObjectContainer
 {
 	/**
 	 * Dispatched when any asset finishes parsing. Also see specific events for each
@@ -94,19 +93,16 @@ class Loader extends DisplayObjectContainer
 	 */
 	//[Event(name="resourceComplete", type="LoaderEvent")]
 
-	private _loaderSession:LoaderSession;
-	private _loaderSessionGarbage:LoaderSession;
-	private _gcTimeoutIID:number;
+	private _loader:Loader;
 	private _useAssetLib:boolean;
 	private _assetLibId:string;
-	private _onResourceCompleteDelegate:Function;
-	private _onAssetCompleteDelegate:Function;
+	private _onLoadCompleteDelegate:(event:LoaderEvent) => void;
+	private _onAssetCompleteDelegate:(event:AssetEvent) => void;
 	private _onTextureSizeErrorDelegate:(event:AssetEvent) => void;
-	private _onLoadErrorDelegate:(event:IOErrorEvent) => boolean;
+	private _onLoadErrorDelegate:(event:URLLoaderEvent) => boolean;
 	private _onParseErrorDelegate:(event:ParserEvent) => boolean;
 
 	private _content:DisplayObject;
-	private _contentLoaderInfo:LoaderInfo;
 
 	/**
 	 * Contains the root display object of the SWF file or image(JPG, PNG, or
@@ -128,27 +124,6 @@ class Loader extends DisplayObjectContainer
 	public get content():DisplayObject
 	{
 		return this._content;
-	}
-
-	/**
-	 * Returns a LoaderInfo object corresponding to the object being loaded.
-	 * LoaderInfo objects are shared between the Loader object and the loaded
-	 * content object. The LoaderInfo object supplies loading progress
-	 * information and statistics about the loaded file.
-	 *
-	 * <p>Events related to the load are dispatched by the LoaderInfo object
-	 * referenced by the <code>contentLoaderInfo</code> property of the Loader
-	 * object. The <code>contentLoaderInfo</code> property is set to a valid
-	 * LoaderInfo object, even before the content is loaded, so that you can add
-	 * event listeners to the object prior to the load.</p>
-	 *
-	 * <p>To detect uncaught errors that happen in a loaded SWF, use the
-	 * <code>Loader.uncaughtErrorEvents</code> property, not the
-	 * <code>Loader.contentLoaderInfo.uncaughtErrorEvents</code> property.</p>
-	 */
-	public get contentLoaderInfo():LoaderInfo
-	{
-		return this._contentLoaderInfo;
 	}
 
 	/**
@@ -206,10 +181,10 @@ class Loader extends DisplayObjectContainer
 		this._useAssetLib = useAssetLibrary;
 		this._assetLibId = assetLibraryId;
 
-		this._onResourceCompleteDelegate = (event:LoaderEvent) => this.onResourceComplete(event);
 		this._onAssetCompleteDelegate = (event:AssetEvent) => this.onAssetComplete(event);
 		this._onTextureSizeErrorDelegate = (event:AssetEvent) => this.onTextureSizeError(event);
-		this._onLoadErrorDelegate = (event:IOErrorEvent) => this.onLoadError(event);
+		this._onLoadCompleteDelegate = (event:LoaderEvent) => this.onLoadComplete(event);
+		this._onLoadErrorDelegate = (event:URLLoaderEvent) => this.onLoadError(event);
 		this._onParseErrorDelegate = (event:ParserEvent) => this.onParseError(event);
 	}
 
@@ -220,16 +195,16 @@ class Loader extends DisplayObjectContainer
 	 */
 	public close()
 	{
-		if (!this._loaderSession)
+		if (!this._loader)
 			return;
 		
 		if (this._useAssetLib) {
 			var lib:AssetLibraryBundle;
 			lib = AssetLibraryBundle.getInstance(this._assetLibId);
-			lib.disposeLoaderSession(this._loaderSession);
+			lib.disposeLoader(this._loader);
 		}
 		
-		this._disposeLoaderSession();
+		this._disposeLoader();
 	}
 
 	/**
@@ -315,7 +290,7 @@ class Loader extends DisplayObjectContainer
 	 *                loaded, allowing the differentiation of two resources with
 	 *                identical assets.
 	 * @param parser  An optional parser object for translating the loaded data
-	 *                into a usable resource. If not provided, LoaderSession will
+	 *                into a usable resource. If not provided, Loader will
 	 *                attempt to auto-detect the file type.
 	 * @throws IOError               The <code>digest</code> property of the
 	 *                               <code>request</code> object is not
@@ -401,7 +376,7 @@ class Loader extends DisplayObjectContainer
 	 */
 	public load(request:URLRequest, context:LoaderContext = null, ns:string = null, parser:ParserBase = null)
 	{
-		this._getLoaderSession().load(request, context, ns, parser);
+		this._getLoader().load(request, context, ns, parser);
 	}
 
 	/**
@@ -492,36 +467,39 @@ class Loader extends DisplayObjectContainer
 	 */
 	public loadData(data:any, context:LoaderContext = null, ns:string = null, parser:ParserBase = null)
 	{
-		this._getLoaderSession().loadData(data, '', context, ns, parser);
+		this._getLoader().loadData(data, '', context, ns, parser);
 	}
 
-	private _getLoaderSession()
+	private _getLoader()
 	{
 		if (this._useAssetLib) {
 			var lib:AssetLibraryBundle = AssetLibraryBundle.getInstance(this._assetLibId);
-			this._loaderSession = lib.getLoaderSession();
+			this._loader = lib.getLoader();
 		} else {
-			this._loaderSession = new LoaderSession();
+			this._loader = new Loader();
 		}
 
-		this._loaderSession.addEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-		this._loaderSession.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-		this._loaderSession.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+		this._loader.addEventListener(LoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
+		this._loader.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
+		this._loader.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
 
 		// Error are handled separately (see documentation for addErrorHandler)
-		this._loaderSession._iAddErrorHandler(this._onLoadErrorDelegate);
-		this._loaderSession._iAddParseErrorHandler(this._onParseErrorDelegate);
+		this._loader._iAddErrorHandler(this._onLoadErrorDelegate);
+		this._loader._iAddParseErrorHandler(this._onParseErrorDelegate);
 
-		return this._loaderSession;
+		return this._loader;
 	}
 
-	private _disposeLoaderSession()
+	private _disposeLoader()
 	{
-		// Add loader to garbage - for a collection sweep and kill
-		this._loaderSessionGarbage = this._loaderSession;
-		delete this._loaderSession;
-		this._loaderSession = null;
-		this._gcTimeoutIID = setTimeout(() => {this.loaderSessionGC()}, 100);
+		this._loader.removeEventListener(LoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
+		this._loader.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
+		this._loader.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+
+		if (!this._useAssetLib)
+			this._loader.stop();
+
+		this._loader = null;
 	}
 	
 	/**
@@ -563,7 +541,7 @@ class Loader extends DisplayObjectContainer
 	 */
 	public static enableParser(parserClass:Object)
 	{
-		LoaderSession.enableParser(parserClass);
+		Loader.enableParser(parserClass);
 	}
 
 	/**
@@ -577,24 +555,7 @@ class Loader extends DisplayObjectContainer
 	 */
 	public static enableParsers(parserClasses:Array<Object>)
 	{
-		LoaderSession.enableParsers(parserClasses);
-	}
-	
-	private loaderSessionGC():void
-	{
-		//remove listeners
-		this._loaderSessionGarbage.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, this._onResourceCompleteDelegate);
-		this._loaderSessionGarbage.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-		this._loaderSessionGarbage.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
-
-		if (!this._useAssetLib)
-			this._loaderSessionGarbage.stop();
-
-		delete this._loaderSessionGarbage;
-		this._loaderSessionGarbage = null;
-
-		clearTimeout(this._gcTimeoutIID);
-		this._gcTimeoutIID = null;
+		Loader.enableParsers(parserClasses);
 	}
 
 	private onAssetComplete(event:AssetEvent)
@@ -605,9 +566,9 @@ class Loader extends DisplayObjectContainer
 	/**
 	 * Called when an error occurs during loading
 	 */
-	private onLoadError(event:IOErrorEvent):boolean
+	private onLoadError(event:URLLoaderEvent):boolean
 	{
-		if (this.hasEventListener(IOErrorEvent.IO_ERROR)) {
+		if (this.hasEventListener(URLLoaderEvent.LOAD_ERROR)) {
 			this.dispatchEvent(event);
 			return true;
 		} else {
@@ -636,7 +597,7 @@ class Loader extends DisplayObjectContainer
 	/**
 	 * Called when the resource and all of its dependencies was retrieved.
 	 */
-	private onResourceComplete(event:LoaderEvent)
+	private onLoadComplete(event:LoaderEvent)
 	{
 		this._content = <DisplayObject> event.content;
 
@@ -645,8 +606,8 @@ class Loader extends DisplayObjectContainer
 
 		this.dispatchEvent(event);
 
-		this._disposeLoaderSession();
+		this._disposeLoader();
 	}
 }
 
-export = Loader;
+export = LoaderContainer;

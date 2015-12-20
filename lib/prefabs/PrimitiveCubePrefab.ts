@@ -8,7 +8,7 @@ import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefa
 /**
  * A Cube primitive prefab.
  */
-class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset
+class PrimitiveCubePrefab extends PrimitivePrefabBase
 {
 	private _width:number;
 	private _height:number;

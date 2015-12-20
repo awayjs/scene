@@ -1,4 +1,4 @@
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
 import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
 
@@ -9,7 +9,7 @@ import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
 * @class away.events.GeometryEvent
 * @see away3d.core.base.Geometry
 */
-class GeometryEvent extends Event
+class GeometryEvent extends EventBase
 {
 	/**
 	 * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
@@ -52,7 +52,7 @@ class GeometryEvent extends Event
 	 * Clones the event.
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():Event
+	public clone():GeometryEvent
 	{
 		return new GeometryEvent(this.type, this._subGeometry);
 	}

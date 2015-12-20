@@ -8,7 +8,7 @@ import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefa
 /**
  * A Plane primitive mesh.
  */
-class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset
+class PrimitivePlanePrefab extends PrimitivePrefabBase
 {
 	private _segmentsW:number;
 	private _segmentsH:number;

@@ -281,29 +281,29 @@ class TriangleSubGeometry extends SubGeometryBase
 			return;
 
 		if (values instanceof Float3Attributes) {
-			this.notifyVerticesDispose(this._positions);
+			this.clearVertices(this._positions);
 			this._positions = <Float3Attributes> values;
 		} else if (values) {
 			this._positions.set(values, offset);
 		} else {
-			this.notifyVerticesDispose(this._positions);
+			this.clearVertices(this._positions);
 			this._positions = new Float3Attributes(this._concatenatedBuffer);
 		}
 
 		this._numVertices = this._positions.count;
 
 		if (this._autoDeriveNormals)
-			this.notifyVerticesUpdate(this._normals);
+			this.invalidateVertices(this._normals);
 
 		if (this._autoDeriveTangents)
-			this.notifyVerticesUpdate(this._tangents);
+			this.invalidateVertices(this._tangents);
 
 		if (this._autoDeriveUVs)
-			this.notifyVerticesUpdate(this._uvs);
+			this.invalidateVertices(this._uvs);
 
 		this.pInvalidateBounds();
 
-		this.notifyVerticesUpdate(this._positions);
+		this.invalidateVertices(this._positions);
 
 		this._verticesDirty[this._positions.id] = false;
 	}
@@ -321,7 +321,7 @@ class TriangleSubGeometry extends SubGeometryBase
 				return;
 
 			if (values instanceof Float3Attributes) {
-				this.notifyVerticesDispose(this._normals);
+				this.clearVertices(this._normals);
 				this._normals = <Float3Attributes> values;
 			} else if (values) {
 				if (!this._normals)
@@ -329,7 +329,7 @@ class TriangleSubGeometry extends SubGeometryBase
 
 				this._normals.set(values, offset);
 			} else if (this._normals) {
-				this.notifyVerticesDispose(this._normals);
+				this.clearVertices(this._normals);
 				this._normals = null;
 				return;
 			}
@@ -340,7 +340,7 @@ class TriangleSubGeometry extends SubGeometryBase
 			this._normals = SubGeometryUtils.generateNormals(this._pIndices, this._faceNormals, this._normals, this._concatenatedBuffer);
 		}
 
-		this.notifyVerticesUpdate(this._normals);
+		this.invalidateVertices(this._normals);
 
 		this._verticesDirty[this._normals.id] = false;
 	}
@@ -358,7 +358,7 @@ class TriangleSubGeometry extends SubGeometryBase
 				return;
 
 			if (values instanceof Float3Attributes) {
-				this.notifyVerticesDispose(this._tangents);
+				this.clearVertices(this._tangents);
 				this._tangents = <Float3Attributes> values;
 			} else if (values) {
 				if (!this._tangents)
@@ -366,7 +366,7 @@ class TriangleSubGeometry extends SubGeometryBase
 
 				this._tangents.set(values, offset);
 			} else if (this._tangents) {
-				this.notifyVerticesDispose(this._tangents);
+				this.clearVertices(this._tangents);
 				this._tangents = null;
 				return;
 			}
@@ -380,7 +380,7 @@ class TriangleSubGeometry extends SubGeometryBase
 			this._tangents = SubGeometryUtils.generateTangents(this._pIndices, this._faceTangents, this._faceNormals, this._tangents, this._concatenatedBuffer);
 		}
 
-		this.notifyVerticesUpdate(this._tangents);
+		this.invalidateVertices(this._tangents);
 
 		this._verticesDirty[this._tangents.id] = false;
 	}
@@ -398,7 +398,7 @@ class TriangleSubGeometry extends SubGeometryBase
 				return;
 
 			if (values instanceof Float2Attributes) {
-				this.notifyVerticesDispose(this._uvs);
+				this.clearVertices(this._uvs);
 				this._uvs = <Float2Attributes> values;
 			} else if (values) {
 				if (!this._uvs)
@@ -406,7 +406,7 @@ class TriangleSubGeometry extends SubGeometryBase
 
 				this._uvs.set(values, offset);
 			} else if (this._uvs) {
-				this.notifyVerticesDispose(this._uvs);
+				this.clearVertices(this._uvs);
 				this._uvs = null;
 				return;
 			}
@@ -415,9 +415,9 @@ class TriangleSubGeometry extends SubGeometryBase
 		}
 
 		if (this._autoDeriveTangents)
-			this.notifyVerticesUpdate(this._tangents);
+			this.invalidateVertices(this._tangents);
 
-		this.notifyVerticesUpdate(this._uvs);
+		this.invalidateVertices(this._uvs);
 
 		this._verticesDirty[this._uvs.id] = false;
 	}
@@ -434,7 +434,7 @@ class TriangleSubGeometry extends SubGeometryBase
 			return;
 
 		if (values instanceof Float2Attributes) {
-			this.notifyVerticesDispose(this._secondaryUVs);
+			this.clearVertices(this._secondaryUVs);
 			this._secondaryUVs = <Float2Attributes> values;
 		} else if (values) {
 			if (!this._secondaryUVs)
@@ -442,12 +442,12 @@ class TriangleSubGeometry extends SubGeometryBase
 
 			this._secondaryUVs.set(values, offset);
 		} else if (this._secondaryUVs) {
-			this.notifyVerticesDispose(this._secondaryUVs);
+			this.clearVertices(this._secondaryUVs);
 			this._secondaryUVs = null;
 			return;
 		}
 
-		this.notifyVerticesUpdate(this._secondaryUVs);
+		this.invalidateVertices(this._secondaryUVs);
 
 		this._verticesDirty[this._secondaryUVs.id] = false;
 	}
@@ -464,7 +464,7 @@ class TriangleSubGeometry extends SubGeometryBase
 			return;
 
 		if (values instanceof AttributesView) {
-			this.notifyVerticesDispose(this._jointIndices);
+			this.clearVertices(this._jointIndices);
 			this._jointIndices = <AttributesView> values;
 		} else if (values) {
 			if (!this._jointIndices)
@@ -495,12 +495,12 @@ class TriangleSubGeometry extends SubGeometryBase
 			this._jointIndices.set(values, offset);
 
 		} else if (this._jointIndices) {
-			this.notifyVerticesDispose(this._jointIndices);
+			this.clearVertices(this._jointIndices);
 			this._jointIndices = null;
 			return;
 		}
 
-		this.notifyVerticesUpdate(this._jointIndices);
+		this.invalidateVertices(this._jointIndices);
 
 		this._verticesDirty[this._jointIndices.id] = false;
 	}
@@ -517,7 +517,7 @@ class TriangleSubGeometry extends SubGeometryBase
 			return;
 
 		if (values instanceof AttributesView) {
-			this.notifyVerticesDispose(this._jointWeights);
+			this.clearVertices(this._jointWeights);
 			this._jointWeights = <AttributesView> values;
 		} else if (values) {
 			if (!this._jointWeights)
@@ -526,12 +526,12 @@ class TriangleSubGeometry extends SubGeometryBase
 			this._jointWeights.set(values, offset);
 
 		} else if (this._jointWeights) {
-			this.notifyVerticesDispose(this._jointWeights);
+			this.clearVertices(this._jointWeights);
 			this._jointWeights = null;
 			return;
 		}
 
-		this.notifyVerticesUpdate(this._jointWeights);
+		this.invalidateVertices(this._jointWeights);
 
 		this._verticesDirty[this._jointWeights.id] = false;
 	}
@@ -603,13 +603,13 @@ class TriangleSubGeometry extends SubGeometryBase
 		this._faceTangentsDirty = true;
 
 		if (this._autoDeriveNormals)
-			this.notifyVerticesUpdate(this._normals);
+			this.invalidateVertices(this._normals);
 
 		if (this._autoDeriveTangents)
-			this.notifyVerticesUpdate(this._tangents);
+			this.invalidateVertices(this._tangents);
 
 		if (this._autoDeriveUVs)
-			this.notifyVerticesUpdate(this._uvs);
+			this.invalidateVertices(this._uvs);
 	}
 
 	/**

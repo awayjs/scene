@@ -1,8 +1,8 @@
-import Event					= require("awayjs-core/lib/events/Event");
+import EventBase				= require("awayjs-core/lib/events/EventBase");
 
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
 
-class DisplayObjectEvent extends Event
+class DisplayObjectEvent extends EventBase
 {
 	public static VISIBLITY_UPDATED:string = "visiblityUpdated";
 	public static SCENETRANSFORM_CHANGED:string = "scenetransformChanged";
@@ -17,12 +17,26 @@ class DisplayObjectEvent extends Event
 	 */
 	public static PARTITION_CHANGED:string = "partitionChanged";
 
-	public object:DisplayObject;
+	private _object:DisplayObject;
+
+	public get object():DisplayObject
+	{
+		return this._object;
+	}
 
 	constructor(type:string, object:DisplayObject)
 	{
 		super(type);
-		this.object = object;
+		this._object = object;
+	}
+
+	/**
+	 * Clones the event.
+	 * @return An exact duplicate of the current object.
+	 */
+	public clone():DisplayObjectEvent
+	{
+		return new DisplayObjectEvent(this.type, this._object);
 	}
 }
 

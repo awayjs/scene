@@ -1,4 +1,4 @@
-import BlendMode					= require("awayjs-core/lib/data/BlendMode");
+import BlendMode					= require("awayjs-core/lib/image/BlendMode");
 import Box							= require("awayjs-core/lib/geom/Box");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Sphere						= require("awayjs-core/lib/geom/Sphere");
@@ -9,8 +9,10 @@ import Point						= require("awayjs-core/lib/geom/Point");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
+import LoaderInfo					= require("awayjs-core/lib/library/LoaderInfo");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
-import Event						= require("awayjs-core/lib/events/Event");
+import EventBase					= require("awayjs-core/lib/events/EventBase");
+import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IDisplayObjectAdapter		= require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
@@ -20,7 +22,6 @@ import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayO
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
 import AlignmentMode				= require("awayjs-display/lib/base/AlignmentMode");
-import LoaderInfo					= require("awayjs-display/lib/base/LoaderInfo");
 import OrientationMode				= require("awayjs-display/lib/base/OrientationMode");
 import IBitmapDrawable				= require("awayjs-display/lib/base/IBitmapDrawable");
 import Transform					= require("awayjs-display/lib/base/Transform");
@@ -28,7 +29,6 @@ import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
-import IRenderable					= require("awayjs-display/lib/pool/IRenderable");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
@@ -171,7 +171,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
 	public _iIsRoot:boolean;
 	public _adapter:IDisplayObjectAdapter;
-	private _queuedEvents:Array<Event> = new Array<Event>();
+	private _queuedEvents:Array<DisplayObjectEvent> = new Array<DisplayObjectEvent>();
 	public _elementsDirty:boolean;
 	private _loaderInfo:LoaderInfo;
 	private _mouseX:number;
@@ -267,7 +267,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _pPickingCollider:IPickingCollider;
 
-	public _pRenderables:Array<IRenderable> = new Array<IRenderable>();
 	private _entityNodes:Array<EntityNode> = new Array<EntityNode>();
 
 	public _iSourcePrefab:PrefabBase;
@@ -1495,7 +1494,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public addEventListener(type:string, listener:Function)
+	public addEventListener(type:string, listener:(event:EventBase) => void)
 	{
 		super.addEventListener(type, listener);
 
@@ -1560,11 +1559,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public dispose()
 	{
-		this.clear();
-	}
+		super.dispose();
 
-	public clear()
-	{
 		if (this._pParent)
 			this._pParent.removeChild(this);
 
@@ -2139,7 +2135,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public removeEventListener(type:string, listener:Function)
+	public removeEventListener(type:string, listener:(event:EventBase) => void)
 	{
 		super.removeEventListener(type, listener);
 
@@ -2328,7 +2324,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pImplicitPartition._iUnregisterEntity(this);
 
 			//gc associated objects
-			this._clearInterfaces();
+			this.clear();
 		}
 
 		// assign parent implicit partition if no explicit one is given
@@ -2413,23 +2409,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._scaleDirty = false;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.SCENE_TRANSFORM;
-	}
-
-	public _iAddRenderable(renderable:IRenderable):IRenderable
-	{
-		this._pRenderables.push(renderable);
-
-		return renderable;
-	}
-
-
-	public _iRemoveRenderable(renderable:IRenderable):IRenderable
-	{
-		var index:number = this._pRenderables.indexOf(renderable);
-
-		this._pRenderables.splice(index, 1);
-
-		return renderable;
 	}
 
 	/**
@@ -2680,7 +2659,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pSphereBounds = new Sphere();
 	}
 
-	private queueDispatch(event:Event)
+	private queueDispatch(event:DisplayObjectEvent)
 	{
 		// Store event to be dispatched later.
 		this._queuedEvents.push(event);
@@ -2836,15 +2815,14 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
 
-	public _clearInterfaces()
+	public clear()
 	{
+		super.clear();
+
 		var i:number;
 
 		for (i = this._entityNodes.length - 1; i >= 0; i--)
 			this._entityNodes[i].dispose();
-
-		for (i = this._pRenderables.length - 1; i >= 0; i--)
-			this._pRenderables[i].dispose();
 
 		if (this._pPickingCollisionVO) {
 			this._pPickingCollisionVO.dispose();

@@ -1,5 +1,5 @@
-﻿import ImageBase					= require("awayjs-core/lib/data/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/data/SamplerBase");
+﻿import ImageBase					= require("awayjs-core/lib/image/ImageBase");
+import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import Box							= require("awayjs-core/lib/geom/Box");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
 import Point						= require("awayjs-core/lib/geom/Point");
@@ -9,7 +9,6 @@ import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import ISubMesh						= require("awayjs-display/lib/base/ISubMesh");
-import ISubMeshClass				= require("awayjs-display/lib/base/ISubMeshClass");
 import Geometry						= require("awayjs-display/lib/base/Geometry");
 import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
 import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
@@ -79,7 +78,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			}
 
 			//invalidate any existing renderables in case they need to pull new geometry
-			subMesh._iInvalidateRenderableGeometry();
+			subMesh.invalidateGeometry();
 		}
 
 		if (this._animator)
@@ -291,20 +290,15 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public dispose()
 	{
-		this.clear();
-
-		Mesh._meshes.push(this);
-	}
-
-	public clear()
-	{
-		super.clear();
+		super.dispose();
 
 		this.material = null;
 		this.geometry = null;
 
 		if (this._animator)
 			this._animator.dispose();
+
+		Mesh._meshes.push(this);
 	}
 
 	/**
@@ -523,7 +517,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	{
 		var len:number = this._subMeshes.length;
 		for (var i:number = 0; i < len; ++i)
-			this._subMeshes[i]._iInvalidateRenderableGeometry();
+			this._subMeshes[i].invalidateGeometry();
 	}
 
 
@@ -553,13 +547,13 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		return super._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
 
-	public _clearInterfaces()
+	public clear()
 	{
-		super._clearInterfaces();
+		super.clear();
 
 		var len:number = this._subMeshes.length;
 		for (var i:number = 0; i < len; i++)
-			this._subMeshes[i]._clearInterfaces();
+			this._subMeshes[i].clear();
 	}
 }
 

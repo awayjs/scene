@@ -1,4 +1,5 @@
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import Scene						= require("awayjs-display/lib/containers/Scene");
 import LightBase					= require("awayjs-display/lib/base/LightBase");
@@ -8,7 +9,7 @@ import ShadowCasterCollector		= require("awayjs-display/lib/traverse/ShadowCaste
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
-class ShadowMapperBase
+class ShadowMapperBase extends AssetBase
 {
 
 	public _pCasterCollector:ShadowCasterCollector;
@@ -22,6 +23,8 @@ class ShadowMapperBase
 
 	constructor()
 	{
+		super();
+
 		this._pCasterCollector = this.pCreateCasterCollector();
 	}
 

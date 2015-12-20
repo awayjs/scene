@@ -15,25 +15,22 @@ import SubGeometryEvent				= require("awayjs-display/lib/events/SubGeometryEvent
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import ISubGeometryVO				= require("awayjs-display/lib/vos/ISubGeometryVO");
 
 /**
  * @class away.base.TriangleSubGeometry
  */
 class SubGeometryBase extends AssetBase
 {
-	private _subGeometryVO:Array<ISubGeometryVO> = new Array<ISubGeometryVO>();
-	
 	public _pIndices:Short3Attributes;
 
 	private _numElements:number = 0;
 
 	public _concatenatedBuffer:AttributesBuffer;
 
-	private _indicesUpdated:SubGeometryEvent;
+	private _invalidateIndices:SubGeometryEvent;
 
 	public _verticesDirty:Object = new Object();
-	public _verticesUpdated:Object = new Object();
+	public _invalidateVertices:Object = new Object();
 
 	public get concatenatedBuffer():AttributesBuffer
 	{
@@ -71,22 +68,13 @@ class SubGeometryBase extends AssetBase
 		this._concatenatedBuffer = concatenatedBuffer;
 	}
 
-
-	/**
-	 *
-	 */
-	public invalidate():void
-	{
-		var len:number = this._subGeometryVO.length;
-		for (var i:number = 0; i < len; i++)
-			this._subGeometryVO[i].invalidate();
-	}
-
 	/**
 	 *
 	 */
 	public dispose()
 	{
+		super.dispose();
+		
 		this.parentGeometry = null;
 
 		if (this._pIndices) {
@@ -107,7 +95,7 @@ class SubGeometryBase extends AssetBase
 	{
 		if (values instanceof Short3Attributes) {
 			if (this._pIndices)
-				this.notifyIndicesDispose();
+				this.clearIndices();
 
 			this._pIndices = <Short3Attributes> values;
 		} else if (values) {
@@ -119,13 +107,13 @@ class SubGeometryBase extends AssetBase
 			this._pIndices.dispose();
 			this._pIndices = null;
 
-			this.notifyIndicesDispose();
+			this.clearIndices();
 		}
 
 		if (this._pIndices) {
 			this._numElements = this._pIndices.count;
 
-			this.notifyIndicesUpdate();
+			this.invalidateIndicies();
 		} else {
 			this._numElements = 0;
 		}
@@ -190,58 +178,44 @@ class SubGeometryBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	private notifyIndicesUpdate()
+	private invalidateIndicies()
 	{
-		if (!this._indicesUpdated)
-			this._indicesUpdated = new SubGeometryEvent(SubGeometryEvent.INDICES_UPDATED, this._pIndices);
+		if (!this._invalidateIndices)
+			this._invalidateIndices = new SubGeometryEvent(SubGeometryEvent.INVALIDATE_INDICES, this._pIndices);
 
-		this.dispatchEvent(this._indicesUpdated);
+		this.dispatchEvent(this._invalidateIndices);
 	}
 
-	private notifyIndicesDispose()
+	private clearIndices()
 	{
-		this.dispatchEvent(new SubGeometryEvent(SubGeometryEvent.INDICES_DISPOSED, this._pIndices));
+		this.dispatchEvent(new SubGeometryEvent(SubGeometryEvent.CLEAR_INDICES, this._pIndices));
 	}
 
-	public notifyVerticesUpdate(attributesView:AttributesView)
+	public invalidateVertices(attributesView:AttributesView)
 	{
 		if (!attributesView || this._verticesDirty[attributesView.id])
 			return;
 
 		this._verticesDirty[attributesView.id] = true;
 
-		if (!this._verticesUpdated[attributesView.id])
-			this._verticesUpdated[attributesView.id] = new SubGeometryEvent(SubGeometryEvent.VERTICES_UPDATED, attributesView);
+		if (!this._invalidateVertices[attributesView.id])
+			this._invalidateVertices[attributesView.id] = new SubGeometryEvent(SubGeometryEvent.INVALIDATE_VERTICES, attributesView);
 
-		this.dispatchEvent(this._verticesUpdated[attributesView.id]);
+		this.dispatchEvent(this._invalidateVertices[attributesView.id]);
 	}
 
 
-	public notifyVerticesDispose(attributesView:AttributesView)
+	public clearVertices(attributesView:AttributesView)
 	{
 		if (!attributesView)
 			return;
 
 		attributesView.dispose();
 
-		this.dispatchEvent(new SubGeometryEvent(SubGeometryEvent.VERTICES_DISPOSED, attributesView));
+		this.dispatchEvent(new SubGeometryEvent(SubGeometryEvent.CLEAR_VERTICES, attributesView));
 
 		this._verticesDirty[attributesView.id] = null;
-		this._verticesUpdated[attributesView.id] = null;
-	}
-
-	public _iAddSubGeometryVO(subGeometryVO:ISubGeometryVO):ISubGeometryVO
-	{
-		this._subGeometryVO.push(subGeometryVO);
-
-		return subGeometryVO;
-	}
-
-	public _iRemoveSubGeometryVO(subGeometryVO:ISubGeometryVO):ISubGeometryVO
-	{
-		this._subGeometryVO.splice(this._subGeometryVO.indexOf(subGeometryVO), 1);
-
-		return subGeometryVO;
+		this._invalidateVertices[attributesView.id] = null;
 	}
 
 	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
