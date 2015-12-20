@@ -1,9 +1,8 @@
 declare module "awayjs-display/lib/IRenderer" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
 	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	/**
@@ -13,10 +12,6 @@ declare module "awayjs-display/lib/IRenderer" {
 	 * @class away.render.IRenderer
 	 */
 	interface IRenderer extends IEventDispatcher {
-	    /**
-	     *
-	     */
-	    renderableSorter: IEntitySorter;
 	    /**
 	     *
 	     */
@@ -82,18 +77,6 @@ declare module "awayjs-display/lib/IRenderer" {
 	
 }
 
-declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
-	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	interface IMovieClipAdapter extends IDisplayObjectAdapter {
-	    evalScript(str: string): Function;
-	    registerScriptObject(child: DisplayObject): void;
-	    unregisterScriptObject(child: DisplayObject): void;
-	}
-	export = IMovieClipAdapter;
-	
-}
-
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -105,6 +88,18 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	    dispose(): any;
 	}
 	export = IDisplayObjectAdapter;
+	
+}
+
+declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
+	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	interface IMovieClipAdapter extends IDisplayObjectAdapter {
+	    evalScript(str: string): Function;
+	    registerScriptObject(child: DisplayObject): void;
+	    unregisterScriptObject(child: DisplayObject): void;
+	}
+	export = IMovieClipAdapter;
 	
 }
 
@@ -157,8 +152,6 @@ declare module "awayjs-display/lib/animators/IAnimationSet" {
 declare module "awayjs-display/lib/animators/IAnimator" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	/**
 	 * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.
@@ -190,24 +183,17 @@ declare module "awayjs-display/lib/animators/IAnimator" {
 	     * @private
 	     */
 	    removeOwner(mesh: IEntity): any;
-	    /**
-	     * //TODO
-	     *
-	     * @param sourceSubGeometry
-	     */
-	    getRenderableSubGeometry(renderable: IRenderable, sourceSubGeometry: SubGeometryBase): SubGeometryBase;
 	}
 	export = IAnimator;
 	
 }
 
 declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	/**
 	 * Provides an abstract base class for nodes in an animation blend tree.
 	 */
-	class AnimationNodeBase extends AssetBase implements IAsset {
+	class AnimationNodeBase extends AssetBase {
 	    static assetType: string;
 	    _pStateClass: any;
 	    stateClass: any;
@@ -397,7 +383,7 @@ declare module "awayjs-display/lib/base/CurveSubMesh" {
 }
 
 declare module "awayjs-display/lib/base/DisplayObject" {
-	import BlendMode = require("awayjs-core/lib/data/BlendMode");
+	import BlendMode = require("awayjs-core/lib/image/BlendMode");
 	import Box = require("awayjs-core/lib/geom/Box");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Sphere = require("awayjs-core/lib/geom/Sphere");
@@ -406,19 +392,19 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import LoaderInfo = require("awayjs-core/lib/library/LoaderInfo");
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import LoaderInfo = require("awayjs-display/lib/base/LoaderInfo");
 	import IBitmapDrawable = require("awayjs-display/lib/base/IBitmapDrawable");
 	import Transform = require("awayjs-display/lib/base/Transform");
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
@@ -635,7 +621,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pPickingCollisionVO: PickingCollisionVO;
 	    _boundsType: string;
 	    _pPickingCollider: IPickingCollider;
-	    _pRenderables: Array<IRenderable>;
 	    private _entityNodes;
 	    _iSourcePrefab: PrefabBase;
 	    private _inheritColorTransform;
@@ -1306,7 +1291,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     *
 	     */
-	    addEventListener(type: string, listener: Function): void;
+	    addEventListener(type: string, listener: (event: EventBase) => void): void;
 	    /**
 	     *
 	     */
@@ -1316,7 +1301,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *
 	     */
 	    dispose(): void;
-	    clear(): void;
 	    /**
 	     * Returns a rectangle that defines the area of the display object relative
 	     * to the coordinate system of the <code>targetCoordinateSpace</code> object.
@@ -1537,7 +1521,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    /**
 	     *
 	     */
-	    removeEventListener(type: string, listener: Function): void;
+	    removeEventListener(type: string, listener: (event: EventBase) => void): void;
 	    /**
 	     * Moves the 3d object along a vector by a defined length
 	     *
@@ -1595,8 +1579,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @protected
 	     */
 	    pUpdateSceneTransform(): void;
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
 	    /**
 	     * //TODO
 	     *
@@ -1676,7 +1658,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _updateMasks();
 	    private _updateColorTransform();
 	    _updateMaskMode(): void;
-	    _clearInterfaces(): void;
+	    clear(): void;
 	}
 	export = DisplayObject;
 	
@@ -1684,7 +1666,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 
 declare module "awayjs-display/lib/base/Geometry" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	/**
@@ -1701,7 +1682,7 @@ declare module "awayjs-display/lib/base/Geometry" {
 	 *
 	 * @class Geometry
 	 */
-	class Geometry extends AssetBase implements IAsset {
+	class Geometry extends AssetBase {
 	    static assetType: string;
 	    private _subGeometries;
 	    assetType: string;
@@ -1806,10 +1787,9 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRender = require("awayjs-display/lib/pool/IRender");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
@@ -1833,8 +1813,6 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	    getNumSamplers(): number;
 	    getSamplerAt(index: number): SamplerBase;
 	    getSamplerIndex(texture: TextureBase, index?: number): number;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
 	    _iAddImage(image: ImageBase): any;
 	    _iRemoveImage(image: ImageBase): any;
 	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): any;
@@ -1845,12 +1823,11 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 }
 
 declare module "awayjs-display/lib/base/IRenderableOwner" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	/**
 	 * IRenderableOwner provides an interface for objects that can use materials.
 	 *
@@ -1867,18 +1844,7 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	    uvTransform: UVTransform;
 	    getImageAt(index: number): ImageBase;
 	    getSamplerAt(index: number): SamplerBase;
-	    /**
-	     *
-	     * @param renderable
-	     * @private
-	     */
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    /**
-	     *
-	     * @param renderable
-	     * @private
-	     */
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
+	    invalidateRenderOwner(): any;
 	}
 	export = IRenderableOwner;
 	
@@ -1900,7 +1866,7 @@ declare module "awayjs-display/lib/base/ISubMesh" {
 	    parentMesh: Mesh;
 	    material: MaterialBase;
 	    _iIndex: number;
-	    _iInvalidateRenderableGeometry(): any;
+	    invalidateGeometry(): any;
 	    _iGetExplicitMaterial(): MaterialBase;
 	}
 	export = ISubMesh;
@@ -1908,7 +1874,6 @@ declare module "awayjs-display/lib/base/ISubMesh" {
 }
 
 declare module "awayjs-display/lib/base/ISubMeshClass" {
-	import IWrapperClass = require("awayjs-core/lib/library/IWrapperClass");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -1919,7 +1884,7 @@ declare module "awayjs-display/lib/base/ISubMeshClass" {
 	 *
 	 * @class away.base.ISubMeshClass
 	 */
-	interface ISubMeshClass extends IWrapperClass {
+	interface ISubMeshClass {
 	    _available: Array<ISubMesh>;
 	    /**
 	     *
@@ -2100,216 +2065,6 @@ declare module "awayjs-display/lib/base/LineSubMesh" {
 	
 }
 
-declare module "awayjs-display/lib/base/LoaderInfo" {
-	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
-	import Loader = require("awayjs-display/lib/containers/Loader");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * The LoaderInfo class provides information about a loaded SWF file or a
-	 * loaded image file(JPEG, GIF, or PNG). LoaderInfo objects are available for
-	 * any display object. The information provided includes load progress, the
-	 * URLs of the loader and loaded content, the number of bytes total for the
-	 * media, and the nominal height and width of the media.
-	 *
-	 * <p>You can access LoaderInfo objects in two ways: </p>
-	 *
-	 * <ul>
-	 *   <li>The <code>contentLoaderInfo</code> property of a flash.display.Loader
-	 * object -  The <code>contentLoaderInfo</code> property is always available
-	 * for any Loader object. For a Loader object that has not called the
-	 * <code>load()</code> or <code>loadBytes()</code> method, or that has not
-	 * sufficiently loaded, attempting to access many of the properties of the
-	 * <code>contentLoaderInfo</code> property throws an error.</li>
-	 *   <li>The <code>loaderInfo</code> property of a display object. </li>
-	 * </ul>
-	 *
-	 * <p>The <code>contentLoaderInfo</code> property of a Loader object provides
-	 * information about the content that the Loader object is loading, whereas
-	 * the <code>loaderInfo</code> property of a DisplayObject provides
-	 * information about the root SWF file for that display object. </p>
-	 *
-	 * <p>When you use a Loader object to load a display object(such as a SWF
-	 * file or a bitmap), the <code>loaderInfo</code> property of the display
-	 * object is the same as the <code>contentLoaderInfo</code> property of the
-	 * Loader object(<code>DisplayObject.loaderInfo =
-	 * Loader.contentLoaderInfo</code>). Because the instance of the main class of
-	 * the SWF file has no Loader object, the <code>loaderInfo</code> property is
-	 * the only way to access the LoaderInfo for the instance of the main class of
-	 * the SWF file.</p>
-	 *
-	 * <p>The following diagram shows the different uses of the LoaderInfo
-	 * object - for the instance of the main class of the SWF file, for the
-	 * <code>contentLoaderInfo</code> property of a Loader object, and for the
-	 * <code>loaderInfo</code> property of a loaded object:</p>
-	 *
-	 * <p>When a loading operation is not complete, some properties of the
-	 * <code>contentLoaderInfo</code> property of a Loader object are not
-	 * available. You can obtain some properties, such as
-	 * <code>bytesLoaded</code>, <code>bytesTotal</code>, <code>url</code>,
-	 * <code>loaderURL</code>, and <code>applicationDomain</code>. When the
-	 * <code>loaderInfo</code> object dispatches the <code>init</code> event, you
-	 * can access all properties of the <code>loaderInfo</code> object and the
-	 * loaded image or SWF file.</p>
-	 *
-	 * <p><b>Note:</b> All properties of LoaderInfo objects are read-only.</p>
-	 *
-	 * <p>The <code>EventDispatcher.dispatchEvent()</code> method is not
-	 * applicable to LoaderInfo objects. If you call <code>dispatchEvent()</code>
-	 * on a LoaderInfo object, an IllegalOperationError exception is thrown.</p>
-	 *
-	 * @event complete   Dispatched when data has loaded successfully. In other
-	 *                   words, it is dispatched when all the content has been
-	 *                   downloaded and the loading has finished. The
-	 *                   <code>complete</code> event is always dispatched after
-	 *                   the <code>init</code> event. The <code>init</code> event
-	 *                   is dispatched when the object is ready to access, though
-	 *                   the content may still be downloading.
-	 * @event httpStatus Dispatched when a network request is made over HTTP and
-	 *                   an HTTP status code can be detected.
-	 * @event init       Dispatched when the properties and methods of a loaded
-	 *                   SWF file are accessible and ready for use. The content,
-	 *                   however, can still be downloading. A LoaderInfo object
-	 *                   dispatches the <code>init</code> event when the following
-	 *                   conditions exist:
-	 *                   <ul>
-	 *                     <li>All properties and methods associated with the
-	 *                   loaded object and those associated with the LoaderInfo
-	 *                   object are accessible.</li>
-	 *                     <li>The constructors for all child objects have
-	 *                   completed.</li>
-	 *                     <li>All ActionScript code in the first frame of the
-	 *                   loaded SWF's main timeline has been executed.</li>
-	 *                   </ul>
-	 *
-	 *                   <p>For example, an <code>Event.INIT</code> is dispatched
-	 *                   when the first frame of a movie or animation is loaded.
-	 *                   The movie is then accessible and can be added to the
-	 *                   display list. The complete movie, however, can take
-	 *                   longer to download. The <code>Event.COMPLETE</code> is
-	 *                   only dispatched once the full movie is loaded.</p>
-	 *
-	 *                   <p>The <code>init</code> event always precedes the
-	 *                   <code>complete</code> event.</p>
-	 * @event ioError    Dispatched when an input or output error occurs that
-	 *                   causes a load operation to fail.
-	 * @event open       Dispatched when a load operation starts.
-	 * @event progress   Dispatched when data is received as the download
-	 *                   operation progresses.
-	 * @event unload     Dispatched by a LoaderInfo object whenever a loaded
-	 *                   object is removed by using the <code>unload()</code>
-	 *                   method of the Loader object, or when a second load is
-	 *                   performed by the same Loader object and the original
-	 *                   content is removed prior to the load beginning.
-	 */
-	class LoaderInfo extends EventDispatcher {
-	    private _bytes;
-	    private _bytesLoaded;
-	    private _bytesTotal;
-	    private _content;
-	    private _contentType;
-	    private _loader;
-	    private _url;
-	    /**
-	     * The bytes associated with a LoaderInfo object.
-	     *
-	     * @throws SecurityError If the object accessing this API is prevented from
-	     *                       accessing the loaded object due to security
-	     *                       restrictions. This situation can occur, for
-	     *                       instance, when a Loader object attempts to access
-	     *                       the <code>contentLoaderInfo.content</code> property
-	     *                       and it is not granted security permission to access
-	     *                       the loaded content.
-	     *
-	     *                       <p>For more information related to security, see the
-	     *                       Flash Player Developer Center Topic: <a
-	     *                       href="http://www.adobe.com/go/devnet_security_en"
-	     *                       scope="external">Security</a>.</p>
-	     */
-	    bytes: ByteArray;
-	    /**
-	     * The number of bytes that are loaded for the media. When this number equals
-	     * the value of <code>bytesTotal</code>, all of the bytes are loaded.
-	     */
-	    bytesLoaded: number;
-	    /**
-	     * The number of compressed bytes in the entire media file.
-	     *
-	     * <p>Before the first <code>progress</code> event is dispatched by this
-	     * LoaderInfo object's corresponding Loader object, <code>bytesTotal</code>
-	     * is 0. After the first <code>progress</code> event from the Loader object,
-	     * <code>bytesTotal</code> reflects the actual number of bytes to be
-	     * downloaded.</p>
-	     */
-	    bytesTotal: number;
-	    /**
-	     * The loaded object associated with this LoaderInfo object.
-	     *
-	     * @throws SecurityError If the object accessing this API is prevented from
-	     *                       accessing the loaded object due to security
-	     *                       restrictions. This situation can occur, for
-	     *                       instance, when a Loader object attempts to access
-	     *                       the <code>contentLoaderInfo.content</code> property
-	     *                       and it is not granted security permission to access
-	     *                       the loaded content.
-	     *
-	     *                       <p>For more information related to security, see the
-	     *                       Flash Player Developer Center Topic: <a
-	     *                       href="http://www.adobe.com/go/devnet_security_en"
-	     *                       scope="external">Security</a>.</p>
-	     */
-	    content: DisplayObject;
-	    /**
-	     * The MIME type of the loaded file. The value is <code>null</code> if not
-	     * enough of the file has loaded in order to determine the type. The
-	     * following list gives the possible values:
-	     * <ul>
-	     *   <li><code>"application/x-shockwave-flash"</code></li>
-	     *   <li><code>"image/jpeg"</code></li>
-	     *   <li><code>"image/gif"</code></li>
-	     *   <li><code>"image/png"</code></li>
-	     * </ul>
-	     */
-	    contentType: string;
-	    /**
-	     * The Loader object associated with this LoaderInfo object. If this
-	     * LoaderInfo object is the <code>loaderInfo</code> property of the instance
-	     * of the main class of the SWF file, no Loader object is associated.
-	     *
-	     * @throws SecurityError If the object accessing this API is prevented from
-	     *                       accessing the Loader object because of security
-	     *                       restrictions. This can occur, for instance, when a
-	     *                       loaded SWF file attempts to access its
-	     *                       <code>loaderInfo.loader</code> property and it is
-	     *                       not granted security permission to access the
-	     *                       loading SWF file.
-	     *
-	     *                       <p>For more information related to security, see the
-	     *                       Flash Player Developer Center Topic: <a
-	     *                       href="http://www.adobe.com/go/devnet_security_en"
-	     *                       scope="external">Security</a>.</p>
-	     */
-	    loader: Loader;
-	    /**
-	     * The URL of the media being loaded.
-	     *
-	     * <p>Before the first <code>progress</code> event is dispatched by this
-	     * LoaderInfo object's corresponding Loader object, the value of the
-	     * <code>url</code> property might reflect only the initial URL specified in
-	     * the call to the <code>load()</code> method of the Loader object. After the
-	     * first <code>progress</code> event, the <code>url</code> property reflects
-	     * the media's final URL, after any redirects and relative URLs are
-	     * resolved.</p>
-	     *
-	     * <p>In some cases, the value of the <code>url</code> property is truncated;
-	     * see the <code>isURLInaccessible</code> property for details.</p>
-	     */
-	    url: string;
-	}
-	export = LoaderInfo;
-	
-}
-
 declare module "awayjs-display/lib/base/OrientationMode" {
 	class OrientationMode {
 	    /**
@@ -2342,18 +2097,16 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import ISubGeometryVO = require("awayjs-display/lib/vos/ISubGeometryVO");
 	/**
 	 * @class away.base.TriangleSubGeometry
 	 */
 	class SubGeometryBase extends AssetBase {
-	    private _subGeometryVO;
 	    _pIndices: Short3Attributes;
 	    private _numElements;
 	    _concatenatedBuffer: AttributesBuffer;
-	    private _indicesUpdated;
+	    private _invalidateIndices;
 	    _verticesDirty: Object;
-	    _verticesUpdated: Object;
+	    _invalidateVertices: Object;
 	    concatenatedBuffer: AttributesBuffer;
 	    /**
 	     * The raw index data that define the faces.
@@ -2368,10 +2121,6 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	     *
 	     */
 	    constructor(concatenatedBuffer?: AttributesBuffer);
-	    /**
-	     *
-	     */
-	    invalidate(): void;
 	    /**
 	     *
 	     */
@@ -2409,12 +2158,10 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	    getBoxBounds(target?: Box): Box;
 	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
 	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
-	    private notifyIndicesUpdate();
-	    private notifyIndicesDispose();
-	    notifyVerticesUpdate(attributesView: AttributesView): void;
-	    notifyVerticesDispose(attributesView: AttributesView): void;
-	    _iAddSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
-	    _iRemoveSubGeometryVO(subGeometryVO: ISubGeometryVO): ISubGeometryVO;
+	    private invalidateIndicies();
+	    private clearIndices();
+	    invalidateVertices(attributesView: AttributesView): void;
+	    clearVertices(attributesView: AttributesView): void;
 	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
 	export = SubGeometryBase;
@@ -2422,13 +2169,12 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 }
 
 declare module "awayjs-display/lib/base/SubMeshBase" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -2447,7 +2193,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    _uvTransform: UVTransform;
 	    _iIndex: number;
 	    _material: MaterialBase;
-	    private _renderables;
 	    /**
 	     * The animator object that provides the state for the TriangleSubMesh's animation.
 	     */
@@ -2488,11 +2233,10 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	     * @returns {away.geom.Matrix3D}
 	     */
 	    getRenderSceneTransform(camera: Camera): Matrix3D;
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
-	    _iInvalidateRenderableGeometry(): void;
+	    invalidateGeometry(): void;
+	    invalidateRenderOwner(): void;
 	    _iGetExplicitMaterial(): MaterialBase;
-	    _clearInterfaces(): void;
+	    clear(): void;
 	}
 	export = SubMeshBase;
 	
@@ -3181,7 +2925,6 @@ declare module "awayjs-display/lib/bounds/NullBounds" {
 
 declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	import Point = require("awayjs-core/lib/geom/Point");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import ContainerNode = require("awayjs-display/lib/partition/ContainerNode");
@@ -3207,7 +2950,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	 * <p>For more information, see the "Display Programming" chapter of the
 	 * <i>ActionScript 3.0 Developer's Guide</i>.</p>
 	 */
-	class DisplayObjectContainer extends DisplayObject implements IAsset {
+	class DisplayObjectContainer extends DisplayObject {
 	    static assetType: string;
 	    private _containerNodes;
 	    private _mouseChildren;
@@ -3354,7 +3097,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     *
 	     */
-	    clear(): void;
+	    dispose(): void;
 	    getChildAtDepth(depth: number): DisplayObject;
 	    /**
 	     * Returns the child display object instance that exists at the specified
@@ -3565,40 +3308,39 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    _iRemoveContainerNode(containerNode: ContainerNode): ContainerNode;
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	    _updateMaskMode(): void;
-	    _clearInterfaces(): void;
+	    clear(): void;
 	}
 	export = DisplayObjectContainer;
 	
 }
 
-declare module "awayjs-display/lib/containers/Loader" {
+declare module "awayjs-display/lib/containers/LoaderContainer" {
 	import LoaderContext = require("awayjs-core/lib/library/LoaderContext");
 	import URLRequest = require("awayjs-core/lib/net/URLRequest");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LoaderInfo = require("awayjs-display/lib/base/LoaderInfo");
 	/**
-	 * The Loader class is used to load SWF files or image(JPG, PNG, or GIF)
+	 * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)
 	 * files. Use the <code>load()</code> method to initiate loading. The loaded
-	 * display object is added as a child of the Loader object.
+	 * display object is added as a child of the LoaderContainer object.
 	 *
 	 * <p>Use the URLLoader class to load text or binary data.</p>
 	 *
-	 * <p>The Loader class overrides the following methods that it inherits,
-	 * because a Loader object can only have one child display object - the
+	 * <p>The LoaderContainer class overrides the following methods that it inherits,
+	 * because a LoaderContainer object can only have one child display object - the
 	 * display object that it loads. Calling the following methods throws an
 	 * exception: <code>addChild()</code>, <code>addChildAt()</code>,
 	 * <code>removeChild()</code>, <code>removeChildAt()</code>, and
 	 * <code>setChildIndex()</code>. To remove a loaded display object, you must
-	 * remove the <i>Loader</i> object from its parent DisplayObjectContainer
+	 * remove the <i>LoaderContainer</i> object from its parent DisplayObjectContainer
 	 * child array. </p>
 	 *
 	 * <p><b>Note:</b> The ActionScript 2.0 MovieClipLoader and LoadVars classes
-	 * are not used in ActionScript 3.0. The Loader and URLLoader classes replace
+	 * are not used in ActionScript 3.0. The LoaderContainer and URLLoader classes replace
 	 * them.</p>
 	 *
-	 * <p>When you use the Loader class, consider the Flash Player and Adobe AIR
+	 * <p>When you use the LoaderContainer class, consider the Flash Player and Adobe AIR
 	 * security model: </p>
 	 *
 	 * <ul>
@@ -3636,12 +3378,12 @@ declare module "awayjs-display/lib/containers/Loader" {
 	 * scope="external">Security</a>.</p>
 	 *
 	 * <p>When loading a SWF file from an untrusted source(such as a domain other
-	 * than that of the Loader object's root SWF file), you may want to define a
-	 * mask for the Loader object, to prevent the loaded content(which is a child
-	 * of the Loader object) from drawing to portions of the Stage outside of that
+	 * than that of the LoaderContainer object's root SWF file), you may want to define a
+	 * mask for the LoaderContainer object, to prevent the loaded content(which is a child
+	 * of the LoaderContainer object) from drawing to portions of the Stage outside of that
 	 * mask, as shown in the following code:</p>
 	 */
-	class Loader extends DisplayObjectContainer {
+	class LoaderContainer extends DisplayObjectContainer {
 	    /**
 	     * Dispatched when any asset finishes parsing. Also see specific events for each
 	     * individual asset type (meshes, materials et c.)
@@ -3653,18 +3395,15 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     *
 	     * @eventType LoaderEvent
 	     */
-	    private _loaderSession;
-	    private _loaderSessionGarbage;
-	    private _gcTimeoutIID;
+	    private _loader;
 	    private _useAssetLib;
 	    private _assetLibId;
-	    private _onResourceCompleteDelegate;
+	    private _onLoadCompleteDelegate;
 	    private _onAssetCompleteDelegate;
 	    private _onTextureSizeErrorDelegate;
 	    private _onLoadErrorDelegate;
 	    private _onParseErrorDelegate;
 	    private _content;
-	    private _contentLoaderInfo;
 	    /**
 	     * Contains the root display object of the SWF file or image(JPG, PNG, or
 	     * GIF) file that was loaded by using the <code>load()</code> or
@@ -3683,23 +3422,6 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     *                       <code>loadBytes()</code> method.
 	     */
 	    content: DisplayObject;
-	    /**
-	     * Returns a LoaderInfo object corresponding to the object being loaded.
-	     * LoaderInfo objects are shared between the Loader object and the loaded
-	     * content object. The LoaderInfo object supplies loading progress
-	     * information and statistics about the loaded file.
-	     *
-	     * <p>Events related to the load are dispatched by the LoaderInfo object
-	     * referenced by the <code>contentLoaderInfo</code> property of the Loader
-	     * object. The <code>contentLoaderInfo</code> property is set to a valid
-	     * LoaderInfo object, even before the content is loaded, so that you can add
-	     * event listeners to the object prior to the load.</p>
-	     *
-	     * <p>To detect uncaught errors that happen in a loaded SWF, use the
-	     * <code>Loader.uncaughtErrorEvents</code> property, not the
-	     * <code>Loader.contentLoaderInfo.uncaughtErrorEvents</code> property.</p>
-	     */
-	    contentLoaderInfo: LoaderInfo;
 	    /**
 	     * Creates a Loader object that you can use to load files, such as SWF, JPEG,
 	     * GIF, or PNG files. Call the <code>load()</code> method to load the asset
@@ -3838,7 +3560,7 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     *                loaded, allowing the differentiation of two resources with
 	     *                identical assets.
 	     * @param parser  An optional parser object for translating the loaded data
-	     *                into a usable resource. If not provided, LoaderSession will
+	     *                into a usable resource. If not provided, Loader will
 	     *                attempt to auto-detect the file type.
 	     * @throws IOError               The <code>digest</code> property of the
 	     *                               <code>request</code> object is not
@@ -4010,8 +3732,8 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     *                      object when a loaded object is removed.
 	     */
 	    loadData(data: any, context?: LoaderContext, ns?: string, parser?: ParserBase): void;
-	    private _getLoaderSession();
-	    private _disposeLoaderSession();
+	    private _getLoader();
+	    private _disposeLoader();
 	    /**
 	     * Removes a child of this Loader object that was loaded by using the
 	     * <code>load()</code> method. The <code>property</code> of the associated
@@ -4056,7 +3778,6 @@ declare module "awayjs-display/lib/containers/Loader" {
 	     * @see away.parsers.Parsers
 	     */
 	    static enableParsers(parserClasses: Array<Object>): void;
-	    private loaderSessionGC();
 	    private onAssetComplete(event);
 	    /**
 	     * Called when an error occurs during loading
@@ -4070,9 +3791,9 @@ declare module "awayjs-display/lib/containers/Loader" {
 	    /**
 	     * Called when the resource and all of its dependencies was retrieved.
 	     */
-	    private onResourceComplete(event);
+	    private onLoadComplete(event);
 	}
-	export = Loader;
+	export = LoaderContainer;
 	
 }
 
@@ -4578,7 +4299,7 @@ declare module "awayjs-display/lib/draw/GradientType" {
 }
 
 declare module "awayjs-display/lib/draw/Graphics" {
-	import BitmapImage2D = require("awayjs-core/lib/data/BitmapImage2D");
+	import BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import CapsStyle = require("awayjs-display/lib/draw/CapsStyle");
 	import GradientType = require("awayjs-display/lib/draw/GradientType");
@@ -5606,8 +5327,8 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 }
 
 declare module "awayjs-display/lib/entities/Billboard" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -5663,7 +5384,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    private _uvTransform;
 	    private _colorTransform;
 	    private _parentColorTransform;
-	    private onTextureChangedDelegate;
+	    private onInvalidateTextureDelegate;
 	    /**
 	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
 	     */
@@ -5746,9 +5467,10 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    /**
 	     * @private
 	     */
-	    private onTextureChanged(event);
+	    private onInvalidateTexture(event);
 	    _applyRenderer(renderer: IRenderer): void;
 	    private _updateDimensions();
+	    invalidateRenderOwner(): void;
 	}
 	export = Billboard;
 	
@@ -6004,7 +5726,7 @@ declare module "awayjs-display/lib/entities/IEntity" {
 }
 
 declare module "awayjs-display/lib/entities/LightProbe" {
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import ImageCube = require("awayjs-core/lib/image/ImageCube");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -6024,8 +5746,8 @@ declare module "awayjs-display/lib/entities/LightProbe" {
 }
 
 declare module "awayjs-display/lib/entities/LineSegment" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -6090,7 +5812,6 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	     * @param thickness Thickness of the line
 	     */
 	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
-	    dispose(): void;
 	    getImageAt(index: number): ImageBase;
 	    addImageAt(image: ImageBase, index: number): void;
 	    removeImageAt(image: ImageBase, index: number): void;
@@ -6105,7 +5826,8 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	    /**
 	     * @private
 	     */
-	    private notifyRenderableUpdate();
+	    private invalidateGeometry();
+	    invalidateRenderOwner(): void;
 	    _applyRenderer(renderer: IRenderer): void;
 	}
 	export = LineSegment;
@@ -6113,8 +5835,8 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 }
 
 declare module "awayjs-display/lib/entities/Mesh" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
@@ -6201,7 +5923,6 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     * @inheritDoc
 	     */
 	    dispose(): void;
-	    clear(): void;
 	    /**
 	     * Clones this Mesh instance along with all it's children, while re-using the same
 	     * material, geometry and animation set. The returned result will be a copy of this mesh,
@@ -6277,7 +5998,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    _applyRenderer(renderer: IRenderer): void;
 	    _iInvalidateRenderableGeometries(): void;
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
-	    _clearInterfaces(): void;
+	    clear(): void;
 	}
 	export = Mesh;
 	
@@ -6314,7 +6035,6 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    adapter: IMovieClipAdapter;
 	    constructor(timeline?: Timeline);
 	    dispose(): void;
-	    clear(): void;
 	    reset_textclones(): void;
 	    isInit: boolean;
 	    timeline: Timeline;
@@ -6357,7 +6077,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    advanceFrame(): void;
 	    logHierarchy(depth?: number): void;
 	    printHierarchyName(depth: number, target: DisplayObject): void;
-	    _clearInterfaces(): void;
+	    clear(): void;
 	}
 	export = MovieClip;
 	
@@ -6422,8 +6142,8 @@ declare module "awayjs-display/lib/entities/Shape" {
 }
 
 declare module "awayjs-display/lib/entities/Skybox" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
@@ -6432,8 +6152,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IRender = require("awayjs-display/lib/pool/IRender");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
@@ -6455,8 +6173,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    private _animationSet;
 	    _pLightPicker: LightPickerBase;
 	    _pBlendMode: string;
-	    private _renders;
-	    private _renderables;
 	    private _uvTransform;
 	    private _colorTransform;
 	    private _owners;
@@ -6504,13 +6220,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     * </ul>
 	     */
 	    blendMode: string;
-	    _pInvalidateRender(): void;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    _pIinvalidatePasses(): void;
 	    /**
 	     * A list of the IRenderableOwners that use this material
 	     *
@@ -6544,27 +6253,18 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    getNumSamplers(): number;
 	    getSamplerAt(index: number): SamplerBase;
 	    getSamplerIndex(texture: TextureBase, index?: number): number;
-	    /**
-	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	     * could be used by other materials and will not be disposed.
-	     */
-	    dispose(): void;
 	    _applyRenderer(renderer: IRenderer): void;
-	    _pUpdateRender(): void;
+	    _iAddImage(image: ImageBase): void;
+	    _iRemoveImage(image: ImageBase): void;
+	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): void;
+	    _iRemoveSampler(texture: TextureBase, index: number): void;
 	    /**
 	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	     *
 	     * @private
 	     */
-	    _pInvalidatePasses(): void;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	    _iAddRenderable(renderable: IRenderable): IRenderable;
-	    _iRemoveRenderable(renderable: IRenderable): IRenderable;
-	    _iAddImage(image: ImageBase): void;
-	    _iRemoveImage(image: ImageBase): void;
-	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): void;
-	    _iRemoveSampler(texture: TextureBase, index: number): void;
+	    invalidatePasses(): void;
+	    invalidateRenderOwner(): void;
 	}
 	export = Skybox;
 	
@@ -7200,7 +6900,6 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * @inheritDoc
 	     */
 	    dispose(): void;
-	    clear(): void;
 	    /**
 	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
 	     * material.
@@ -7504,8 +7203,8 @@ declare module "awayjs-display/lib/entities/TextField" {
 }
 
 declare module "awayjs-display/lib/errors/CastError" {
-	import Error = require("awayjs-core/lib/errors/Error");
-	class CastError extends Error {
+	import ErrorBase = require("awayjs-core/lib/errors/ErrorBase");
+	class CastError extends ErrorBase {
 	    constructor(message: string);
 	}
 	export = CastError;
@@ -7513,25 +7212,30 @@ declare module "awayjs-display/lib/errors/CastError" {
 }
 
 declare module "awayjs-display/lib/events/CameraEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	/**
 	 * @class away.events.CameraEvent
 	 */
-	class CameraEvent extends Event {
+	class CameraEvent extends EventBase {
 	    static PROJECTION_CHANGED: string;
 	    private _camera;
 	    constructor(type: string, camera: Camera);
 	    camera: Camera;
+	    /**
+	     * Clones the event.
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): CameraEvent;
 	}
 	export = CameraEvent;
 	
 }
 
 declare module "awayjs-display/lib/events/DisplayObjectEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class DisplayObjectEvent extends Event {
+	class DisplayObjectEvent extends EventBase {
 	    static VISIBLITY_UPDATED: string;
 	    static SCENETRANSFORM_CHANGED: string;
 	    static SCENE_CHANGED: string;
@@ -7543,15 +7247,21 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	     *
 	     */
 	    static PARTITION_CHANGED: string;
+	    private _object;
 	    object: DisplayObject;
 	    constructor(type: string, object: DisplayObject);
+	    /**
+	     * Clones the event.
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): DisplayObjectEvent;
 	}
 	export = DisplayObjectEvent;
 	
 }
 
 declare module "awayjs-display/lib/events/GeometryEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	/**
 	* Dispatched to notify changes in a geometry object's state.
@@ -7559,7 +7269,7 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	* @class away.events.GeometryEvent
 	* @see away3d.core.base.Geometry
 	*/
-	class GeometryEvent extends Event {
+	class GeometryEvent extends EventBase {
 	    /**
 	     * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
 	     */
@@ -7587,37 +7297,27 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	     * Clones the event.
 	     * @return An exact duplicate of the current object.
 	     */
-	    clone(): Event;
+	    clone(): GeometryEvent;
 	}
 	export = GeometryEvent;
 	
 }
 
 declare module "awayjs-display/lib/events/LightEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class LightEvent extends Event {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	class LightEvent extends EventBase {
 	    static CASTS_SHADOW_CHANGE: string;
 	    constructor(type: string);
-	    clone(): Event;
+	    clone(): LightEvent;
 	}
 	export = LightEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/MaterialEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class MaterialEvent extends Event {
-	    static TEXTURE_CHANGED: string;
-	    constructor(type: string);
-	}
-	export = MaterialEvent;
 	
 }
 
 declare module "awayjs-display/lib/events/MouseEvent" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Event = require("awayjs-core/lib/events/Event");
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import View = require("awayjs-display/lib/containers/View");
@@ -7626,7 +7326,7 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	 * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
 	 * TODO: we don't have screenZ data, tho this should be easy to implement
 	 */
-	class MouseEvent extends Event {
+	class MouseEvent extends EventBase {
 	    _iAllowedToPropagate: boolean;
 	    _iParentEvent: MouseEvent;
 	    /**
@@ -7747,7 +7447,7 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	    /**
 	     * Creates a copy of the MouseEvent object and sets the value of each property to match that of the original.
 	     */
-	    clone(): Event;
+	    clone(): MouseEvent;
 	    /**
 	     * The position in scene space where the event took place
 	     */
@@ -7761,20 +7461,13 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
+declare module "awayjs-display/lib/events/RenderOwnerEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	/**
-	 * Dispatched to notify changes in a sub geometry object's state.
-	 *
-	 * @class away.events.RenderableOwnerEvent
-	 * @see away.core.base.Geometry
-	 */
-	class RenderableOwnerEvent extends Event {
-	    /**
-	     * Dispatched when a Renderable owners's render object owner has been updated.
-	     */
-	    static RENDER_OWNER_UPDATED: string;
+	class RenderOwnerEvent extends EventBase {
+	    static INVALIDATE_TEXTURE: string;
+	    static INVALIDATE_ANIMATION: string;
+	    static INVALIDATE_PASSES: string;
 	    private _renderOwner;
 	    /**
 	     * Create a new GeometryEvent
@@ -7791,15 +7484,55 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	     *
 	     * @return An exact duplicate of the current object.
 	     */
-	    clone(): Event;
+	    clone(): RenderOwnerEvent;
+	}
+	export = RenderOwnerEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	/**
+	 * Dispatched to notify changes in a sub geometry object's state.
+	 *
+	 * @class away.events.RenderableOwnerEvent
+	 * @see away.core.base.Geometry
+	 */
+	class RenderableOwnerEvent extends EventBase {
+	    /**
+	     * Dispatched when a Renderable owners's render object owner has been updated.
+	     */
+	    static INVALIDATE_RENDER_OWNER: string;
+	    /**
+	     *
+	     */
+	    static INVALIDATE_GEOMETRY: string;
+	    private _renderableOwner;
+	    /**
+	     * Create a new GeometryEvent
+	     * @param type The event type.
+	     * @param dataType An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, renderableOwner: IRenderableOwner);
+	    /**
+	     * The renderobject owner of the renderable owner.
+	     */
+	    renderableOwner: IRenderableOwner;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): RenderableOwnerEvent;
 	}
 	export = RenderableOwnerEvent;
 	
 }
 
 declare module "awayjs-display/lib/events/RendererEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class RendererEvent extends Event {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	class RendererEvent extends EventBase {
 	    static VIEWPORT_UPDATED: string;
 	    static SCISSOR_UPDATED: string;
 	    constructor(type: string);
@@ -7809,14 +7542,20 @@ declare module "awayjs-display/lib/events/RendererEvent" {
 }
 
 declare module "awayjs-display/lib/events/ResizeEvent" {
-	import Event = require("awayjs-core/lib/events/Event");
-	class ResizeEvent extends Event {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	class ResizeEvent extends EventBase {
 	    static RESIZE: string;
 	    private _oldHeight;
 	    private _oldWidth;
 	    constructor(type: string, oldHeight?: number, oldWidth?: number);
 	    oldHeight: number;
 	    oldWidth: number;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): ResizeEvent;
 	}
 	export = ResizeEvent;
 	
@@ -7824,30 +7563,30 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 
 declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import Event = require("awayjs-core/lib/events/Event");
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	/**
 	 * Dispatched to notify changes in a sub geometry object's state.
 	 *
 	 * @class away.events.SubGeometryEvent
 	 * @see away.core.base.Geometry
 	 */
-	class SubGeometryEvent extends Event {
+	class SubGeometryEvent extends EventBase {
 	    /**
 	     * Dispatched when a SubGeometry's index data has been updated.
 	     */
-	    static INDICES_UPDATED: string;
+	    static INVALIDATE_INDICES: string;
 	    /**
 	     * Dispatched when a SubGeometry's index data has been disposed.
 	     */
-	    static INDICES_DISPOSED: string;
+	    static CLEAR_INDICES: string;
 	    /**
 	     * Dispatched when a SubGeometry's vertex data has been updated.
 	     */
-	    static VERTICES_UPDATED: string;
+	    static INVALIDATE_VERTICES: string;
 	    /**
 	     * Dispatched when a SubGeometry's vertex data has been disposed.
 	     */
-	    static VERTICES_DISPOSED: string;
+	    static CLEAR_VERTICES: string;
 	    private _attributesView;
 	    /**
 	     * Create a new GeometryEvent
@@ -7864,7 +7603,7 @@ declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	     *
 	     * @return An exact duplicate of the current object.
 	     */
-	    clone(): Event;
+	    clone(): SubGeometryEvent;
 	}
 	export = SubGeometryEvent;
 	
@@ -7873,12 +7612,12 @@ declare module "awayjs-display/lib/events/SubGeometryEvent" {
 declare module "awayjs-display/lib/events/TouchEvent" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Event = require("awayjs-core/lib/events/Event");
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import View = require("awayjs-display/lib/containers/View");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	class TouchEvent extends Event {
+	class TouchEvent extends EventBase {
 	    _iAllowedToPropagate: boolean;
 	    _iParentEvent: TouchEvent;
 	    /**
@@ -7978,7 +7717,7 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	    /**
 	     * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
 	     */
-	    clone(): Event;
+	    clone(): TouchEvent;
 	    /**
 	     * The position in scene space where the event took place
 	     */
@@ -8150,7 +7889,7 @@ declare module "awayjs-display/lib/managers/TouchManager" {
 }
 
 declare module "awayjs-display/lib/materials/BasicMaterial" {
-	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import Image2D = require("awayjs-core/lib/image/Image2D");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
@@ -8218,14 +7957,13 @@ declare module "awayjs-display/lib/materials/LightSources" {
 }
 
 declare module "awayjs-display/lib/materials/MaterialBase" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/data/SamplerBase");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRender = require("awayjs-display/lib/pool/IRender");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	/**
@@ -8249,8 +7987,6 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    private _pUseColorTransform;
 	    private _alphaBlending;
 	    private _alpha;
-	    private _textureChanged;
-	    private _renders;
 	    _pAlphaThreshold: number;
 	    _pAnimateUVs: boolean;
 	    private _enableLightFallOff;
@@ -8366,11 +8102,6 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     */
 	    specularLightSources: number;
 	    /**
-	     * Cleans up resources owned by the material, including passes. Textures are not owned by the material since they
-	     * could be used by other materials and will not be disposed.
-	     */
-	    dispose(): void;
-	    /**
 	     * Defines whether or not the material should cull triangles facing away from the camera.
 	     */
 	    bothSides: boolean;
@@ -8431,18 +8162,15 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     *
 	     * @private
 	     */
-	    _pInvalidatePasses(): void;
+	    invalidatePasses(): void;
 	    private invalidateAnimation();
-	    _pInvalidateRender(): void;
-	    _pUpdateRender(): void;
+	    invalidateRenderOwners(): void;
 	    /**
 	     * Called when the light picker's configuration changed.
 	     */
 	    private onLightsChange(event);
-	    _pNotifyTextureChanged(): void;
-	    _iAddRender(render: IRender): IRender;
-	    _iRemoveRender(render: IRender): IRender;
-	    _clearInterfaces(): void;
+	    invalidateTexture(): void;
+	    clear(): void;
 	    _iAddImage(image: ImageBase): void;
 	    _iRemoveImage(image: ImageBase): void;
 	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): void;
@@ -8454,9 +8182,8 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 
 declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
 	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
 	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
 	import PointLight = require("awayjs-display/lib/entities/PointLight");
@@ -8467,7 +8194,7 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	 *
 	 * @see StaticLightPicker
 	 */
-	class LightPickerBase extends AssetBase implements IAsset {
+	class LightPickerBase extends AssetBase {
 	    static assetType: string;
 	    _pNumPointLights: number;
 	    _pNumDirectionalLights: number;
@@ -8544,12 +8271,12 @@ declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	    /**
 	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
 	     */
-	    collectLights(renderable: IRenderable): void;
+	    collectLights(entity: IEntity): void;
 	    /**
 	     * Updates the weights for the light probes, based on the renderable's position relative to them.
 	     * @param renderable The renderble for which to calculate the light probes' influence.
 	     */
-	    private updateProbeWeights(renderable);
+	    private updateProbeWeights(entity);
 	}
 	export = LightPickerBase;
 	
@@ -8598,14 +8325,12 @@ declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Event = require("awayjs-core/lib/events/Event");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-	class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher {
+	class CascadeShadowMapper extends DirectionalShadowMapper {
 	    _pScissorRects: Rectangle[];
 	    private _pScissorRectsInvalid;
 	    private _splitRatios;
@@ -8614,7 +8339,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	    private _depthLenses;
 	    private _texOffsetsX;
 	    private _texOffsetsY;
-	    private _changeDispatcher;
 	    private _nearPlaneDistances;
 	    constructor(numCascades?: number);
 	    getSplitRatio(index: number): number;
@@ -8628,10 +8352,6 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	    private updateScissorRects();
 	    pUpdateDepthProjection(viewCamera: Camera): void;
 	    private updateProjectionPartition(matrix, splitRatio, texOffsetX, texOffsetY);
-	    addEventListener(type: string, listener: Function): void;
-	    removeEventListener(type: string, listener: Function): void;
-	    dispatchEvent(event: Event): void;
-	    hasEventListener(type: string): boolean;
 	    _iNearPlaneDistances: Array<number>;
 	}
 	export = CascadeShadowMapper;
@@ -8711,6 +8431,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadow
 }
 
 declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import Scene = require("awayjs-display/lib/containers/Scene");
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
@@ -8718,7 +8439,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	class ShadowMapperBase {
+	class ShadowMapperBase extends AssetBase {
 	    _pCasterCollector: ShadowCasterCollector;
 	    _depthMap: TextureBase;
 	    _pDepthMapSize: number;
@@ -9651,98 +9372,8 @@ declare module "awayjs-display/lib/pool/IEntityNodeClass" {
 	
 }
 
-declare module "awayjs-display/lib/pool/IRender" {
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	/**
-	 * IRender provides an abstract base class for material shader passes. A material pass constitutes at least
-	 * a render call per required renderable.
-	 */
-	interface IRender extends IEventDispatcher {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidateRender(): any;
-	    /**
-	     *
-	     */
-	    invalidatePasses(): any;
-	    /**
-	     *
-	     */
-	    invalidateAnimation(): any;
-	}
-	export = IRender;
-	
-}
-
-declare module "awayjs-display/lib/pool/IRenderable" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	/**
-	 * IRenderable is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderable
-	 */
-	interface IRenderable {
-	    /**
-	     *
-	     */
-	    next: IRenderable;
-	    /**
-	     *
-	     */
-	    sourceEntity: IEntity;
-	    /**
-	     *
-	     */
-	    renderId: number;
-	    /**
-	     *
-	     */
-	    renderOrderId: number;
-	    /**
-	     *
-	     */
-	    zIndex: number;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidateGeometry(): any;
-	}
-	export = IRenderable;
-	
-}
-
-declare module "awayjs-display/lib/pool/ITextureVO" {
-	/**
-	 * ITextureVO is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a texture
-	 *
-	 * @class away.pool.ITextureVO
-	 */
-	interface ITextureVO {
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     */
-	    invalidate(): any;
-	}
-	export = ITextureVO;
-	
-}
-
 declare module "awayjs-display/lib/pool/SubMeshPool" {
+	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import ISubMeshClass = require("awayjs-display/lib/base/ISubMeshClass");
@@ -9758,7 +9389,7 @@ declare module "awayjs-display/lib/pool/SubMeshPool" {
 	     *
 	     * @param subMeshClass
 	     */
-	    static registerClass(subMeshClass: ISubMeshClass): void;
+	    static registerClass(subMeshClass: ISubMeshClass, assetClass: IAssetClass): void;
 	    /**
 	     *
 	     * @param subGeometry
@@ -9795,13 +9426,12 @@ declare module "awayjs-display/lib/prefabs/PrefabBase" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Capsule primitive mesh.
 	 */
-	class PrimitiveCapsulePrefab extends PrimitivePrefabBase implements IAsset {
+	class PrimitiveCapsulePrefab extends PrimitivePrefabBase {
 	    private _radius;
 	    private _height;
 	    private _segmentsW;
@@ -9851,12 +9481,11 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 	/**
 	 * A UV Cone primitive mesh.
 	 */
-	class PrimitiveConePrefab extends PrimitiveCylinderPrefab implements IAsset {
+	class PrimitiveConePrefab extends PrimitiveCylinderPrefab {
 	    /**
 	     * The radius of the bottom end of the cone.
 	     */
@@ -9876,13 +9505,12 @@ declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Cube primitive prefab.
 	 */
-	class PrimitiveCubePrefab extends PrimitivePrefabBase implements IAsset {
+	class PrimitiveCubePrefab extends PrimitivePrefabBase {
 	    private _width;
 	    private _height;
 	    private _depth;
@@ -9948,13 +9576,12 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Cylinder primitive mesh.
 	 */
-	class PrimitiveCylinderPrefab extends PrimitivePrefabBase implements IAsset {
+	class PrimitiveCylinderPrefab extends PrimitivePrefabBase {
 	    _pBottomRadius: number;
 	    _pSegmentsW: number;
 	    _pSegmentsH: number;
@@ -10025,13 +9652,12 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Plane primitive mesh.
 	 */
-	class PrimitivePlanePrefab extends PrimitivePrefabBase implements IAsset {
+	class PrimitivePlanePrefab extends PrimitivePrefabBase {
 	    private _segmentsW;
 	    private _segmentsH;
 	    private _yUp;
@@ -10087,12 +9713,11 @@ declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 	/**
 	 * A UV RegularPolygon primitive mesh.
 	 */
-	class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab implements IAsset {
+	class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab {
 	    /**
 	     * The radius of the regular polygon.
 	     */
@@ -10200,13 +9825,12 @@ declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A UV Sphere primitive mesh.
 	 */
-	class PrimitiveSpherePrefab extends PrimitivePrefabBase implements IAsset {
+	class PrimitiveSpherePrefab extends PrimitivePrefabBase {
 	    private _radius;
 	    private _segmentsW;
 	    private _segmentsH;
@@ -10250,13 +9874,12 @@ declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A UV Cylinder primitive mesh.
 	 */
-	class PrimitiveTorusPrefab extends PrimitivePrefabBase implements IAsset {
+	class PrimitiveTorusPrefab extends PrimitivePrefabBase {
 	    private _radius;
 	    private _tubeRadius;
 	    private _segmentsR;
@@ -10305,47 +9928,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	
 }
 
-declare module "awayjs-display/lib/sort/IEntitySorter" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	/**
-	 * @interface away.sort.IEntitySorter
-	 */
-	interface IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = IEntitySorter;
-	
-}
-
-declare module "awayjs-display/lib/sort/RenderableMergeSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.RenderableMergeSort
-	 */
-	class RenderableMergeSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableMergeSort;
-	
-}
-
-declare module "awayjs-display/lib/sort/RenderableNullSort" {
-	import IRenderable = require("awayjs-display/lib/pool/IRenderable");
-	import IEntitySorter = require("awayjs-display/lib/sort/IEntitySorter");
-	/**
-	 * @class away.sort.NullSort
-	 */
-	class RenderableNullSort implements IEntitySorter {
-	    sortBlendedRenderables(head: IRenderable): IRenderable;
-	    sortOpaqueRenderables(head: IRenderable): IRenderable;
-	}
-	export = RenderableNullSort;
-	
-}
-
 declare module "awayjs-display/lib/text/AntiAliasType" {
 	/**
 	 * The AntiAliasType class provides values for anti-aliasing in the
@@ -10377,7 +9959,6 @@ declare module "awayjs-display/lib/text/AntiAliasType" {
 
 declare module "awayjs-display/lib/text/Font" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
 	/**
 	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
@@ -10388,7 +9969,7 @@ declare module "awayjs-display/lib/text/Font" {
 	 *
 	 * @class away.base.SubMeshBase
 	 */
-	class Font extends AssetBase implements IAsset {
+	class Font extends AssetBase {
 	    static assetType: string;
 	    private _font_styles;
 	    /**
@@ -10609,7 +10190,6 @@ declare module "awayjs-display/lib/text/TextFieldType" {
 
 declare module "awayjs-display/lib/text/TextFormat" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import TesselatedFontTable = require("awayjs-display/lib/text/TesselatedFontTable");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
@@ -10638,7 +10218,7 @@ declare module "awayjs-display/lib/text/TextFormat" {
 	 * <p>The default formatting for each property is also described in each
 	 * property description.</p>
 	 */
-	class TextFormat extends AssetBase implements IAsset {
+	class TextFormat extends AssetBase {
 	    static assetType: string;
 	    /**
 	     * Indicates the alignment of the paragraph. Valid values are TextFormatAlign
@@ -10972,16 +10552,41 @@ declare module "awayjs-display/lib/text/TextLineMetrics" {
 	
 }
 
+declare module "awayjs-display/lib/textures/MappingMode" {
+	/**
+	
+	
+	 */
+	class MappingMode {
+	    /**
+	     *
+	     */
+	    static NORMAL: string;
+	    /**
+	     *
+	     */
+	    static LINEAR_GRADIENT: string;
+	    /**
+	     *
+	     */
+	    static RADIAL_GRADIENT: string;
+	}
+	export = MappingMode;
+	
+}
+
 declare module "awayjs-display/lib/textures/Single2DTexture" {
-	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import Image2D = require("awayjs-core/lib/image/Image2D");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class Single2DTexture extends TextureBase {
+	    private _mappingMode;
 	    static assetType: string;
 	    /**
 	     *
 	     * @returns {string}
 	     */
 	    assetType: string;
+	    mappingMode: string;
 	    /**
 	     *
 	     * @returns {Image2D}
@@ -10994,7 +10599,7 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 }
 
 declare module "awayjs-display/lib/textures/SingleCubeTexture" {
-	import ImageCube = require("awayjs-core/lib/data/ImageCube");
+	import ImageCube = require("awayjs-core/lib/image/ImageCube");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class SingleCubeTexture extends TextureBase {
 	    static assetType: string;
@@ -11015,38 +10620,20 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 }
 
 declare module "awayjs-display/lib/textures/TextureBase" {
-	import ImageBase = require("awayjs-core/lib/data/ImageBase");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import ITextureVO = require("awayjs-display/lib/pool/ITextureVO");
 	/**
 	 *
 	 */
-	class TextureBase extends AssetBase implements IAsset {
+	class TextureBase extends AssetBase {
 	    private _owners;
 	    private _counts;
-	    private _textureVO;
 	    _images: Array<ImageBase>;
 	    /**
 	     *
 	     */
 	    constructor();
-	    /**
-	     *
-	     */
-	    invalidateContent(): void;
-	    /**
-	     *
-	     * @private
-	     */
-	    invalidateSize(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    dispose(): void;
-	    _iAddTextureVO(textureVO: ITextureVO): ITextureVO;
-	    _iRemoveTextureVO(textureVO: ITextureVO): ITextureVO;
 	    iAddOwner(owner: IRenderOwner): void;
 	    iRemoveOwner(owner: IRenderOwner): void;
 	    /**
@@ -11286,7 +10873,7 @@ declare module "awayjs-display/lib/traverse/ShadowCasterCollector" {
 }
 
 declare module "awayjs-display/lib/utils/Cast" {
-	import Image2D = require("awayjs-core/lib/data/Image2D");
+	import Image2D = require("awayjs-core/lib/image/Image2D");
 	import ByteArray = require("awayjs-core/lib/utils/ByteArray");
 	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 	/**
