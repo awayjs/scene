@@ -1301,6 +1301,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     *
 	     */
 	    dispose(): void;
+	    disposeValues(): void;
 	    /**
 	     * Returns a rectangle that defines the area of the display object relative
 	     * to the coordinate system of the <code>targetCoordinateSpace</code> object.
@@ -3097,7 +3098,7 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	    /**
 	     *
 	     */
-	    dispose(): void;
+	    disposeValues(): void;
 	    getChildAtDepth(depth: number): DisplayObject;
 	    /**
 	     * Returns the child display object instance that exists at the specified
@@ -5924,6 +5925,10 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     */
 	    dispose(): void;
 	    /**
+	     * @inheritDoc
+	     */
+	    disposeValues(): void;
+	    /**
 	     * Clones this Mesh instance along with all it's children, while re-using the same
 	     * material, geometry and animation set. The returned result will be a copy of this mesh,
 	     * containing copies of all of it's children.
@@ -6035,6 +6040,7 @@ declare module "awayjs-display/lib/entities/MovieClip" {
 	    adapter: IMovieClipAdapter;
 	    constructor(timeline?: Timeline);
 	    dispose(): void;
+	    disposeValues(): void;
 	    reset_textclones(): void;
 	    isInit: boolean;
 	    timeline: Timeline;
@@ -6900,6 +6906,10 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     * @inheritDoc
 	     */
 	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    disposeValues(): void;
 	    /**
 	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
 	     * material.

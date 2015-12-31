@@ -1578,7 +1578,9 @@ var DisplayObject = (function (_super) {
      *
      */
     DisplayObject.prototype.dispose = function () {
-        _super.prototype.dispose.call(this);
+        this.disposeValues();
+    };
+    DisplayObject.prototype.disposeValues = function () {
         if (this._pParent)
             this._pParent.removeChild(this);
         //if (this._adapter) {
@@ -5421,10 +5423,10 @@ var DisplayObjectContainer = (function (_super) {
     /**
      *
      */
-    DisplayObjectContainer.prototype.dispose = function () {
+    DisplayObjectContainer.prototype.disposeValues = function () {
         for (var i = this._children.length - 1; i >= 0; i--)
             this.removeChild(this._children[i]);
-        _super.prototype.dispose.call(this);
+        _super.prototype.disposeValues.call(this);
     };
     DisplayObjectContainer.prototype.getChildAtDepth = function (depth) {
         return this._depth_childs[depth];
@@ -9902,8 +9904,10 @@ var Mesh = (function (_super) {
                 this._geometry.removeEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
                 this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
                 this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
-                for (i = 0; i < this._subMeshes.length; ++i)
+                for (i = 0; i < this._subMeshes.length; ++i) {
+                    this._subMeshes[i].clear();
                     this._subMeshes[i].dispose();
+                }
                 this._subMeshes.length = 0;
             }
             this._geometry = value;
@@ -10016,12 +10020,18 @@ var Mesh = (function (_super) {
      * @inheritDoc
      */
     Mesh.prototype.dispose = function () {
-        _super.prototype.dispose.call(this);
+        this.disposeValues();
+        Mesh._meshes.push(this);
+    };
+    /**
+     * @inheritDoc
+     */
+    Mesh.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
         this.material = null;
         this.geometry = null;
         if (this._animator)
             this._animator.dispose();
-        Mesh._meshes.push(this);
     };
     /**
      * Clones this Mesh instance along with all it's children, while re-using the same
@@ -10120,6 +10130,7 @@ var Mesh = (function (_super) {
         for (i = 0; i < len; ++i) {
             subMesh = this._subMeshes[i];
             if (subMesh.subGeometry == subGeom) {
+                subMesh.clear();
                 subMesh.dispose();
                 this._subMeshes.splice(i, 1);
                 break;
@@ -10276,8 +10287,11 @@ var MovieClip = (function (_super) {
         configurable: true
     });
     MovieClip.prototype.dispose = function () {
-        _super.prototype.dispose.call(this);
+        this.disposeValues();
         MovieClip._movieClips.push(this);
+    };
+    MovieClip.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
         this._potentialInstances = {};
         this._depth_sessionIDs = {};
         this._sessionID_childs = {};
@@ -11410,13 +11424,19 @@ var TextField = (function (_super) {
      * @inheritDoc
      */
     TextField.prototype.dispose = function () {
+        this.disposeValues();
+        TextField._textFields.push(this);
+    };
+    /**
+     * @inheritDoc
+     */
+    TextField.prototype.disposeValues = function () {
         //dispose material before geometry to ensure owners are deleted
         this.material = null;
         //textfield has a unique geometry that can be disposed here
         this._geometry.dispose();
-        _super.prototype.dispose.call(this);
+        _super.prototype.disposeValues.call(this);
         this._textFormat = null;
-        TextField._textFields.push(this);
     };
     Object.defineProperty(TextField.prototype, "subMeshes", {
         /**
