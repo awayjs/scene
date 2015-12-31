@@ -73,9 +73,14 @@ class MovieClip extends DisplayObjectContainer
 
     public dispose()
     {
-        super.dispose();
+        this.disposeValues();
 
         MovieClip._movieClips.push(this);
+    }
+
+    public disposeValues()
+    {
+        super.disposeValues();
 
         this._potentialInstances = {};
         this._depth_sessionIDs = {};

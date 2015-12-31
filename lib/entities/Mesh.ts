@@ -129,8 +129,10 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
 			this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
 
-			for (i = 0; i < this._subMeshes.length; ++i)
+			for (i = 0; i < this._subMeshes.length; ++i) {
+				this._subMeshes[i].clear();
 				this._subMeshes[i].dispose();
+			}
 
 			this._subMeshes.length = 0;
 		}
@@ -290,15 +292,23 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public dispose()
 	{
-		super.dispose();
+		this.disposeValues();
+
+		Mesh._meshes.push(this);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public disposeValues()
+	{
+		super.disposeValues();
 
 		this.material = null;
 		this.geometry = null;
 
 		if (this._animator)
 			this._animator.dispose();
-
-		Mesh._meshes.push(this);
 	}
 
 	/**
@@ -432,6 +442,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 			subMesh = this._subMeshes[i];
 
 			if (subMesh.subGeometry == subGeom) {
+				subMesh.clear();
 				subMesh.dispose();
 
 				this._subMeshes.splice(i, 1);

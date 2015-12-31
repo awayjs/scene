@@ -284,12 +284,12 @@ class DisplayObjectContainer extends DisplayObject
 	/**
 	 *
 	 */
-	public dispose()
+	public disposeValues()
 	{
 		for (var i:number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
 
-		super.dispose();
+		super.disposeValues();
 	}
 
 	public getChildAtDepth(depth:number):DisplayObject

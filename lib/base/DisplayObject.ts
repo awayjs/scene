@@ -1559,8 +1559,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public dispose()
 	{
-		super.dispose();
+		this.disposeValues();
+	}
 
+	public disposeValues()
+	{
 		if (this._pParent)
 			this._pParent.removeChild(this);
 

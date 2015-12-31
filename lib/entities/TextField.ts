@@ -831,11 +831,20 @@ class TextField extends Mesh
 		this.type = TextFieldType.STATIC;
 	}
 
-
 	/**
 	 * @inheritDoc
 	 */
 	public dispose()
+	{
+		this.disposeValues();
+
+		TextField._textFields.push(this);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public disposeValues()
 	{
 		//dispose material before geometry to ensure owners are deleted
 		this.material = null;
@@ -843,11 +852,9 @@ class TextField extends Mesh
 		//textfield has a unique geometry that can be disposed here
 		this._geometry.dispose();
 
-		super.dispose();
+		super.disposeValues();
 
 		this._textFormat = null;
-
-		TextField._textFields.push(this);
 	}
 
 	/**
