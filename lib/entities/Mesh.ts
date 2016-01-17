@@ -19,6 +19,8 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils");
+import Style						= require("awayjs-display/lib/base/Style");
+import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
 
 /**
  * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
@@ -27,14 +29,12 @@ import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils"
  */
 class Mesh extends DisplayObjectContainer implements IEntity
 {
-	private _images:Array<ImageBase> = new Array<ImageBase>();
-	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
-
 	private static _meshes:Array<Mesh> = new Array<Mesh>();
 
 	public static assetType:string = "[asset Mesh]";
 
 	private _uvTransform:UVTransform;
+	private _style:Style;
 
 	private _center:Vector3D;
 	public _subMeshes:Array<ISubMesh>;
@@ -47,6 +47,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	public _onGeometryBoundsInvalidDelegate:(event:GeometryEvent) => void;
 	public _onSubGeometryAddedDelegate:(event:GeometryEvent) => void;
 	public _onSubGeometryRemovedDelegate:(event:GeometryEvent) => void;
+	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 
 	//temp point used in hit testing
 	private _tempPoint:Point = new Point();
@@ -223,35 +224,28 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		this._uvTransform = value;
 	}
 
-
-	public getImageAt(index:number):ImageBase
+	/**
+	 *
+	 */
+	public get style():Style
 	{
-		return this._images[index];
+		return this._style;
 	}
 
-	public addImageAt(image:ImageBase, index:number)
+	public set style(value:Style)
 	{
-		this._images[index] = image;
-	}
+		if (this._style == value)
+			return;
 
-	public removeImageAt(image:ImageBase, index:number)
-	{
-		this._images[index] = null;
-	}
+		if (this._style)
+			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-	public getSamplerAt(index:number):SamplerBase
-	{
-		return this._samplers[index];
-	}
+		this._style = value;
 
-	public addSamplerAt(sampler:SamplerBase, index:number)
-	{
-		this._samplers[index] = sampler;
-	}
+		if (this._style)
+			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-	public removeSamplerAt(index:number)
-	{
-		this._samplers[index] = null;
+		this._iInvalidateRenderOwners();
 	}
 
 	/**
@@ -271,6 +265,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		this._onGeometryBoundsInvalidDelegate = (event:GeometryEvent) => this.onGeometryBoundsInvalid(event);
 		this._onSubGeometryAddedDelegate = (event:GeometryEvent) => this.onSubGeometryAdded(event);
 		this._onSubGeometryRemovedDelegate = (event:GeometryEvent) => this.onSubGeometryRemoved(event);
+		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 
 		//this should never happen, but if people insist on trying to create their meshes before they have geometry to fill it, it becomes necessary
 		this.geometry = geometry || new Geometry();
@@ -283,8 +278,8 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public bakeTransformations()
 	{
-		this.geometry.applyTransformation(this._iMatrix3D);
-		this._iMatrix3D.identity();
+		this.geometry.applyTransformation(this.transform.matrix3D);
+		this.transform.clearMatrix3D();
 	}
 
 	/**
@@ -532,6 +527,13 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 
+	public _iInvalidateRenderOwners()
+	{
+		var len:number = this._subMeshes.length;
+		for (var i:number = 0; i < len; ++i)
+			this._subMeshes[i].invalidateRenderOwner();
+	}
+
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
 		if(this._geometry && this._geometry.subGeometries.length) {
@@ -565,6 +567,11 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		var len:number = this._subMeshes.length;
 		for (var i:number = 0; i < len; i++)
 			this._subMeshes[i].clear();
+	}
+
+	private _onInvalidateProperties(event:StyleEvent)
+	{
+		this._iInvalidateRenderOwners();
 	}
 }
 

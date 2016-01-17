@@ -6,7 +6,7 @@ import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-
+import Style						= require("awayjs-display/lib/base/Style");
 
 /**
  * IRenderOwner provides an interface for objects that can use materials.
@@ -17,9 +17,7 @@ interface IRenderOwner extends IAsset
 {
 	alphaThreshold:number;
 
-	mipmap:boolean;
-
-	smooth:boolean;
+	style:Style;
 
 	imageRect:boolean;
 
@@ -31,25 +29,13 @@ interface IRenderOwner extends IAsset
 
 	iOwners:Array<IRenderableOwner>;
 
-	getNumImages():number;
+	getNumTextures():number;
 
-	getImageAt(index:number):ImageBase;
+	getTextureAt(index:number):TextureBase;
 
-	getImageIndex(image:ImageBase):number;
+	addTexture(texture:TextureBase);
 
-	getNumSamplers():number;
-
-	getSamplerAt(index:number):SamplerBase;
-
-	getSamplerIndex(texture:TextureBase, index?:number):number;
-
-	_iAddImage(image:ImageBase);
-
-	_iRemoveImage(image:ImageBase);
-
-	_iAddSampler(sampler:SamplerBase, texture:TextureBase, index:number);
-
-	_iRemoveSampler(texture:TextureBase, index:number);
+	removeTexture(texture:TextureBase);
 }
 
 export = IRenderOwner;

@@ -13,6 +13,7 @@ class BasicMaterial extends MaterialBase
 	public static assetType:string = "[materials BasicMaterial]";
 
     private _preserveAlpha:boolean = false;
+    private _texture:TextureBase;
 
 	/**
 	 *
@@ -30,27 +31,17 @@ class BasicMaterial extends MaterialBase
 	 * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
 	 * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
 	 */
-	constructor(texture?:Image2D, smooth?:boolean, repeat?:boolean, mipmap?:boolean);
-	constructor(texture?:TextureBase, smooth?:boolean, repeat?:boolean, mipmap?:boolean);
+	constructor(image?:Image2D, alpha?:number);
 	constructor(color?:number, alpha?:number);
-	constructor(textureColor:any = null, smoothAlpha:any = null, repeat:boolean = false, mipmap:boolean = false)
+	constructor(imageColor:any = null, alpha:number = 1)
 	{
-		super();
+		super(imageColor, alpha);
 
-		if (textureColor instanceof Image2D)
-			textureColor = new Single2DTexture(textureColor);
-
-		if (textureColor instanceof TextureBase) {
-			this.texture = <TextureBase> textureColor;
-
-			this.smooth = (smoothAlpha == null)? true : false;
-			this.repeat = repeat;
-			this.mipmap = mipmap;
-		} else {
-			this.color = textureColor? Number(textureColor) : 0xCCCCCC;
-			this.alpha = (smoothAlpha == null)? 1 : Number(smoothAlpha);
-		}
+        //set a texture if an image is present
+        if (imageColor instanceof Image2D)
+            this.texture = new Single2DTexture();
 	}
+
     /**
      * Indicates whether alpha should be preserved - defaults to false
      */
@@ -66,6 +57,31 @@ class BasicMaterial extends MaterialBase
         this._preserveAlpha = value;
 
         this.invalidate();
+    }
+
+
+    /**
+     * The texture object to use for the albedo colour.
+     */
+    public get texture():TextureBase
+    {
+        return this._texture;
+    }
+
+    public set texture(value:TextureBase)
+    {
+        if (this._texture == value)
+            return;
+
+        if (this._texture)
+            this.removeTexture(this._texture);
+
+        this._texture = value;
+
+        if (this._texture)
+            this.addTexture(this._texture);
+
+        this.invalidateTexture();
     }
 }
 

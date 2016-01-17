@@ -19,6 +19,23 @@ class SingleCubeTexture extends TextureBase
 
 	/**
 	 *
+	 * @returns {Image2D}
+	 */
+	public get samplerCube():SamplerCube
+	{
+		return <SamplerCube> this._samplers[0];
+	}
+
+	public set samplerCube(value:SamplerCube)
+	{
+		if (this._samplers[0] == value)
+			return;
+
+		this.setSamplerAt(value, 0);
+	}
+
+	/**
+	 *
 	 * @returns {ImageCube}
 	 */
 	public get imageCube():ImageCube
@@ -31,20 +48,15 @@ class SingleCubeTexture extends TextureBase
 		if (this._images[0] == value)
 			return;
 
-		if (this._images[0])
-			this.iRemoveImage(0);
-
-		if (value)
-			this.iAddImage(value, 0);
-
-
-		this.invalidate();
+		this.setImageAt(value, 0);
 	}
 
 	
-	constructor(imageCube:ImageCube)
+	constructor(imageCube:ImageCube = null)
 	{
 		super();
+
+		this.setNumImages(1);
 
 		this.imageCube = imageCube;
 	}

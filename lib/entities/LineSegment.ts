@@ -14,14 +14,16 @@ import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwn
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
+import Style						= require("awayjs-display/lib/base/Style");
+import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
 
 /**
  * A Line Segment primitive.
  */
 class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 {
-	private _images:Array<ImageBase> = new Array<ImageBase>();
-	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
+	private _style:Style;
+	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 
 	public static assetType:string = "[asset LineSegment]";
 
@@ -159,6 +161,8 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	{
 		super();
 
+		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
+
 		this._pIsEntity = true;
 
 		this.material = material;
@@ -171,36 +175,30 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
-	public getImageAt(index:number):ImageBase
+	/**
+	 * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
+	 */
+	public get style():Style
 	{
-		return this._images[index];
+		return this._style;
 	}
 
-	public addImageAt(image:ImageBase, index:number)
+	public set style(value:Style)
 	{
-		this._images[index] = image;
+		if (this._style == value)
+			return;
+
+		if (this._style)
+			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+
+		this._style = value;
+
+		if (this._style)
+			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+
+		this.invalidateRenderOwner();
 	}
 
-	public removeImageAt(image:ImageBase, index:number)
-	{
-		this._images[index] = null;
-	}
-
-
-	public getSamplerAt(index:number):SamplerBase
-	{
-		return this._samplers[index];
-	}
-
-	public addSamplerAt(sampler:SamplerBase, index:number)
-	{
-		this._samplers[index] = sampler;
-	}
-
-	public removeSamplerAt(index:number)
-	{
-		this._samplers[index] = null;
-	}
 
 	/**
 	 * @protected
@@ -243,6 +241,11 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	public invalidateRenderOwner()
 	{
 		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+	}
+
+	private _onInvalidateProperties(event:StyleEvent)
+	{
+		this.invalidateRenderOwner();
 	}
 
 	public _applyRenderer(renderer:IRenderer)

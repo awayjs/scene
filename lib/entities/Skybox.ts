@@ -1,4 +1,6 @@
+import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import BlendMode					= require("awayjs-core/lib/image/BlendMode");
+import ImageCube					= require("awayjs-core/lib/image/ImageCube");
 import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
@@ -18,6 +20,8 @@ import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/L
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
+import Style						= require("awayjs-display/lib/base/Style");
+import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
@@ -26,15 +30,11 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
  */
 class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner
 {
-	private _images:Array<ImageBase> = new Array<ImageBase>();
-	private _imageCount:Array<number> = new Array<number>();
-	private _imageIndex:Object = new Object();
-	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
-	private _samplerIndices:Object = new Object();
+	private _textures:Array<TextureBase> = new Array<TextureBase>();
 
 	public static assetType:string = "[asset Skybox]";
 
-	private _cubeMap:SingleCubeTexture;
+	private _texture:SingleCubeTexture;
 	public _pAlphaThreshold:number = 0;
 	private _animationSet:IAnimationSet;
 	public _pLightPicker:LightPickerBase;
@@ -43,10 +43,12 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _colorTransform:ColorTransform;
 	private _owners:Array<IRenderableOwner>;
 	private _imageRect:boolean = false;
-	private _mipmap:boolean = false;
-	private _smooth:boolean = true;
+	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
+	private _style:Style = new Style();
 
 	private _animator:IAnimator;
+
+	private _onTextureInvalidateDelegate:(event:AssetEvent) => void;
 
 	/**
 	 * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
@@ -87,41 +89,6 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 			return;
 
 		this._imageRect = value;
-
-		this.invalidatePasses();
-	}
-	/**
-	 * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
-	 */
-	public get mipmap():boolean
-	{
-		return this._mipmap;
-	}
-
-	public set mipmap(value:boolean)
-	{
-		if (this._mipmap == value)
-			return;
-
-		this._mipmap = value;
-
-		this.invalidatePasses();
-	}
-
-	/**
-	 * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
-	 */
-	public get smooth():boolean
-	{
-		return this._smooth;
-	}
-
-	public set smooth(value:boolean)
-	{
-		if (this._smooth == value)
-			return;
-
-		this._smooth = value;
 
 		this.invalidatePasses();
 	}
@@ -210,28 +177,47 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	{
 		this._colorTransform = value;
 	}
+
 	/**
 	* The cube texture to use as the skybox.
 	*/
-	public get cubeMap():SingleCubeTexture
+	public get texture():SingleCubeTexture
 	{
-		return this._cubeMap;
+		return this._texture;
 	}
 
-	public set cubeMap(value:SingleCubeTexture)
+	public set texture(value:SingleCubeTexture)
 	{
-		if (this._cubeMap == value)
+		if (this._texture == value)
 			return;
 
-		if (this._cubeMap)
-			this._cubeMap.iRemoveOwner(this);
+		if (this._texture)
+			this.removeTexture(this._texture);
 
-		this._cubeMap = value;
+		this._texture = value;
 
-		if (this._cubeMap)
-			this._cubeMap.iAddOwner(this);
+		if (this._texture)
+			this.addTexture(this._texture);
 
 		this.invalidatePasses();
+	}
+
+	public getNumTextures():number
+	{
+		return this._textures.length;
+	}
+
+	public getTextureAt(index:number):TextureBase
+	{
+		return this._textures[index];
+	}
+
+	/**
+	 *
+	 */
+	public get style():Style
+	{
+		return this._style;
 	}
 
 	/**
@@ -239,14 +225,19 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	 *
 	 * @param material	The material with which to render the Skybox.
 	 */
-	constructor(cubeMap:SingleCubeTexture = null)
+	constructor(image:ImageCube = null)
 	{
 		super();
+
+		this._onTextureInvalidateDelegate = (event:AssetEvent) => this.onTextureInvalidate(event);
+		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
+		this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
 		this._pIsEntity = true;
 		this._owners = new Array<IRenderableOwner>(this);
 
-		this.cubeMap = cubeMap;
+		this._style.image = image;
+		this.texture =  new SingleCubeTexture();
 
 		//default bounds type
 		this._boundsType = BoundsType.NULL;
@@ -262,127 +253,9 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		return false; //TODO
 	}
 
-	public getNumImages():number
-	{
-		return this._images.length;
-	}
-
-	public getImageAt(index:number):ImageBase
-	{
-		return this._images[index];
-	}
-
-	public getImageIndex(image:ImageBase):number
-	{
-		return this._imageIndex[image.id];
-	}
-
-	public getNumSamplers():number
-	{
-		return this._samplers.length;
-	}
-
-	public getSamplerAt(index:number):SamplerBase
-	{
-		return this._samplers[index];
-	}
-
-	public getSamplerIndex(texture:TextureBase, index:number = 0):number
-	{
-		if (!this._samplerIndices[texture.id])
-			this._samplerIndices[texture.id] = new Array<number>();
-
-		return this._samplerIndices[texture.id][index];
-	}
-
 	public _applyRenderer(renderer:IRenderer)
 	{
 		//skybox do not get collected in the standard entity list
-	}
-
-	public _iAddImage(image:ImageBase)
-	{
-		var index:number = this._imageIndex[image.id];
-		if (!index) {
-			this._imageIndex[image.id] = this._images.length;
-
-			this._images.push(image);
-			this._imageCount.push(1);
-
-			this.invalidatePasses();
-
-			this.invalidateRenderOwner();
-		} else {
-			this._imageCount[index]--;
-		}
-	}
-
-	public _iRemoveImage(image:ImageBase)
-	{
-		var index:number = this._imageIndex[image.id];
-		if (this._imageCount[index] != 1) {
-			this._imageCount[index]--;
-		} else {
-			delete this._imageIndex[image.id];
-
-			this._images.splice(index, 1);
-			this._imageCount.splice(index, 1);
-
-			var len:number = this._images.length;
-			for (var i:number = index; i < len; i++) {
-				this._imageIndex[this._images[i].id] = i;
-			}
-
-			this.invalidatePasses();
-
-			this.invalidateRenderOwner();
-		}
-	}
-
-
-	public _iAddSampler(sampler:SamplerBase, texture:TextureBase, index:number)
-	{
-		//find free sampler slot
-		var i:number = 0;
-		var len:number = this._samplers.length;
-		while (i < len) {
-			if (!this._samplers[i])
-				break;
-
-			i++;
-		}
-
-		if (!this._samplerIndices[texture.id])
-			this._samplerIndices[texture.id] = new Array<number>();
-
-		this._samplerIndices[texture.id][index] = i;
-
-		this._samplers[i] = sampler;
-
-		this.invalidatePasses();
-
-		this.invalidateRenderOwner();
-	}
-
-	public _iRemoveSampler(texture:TextureBase, index:number)
-	{
-		var index:number = this._samplerIndices[texture.id][index];
-
-		this._samplers[index] = null;
-
-		//shorten samplers array if sampler at end
-		if (index == this._samplers.length - 1) {
-			while(index--) {
-				if (this._samplers[index] != null)
-					break;
-			}
-
-			this._samplers.length = index + 1;
-		}
-
-		this.invalidatePasses();
-
-		this.invalidateRenderOwner();
 	}
 
 	/**
@@ -398,6 +271,34 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	public invalidateRenderOwner()
 	{
 		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+	}
+
+	public addTexture(texture:TextureBase)
+	{
+		this._textures.push(texture);
+
+		texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+
+		this.onTextureInvalidate();
+	}
+
+	public removeTexture(texture:TextureBase)
+	{
+		this._textures.splice(this._textures.indexOf(texture), 1);
+
+		texture.removeEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+
+		this.onTextureInvalidate();
+	}
+
+	private onTextureInvalidate(event:AssetEvent = null)
+	{
+		this.invalidate();
+	}
+
+	private _onInvalidateProperties(event:StyleEvent)
+	{
+		this.invalidatePasses();
 	}
 }
 

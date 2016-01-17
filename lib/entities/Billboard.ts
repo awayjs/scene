@@ -15,9 +15,11 @@ import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
 import RenderOwnerEvent				= require("awayjs-display/lib/events/RenderOwnerEvent");
+import DefaultMaterialManager		= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-
+import Style						= require("awayjs-display/lib/base/Style");
+import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -56,9 +58,6 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 {
-	private _images:Array<ImageBase> = new Array<ImageBase>();
-	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
-
 	public static assetType:string = "[asset Billboard]";
 
 	private _animator:IAnimator;
@@ -67,9 +66,9 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	private _billboardRect:Rectangle;
 	private _material:MaterialBase;
 	private _uvTransform:UVTransform;
-	private _colorTransform:ColorTransform;
-	private _parentColorTransform:ColorTransform;
 
+	private _style:Style;
+	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 	private onInvalidateTextureDelegate:(event:RenderOwnerEvent) => void;
 
 
@@ -141,31 +140,6 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	}
 
 	/**
-	 * Controls whether or not the Billboard object is snapped to the nearest pixel.
-	 * This value is ignored in the native and HTML5 targets.
-	 * The PixelSnapping class includes possible values:
-	 * <ul>
-	 *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
-	 *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
-	 * the nearest pixel, independent of transformation.</li>
-	 *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
-	 * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
-	 * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
-	 * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
-	 * When targeting Flash Player, this value allows the image to be drawn as fast
-	 * as possible using the internal vector renderer.</li>
-	 * </ul>
-	 */
-	public pixelSnapping:string; //TODO
-
-	/**
-	 * Controls whether or not the bitmap is smoothed when scaled. If
-	 * <code>true</code>, the bitmap is smoothed when scaled. If
-	 * <code>false</code>, the bitmap is not smoothed when scaled.
-	 */
-	public smoothing:boolean; //TODO
-
-	/**
 	 *
 	 */
 	public get uvTransform():UVTransform
@@ -177,71 +151,6 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	{
 		this._uvTransform = value;
 	}
-	/**
-	 *
-	 */
-	public get colorTransform():ColorTransform
-	{
-		// outputs the concaneted color-transform
-		return this._colorTransform;// || this._pParentMesh._colorTransform;
-	}
-
-	public set colorTransform(value:ColorTransform)
-	{
-		// set this on the inheritet colorTransform
-		this.transform.colorTransform = value;
-		// new calculate the concaneted transform
-		this._applyColorTransform();
-
-	}
-
-	public get parentColorTransform():ColorTransform
-	{
-		return this._parentColorTransform;
-	}
-
-	public set parentColorTransform(value:ColorTransform)
-	{
-		// we will never modify the parentColorTransform directly, so save to set as reference (?)
-		this._parentColorTransform = value;
-		this._applyColorTransform();
-	}
-
-	private _applyColorTransform()
-	{
-		this._colorTransform=new ColorTransform();
-		if ((this._parentColorTransform)&&(this.transform.colorTransform)){
-			// if this mc has a parent-colortransform applied, we need to concanete the transforms.
-			this._colorTransform.alphaMultiplier   = this.transform.colorTransform.alphaMultiplier * this._parentColorTransform.alphaMultiplier;
-			this._colorTransform.redMultiplier     = this.transform.colorTransform.redMultiplier * this._parentColorTransform.redMultiplier;
-			this._colorTransform.blueMultiplier    = this.transform.colorTransform.blueMultiplier * this._parentColorTransform.blueMultiplier;
-			this._colorTransform.greenMultiplier   = this.transform.colorTransform.greenMultiplier * this._parentColorTransform.greenMultiplier;
-			this._colorTransform.alphaOffset       = this.transform.colorTransform.alphaOffset + this._parentColorTransform.alphaOffset;
-			this._colorTransform.redOffset         = this.transform.colorTransform.redOffset + this._parentColorTransform.redOffset;
-			this._colorTransform.blueOffset        = this.transform.colorTransform.blueOffset + this._parentColorTransform.blueOffset;
-			this._colorTransform.greenOffset       = this.transform.colorTransform.greenOffset + this._parentColorTransform.greenOffset;
-		}
-		else if (this.transform.colorTransform){
-			this._colorTransform.alphaMultiplier   = this.transform.colorTransform.alphaMultiplier;
-			this._colorTransform.redMultiplier     = this.transform.colorTransform.redMultiplier;
-			this._colorTransform.blueMultiplier    = this.transform.colorTransform.blueMultiplier;
-			this._colorTransform.greenMultiplier   = this.transform.colorTransform.greenMultiplier;
-			this._colorTransform.alphaOffset       = this.transform.colorTransform.alphaOffset;
-			this._colorTransform.redOffset         = this.transform.colorTransform.redOffset;
-			this._colorTransform.blueOffset        = this.transform.colorTransform.blueOffset;
-			this._colorTransform.greenOffset       = this.transform.colorTransform.greenOffset;
-		}
-		else if (this._parentColorTransform){
-			this._colorTransform.alphaMultiplier   = this._parentColorTransform.alphaMultiplier;
-			this._colorTransform.redMultiplier     = this._parentColorTransform.redMultiplier;
-			this._colorTransform.blueMultiplier    = this._parentColorTransform.blueMultiplier;
-			this._colorTransform.greenMultiplier   = this._parentColorTransform.greenMultiplier;
-			this._colorTransform.alphaOffset       = this._parentColorTransform.alphaOffset;
-			this._colorTransform.redOffset         = this._parentColorTransform.redOffset;
-			this._colorTransform.blueOffset        = this._parentColorTransform.blueOffset;
-			this._colorTransform.greenOffset       = this._parentColorTransform.greenOffset;
-		}
-	}
 
 	constructor(material:MaterialBase, pixelSnapping:string = "auto", smoothing:boolean = false)
 	{
@@ -250,6 +159,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		this._pIsEntity = true;
 
 		this.onInvalidateTextureDelegate = (event:RenderOwnerEvent) => this.onInvalidateTexture(event);
+		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 
 		this.material = material;
 
@@ -276,40 +186,28 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		return clone;
 	}
 
-	public getImageAt(index:number):ImageBase
+	/**
+	 * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
+	 */
+	public get style():Style
 	{
-		return this._images[index] || this.material.getImageAt(index);
+		return this._style;
 	}
 
-	public addImageAt(image:ImageBase, index:number)
+	public set style(value:Style)
 	{
-		this._images[index] = image;
-	}
+		if (this._style == value)
+			return;
 
-	public removeImageAt(index:number)
-	{
-		this._images[index] = null;
-	}
+		if (this._style)
+			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-	public getSamplerAt(index:number):SamplerBase
-	{
-		return this._samplers[index];
+		this._style = value;
 
-		if (index == 0)
-			this._updateDimensions();
-	}
+		if (this._style)
+			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-	public addSamplerAt(sampler:SamplerBase, index:number)
-	{
-		this._samplers[index] = sampler;
-
-		if (index == 0)
-			this._updateDimensions();
-	}
-
-	public removeSamplerAt(index:number)
-	{
-		this._samplers[index] = null;
+		this._onInvalidateProperties();
 	}
 
 	/**
@@ -347,11 +245,12 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 	private _updateDimensions()
 	{
-		var image:Image2D = <Image2D> this.getImageAt(0);
+		var texture:TextureBase = this.material.getTextureAt(0);
+
+		var image:Image2D = texture? <Image2D> ((this._style? this._style.getImageAt(texture) : null) || (this.material.style? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
 
 		if (image) {
-			var index:number = this.material.getSamplerIndex(this.material.texture);
-			var sampler:Sampler2D = <Sampler2D> (this.getSamplerAt(index) || this.material.getSamplerAt(index));
+			var sampler:Sampler2D = <Sampler2D> ((this._style? this._style.getSamplerAt(texture) : null) || (this.material.style? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || DefaultMaterialManager.getDefaultSampler());
 			var rect:Rectangle = sampler.imageRect || image.rect;
 			this._billboardWidth = rect.width;
 			this._billboardHeight = rect.height;
@@ -371,6 +270,13 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	public invalidateRenderOwner()
 	{
 		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+	}
+
+	private _onInvalidateProperties(event:StyleEvent = null)
+	{
+		this.invalidateRenderOwner();
+
+		this._updateDimensions();
 	}
 }
 

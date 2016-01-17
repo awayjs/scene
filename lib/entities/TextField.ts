@@ -727,10 +727,10 @@ class TextField extends Mesh
 	public set textColor(value:number)
 	{
 		this._textColor = value;
-		if(!this._iColorTransform)
-			this._iColorTransform = new ColorTransform();
+		if(!this.transform.colorTransform)
+			this.transform.colorTransform = new ColorTransform();
 
-		this._iColorTransform.color = value;
+		this.transform.colorTransform.color = value;
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 	}
 

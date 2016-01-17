@@ -1,4 +1,5 @@
 import ImageCube					= require("awayjs-core/lib/image/ImageCube");
+import SamplerCube					= require("awayjs-core/lib/image/SamplerCube");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import ErrorBase					= require("awayjs-core/lib/errors/ErrorBase");
@@ -12,8 +13,13 @@ class LightProbe extends LightBase implements IEntity
 {
 	public static assetType:string = "[light LightProbe]";
 
-	private _diffuseMap:ImageCube;
-	private _specularMap:ImageCube;
+	public diffuseMap:ImageCube;
+
+	public diffuseSampler:SamplerCube = new SamplerCube();
+
+	public specularMap:ImageCube;
+
+	public specularSampler:SamplerCube = new SamplerCube();
 
 	constructor(diffuseMap:ImageCube, specularMap:ImageCube = null)
 	{
@@ -21,8 +27,8 @@ class LightProbe extends LightBase implements IEntity
 
 		this._pIsEntity = true;
 
-		this._diffuseMap = diffuseMap;
-		this._specularMap = specularMap;
+		this.diffuseMap = diffuseMap;
+		this.specularMap = specularMap;
 
 		//default bounds type
 		this._boundsType = BoundsType.NULL;
@@ -31,26 +37,6 @@ class LightProbe extends LightBase implements IEntity
 	public get assetType():string
 	{
 		return LightProbe.assetType;
-	}
-
-	public get diffuseMap():ImageCube
-	{
-		return this._diffuseMap;
-	}
-
-	public set diffuseMap(value:ImageCube)
-	{
-		this._diffuseMap = value;
-	}
-
-	public get specularMap():ImageCube
-	{
-		return this._specularMap;
-	}
-
-	public set specularMap(value:ImageCube)
-	{
-		this._specularMap = value;
 	}
 
 	//@override

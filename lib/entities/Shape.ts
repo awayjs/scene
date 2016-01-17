@@ -40,7 +40,7 @@ class Shape extends DisplayObject
 	{
 		var clone:Shape = new Shape();
 		clone.pivot = this.pivot;
-		clone._iMatrix3D = this._iMatrix3D;
+		clone.transform.matrix3D = this.transform.matrix3D
 		clone.name = name;
 		clone.maskMode = this.maskMode;
 		clone.masks = this.masks? this.masks.concat() : null;

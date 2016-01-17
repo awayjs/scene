@@ -1,6 +1,7 @@
 import BlendMode					= require("awayjs-core/lib/image/BlendMode");
 import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
+import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
@@ -17,7 +18,8 @@ import RenderOwnerEvent				= require("awayjs-display/lib/events/RenderOwnerEvent
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
-
+import Style						= require("awayjs-display/lib/base/Style");
+import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
 
 /**
  * MaterialBase forms an abstract base class for any material.
@@ -32,11 +34,7 @@ import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture
  */
 class MaterialBase extends AssetBase implements IRenderOwner
 {
-	private _images:Array<ImageBase> = new Array<ImageBase>();
-	private _imageCount:Array<number> = new Array<number>();
-	private _imageIndex:Object = new Object();
-	private _samplers:Array<SamplerBase> = new Array<SamplerBase>();
-	private _samplerIndices:Object = new Object();
+	private _textures:Array<TextureBase> = new Array<TextureBase>();
 	private _colorTransform:ColorTransform;
 	private _pUseColorTransform:boolean = false;
 	private _alphaBlending:boolean = false;
@@ -47,6 +45,8 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	private _enableLightFallOff:boolean = true;
 	private _specularLightSources:number = 0x01;
 	private _diffuseLightSources:number = 0x03;
+	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
+	private _style:Style = new Style();
 
 	/**
 	 * An object to contain any extra data.
@@ -77,24 +77,33 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	public _pBlendMode:string = BlendMode.NORMAL;
 
 	private _imageRect:boolean = false;
-	private _mipmap:boolean = true;
-	private _smooth:boolean = true;
-	private _repeat:boolean = false;
-	private _color:number = 0xFFFFFF;
-	public _pTexture:TextureBase;
 
 	public _pLightPicker:LightPickerBase;
 
 	private _onLightChangeDelegate:(event:AssetEvent) => void;
+	private _onTextureInvalidateDelegate:(event:AssetEvent) => void;
 
 	/**
 	 * Creates a new MaterialBase object.
 	 */
-	constructor()
+	constructor(image?:ImageBase, alpha?:number);
+	constructor(color?:number, alpha?:number);
+	constructor(imageColor:any = null, alpha:number = 1)
 	{
 		super();
 
+		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
+		this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+
+		if (imageColor instanceof ImageBase)
+			this._style.image = <ImageBase> imageColor;
+		else if (imageColor)
+			this._style.color = Number(imageColor);
+
+		this.alpha = alpha;
+
 		this._onLightChangeDelegate = (event:AssetEvent) => this.onLightsChange(event);
+		this._onTextureInvalidateDelegate = (event:AssetEvent) => this.onTextureInvalidate(event);
 
 		this.alphaPremultiplied = false; //TODO: work out why this is different for WebGL
 	}
@@ -215,103 +224,29 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this.invalidatePasses();
 	}
 
-	/**
-	 * Indicates whether or not any used textures should use mipmapping. Defaults to true.
-	 */
-	public get mipmap():boolean
-	{
-		return this._mipmap;
-	}
-
-	public set mipmap(value:boolean)
-	{
-		if (this._mipmap == value)
-			return;
-
-		this._mipmap = value;
-
-		this.invalidatePasses();
-	}
 
 	/**
-	 * Indicates whether or not any used textures should use smoothing. Defaults to true.
+	 * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
 	 */
-	public get smooth():boolean
+	public get style():Style
 	{
-		return this._smooth;
+		return this._style;
 	}
 
-	public set smooth(value:boolean)
+	public set style(value:Style)
 	{
-		if (this._smooth == value)
+		if (this._style == value)
 			return;
 
-		this._smooth = value;
+		if (this._style)
+			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+
+		this._style = value;
+
+		if (this._style)
+			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
 		this.invalidatePasses();
-	}
-
-	/**
-	 * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
-	 * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
-	 */
-	public get repeat():boolean
-	{
-		return this._repeat;
-	}
-
-	public set repeat(value:boolean)
-	{
-		if (this._repeat == value)
-			return;
-
-		this._repeat = value;
-
-		this.invalidatePasses();
-	}
-
-	/**
-	 * The diffuse reflectivity color of the surface.
-	 */
-	public get color():number
-	{
-		return this._color;
-	}
-
-	public set color(value:number)
-	{
-		if (this._color == value)
-			return;
-
-		this._color = value;
-
-		this.invalidatePasses();
-	}
-
-	/**
-	 * The texture object to use for the albedo colour.
-	 */
-	public get texture():TextureBase
-	{
-		return this._pTexture;
-	}
-
-	public set texture(value:TextureBase)
-	{
-		if (this._pTexture == value)
-			return;
-
-		if (this._pTexture)
-			this._pTexture.iRemoveOwner(this);
-
-		this._pTexture = value;
-
-		if (this._pTexture)
-			this._pTexture.iAddOwner(this);
-
-		this.invalidatePasses();
-
-		this.invalidateTexture();
 	}
 
 	/**
@@ -499,40 +434,6 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this.invalidatePasses();
 	}
 
-	public getNumImages():number
-	{
-		return this._images.length;
-	}
-
-	public getImageAt(index:number):ImageBase
-	{
-		return this._images[index];
-	}
-
-	public getImageIndex(image:ImageBase):number
-	{
-		return this._imageIndex[image.id];
-	}
-
-
-	public getNumSamplers():number
-	{
-		return this._samplers.length;
-	}
-
-	public getSamplerAt(index:number):SamplerBase
-	{
-		return this._samplers[index];
-	}
-
-	public getSamplerIndex(texture:TextureBase, index:number = 0):number
-	{
-		if (!this._samplerIndices[texture.id])
-			this._samplerIndices[texture.id] = new Array<number>();
-
-		return this._samplerIndices[texture.id][index];
-	}
-
 	//
 	// MATERIAL MANAGEMENT
 	//
@@ -600,6 +501,16 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		return this._owners;
 	}
 
+	public getNumTextures():number
+	{
+		return this._textures.length;
+	}
+
+	public getTextureAt(index:number):TextureBase
+	{
+		return this._textures[index];
+	}
+
 	/**
 	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	 *
@@ -635,94 +546,53 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_TEXTURE, this));
 	}
 
-	public clear()
+	public addTextureAt(texture:TextureBase, index:number)
 	{
-		this.dispatchEvent(new AssetEvent(AssetEvent.CLEAR, this));
+		var i:number = this._textures.indexOf(texture);
+
+		if (i == index)
+			return;
+		else if (i != -1)
+			this._textures.splice(i, 1);
+
+		this._textures.splice(index, 0, texture);
+
+		texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+
+		this.onTextureInvalidate();
 	}
 
-	public _iAddImage(image:ImageBase)
+	public addTexture(texture:TextureBase)
 	{
-		var index:number = this._imageIndex[image.id];
-		if (!index) {
-			this._imageIndex[image.id] = this._images.length;
+		if (this._textures.indexOf(texture) != -1)
+			return;
 
-			this._images.push(image);
-			this._imageCount.push(1);
+		this._textures.push(texture);
 
-			this.invalidatePasses();
+		texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
 
-			this.invalidateRenderOwners();
-		} else {
-			this._imageCount[index]--;
-		}
+		this.onTextureInvalidate();
 	}
-
-	public _iRemoveImage(image:ImageBase)
+	
+	public removeTexture(texture:TextureBase)
 	{
-		var index:number = this._imageIndex[image.id];
-		if (this._imageCount[index] != 1) {
-			this._imageCount[index]--;
-		} else {
-			delete this._imageIndex[image.id];
+		this._textures.splice(this._textures.indexOf(texture), 1);
 
-			this._images.splice(index, 1);
-			this._imageCount.splice(index, 1);
+		texture.removeEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
 
-			var len:number = this._images.length;
-			for (var i:number = index; i < len; i++) {
-				this._imageIndex[this._images[i].id] = i;
-			}
-
-			this.invalidatePasses();
-
-			this.invalidateRenderOwners();
-		}
+		this.onTextureInvalidate();
 	}
-
-
-	public _iAddSampler(sampler:SamplerBase, texture:TextureBase, index:number)
+	
+	private onTextureInvalidate(event:AssetEvent = null)
 	{
-		//find free sampler slot
-		var i:number = 0;
-		var len:number = this._samplers.length;
-		while (i < len) {
-			if (!this._samplers[i])
-				break;
-
-			i++;
-		}
-
-		if (!this._samplerIndices[texture.id])
-			this._samplerIndices[texture.id] = new Array<number>();
-
-		this._samplerIndices[texture.id][index] = i;
-
-		this._samplers[i] = sampler;
-
 		this.invalidatePasses();
 
 		this.invalidateRenderOwners();
 	}
 
-	public _iRemoveSampler(texture:TextureBase, index:number)
+	private _onInvalidateProperties(event:StyleEvent)
 	{
-		var index:number = this._samplerIndices[texture.id][index];
-
-		this._samplers[index] = null;
-
-		//shorten samplers array if sampler at end
-		if (index == this._samplers.length - 1) {
-			while(index--) {
-				if (this._samplers[index] != null)
-					break;
-			}
-
-			this._samplers.length = index + 1;
-		}
-
 		this.invalidatePasses();
-
-		this.invalidateRenderOwners();
 	}
 }
 

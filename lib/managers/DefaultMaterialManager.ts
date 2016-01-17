@@ -1,3 +1,4 @@
+import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
 import BitmapImageCube				= require("awayjs-core/lib/image/BitmapImageCube");
 
@@ -12,6 +13,7 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 class DefaultMaterialManager
 {
+	private static _defaultSampler2D:Sampler2D;
 	private static _defaultBitmapImage2D:BitmapImage2D;
 	private static _defaultBitmapImageCube:BitmapImageCube;
 	private static _defaultCubeTextureMaterial:BasicMaterial;
@@ -57,28 +59,46 @@ class DefaultMaterialManager
 		return DefaultMaterialManager._defaultTexture;
 	}
 
-	private static createDefaultTexture()
+	public static getDefaultImage2D():BitmapImage2D
 	{
 		if (!DefaultMaterialManager._defaultBitmapImage2D)
-			DefaultMaterialManager.createCheckeredBitmapImage2D();
+			DefaultMaterialManager.createDefaultImage2D();
 
-		DefaultMaterialManager._defaultTexture = new Single2DTexture(DefaultMaterialManager._defaultBitmapImage2D);
+		return DefaultMaterialManager._defaultBitmapImage2D;
+	}
+
+	public static getDefaultImageCube():BitmapImageCube
+	{
+		if (!DefaultMaterialManager._defaultBitmapImageCube)
+			DefaultMaterialManager.createDefaultImageCube();
+
+		return DefaultMaterialManager._defaultBitmapImageCube;
+	}
+
+	public static getDefaultSampler():Sampler2D
+	{
+		if (!DefaultMaterialManager._defaultSampler2D)
+			DefaultMaterialManager.createDefaultSampler2D();
+
+		return DefaultMaterialManager._defaultSampler2D;
+	}
+
+	private static createDefaultTexture()
+	{
+		DefaultMaterialManager._defaultTexture = new Single2DTexture();
 		DefaultMaterialManager._defaultTexture.name = "defaultTexture";
 	}
 
 	private static createDefaultCubeTexture()
 	{
-		if (!DefaultMaterialManager._defaultBitmapImageCube)
-			DefaultMaterialManager.createCheckeredBitmapImageCube();
-
-		DefaultMaterialManager._defaultCubeTexture = new SingleCubeTexture(DefaultMaterialManager._defaultBitmapImageCube);
+		DefaultMaterialManager._defaultCubeTexture = new SingleCubeTexture();
 		DefaultMaterialManager._defaultCubeTexture.name = "defaultCubeTexture";
 	}
 
-	private static createCheckeredBitmapImageCube()
+	private static createDefaultImageCube()
 	{
 		if (!DefaultMaterialManager._defaultBitmapImage2D)
-			DefaultMaterialManager.createCheckeredBitmapImage2D();
+			DefaultMaterialManager.createDefaultImage2D();
 
 		var b = new BitmapImageCube(DefaultMaterialManager._defaultBitmapImage2D.width);
 
@@ -88,19 +108,16 @@ class DefaultMaterialManager
 		DefaultMaterialManager._defaultBitmapImageCube = b;
 	}
 
-	private static createCheckeredBitmapImage2D()
+	private static createDefaultImage2D()
 	{
 		var b:BitmapImage2D = new BitmapImage2D(8, 8, false, 0x000000);
 
 		//create chekerboard
 		var i:number, j:number;
-		for (i = 0; i < 8; i++) {
-			for (j = 0; j < 8; j++) {
-				if ((j & 1) ^ (i & 1)) {
+		for (i = 0; i < 8; i++)
+			for (j = 0; j < 8; j++)
+				if ((j & 1) ^ (i & 1))
 					b.setPixel(i, j, 0XFFFFFF);
-				}
-			}
-		}
 
 		DefaultMaterialManager._defaultBitmapImage2D = b;
 	}
@@ -110,9 +127,8 @@ class DefaultMaterialManager
 		if (!DefaultMaterialManager._defaultTexture)
 			DefaultMaterialManager.createDefaultTexture();
 
-		DefaultMaterialManager._defaultTextureMaterial = new BasicMaterial(DefaultMaterialManager._defaultTexture);
-		DefaultMaterialManager._defaultTextureMaterial.mipmap = false;
-		DefaultMaterialManager._defaultTextureMaterial.smooth = false;
+		DefaultMaterialManager._defaultTextureMaterial = new BasicMaterial();
+		DefaultMaterialManager._defaultTextureMaterial.texture = DefaultMaterialManager._defaultTexture;
 		DefaultMaterialManager._defaultTextureMaterial.name = "defaultTextureMaterial";
 	}
 
@@ -121,9 +137,8 @@ class DefaultMaterialManager
 		if (!DefaultMaterialManager._defaultCubeTexture)
 			DefaultMaterialManager.createDefaultCubeTexture();
 
-		DefaultMaterialManager._defaultCubeTextureMaterial = new BasicMaterial(DefaultMaterialManager._defaultCubeTexture);
-		DefaultMaterialManager._defaultCubeTextureMaterial.mipmap = false;
-		DefaultMaterialManager._defaultCubeTextureMaterial.smooth = false;
+		DefaultMaterialManager._defaultCubeTextureMaterial = new BasicMaterial();
+		DefaultMaterialManager._defaultCubeTextureMaterial.texture = DefaultMaterialManager._defaultCubeTexture;
 		DefaultMaterialManager._defaultCubeTextureMaterial.name = "defaultCubeTextureMaterial";
 	}
 
@@ -132,6 +147,12 @@ class DefaultMaterialManager
 		DefaultMaterialManager._defaultColorMaterial = new BasicMaterial();
 		DefaultMaterialManager._defaultColorMaterial.name = "defaultColorMaterial";
 	}
+
+	private static createDefaultSampler2D()
+	{
+		DefaultMaterialManager._defaultSampler2D = new Sampler2D();
+	}
+
 }
 
 export = DefaultMaterialManager;
