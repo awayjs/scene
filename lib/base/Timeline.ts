@@ -233,17 +233,9 @@ class Timeline
 				} else if (!jump_forward) {
 					if(child.adapter) {
 						if (!child.adapter.isBlockedByScript()) {
-							if (child._iMatrix3D) {
-								child._iMatrix3D.identity();
-								child.x = child._iMatrix3D.rawData[12];
-								child.y = child._iMatrix3D.rawData[13];
-								child._elementsDirty = true;
-								child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-							}
-							if (child._iColorTransform) {
-								child._iColorTransform.clear();
-								child.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-							}
+							child.transform.clearMatrix3D();
+							child.transform.clearColorTransform();
+
 							//this.name="";
 							child.masks = null;
 							child.maskMode = false;
@@ -401,7 +393,7 @@ class Timeline
 			return;
 
 		i *= 6;
-		var new_matrix:Matrix3D = child._iMatrix3D;
+		var new_matrix:Matrix3D = child.transform.matrix3D;
 		new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[i++];
 		new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[i++];
 		new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[i++];
@@ -409,9 +401,7 @@ class Timeline
 		new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[i++];
 		new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[i];
 
-		child._elementsDirty = true;
-
-		child.invalidatePosition();
+		child.transform.invalidateComponents();
 	}
 
 	public update_colortransform(child:DisplayObject, target_mc:MovieClip, i:number)
@@ -420,7 +410,7 @@ class Timeline
 			return;
 
 		i *= 8;
-		var new_ct:ColorTransform = child._iColorTransform || (child._iColorTransform = new ColorTransform());
+		var new_ct:ColorTransform = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
 		new_ct.redMultiplier = this.properties_stream_f32_ct[i++];
 		new_ct.greenMultiplier = this.properties_stream_f32_ct[i++];
 		new_ct.blueMultiplier = this.properties_stream_f32_ct[i++];
@@ -430,7 +420,7 @@ class Timeline
 		new_ct.blueOffset = this.properties_stream_f32_ct[i++];
 		new_ct.alphaOffset = this.properties_stream_f32_ct[i];
 
-		child.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+		child.transform.invalidateColorTransform();
 	}
 
 	public update_masks(child:DisplayObject, target_mc:MovieClip, i:number)
@@ -479,13 +469,13 @@ class Timeline
 
 		i *= 4;
 
-		var new_matrix:Matrix3D = child._iMatrix3D;
+		var new_matrix:Matrix3D = child.transform.matrix3D;
 		new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[i++];
 		new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[i++];
 		new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[i++];
 		new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[i];
 
-		child._elementsDirty = true;
+		child.transform.invalidateComponents();
 
 		child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
@@ -497,11 +487,11 @@ class Timeline
 
 		i *= 2;
 
-		var new_matrix:Matrix3D = child._iMatrix3D;
+		var new_matrix:Matrix3D = child.transform.matrix3D;
 		new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[i++];
 		new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[i];
 
-		child.invalidatePosition();
+		child.transform.invalidatePosition();
 	}
 
 	public enable_maskmode(child:DisplayObject, target_mc:MovieClip, i:number)

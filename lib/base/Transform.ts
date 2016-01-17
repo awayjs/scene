@@ -1,12 +1,15 @@
-import ColorTransform			= require("awayjs-core/lib/geom/ColorTransform");
-import Matrix					= require("awayjs-core/lib/geom/Matrix");
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils			= require("awayjs-core/lib/geom/Matrix3DUtils");
-import Rectangle				= require("awayjs-core/lib/geom/Rectangle");
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import PerspectiveProjection	= require("awayjs-core/lib/projections/PerspectiveProjection");
+import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
+import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
+import Matrix						= require("awayjs-core/lib/geom/Matrix");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
+import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
 
-import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
+
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import TransformEvent				= require("awayjs-display/lib/events/TransformEvent");
 
 /**
  * The Transform class provides access to color adjustment properties and two-
@@ -62,20 +65,26 @@ import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
  * projection center changes. For more control over the perspective
  * transformation, create a perspective projection Matrix3D object.</p>
  */
-class Transform
+class Transform extends EventDispatcher
 {
-	private _displayObject:DisplayObject;
 	private _concatenatedColorTransform:ColorTransform;
 	private _concatenatedMatrix:Matrix;
 	private _pixelBounds:Rectangle;
-	public _position:Vector3D = new Vector3D();
+	private _colorTransform:ColorTransform;
+	private _matrix3D:Matrix3D = new Matrix3D();
+	private _matrix3DDirty:boolean;
+	private _rotation:Vector3D = new Vector3D();
+	private _skew:Vector3D = new Vector3D();
+	private _scale:Vector3D = new Vector3D(1, 1, 1);
+	private _components:Array<Vector3D>;
+	private _componentsDirty:boolean;
 
 	/**
 	 *
 	 */
 	public get backVector():Vector3D
 	{
-		var director:Vector3D = Matrix3DUtils.getForward(this._displayObject._iMatrix3D);
+		var director:Vector3D = Matrix3DUtils.getForward(this._matrix3D);
 		director.negate();
 
 		return director;
@@ -89,12 +98,17 @@ class Transform
 	 */
 	public get colorTransform():ColorTransform
 	{
-		return this._displayObject._iColorTransform;
+		return this._colorTransform;
 	}
 
 	public set colorTransform(val:ColorTransform)
 	{
-		this._displayObject._iColorTransform = val;
+		if (this._colorTransform == val)
+			return;
+
+		this._colorTransform = val;
+
+		this.invalidateColorTransform();
 	}
 
 	/**
@@ -118,7 +132,7 @@ class Transform
 	 * factors in the difference between stage coordinates and window coordinates
 	 * due to window resizing. Thus, the property converts local coordinates to
 	 * window coordinates, which may not be the same coordinate space as that of
-	 * the Stage.
+	 * the Scene.
 	 */
 	public get concatenatedMatrix():Matrix
 	{
@@ -130,7 +144,7 @@ class Transform
 	 */
 	public get downVector():Vector3D
 	{
-		var director:Vector3D = Matrix3DUtils.getUp(this._displayObject._iMatrix3D);
+		var director:Vector3D = Matrix3DUtils.getUp(this._matrix3D);
 		director.negate();
 
 		return director;
@@ -141,7 +155,7 @@ class Transform
 	 */
 	public get forwardVector():Vector3D
 	{
-		return Matrix3DUtils.getForward(this._displayObject._iMatrix3D);
+		return Matrix3DUtils.getForward(this._matrix3D);
 	}
 
 	/**
@@ -149,7 +163,7 @@ class Transform
 	 */
 	public get leftVector():Vector3D
 	{
-		var director:Vector3D = Matrix3DUtils.getRight(this._displayObject._iMatrix3D);
+		var director:Vector3D = Matrix3DUtils.getRight(this._matrix3D);
 		director.negate();
 
 		return director;
@@ -183,12 +197,18 @@ class Transform
 	 */
 	public get matrix3D():Matrix3D
 	{
-		return this._displayObject._iMatrix3D;
+		if (this._matrix3DDirty)
+			this._updateMatrix3D();
+
+		return this._matrix3D;
 	}
 
 	public set matrix3D(val:Matrix3D)
 	{
-		this._displayObject._iMatrix3D = val;
+		for (var i:number = 0; i < 15; i++)
+			this._matrix3D.rawData[i] = val.rawData[i];
+		
+		this.invalidateComponents();
 	}
 
 	/**
@@ -216,14 +236,7 @@ class Transform
 	 */
 	public get position():Vector3D
 	{
-		return this._displayObject._iMatrix3D.position
-	}
-
-	public set position(value:Vector3D)
-	{
-		this._displayObject.x = value.x;
-		this._displayObject.y = value.y;
-		this._displayObject.z = value.z;
+		return this._matrix3D.position;
 	}
 
 	/**
@@ -231,7 +244,7 @@ class Transform
 	 */
 	public get rightVector():Vector3D
 	{
-		return Matrix3DUtils.getRight(this._displayObject._iMatrix3D);
+		return Matrix3DUtils.getRight(this.matrix3D);
 	}
 
 	/**
@@ -239,14 +252,29 @@ class Transform
 	 */
 	public get rotation():Vector3D
 	{
-		return new Vector3D(this._displayObject.rotationX, this._displayObject.rotationY, this._displayObject.rotationZ);
+		if (this._componentsDirty)
+			this._updateComponents();
+
+		return this._rotation;
 	}
 
-	public set rotation(value:Vector3D)
+	/**
+	 * Rotates the 3d object directly to a euler angle
+	 *
+	 * @param    ax        The angle in degrees of the rotation around the x axis.
+	 * @param    ay        The angle in degrees of the rotation around the y axis.
+	 * @param    az        The angle in degrees of the rotation around the z axis.
+	 */
+	public rotateTo(ax:number, ay:number, az:number)
 	{
-		this._displayObject.rotationX = value.x;
-		this._displayObject.rotationY = value.y;
-		this._displayObject.rotationZ = value.z;
+		if (this._componentsDirty)
+			this._updateComponents();
+
+		this._rotation.x = ax;
+		this._rotation.y = ay;
+		this._rotation.z = az;
+
+		this.invalidateMatrix3D();
 	}
 
 	/**
@@ -254,32 +282,73 @@ class Transform
 	 */
 	public get scale():Vector3D
 	{
-		return new Vector3D(this._displayObject.scaleX, this._displayObject.scaleY, this._displayObject.scaleZ);
+		if (this._componentsDirty)
+			this._updateComponents();
+
+		return this._scale;
 	}
 
-	public set scale(value:Vector3D)
+	public scaleTo(sx:number, sy:number, sz:number)
 	{
-		this._displayObject.scaleX = value.x;
-		this._displayObject.scaleY = value.y;
-		this._displayObject.scaleZ = value.z;
+		if (this._componentsDirty)
+			this._updateComponents();
+
+		this._scale.x = sx;
+		this._scale.y = sy;
+		this._scale.z = sz;
+
+		this.invalidateMatrix3D();
 	}
+
+	/**
+	 * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	 */
+	public get skew():Vector3D
+	{
+		if (this._componentsDirty)
+			this._updateComponents();
+
+		return this._skew;
+	}
+
+	public skewTo(sx:number, sy:number, sz:number)
+	{
+		if (this._componentsDirty)
+			this._updateComponents();
+
+		this._skew.x = sx;
+		this._skew.y = sy;
+		this._skew.z = sz;
+
+		this.invalidateMatrix3D();
+	}
+
 
 	/**
 	 *
 	 */
 	public get upVector():Vector3D
 	{
-		return Matrix3DUtils.getUp(this._displayObject._iMatrix3D);
+		return Matrix3DUtils.getUp(this.matrix3D);
 	}
 
-	constructor(displayObject:DisplayObject)
+	constructor()
 	{
-		this._displayObject = displayObject;
+		super();
+
+		// Cached vector of transformation components used when
+		// recomposing the transform matrix in updateTransform()
+
+		this._components = new Array<Vector3D>(4);
+
+		this._components[1] = this._rotation;
+		this._components[2] = this._skew;
+		this._components[3] = this._scale;
 	}
 
 	public dispose()
 	{
-		this._displayObject = null;
+		
 	}
 
 	/**
@@ -313,7 +382,7 @@ class Transform
 	 */
 	public moveForward(distance:number)
 	{
-		this._displayObject.translateLocal(Vector3D.Z_AXIS, distance);
+		this.translateLocal(Vector3D.Z_AXIS, distance);
 	}
 
 	/**
@@ -323,7 +392,7 @@ class Transform
 	 */
 	public moveBackward(distance:number)
 	{
-		this._displayObject.translateLocal(Vector3D.Z_AXIS, -distance);
+		this.translateLocal(Vector3D.Z_AXIS, -distance);
 	}
 
 	/**
@@ -334,7 +403,7 @@ class Transform
 
 	public moveLeft(distance:number)
 	{
-		this._displayObject.translateLocal(Vector3D.X_AXIS, -distance);
+		this.translateLocal(Vector3D.X_AXIS, -distance);
 	}
 
 	/**
@@ -344,7 +413,7 @@ class Transform
 	 */
 	public moveRight(distance:number)
 	{
-		this._displayObject.translateLocal(Vector3D.X_AXIS, distance);
+		this.translateLocal(Vector3D.X_AXIS, distance);
 	}
 
 	/**
@@ -354,7 +423,7 @@ class Transform
 	 */
 	public moveUp(distance:number)
 	{
-		this._displayObject.translateLocal(Vector3D.Y_AXIS, distance);
+		this.translateLocal(Vector3D.Y_AXIS, distance);
 	}
 
 	/**
@@ -364,7 +433,185 @@ class Transform
 	 */
 	public moveDown(distance:number)
 	{
-		this._displayObject.translateLocal(Vector3D.Y_AXIS, -distance);
+		this.translateLocal(Vector3D.Y_AXIS, -distance);
+	}
+
+	/**
+	 * Moves the 3d object directly to a point in space
+	 *
+	 * @param    dx        The amount of movement along the local x axis.
+	 * @param    dy        The amount of movement along the local y axis.
+	 * @param    dz        The amount of movement along the local z axis.
+	 */
+
+	public moveTo(dx:number, dy:number, dz:number)
+	{
+		this._matrix3D.rawData[12] = dx;
+		this._matrix3D.rawData[13] = dy;
+		this._matrix3D.rawData[14] = dz;
+
+		this.invalidatePosition();
+	}
+
+	/**
+	 * Rotates the 3d object around it's local x-axis
+	 *
+	 * @param    angle        The amount of rotation in degrees
+	 */
+	public pitch(angle:number)
+	{
+		this.rotate(Vector3D.X_AXIS, angle);
+	}
+
+	/**
+	 * Rotates the 3d object around it's local z-axis
+	 *
+	 * @param    angle        The amount of rotation in degrees
+	 */
+	public roll(angle:number)
+	{
+		this.rotate(Vector3D.Z_AXIS, angle);
+	}
+
+	/**
+	 * Rotates the 3d object around it's local y-axis
+	 *
+	 * @param    angle        The amount of rotation in degrees
+	 */
+	public yaw(angle:number)
+	{
+		this.rotate(Vector3D.Y_AXIS, angle);
+	}
+
+	/**
+	 * Rotates the 3d object around an axis by a defined angle
+	 *
+	 * @param    axis        The vector defining the axis of rotation
+	 * @param    angle        The amount of rotation in degrees
+	 */
+	public rotate(axis:Vector3D, angle:number)
+	{
+		this.matrix3D.prependRotation(angle, axis);
+
+		this.invalidateComponents();
+	}
+
+	/**
+	 * Moves the 3d object along a vector by a defined length
+	 *
+	 * @param    axis        The vector defining the axis of movement
+	 * @param    distance    The length of the movement
+	 */
+	public translate(axis:Vector3D, distance:number)
+	{
+		var x:number = axis.x, y:number = axis.y, z:number = axis.z;
+		var len:number = distance/Math.sqrt(x*x + y*y + z*z);
+
+		this.matrix3D.appendTranslation(x*len, y*len, z*len);
+
+		this.invalidatePosition();
+	}
+
+	/**
+	 * Moves the 3d object along a vector by a defined length
+	 *
+	 * @param    axis        The vector defining the axis of movement
+	 * @param    distance    The length of the movement
+	 */
+	public translateLocal(axis:Vector3D, distance:number)
+	{
+		var x:number = axis.x, y:number = axis.y, z:number = axis.z;
+		var len:number = distance/Math.sqrt(x*x + y*y + z*z);
+
+		this.matrix3D.prependTranslation(x*len, y*len, z*len);
+
+		this.invalidatePosition();
+	}
+
+	public clearMatrix3D()
+	{
+		this._matrix3D.identity();
+		this.invalidateComponents();
+	}
+
+	public clearColorTransform()
+	{
+		if (!this._colorTransform)
+			return;
+		
+		this._colorTransform.clear();
+		this.invalidateColorTransform();
+	}
+
+	/**
+	 * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
+	 *
+	 * @private
+	 */
+	public invalidateMatrix3D():void
+	{
+		this._matrix3DDirty = true;
+		
+		this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
+	}
+
+	public invalidateComponents()
+	{
+		this.invalidatePosition();
+		
+		this._componentsDirty = true;
+	}
+	
+	/**
+	 *
+	 */
+	public invalidatePosition()
+	{
+		this._matrix3D.invalidatePosition();
+
+		this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
+	}
+
+	public invalidateColorTransform()
+	{
+		this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_COLOR_TRANSFORM, this));
+	}
+
+	/**
+	 *
+	 */
+	private _updateMatrix3D()
+	{
+		this._matrix3D.recompose(this._components);
+
+		this._matrix3DDirty = false;
+	}
+
+
+	private _updateComponents()
+	{
+		var elements:Array<Vector3D> = this._matrix3D.decompose();
+		var vec:Vector3D;
+
+		vec = elements[1];
+
+		this._rotation.x = vec.x;
+		this._rotation.y = vec.y;
+		this._rotation.z = vec.z;
+
+		vec = elements[2];
+
+		this._skew.x = vec.x;
+		this._skew.y = vec.y;
+		this._skew.z = vec.z;
+
+		vec = elements[3];
+
+		this._scale.x = vec.x;
+		this._scale.y = vec.y;
+		this._scale.z = vec.z;
+
+		this._componentsDirty = false;
 	}
 }
 
