@@ -541,7 +541,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _iIsRoot: boolean;
 	    _adapter: IDisplayObjectAdapter;
 	    private _queuedEvents;
-	    _elementsDirty: boolean;
 	    private _loaderInfo;
 	    private _mouseX;
 	    private _mouseY;
@@ -565,8 +564,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    private _sceneTransformChanged;
 	    private _sceneChanged;
 	    private _transform;
-	    private _matrix3D;
-	    private _matrix3DDirty;
 	    private _inverseSceneTransform;
 	    private _inverseSceneTransformDirty;
 	    private _scenePosition;
@@ -580,43 +577,21 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _pImplicitMaskIds: Array<Array<number>>;
 	    private _explicitMouseEnabled;
 	    _pImplicitMouseEnabled: boolean;
-	    private _explicitColorTransform;
 	    _pImplicitColorTransform: ColorTransform;
 	    private _listenToSceneTransformChanged;
 	    private _listenToSceneChanged;
+	    private _matrix3DDirty;
 	    private _positionDirty;
 	    private _rotationDirty;
 	    private _skewDirty;
 	    private _scaleDirty;
-	    private _positionChanged;
-	    private _rotationChanged;
-	    private _skewChanged;
-	    private _scaleChanged;
-	    _rotationX: number;
-	    private _rotationY;
-	    private _rotationZ;
 	    private _eulers;
-	    private _listenToPositionChanged;
-	    private _listenToRotationChanged;
-	    private _listenToSkewChanged;
-	    private _listenToScaleChanged;
 	    _width: number;
 	    _height: number;
 	    _depth: number;
-	    private _skewX;
-	    private _skewY;
-	    private _skewZ;
-	    private _scaleX;
-	    private _scaleY;
-	    private _scaleZ;
 	    private _pivot;
 	    private _pivotScale;
 	    private _orientationMatrix;
-	    private _pivotDirty;
-	    private _rot;
-	    private _ske;
-	    private _sca;
-	    private _transformComponents;
 	    private _shaderPickingDetails;
 	    _pPickingCollisionVO: PickingCollisionVO;
 	    _boundsType: string;
@@ -1472,14 +1447,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    localToGlobal3D(position: Vector3D): Vector3D;
 	    /**
-	     * Moves the 3d object directly to a point in space
-	     *
-	     * @param    dx        The amount of movement along the local x axis.
-	     * @param    dy        The amount of movement along the local y axis.
-	     * @param    dz        The amount of movement along the local z axis.
-	     */
-	    moveTo(dx: number, dy: number, dz: number): void;
-	    /**
 	     * Moves the local point around which the object rotates.
 	     *
 	     * @param    dx        The amount of movement along the local x axis.
@@ -1487,62 +1454,15 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @param    dz        The amount of movement along the local z axis.
 	     */
 	    movePivot(dx: number, dy: number, dz: number): void;
-	    /**
-	     * Rotates the 3d object around it's local x-axis
-	     *
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    pitch(angle: number): void;
 	    reset(): void;
 	    /**
 	     *
 	     */
 	    getRenderSceneTransform(camera: Camera): Matrix3D;
 	    /**
-	     * Rotates the 3d object around it's local z-axis
-	     *
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    roll(angle: number): void;
-	    /**
-	     * Rotates the 3d object around an axis by a defined angle
-	     *
-	     * @param    axis        The vector defining the axis of rotation
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    rotate(axis: Vector3D, angle: number): void;
-	    /**
-	     * Rotates the 3d object directly to a euler angle
-	     *
-	     * @param    ax        The angle in degrees of the rotation around the x axis.
-	     * @param    ay        The angle in degrees of the rotation around the y axis.
-	     * @param    az        The angle in degrees of the rotation around the z axis.
-	     */
-	    rotateTo(ax: number, ay: number, az: number): void;
-	    /**
 	     *
 	     */
 	    removeEventListener(type: string, listener: (event: EventBase) => void): void;
-	    /**
-	     * Moves the 3d object along a vector by a defined length
-	     *
-	     * @param    axis        The vector defining the axis of movement
-	     * @param    distance    The length of the movement
-	     */
-	    translate(axis: Vector3D, distance: number): void;
-	    /**
-	     * Moves the 3d object along a vector by a defined length
-	     *
-	     * @param    axis        The vector defining the axis of movement
-	     * @param    distance    The length of the movement
-	     */
-	    translateLocal(axis: Vector3D, distance: number): void;
-	    /**
-	     * Rotates the 3d object around it's local y-axis
-	     *
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    yaw(angle: number): void;
 	    /**
 	     * @internal
 	     */
@@ -1551,13 +1471,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @internal
 	     */
 	    _iAssignedPartition: PartitionBase;
-	    /**
-	     * The transformation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     *
-	     * @internal
-	     */
-	    _iMatrix3D: Matrix3D;
-	    _iColorTransform: ColorTransform;
 	    /**
 	     * @internal
 	     */
@@ -1571,11 +1484,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @protected
 	     */
 	    _iSetScene(scene: Scene, partition: PartitionBase): void;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateMatrix3D(): void;
-	    _pUpdatePivot(): void;
 	    /**
 	     * @protected
 	     */
@@ -1614,42 +1522,25 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    _iIsMouseEnabled(): boolean;
 	    _applyRenderer(renderer: IRenderer): void;
 	    /**
-	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
-	     *
-	     * @private
-	     */
-	    private invalidateMatrix3D();
-	    /**
 	     * @private
 	     */
 	    invalidatePartition(): void;
 	    /**
+	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
+	     *
 	     * @private
 	     */
-	    private invalidatePivot();
+	    private _onInvalidateMatrix3D(event);
 	    /**
 	     * @private
 	     */
-	    invalidatePosition(): void;
-	    /**
-	     * @private
-	     */
-	    invalidateRotation(matrixDirty?: boolean): void;
-	    /**
-	     * @private
-	     */
-	    private invalidateSkew(matrixDirty?);
-	    /**
-	     * @private
-	     */
-	    private invalidateScale(matrixDirty?);
+	    private _onInvalidateColorTransform(event);
 	    _iAddEntityNode(entityNode: EntityNode): EntityNode;
 	    _iRemoveEntityNode(entityNode: EntityNode): EntityNode;
 	    _pInvalidateBounds(): void;
 	    _pUpdateBoxBounds(): void;
 	    _pUpdateSphereBounds(): void;
 	    private queueDispatch(event);
-	    updateElements(): void;
 	    private _setScaleX(val);
 	    private _setScaleY(val);
 	    private _setScaleZ(val);
@@ -1788,12 +1679,11 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * IRenderOwner provides an interface for objects that can use materials.
 	 *
@@ -1801,34 +1691,26 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	 */
 	interface IRenderOwner extends IAsset {
 	    alphaThreshold: number;
-	    mipmap: boolean;
-	    smooth: boolean;
+	    style: Style;
 	    imageRect: boolean;
 	    blendMode: string;
 	    lightPicker: LightPickerBase;
 	    animationSet: IAnimationSet;
 	    iOwners: Array<IRenderableOwner>;
-	    getNumImages(): number;
-	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
-	    getNumSamplers(): number;
-	    getSamplerAt(index: number): SamplerBase;
-	    getSamplerIndex(texture: TextureBase, index?: number): number;
-	    _iAddImage(image: ImageBase): any;
-	    _iRemoveImage(image: ImageBase): any;
-	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): any;
-	    _iRemoveSampler(texture: TextureBase, index: number): any;
+	    getNumTextures(): number;
+	    getTextureAt(index: number): TextureBase;
+	    addTexture(texture: TextureBase): any;
+	    removeTexture(texture: TextureBase): any;
 	}
 	export = IRenderOwner;
 	
 }
 
 declare module "awayjs-display/lib/base/IRenderableOwner" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * IRenderableOwner provides an interface for objects that can use materials.
 	 *
@@ -1843,8 +1725,7 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	     *
 	     */
 	    uvTransform: UVTransform;
-	    getImageAt(index: number): ImageBase;
-	    getSamplerAt(index: number): SamplerBase;
+	    style: Style;
 	    invalidateRenderOwner(): any;
 	}
 	export = IRenderableOwner;
@@ -2085,6 +1966,39 @@ declare module "awayjs-display/lib/base/OrientationMode" {
 	
 }
 
+declare module "awayjs-display/lib/base/Style" {
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
+	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	/**
+	 *
+	 */
+	class Style extends EventDispatcher {
+	    private _sampler;
+	    private _samplers;
+	    private _image;
+	    private _images;
+	    private _color;
+	    sampler: SamplerBase;
+	    image: ImageBase;
+	    /**
+	     * The diffuse reflectivity color of the surface.
+	     */
+	    color: number;
+	    constructor();
+	    getImageAt(texture: TextureBase, index?: number): ImageBase;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    addImageAt(image: ImageBase, texture: TextureBase, index?: number): void;
+	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    removeImageAt(texture: TextureBase, index?: number): void;
+	    removeSamplerAt(texture: TextureBase, index?: number): void;
+	    private _invalidateProperties();
+	}
+	export = Style;
+	
+}
+
 declare module "awayjs-display/lib/base/SubGeometryBase" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
@@ -2170,8 +2084,6 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 }
 
 declare module "awayjs-display/lib/base/SubMeshBase" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
@@ -2179,6 +2091,7 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
 	 *
@@ -2189,11 +2102,11 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	 * @class away.base.SubMeshBase
 	 */
 	class SubMeshBase extends AssetBase {
-	    private _images;
-	    private _samplers;
 	    _uvTransform: UVTransform;
 	    _iIndex: number;
+	    private _style;
 	    _material: MaterialBase;
+	    private _onInvalidatePropertiesDelegate;
 	    /**
 	     * The animator object that provides the state for the TriangleSubMesh's animation.
 	     */
@@ -2202,6 +2115,10 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	     * The material used to render the current TriangleSubMesh. If set to null, its parent Mesh's material will be used instead.
 	     */
 	    material: MaterialBase;
+	    /**
+	     * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
+	     */
+	    style: Style;
 	    /**
 	     * The scene transform object that transforms from model to world space.
 	     */
@@ -2214,16 +2131,10 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	     *
 	     */
 	    uvTransform: UVTransform;
-	    getImageAt(index: number): ImageBase;
-	    addImageAt(image: ImageBase, index: number): void;
-	    removeImageAt(index: number): void;
-	    getSamplerAt(index: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, index: number): void;
-	    removeSamplerAt(index: number): void;
 	    /**
 	     * Creates a new SubMeshBase object
 	     */
-	    constructor(parentMesh: Mesh, material?: MaterialBase);
+	    constructor(parentMesh: Mesh, material?: MaterialBase, style?: Style);
 	    /**
 	     *
 	     */
@@ -2237,7 +2148,7 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    invalidateGeometry(): void;
 	    invalidateRenderOwner(): void;
 	    _iGetExplicitMaterial(): MaterialBase;
-	    clear(): void;
+	    private _onInvalidateProperties(event);
 	}
 	export = SubMeshBase;
 	
@@ -2325,6 +2236,7 @@ declare module "awayjs-display/lib/base/TouchPoint" {
 }
 
 declare module "awayjs-display/lib/base/Transform" {
+	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
@@ -2386,12 +2298,18 @@ declare module "awayjs-display/lib/base/Transform" {
 	 * projection center changes. For more control over the perspective
 	 * transformation, create a perspective projection Matrix3D object.</p>
 	 */
-	class Transform {
-	    private _displayObject;
+	class Transform extends EventDispatcher {
 	    private _concatenatedColorTransform;
 	    private _concatenatedMatrix;
 	    private _pixelBounds;
-	    _position: Vector3D;
+	    private _colorTransform;
+	    private _matrix3D;
+	    private _matrix3DDirty;
+	    private _rotation;
+	    private _skew;
+	    private _scale;
+	    private _components;
+	    private _componentsDirty;
 	    /**
 	     *
 	     */
@@ -2420,7 +2338,7 @@ declare module "awayjs-display/lib/base/Transform" {
 	     * factors in the difference between stage coordinates and window coordinates
 	     * due to window resizing. Thus, the property converts local coordinates to
 	     * window coordinates, which may not be the same coordinate space as that of
-	     * the Stage.
+	     * the Scene.
 	     */
 	    concatenatedMatrix: Matrix;
 	    /**
@@ -2489,14 +2407,28 @@ declare module "awayjs-display/lib/base/Transform" {
 	     */
 	    rotation: Vector3D;
 	    /**
+	     * Rotates the 3d object directly to a euler angle
+	     *
+	     * @param    ax        The angle in degrees of the rotation around the x axis.
+	     * @param    ay        The angle in degrees of the rotation around the y axis.
+	     * @param    az        The angle in degrees of the rotation around the z axis.
+	     */
+	    rotateTo(ax: number, ay: number, az: number): void;
+	    /**
 	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	     */
 	    scale: Vector3D;
+	    scaleTo(sx: number, sy: number, sz: number): void;
+	    /**
+	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    skew: Vector3D;
+	    skewTo(sx: number, sy: number, sz: number): void;
 	    /**
 	     *
 	     */
 	    upVector: Vector3D;
-	    constructor(displayObject: DisplayObject);
+	    constructor();
 	    dispose(): void;
 	    /**
 	     * Returns a Matrix3D object, which can transform the space of a specified
@@ -2553,6 +2485,72 @@ declare module "awayjs-display/lib/base/Transform" {
 	     * @param    distance    The length of the movement
 	     */
 	    moveDown(distance: number): void;
+	    /**
+	     * Moves the 3d object directly to a point in space
+	     *
+	     * @param    dx        The amount of movement along the local x axis.
+	     * @param    dy        The amount of movement along the local y axis.
+	     * @param    dz        The amount of movement along the local z axis.
+	     */
+	    moveTo(dx: number, dy: number, dz: number): void;
+	    /**
+	     * Rotates the 3d object around it's local x-axis
+	     *
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    pitch(angle: number): void;
+	    /**
+	     * Rotates the 3d object around it's local z-axis
+	     *
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    roll(angle: number): void;
+	    /**
+	     * Rotates the 3d object around it's local y-axis
+	     *
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    yaw(angle: number): void;
+	    /**
+	     * Rotates the 3d object around an axis by a defined angle
+	     *
+	     * @param    axis        The vector defining the axis of rotation
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    rotate(axis: Vector3D, angle: number): void;
+	    /**
+	     * Moves the 3d object along a vector by a defined length
+	     *
+	     * @param    axis        The vector defining the axis of movement
+	     * @param    distance    The length of the movement
+	     */
+	    translate(axis: Vector3D, distance: number): void;
+	    /**
+	     * Moves the 3d object along a vector by a defined length
+	     *
+	     * @param    axis        The vector defining the axis of movement
+	     * @param    distance    The length of the movement
+	     */
+	    translateLocal(axis: Vector3D, distance: number): void;
+	    clearMatrix3D(): void;
+	    clearColorTransform(): void;
+	    /**
+	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
+	     *
+	     * @private
+	     */
+	    invalidateMatrix3D(): void;
+	    invalidateComponents(): void;
+	    /**
+	     *
+	     */
+	    invalidatePosition(): void;
+	    invalidateColorTransform(): void;
+	    /**
+	     *
+	     */
+	    private _updateMatrix3D();
+	    private _updateComponents();
 	}
 	export = Transform;
 	
@@ -5328,17 +5326,15 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 }
 
 declare module "awayjs-display/lib/entities/Billboard" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * The Billboard class represents display objects that represent bitmap images.
 	 * These can be images that you load with the <code>flash.Assets</code> or
@@ -5374,8 +5370,6 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	 * contains the Billboard object.</p>
 	 */
 	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
-	    private _images;
-	    private _samplers;
 	    static assetType: string;
 	    private _animator;
 	    private _billboardWidth;
@@ -5383,8 +5377,8 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    private _billboardRect;
 	    private _material;
 	    private _uvTransform;
-	    private _colorTransform;
-	    private _parentColorTransform;
+	    private _style;
+	    private _onInvalidatePropertiesDelegate;
 	    private onInvalidateTextureDelegate;
 	    /**
 	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
@@ -5411,50 +5405,19 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	     */
 	    material: MaterialBase;
 	    /**
-	     * Controls whether or not the Billboard object is snapped to the nearest pixel.
-	     * This value is ignored in the native and HTML5 targets.
-	     * The PixelSnapping class includes possible values:
-	     * <ul>
-	     *   <li><code>PixelSnapping.NEVER</code> - No pixel snapping occurs.</li>
-	     *   <li><code>PixelSnapping.ALWAYS</code> - The image is always snapped to
-	     * the nearest pixel, independent of transformation.</li>
-	     *   <li><code>PixelSnapping.AUTO</code> - The image is snapped to the
-	     * nearest pixel if it is drawn with no rotation or skew and it is drawn at a
-	     * scale factor of 99.9% to 100.1%. If these conditions are satisfied, the
-	     * bitmap image is drawn at 100% scale, snapped to the nearest pixel.
-	     * When targeting Flash Player, this value allows the image to be drawn as fast
-	     * as possible using the internal vector renderer.</li>
-	     * </ul>
-	     */
-	    pixelSnapping: string;
-	    /**
-	     * Controls whether or not the bitmap is smoothed when scaled. If
-	     * <code>true</code>, the bitmap is smoothed when scaled. If
-	     * <code>false</code>, the bitmap is not smoothed when scaled.
-	     */
-	    smoothing: boolean;
-	    /**
 	     *
 	     */
 	    uvTransform: UVTransform;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    parentColorTransform: ColorTransform;
-	    private _applyColorTransform();
 	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
 	    /**
 	     * @protected
 	     */
 	    _pUpdateBoxBounds(): void;
 	    clone(): DisplayObject;
-	    getImageAt(index: number): ImageBase;
-	    addImageAt(image: ImageBase, index: number): void;
-	    removeImageAt(index: number): void;
-	    getSamplerAt(index: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, index: number): void;
-	    removeSamplerAt(index: number): void;
+	    /**
+	     * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
+	     */
+	    style: Style;
 	    /**
 	     * //TODO
 	     *
@@ -5472,6 +5435,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    _applyRenderer(renderer: IRenderer): void;
 	    private _updateDimensions();
 	    invalidateRenderOwner(): void;
+	    private _onInvalidateProperties(event?);
 	}
 	export = Billboard;
 	
@@ -5728,18 +5692,19 @@ declare module "awayjs-display/lib/entities/IEntity" {
 
 declare module "awayjs-display/lib/entities/LightProbe" {
 	import ImageCube = require("awayjs-core/lib/image/ImageCube");
+	import SamplerCube = require("awayjs-core/lib/image/SamplerCube");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import LightBase = require("awayjs-display/lib/base/LightBase");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	class LightProbe extends LightBase implements IEntity {
 	    static assetType: string;
-	    private _diffuseMap;
-	    private _specularMap;
+	    diffuseMap: ImageCube;
+	    diffuseSampler: SamplerCube;
+	    specularMap: ImageCube;
+	    specularSampler: SamplerCube;
 	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
 	    assetType: string;
-	    diffuseMap: ImageCube;
-	    specularMap: ImageCube;
 	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
 	}
 	export = LightProbe;
@@ -5747,8 +5712,6 @@ declare module "awayjs-display/lib/entities/LightProbe" {
 }
 
 declare module "awayjs-display/lib/entities/LineSegment" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -5758,12 +5721,13 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * A Line Segment primitive.
 	 */
 	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
-	    private _images;
-	    private _samplers;
+	    private _style;
+	    private _onInvalidatePropertiesDelegate;
 	    static assetType: string;
 	    private _animator;
 	    private _material;
@@ -5813,12 +5777,10 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	     * @param thickness Thickness of the line
 	     */
 	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
-	    getImageAt(index: number): ImageBase;
-	    addImageAt(image: ImageBase, index: number): void;
-	    removeImageAt(image: ImageBase, index: number): void;
-	    getSamplerAt(index: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, index: number): void;
-	    removeSamplerAt(index: number): void;
+	    /**
+	     * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
+	     */
+	    style: Style;
 	    /**
 	     * @protected
 	     */
@@ -5829,6 +5791,7 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	     */
 	    private invalidateGeometry();
 	    invalidateRenderOwner(): void;
+	    private _onInvalidateProperties(event);
 	    _applyRenderer(renderer: IRenderer): void;
 	}
 	export = LineSegment;
@@ -5836,8 +5799,6 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 }
 
 declare module "awayjs-display/lib/entities/Mesh" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
@@ -5848,17 +5809,17 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
 	 * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
 	 * of the geometry to be assigned different materials.
 	 */
 	class Mesh extends DisplayObjectContainer implements IEntity {
-	    private _images;
-	    private _samplers;
 	    private static _meshes;
 	    static assetType: string;
 	    private _uvTransform;
+	    private _style;
 	    private _center;
 	    _subMeshes: Array<ISubMesh>;
 	    _geometry: Geometry;
@@ -5869,6 +5830,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    _onGeometryBoundsInvalidDelegate: (event: GeometryEvent) => void;
 	    _onSubGeometryAddedDelegate: (event: GeometryEvent) => void;
 	    _onSubGeometryRemovedDelegate: (event: GeometryEvent) => void;
+	    private _onInvalidatePropertiesDelegate;
 	    private _tempPoint;
 	    /**
 	     * Defines the animator of the mesh. Act on the mesh's geometry.  Default value is <code>null</code>.
@@ -5903,12 +5865,10 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     *
 	     */
 	    uvTransform: UVTransform;
-	    getImageAt(index: number): ImageBase;
-	    addImageAt(image: ImageBase, index: number): void;
-	    removeImageAt(image: ImageBase, index: number): void;
-	    getSamplerAt(index: number): SamplerBase;
-	    addSamplerAt(sampler: SamplerBase, index: number): void;
-	    removeSamplerAt(index: number): void;
+	    /**
+	     *
+	     */
+	    style: Style;
 	    /**
 	     * Create a new Mesh object.
 	     *
@@ -6002,8 +5962,10 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     */
 	    _applyRenderer(renderer: IRenderer): void;
 	    _iInvalidateRenderableGeometries(): void;
+	    _iInvalidateRenderOwners(): void;
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	    clear(): void;
+	    private _onInvalidateProperties(event);
 	}
 	export = Mesh;
 	
@@ -6148,8 +6110,7 @@ declare module "awayjs-display/lib/entities/Shape" {
 }
 
 declare module "awayjs-display/lib/entities/Skybox" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
+	import ImageCube = require("awayjs-core/lib/image/ImageCube");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
@@ -6162,19 +6123,16 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
 	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
 	 * the sky box is always as large as possible without being clipped.
 	 */
 	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner {
-	    private _images;
-	    private _imageCount;
-	    private _imageIndex;
-	    private _samplers;
-	    private _samplerIndices;
+	    private _textures;
 	    static assetType: string;
-	    private _cubeMap;
+	    private _texture;
 	    _pAlphaThreshold: number;
 	    private _animationSet;
 	    _pLightPicker: LightPickerBase;
@@ -6183,9 +6141,10 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    private _colorTransform;
 	    private _owners;
 	    private _imageRect;
-	    private _mipmap;
-	    private _smooth;
+	    private _onInvalidatePropertiesDelegate;
+	    private _style;
 	    private _animator;
+	    private _onTextureInvalidateDelegate;
 	    /**
 	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
 	     * invisible or entirely opaque, often used with textures for foliage, etc.
@@ -6196,14 +6155,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
 	     */
 	    imageRect: boolean;
-	    /**
-	     * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
-	     */
-	    mipmap: boolean;
-	    /**
-	     * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
-	     */
-	    smooth: boolean;
 	    /**
 	     * The light picker used by the material to provide lights to the material if it supports lighting.
 	     *
@@ -6244,26 +6195,22 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    /**
 	    * The cube texture to use as the skybox.
 	    */
-	    cubeMap: SingleCubeTexture;
+	    texture: SingleCubeTexture;
+	    getNumTextures(): number;
+	    getTextureAt(index: number): TextureBase;
+	    /**
+	     *
+	     */
+	    style: Style;
 	    /**
 	     * Create a new Skybox object.
 	     *
 	     * @param material	The material with which to render the Skybox.
 	     */
-	    constructor(cubeMap?: SingleCubeTexture);
+	    constructor(image?: ImageCube);
 	    assetType: string;
 	    castsShadows: boolean;
-	    getNumImages(): number;
-	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
-	    getNumSamplers(): number;
-	    getSamplerAt(index: number): SamplerBase;
-	    getSamplerIndex(texture: TextureBase, index?: number): number;
 	    _applyRenderer(renderer: IRenderer): void;
-	    _iAddImage(image: ImageBase): void;
-	    _iRemoveImage(image: ImageBase): void;
-	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): void;
-	    _iRemoveSampler(texture: TextureBase, index: number): void;
 	    /**
 	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	     *
@@ -6271,6 +6218,10 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     */
 	    invalidatePasses(): void;
 	    invalidateRenderOwner(): void;
+	    addTexture(texture: TextureBase): void;
+	    removeTexture(texture: TextureBase): void;
+	    private onTextureInvalidate(event?);
+	    private _onInvalidateProperties(event);
 	}
 	export = Skybox;
 	
@@ -7246,13 +7197,18 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	class DisplayObjectEvent extends EventBase {
+	    /**
+	     *
+	     */
 	    static VISIBLITY_UPDATED: string;
+	    /**
+	     *
+	     */
 	    static SCENETRANSFORM_CHANGED: string;
+	    /**
+	     *
+	     */
 	    static SCENE_CHANGED: string;
-	    static POSITION_CHANGED: string;
-	    static ROTATION_CHANGED: string;
-	    static SKEW_CHANGED: string;
-	    static SCALE_CHANGED: string;
 	    /**
 	     *
 	     */
@@ -7571,6 +7527,27 @@ declare module "awayjs-display/lib/events/ResizeEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/StyleEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	class StyleEvent extends EventBase {
+	    private _style;
+	    /**
+	     *
+	     */
+	    static INVALIDATE_PROPERTIES: string;
+	    style: Style;
+	    constructor(type: string, style: Style);
+	    /**
+	     * Clones the event.
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): StyleEvent;
+	}
+	export = StyleEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
@@ -7616,6 +7593,49 @@ declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	    clone(): SubGeometryEvent;
 	}
 	export = SubGeometryEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/TextureEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	/**
+	* Dispatched to notify changes in a geometry object's state.
+	*
+	* @class away.events.TextureEvent
+	* @see away3d.core.base.Geometry
+	*/
+	class TextureEvent extends EventBase {
+	    /**
+	     * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
+	     */
+	    static SUB_GEOMETRY_ADDED: string;
+	    /**
+	     * Dispatched when a TriangleSubGeometry was removed from the dispatching Geometry.
+	     */
+	    static SUB_GEOMETRY_REMOVED: string;
+	    /**
+	     *
+	     */
+	    static BOUNDS_INVALID: string;
+	    private _subGeometry;
+	    /**
+	     * Create a new TextureEvent
+	     * @param type The event type.
+	     * @param subGeometry An optional TriangleSubGeometry object that is the subject of this event.
+	     */
+	    constructor(type: string, subGeometry?: SubGeometryBase);
+	    /**
+	     * The TriangleSubGeometry object that is the subject of this event, if appropriate.
+	     */
+	    subGeometry: SubGeometryBase;
+	    /**
+	     * Clones the event.
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): TextureEvent;
+	}
+	export = TextureEvent;
 	
 }
 
@@ -7741,6 +7761,31 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/TransformEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import Transform = require("awayjs-display/lib/base/Transform");
+	class TransformEvent extends EventBase {
+	    private _transform;
+	    /**
+	     *
+	     */
+	    static INVALIDATE_MATRIX3D: string;
+	    /**
+	     *
+	     */
+	    static INVALIDATE_COLOR_TRANSFORM: string;
+	    transform: Transform;
+	    constructor(type: string, transform: Transform);
+	    /**
+	     * Clones the event.
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): TransformEvent;
+	}
+	export = TransformEvent;
+	
+}
+
 declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
 	import Timeline = require("awayjs-display/lib/base/Timeline");
 	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
@@ -7754,10 +7799,14 @@ declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
 }
 
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
+	import Sampler2D = require("awayjs-core/lib/image/Sampler2D");
+	import BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
+	import BitmapImageCube = require("awayjs-core/lib/image/BitmapImageCube");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class DefaultMaterialManager {
+	    private static _defaultSampler2D;
 	    private static _defaultBitmapImage2D;
 	    private static _defaultBitmapImageCube;
 	    private static _defaultCubeTextureMaterial;
@@ -7767,13 +7816,17 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	    private static _defaultCubeTexture;
 	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
 	    static getDefaultTexture(renderableOwner?: IRenderableOwner): TextureBase;
+	    static getDefaultImage2D(): BitmapImage2D;
+	    static getDefaultImageCube(): BitmapImageCube;
+	    static getDefaultSampler(): Sampler2D;
 	    private static createDefaultTexture();
 	    private static createDefaultCubeTexture();
-	    private static createCheckeredBitmapImageCube();
-	    private static createCheckeredBitmapImage2D();
+	    private static createDefaultImageCube();
+	    private static createDefaultImage2D();
 	    private static createDefaultTextureMaterial();
 	    private static createDefaultCubeTextureMaterial();
 	    private static createDefaultColorMaterial();
+	    private static createDefaultSampler2D();
 	}
 	export = DefaultMaterialManager;
 	
@@ -7909,6 +7962,7 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	class BasicMaterial extends MaterialBase {
 	    static assetType: string;
 	    private _preserveAlpha;
+	    private _texture;
 	    /**
 	     *
 	     */
@@ -7921,13 +7975,16 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	     * @param repeat Indicates whether the texture should be tiled when sampled. Defaults to false.
 	     * @param mipmap Indicates whether or not any used textures should use mipmapping. Defaults to false.
 	     */
-	    constructor(texture?: Image2D, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
-	    constructor(texture?: TextureBase, smooth?: boolean, repeat?: boolean, mipmap?: boolean);
+	    constructor(image?: Image2D, alpha?: number);
 	    constructor(color?: number, alpha?: number);
 	    /**
 	     * Indicates whether alpha should be preserved - defaults to false
 	     */
 	    preserveAlpha: boolean;
+	    /**
+	     * The texture object to use for the albedo colour.
+	     */
+	    texture: TextureBase;
 	}
 	export = BasicMaterial;
 	
@@ -7968,7 +8025,6 @@ declare module "awayjs-display/lib/materials/LightSources" {
 
 declare module "awayjs-display/lib/materials/MaterialBase" {
 	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -7976,6 +8032,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * MaterialBase forms an abstract base class for any material.
 	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
@@ -7988,11 +8045,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	 * shaders, or entire new material frameworks.
 	 */
 	class MaterialBase extends AssetBase implements IRenderOwner {
-	    private _images;
-	    private _imageCount;
-	    private _imageIndex;
-	    private _samplers;
-	    private _samplerIndices;
+	    private _textures;
 	    private _colorTransform;
 	    private _pUseColorTransform;
 	    private _alphaBlending;
@@ -8002,6 +8055,8 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    private _enableLightFallOff;
 	    private _specularLightSources;
 	    private _diffuseLightSources;
+	    private _onInvalidatePropertiesDelegate;
+	    private _style;
 	    /**
 	     * An object to contain any extra data.
 	     */
@@ -8024,17 +8079,14 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    private _alphaPremultiplied;
 	    _pBlendMode: string;
 	    private _imageRect;
-	    private _mipmap;
-	    private _smooth;
-	    private _repeat;
-	    private _color;
-	    _pTexture: TextureBase;
 	    _pLightPicker: LightPickerBase;
 	    private _onLightChangeDelegate;
+	    private _onTextureInvalidateDelegate;
 	    /**
 	     * Creates a new MaterialBase object.
 	     */
-	    constructor();
+	    constructor(image?: ImageBase, alpha?: number);
+	    constructor(color?: number, alpha?: number);
 	    /**
 	     * The alpha of the surface.
 	     */
@@ -8064,26 +8116,9 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     */
 	    imageRect: boolean;
 	    /**
-	     * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	     * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
 	     */
-	    mipmap: boolean;
-	    /**
-	     * Indicates whether or not any used textures should use smoothing. Defaults to true.
-	     */
-	    smooth: boolean;
-	    /**
-	     * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
-	     * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
-	     */
-	    repeat: boolean;
-	    /**
-	     * The diffuse reflectivity color of the surface.
-	     */
-	    color: number;
-	    /**
-	     * The texture object to use for the albedo colour.
-	     */
-	    texture: TextureBase;
+	    style: Style;
 	    /**
 	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
 	     */
@@ -8138,12 +8173,6 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
 	     */
 	    alphaThreshold: number;
-	    getNumImages(): number;
-	    getImageAt(index: number): ImageBase;
-	    getImageIndex(image: ImageBase): number;
-	    getNumSamplers(): number;
-	    getSamplerAt(index: number): SamplerBase;
-	    getSamplerIndex(texture: TextureBase, index?: number): number;
 	    /**
 	     * Mark an IRenderableOwner as owner of this material.
 	     * Assures we're not using the same material across renderables with different animations, since the
@@ -8167,6 +8196,8 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     * @private
 	     */
 	    iOwners: Array<IRenderableOwner>;
+	    getNumTextures(): number;
+	    getTextureAt(index: number): TextureBase;
 	    /**
 	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	     *
@@ -8180,11 +8211,11 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     */
 	    private onLightsChange(event);
 	    invalidateTexture(): void;
-	    clear(): void;
-	    _iAddImage(image: ImageBase): void;
-	    _iRemoveImage(image: ImageBase): void;
-	    _iAddSampler(sampler: SamplerBase, texture: TextureBase, index: number): void;
-	    _iRemoveSampler(texture: TextureBase, index: number): void;
+	    addTextureAt(texture: TextureBase, index: number): void;
+	    addTexture(texture: TextureBase): void;
+	    removeTexture(texture: TextureBase): void;
+	    private onTextureInvalidate(event?);
+	    private _onInvalidateProperties(event);
 	}
 	export = MaterialBase;
 	
@@ -9938,35 +9969,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	
 }
 
-declare module "awayjs-display/lib/text/AntiAliasType" {
-	/**
-	 * The AntiAliasType class provides values for anti-aliasing in the
-	 * away.text.TextField class.
-	 */
-	class AntiAliasType {
-	    /**
-	     * Sets anti-aliasing to advanced anti-aliasing. Advanced anti-aliasing
-	     * allows font faces to be rendered at very high quality at small sizes. It
-	     * is best used with applications that have a lot of small text. Advanced
-	     * anti-aliasing is not recommended for very large fonts(larger than 48
-	     * points). This constant is used for the <code>antiAliasType</code> property
-	     * in the TextField class. Use the syntax
-	     * <code>AntiAliasType.ADVANCED</code>.
-	     */
-	    static ADVANCED: string;
-	    /**
-	     * Sets anti-aliasing to the anti-aliasing that is used in Flash Player 7 and
-	     * earlier. This setting is recommended for applications that do not have a
-	     * lot of text. This constant is used for the <code>antiAliasType</code>
-	     * property in the TextField class. Use the syntax
-	     * <code>AntiAliasType.NORMAL</code>.
-	     */
-	    static NORMAL: string;
-	}
-	export = AntiAliasType;
-	
-}
-
 declare module "awayjs-display/lib/text/Font" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
@@ -10001,6 +10003,35 @@ declare module "awayjs-display/lib/text/Font" {
 	    get_font_table(style_name: string): FontTable;
 	}
 	export = Font;
+	
+}
+
+declare module "awayjs-display/lib/text/AntiAliasType" {
+	/**
+	 * The AntiAliasType class provides values for anti-aliasing in the
+	 * away.text.TextField class.
+	 */
+	class AntiAliasType {
+	    /**
+	     * Sets anti-aliasing to advanced anti-aliasing. Advanced anti-aliasing
+	     * allows font faces to be rendered at very high quality at small sizes. It
+	     * is best used with applications that have a lot of small text. Advanced
+	     * anti-aliasing is not recommended for very large fonts(larger than 48
+	     * points). This constant is used for the <code>antiAliasType</code> property
+	     * in the TextField class. Use the syntax
+	     * <code>AntiAliasType.ADVANCED</code>.
+	     */
+	    static ADVANCED: string;
+	    /**
+	     * Sets anti-aliasing to the anti-aliasing that is used in Flash Player 7 and
+	     * earlier. This setting is recommended for applications that do not have a
+	     * lot of text. This constant is used for the <code>antiAliasType</code>
+	     * property in the TextField class. Use the syntax
+	     * <code>AntiAliasType.NORMAL</code>.
+	     */
+	    static NORMAL: string;
+	}
+	export = AntiAliasType;
 	
 }
 
@@ -10586,6 +10617,7 @@ declare module "awayjs-display/lib/textures/MappingMode" {
 }
 
 declare module "awayjs-display/lib/textures/Single2DTexture" {
+	import Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 	import Image2D = require("awayjs-core/lib/image/Image2D");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class Single2DTexture extends TextureBase {
@@ -10601,14 +10633,20 @@ declare module "awayjs-display/lib/textures/Single2DTexture" {
 	     *
 	     * @returns {Image2D}
 	     */
+	    sampler2D: Sampler2D;
+	    /**
+	     *
+	     * @returns {Image2D}
+	     */
 	    image2D: Image2D;
-	    constructor(image2D: Image2D);
+	    constructor(image2D?: Image2D);
 	}
 	export = Single2DTexture;
 	
 }
 
 declare module "awayjs-display/lib/textures/SingleCubeTexture" {
+	import SamplerCube = require("awayjs-core/lib/image/SamplerCube");
 	import ImageCube = require("awayjs-core/lib/image/ImageCube");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class SingleCubeTexture extends TextureBase {
@@ -10620,10 +10658,15 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	    assetType: string;
 	    /**
 	     *
+	     * @returns {Image2D}
+	     */
+	    samplerCube: SamplerCube;
+	    /**
+	     *
 	     * @returns {ImageCube}
 	     */
 	    imageCube: ImageCube;
-	    constructor(imageCube: ImageCube);
+	    constructor(imageCube?: ImageCube);
 	}
 	export = SingleCubeTexture;
 	
@@ -10631,29 +10674,25 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 
 declare module "awayjs-display/lib/textures/TextureBase" {
 	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
 	/**
 	 *
 	 */
 	class TextureBase extends AssetBase {
-	    private _owners;
-	    private _counts;
+	    _numImages: number;
 	    _images: Array<ImageBase>;
+	    _samplers: Array<SamplerBase>;
 	    /**
 	     *
 	     */
 	    constructor();
-	    iAddOwner(owner: IRenderOwner): void;
-	    iRemoveOwner(owner: IRenderOwner): void;
-	    /**
-	     *
-	     */
-	    iAddImage(image: ImageBase, index: number): void;
-	    /**
-	     *
-	     */
-	    iRemoveImage(index: number): void;
+	    getNumImages(): number;
+	    setNumImages(value: number): void;
+	    getImageAt(index: number): ImageBase;
+	    setImageAt(image: ImageBase, index: number): void;
+	    getSamplerAt(index: number): SamplerBase;
+	    setSamplerAt(sampler: SamplerBase, index: number): void;
 	}
 	export = TextureBase;
 	

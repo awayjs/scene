@@ -403,6 +403,7 @@ var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
 var Transform = require("awayjs-display/lib/base/Transform");
 var PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
+var TransformEvent = require("awayjs-display/lib/events/TransformEvent");
 /**
  * The DisplayObject class is the base class for all objects that can be
  * placed on the display list. The display list manages all objects displayed
@@ -538,6 +539,7 @@ var DisplayObject = (function (_super) {
      * Creates a new <code>DisplayObject</code> instance.
      */
     function DisplayObject() {
+        var _this = this;
         _super.call(this);
         this._queuedEvents = new Array();
         this._boxBoundsInvalid = true;
@@ -547,7 +549,6 @@ var DisplayObject = (function (_super) {
         this._pIsContainer = false;
         this._sessionID = -1;
         this._depthID = -16384;
-        this._matrix3D = new Matrix3D();
         this._inverseSceneTransform = new Matrix3D();
         this._scenePosition = new Vector3D();
         this._explicitVisibility = true;
@@ -557,19 +558,7 @@ var DisplayObject = (function (_super) {
         this._pImplicitMaskIds = new Array();
         this._explicitMouseEnabled = true;
         this._pImplicitMouseEnabled = true;
-        this._rotationX = 0;
-        this._rotationY = 0;
-        this._rotationZ = 0;
-        this._skewX = 0;
-        this._skewY = 0;
-        this._skewZ = 0;
-        this._scaleX = 1;
-        this._scaleY = 1;
-        this._scaleZ = 1;
         this._orientationMatrix = new Matrix3D();
-        this._rot = new Vector3D();
-        this._ske = new Vector3D();
-        this._sca = new Vector3D();
         this._entityNodes = new Array();
         this._inheritColorTransform = false;
         this._maskMode = false;
@@ -591,15 +580,11 @@ var DisplayObject = (function (_super) {
          *
          */
         this.zOffset = 0;
-        // Cached vector of transformation components used when
-        // recomposing the transform matrix in updateTransform()
-        this._transformComponents = new Array(4);
-        this._transformComponents[1] = this._rot;
-        this._transformComponents[2] = this._ske;
-        this._transformComponents[3] = this._sca;
         //creation of associated transform object
-        this._transform = new Transform(this);
-        this._matrix3D.identity();
+        this._transform = new Transform();
+        //setup transform listeners
+        this._transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, function (event) { return _this._onInvalidateMatrix3D(event); });
+        this._transform.addEventListener(TransformEvent.INVALIDATE_COLOR_TRANSFORM, function (event) { return _this._onInvalidateColorTransform(event); });
         //default bounds type
         this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
@@ -638,12 +623,12 @@ var DisplayObject = (function (_super) {
          * even though they are invisible.
          */
         get: function () {
-            return this._explicitColorTransform ? this._explicitColorTransform.alphaMultiplier : 1;
+            return this._transform.colorTransform ? this._transform.colorTransform.alphaMultiplier : 1;
         },
         set: function (value) {
-            if (!this._explicitColorTransform)
-                this._iColorTransform = new ColorTransform();
-            this._explicitColorTransform.alphaMultiplier = value;
+            if (!this._transform.colorTransform)
+                this._transform.colorTransform = new ColorTransform();
+            this._transform.colorTransform.alphaMultiplier = value;
         },
         enumerable: true,
         configurable: true
@@ -1047,7 +1032,7 @@ var DisplayObject = (function (_super) {
                 this._pivot.y = pivot.y;
                 this._pivot.z = pivot.z;
             }
-            this.invalidatePivot();
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
         },
         enumerable: true,
         configurable: true
@@ -1094,15 +1079,13 @@ var DisplayObject = (function (_super) {
          * to or subtracted from 360 to obtain a value within the range.
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._rotationX * MathConsts.RADIANS_TO_DEGREES;
+            return this._transform.rotation.x * MathConsts.RADIANS_TO_DEGREES;
         },
         set: function (val) {
             if (this.rotationX == val)
                 return;
-            this._rotationX = val * MathConsts.DEGREES_TO_RADIANS;
-            this.invalidateRotation();
+            this._transform.rotation.x = val * MathConsts.DEGREES_TO_RADIANS;
+            this._transform.invalidateMatrix3D();
         },
         enumerable: true,
         configurable: true
@@ -1116,15 +1099,13 @@ var DisplayObject = (function (_super) {
          * to or subtracted from 360 to obtain a value within the range.
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._rotationY * MathConsts.RADIANS_TO_DEGREES;
+            return this._transform.rotation.y * MathConsts.RADIANS_TO_DEGREES;
         },
         set: function (val) {
             if (this.rotationY == val)
                 return;
-            this._rotationY = val * MathConsts.DEGREES_TO_RADIANS;
-            this.invalidateRotation();
+            this._transform.rotation.y = val * MathConsts.DEGREES_TO_RADIANS;
+            this._transform.invalidateMatrix3D();
         },
         enumerable: true,
         configurable: true
@@ -1138,15 +1119,13 @@ var DisplayObject = (function (_super) {
          * to or subtracted from 360 to obtain a value within the range.
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._rotationZ * MathConsts.RADIANS_TO_DEGREES;
+            return this._transform.rotation.z * MathConsts.RADIANS_TO_DEGREES;
         },
         set: function (val) {
             if (this.rotationZ == val)
                 return;
-            this._rotationZ = val * MathConsts.DEGREES_TO_RADIANS;
-            this.invalidateRotation();
+            this._transform.rotation.z = val * MathConsts.DEGREES_TO_RADIANS;
+            this._transform.invalidateMatrix3D();
         },
         enumerable: true,
         configurable: true
@@ -1161,9 +1140,7 @@ var DisplayObject = (function (_super) {
          * <code>y</code> property values, which are defined in whole pixels. </p>
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._scaleX;
+            return this._transform.scale.x;
         },
         set: function (val) {
             //remove absolute width
@@ -1183,9 +1160,7 @@ var DisplayObject = (function (_super) {
          * <code>y</code> property values, which are defined in whole pixels. </p>
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._scaleY;
+            return this._transform.scale.y;
         },
         set: function (val) {
             //remove absolute height
@@ -1206,9 +1181,7 @@ var DisplayObject = (function (_super) {
          * whole pixels. </p>
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._scaleZ;
+            return this._transform.scale.z;
         },
         set: function (val) {
             //remove absolute depth
@@ -1224,15 +1197,13 @@ var DisplayObject = (function (_super) {
          * the registration point. The default registration point is(0,0).
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._skewX;
+            return this._transform.skew.x;
         },
         set: function (val) {
             if (this.skewX == val)
                 return;
-            this._skewX = val;
-            this.invalidateSkew();
+            this._transform.skew.x = val;
+            this._transform.invalidateMatrix3D();
         },
         enumerable: true,
         configurable: true
@@ -1243,15 +1214,13 @@ var DisplayObject = (function (_super) {
          * registration point of the object. The default registration point is(0,0).
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._skewY;
+            return this._transform.skew.y;
         },
         set: function (val) {
             if (this.skewY == val)
                 return;
-            this._skewY = val;
-            this.invalidateSkew();
+            this._transform.skew.y = val;
+            this._transform.invalidateMatrix3D();
         },
         enumerable: true,
         configurable: true
@@ -1262,15 +1231,13 @@ var DisplayObject = (function (_super) {
          * registration point of the object. The default registration point is(0,0).
          */
         get: function () {
-            if (this._elementsDirty)
-                this.updateElements();
-            return this._skewZ;
+            return this._transform.skew.z;
         },
         set: function (val) {
             if (this.skewZ == val)
                 return;
-            this._skewZ = val;
-            this.invalidateSkew();
+            this._transform.skew.z = val;
+            this._transform.invalidateMatrix3D();
         },
         enumerable: true,
         configurable: true
@@ -1458,13 +1425,13 @@ var DisplayObject = (function (_super) {
          * registration point position.
          */
         get: function () {
-            return this._matrix3D.rawData[12];
+            return this._transform.position.x;
         },
         set: function (val) {
-            if (this._matrix3D.rawData[12] == val)
+            if (this._transform.position.x == val)
                 return;
-            this._matrix3D.rawData[12] = val;
-            this.invalidatePosition();
+            this._transform.matrix3D.rawData[12] = val;
+            this._transform.invalidatePosition();
         },
         enumerable: true,
         configurable: true
@@ -1481,13 +1448,13 @@ var DisplayObject = (function (_super) {
          * registration point position.
          */
         get: function () {
-            return this._matrix3D.rawData[13];
+            return this._transform.position.y;
         },
         set: function (val) {
-            if (this._matrix3D.rawData[13] == val)
+            if (this._transform.position.y == val)
                 return;
-            this._matrix3D.rawData[13] = val;
-            this.invalidatePosition();
+            this._transform.matrix3D.rawData[13] = val;
+            this._transform.invalidatePosition();
         },
         enumerable: true,
         configurable: true
@@ -1513,13 +1480,13 @@ var DisplayObject = (function (_super) {
          * y~~cameraFocalLength/cameraRelativeZPosition)</code></p>
          */
         get: function () {
-            return this._matrix3D.rawData[14];
+            return this._transform.position.z;
         },
         set: function (val) {
-            if (this._matrix3D.rawData[14] == val)
+            if (this._transform.position.z == val)
                 return;
-            this._matrix3D.rawData[14] = val;
-            this.invalidatePosition();
+            this._transform.matrix3D.rawData[14] = val;
+            this._transform.invalidatePosition();
         },
         enumerable: true,
         configurable: true
@@ -1530,18 +1497,6 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.addEventListener = function (type, listener) {
         _super.prototype.addEventListener.call(this, type, listener);
         switch (type) {
-            case DisplayObjectEvent.POSITION_CHANGED:
-                this._listenToPositionChanged = true;
-                break;
-            case DisplayObjectEvent.ROTATION_CHANGED:
-                this._listenToRotationChanged = true;
-                break;
-            case DisplayObjectEvent.SKEW_CHANGED:
-                this._listenToSkewChanged = true;
-                break;
-            case DisplayObjectEvent.SCALE_CHANGED:
-                this._listenToScaleChanged = true;
-                break;
             case DisplayObjectEvent.SCENE_CHANGED:
                 this._listenToSceneChanged = true;
                 break;
@@ -1568,9 +1523,9 @@ var DisplayObject = (function (_super) {
         newInstance.maskMode = this._maskMode;
         if (this._explicitMasks)
             newInstance.masks = this._explicitMasks;
-        newInstance._iMatrix3D = this._iMatrix3D;
         if (this._adapter)
             newInstance.adapter = this._adapter.clone(newInstance);
+        newInstance._transform.matrix3D = this._transform.matrix3D;
         if (this._transform.colorTransform)
             newInstance.transform.colorTransform = this._transform.colorTransform.clone();
     };
@@ -1599,7 +1554,6 @@ var DisplayObject = (function (_super) {
         //this._pSceneTransform = null;
         //this._inverseSceneTransform = null;
         this._explicitMasks = null;
-        this._explicitColorTransform = null;
     };
     /**
      * Returns a rectangle that defines the area of the display object relative
@@ -1668,7 +1622,7 @@ var DisplayObject = (function (_super) {
         if (targetCoordinateSpace == null || targetCoordinateSpace == this)
             return this._pBoxBounds;
         if (targetCoordinateSpace == this._pParent)
-            return this._iMatrix3D.transformBox(this._pBoxBounds);
+            return this._transform.matrix3D.transformBox(this._pBoxBounds);
         else
             return targetCoordinateSpace.inverseSceneTransform.transformBox(this.sceneTransform.transformBox(this._pBoxBounds));
     };
@@ -1873,7 +1827,7 @@ var DisplayObject = (function (_super) {
             upAxis = Vector3D.Y_AXIS;
         else
             upAxis.normalize();
-        zAxis = target.subtract(this._iMatrix3D.position);
+        zAxis = target.subtract(this._transform.position);
         zAxis.normalize();
         xAxis = upAxis.crossProduct(zAxis);
         xAxis.normalize();
@@ -1966,21 +1920,6 @@ var DisplayObject = (function (_super) {
         return this.sceneTransform.transformVector(position);
     };
     /**
-     * Moves the 3d object directly to a point in space
-     *
-     * @param    dx        The amount of movement along the local x axis.
-     * @param    dy        The amount of movement along the local y axis.
-     * @param    dz        The amount of movement along the local z axis.
-     */
-    DisplayObject.prototype.moveTo = function (dx, dy, dz) {
-        if (this._matrix3D.rawData[12] == dx && this._matrix3D.rawData[13] == dy && this._matrix3D.rawData[14] == dz)
-            return;
-        this._matrix3D.rawData[12] = dx;
-        this._matrix3D.rawData[13] = dy;
-        this._matrix3D.rawData[14] = dz;
-        this.invalidatePosition();
-    };
-    /**
      * Moves the local point around which the object rotates.
      *
      * @param    dx        The amount of movement along the local x axis.
@@ -1993,22 +1932,14 @@ var DisplayObject = (function (_super) {
         this._pivot.x += dx;
         this._pivot.y += dy;
         this._pivot.z += dz;
-        this.invalidatePivot();
-    };
-    /**
-     * Rotates the 3d object around it's local x-axis
-     *
-     * @param    angle        The amount of rotation in degrees
-     */
-    DisplayObject.prototype.pitch = function (angle) {
-        this.rotate(Vector3D.X_AXIS, angle);
+        this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
     };
     DisplayObject.prototype.reset = function () {
         this.visible = true;
-        if (this._iMatrix3D)
-            this._iMatrix3D.identity();
-        if (this._iColorTransform)
-            this._iColorTransform.clear();
+        if (this._transform.matrix3D)
+            this._transform.clearMatrix3D();
+        if (this._transform.colorTransform)
+            this._transform.clearColorTransform();
         //this.name="";
         this.masks = null;
         this.maskMode = false;
@@ -2033,40 +1964,6 @@ var DisplayObject = (function (_super) {
         return this.sceneTransform;
     };
     /**
-     * Rotates the 3d object around it's local z-axis
-     *
-     * @param    angle        The amount of rotation in degrees
-     */
-    DisplayObject.prototype.roll = function (angle) {
-        this.rotate(Vector3D.Z_AXIS, angle);
-    };
-    /**
-     * Rotates the 3d object around an axis by a defined angle
-     *
-     * @param    axis        The vector defining the axis of rotation
-     * @param    angle        The amount of rotation in degrees
-     */
-    DisplayObject.prototype.rotate = function (axis, angle) {
-        var m = new Matrix3D();
-        m.prependRotation(angle, axis);
-        var vec = m.decompose()[1];
-        this.rotationX += vec.x * MathConsts.RADIANS_TO_DEGREES;
-        this.rotationY += vec.y * MathConsts.RADIANS_TO_DEGREES;
-        this.rotationZ += vec.z * MathConsts.RADIANS_TO_DEGREES;
-    };
-    /**
-     * Rotates the 3d object directly to a euler angle
-     *
-     * @param    ax        The angle in degrees of the rotation around the x axis.
-     * @param    ay        The angle in degrees of the rotation around the y axis.
-     * @param    az        The angle in degrees of the rotation around the z axis.
-     */
-    DisplayObject.prototype.rotateTo = function (ax, ay, az) {
-        this.rotationX = ax;
-        this.rotationY = ay;
-        this.rotationZ = az;
-    };
-    /**
      *
      */
     DisplayObject.prototype.removeEventListener = function (type, listener) {
@@ -2074,17 +1971,6 @@ var DisplayObject = (function (_super) {
         if (this.hasEventListener(type))
             return;
         switch (type) {
-            case DisplayObjectEvent.POSITION_CHANGED:
-                this._listenToPositionChanged = false;
-                break;
-            case DisplayObjectEvent.ROTATION_CHANGED:
-                this._listenToRotationChanged = false;
-                break;
-            case DisplayObjectEvent.SKEW_CHANGED:
-                this._listenToSkewChanged = false;
-            case DisplayObjectEvent.SCALE_CHANGED:
-                this._listenToScaleChanged = false;
-                break;
             case DisplayObjectEvent.SCENE_CHANGED:
                 this._listenToSceneChanged = false;
                 break;
@@ -2093,79 +1979,12 @@ var DisplayObject = (function (_super) {
                 break;
         }
     };
-    /**
-     * Moves the 3d object along a vector by a defined length
-     *
-     * @param    axis        The vector defining the axis of movement
-     * @param    distance    The length of the movement
-     */
-    DisplayObject.prototype.translate = function (axis, distance) {
-        var x = axis.x, y = axis.y, z = axis.z;
-        var len = distance / Math.sqrt(x * x + y * y + z * z);
-        this._matrix3D.rawData[12] += x * len;
-        this._matrix3D.rawData[13] += y * len;
-        this._matrix3D.rawData[14] += z * len;
-        this.invalidatePosition();
-    };
-    /**
-     * Moves the 3d object along a vector by a defined length
-     *
-     * @param    axis        The vector defining the axis of movement
-     * @param    distance    The length of the movement
-     */
-    DisplayObject.prototype.translateLocal = function (axis, distance) {
-        var x = axis.x, y = axis.y, z = axis.z;
-        var len = distance / Math.sqrt(x * x + y * y + z * z);
-        this._iMatrix3D.prependTranslation(x * len, y * len, z * len);
-        this.invalidatePosition();
-    };
-    /**
-     * Rotates the 3d object around it's local y-axis
-     *
-     * @param    angle        The amount of rotation in degrees
-     */
-    DisplayObject.prototype.yaw = function (angle) {
-        this.rotate(Vector3D.Y_AXIS, angle);
-    };
     Object.defineProperty(DisplayObject.prototype, "_iAssignedPartition", {
         /**
          * @internal
          */
         get: function () {
             return this._pImplicitPartition;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObject.prototype, "_iMatrix3D", {
-        /**
-         * The transformation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-         *
-         * @internal
-         */
-        get: function () {
-            if (this._matrix3DDirty)
-                this._pUpdateMatrix3D();
-            if (this._pivotDirty)
-                this._pUpdatePivot();
-            return this._matrix3D;
-        },
-        set: function (val) {
-            for (var i = 0; i < 15; i++)
-                this._matrix3D.rawData[i] = val.rawData[i];
-            this._elementsDirty = true;
-            this.invalidatePosition();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObject.prototype, "_iColorTransform", {
-        get: function () {
-            return this._explicitColorTransform;
-        },
-        set: function (value) {
-            this._explicitColorTransform = value;
-            this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
         },
         enumerable: true,
         configurable: true
@@ -2240,47 +2059,23 @@ var DisplayObject = (function (_super) {
     /**
      * @protected
      */
-    DisplayObject.prototype._pUpdateMatrix3D = function () {
-        if (this._elementsDirty)
-            this.updateElements();
-        this._rot.x = this._rotationX;
-        this._rot.y = this._rotationY;
-        this._rot.z = this._rotationZ;
-        this._ske.x = this._skewX;
-        this._ske.y = this._skewY;
-        this._ske.z = this._skewZ;
-        this._sca.x = this._scaleX;
-        this._sca.y = this._scaleY;
-        this._sca.z = this._scaleZ;
-        this._matrix3D.recompose(this._transformComponents);
-        this._matrix3DDirty = false;
-    };
-    DisplayObject.prototype._pUpdatePivot = function () {
-        if (this._pivot) {
-            if (!this._pivotScale)
-                this._pivotScale = new Vector3D();
-            this._pivotScale.x = this._pivot.x / this._scaleX;
-            this._pivotScale.y = this._pivot.y / this._scaleY;
-            this._pivotScale.z = this._pivot.z / this._scaleZ;
-            this._matrix3D.prependTranslation(-this._pivotScale.x, -this._pivotScale.y, -this._pivotScale.z);
-            if (this.alignmentMode != AlignmentMode.PIVOT_POINT)
-                this._matrix3D.appendTranslation(this._pivot.x, this._pivot.y, this._pivot.z);
-        }
-        this._pivotDirty = false;
-    };
-    /**
-     * @protected
-     */
     DisplayObject.prototype.pUpdateSceneTransform = function () {
         if (this._iController)
             this._iController.updateController();
-        if (this._pParent && !this._pParent._iIsRoot) {
-            this._pSceneTransform.copyFrom(this._pParent.sceneTransform);
-            this._pSceneTransform.prepend(this._iMatrix3D);
+        this._pSceneTransform.copyFrom(this._transform.matrix3D);
+        if (this._pivot) {
+            if (!this._pivotScale)
+                this._pivotScale = new Vector3D();
+            this._pivotScale.x = this._pivot.x / this._transform.scale.x;
+            this._pivotScale.y = this._pivot.y / this._transform.scale.y;
+            this._pivotScale.z = this._pivot.z / this._transform.scale.z;
+            this._pSceneTransform.prependTranslation(-this._pivotScale.x, -this._pivotScale.y, -this._pivotScale.z);
+            if (this.alignmentMode != AlignmentMode.PIVOT_POINT)
+                this._pSceneTransform.appendTranslation(this._pivot.x, this._pivot.y, this._pivot.z);
         }
-        else {
-            this._pSceneTransform.copyFrom(this._iMatrix3D);
-        }
+        if (this._pParent && !this._pParent._iIsRoot)
+            this._pSceneTransform.append(this._pParent.sceneTransform);
+        this._matrix3DDirty = false;
         this._positionDirty = false;
         this._rotationDirty = false;
         this._skewDirty = false;
@@ -2357,17 +2152,6 @@ var DisplayObject = (function (_super) {
         //nothing to do here
     };
     /**
-     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
-     *
-     * @private
-     */
-    DisplayObject.prototype.invalidateMatrix3D = function () {
-        if (this._matrix3DDirty)
-            return;
-        this._matrix3DDirty = true;
-        this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-    };
-    /**
      * @private
      */
     DisplayObject.prototype.invalidatePartition = function () {
@@ -2376,65 +2160,21 @@ var DisplayObject = (function (_super) {
             this._entityNodes[i].invalidatePartition();
     };
     /**
+     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
+     *
      * @private
      */
-    DisplayObject.prototype.invalidatePivot = function () {
-        if (this._pivotDirty)
+    DisplayObject.prototype._onInvalidateMatrix3D = function (event) {
+        if (this._matrix3DDirty)
             return;
-        this._pivotDirty = true;
-        this.invalidateMatrix3D();
-    };
-    /**
-     * @private
-     */
-    DisplayObject.prototype.invalidatePosition = function () {
-        if (this._positionDirty)
-            return;
-        this._positionDirty = true;
+        this._matrix3DDirty = true;
         this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-        if (this._pivot)
-            this.invalidatePivot();
-        if (this._listenToPositionChanged)
-            this.queueDispatch(this._positionChanged || (this._positionChanged = new DisplayObjectEvent(DisplayObjectEvent.POSITION_CHANGED, this)));
     };
     /**
      * @private
      */
-    DisplayObject.prototype.invalidateRotation = function (matrixDirty) {
-        if (matrixDirty === void 0) { matrixDirty = true; }
-        if (matrixDirty)
-            this.invalidateMatrix3D();
-        if (this._rotationDirty)
-            return;
-        this._rotationDirty = true;
-        if (this._listenToRotationChanged)
-            this.queueDispatch(this._rotationChanged || (this._rotationChanged = new DisplayObjectEvent(DisplayObjectEvent.ROTATION_CHANGED, this)));
-    };
-    /**
-     * @private
-     */
-    DisplayObject.prototype.invalidateSkew = function (matrixDirty) {
-        if (matrixDirty === void 0) { matrixDirty = true; }
-        if (matrixDirty)
-            this.invalidateMatrix3D();
-        if (this._skewDirty)
-            return;
-        this._skewDirty = true;
-        if (this._listenToSkewChanged)
-            this.queueDispatch(this._skewChanged || (this._skewChanged = new DisplayObjectEvent(DisplayObjectEvent.SKEW_CHANGED, this)));
-    };
-    /**
-     * @private
-     */
-    DisplayObject.prototype.invalidateScale = function (matrixDirty) {
-        if (matrixDirty === void 0) { matrixDirty = true; }
-        if (matrixDirty)
-            this.invalidateMatrix3D();
-        if (this._scaleDirty)
-            return;
-        this._scaleDirty = true;
-        if (this._listenToScaleChanged)
-            this.queueDispatch(this._scaleChanged || (this._scaleChanged = new DisplayObjectEvent(DisplayObjectEvent.SCALE_CHANGED, this)));
+    DisplayObject.prototype._onInvalidateColorTransform = function (event) {
+        this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
     };
     DisplayObject.prototype._iAddEntityNode = function (entityNode) {
         this._entityNodes.push(entityNode);
@@ -2466,52 +2206,23 @@ var DisplayObject = (function (_super) {
         // Store event to be dispatched later.
         this._queuedEvents.push(event);
     };
-    DisplayObject.prototype.updateElements = function () {
-        this._elementsDirty = false;
-        var elements = this._matrix3D.decompose();
-        var vec;
-        vec = elements[1];
-        if (this._rotationX != vec.x || this._rotationY != vec.y || this._rotationZ != vec.z) {
-            this._rotationX = vec.x;
-            this._rotationY = vec.y;
-            this._rotationZ = vec.z;
-            this.invalidateRotation(false);
-        }
-        vec = elements[2];
-        if (this._skewX != vec.x || this._skewY != vec.y || this._skewZ != vec.z) {
-            this._skewX = vec.x;
-            this._skewY = vec.y;
-            this._skewZ = vec.z;
-            this.invalidateSkew(false);
-        }
-        vec = elements[3];
-        this._width = null;
-        this._height = null;
-        this._depth = null;
-        if (this._scaleX != vec.x || this._scaleY != vec.y || this._scaleZ != vec.z) {
-            this._scaleX = vec.x;
-            this._scaleY = vec.y;
-            this._scaleZ = vec.z;
-            this.invalidateScale(false);
-        }
-    };
     DisplayObject.prototype._setScaleX = function (val) {
         if (this.scaleX == val)
             return;
-        this._scaleX = val;
-        this.invalidateScale();
+        this._transform.scale.x = val;
+        this._transform.invalidateMatrix3D();
     };
     DisplayObject.prototype._setScaleY = function (val) {
         if (this.scaleY == val)
             return;
-        this._scaleY = val;
-        this.invalidateScale();
+        this._transform.scale.y = val;
+        this._transform.invalidateMatrix3D();
     };
     DisplayObject.prototype._setScaleZ = function (val) {
         if (this.scaleZ == val)
             return;
-        this._scaleZ = val;
-        this.invalidateScale();
+        this._transform.scale.z = val;
+        this._transform.invalidateMatrix3D();
     };
     DisplayObject.prototype._updateMouseEnabled = function () {
         this._pImplicitMouseEnabled = (this._pParent) ? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
@@ -2552,12 +2263,12 @@ var DisplayObject = (function (_super) {
             this._pImplicitColorTransform = new ColorTransform();
         if (this._inheritColorTransform && this._pParent && this._pParent._iAssignedColorTransform()) {
             this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
-            if (this._explicitColorTransform)
-                this._pImplicitColorTransform.prepend(this._explicitColorTransform);
+            if (this._transform.colorTransform)
+                this._pImplicitColorTransform.prepend(this._transform.colorTransform);
         }
         else {
-            if (this._explicitColorTransform)
-                this._pImplicitColorTransform.copyFrom(this._explicitColorTransform);
+            if (this._transform.colorTransform)
+                this._pImplicitColorTransform.copyFrom(this._transform.colorTransform);
             else
                 this._pImplicitColorTransform.clear();
         }
@@ -2584,7 +2295,7 @@ var DisplayObject = (function (_super) {
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/Geometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3237,7 +2948,111 @@ var OrientationMode = (function () {
 })();
 module.exports = OrientationMode;
 
-},{}],"awayjs-display/lib/base/SubGeometryBase":[function(require,module,exports){
+},{}],"awayjs-display/lib/base/Style":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
+/**
+ *
+ */
+var Style = (function (_super) {
+    __extends(Style, _super);
+    function Style() {
+        _super.call(this);
+        this._samplers = new Object();
+        this._images = new Object();
+        this._color = 0xFFFFFF;
+    }
+    Object.defineProperty(Style.prototype, "sampler", {
+        get: function () {
+            return this._sampler;
+        },
+        set: function (value) {
+            if (this._sampler == value)
+                return;
+            this._sampler = value;
+            this._invalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Style.prototype, "image", {
+        get: function () {
+            return this._image;
+        },
+        set: function (value) {
+            if (this._image == value)
+                return;
+            this._image = value;
+            this._invalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Style.prototype, "color", {
+        /**
+         * The diffuse reflectivity color of the surface.
+         */
+        get: function () {
+            return this._color;
+        },
+        set: function (value) {
+            if (this._color == value)
+                return;
+            this._color = value;
+            this._invalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Style.prototype.getImageAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        return (this._images[texture.id] ? this._images[texture.id][index] : null) || this._image;
+    };
+    Style.prototype.getSamplerAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        return (this._samplers[texture.id] ? this._samplers[texture.id][index] : null) || this._sampler;
+    };
+    Style.prototype.addImageAt = function (image, texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._images[texture.id])
+            this._images[texture.id] = new Array();
+        this._images[texture.id][index] = image;
+    };
+    Style.prototype.addSamplerAt = function (sampler, texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._samplers[texture.id])
+            this._samplers[texture.id] = new Array();
+        this._samplers[texture.id][index] = sampler;
+        this._invalidateProperties();
+    };
+    Style.prototype.removeImageAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._images[texture.id])
+            return;
+        this._images[texture.id][index] = null;
+        this._invalidateProperties();
+    };
+    Style.prototype.removeSamplerAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._samplers[texture.id])
+            return;
+        this._samplers[texture.id][index] = null;
+        this._invalidateProperties();
+    };
+    Style.prototype._invalidateProperties = function () {
+        this.dispatchEvent(new StyleEvent(StyleEvent.INVALIDATE_PROPERTIES, this));
+    };
+    return Style;
+})(EventDispatcher);
+module.exports = Style;
+
+},{"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/base/SubGeometryBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3409,9 +3224,9 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
  * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
  *
@@ -3426,13 +3241,15 @@ var SubMeshBase = (function (_super) {
     /**
      * Creates a new SubMeshBase object
      */
-    function SubMeshBase(parentMesh, material) {
+    function SubMeshBase(parentMesh, material, style) {
+        var _this = this;
         if (material === void 0) { material = null; }
+        if (style === void 0) { style = null; }
         _super.call(this);
-        this._images = new Array();
-        this._samplers = new Array();
         this._iIndex = 0;
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
         this.parentMesh = parentMesh;
+        this.style = style;
         this.material = material;
     }
     Object.defineProperty(SubMeshBase.prototype, "animator", {
@@ -3468,6 +3285,26 @@ var SubMeshBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(SubMeshBase.prototype, "style", {
+        /**
+         * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
+         */
+        get: function () {
+            return this._style || this.parentMesh.style;
+        },
+        set: function (value) {
+            if (this._style == value)
+                return;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this.invalidateRenderOwner();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(SubMeshBase.prototype, "sceneTransform", {
         /**
          * The scene transform object that transforms from model to world space.
@@ -3491,30 +3328,12 @@ var SubMeshBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    SubMeshBase.prototype.getImageAt = function (index) {
-        return this._images[index] || this.parentMesh.getImageAt(index);
-    };
-    SubMeshBase.prototype.addImageAt = function (image, index) {
-        this._images[index] = image;
-    };
-    SubMeshBase.prototype.removeImageAt = function (index) {
-        this._images[index] = null;
-    };
-    SubMeshBase.prototype.getSamplerAt = function (index) {
-        return this._samplers[index] || this.parentMesh.getSamplerAt(index);
-    };
-    SubMeshBase.prototype.addSamplerAt = function (sampler, index) {
-        this._samplers[index] = sampler;
-    };
-    SubMeshBase.prototype.removeSamplerAt = function (index) {
-        this._samplers[index] = null;
-    };
     /**
      *
      */
     SubMeshBase.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this.material = null;
+        this.style = null;
         this.parentMesh = null;
     };
     /**
@@ -3534,14 +3353,14 @@ var SubMeshBase = (function (_super) {
     SubMeshBase.prototype._iGetExplicitMaterial = function () {
         return this._material;
     };
-    SubMeshBase.prototype.clear = function () {
-        this.dispatchEvent(new AssetEvent(AssetEvent.CLEAR, this));
+    SubMeshBase.prototype._onInvalidateProperties = function (event) {
+        this.invalidateRenderOwner();
     };
     return SubMeshBase;
 })(AssetBase);
 module.exports = SubMeshBase;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
@@ -3687,17 +3506,8 @@ var Timeline = (function () {
                 else if (!jump_forward) {
                     if (child.adapter) {
                         if (!child.adapter.isBlockedByScript()) {
-                            if (child._iMatrix3D) {
-                                child._iMatrix3D.identity();
-                                child.x = child._iMatrix3D.rawData[12];
-                                child.y = child._iMatrix3D.rawData[13];
-                                child._elementsDirty = true;
-                                child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-                            }
-                            if (child._iColorTransform) {
-                                child._iColorTransform.clear();
-                                child.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-                            }
+                            child.transform.clearMatrix3D();
+                            child.transform.clearColorTransform();
                             //this.name="";
                             child.masks = null;
                             child.maskMode = false;
@@ -3819,21 +3629,20 @@ var Timeline = (function () {
         if (this._blocked)
             return;
         i *= 6;
-        var new_matrix = child._iMatrix3D;
+        var new_matrix = child.transform.matrix3D;
         new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[i++];
         new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[i++];
         new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[i++];
         new_matrix.rawData[5] = this.properties_stream_f32_mtx_all[i++];
         new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[i++];
         new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[i];
-        child._elementsDirty = true;
-        child.invalidatePosition();
+        child.transform.invalidateComponents();
     };
     Timeline.prototype.update_colortransform = function (child, target_mc, i) {
         if (this._blocked)
             return;
         i *= 8;
-        var new_ct = child._iColorTransform || (child._iColorTransform = new ColorTransform());
+        var new_ct = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
         new_ct.redMultiplier = this.properties_stream_f32_ct[i++];
         new_ct.greenMultiplier = this.properties_stream_f32_ct[i++];
         new_ct.blueMultiplier = this.properties_stream_f32_ct[i++];
@@ -3842,7 +3651,7 @@ var Timeline = (function () {
         new_ct.greenOffset = this.properties_stream_f32_ct[i++];
         new_ct.blueOffset = this.properties_stream_f32_ct[i++];
         new_ct.alphaOffset = this.properties_stream_f32_ct[i];
-        child.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+        child.transform.invalidateColorTransform();
     };
     Timeline.prototype.update_masks = function (child, target_mc, i) {
         // an object could have multiple groups of masks, in case a graphic clip was merged into the timeline
@@ -3874,22 +3683,22 @@ var Timeline = (function () {
         if (this._blocked)
             return;
         i *= 4;
-        var new_matrix = child._iMatrix3D;
+        var new_matrix = child.transform.matrix3D;
         new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[i++];
         new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[i++];
         new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[i++];
         new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[i];
-        child._elementsDirty = true;
+        child.transform.invalidateComponents();
         child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
     };
     Timeline.prototype.update_mtx_pos = function (child, target_mc, i) {
         if (this._blocked)
             return;
         i *= 2;
-        var new_matrix = child._iMatrix3D;
+        var new_matrix = child.transform.matrix3D;
         new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[i++];
         new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[i];
-        child.invalidatePosition();
+        child.transform.invalidatePosition();
     };
     Timeline.prototype.enable_maskmode = function (child, target_mc, i) {
         child.maskMode = true;
@@ -3916,9 +3725,17 @@ var TouchPoint = (function () {
 module.exports = TouchPoint;
 
 },{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var TransformEvent = require("awayjs-display/lib/events/TransformEvent");
 /**
  * The Transform class provides access to color adjustment properties and two-
  * or three-dimensional transformation objects that can be applied to a
@@ -3973,17 +3790,27 @@ var Vector3D = require("awayjs-core/lib/geom/Vector3D");
  * projection center changes. For more control over the perspective
  * transformation, create a perspective projection Matrix3D object.</p>
  */
-var Transform = (function () {
-    function Transform(displayObject) {
-        this._position = new Vector3D();
-        this._displayObject = displayObject;
+var Transform = (function (_super) {
+    __extends(Transform, _super);
+    function Transform() {
+        _super.call(this);
+        this._matrix3D = new Matrix3D();
+        this._rotation = new Vector3D();
+        this._skew = new Vector3D();
+        this._scale = new Vector3D(1, 1, 1);
+        // Cached vector of transformation components used when
+        // recomposing the transform matrix in updateTransform()
+        this._components = new Array(4);
+        this._components[1] = this._rotation;
+        this._components[2] = this._skew;
+        this._components[3] = this._scale;
     }
     Object.defineProperty(Transform.prototype, "backVector", {
         /**
          *
          */
         get: function () {
-            var director = Matrix3DUtils.getForward(this._displayObject._iMatrix3D);
+            var director = Matrix3DUtils.getForward(this._matrix3D);
             director.negate();
             return director;
         },
@@ -3998,10 +3825,13 @@ var Transform = (function () {
          * @throws TypeError The colorTransform is null when being set
          */
         get: function () {
-            return this._displayObject._iColorTransform;
+            return this._colorTransform;
         },
         set: function (val) {
-            this._displayObject._iColorTransform = val;
+            if (this._colorTransform == val)
+                return;
+            this._colorTransform = val;
+            this.invalidateColorTransform();
         },
         enumerable: true,
         configurable: true
@@ -4030,7 +3860,7 @@ var Transform = (function () {
          * factors in the difference between stage coordinates and window coordinates
          * due to window resizing. Thus, the property converts local coordinates to
          * window coordinates, which may not be the same coordinate space as that of
-         * the Stage.
+         * the Scene.
          */
         get: function () {
             return this._concatenatedMatrix; //TODO
@@ -4043,7 +3873,7 @@ var Transform = (function () {
          *
          */
         get: function () {
-            var director = Matrix3DUtils.getUp(this._displayObject._iMatrix3D);
+            var director = Matrix3DUtils.getUp(this._matrix3D);
             director.negate();
             return director;
         },
@@ -4055,7 +3885,7 @@ var Transform = (function () {
          *
          */
         get: function () {
-            return Matrix3DUtils.getForward(this._displayObject._iMatrix3D);
+            return Matrix3DUtils.getForward(this._matrix3D);
         },
         enumerable: true,
         configurable: true
@@ -4065,7 +3895,7 @@ var Transform = (function () {
          *
          */
         get: function () {
-            var director = Matrix3DUtils.getRight(this._displayObject._iMatrix3D);
+            var director = Matrix3DUtils.getRight(this._matrix3D);
             director.negate();
             return director;
         },
@@ -4086,10 +3916,14 @@ var Transform = (function () {
          * <code>null</code>.</p>
          */
         get: function () {
-            return this._displayObject._iMatrix3D;
+            if (this._matrix3DDirty)
+                this._updateMatrix3D();
+            return this._matrix3D;
         },
         set: function (val) {
-            this._displayObject._iMatrix3D = val;
+            for (var i = 0; i < 15; i++)
+                this._matrix3D.rawData[i] = val.rawData[i];
+            this.invalidateComponents();
         },
         enumerable: true,
         configurable: true
@@ -4110,12 +3944,7 @@ var Transform = (function () {
          * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
          */
         get: function () {
-            return this._displayObject._iMatrix3D.position;
-        },
-        set: function (value) {
-            this._displayObject.x = value.x;
-            this._displayObject.y = value.y;
-            this._displayObject.z = value.z;
+            return this._matrix3D.position;
         },
         enumerable: true,
         configurable: true
@@ -4125,7 +3954,7 @@ var Transform = (function () {
          *
          */
         get: function () {
-            return Matrix3DUtils.getRight(this._displayObject._iMatrix3D);
+            return Matrix3DUtils.getRight(this.matrix3D);
         },
         enumerable: true,
         configurable: true
@@ -4135,43 +3964,79 @@ var Transform = (function () {
          * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
          */
         get: function () {
-            return new Vector3D(this._displayObject.rotationX, this._displayObject.rotationY, this._displayObject.rotationZ);
-        },
-        set: function (value) {
-            this._displayObject.rotationX = value.x;
-            this._displayObject.rotationY = value.y;
-            this._displayObject.rotationZ = value.z;
+            if (this._componentsDirty)
+                this._updateComponents();
+            return this._rotation;
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Rotates the 3d object directly to a euler angle
+     *
+     * @param    ax        The angle in degrees of the rotation around the x axis.
+     * @param    ay        The angle in degrees of the rotation around the y axis.
+     * @param    az        The angle in degrees of the rotation around the z axis.
+     */
+    Transform.prototype.rotateTo = function (ax, ay, az) {
+        if (this._componentsDirty)
+            this._updateComponents();
+        this._rotation.x = ax;
+        this._rotation.y = ay;
+        this._rotation.z = az;
+        this.invalidateMatrix3D();
+    };
     Object.defineProperty(Transform.prototype, "scale", {
         /**
          * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
          */
         get: function () {
-            return new Vector3D(this._displayObject.scaleX, this._displayObject.scaleY, this._displayObject.scaleZ);
-        },
-        set: function (value) {
-            this._displayObject.scaleX = value.x;
-            this._displayObject.scaleY = value.y;
-            this._displayObject.scaleZ = value.z;
+            if (this._componentsDirty)
+                this._updateComponents();
+            return this._scale;
         },
         enumerable: true,
         configurable: true
     });
+    Transform.prototype.scaleTo = function (sx, sy, sz) {
+        if (this._componentsDirty)
+            this._updateComponents();
+        this._scale.x = sx;
+        this._scale.y = sy;
+        this._scale.z = sz;
+        this.invalidateMatrix3D();
+    };
+    Object.defineProperty(Transform.prototype, "skew", {
+        /**
+         * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+         */
+        get: function () {
+            if (this._componentsDirty)
+                this._updateComponents();
+            return this._skew;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Transform.prototype.skewTo = function (sx, sy, sz) {
+        if (this._componentsDirty)
+            this._updateComponents();
+        this._skew.x = sx;
+        this._skew.y = sy;
+        this._skew.z = sz;
+        this.invalidateMatrix3D();
+    };
     Object.defineProperty(Transform.prototype, "upVector", {
         /**
          *
          */
         get: function () {
-            return Matrix3DUtils.getUp(this._displayObject._iMatrix3D);
+            return Matrix3DUtils.getUp(this.matrix3D);
         },
         enumerable: true,
         configurable: true
     });
     Transform.prototype.dispose = function () {
-        this._displayObject = null;
     };
     /**
      * Returns a Matrix3D object, which can transform the space of a specified
@@ -4200,7 +4065,7 @@ var Transform = (function () {
      * @param    distance    The length of the movement
      */
     Transform.prototype.moveForward = function (distance) {
-        this._displayObject.translateLocal(Vector3D.Z_AXIS, distance);
+        this.translateLocal(Vector3D.Z_AXIS, distance);
     };
     /**
      * Moves the 3d object backwards along it's local z axis
@@ -4208,7 +4073,7 @@ var Transform = (function () {
      * @param    distance    The length of the movement
      */
     Transform.prototype.moveBackward = function (distance) {
-        this._displayObject.translateLocal(Vector3D.Z_AXIS, -distance);
+        this.translateLocal(Vector3D.Z_AXIS, -distance);
     };
     /**
      * Moves the 3d object backwards along it's local x axis
@@ -4216,7 +4081,7 @@ var Transform = (function () {
      * @param    distance    The length of the movement
      */
     Transform.prototype.moveLeft = function (distance) {
-        this._displayObject.translateLocal(Vector3D.X_AXIS, -distance);
+        this.translateLocal(Vector3D.X_AXIS, -distance);
     };
     /**
      * Moves the 3d object forwards along it's local x axis
@@ -4224,7 +4089,7 @@ var Transform = (function () {
      * @param    distance    The length of the movement
      */
     Transform.prototype.moveRight = function (distance) {
-        this._displayObject.translateLocal(Vector3D.X_AXIS, distance);
+        this.translateLocal(Vector3D.X_AXIS, distance);
     };
     /**
      * Moves the 3d object forwards along it's local y axis
@@ -4232,7 +4097,7 @@ var Transform = (function () {
      * @param    distance    The length of the movement
      */
     Transform.prototype.moveUp = function (distance) {
-        this._displayObject.translateLocal(Vector3D.Y_AXIS, distance);
+        this.translateLocal(Vector3D.Y_AXIS, distance);
     };
     /**
      * Moves the 3d object backwards along it's local y axis
@@ -4240,13 +4105,141 @@ var Transform = (function () {
      * @param    distance    The length of the movement
      */
     Transform.prototype.moveDown = function (distance) {
-        this._displayObject.translateLocal(Vector3D.Y_AXIS, -distance);
+        this.translateLocal(Vector3D.Y_AXIS, -distance);
+    };
+    /**
+     * Moves the 3d object directly to a point in space
+     *
+     * @param    dx        The amount of movement along the local x axis.
+     * @param    dy        The amount of movement along the local y axis.
+     * @param    dz        The amount of movement along the local z axis.
+     */
+    Transform.prototype.moveTo = function (dx, dy, dz) {
+        this._matrix3D.rawData[12] = dx;
+        this._matrix3D.rawData[13] = dy;
+        this._matrix3D.rawData[14] = dz;
+        this.invalidatePosition();
+    };
+    /**
+     * Rotates the 3d object around it's local x-axis
+     *
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.pitch = function (angle) {
+        this.rotate(Vector3D.X_AXIS, angle);
+    };
+    /**
+     * Rotates the 3d object around it's local z-axis
+     *
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.roll = function (angle) {
+        this.rotate(Vector3D.Z_AXIS, angle);
+    };
+    /**
+     * Rotates the 3d object around it's local y-axis
+     *
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.yaw = function (angle) {
+        this.rotate(Vector3D.Y_AXIS, angle);
+    };
+    /**
+     * Rotates the 3d object around an axis by a defined angle
+     *
+     * @param    axis        The vector defining the axis of rotation
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.rotate = function (axis, angle) {
+        this.matrix3D.prependRotation(angle, axis);
+        this.invalidateComponents();
+    };
+    /**
+     * Moves the 3d object along a vector by a defined length
+     *
+     * @param    axis        The vector defining the axis of movement
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.translate = function (axis, distance) {
+        var x = axis.x, y = axis.y, z = axis.z;
+        var len = distance / Math.sqrt(x * x + y * y + z * z);
+        this.matrix3D.appendTranslation(x * len, y * len, z * len);
+        this.invalidatePosition();
+    };
+    /**
+     * Moves the 3d object along a vector by a defined length
+     *
+     * @param    axis        The vector defining the axis of movement
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.translateLocal = function (axis, distance) {
+        var x = axis.x, y = axis.y, z = axis.z;
+        var len = distance / Math.sqrt(x * x + y * y + z * z);
+        this.matrix3D.prependTranslation(x * len, y * len, z * len);
+        this.invalidatePosition();
+    };
+    Transform.prototype.clearMatrix3D = function () {
+        this._matrix3D.identity();
+        this.invalidateComponents();
+    };
+    Transform.prototype.clearColorTransform = function () {
+        if (!this._colorTransform)
+            return;
+        this._colorTransform.clear();
+        this.invalidateColorTransform();
+    };
+    /**
+     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
+     *
+     * @private
+     */
+    Transform.prototype.invalidateMatrix3D = function () {
+        this._matrix3DDirty = true;
+        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
+    };
+    Transform.prototype.invalidateComponents = function () {
+        this.invalidatePosition();
+        this._componentsDirty = true;
+    };
+    /**
+     *
+     */
+    Transform.prototype.invalidatePosition = function () {
+        this._matrix3D.invalidatePosition();
+        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
+    };
+    Transform.prototype.invalidateColorTransform = function () {
+        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_COLOR_TRANSFORM, this));
+    };
+    /**
+     *
+     */
+    Transform.prototype._updateMatrix3D = function () {
+        this._matrix3D.recompose(this._components);
+        this._matrix3DDirty = false;
+    };
+    Transform.prototype._updateComponents = function () {
+        var elements = this._matrix3D.decompose();
+        var vec;
+        vec = elements[1];
+        this._rotation.x = vec.x;
+        this._rotation.y = vec.y;
+        this._rotation.z = vec.z;
+        vec = elements[2];
+        this._skew.x = vec.x;
+        this._skew.y = vec.y;
+        this._skew.z = vec.z;
+        vec = elements[3];
+        this._scale.x = vec.x;
+        this._scale.y = vec.y;
+        this._scale.z = vec.z;
+        this._componentsDirty = false;
     };
     return Transform;
-})();
+})(EventDispatcher);
 module.exports = Transform;
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/base/TriangleSubGeometry":[function(require,module,exports){
+},{"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/base/TriangleSubGeometry":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -8831,11 +8824,12 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var Rectangle = require("awayjs-core/lib/geom/Rectangle");
-var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
 var RenderOwnerEvent = require("awayjs-display/lib/events/RenderOwnerEvent");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
  * The Billboard class represents display objects that represent bitmap images.
  * These can be images that you load with the <code>flash.Assets</code> or
@@ -8877,10 +8871,9 @@ var Billboard = (function (_super) {
         if (pixelSnapping === void 0) { pixelSnapping = "auto"; }
         if (smoothing === void 0) { smoothing = false; }
         _super.call(this);
-        this._images = new Array();
-        this._samplers = new Array();
         this._pIsEntity = true;
         this.onInvalidateTextureDelegate = function (event) { return _this.onInvalidateTexture(event); };
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
         this.material = material;
         this._updateDimensions();
         //default bounds type
@@ -8972,69 +8965,6 @@ var Billboard = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Billboard.prototype, "colorTransform", {
-        /**
-         *
-         */
-        get: function () {
-            // outputs the concaneted color-transform
-            return this._colorTransform; // || this._pParentMesh._colorTransform;
-        },
-        set: function (value) {
-            // set this on the inheritet colorTransform
-            this.transform.colorTransform = value;
-            // new calculate the concaneted transform
-            this._applyColorTransform();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Billboard.prototype, "parentColorTransform", {
-        get: function () {
-            return this._parentColorTransform;
-        },
-        set: function (value) {
-            // we will never modify the parentColorTransform directly, so save to set as reference (?)
-            this._parentColorTransform = value;
-            this._applyColorTransform();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Billboard.prototype._applyColorTransform = function () {
-        this._colorTransform = new ColorTransform();
-        if ((this._parentColorTransform) && (this.transform.colorTransform)) {
-            // if this mc has a parent-colortransform applied, we need to concanete the transforms.
-            this._colorTransform.alphaMultiplier = this.transform.colorTransform.alphaMultiplier * this._parentColorTransform.alphaMultiplier;
-            this._colorTransform.redMultiplier = this.transform.colorTransform.redMultiplier * this._parentColorTransform.redMultiplier;
-            this._colorTransform.blueMultiplier = this.transform.colorTransform.blueMultiplier * this._parentColorTransform.blueMultiplier;
-            this._colorTransform.greenMultiplier = this.transform.colorTransform.greenMultiplier * this._parentColorTransform.greenMultiplier;
-            this._colorTransform.alphaOffset = this.transform.colorTransform.alphaOffset + this._parentColorTransform.alphaOffset;
-            this._colorTransform.redOffset = this.transform.colorTransform.redOffset + this._parentColorTransform.redOffset;
-            this._colorTransform.blueOffset = this.transform.colorTransform.blueOffset + this._parentColorTransform.blueOffset;
-            this._colorTransform.greenOffset = this.transform.colorTransform.greenOffset + this._parentColorTransform.greenOffset;
-        }
-        else if (this.transform.colorTransform) {
-            this._colorTransform.alphaMultiplier = this.transform.colorTransform.alphaMultiplier;
-            this._colorTransform.redMultiplier = this.transform.colorTransform.redMultiplier;
-            this._colorTransform.blueMultiplier = this.transform.colorTransform.blueMultiplier;
-            this._colorTransform.greenMultiplier = this.transform.colorTransform.greenMultiplier;
-            this._colorTransform.alphaOffset = this.transform.colorTransform.alphaOffset;
-            this._colorTransform.redOffset = this.transform.colorTransform.redOffset;
-            this._colorTransform.blueOffset = this.transform.colorTransform.blueOffset;
-            this._colorTransform.greenOffset = this.transform.colorTransform.greenOffset;
-        }
-        else if (this._parentColorTransform) {
-            this._colorTransform.alphaMultiplier = this._parentColorTransform.alphaMultiplier;
-            this._colorTransform.redMultiplier = this._parentColorTransform.redMultiplier;
-            this._colorTransform.blueMultiplier = this._parentColorTransform.blueMultiplier;
-            this._colorTransform.greenMultiplier = this._parentColorTransform.greenMultiplier;
-            this._colorTransform.alphaOffset = this._parentColorTransform.alphaOffset;
-            this._colorTransform.redOffset = this._parentColorTransform.redOffset;
-            this._colorTransform.blueOffset = this._parentColorTransform.blueOffset;
-            this._colorTransform.greenOffset = this._parentColorTransform.greenOffset;
-        }
-    };
     /**
      * @protected
      */
@@ -9047,28 +8977,26 @@ var Billboard = (function (_super) {
         var clone = new Billboard(this.material);
         return clone;
     };
-    Billboard.prototype.getImageAt = function (index) {
-        return this._images[index] || this.material.getImageAt(index);
-    };
-    Billboard.prototype.addImageAt = function (image, index) {
-        this._images[index] = image;
-    };
-    Billboard.prototype.removeImageAt = function (index) {
-        this._images[index] = null;
-    };
-    Billboard.prototype.getSamplerAt = function (index) {
-        return this._samplers[index];
-        if (index == 0)
-            this._updateDimensions();
-    };
-    Billboard.prototype.addSamplerAt = function (sampler, index) {
-        this._samplers[index] = sampler;
-        if (index == 0)
-            this._updateDimensions();
-    };
-    Billboard.prototype.removeSamplerAt = function (index) {
-        this._samplers[index] = null;
-    };
+    Object.defineProperty(Billboard.prototype, "style", {
+        /**
+         * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
+         */
+        get: function () {
+            return this._style;
+        },
+        set: function (value) {
+            if (this._style == value)
+                return;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._onInvalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * //TODO
      *
@@ -9096,10 +9024,10 @@ var Billboard = (function (_super) {
         renderer._iApplyRenderableOwner(this);
     };
     Billboard.prototype._updateDimensions = function () {
-        var image = this.getImageAt(0);
+        var texture = this.material.getTextureAt(0);
+        var image = texture ? ((this._style ? this._style.getImageAt(texture) : null) || (this.material.style ? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
         if (image) {
-            var index = this.material.getSamplerIndex(this.material.texture);
-            var sampler = (this.getSamplerAt(index) || this.material.getSamplerAt(index));
+            var sampler = ((this._style ? this._style.getSamplerAt(texture) : null) || (this.material.style ? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || DefaultMaterialManager.getDefaultSampler());
             var rect = sampler.imageRect || image.rect;
             this._billboardWidth = rect.width;
             this._billboardHeight = rect.height;
@@ -9116,12 +9044,17 @@ var Billboard = (function (_super) {
     Billboard.prototype.invalidateRenderOwner = function () {
         this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
     };
+    Billboard.prototype._onInvalidateProperties = function (event) {
+        if (event === void 0) { event = null; }
+        this.invalidateRenderOwner();
+        this._updateDimensions();
+    };
     Billboard.assetType = "[asset Billboard]";
     return Billboard;
 })(DisplayObject);
 module.exports = Billboard;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9525,6 +9458,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var SamplerCube = require("awayjs-core/lib/image/SamplerCube");
 var ErrorBase = require("awayjs-core/lib/errors/ErrorBase");
 var LightBase = require("awayjs-display/lib/base/LightBase");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
@@ -9533,35 +9467,17 @@ var LightProbe = (function (_super) {
     function LightProbe(diffuseMap, specularMap) {
         if (specularMap === void 0) { specularMap = null; }
         _super.call(this);
+        this.diffuseSampler = new SamplerCube();
+        this.specularSampler = new SamplerCube();
         this._pIsEntity = true;
-        this._diffuseMap = diffuseMap;
-        this._specularMap = specularMap;
+        this.diffuseMap = diffuseMap;
+        this.specularMap = specularMap;
         //default bounds type
         this._boundsType = BoundsType.NULL;
     }
     Object.defineProperty(LightProbe.prototype, "assetType", {
         get: function () {
             return LightProbe.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LightProbe.prototype, "diffuseMap", {
-        get: function () {
-            return this._diffuseMap;
-        },
-        set: function (value) {
-            this._diffuseMap = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LightProbe.prototype, "specularMap", {
-        get: function () {
-            return this._specularMap;
-        },
-        set: function (value) {
-            this._specularMap = value;
         },
         enumerable: true,
         configurable: true
@@ -9576,7 +9492,7 @@ var LightProbe = (function (_super) {
 })(LightBase);
 module.exports = LightProbe;
 
-},{"awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/LineSegment":[function(require,module,exports){
+},{"awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/image/SamplerCube":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/LineSegment":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9586,6 +9502,7 @@ var __extends = this.__extends || function (d, b) {
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
  * A Line Segment primitive.
  */
@@ -9599,10 +9516,10 @@ var LineSegment = (function (_super) {
      * @param thickness Thickness of the line
      */
     function LineSegment(material, startPosition, endPosition, thickness) {
+        var _this = this;
         if (thickness === void 0) { thickness = 1; }
         _super.call(this);
-        this._images = new Array();
-        this._samplers = new Array();
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
         this._pIsEntity = true;
         this.material = material;
         this._startPosition = startPosition;
@@ -9726,24 +9643,26 @@ var LineSegment = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    LineSegment.prototype.getImageAt = function (index) {
-        return this._images[index];
-    };
-    LineSegment.prototype.addImageAt = function (image, index) {
-        this._images[index] = image;
-    };
-    LineSegment.prototype.removeImageAt = function (image, index) {
-        this._images[index] = null;
-    };
-    LineSegment.prototype.getSamplerAt = function (index) {
-        return this._samplers[index];
-    };
-    LineSegment.prototype.addSamplerAt = function (sampler, index) {
-        this._samplers[index] = sampler;
-    };
-    LineSegment.prototype.removeSamplerAt = function (index) {
-        this._samplers[index] = null;
-    };
+    Object.defineProperty(LineSegment.prototype, "style", {
+        /**
+         * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
+         */
+        get: function () {
+            return this._style;
+        },
+        set: function (value) {
+            if (this._style == value)
+                return;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this.invalidateRenderOwner();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * @protected
      */
@@ -9776,6 +9695,9 @@ var LineSegment = (function (_super) {
     LineSegment.prototype.invalidateRenderOwner = function () {
         this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
     };
+    LineSegment.prototype._onInvalidateProperties = function (event) {
+        this.invalidateRenderOwner();
+    };
     LineSegment.prototype._applyRenderer = function (renderer) {
         // Since this getter is invoked every iteration of the render loop, and
         // the prefab construct could affect the sub-meshes, the prefab is
@@ -9789,7 +9711,7 @@ var LineSegment = (function (_super) {
 })(DisplayObject);
 module.exports = LineSegment;
 
-},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
+},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9803,6 +9725,7 @@ var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 var SubMeshPool = require("awayjs-display/lib/pool/SubMeshPool");
 var SubGeometryUtils = require("awayjs-display/lib/utils/SubGeometryUtils");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
  * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
@@ -9820,8 +9743,6 @@ var Mesh = (function (_super) {
         var _this = this;
         if (material === void 0) { material = null; }
         _super.call(this);
-        this._images = new Array();
-        this._samplers = new Array();
         this._castsShadows = true;
         this._shareAnimationGeometry = true;
         //temp point used in hit testing
@@ -9831,6 +9752,7 @@ var Mesh = (function (_super) {
         this._onGeometryBoundsInvalidDelegate = function (event) { return _this.onGeometryBoundsInvalid(event); };
         this._onSubGeometryAddedDelegate = function (event) { return _this.onSubGeometryAdded(event); };
         this._onSubGeometryRemovedDelegate = function (event) { return _this.onSubGeometryRemoved(event); };
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
         //this should never happen, but if people insist on trying to create their meshes before they have geometry to fill it, it becomes necessary
         this.geometry = geometry || new Geometry();
         this.material = material;
@@ -9991,30 +9913,32 @@ var Mesh = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Mesh.prototype.getImageAt = function (index) {
-        return this._images[index];
-    };
-    Mesh.prototype.addImageAt = function (image, index) {
-        this._images[index] = image;
-    };
-    Mesh.prototype.removeImageAt = function (image, index) {
-        this._images[index] = null;
-    };
-    Mesh.prototype.getSamplerAt = function (index) {
-        return this._samplers[index];
-    };
-    Mesh.prototype.addSamplerAt = function (sampler, index) {
-        this._samplers[index] = sampler;
-    };
-    Mesh.prototype.removeSamplerAt = function (index) {
-        this._samplers[index] = null;
-    };
+    Object.defineProperty(Mesh.prototype, "style", {
+        /**
+         *
+         */
+        get: function () {
+            return this._style;
+        },
+        set: function (value) {
+            if (this._style == value)
+                return;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._iInvalidateRenderOwners();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      *
      */
     Mesh.prototype.bakeTransformations = function () {
-        this.geometry.applyTransformation(this._iMatrix3D);
-        this._iMatrix3D.identity();
+        this.geometry.applyTransformation(this.transform.matrix3D);
+        this.transform.clearMatrix3D();
     };
     /**
      * @inheritDoc
@@ -10197,6 +10121,11 @@ var Mesh = (function (_super) {
         for (var i = 0; i < len; ++i)
             this._subMeshes[i].invalidateGeometry();
     };
+    Mesh.prototype._iInvalidateRenderOwners = function () {
+        var len = this._subMeshes.length;
+        for (var i = 0; i < len; ++i)
+            this._subMeshes[i].invalidateRenderOwner();
+    };
     Mesh.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
         if (this._geometry && this._geometry.subGeometries.length) {
             this._tempPoint.setTo(x, y);
@@ -10223,13 +10152,16 @@ var Mesh = (function (_super) {
         for (var i = 0; i < len; i++)
             this._subMeshes[i].clear();
     };
+    Mesh.prototype._onInvalidateProperties = function (event) {
+        this._iInvalidateRenderOwners();
+    };
     Mesh._meshes = new Array();
     Mesh.assetType = "[asset Mesh]";
     return Mesh;
 })(DisplayObjectContainer);
 module.exports = Mesh;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool","awayjs-display/lib/utils/SubGeometryUtils":"awayjs-display/lib/utils/SubGeometryUtils"}],"awayjs-display/lib/entities/MovieClip":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/pool/SubMeshPool":"awayjs-display/lib/pool/SubMeshPool","awayjs-display/lib/utils/SubGeometryUtils":"awayjs-display/lib/utils/SubGeometryUtils"}],"awayjs-display/lib/entities/MovieClip":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -10717,7 +10649,7 @@ var Shape = (function (_super) {
     Shape.prototype.clone = function () {
         var clone = new Shape();
         clone.pivot = this.pivot;
-        clone._iMatrix3D = this._iMatrix3D;
+        clone.transform.matrix3D = this.transform.matrix3D;
         clone.name = name;
         clone.maskMode = this.maskMode;
         clone.masks = this.masks ? this.masks.concat() : null;
@@ -10735,11 +10667,15 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var BlendMode = require("awayjs-core/lib/image/BlendMode");
 var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
 var RenderOwnerEvent = require("awayjs-display/lib/events/RenderOwnerEvent");
+var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+var Style = require("awayjs-display/lib/base/Style");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
@@ -10752,22 +10688,22 @@ var Skybox = (function (_super) {
      *
      * @param material	The material with which to render the Skybox.
      */
-    function Skybox(cubeMap) {
-        if (cubeMap === void 0) { cubeMap = null; }
+    function Skybox(image) {
+        var _this = this;
+        if (image === void 0) { image = null; }
         _super.call(this);
-        this._images = new Array();
-        this._imageCount = new Array();
-        this._imageIndex = new Object();
-        this._samplers = new Array();
-        this._samplerIndices = new Object();
+        this._textures = new Array();
         this._pAlphaThreshold = 0;
         this._pBlendMode = BlendMode.NORMAL;
         this._imageRect = false;
-        this._mipmap = false;
-        this._smooth = true;
+        this._style = new Style();
+        this._onTextureInvalidateDelegate = function (event) { return _this.onTextureInvalidate(event); };
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
+        this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
         this._pIsEntity = true;
         this._owners = new Array(this);
-        this.cubeMap = cubeMap;
+        this._style.image = image;
+        this.texture = new SingleCubeTexture();
         //default bounds type
         this._boundsType = BoundsType.NULL;
     }
@@ -10804,38 +10740,6 @@ var Skybox = (function (_super) {
             if (this._imageRect == value)
                 return;
             this._imageRect = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "mipmap", {
-        /**
-         * Indicates whether or not the Skybox texture should use mipmapping. Defaults to false.
-         */
-        get: function () {
-            return this._mipmap;
-        },
-        set: function (value) {
-            if (this._mipmap == value)
-                return;
-            this._mipmap = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "smooth", {
-        /**
-         * Indicates whether or not the Skybox texture should use smoothing. Defaults to true.
-         */
-        get: function () {
-            return this._smooth;
-        },
-        set: function (value) {
-            if (this._smooth == value)
-                return;
-            this._smooth = value;
             this.invalidatePasses();
         },
         enumerable: true,
@@ -10932,22 +10836,38 @@ var Skybox = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Skybox.prototype, "cubeMap", {
+    Object.defineProperty(Skybox.prototype, "texture", {
         /**
         * The cube texture to use as the skybox.
         */
         get: function () {
-            return this._cubeMap;
+            return this._texture;
         },
         set: function (value) {
-            if (this._cubeMap == value)
+            if (this._texture == value)
                 return;
-            if (this._cubeMap)
-                this._cubeMap.iRemoveOwner(this);
-            this._cubeMap = value;
-            if (this._cubeMap)
-                this._cubeMap.iAddOwner(this);
+            if (this._texture)
+                this.removeTexture(this._texture);
+            this._texture = value;
+            if (this._texture)
+                this.addTexture(this._texture);
             this.invalidatePasses();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Skybox.prototype.getNumTextures = function () {
+        return this._textures.length;
+    };
+    Skybox.prototype.getTextureAt = function (index) {
+        return this._textures[index];
+    };
+    Object.defineProperty(Skybox.prototype, "style", {
+        /**
+         *
+         */
+        get: function () {
+            return this._style;
         },
         enumerable: true,
         configurable: true
@@ -10966,89 +10886,8 @@ var Skybox = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Skybox.prototype.getNumImages = function () {
-        return this._images.length;
-    };
-    Skybox.prototype.getImageAt = function (index) {
-        return this._images[index];
-    };
-    Skybox.prototype.getImageIndex = function (image) {
-        return this._imageIndex[image.id];
-    };
-    Skybox.prototype.getNumSamplers = function () {
-        return this._samplers.length;
-    };
-    Skybox.prototype.getSamplerAt = function (index) {
-        return this._samplers[index];
-    };
-    Skybox.prototype.getSamplerIndex = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplerIndices[texture.id])
-            this._samplerIndices[texture.id] = new Array();
-        return this._samplerIndices[texture.id][index];
-    };
     Skybox.prototype._applyRenderer = function (renderer) {
         //skybox do not get collected in the standard entity list
-    };
-    Skybox.prototype._iAddImage = function (image) {
-        var index = this._imageIndex[image.id];
-        if (!index) {
-            this._imageIndex[image.id] = this._images.length;
-            this._images.push(image);
-            this._imageCount.push(1);
-            this.invalidatePasses();
-            this.invalidateRenderOwner();
-        }
-        else {
-            this._imageCount[index]--;
-        }
-    };
-    Skybox.prototype._iRemoveImage = function (image) {
-        var index = this._imageIndex[image.id];
-        if (this._imageCount[index] != 1) {
-            this._imageCount[index]--;
-        }
-        else {
-            delete this._imageIndex[image.id];
-            this._images.splice(index, 1);
-            this._imageCount.splice(index, 1);
-            var len = this._images.length;
-            for (var i = index; i < len; i++) {
-                this._imageIndex[this._images[i].id] = i;
-            }
-            this.invalidatePasses();
-            this.invalidateRenderOwner();
-        }
-    };
-    Skybox.prototype._iAddSampler = function (sampler, texture, index) {
-        //find free sampler slot
-        var i = 0;
-        var len = this._samplers.length;
-        while (i < len) {
-            if (!this._samplers[i])
-                break;
-            i++;
-        }
-        if (!this._samplerIndices[texture.id])
-            this._samplerIndices[texture.id] = new Array();
-        this._samplerIndices[texture.id][index] = i;
-        this._samplers[i] = sampler;
-        this.invalidatePasses();
-        this.invalidateRenderOwner();
-    };
-    Skybox.prototype._iRemoveSampler = function (texture, index) {
-        var index = this._samplerIndices[texture.id][index];
-        this._samplers[index] = null;
-        //shorten samplers array if sampler at end
-        if (index == this._samplers.length - 1) {
-            while (index--) {
-                if (this._samplers[index] != null)
-                    break;
-            }
-            this._samplers.length = index + 1;
-        }
-        this.invalidatePasses();
-        this.invalidateRenderOwner();
     };
     /**
      * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
@@ -11061,12 +10900,29 @@ var Skybox = (function (_super) {
     Skybox.prototype.invalidateRenderOwner = function () {
         this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
     };
+    Skybox.prototype.addTexture = function (texture) {
+        this._textures.push(texture);
+        texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+        this.onTextureInvalidate();
+    };
+    Skybox.prototype.removeTexture = function (texture) {
+        this._textures.splice(this._textures.indexOf(texture), 1);
+        texture.removeEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+        this.onTextureInvalidate();
+    };
+    Skybox.prototype.onTextureInvalidate = function (event) {
+        if (event === void 0) { event = null; }
+        this.invalidate();
+    };
+    Skybox.prototype._onInvalidateProperties = function (event) {
+        this.invalidatePasses();
+    };
     Skybox.assetType = "[asset Skybox]";
     return Skybox;
 })(DisplayObject);
 module.exports = Skybox;
 
-},{"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent"}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11371,9 +11227,9 @@ var TextField = (function (_super) {
         },
         set: function (value) {
             this._textColor = value;
-            if (!this._iColorTransform)
-                this._iColorTransform = new ColorTransform();
-            this._iColorTransform.color = value;
+            if (!this.transform.colorTransform)
+                this.transform.colorTransform = new ColorTransform();
+            this.transform.colorTransform.color = value;
             this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
         },
         enumerable: true,
@@ -12043,13 +11899,18 @@ var DisplayObjectEvent = (function (_super) {
     DisplayObjectEvent.prototype.clone = function () {
         return new DisplayObjectEvent(this.type, this._object);
     };
+    /**
+     *
+     */
     DisplayObjectEvent.VISIBLITY_UPDATED = "visiblityUpdated";
+    /**
+     *
+     */
     DisplayObjectEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
+    /**
+     *
+     */
     DisplayObjectEvent.SCENE_CHANGED = "sceneChanged";
-    DisplayObjectEvent.POSITION_CHANGED = "positionChanged";
-    DisplayObjectEvent.ROTATION_CHANGED = "rotationChanged";
-    DisplayObjectEvent.SKEW_CHANGED = "skewChanged";
-    DisplayObjectEvent.SCALE_CHANGED = "scaleChanged";
     /**
      *
      */
@@ -12446,6 +12307,42 @@ var ResizeEvent = (function (_super) {
 })(EventBase);
 module.exports = ResizeEvent;
 
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/StyleEvent":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventBase = require("awayjs-core/lib/events/EventBase");
+var StyleEvent = (function (_super) {
+    __extends(StyleEvent, _super);
+    function StyleEvent(type, style) {
+        _super.call(this, type);
+        this._style = style;
+    }
+    Object.defineProperty(StyleEvent.prototype, "style", {
+        get: function () {
+            return this._style;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     * @return An exact duplicate of the current object.
+     */
+    StyleEvent.prototype.clone = function () {
+        return new StyleEvent(this.type, this._style);
+    };
+    /**
+     *
+     */
+    StyleEvent.INVALIDATE_PROPERTIES = "invalidateProperties";
+    return StyleEvent;
+})(EventBase);
+module.exports = StyleEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/SubGeometryEvent":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -12508,6 +12405,65 @@ var SubGeometryEvent = (function (_super) {
     return SubGeometryEvent;
 })(EventBase);
 module.exports = SubGeometryEvent;
+
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TextureEvent":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventBase = require("awayjs-core/lib/events/EventBase");
+/**
+* Dispatched to notify changes in a geometry object's state.
+*
+* @class away.events.TextureEvent
+* @see away3d.core.base.Geometry
+*/
+var TextureEvent = (function (_super) {
+    __extends(TextureEvent, _super);
+    /**
+     * Create a new TextureEvent
+     * @param type The event type.
+     * @param subGeometry An optional TriangleSubGeometry object that is the subject of this event.
+     */
+    function TextureEvent(type, subGeometry) {
+        if (subGeometry === void 0) { subGeometry = null; }
+        _super.call(this, type);
+        this._subGeometry = subGeometry;
+    }
+    Object.defineProperty(TextureEvent.prototype, "subGeometry", {
+        /**
+         * The TriangleSubGeometry object that is the subject of this event, if appropriate.
+         */
+        get: function () {
+            return this._subGeometry;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     * @return An exact duplicate of the current object.
+     */
+    TextureEvent.prototype.clone = function () {
+        return new TextureEvent(this.type, this._subGeometry);
+    };
+    /**
+     * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
+     */
+    TextureEvent.SUB_GEOMETRY_ADDED = "subGeometryAdded";
+    /**
+     * Dispatched when a TriangleSubGeometry was removed from the dispatching Geometry.
+     */
+    TextureEvent.SUB_GEOMETRY_REMOVED = "subGeometryRemoved";
+    /**
+     *
+     */
+    TextureEvent.BOUNDS_INVALID = "boundsInvalid";
+    return TextureEvent;
+})(EventBase);
+module.exports = TextureEvent;
 
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
@@ -12628,9 +12584,50 @@ var TouchEvent = (function (_super) {
 })(EventBase);
 module.exports = TouchEvent;
 
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TransformEvent":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventBase = require("awayjs-core/lib/events/EventBase");
+var TransformEvent = (function (_super) {
+    __extends(TransformEvent, _super);
+    function TransformEvent(type, transform) {
+        _super.call(this, type);
+        this._transform = transform;
+    }
+    Object.defineProperty(TransformEvent.prototype, "transform", {
+        get: function () {
+            return this._transform;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     * @return An exact duplicate of the current object.
+     */
+    TransformEvent.prototype.clone = function () {
+        return new TransformEvent(this.type, this._transform);
+    };
+    /**
+     *
+     */
+    TransformEvent.INVALIDATE_MATRIX3D = "invalidateMatrix3D";
+    /**
+     *
+     */
+    TransformEvent.INVALIDATE_COLOR_TRANSFORM = "invalidateColorTransform";
+    return TransformEvent;
+})(EventBase);
+module.exports = TransformEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/factories/ITimelineSceneGraphFactory":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
 var BitmapImageCube = require("awayjs-core/lib/image/BitmapImageCube");
 var LineSubMesh = require("awayjs-display/lib/base/LineSubMesh");
@@ -12668,64 +12665,73 @@ var DefaultMaterialManager = (function () {
             DefaultMaterialManager.createDefaultTexture();
         return DefaultMaterialManager._defaultTexture;
     };
-    DefaultMaterialManager.createDefaultTexture = function () {
+    DefaultMaterialManager.getDefaultImage2D = function () {
         if (!DefaultMaterialManager._defaultBitmapImage2D)
-            DefaultMaterialManager.createCheckeredBitmapImage2D();
-        DefaultMaterialManager._defaultTexture = new Single2DTexture(DefaultMaterialManager._defaultBitmapImage2D);
+            DefaultMaterialManager.createDefaultImage2D();
+        return DefaultMaterialManager._defaultBitmapImage2D;
+    };
+    DefaultMaterialManager.getDefaultImageCube = function () {
+        if (!DefaultMaterialManager._defaultBitmapImageCube)
+            DefaultMaterialManager.createDefaultImageCube();
+        return DefaultMaterialManager._defaultBitmapImageCube;
+    };
+    DefaultMaterialManager.getDefaultSampler = function () {
+        if (!DefaultMaterialManager._defaultSampler2D)
+            DefaultMaterialManager.createDefaultSampler2D();
+        return DefaultMaterialManager._defaultSampler2D;
+    };
+    DefaultMaterialManager.createDefaultTexture = function () {
+        DefaultMaterialManager._defaultTexture = new Single2DTexture();
         DefaultMaterialManager._defaultTexture.name = "defaultTexture";
     };
     DefaultMaterialManager.createDefaultCubeTexture = function () {
-        if (!DefaultMaterialManager._defaultBitmapImageCube)
-            DefaultMaterialManager.createCheckeredBitmapImageCube();
-        DefaultMaterialManager._defaultCubeTexture = new SingleCubeTexture(DefaultMaterialManager._defaultBitmapImageCube);
+        DefaultMaterialManager._defaultCubeTexture = new SingleCubeTexture();
         DefaultMaterialManager._defaultCubeTexture.name = "defaultCubeTexture";
     };
-    DefaultMaterialManager.createCheckeredBitmapImageCube = function () {
+    DefaultMaterialManager.createDefaultImageCube = function () {
         if (!DefaultMaterialManager._defaultBitmapImage2D)
-            DefaultMaterialManager.createCheckeredBitmapImage2D();
+            DefaultMaterialManager.createDefaultImage2D();
         var b = new BitmapImageCube(DefaultMaterialManager._defaultBitmapImage2D.width);
         for (var i = 0; i < 6; i++)
             b.draw(i, DefaultMaterialManager._defaultBitmapImage2D);
         DefaultMaterialManager._defaultBitmapImageCube = b;
     };
-    DefaultMaterialManager.createCheckeredBitmapImage2D = function () {
+    DefaultMaterialManager.createDefaultImage2D = function () {
         var b = new BitmapImage2D(8, 8, false, 0x000000);
         //create chekerboard
         var i, j;
-        for (i = 0; i < 8; i++) {
-            for (j = 0; j < 8; j++) {
-                if ((j & 1) ^ (i & 1)) {
+        for (i = 0; i < 8; i++)
+            for (j = 0; j < 8; j++)
+                if ((j & 1) ^ (i & 1))
                     b.setPixel(i, j, 0XFFFFFF);
-                }
-            }
-        }
         DefaultMaterialManager._defaultBitmapImage2D = b;
     };
     DefaultMaterialManager.createDefaultTextureMaterial = function () {
         if (!DefaultMaterialManager._defaultTexture)
             DefaultMaterialManager.createDefaultTexture();
-        DefaultMaterialManager._defaultTextureMaterial = new BasicMaterial(DefaultMaterialManager._defaultTexture);
-        DefaultMaterialManager._defaultTextureMaterial.mipmap = false;
-        DefaultMaterialManager._defaultTextureMaterial.smooth = false;
+        DefaultMaterialManager._defaultTextureMaterial = new BasicMaterial();
+        DefaultMaterialManager._defaultTextureMaterial.texture = DefaultMaterialManager._defaultTexture;
         DefaultMaterialManager._defaultTextureMaterial.name = "defaultTextureMaterial";
     };
     DefaultMaterialManager.createDefaultCubeTextureMaterial = function () {
         if (!DefaultMaterialManager._defaultCubeTexture)
             DefaultMaterialManager.createDefaultCubeTexture();
-        DefaultMaterialManager._defaultCubeTextureMaterial = new BasicMaterial(DefaultMaterialManager._defaultCubeTexture);
-        DefaultMaterialManager._defaultCubeTextureMaterial.mipmap = false;
-        DefaultMaterialManager._defaultCubeTextureMaterial.smooth = false;
+        DefaultMaterialManager._defaultCubeTextureMaterial = new BasicMaterial();
+        DefaultMaterialManager._defaultCubeTextureMaterial.texture = DefaultMaterialManager._defaultCubeTexture;
         DefaultMaterialManager._defaultCubeTextureMaterial.name = "defaultCubeTextureMaterial";
     };
     DefaultMaterialManager.createDefaultColorMaterial = function () {
         DefaultMaterialManager._defaultColorMaterial = new BasicMaterial();
         DefaultMaterialManager._defaultColorMaterial.name = "defaultColorMaterial";
     };
+    DefaultMaterialManager.createDefaultSampler2D = function () {
+        DefaultMaterialManager._defaultSampler2D = new Sampler2D();
+    };
     return DefaultMaterialManager;
 })();
 module.exports = DefaultMaterialManager;
 
-},{"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
+},{"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/LineSubMesh":"awayjs-display/lib/base/LineSubMesh","awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
 var FrameScriptManager = (function () {
     function FrameScriptManager() {
     }
@@ -13242,32 +13248,20 @@ var __extends = this.__extends || function (d, b) {
 var Image2D = require("awayjs-core/lib/image/Image2D");
 var MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
-var TextureBase = require("awayjs-display/lib/textures/TextureBase");
 /**
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
  * using material methods to define their appearance.
  */
 var BasicMaterial = (function (_super) {
     __extends(BasicMaterial, _super);
-    function BasicMaterial(textureColor, smoothAlpha, repeat, mipmap) {
-        if (textureColor === void 0) { textureColor = null; }
-        if (smoothAlpha === void 0) { smoothAlpha = null; }
-        if (repeat === void 0) { repeat = false; }
-        if (mipmap === void 0) { mipmap = false; }
-        _super.call(this);
+    function BasicMaterial(imageColor, alpha) {
+        if (imageColor === void 0) { imageColor = null; }
+        if (alpha === void 0) { alpha = 1; }
+        _super.call(this, imageColor, alpha);
         this._preserveAlpha = false;
-        if (textureColor instanceof Image2D)
-            textureColor = new Single2DTexture(textureColor);
-        if (textureColor instanceof TextureBase) {
-            this.texture = textureColor;
-            this.smooth = (smoothAlpha == null) ? true : false;
-            this.repeat = repeat;
-            this.mipmap = mipmap;
-        }
-        else {
-            this.color = textureColor ? Number(textureColor) : 0xCCCCCC;
-            this.alpha = (smoothAlpha == null) ? 1 : Number(smoothAlpha);
-        }
+        //set a texture if an image is present
+        if (imageColor instanceof Image2D)
+            this.texture = new Single2DTexture();
     }
     Object.defineProperty(BasicMaterial.prototype, "assetType", {
         /**
@@ -13295,12 +13289,32 @@ var BasicMaterial = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(BasicMaterial.prototype, "texture", {
+        /**
+         * The texture object to use for the albedo colour.
+         */
+        get: function () {
+            return this._texture;
+        },
+        set: function (value) {
+            if (this._texture == value)
+                return;
+            if (this._texture)
+                this.removeTexture(this._texture);
+            this._texture = value;
+            if (this._texture)
+                this.addTexture(this._texture);
+            this.invalidateTexture();
+        },
+        enumerable: true,
+        configurable: true
+    });
     BasicMaterial.assetType = "[materials BasicMaterial]";
     return BasicMaterial;
 })(MaterialBase);
 module.exports = BasicMaterial;
 
-},{"awayjs-core/lib/image/Image2D":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
+},{"awayjs-core/lib/image/Image2D":undefined,"awayjs-display/lib/materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
 /**
  * Enumeration class for defining which lighting types affect the specific material
  * lighting component (diffuse and specular). This can be useful if, for example, you
@@ -13342,10 +13356,13 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var BlendMode = require("awayjs-core/lib/image/BlendMode");
+var ImageBase = require("awayjs-core/lib/image/ImageBase");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var RenderOwnerEvent = require("awayjs-display/lib/events/RenderOwnerEvent");
+var Style = require("awayjs-display/lib/base/Style");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
  * MaterialBase forms an abstract base class for any material.
  * A material consists of several passes, each of which constitutes at least one render call. Several passes could
@@ -13359,17 +13376,12 @@ var RenderOwnerEvent = require("awayjs-display/lib/events/RenderOwnerEvent");
  */
 var MaterialBase = (function (_super) {
     __extends(MaterialBase, _super);
-    /**
-     * Creates a new MaterialBase object.
-     */
-    function MaterialBase() {
+    function MaterialBase(imageColor, alpha) {
         var _this = this;
+        if (imageColor === void 0) { imageColor = null; }
+        if (alpha === void 0) { alpha = 1; }
         _super.call(this);
-        this._images = new Array();
-        this._imageCount = new Array();
-        this._imageIndex = new Object();
-        this._samplers = new Array();
-        this._samplerIndices = new Object();
+        this._textures = new Array();
         this._pUseColorTransform = false;
         this._alphaBlending = false;
         this._alpha = 1;
@@ -13378,6 +13390,7 @@ var MaterialBase = (function (_super) {
         this._enableLightFallOff = true;
         this._specularLightSources = 0x01;
         this._diffuseLightSources = 0x03;
+        this._style = new Style();
         this._iBaseScreenPassIndex = 0;
         this._bothSides = false; // update
         /**
@@ -13386,11 +13399,15 @@ var MaterialBase = (function (_super) {
         this._owners = new Array();
         this._pBlendMode = BlendMode.NORMAL;
         this._imageRect = false;
-        this._mipmap = true;
-        this._smooth = true;
-        this._repeat = false;
-        this._color = 0xFFFFFF;
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
+        this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+        if (imageColor instanceof ImageBase)
+            this._style.image = imageColor;
+        else if (imageColor)
+            this._style.color = Number(imageColor);
+        this.alpha = alpha;
         this._onLightChangeDelegate = function (event) { return _this.onLightsChange(event); };
+        this._onTextureInvalidateDelegate = function (event) { return _this.onTextureInvalidate(event); };
         this.alphaPremultiplied = false; //TODO: work out why this is different for WebGL
     }
     Object.defineProperty(MaterialBase.prototype, "alpha", {
@@ -13496,88 +13513,22 @@ var MaterialBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(MaterialBase.prototype, "mipmap", {
+    Object.defineProperty(MaterialBase.prototype, "style", {
         /**
-         * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+         * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
          */
         get: function () {
-            return this._mipmap;
+            return this._style;
         },
         set: function (value) {
-            if (this._mipmap == value)
+            if (this._style == value)
                 return;
-            this._mipmap = value;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
             this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MaterialBase.prototype, "smooth", {
-        /**
-         * Indicates whether or not any used textures should use smoothing. Defaults to true.
-         */
-        get: function () {
-            return this._smooth;
-        },
-        set: function (value) {
-            if (this._smooth == value)
-                return;
-            this._smooth = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MaterialBase.prototype, "repeat", {
-        /**
-         * Indicates whether or not any used textures should be tiled. If set to false, texture samples are clamped to
-         * the texture's borders when the uv coordinates are outside the [0, 1] interval. Defaults to false.
-         */
-        get: function () {
-            return this._repeat;
-        },
-        set: function (value) {
-            if (this._repeat == value)
-                return;
-            this._repeat = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MaterialBase.prototype, "color", {
-        /**
-         * The diffuse reflectivity color of the surface.
-         */
-        get: function () {
-            return this._color;
-        },
-        set: function (value) {
-            if (this._color == value)
-                return;
-            this._color = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MaterialBase.prototype, "texture", {
-        /**
-         * The texture object to use for the albedo colour.
-         */
-        get: function () {
-            return this._pTexture;
-        },
-        set: function (value) {
-            if (this._pTexture == value)
-                return;
-            if (this._pTexture)
-                this._pTexture.iRemoveOwner(this);
-            this._pTexture = value;
-            if (this._pTexture)
-                this._pTexture.iAddOwner(this);
-            this.invalidatePasses();
-            this.invalidateTexture();
         },
         enumerable: true,
         configurable: true
@@ -13748,27 +13699,6 @@ var MaterialBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    MaterialBase.prototype.getNumImages = function () {
-        return this._images.length;
-    };
-    MaterialBase.prototype.getImageAt = function (index) {
-        return this._images[index];
-    };
-    MaterialBase.prototype.getImageIndex = function (image) {
-        return this._imageIndex[image.id];
-    };
-    MaterialBase.prototype.getNumSamplers = function () {
-        return this._samplers.length;
-    };
-    MaterialBase.prototype.getSamplerAt = function (index) {
-        return this._samplers[index];
-    };
-    MaterialBase.prototype.getSamplerIndex = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplerIndices[texture.id])
-            this._samplerIndices[texture.id] = new Array();
-        return this._samplerIndices[texture.id][index];
-    };
     //
     // MATERIAL MANAGEMENT
     //
@@ -13826,6 +13756,12 @@ var MaterialBase = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    MaterialBase.prototype.getNumTextures = function () {
+        return this._textures.length;
+    };
+    MaterialBase.prototype.getTextureAt = function (index) {
+        return this._textures[index];
+    };
     /**
      * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
      *
@@ -13851,74 +13787,41 @@ var MaterialBase = (function (_super) {
     MaterialBase.prototype.invalidateTexture = function () {
         this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_TEXTURE, this));
     };
-    MaterialBase.prototype.clear = function () {
-        this.dispatchEvent(new AssetEvent(AssetEvent.CLEAR, this));
+    MaterialBase.prototype.addTextureAt = function (texture, index) {
+        var i = this._textures.indexOf(texture);
+        if (i == index)
+            return;
+        else if (i != -1)
+            this._textures.splice(i, 1);
+        this._textures.splice(index, 0, texture);
+        texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+        this.onTextureInvalidate();
     };
-    MaterialBase.prototype._iAddImage = function (image) {
-        var index = this._imageIndex[image.id];
-        if (!index) {
-            this._imageIndex[image.id] = this._images.length;
-            this._images.push(image);
-            this._imageCount.push(1);
-            this.invalidatePasses();
-            this.invalidateRenderOwners();
-        }
-        else {
-            this._imageCount[index]--;
-        }
+    MaterialBase.prototype.addTexture = function (texture) {
+        if (this._textures.indexOf(texture) != -1)
+            return;
+        this._textures.push(texture);
+        texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+        this.onTextureInvalidate();
     };
-    MaterialBase.prototype._iRemoveImage = function (image) {
-        var index = this._imageIndex[image.id];
-        if (this._imageCount[index] != 1) {
-            this._imageCount[index]--;
-        }
-        else {
-            delete this._imageIndex[image.id];
-            this._images.splice(index, 1);
-            this._imageCount.splice(index, 1);
-            var len = this._images.length;
-            for (var i = index; i < len; i++) {
-                this._imageIndex[this._images[i].id] = i;
-            }
-            this.invalidatePasses();
-            this.invalidateRenderOwners();
-        }
+    MaterialBase.prototype.removeTexture = function (texture) {
+        this._textures.splice(this._textures.indexOf(texture), 1);
+        texture.removeEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+        this.onTextureInvalidate();
     };
-    MaterialBase.prototype._iAddSampler = function (sampler, texture, index) {
-        //find free sampler slot
-        var i = 0;
-        var len = this._samplers.length;
-        while (i < len) {
-            if (!this._samplers[i])
-                break;
-            i++;
-        }
-        if (!this._samplerIndices[texture.id])
-            this._samplerIndices[texture.id] = new Array();
-        this._samplerIndices[texture.id][index] = i;
-        this._samplers[i] = sampler;
+    MaterialBase.prototype.onTextureInvalidate = function (event) {
+        if (event === void 0) { event = null; }
         this.invalidatePasses();
         this.invalidateRenderOwners();
     };
-    MaterialBase.prototype._iRemoveSampler = function (texture, index) {
-        var index = this._samplerIndices[texture.id][index];
-        this._samplers[index] = null;
-        //shorten samplers array if sampler at end
-        if (index == this._samplers.length - 1) {
-            while (index--) {
-                if (this._samplers[index] != null)
-                    break;
-            }
-            this._samplers.length = index + 1;
-        }
+    MaterialBase.prototype._onInvalidateProperties = function (event) {
         this.invalidatePasses();
-        this.invalidateRenderOwners();
     };
     return MaterialBase;
 })(AssetBase);
 module.exports = MaterialBase;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/ImageBase":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -19561,8 +19464,9 @@ var TextureBase = require("awayjs-display/lib/textures/TextureBase");
 var Single2DTexture = (function (_super) {
     __extends(Single2DTexture, _super);
     function Single2DTexture(image2D) {
+        if (image2D === void 0) { image2D = null; }
         _super.call(this);
-        this._images.length = 1;
+        this.setNumImages(1);
         this.image2D = image2D;
         this._mappingMode = MappingMode.NORMAL;
     }
@@ -19589,6 +19493,22 @@ var Single2DTexture = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Single2DTexture.prototype, "sampler2D", {
+        /**
+         *
+         * @returns {Image2D}
+         */
+        get: function () {
+            return this._samplers[0];
+        },
+        set: function (value) {
+            if (this._samplers[0] == value)
+                return;
+            this.setSamplerAt(value, 0);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Single2DTexture.prototype, "image2D", {
         /**
          *
@@ -19602,11 +19522,7 @@ var Single2DTexture = (function (_super) {
                 return;
             if (!ImageUtils.isImage2DValid(value))
                 throw new ErrorBase("Invalid image2DData: Width and height must be power of 2 and cannot exceed 2048");
-            if (this._images[0])
-                this.iRemoveImage(0);
-            if (value)
-                this.iAddImage(value, 0);
-            this.invalidate();
+            this.setImageAt(value, 0);
         },
         enumerable: true,
         configurable: true
@@ -19627,7 +19543,9 @@ var TextureBase = require("awayjs-display/lib/textures/TextureBase");
 var SingleCubeTexture = (function (_super) {
     __extends(SingleCubeTexture, _super);
     function SingleCubeTexture(imageCube) {
+        if (imageCube === void 0) { imageCube = null; }
         _super.call(this);
+        this.setNumImages(1);
         this.imageCube = imageCube;
     }
     Object.defineProperty(SingleCubeTexture.prototype, "assetType", {
@@ -19637,6 +19555,22 @@ var SingleCubeTexture = (function (_super) {
          */
         get: function () {
             return SingleCubeTexture.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SingleCubeTexture.prototype, "samplerCube", {
+        /**
+         *
+         * @returns {Image2D}
+         */
+        get: function () {
+            return this._samplers[0];
+        },
+        set: function (value) {
+            if (this._samplers[0] == value)
+                return;
+            this.setSamplerAt(value, 0);
         },
         enumerable: true,
         configurable: true
@@ -19652,11 +19586,7 @@ var SingleCubeTexture = (function (_super) {
         set: function (value) {
             if (this._images[0] == value)
                 return;
-            if (this._images[0])
-                this.iRemoveImage(0);
-            if (value)
-                this.iAddImage(value, 0);
-            this.invalidate();
+            this.setImageAt(value, 0);
         },
         enumerable: true,
         configurable: true
@@ -19684,68 +19614,34 @@ var TextureBase = (function (_super) {
      */
     function TextureBase() {
         _super.call(this);
-        this._owners = new Array();
-        this._counts = new Array();
+        this._numImages = 0;
         this._images = new Array();
+        this._samplers = new Array();
     }
-    TextureBase.prototype.iAddOwner = function (owner) {
-        //a texture can be used more than once in the same owner, so we check for this
-        var index = this._owners.indexOf(owner);
-        if (index != -1) {
-            this._counts[index]++;
-        }
-        else {
-            this._owners.push(owner);
-            this._counts.push(1);
-            //add images
-            var len = this._images.length;
-            for (var i = 0; i < len; i++)
-                owner._iAddImage(this._images[i]);
-        }
-        //add samplers
-        var len = this._images.length;
-        for (var i = 0; i < len; i++)
-            owner._iAddSampler(this._images[i].createSampler(), this, i);
+    TextureBase.prototype.getNumImages = function () {
+        return this._numImages;
     };
-    TextureBase.prototype.iRemoveOwner = function (owner) {
-        var index = this._owners.indexOf(owner);
-        if (this._counts[index] != 1) {
-            this._counts[index]--;
-        }
-        else {
-            this._owners.splice(index, 1);
-            this._counts.splice(index, 1);
-            //remove images
-            var len = this._images.length;
-            for (var i = 0; i < len; i++)
-                owner._iRemoveImage(this._images[i]);
-        }
-        //add samplers
-        var len = this._images.length;
-        for (var i = 0; i < len; i++)
-            owner._iRemoveSampler(this, i);
+    TextureBase.prototype.setNumImages = function (value) {
+        if (this._numImages == value)
+            return;
+        this._numImages = value;
+        this._images.length = value;
+        this._samplers.length = value;
+        this.invalidate();
     };
-    /**
-     *
-     */
-    TextureBase.prototype.iAddImage = function (image, index) {
+    TextureBase.prototype.getImageAt = function (index) {
+        return this._images[index];
+    };
+    TextureBase.prototype.setImageAt = function (image, index) {
         this._images[index] = image;
-        var len = this._owners.length;
-        for (var i = 0; i < len; i++) {
-            this._owners[i]._iAddImage(image);
-            this._owners[i]._iAddSampler(image.createSampler(), this, index);
-        }
+        this.invalidate();
     };
-    /**
-     *
-     */
-    TextureBase.prototype.iRemoveImage = function (index) {
-        var image = this._images[index];
-        var len = this._owners.length;
-        for (var i = 0; i < len; i++) {
-            this._owners[i]._iRemoveImage(image);
-            this._owners[i]._iRemoveSampler(this, index);
-        }
+    TextureBase.prototype.getSamplerAt = function (index) {
+        return this._samplers[index];
+    };
+    TextureBase.prototype.setSamplerAt = function (sampler, index) {
+        this._samplers[index] = sampler;
+        this.invalidate();
     };
     return TextureBase;
 })(AssetBase);
