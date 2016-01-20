@@ -119,6 +119,20 @@ class Timeline
 	}
 	public add_framescript(value:string, keyframe_index:number)
 	{
+		if(FrameScriptManager.frameScriptDebug){
+			// if we are in debug mode, we try to extract the function name from the first line of framescript code,
+			// and check if this function is available on the object that is set as frameScriptDebug
+			// try to get the functions name (it should be the first line as comment)
+			var functionname = value.split(/[\r\n]+/g)[0].split("//")[1];
+			if(FrameScriptManager.frameScriptDebug[functionname]){
+				this._framescripts[keyframe_index] = FrameScriptManager.frameScriptDebug[functionname];
+				this._framescripts_translated[keyframe_index]=true;
+				return;
+			}
+			else{
+				throw new Error("Framescript could not be found on FrameScriptManager.frameScriptDebug.\n the Object set as FrameScriptmanager.frameScriptDebug should contain a function with the name '"+functionname+"' !!!");
+			}
+		}
 		this._framescripts[keyframe_index] = value;
 	}
 

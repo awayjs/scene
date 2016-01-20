@@ -3,6 +3,14 @@ import MovieClip					= require("awayjs-display/lib/entities/MovieClip");
 
 class FrameScriptManager
 {
+	// FrameScript debugging:
+	// the first line of a FrameScript should be a comment that represents the functions unique name
+	// the exporter creates a js file, containing a object that has the framescripts functions set as properties according to the unique names
+	// this object can be set as "frameScriptDebug" in order to enable debug mode
+
+
+	public static frameScriptDebug:Object = undefined;
+
 	//queue of objects for disposal
 	private static _queued_dispose:Array<DisplayObject> = new Array<DisplayObject>();
 
@@ -81,7 +89,7 @@ class FrameScriptManager
 			if(mc.scene!=null) {
 				var caller = mc.adapter ? mc.adapter : mc;
 			//	try {
-					this._queued_scripts[i].call(caller);
+				this._queued_scripts[i].call(caller);
 			//	}
 			/*	catch (err) {
 					console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
