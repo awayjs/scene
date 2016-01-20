@@ -1,82 +1,3 @@
-declare module "awayjs-display/lib/IRenderer" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	/**
-	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderer
-	 */
-	interface IRenderer extends IEventDispatcher {
-	    /**
-	     *
-	     */
-	    shareContext: boolean;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    viewPort: Rectangle;
-	    /**
-	     *
-	     */
-	    scissorRect: Rectangle;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): any;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundR: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundG: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundB: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundAlpha: number;
-	    /**
-	     * @internal
-	     */
-	    _iCreateEntityCollector(): CollectorBase;
-	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
-	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
-	}
-	export = IRenderer;
-	
-}
-
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -1677,6 +1598,32 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 	
 }
 
+declare module "awayjs-display/lib/base/IRenderableOwner" {
+	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import Style = require("awayjs-display/lib/base/Style");
+	/**
+	 * IRenderableOwner provides an interface for objects that can use materials.
+	 *
+	 * @interface away.base.IRenderableOwner
+	 */
+	interface IRenderableOwner extends IAsset {
+	    /**
+	     * The animation used by the material owner to assemble the vertex code.
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    uvTransform: UVTransform;
+	    style: Style;
+	    invalidateRenderOwner(): any;
+	}
+	export = IRenderableOwner;
+	
+}
+
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -1703,32 +1650,6 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	    removeTexture(texture: TextureBase): any;
 	}
 	export = IRenderOwner;
-	
-}
-
-declare module "awayjs-display/lib/base/IRenderableOwner" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import Style = require("awayjs-display/lib/base/Style");
-	/**
-	 * IRenderableOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderableOwner
-	 */
-	interface IRenderableOwner extends IAsset {
-	    /**
-	     * The animation used by the material owner to assemble the vertex code.
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: UVTransform;
-	    style: Style;
-	    invalidateRenderOwner(): any;
-	}
-	export = IRenderableOwner;
 	
 }
 
@@ -2083,6 +2004,73 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 	
 }
 
+declare module "awayjs-display/lib/base/Timeline" {
+	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	class Timeline {
+	    private _functions;
+	    private _blocked;
+	    _update_indices: Array<number>;
+	    _labels: Object;
+	    _framescripts: Object;
+	    _framescripts_translated: Object;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_f32_mtx_all: ArrayBufferView;
+	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
+	    properties_stream_f32_mtx_pos: ArrayBufferView;
+	    properties_stream_f32_ct: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
+	    private _potentialPrototypes;
+	    numKeyFrames: number;
+	    constructor();
+	    init(): void;
+	    get_framescript(keyframe_index: number): string;
+	    add_framescript(value: string, keyframe_index: number): void;
+	    private regexIndexOf(str, regex, startpos);
+	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
+	    numFrames: number;
+	    getPotentialChildPrototype(id: number): DisplayObject;
+	    getKeyframeIndexForFrameIndex(frame_index: number): number;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    registerPotentialChild(prototype: DisplayObject): void;
+	    jumpToLabel(target_mc: MovieClip, label: string): void;
+	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
+	    pass1(start_construct_idx: number, target_keyframe_idx: number, depth_sessionIDs: Object): void;
+	    pass2(target_mc: MovieClip): void;
+	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
+	    update_childs(target_mc: MovieClip, frame_command_idx: number): void;
+	    update_mtx_all(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_colortransform(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_name(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_button_name(target: DisplayObject, sourceMovieClip: MovieClip, i: number): void;
+	    update_visibility(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_mtx_scale_rot(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_mtx_pos(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    enable_maskmode(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    remove_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	}
+	export = Timeline;
+	
+}
+
 declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
@@ -2151,73 +2139,6 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    private _onInvalidateProperties(event);
 	}
 	export = SubMeshBase;
-	
-}
-
-declare module "awayjs-display/lib/base/Timeline" {
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class Timeline {
-	    private _functions;
-	    private _blocked;
-	    _update_indices: Array<number>;
-	    _labels: Object;
-	    _framescripts: Object;
-	    _framescripts_translated: Object;
-	    keyframe_indices: Array<number>;
-	    keyframe_firstframes: Array<number>;
-	    keyframe_constructframes: Array<number>;
-	    keyframe_durations: ArrayBufferView;
-	    frame_command_indices: ArrayBufferView;
-	    frame_recipe: ArrayBufferView;
-	    command_index_stream: ArrayBufferView;
-	    command_length_stream: ArrayBufferView;
-	    add_child_stream: ArrayBufferView;
-	    remove_child_stream: ArrayBufferView;
-	    update_child_stream: ArrayBufferView;
-	    update_child_props_length_stream: ArrayBufferView;
-	    update_child_props_indices_stream: ArrayBufferView;
-	    property_index_stream: ArrayBufferView;
-	    property_type_stream: ArrayBufferView;
-	    properties_stream_int: ArrayBufferView;
-	    properties_stream_f32_mtx_all: ArrayBufferView;
-	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
-	    properties_stream_f32_mtx_pos: ArrayBufferView;
-	    properties_stream_f32_ct: ArrayBufferView;
-	    properties_stream_strings: Array<string>;
-	    private _potentialPrototypes;
-	    numKeyFrames: number;
-	    constructor();
-	    init(): void;
-	    get_framescript(keyframe_index: number): string;
-	    add_framescript(value: string, keyframe_index: number): void;
-	    private regexIndexOf(str, regex, startpos);
-	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
-	    numFrames: number;
-	    getPotentialChildPrototype(id: number): DisplayObject;
-	    getKeyframeIndexForFrameIndex(frame_index: number): number;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    registerPotentialChild(prototype: DisplayObject): void;
-	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
-	    pass1(start_construct_idx: number, target_keyframe_idx: number, depth_sessionIDs: Object): void;
-	    pass2(target_mc: MovieClip): void;
-	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
-	    remove_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
-	    add_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
-	    update_childs(target_mc: MovieClip, frame_command_idx: number): void;
-	    update_mtx_all(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_colortransform(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_name(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_button_name(target: DisplayObject, sourceMovieClip: MovieClip, i: number): void;
-	    update_visibility(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_mtx_scale_rot(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_mtx_pos(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    enable_maskmode(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    remove_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	}
-	export = Timeline;
 	
 }
 
@@ -7226,6 +7147,17 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/LightEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	class LightEvent extends EventBase {
+	    static CASTS_SHADOW_CHANGE: string;
+	    constructor(type: string);
+	    clone(): LightEvent;
+	}
+	export = LightEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/GeometryEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
@@ -7266,17 +7198,6 @@ declare module "awayjs-display/lib/events/GeometryEvent" {
 	    clone(): GeometryEvent;
 	}
 	export = GeometryEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/LightEvent" {
-	import EventBase = require("awayjs-core/lib/events/EventBase");
-	class LightEvent extends EventBase {
-	    static CASTS_SHADOW_CHANGE: string;
-	    constructor(type: string);
-	    clone(): LightEvent;
-	}
-	export = LightEvent;
 	
 }
 
@@ -7427,35 +7348,6 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/RenderOwnerEvent" {
-	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	class RenderOwnerEvent extends EventBase {
-	    static INVALIDATE_TEXTURE: string;
-	    static INVALIDATE_ANIMATION: string;
-	    static INVALIDATE_PASSES: string;
-	    private _renderOwner;
-	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param dataType An optional data type of the vertex data being updated.
-	     */
-	    constructor(type: string, renderOwner: IRenderOwner);
-	    /**
-	     * The renderobject owner of the renderable owner.
-	     */
-	    renderOwner: IRenderOwner;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): RenderOwnerEvent;
-	}
-	export = RenderOwnerEvent;
-	
-}
-
 declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
@@ -7507,6 +7399,35 @@ declare module "awayjs-display/lib/events/RendererEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/RenderOwnerEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
+	class RenderOwnerEvent extends EventBase {
+	    static INVALIDATE_TEXTURE: string;
+	    static INVALIDATE_ANIMATION: string;
+	    static INVALIDATE_PASSES: string;
+	    private _renderOwner;
+	    /**
+	     * Create a new GeometryEvent
+	     * @param type The event type.
+	     * @param dataType An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, renderOwner: IRenderOwner);
+	    /**
+	     * The renderobject owner of the renderable owner.
+	     */
+	    renderOwner: IRenderOwner;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): RenderOwnerEvent;
+	}
+	export = RenderOwnerEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/ResizeEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
 	class ResizeEvent extends EventBase {
@@ -7545,6 +7466,49 @@ declare module "awayjs-display/lib/events/StyleEvent" {
 	    clone(): StyleEvent;
 	}
 	export = StyleEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/TextureEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	/**
+	* Dispatched to notify changes in a geometry object's state.
+	*
+	* @class away.events.TextureEvent
+	* @see away3d.core.base.Geometry
+	*/
+	class TextureEvent extends EventBase {
+	    /**
+	     * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
+	     */
+	    static SUB_GEOMETRY_ADDED: string;
+	    /**
+	     * Dispatched when a TriangleSubGeometry was removed from the dispatching Geometry.
+	     */
+	    static SUB_GEOMETRY_REMOVED: string;
+	    /**
+	     *
+	     */
+	    static BOUNDS_INVALID: string;
+	    private _subGeometry;
+	    /**
+	     * Create a new TextureEvent
+	     * @param type The event type.
+	     * @param subGeometry An optional TriangleSubGeometry object that is the subject of this event.
+	     */
+	    constructor(type: string, subGeometry?: SubGeometryBase);
+	    /**
+	     * The TriangleSubGeometry object that is the subject of this event, if appropriate.
+	     */
+	    subGeometry: SubGeometryBase;
+	    /**
+	     * Clones the event.
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): TextureEvent;
+	}
+	export = TextureEvent;
 	
 }
 
@@ -7593,49 +7557,6 @@ declare module "awayjs-display/lib/events/SubGeometryEvent" {
 	    clone(): SubGeometryEvent;
 	}
 	export = SubGeometryEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/TextureEvent" {
-	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	/**
-	* Dispatched to notify changes in a geometry object's state.
-	*
-	* @class away.events.TextureEvent
-	* @see away3d.core.base.Geometry
-	*/
-	class TextureEvent extends EventBase {
-	    /**
-	     * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
-	     */
-	    static SUB_GEOMETRY_ADDED: string;
-	    /**
-	     * Dispatched when a TriangleSubGeometry was removed from the dispatching Geometry.
-	     */
-	    static SUB_GEOMETRY_REMOVED: string;
-	    /**
-	     *
-	     */
-	    static BOUNDS_INVALID: string;
-	    private _subGeometry;
-	    /**
-	     * Create a new TextureEvent
-	     * @param type The event type.
-	     * @param subGeometry An optional TriangleSubGeometry object that is the subject of this event.
-	     */
-	    constructor(type: string, subGeometry?: SubGeometryBase);
-	    /**
-	     * The TriangleSubGeometry object that is the subject of this event, if appropriate.
-	     */
-	    subGeometry: SubGeometryBase;
-	    /**
-	     * Clones the event.
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): TextureEvent;
-	}
-	export = TextureEvent;
 	
 }
 
@@ -7798,6 +7719,85 @@ declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
 	
 }
 
+declare module "awayjs-display/lib/IRenderer" {
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	/**
+	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderer
+	 */
+	interface IRenderer extends IEventDispatcher {
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    viewPort: Rectangle;
+	    /**
+	     *
+	     */
+	    scissorRect: Rectangle;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): any;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundR: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundG: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundB: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundAlpha: number;
+	    /**
+	     * @internal
+	     */
+	    _iCreateEntityCollector(): CollectorBase;
+	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
+	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
+	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
+	}
+	export = IRenderer;
+	
+}
+
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	import Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 	import BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
@@ -7836,6 +7836,7 @@ declare module "awayjs-display/lib/managers/FrameScriptManager" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
 	class FrameScriptManager {
+	    static frameScriptDebug: Object;
 	    private static _queued_dispose;
 	    private static _queued_mcs;
 	    private static _queued_scripts;
@@ -7951,6 +7952,108 @@ declare module "awayjs-display/lib/managers/TouchManager" {
 	
 }
 
+declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
+	import PointLight = require("awayjs-display/lib/entities/PointLight");
+	/**
+	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
+	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
+	 * extended to provide more application-specific dynamic selection of lights.
+	 *
+	 * @see StaticLightPicker
+	 */
+	class LightPickerBase extends AssetBase {
+	    static assetType: string;
+	    _pNumPointLights: number;
+	    _pNumDirectionalLights: number;
+	    _pNumCastingPointLights: number;
+	    _pNumCastingDirectionalLights: number;
+	    _pNumLightProbes: number;
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
+	    /**
+	     * Creates a new LightPickerBase object.
+	     */
+	    constructor();
+	    /**
+	     * Disposes resources used by the light picker.
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    assetType: string;
+	    /**
+	     * The maximum amount of directional lights that will be provided.
+	     */
+	    numDirectionalLights: number;
+	    /**
+	     * The maximum amount of point lights that will be provided.
+	     */
+	    numPointLights: number;
+	    /**
+	     * The maximum amount of directional lights that cast shadows.
+	     */
+	    numCastingDirectionalLights: number;
+	    /**
+	     * The amount of point lights that cast shadows.
+	     */
+	    numCastingPointLights: number;
+	    /**
+	     * The maximum amount of light probes that will be provided.
+	     */
+	    numLightProbes: number;
+	    /**
+	     * The collected point lights to be used for shading.
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights to be used for shading.
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected point lights that cast shadows to be used for shading.
+	     */
+	    castingPointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights that cast shadows to be used for shading.
+	     */
+	    castingDirectionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected light probes to be used for shading.
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     * The weights for each light probe, defining their influence on the object.
+	     */
+	    lightProbeWeights: Array<number>;
+	    /**
+	     * A collection of all the collected lights.
+	     */
+	    allPickedLights: Array<LightBase>;
+	    /**
+	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
+	     */
+	    collectLights(entity: IEntity): void;
+	    /**
+	     * Updates the weights for the light probes, based on the renderable's position relative to them.
+	     * @param renderable The renderble for which to calculate the light probes' influence.
+	     */
+	    private updateProbeWeights(entity);
+	}
+	export = LightPickerBase;
+	
+}
+
 declare module "awayjs-display/lib/materials/BasicMaterial" {
 	import Image2D = require("awayjs-core/lib/image/Image2D");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -7987,6 +8090,46 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	    texture: TextureBase;
 	}
 	export = BasicMaterial;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
+	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
+	 * occur.
+	 */
+	class StaticLightPicker extends LightPickerBase {
+	    private _lights;
+	    private _onCastShadowChangeDelegate;
+	    /**
+	     * Creates a new StaticLightPicker object.
+	     * @param lights The lights to be used for shading.
+	     */
+	    constructor(lights: any);
+	    /**
+	     * The lights used for shading.
+	     */
+	    lights: Array<any>;
+	    /**
+	     * Remove configuration change listeners on the lights.
+	     */
+	    private clearListeners();
+	    /**
+	     * Notifies the material of a configuration change.
+	     */
+	    private onCastShadowChange(event);
+	    /**
+	     * Called when a directional light's shadow casting configuration changes.
+	     */
+	    private updateDirectionalCasting(light);
+	    /**
+	     * Called when a point light's shadow casting configuration changes.
+	     */
+	    private updatePointCasting(light);
+	}
+	export = StaticLightPicker;
 	
 }
 
@@ -8218,148 +8361,6 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    private _onInvalidateProperties(event);
 	}
 	export = MaterialBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
-	/**
-	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
-	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
-	 * extended to provide more application-specific dynamic selection of lights.
-	 *
-	 * @see StaticLightPicker
-	 */
-	class LightPickerBase extends AssetBase {
-	    static assetType: string;
-	    _pNumPointLights: number;
-	    _pNumDirectionalLights: number;
-	    _pNumCastingPointLights: number;
-	    _pNumCastingDirectionalLights: number;
-	    _pNumLightProbes: number;
-	    _pAllPickedLights: Array<LightBase>;
-	    _pPointLights: Array<PointLight>;
-	    _pCastingPointLights: Array<PointLight>;
-	    _pDirectionalLights: Array<DirectionalLight>;
-	    _pCastingDirectionalLights: Array<DirectionalLight>;
-	    _pLightProbes: Array<LightProbe>;
-	    _pLightProbeWeights: Array<number>;
-	    /**
-	     * Creates a new LightPickerBase object.
-	     */
-	    constructor();
-	    /**
-	     * Disposes resources used by the light picker.
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    assetType: string;
-	    /**
-	     * The maximum amount of directional lights that will be provided.
-	     */
-	    numDirectionalLights: number;
-	    /**
-	     * The maximum amount of point lights that will be provided.
-	     */
-	    numPointLights: number;
-	    /**
-	     * The maximum amount of directional lights that cast shadows.
-	     */
-	    numCastingDirectionalLights: number;
-	    /**
-	     * The amount of point lights that cast shadows.
-	     */
-	    numCastingPointLights: number;
-	    /**
-	     * The maximum amount of light probes that will be provided.
-	     */
-	    numLightProbes: number;
-	    /**
-	     * The collected point lights to be used for shading.
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights to be used for shading.
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected point lights that cast shadows to be used for shading.
-	     */
-	    castingPointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights that cast shadows to be used for shading.
-	     */
-	    castingDirectionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected light probes to be used for shading.
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     * The weights for each light probe, defining their influence on the object.
-	     */
-	    lightProbeWeights: Array<number>;
-	    /**
-	     * A collection of all the collected lights.
-	     */
-	    allPickedLights: Array<LightBase>;
-	    /**
-	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
-	     */
-	    collectLights(entity: IEntity): void;
-	    /**
-	     * Updates the weights for the light probes, based on the renderable's position relative to them.
-	     * @param renderable The renderble for which to calculate the light probes' influence.
-	     */
-	    private updateProbeWeights(entity);
-	}
-	export = LightPickerBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
-	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
-	 * occur.
-	 */
-	class StaticLightPicker extends LightPickerBase {
-	    private _lights;
-	    private _onCastShadowChangeDelegate;
-	    /**
-	     * Creates a new StaticLightPicker object.
-	     * @param lights The lights to be used for shading.
-	     */
-	    constructor(lights: any);
-	    /**
-	     * The lights used for shading.
-	     */
-	    lights: Array<any>;
-	    /**
-	     * Remove configuration change listeners on the lights.
-	     */
-	    private clearListeners();
-	    /**
-	     * Notifies the material of a configuration change.
-	     */
-	    private onCastShadowChange(event);
-	    /**
-	     * Called when a directional light's shadow casting configuration changes.
-	     */
-	    private updateDirectionalCasting(light);
-	    /**
-	     * Called when a point light's shadow casting configuration changes.
-	     */
-	    private updatePointCasting(light);
-	}
-	export = StaticLightPicker;
 	
 }
 
@@ -9969,43 +9970,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	
 }
 
-declare module "awayjs-display/lib/text/Font" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
-	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.SubMeshBase
-	 */
-	class Font extends AssetBase {
-	    static assetType: string;
-	    private _font_styles;
-	    /**
-	     * Creates a new TesselatedFont object
-	     */
-	    constructor();
-	    font_styles: Array<FontTable>;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     *Get a font-table for a specific name, or create one if it does not exists.
-	     */
-	    get_font_table(style_name: string): FontTable;
-	}
-	export = Font;
-	
-}
-
 declare module "awayjs-display/lib/text/AntiAliasType" {
 	/**
 	 * The AntiAliasType class provides values for anti-aliasing in the
@@ -10071,6 +10035,43 @@ declare module "awayjs-display/lib/text/GridFitType" {
 	
 }
 
+declare module "awayjs-display/lib/text/Font" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
+	/**
+	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.SubMeshBase
+	 */
+	class Font extends AssetBase {
+	    static assetType: string;
+	    private _font_styles;
+	    /**
+	     * Creates a new TesselatedFont object
+	     */
+	    constructor();
+	    font_styles: Array<FontTable>;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     *Get a font-table for a specific name, or create one if it does not exists.
+	     */
+	    get_font_table(style_name: string): FontTable;
+	}
+	export = Font;
+	
+}
+
 declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
 	/**
@@ -10119,55 +10120,6 @@ declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	    constructor(subgeom: CurveSubGeometry);
 	}
 	export = TesselatedFontChar;
-	
-}
-
-declare module "awayjs-display/lib/text/TesselatedFontTable" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
-	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.SubMeshBase
-	 */
-	class TesselatedFontTable extends AssetBase {
-	    private _font_chars;
-	    _font_chars_dic: Object;
-	    private _font_em_size;
-	    private _whitespace_width;
-	    private _offset_x;
-	    private _offset_y;
-	    private _charDictDirty;
-	    /**
-	     * Creates a new TesselatedFont object
-	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    offset_x: number;
-	    offset_y: number;
-	    get_font_chars(): Array<TesselatedFontChar>;
-	    get_font_em_size(): number;
-	    set_whitespace_width(value: number): void;
-	    get_whitespace_width(): number;
-	    set_font_em_size(font_em_size: number): void;
-	    /**
-	     *
-	     */
-	    get_subgeo_for_char(char: string): TesselatedFontChar;
-	    /**
-	     *
-	     */
-	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
-	}
-	export = TesselatedFontTable;
 	
 }
 
@@ -10501,6 +10453,55 @@ declare module "awayjs-display/lib/text/TextFormatAlign" {
 	
 }
 
+declare module "awayjs-display/lib/text/TesselatedFontTable" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
+	/**
+	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.TriangleSubGeometry
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.SubMeshBase
+	 */
+	class TesselatedFontTable extends AssetBase {
+	    private _font_chars;
+	    _font_chars_dic: Object;
+	    private _font_em_size;
+	    private _whitespace_width;
+	    private _offset_x;
+	    private _offset_y;
+	    private _charDictDirty;
+	    /**
+	     * Creates a new TesselatedFont object
+	     */
+	    constructor();
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    offset_x: number;
+	    offset_y: number;
+	    get_font_chars(): Array<TesselatedFontChar>;
+	    get_font_em_size(): number;
+	    set_whitespace_width(value: number): void;
+	    get_whitespace_width(): number;
+	    set_font_em_size(font_em_size: number): void;
+	    /**
+	     *
+	     */
+	    get_subgeo_for_char(char: string): TesselatedFontChar;
+	    /**
+	     *
+	     */
+	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
+	}
+	export = TesselatedFontTable;
+	
+}
+
 declare module "awayjs-display/lib/text/TextInteractionMode" {
 	/**
 	 * A class that defines the Interactive mode of a text field object.
@@ -10672,44 +10673,6 @@ declare module "awayjs-display/lib/textures/SingleCubeTexture" {
 	
 }
 
-declare module "awayjs-display/lib/textures/TextureBase" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	/**
-	 *
-	 */
-	class TextureBase extends AssetBase {
-	    _numImages: number;
-	    _images: Array<ImageBase>;
-	    _samplers: Array<SamplerBase>;
-	    /**
-	     *
-	     */
-	    constructor();
-	    getNumImages(): number;
-	    setNumImages(value: number): void;
-	    getImageAt(index: number): ImageBase;
-	    setImageAt(image: ImageBase, index: number): void;
-	    getSamplerAt(index: number): SamplerBase;
-	    setSamplerAt(sampler: SamplerBase, index: number): void;
-	}
-	export = TextureBase;
-	
-}
-
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
-	
-}
-
 declare module "awayjs-display/lib/traverse/CollectorBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Scene = require("awayjs-display/lib/containers/Scene");
@@ -10790,6 +10753,44 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = CollectorBase;
+	
+}
+
+declare module "awayjs-display/lib/textures/TextureBase" {
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	/**
+	 *
+	 */
+	class TextureBase extends AssetBase {
+	    _numImages: number;
+	    _images: Array<ImageBase>;
+	    _samplers: Array<SamplerBase>;
+	    /**
+	     *
+	     */
+	    constructor();
+	    getNumImages(): number;
+	    setNumImages(value: number): void;
+	    getImageAt(index: number): ImageBase;
+	    setImageAt(image: ImageBase, index: number): void;
+	    getSamplerAt(index: number): SamplerBase;
+	    setSamplerAt(sampler: SamplerBase, index: number): void;
+	}
+	export = TextureBase;
+	
+}
+
+declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * @class away.traverse.CSSEntityCollector
+	 */
+	class CSSEntityCollector extends CollectorBase {
+	    constructor();
+	}
+	export = CSSEntityCollector;
 	
 }
 
