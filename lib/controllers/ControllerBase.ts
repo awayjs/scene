@@ -16,7 +16,7 @@ class ControllerBase
 	public pNotifyUpdate()
 	{
 		if (this._pTargetObject)
-			this._pTargetObject.invalidatePartition();
+			this._pTargetObject.invalidatePartitionBounds();
 	}
 
 	public get targetObject():DisplayObject

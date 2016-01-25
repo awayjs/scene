@@ -2,24 +2,24 @@ import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import ContainerNode				= require("awayjs-display/lib/partition/ContainerNode");
+import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import ContainerNodePool			= require("awayjs-display/lib/pool/ContainerNodePool");
-import INode			= require("awayjs-display/lib/partition/INode");
-import IDisplayObjectNode			= require("awayjs-display/lib/partition/IDisplayObjectNode");
+import SceneGraphNodePool			= require("awayjs-display/lib/pool/SceneGraphNodePool");
+import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
+import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
 
 /**
  * @class away.partition.Partition
  */
 class SceneGraphPartition extends PartitionBase
 {
-	public _containerNodePool:ContainerNodePool;
+	public _sceneGraphNodePool:SceneGraphNodePool;
 
 	constructor()
 	{
 		super();
 
-		this._containerNodePool = new ContainerNodePool(this);
+		this._sceneGraphNodePool = new SceneGraphNodePool(this);
 	}
 
 	public traverse(traverser:CollectorBase)
@@ -33,17 +33,17 @@ class SceneGraphPartition extends PartitionBase
 	 * @param entity
 	 * @returns {away.partition.NodeBase}
 	 */
-	public findParentForNode(node:IDisplayObjectNode):INode
+	public findParentForNode(node:DisplayObjectNode):IContainerNode
 	{
-		if (node.displayObject.partition == this || node.displayObject._iIsRoot) {
-			this._rootNode = node;
+		if (node._displayObject.partition == this || node._displayObject._iIsRoot) {
+			this._rootNode = <SceneGraphNode> node;
 			return null;
 		}
 
-		if (!node.isContainerNode && node.displayObject.isContainer)
-			return this._containerNodePool.getItem(<DisplayObjectContainer> node.displayObject);
+		if (!node.isSceneGraphNode && node._displayObject.isContainer)
+			return this._sceneGraphNodePool.getAbstraction(<DisplayObjectContainer> node._displayObject);
 
-		return this._containerNodePool.getItem(node.displayObject.parent);
+		return this._sceneGraphNodePool.getAbstraction(node._displayObject.parent);
 	}
 
 	/**
@@ -54,7 +54,7 @@ class SceneGraphPartition extends PartitionBase
 		super._iRegisterEntity(displayObject);
 
 		if (displayObject.isContainer)
-			this.iMarkForUpdate(this._containerNodePool.getItem(<DisplayObjectContainer> displayObject));
+			this.iMarkForUpdate(this._sceneGraphNodePool.getAbstraction(<DisplayObjectContainer> displayObject));
 	}
 
 	/**
@@ -65,7 +65,7 @@ class SceneGraphPartition extends PartitionBase
 		super._iUnregisterEntity(displayObject);
 
 		if (displayObject.isContainer)
-			this.iRemoveEntity(this._containerNodePool.getItem(<DisplayObjectContainer> displayObject));
+			this.iRemoveEntity(this._sceneGraphNodePool.getAbstraction(<DisplayObjectContainer> displayObject));
 	}
 }
 

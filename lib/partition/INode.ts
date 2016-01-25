@@ -1,5 +1,9 @@
+import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -9,21 +13,19 @@ import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
  */
 interface INode
 {
-	parent:INode;
-
 	numEntities:number;
 
-	debugChildrenVisible:boolean;
+	parent:IContainerNode;
 
-	_iUpdateImplicitDebugVisible(value:boolean);
+	_iCollectionMark:number;
+
+	isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
+
+	isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean
 
 	acceptTraverser(traverser:CollectorBase);
 
-	iAddNode(node:INode);
-
-	iRemoveNode(node:INode);
-
-	dispose();
+	isCastingShadow():boolean;
 }
 
 export = INode;

@@ -1,4 +1,4 @@
-import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
+import INode						= require("awayjs-display/lib/partition/INode");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 /**
@@ -14,7 +14,7 @@ class ShadowCasterCollector extends CollectorBase
 	/**
 	 *
 	 */
-	public enterNode(node:NodeBase):boolean
+	public enterNode(node:INode):boolean
 	{
 		var enter:boolean = this.scene._iCollectionMark != node._iCollectionMark && node.isCastingShadow();
 

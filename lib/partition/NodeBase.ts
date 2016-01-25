@@ -6,15 +6,13 @@ import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodErr
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import INode						= require("awayjs-display/lib/partition/INode");
+import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 
 /**
  * @class away.partition.NodeBase
  */
-class NodeBase implements INode
+class NodeBase implements IContainerNode
 {
-	private _debugChildrenVisible:boolean;
-	private _explicitDebugVisible:boolean;
-	public _pImplicitDebugVisible:boolean;
 	public _pChildNodes:Array<INode> = new Array<INode>();
 	public _pNumChildNodes:number = 0;
 
@@ -24,41 +22,7 @@ class NodeBase implements INode
 
 	public numEntities:number = 0;
 
-	public parent:INode;
-	/**
-	 *
-	 */
-	public get debugVisible():boolean
-	{
-		return this._explicitDebugVisible;
-	}
-
-	public set debugVisible(value:boolean)
-	{
-		if (this._explicitDebugVisible == value)
-			return;
-
-		this._explicitDebugVisible = value;
-
-		this._iUpdateImplicitDebugVisible(this.parent? this.parent.debugChildrenVisible : false);
-
-	}
-
-	public get debugChildrenVisible():boolean
-	{
-		return this._debugChildrenVisible;
-	}
-
-	public set debugChildrenVisible(value:boolean)
-	{
-		if (this._debugChildrenVisible == value)
-			return;
-
-		this._debugChildrenVisible = value;
-
-		for (var i:number = 0; i < this._pNumChildNodes; ++i)
-			this._pChildNodes[i]._iUpdateImplicitDebugVisible(this._debugChildrenVisible);
-	}
+	public parent:IContainerNode;
 
 	/**
 	 *
@@ -111,28 +75,13 @@ class NodeBase implements INode
 	 */
 	public acceptTraverser(traverser:CollectorBase)
 	{
-		if (this.numEntities == 0 && !this._pImplicitDebugVisible)
+		if (this.numEntities == 0)
 			return;
 
 		if (traverser.enterNode(this)) {
 			for (var i:number = 0; i < this._pNumChildNodes; i++)
 				this._pChildNodes[i].acceptTraverser(traverser);
-
-			if (this._pImplicitDebugVisible && traverser.isEntityCollector)
-				traverser.applyEntity(this._pDebugEntity);
 		}
-	}
-
-	/**
-	 *
-	 * @protected
-	 */
-	public applyDebugEntity(traverser:CollectorBase)
-	{
-		if (this._pDebugEntity == null)
-			this._pDebugEntity = this._pCreateDebugEntity();
-
-		traverser.applyEntity(this._pDebugEntity);
 	}
 
 	/**
@@ -145,8 +94,6 @@ class NodeBase implements INode
 		node.parent = this;
 		this.numEntities += node.numEntities;
 		this._pChildNodes[ this._pNumChildNodes++ ] = node;
-
-		node._iUpdateImplicitDebugVisible(this.debugChildrenVisible);
 
 		var numEntities:number = node.numEntities;
 		node = this;
@@ -167,46 +114,12 @@ class NodeBase implements INode
 		this._pChildNodes[index] = this._pChildNodes[--this._pNumChildNodes];
 		this._pChildNodes.pop();
 
-		node._iUpdateImplicitDebugVisible(false);
-
 		var numEntities:number = node.numEntities;
 		node = this;
 
 		do {
 			node.numEntities -= numEntities;
 		} while ((node = node.parent) != null);
-	}
-
-	public _iUpdateImplicitDebugVisible(value:boolean)
-	{
-		if (this._pImplicitDebugVisible == this._explicitDebugVisible || value)
-			return;
-
-		this._pImplicitDebugVisible = this._explicitDebugVisible || value;
-
-		for (var i:number = 0; i < this._pNumChildNodes; ++i)
-			this._pChildNodes[i]._iUpdateImplicitDebugVisible(this._debugChildrenVisible);
-
-		if (this._pImplicitDebugVisible) {
-			this._pDebugEntity = this._pCreateDebugEntity();
-		} else {
-			//this._pDebugEntity.dispose();
-			this._pDebugEntity = null;
-		}
-		
-	}
-
-	public updateDebugEntity()
-	{
-		if (this._pImplicitDebugVisible) {
-			//this._pDebugEntity.dispose();
-			this._pDebugEntity = this._pCreateDebugEntity();
-		}
-	}
-
-	public _pCreateDebugEntity():IEntity
-	{
-		throw new AbstractMethodError();
 	}
 }
 

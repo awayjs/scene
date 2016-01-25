@@ -69,6 +69,7 @@ gulp.task('tests', function () {
 function browserifyShare(callback) {
     var b = browserify({
         debug: true,
+        entries: './display.ts',
         paths: ['../'],
         cache: {},
         packageCache: {},

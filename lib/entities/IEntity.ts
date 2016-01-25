@@ -157,20 +157,6 @@ interface IEntity extends IAsset
 	_iInternalUpdate();
 
 	/**
-	 *
-	 * @param entityNode
-	 * @private
-	 */
-	_iAddEntityNode(entityNode:EntityNode):EntityNode;
-
-	/**
-	 *
-	 * @param entityNode
-	 * @private
-	 */
-	_iRemoveEntityNode(entityNode:EntityNode):EntityNode;
-
-	/**
 	 * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
 	 * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
 	 * return the scene transform.

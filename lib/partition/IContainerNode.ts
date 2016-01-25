@@ -1,4 +1,3 @@
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import INode						= require("awayjs-display/lib/partition/INode");
 
 /**
@@ -7,13 +6,13 @@ import INode						= require("awayjs-display/lib/partition/INode");
  *
  * @class away.pool.IDisplayObjectNode
  */
-interface IDisplayObjectNode extends INode
+interface IContainerNode extends INode
 {
-	_iUpdateQueueNext:IDisplayObjectNode;
+	numEntities:number;
 
-	displayObject:DisplayObject;
+	iAddNode(node:INode);
 
-	isSceneGraphNode:boolean;
+	iRemoveNode(node:INode);
 }
 
-export = IDisplayObjectNode;
+export = IContainerNode;

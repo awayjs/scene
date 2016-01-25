@@ -1,14 +1,13 @@
+import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import ContainerNode				= require("awayjs-display/lib/partition/ContainerNode");
+import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 
 /**
  * @class away.pool.ContainerNodePool
  */
-class ContainerNodePool
+class ContainerNodePool implements IAbstractionPool
 {
-	private static _classPool:Object = new Object();
-
 	private _containerNodePool:Object = new Object();
 	private _partition:PartitionBase;
 
@@ -28,9 +27,9 @@ class ContainerNodePool
 	 * @param entity
 	 * @returns EntityNode
 	 */
-	public getItem(displayObjectContainer:DisplayObjectContainer):ContainerNode
+	public getAbstraction(displayObjectContainer:DisplayObjectContainer):SceneGraphNode
 	{
-		return (this._containerNodePool[displayObjectContainer.id] || (this._containerNodePool[displayObjectContainer.id] = displayObjectContainer._iAddContainerNode(new ContainerNode(this, displayObjectContainer, this._partition))));
+		return (this._containerNodePool[displayObjectContainer.id] || (this._containerNodePool[displayObjectContainer.id] = new SceneGraphNode(displayObjectContainer, this)));
 	}
 
 	/**
@@ -38,10 +37,8 @@ class ContainerNodePool
 	 *
 	 * @param entity
 	 */
-	public disposeItem(displayObjectContainer:DisplayObjectContainer)
+	public clearAbstraction(displayObjectContainer:DisplayObjectContainer)
 	{
-		displayObjectContainer._iRemoveContainerNode(this._containerNodePool[displayObjectContainer.id]);
-
 		delete this._containerNodePool[displayObjectContainer.id];
 	}
 }

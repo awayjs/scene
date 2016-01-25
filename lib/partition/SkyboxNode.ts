@@ -1,12 +1,7 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
 
-import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import Skybox						= require("awayjs-display/lib/entities/Skybox");
-import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
@@ -15,28 +10,13 @@ import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
  */
 class SkyboxNode extends EntityNode
 {
-	public static id:string = "skyboxNode";
-
-	private _skyBox:Skybox;
-
-	/**
-	 * Creates a new SkyboxNode object.
-	 * @param skyBox The Skybox to be contained in the node.
-	 */
-	constructor(pool:EntityNodePool, skyBox:Skybox, partition:PartitionBase)
-	{
-		super(pool, skyBox, partition);
-
-		this._skyBox = skyBox;
-	}
-
 	/**
 	 * @inheritDoc
 	 */
 	public acceptTraverser(traverser:CollectorBase)
 	{
-		if (traverser.enterNode(<NodeBase> this))
-			traverser.applySkybox(this._skyBox);
+		if (traverser.enterNode(this))
+			traverser.applySkybox(this._displayObject);
 	}
 
 	/**
@@ -47,7 +27,7 @@ class SkyboxNode extends EntityNode
 	 */
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if (!this._skyBox._iIsVisible)
+		if (!this._displayObject._iIsVisible)
 			return false;
 
 		//a skybox is always in view unless its visibility is set to false

@@ -23,7 +23,6 @@ import AlignmentMode				= require("awayjs-display/lib/base/AlignmentMode");
 import OrientationMode				= require("awayjs-display/lib/base/OrientationMode");
 import IBitmapDrawable				= require("awayjs-display/lib/base/IBitmapDrawable");
 import Transform					= require("awayjs-display/lib/base/Transform");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
@@ -239,8 +238,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _pPickingCollider:IPickingCollider;
 
-	private _entityNodes:Array<EntityNode> = new Array<EntityNode>();
-
 	public _iSourcePrefab:PrefabBase;
 
     private _inheritColorTransform:boolean = false;
@@ -345,11 +342,9 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._boundsType = value;
 
+		this.invalidate();
+		
 		this._pInvalidateBounds();
-
-		var len:number = this._entityNodes.length;
-		for (var i:number = 0; i < len; i++)
-			this._entityNodes[i].updateBounds();
 	}
 
 	/**
@@ -1207,9 +1202,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._debugVisible = value;
 
-		var len:number = this._entityNodes.length;
-		for (var i:number = 0; i < len; i++)
-			this._entityNodes[i].debugVisible = this._debugVisible;
+		this.invalidate();
 	}
 
 	/**
@@ -2060,7 +2053,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._scenePositionDirty = true;
 
 			if (this.isEntity)
-				this.invalidatePartition();
+				this.invalidatePartitionBounds();
 
 			if (this._pParent)
 				this._pParent._pInvalidateBounds();
@@ -2086,7 +2079,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			//unregister entity from current partition
 			this._pImplicitPartition._iUnregisterEntity(this);
 
-			//gc associated objects
+			//gc abstraction objects
 			this.clear();
 		}
 
@@ -2241,16 +2234,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	}
 
 	/**
-	 * @private
-	 */
-	public invalidatePartition()
-	{
-		var len:number = this._entityNodes.length;
-		for (var i:number = 0; i < len; i++)
-			this._entityNodes[i].invalidatePartition();
-	}
-
-	/**
 	 * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
 	 *
 	 * @private
@@ -2273,30 +2256,13 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 	}
 
-
-
-	public _iAddEntityNode(entityNode:EntityNode):EntityNode
-	{
-		this._entityNodes.push(entityNode);
-
-		return entityNode;
-	}
-
-
-	public _iRemoveEntityNode(entityNode:EntityNode):EntityNode
-	{
-		this._entityNodes.splice(this._entityNodes.indexOf(entityNode), 1);
-
-		return entityNode;
-	}
-
 	public _pInvalidateBounds()
 	{
 		this._boxBoundsInvalid = true;
 		this._sphereBoundsInvalid = true;
 
 		if (this.isEntity)
-			this.invalidatePartition();
+			this.invalidatePartitionBounds();
 
 		if (this._pParent)
 			this._pParent._pInvalidateBounds();
@@ -2438,9 +2404,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		var i:number;
 
-		for (i = this._entityNodes.length - 1; i >= 0; i--)
-			this._entityNodes[i].dispose();
-
 		if (this._pPickingCollisionVO) {
 			this._pPickingCollisionVO.dispose();
 			this._pPickingCollisionVO = null;
@@ -2448,6 +2411,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._pImplicitColorTransform = null;
 		this._pImplicitMasks = null;
+	}
+
+	public invalidatePartitionBounds()
+	{
+		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this));
 	}
 }
 

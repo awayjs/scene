@@ -1,26 +1,44 @@
-import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
+import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
 
+import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
-import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
+import IEntityNodeClass				= require("awayjs-display/lib/partition/IEntityNodeClass");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import IDisplayObjectNode			= require("awayjs-display/lib/partition/IDisplayObjectNode");
-import INode						= require("awayjs-display/lib/partition/INode");
+import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
+import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 
 /**
  * @class away.partition.Partition
  */
-class PartitionBase
+class PartitionBase implements IAbstractionPool
 {
-	public _entityNodePool:EntityNodePool;
-	public _rootNode:INode;
+	private static _abstractionClassPool:Object = new Object();
+
+	private _abstractionPool:Object = new Object();
+
+	public _rootNode:IContainerNode;
 
 	private _updatesMade:Boolean = false;
-	private _updateQueue:IDisplayObjectNode;
+	private _updateQueue:DisplayObjectNode;
 
 	constructor()
 	{
-		this._entityNodePool = new EntityNodePool(this);
+	}
+
+	public getAbstraction(displayObject:DisplayObject):EntityNode
+	{
+		return (this._abstractionPool[displayObject.id] || (this._abstractionPool[displayObject.id] = new (<IEntityNodeClass> PartitionBase._abstractionClassPool[displayObject.assetType])(displayObject, this)));
+	}
+
+	/**
+	 *
+	 * @param image
+	 */
+	public clearAbstraction(displayObject:DisplayObject)
+	{
+		this._abstractionPool[displayObject.id] = null;
 	}
 
 	public traverse(traverser:CollectorBase)
@@ -31,9 +49,9 @@ class PartitionBase
 		this._rootNode.acceptTraverser(traverser);
 	}
 
-	public iMarkForUpdate(node:IDisplayObjectNode)
+	public iMarkForUpdate(node:DisplayObjectNode)
 	{
-		var t:IDisplayObjectNode = this._updateQueue;
+		var t:DisplayObjectNode = this._updateQueue;
 
 		while (t) {
 			if (node == t)
@@ -48,9 +66,9 @@ class PartitionBase
 		this._updatesMade = true;
 	}
 
-	public iRemoveEntity(node:IDisplayObjectNode)
+	public iRemoveEntity(node:DisplayObjectNode)
 	{
-		var t:IDisplayObjectNode;
+		var t:DisplayObjectNode;
 
 		if (node.parent) {
 			node.parent.iRemoveNode(node);
@@ -80,24 +98,24 @@ class PartitionBase
 	 * @param entity
 	 * @returns {away.partition.NodeBase}
 	 */
-	public findParentForNode(node:INode):INode
+	public findParentForNode(node:DisplayObjectNode):IContainerNode
 	{
 		return this._rootNode;
 	}
 
 	private updateEntities()
 	{
-		var node:IDisplayObjectNode = this._updateQueue;
+		var node:DisplayObjectNode = this._updateQueue;
 		while (node) {
 			//required for controllers with autoUpdate set to true and queued events
-			node.displayObject._iInternalUpdate();
+			node._displayObject._iInternalUpdate();
 			node = node._iUpdateQueueNext;
 		}
 
 		//reset head
 		node = this._updateQueue;
-		var targetNode:INode;
-		var t:IDisplayObjectNode;
+		var targetNode:IContainerNode;
+		var t:DisplayObjectNode;
 		this._updateQueue = null;
 		this._updatesMade = false;
 
@@ -122,7 +140,7 @@ class PartitionBase
 	public _iRegisterEntity(displayObject:DisplayObject)
 	{
 		if (displayObject.isEntity)
-			this.iMarkForUpdate(this._entityNodePool.getItem(displayObject));
+			this.iMarkForUpdate(this.getAbstraction(displayObject));
 	}
 
 	/**
@@ -131,7 +149,16 @@ class PartitionBase
 	public _iUnregisterEntity(displayObject:DisplayObject)
 	{
 		if (displayObject.isEntity)
-			this.iRemoveEntity(this._entityNodePool.getItem(displayObject));
+			this.iRemoveEntity(this.getAbstraction(displayObject));
+	}
+
+	/**
+	 *
+	 * @param imageObjectClass
+	 */
+	public static registerAbstraction(entityNodeClass:IEntityNodeClass, assetClass:IAssetClass)
+	{
+		PartitionBase._abstractionClassPool[assetClass.assetType] = entityNodeClass;
 	}
 }
 

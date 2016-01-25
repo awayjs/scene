@@ -18,13 +18,22 @@ class BoundingVolumeBase
 		this._pEntity = entity;
 	}
 
+	public dispose()
+	{
+		this._pEntity = null;
+		this._pBoundsPrimitive = null;
+	}
+
 	public get boundsPrimitive():IEntity
 	{
 		if (this._pBoundsPrimitive == null) {
 			this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
 
-			this._pUpdate();
+			this._pInvalidated = true;
 		}
+
+		if(this._pInvalidated)
+			this._pUpdate();
 
 		return this._pBoundsPrimitive;
 	}

@@ -1,6 +1,6 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
+import INode						= require("awayjs-display/lib/partition/INode");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
@@ -60,7 +60,7 @@ class RaycastCollector extends CollectorBase
 	 *
 	 * @param node The Partition3DNode object to frustum-test.
 	 */
-	public enterNode(node:NodeBase):boolean
+	public enterNode(node:INode):boolean
 	{
 		return node.isIntersectingRay(this._rayPosition, this._rayDirection);
 	}

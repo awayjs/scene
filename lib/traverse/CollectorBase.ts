@@ -6,6 +6,7 @@ import EntityListItemPool			= require("awayjs-display/lib/pool/EntityListItemPoo
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import INode						= require("awayjs-display/lib/partition/INode");
 
 /**
  * @class away.traverse.CollectorBase
@@ -98,7 +99,7 @@ class CollectorBase
 	 * @param node
 	 * @returns {boolean}
 	 */
-	public enterNode(node:NodeBase):boolean
+	public enterNode(node:INode):boolean
 	{
 		var enter:boolean = this.scene._iCollectionMark != node._iCollectionMark && node.isInFrustum(this._cullPlanes, this._numCullPlanes);
 

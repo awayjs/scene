@@ -427,8 +427,6 @@ class MovieClip extends DisplayObjectContainer
             if (instance.name == "") {
                 FrameScriptManager.add_child_to_dispose(instance);
                 delete this._potentialInstances[key];
-            } else {
-                instance.clear();
             }
         }
 

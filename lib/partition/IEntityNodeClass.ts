@@ -1,7 +1,6 @@
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import EntityNodePool				= require("awayjs-display/lib/pool/EntityNodePool");
 
 /**
  * IEntityNodeClass is an interface for the constructable class definition EntityNode that is used to
@@ -14,7 +13,7 @@ interface IEntityNodeClass
 	/**
 	 *
 	 */
-	new(pool:EntityNodePool, entity:IEntity, partition:PartitionBase):EntityNode;
+	new(entity:IEntity, pool:PartitionBase):EntityNode;
 }
 
 export = IEntityNodeClass;

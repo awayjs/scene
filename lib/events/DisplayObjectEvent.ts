@@ -24,6 +24,11 @@ class DisplayObjectEvent extends EventBase
 	 */
 	public static PARTITION_CHANGED:string = "partitionChanged";
 
+	/**
+	 *
+	 */
+	public static INVALIDATE_PARTITION_BOUNDS:string = "invalidatePartitionBounds";
+
 	private _object:DisplayObject;
 
 	public get object():DisplayObject

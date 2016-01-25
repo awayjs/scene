@@ -7,7 +7,6 @@ import Extensions					= require("awayjs-core/lib/utils/Extensions");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import ContainerNode				= require("awayjs-display/lib/partition/ContainerNode");
 import Scene						= require("awayjs-display/lib/containers/Scene");
 
 /**
@@ -35,7 +34,6 @@ class DisplayObjectContainer extends DisplayObject
 {
 	public static assetType:string = "[asset DisplayObjectContainer]";
 
-	private _containerNodes:Array<ContainerNode> = new Array<ContainerNode>();
 	private _mouseChildren:boolean = true;
 	private _depth_childs:Object = {};
 	private _nextHighestDepth:number = 0;
@@ -716,21 +714,6 @@ class DisplayObjectContainer extends DisplayObject
 		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag)
 	}
 
-	public _iAddContainerNode(containerNode:ContainerNode):ContainerNode
-	{
-		this._containerNodes.push(containerNode);
-
-		return containerNode;
-	}
-
-
-	public _iRemoveContainerNode(containerNode:ContainerNode):ContainerNode
-	{
-		this._containerNodes.splice(this._containerNodes.indexOf(containerNode), 1);
-
-		return containerNode;
-	}
-
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
 		var numChildren:number = this._children.length;
@@ -747,19 +730,6 @@ class DisplayObjectContainer extends DisplayObject
 			this.mouseChildren = false;
 
 		super._updateMaskMode();
-	}
-
-	public clear()
-	{
-		super.clear();
-
-		var i:number;
-
-		for (i = this._children.length - 1; i >= 0; i--)
-			this._children[i].clear();
-
-		for (i = this._containerNodes.length - 1; i >= 0; i--)
-			this._containerNodes[i].dispose();
 	}
 }
 
