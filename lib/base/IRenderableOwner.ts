@@ -1,4 +1,4 @@
-import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
@@ -19,7 +19,7 @@ interface IRenderableOwner extends IAsset
 	/**
 	 *
 	 */
-	uvTransform:UVTransform;
+	uvTransform:Matrix;
 
 	style:Style;
 

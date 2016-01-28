@@ -1,7 +1,7 @@
 ﻿import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import Box							= require("awayjs-core/lib/geom/Box");
-import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import Point						= require("awayjs-core/lib/geom/Point");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
@@ -33,7 +33,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 	public static assetType:string = "[asset Mesh]";
 
-	private _uvTransform:UVTransform;
+	private _uvTransform:Matrix;
 	private _style:Style;
 
 	private _center:Vector3D;
@@ -214,12 +214,12 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	/**
 	 *
 	 */
-	public get uvTransform():UVTransform
+	public get uvTransform():Matrix
 	{
 		return this._uvTransform;
 	}
 
-	public set uvTransform(value:UVTransform)
+	public set uvTransform(value:Matrix)
 	{
 		this._uvTransform = value;
 	}

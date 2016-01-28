@@ -3,7 +3,7 @@ import BlendMode					= require("awayjs-core/lib/image/BlendMode");
 import ImageCube					= require("awayjs-core/lib/image/ImageCube");
 import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
-import UVTransform					= require("awayjs-core/lib/geom/UVTransform");
+import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
@@ -39,7 +39,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _animationSet:IAnimationSet;
 	public _pLightPicker:LightPickerBase;
 	public _pBlendMode:string = BlendMode.NORMAL;
-	private _uvTransform:UVTransform;
+	private _uvTransform:Matrix;
 	private _colorTransform:ColorTransform;
 	private _owners:Array<IRenderableOwner>;
 	private _imageRect:boolean = false;
@@ -156,12 +156,12 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	/**
 	 *
 	 */
-	public get uvTransform():UVTransform
+	public get uvTransform():Matrix
 	{
 		return this._uvTransform;
 	}
 
-	public set uvTransform(value:UVTransform)
+	public set uvTransform(value:Matrix)
 	{
 		this._uvTransform = value;
 	}
