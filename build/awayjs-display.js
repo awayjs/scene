@@ -3318,6 +3318,12 @@ var SubMeshBase = (function (_super) {
     SubMeshBase.prototype._iGetExplicitMaterial = function () {
         return this._material;
     };
+    SubMeshBase.prototype._iGetExplicitStyle = function () {
+        return this._style;
+    };
+    SubMeshBase.prototype._iGetExplicitUVTransform = function () {
+        return this._uvTransform;
+    };
     SubMeshBase.prototype._onInvalidateProperties = function (event) {
         this.invalidateRenderOwner();
     };
@@ -9954,8 +9960,11 @@ var Mesh = (function (_super) {
         newInstance.castsShadows = this._castsShadows;
         newInstance.shareAnimationGeometry = this._shareAnimationGeometry;
         var len = this._subMeshes.length;
-        for (var i = 0; i < len; ++i)
+        for (var i = 0; i < len; ++i) {
             newInstance._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
+            newInstance._subMeshes[i].style = this._subMeshes[i]._iGetExplicitStyle();
+            newInstance._subMeshes[i].uvTransform = this._subMeshes[i]._iGetExplicitUVTransform();
+        }
         if (this._animator)
             newInstance.animator = this._animator.clone();
     };
