@@ -1,7 +1,10 @@
+import Matrix					= require("awayjs-core/lib/geom/Matrix");
+
 import IRenderableOwner			= require("awayjs-display/lib/base/IRenderableOwner");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
+import Style					= require("awayjs-display/lib/base/Style");
 
 /**
  * ISubMesh is an interface for object SubMesh that is used to
@@ -22,6 +25,10 @@ interface ISubMesh extends IRenderableOwner
 	invalidateGeometry();
 
 	_iGetExplicitMaterial():MaterialBase;
+
+	_iGetExplicitStyle():Style;
+
+	_iGetExplicitUVTransform():Matrix;
 }
 
 export = ISubMesh;

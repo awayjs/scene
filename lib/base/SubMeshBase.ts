@@ -168,6 +168,16 @@ class SubMeshBase extends AssetBase
 		return this._material;
 	}
 
+	public _iGetExplicitStyle():Style
+	{
+		return this._style;
+	}
+
+	public _iGetExplicitUVTransform():Matrix
+	{
+		return this._uvTransform;
+	}
+
 	private _onInvalidateProperties(event:StyleEvent)
 	{
 		this.invalidateRenderOwner();

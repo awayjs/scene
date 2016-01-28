@@ -343,8 +343,12 @@ class Mesh extends DisplayObjectContainer implements IEntity
 		newInstance.shareAnimationGeometry = this._shareAnimationGeometry;
 
         var len:number = this._subMeshes.length;
-        for (var i:number = 0; i < len; ++i)
+        for (var i:number = 0; i < len; ++i){
 			newInstance._subMeshes[i].material = this._subMeshes[i]._iGetExplicitMaterial();
+			newInstance._subMeshes[i].style = this._subMeshes[i]._iGetExplicitStyle();
+			newInstance._subMeshes[i].uvTransform = this._subMeshes[i]._iGetExplicitUVTransform();
+		}
+
 
         if (this._animator)
 			newInstance.animator = this._animator.clone();
