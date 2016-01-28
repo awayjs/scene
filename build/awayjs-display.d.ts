@@ -245,6 +245,7 @@ declare module "awayjs-display/lib/base/AlignmentMode" {
 
 declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 	import Box = require("awayjs-core/lib/geom/Box");
@@ -261,32 +262,14 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	class CurveSubGeometry extends SubGeometryBase {
 	    static assetType: string;
 	    private _numVertices;
-	    private _uvsDirty;
 	    private _positions;
 	    private _curves;
 	    private _uvs;
-	    private _autoDeriveUVs;
-	    private _scaleU;
-	    private _scaleV;
 	    cells: Array<Array<number>>;
 	    lastCollisionIndex: number;
 	    divisions: number;
 	    assetType: string;
 	    numVertices: number;
-	    /**
-	     * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-	     * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-	     * in cases where UV data is explicitly defined or the material does not require UV data.
-	     */
-	    autoDeriveUVs: boolean;
-	    /**
-	     *
-	     */
-	    scaleU: number;
-	    /**
-	     *
-	     */
-	    scaleV: number;
 	    /**
 	     *
 	     */
@@ -298,7 +281,7 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	    /**
 	     *
 	     */
-	    uvs: Float2Attributes;
+	    uvs: AttributesView;
 	    /**
 	     *
 	     */
@@ -322,7 +305,7 @@ declare module "awayjs-display/lib/base/CurveSubGeometry" {
 	     */
 	    setUVs(array: Array<number>, offset?: number): any;
 	    setUVs(float32Array: Float32Array, offset?: number): any;
-	    setUVs(float2Attributes: Float2Attributes, offset?: number): any;
+	    setUVs(attributesView: AttributesView, offset?: number): any;
 	    /**
 	     *
 	     */
@@ -10855,6 +10838,7 @@ declare module "awayjs-display/lib/utils/Cast" {
 
 declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 	import Short2Attributes = require("awayjs-core/lib/attributes/Short2Attributes");
 	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
 	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
@@ -10877,7 +10861,7 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	    static generateTangents(indexAttributes: Short3Attributes, faceTangentAttributes: Float3Attributes, faceNormalAttributes: Float4Attributes, output: Float3Attributes, concatenatedBuffer: AttributesBuffer): Float3Attributes;
 	    static generateUVs(indexAttributes: Short3Attributes, output: Float2Attributes, concatenatedBuffer: AttributesBuffer, count: number, offset?: number): Float2Attributes;
 	    static generateColors(indexAttributes: Short3Attributes, output: Byte4Attributes, concatenatedBuffer: AttributesBuffer, count: number, offset?: number): Byte4Attributes;
-	    static scaleUVs(scaleU: number, scaleV: number, output: Float2Attributes, count: number, offset?: number): void;
+	    static scaleUVs(scaleU: number, scaleV: number, output: AttributesView, count: number, offset?: number): void;
 	    static scale(scale: number, output: Float3Attributes, count: number, offset?: number): void;
 	    static applyTransformation(transform: Matrix3D, positionAttributes: Float3Attributes, normalAttributes: Float3Attributes, tangentAttributes: Float3Attributes, count: number, offset?: number): void;
 	    static getSubIndices(indexAttributes: Short2Attributes, numVertices: number, indexMappings: Array<number>, indexOffset?: number): AttributesBuffer;

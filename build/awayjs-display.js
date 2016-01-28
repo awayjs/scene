@@ -135,10 +135,6 @@ var CurveSubGeometry = (function (_super) {
         if (concatenatedBuffer === void 0) { concatenatedBuffer = null; }
         _super.call(this, concatenatedBuffer);
         this._numVertices = 0;
-        this._uvsDirty = true;
-        this._autoDeriveUVs = false;
-        this._scaleU = 1;
-        this._scaleV = 1;
         //used for hittesting geometry
         this.cells = new Array();
         this.lastCollisionIndex = -1;
@@ -156,45 +152,6 @@ var CurveSubGeometry = (function (_super) {
     Object.defineProperty(CurveSubGeometry.prototype, "numVertices", {
         get: function () {
             return this._numVertices;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CurveSubGeometry.prototype, "autoDeriveUVs", {
-        /**
-         * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-         * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-         * in cases where UV data is explicitly defined or the material does not require UV data.
-         */
-        get: function () {
-            return this._autoDeriveUVs;
-        },
-        set: function (value) {
-            if (this._autoDeriveUVs == value)
-                return;
-            this._autoDeriveUVs = value;
-            if (value)
-                this._uvsDirty = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CurveSubGeometry.prototype, "scaleU", {
-        /**
-         *
-         */
-        get: function () {
-            return this._scaleU;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CurveSubGeometry.prototype, "scaleV", {
-        /**
-         *
-         */
-        get: function () {
-            return this._scaleV;
         },
         enumerable: true,
         configurable: true
@@ -224,8 +181,8 @@ var CurveSubGeometry = (function (_super) {
          *
          */
         get: function () {
-            if (this._uvsDirty)
-                this.setUVs(this._uvs);
+            if (!this._uvs || this._verticesDirty[this._uvs.id])
+                this.setUVs(this._uvs || this._positions);
             return this._uvs;
         },
         enumerable: true,
@@ -256,8 +213,6 @@ var CurveSubGeometry = (function (_super) {
             this._positions = new Float3Attributes(this._concatenatedBuffer);
         }
         this._numVertices = this._positions.count;
-        if (this._autoDeriveUVs)
-            this.invalidateVertices(this._uvs);
         this.pInvalidateBounds();
         this.invalidateVertices(this._positions);
         this._verticesDirty[this._positions.id] = false;
@@ -282,26 +237,21 @@ var CurveSubGeometry = (function (_super) {
     };
     CurveSubGeometry.prototype.setUVs = function (values, offset) {
         if (offset === void 0) { offset = 0; }
-        if (!this._autoDeriveUVs) {
-            if (values == this._uvs)
-                return;
-            if (values instanceof Float2Attributes) {
-                this.clearVertices(this._uvs);
-                this._uvs = values;
-            }
-            else if (values) {
-                if (!this._uvs)
-                    this._uvs = new Float2Attributes(this._concatenatedBuffer);
-                this._uvs.set(values, offset);
-            }
-            else if (this._uvs) {
-                this.clearVertices(this._uvs);
-                this._uvs = null;
-                return;
-            }
+        if (values == this._uvs)
+            return;
+        if (values instanceof Float2Attributes || values instanceof Float3Attributes) {
+            this.clearVertices(this._uvs);
+            this._uvs = values;
         }
-        else {
-            this._uvs = SubGeometryUtils.generateUVs(this._pIndices, this._uvs, this._concatenatedBuffer, this._numVertices);
+        else if (values) {
+            if (!this._uvs || this._uvs == this._positions)
+                this._uvs = new Float2Attributes(this._concatenatedBuffer);
+            this._uvs.set(values, offset);
+        }
+        else if (this._uvs && this._uvs != this._positions) {
+            this.clearVertices(this._uvs);
+            this._uvs = this._positions;
+            return;
         }
         this.invalidateVertices(this._uvs);
         this._verticesDirty[this._uvs.id] = false;
@@ -326,14 +276,10 @@ var CurveSubGeometry = (function (_super) {
      */
     CurveSubGeometry.prototype.clone = function () {
         var clone = new CurveSubGeometry(this._concatenatedBuffer ? this._concatenatedBuffer.clone() : null);
-        //temp disable auto derives
-        clone.autoDeriveUVs = false;
         if (this.indices)
             clone.setIndices(this.indices.clone());
         if (this.uvs)
             clone.setUVs(this.uvs.clone());
-        //return auto derives to cloned values
-        clone.autoDeriveUVs = this._autoDeriveUVs;
         return clone;
     };
     CurveSubGeometry.prototype.scaleUV = function (scaleU, scaleV) {
