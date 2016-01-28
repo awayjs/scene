@@ -1711,7 +1711,7 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 }
 
 declare module "awayjs-display/lib/base/IRenderableOwner" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import Style = require("awayjs-display/lib/base/Style");
@@ -1728,7 +1728,7 @@ declare module "awayjs-display/lib/base/IRenderableOwner" {
 	    /**
 	     *
 	     */
-	    uvTransform: UVTransform;
+	    uvTransform: Matrix;
 	    style: Style;
 	    invalidateRenderOwner(): any;
 	}
@@ -2089,7 +2089,7 @@ declare module "awayjs-display/lib/base/SubGeometryBase" {
 
 declare module "awayjs-display/lib/base/SubMeshBase" {
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import Camera = require("awayjs-display/lib/entities/Camera");
@@ -2106,7 +2106,7 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	 * @class away.base.SubMeshBase
 	 */
 	class SubMeshBase extends AssetBase {
-	    _uvTransform: UVTransform;
+	    _uvTransform: Matrix;
 	    _iIndex: number;
 	    private _style;
 	    _material: MaterialBase;
@@ -2134,7 +2134,7 @@ declare module "awayjs-display/lib/base/SubMeshBase" {
 	    /**
 	     *
 	     */
-	    uvTransform: UVTransform;
+	    uvTransform: Matrix;
 	    /**
 	     * Creates a new SubMeshBase object
 	     */
@@ -5327,7 +5327,7 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 
 declare module "awayjs-display/lib/entities/Billboard" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -5407,7 +5407,7 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	    /**
 	     *
 	     */
-	    uvTransform: UVTransform;
+	    uvTransform: Matrix;
 	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
 	    /**
 	     * @protected
@@ -5699,7 +5699,7 @@ declare module "awayjs-display/lib/entities/LightProbe" {
 }
 
 declare module "awayjs-display/lib/entities/LineSegment" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
@@ -5751,7 +5751,7 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	    /**
 	     *
 	     */
-	    uvTransform: UVTransform;
+	    uvTransform: Matrix;
 	    /**
 	     *
 	     */
@@ -5786,7 +5786,7 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 }
 
 declare module "awayjs-display/lib/entities/Mesh" {
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
@@ -5851,7 +5851,7 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    /**
 	     *
 	     */
-	    uvTransform: UVTransform;
+	    uvTransform: Matrix;
 	    /**
 	     *
 	     */
@@ -6098,7 +6098,7 @@ declare module "awayjs-display/lib/entities/Shape" {
 
 declare module "awayjs-display/lib/entities/Skybox" {
 	import ImageCube = require("awayjs-core/lib/image/ImageCube");
-	import UVTransform = require("awayjs-core/lib/geom/UVTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -6174,7 +6174,7 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    /**
 	     *
 	     */
-	    uvTransform: UVTransform;
+	    uvTransform: Matrix;
 	    /**
 	     *
 	     */
