@@ -369,14 +369,14 @@ class SubGeometryUtils
 		return output;
 	}
 
-	public static scaleUVs(scaleU:number, scaleV:number, output:Float2Attributes, count:number, offset:number = 0)
+	public static scaleUVs(scaleU:number, scaleV:number, output:AttributesView, count:number, offset:number = 0)
 	{
 		if (output.count < count + offset)
 			output.count = count + offset;
 
 		var outputDim:number = output.dimensions;
 
-		var uvs:Float32Array = output.get(count, offset);
+		var uvs:ArrayBufferView = output.get(count, offset);
 
 		var i:number = 0;
 		var j:number = 0;

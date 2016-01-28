@@ -1,4 +1,5 @@
 import AttributesBuffer				= require("awayjs-core/lib/attributes/AttributesBuffer");
+import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
 import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
 import Short3Attributes				= require("awayjs-core/lib/attributes/Short3Attributes");
@@ -21,16 +22,10 @@ class CurveSubGeometry extends SubGeometryBase
 	public static assetType:string = "[asset CurveSubGeometry]";
 
 	private _numVertices:number = 0;
-	private _uvsDirty:boolean = true;
 
 	private _positions:Float3Attributes;
 	private _curves:Float2Attributes;
-	private _uvs:Float2Attributes;
-
-	private _autoDeriveUVs:boolean = false;
-
-	private _scaleU:number = 1;
-	private _scaleV:number = 1;
+	private _uvs:AttributesView;
 
 	//used for hittesting geometry
 	public cells:Array<Array<number>> = new Array<Array<number>>();
@@ -45,43 +40,6 @@ class CurveSubGeometry extends SubGeometryBase
 	public get numVertices():number
 	{
 		return this._numVertices;
-	}
-
-	/**
-	 * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-	 * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-	 * in cases where UV data is explicitly defined or the material does not require UV data.
-	 */
-	public get autoDeriveUVs():boolean
-	{
-		return this._autoDeriveUVs;
-	}
-
-	public set autoDeriveUVs(value:boolean)
-	{
-		if (this._autoDeriveUVs == value)
-			return;
-
-		this._autoDeriveUVs = value;
-
-		if (value)
-			this._uvsDirty = true;
-	}
-
-	/**
-	 *
-	 */
-	public get scaleU():number
-	{
-		return this._scaleU;
-	}
-
-	/**
-	 *
-	 */
-	public get scaleV():number
-	{
-		return this._scaleV;
 	}
 
 	/**
@@ -105,10 +63,10 @@ class CurveSubGeometry extends SubGeometryBase
 	/**
 	 *
 	 */
-	public get uvs():Float2Attributes
+	public get uvs():AttributesView
 	{
-		if (this._uvsDirty)
-			this.setUVs(this._uvs);
+		if (!this._uvs || this._verticesDirty[this._uvs.id])
+			this.setUVs(this._uvs || this._positions);
 
 		return this._uvs;
 	}
@@ -161,9 +119,6 @@ class CurveSubGeometry extends SubGeometryBase
 
 		this._numVertices = this._positions.count;
 
-		if (this._autoDeriveUVs)
-			this.invalidateVertices(this._uvs);
-
 		this.pInvalidateBounds();
 
 		this.invalidateVertices(this._positions);
@@ -203,28 +158,24 @@ class CurveSubGeometry extends SubGeometryBase
 	 */
 	public setUVs(array:Array<number>, offset?:number);
 	public setUVs(float32Array:Float32Array, offset?:number);
-	public setUVs(float2Attributes:Float2Attributes, offset?:number);
+	public setUVs(attributesView:AttributesView, offset?:number);
 	public setUVs(values:any, offset:number = 0)
 	{
-		if (!this._autoDeriveUVs) {
-			if (values == this._uvs)
-				return;
+		if (values == this._uvs)
+			return;
 
-			if (values instanceof Float2Attributes) {
-				this.clearVertices(this._uvs);
-				this._uvs = <Float2Attributes> values;
-			} else if (values) {
-				if (!this._uvs)
-					this._uvs = new Float2Attributes(this._concatenatedBuffer);
+		if (values instanceof Float2Attributes || values instanceof Float3Attributes) {
+			this.clearVertices(this._uvs);
+			this._uvs = values;
+		} else if (values) {
+			if (!this._uvs || this._uvs == this._positions)
+				this._uvs = new Float2Attributes(this._concatenatedBuffer);
 
-				this._uvs.set(values, offset);
-			} else if (this._uvs) {
-				this.clearVertices(this._uvs);
-				this._uvs = null;
-				return;
-			}
-		} else {
-			this._uvs = SubGeometryUtils.generateUVs(this._pIndices, this._uvs, this._concatenatedBuffer, this._numVertices);
+			this._uvs.set(values, offset);
+		} else if (this._uvs && this._uvs != this._positions) {
+			this.clearVertices(this._uvs);
+			this._uvs = this._positions;
+			return;
 		}
 
 		this.invalidateVertices(this._uvs);
@@ -261,17 +212,11 @@ class CurveSubGeometry extends SubGeometryBase
 	{
 		var clone:CurveSubGeometry = new CurveSubGeometry(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
 
-		//temp disable auto derives
-		clone.autoDeriveUVs = false;
-
 		if (this.indices)
 			clone.setIndices(this.indices.clone());
 
 		if (this.uvs)
 			clone.setUVs(this.uvs.clone());
-
-		//return auto derives to cloned values
-		clone.autoDeriveUVs = this._autoDeriveUVs;
 
 		return clone;
 	}

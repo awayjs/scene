@@ -213,7 +213,7 @@ class JSPickingCollider implements IPickingCollider
 		var posDim:number = curveSubGeometry.positions.dimensions;
 		var curves:Float32Array = curveSubGeometry.curves.get(curveSubGeometry.numVertices);
 		var curveDim:number = curveSubGeometry.curves.dimensions;
-		var uvs:Float32Array = curveSubGeometry.uvs.get(curveSubGeometry.numVertices);
+		var uvs:ArrayBufferView = curveSubGeometry.uvs.get(curveSubGeometry.numVertices);
 		var uvDim:number = curveSubGeometry.uvs.dimensions;
 		var numIndices:number = indices.length;
 
@@ -333,7 +333,7 @@ class JSPickingCollider implements IPickingCollider
 	}
 
 
-	private _getCollisionUV(indices:Uint16Array, uvData:Float32Array, triangleIndex:number, v:number, w:number, u:number, uvDim:number):Point // PROTECTED
+	private _getCollisionUV(indices:Uint16Array, uvData:ArrayBufferView, triangleIndex:number, v:number, w:number, u:number, uvDim:number):Point // PROTECTED
 	{
 		var uv:Point = new Point();
 		var uIndex:number = indices[triangleIndex]*uvDim;
