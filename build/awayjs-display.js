@@ -10904,14 +10904,17 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
+var Matrix = require("awayjs-core/lib/geom/Matrix");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+var Rectangle = require("awayjs-core/lib/geom/Rectangle");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
 var GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
 var Geometry = require("awayjs-display/lib/base/Geometry");
 var CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
+var Style = require("awayjs-display/lib/base/Style");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -11254,7 +11257,7 @@ var TextField = (function (_super) {
      * @inheritDoc
      */
     TextField.prototype.dispose = function () {
-        this.disposeValues();
+        //this.disposeValues();
         TextField._textFields.push(this);
     };
     /**
@@ -11412,8 +11415,6 @@ var TextField = (function (_super) {
                             vertices[j++] = positions2[v * 3 + 2];
                             vertices[j++] = curveData2[v * 2];
                             vertices[j++] = curveData2[v * 2 + 1];
-                            vertices[j++] = this._textFormat.uv_values[0];
-                            vertices[j++] = this._textFormat.uv_values[1];
                         }
                         // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
                         var kerning_value = 0;
@@ -11438,14 +11439,20 @@ var TextField = (function (_super) {
             }
             y_offset += (this._textFormat.font_table.get_font_em_size() * char_scale);
         }
-        var attributesView = new AttributesView(Float32Array, 7);
+        var attributesView = new AttributesView(Float32Array, 5);
         attributesView.set(vertices);
-        var attributesBuffer = attributesView.buffer;
+        var vertexBuffer = attributesView.buffer;
         attributesView.dispose();
-        var curve_sub_geom = new CurveSubGeometry(attributesBuffer);
-        curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
+        var curve_sub_geom = new CurveSubGeometry(vertexBuffer);
         this._geometry.addSubGeometry(curve_sub_geom);
-        this._subMeshes[0].material = this._textFormat.material;
+        this.material = this._textFormat.material;
+        var sampler = new Sampler2D();
+        sampler.imageRect = new Rectangle(this._textFormat.uv_values[0], this._textFormat.uv_values[1], 0, 0);
+        this.material.imageRect = true;
+        this.style = new Style();
+        this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+        this.material.animateUVs = true;
+        this.uvTransform = new Matrix(1, 0, 0, 1, 0, 0); //matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
     };
     /**
      * Appends the string specified by the <code>newText</code> parameter to the
@@ -11792,7 +11799,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
