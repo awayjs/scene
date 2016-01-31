@@ -11257,7 +11257,7 @@ var TextField = (function (_super) {
      * @inheritDoc
      */
     TextField.prototype.dispose = function () {
-        //this.disposeValues();
+        this.disposeValues();
         TextField._textFields.push(this);
     };
     /**
