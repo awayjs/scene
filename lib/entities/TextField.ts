@@ -3,6 +3,7 @@ import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
 import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
@@ -27,6 +28,8 @@ import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontCha
 import TextFormatAlign				= require("awayjs-display/lib/text/TextFormatAlign");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 
+import Sampler2D						= require("awayjs-core/lib/image/Sampler2D");
+import Style 						= require("awayjs-display/lib/base/Style");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -836,7 +839,7 @@ class TextField extends Mesh
 	 */
 	public dispose()
 	{
-		this.disposeValues();
+		//this.disposeValues();
 
 		TextField._textFields.push(this);
 	}
@@ -1016,8 +1019,8 @@ class TextField extends Mesh
 							vertices[j++] = positions2[v * 3 + 2];
 							vertices[j++] = curveData2[v * 2];
 							vertices[j++] = curveData2[v * 2 + 1];
-							vertices[j++] = this._textFormat.uv_values[0];
-							vertices[j++] = this._textFormat.uv_values[1];
+							//vertices[j++] = this._textFormat.uv_values[0];
+							//vertices[j++] = this._textFormat.uv_values[1];
 						}
 						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
 						var kerning_value:number = 0;
@@ -1043,14 +1046,24 @@ class TextField extends Mesh
 			y_offset+=(this._textFormat.font_table.get_font_em_size() * char_scale);
 
 		}
-		var attributesView:AttributesView = new AttributesView(Float32Array, 7);
+
+
+		var attributesView:AttributesView = new AttributesView(Float32Array, 5);
 		attributesView.set(vertices);
-		var attributesBuffer:AttributesBuffer = attributesView.buffer;
+		var vertexBuffer:AttributesBuffer = attributesView.buffer;
 		attributesView.dispose();
-		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(attributesBuffer);
-		curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
+		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
+
 		this._geometry.addSubGeometry(curve_sub_geom);
-		this._subMeshes[0].material = this._textFormat.material;
+
+		this.material = this._textFormat.material;
+		var sampler:Sampler2D = new Sampler2D();
+		sampler.imageRect = new Rectangle(this._textFormat.uv_values[0], this._textFormat.uv_values[1], 0, 0);
+		this.material.imageRect = true;
+		this.style = new Style();
+		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+		this.material.animateUVs = true;
+		this.uvTransform = new Matrix(1,0,0,1,0,0);//matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
