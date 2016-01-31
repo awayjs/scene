@@ -839,7 +839,7 @@ class TextField extends Mesh
 	 */
 	public dispose()
 	{
-		//this.disposeValues();
+		this.disposeValues();
 
 		TextField._textFields.push(this);
 	}
