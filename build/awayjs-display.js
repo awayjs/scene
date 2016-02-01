@@ -3335,6 +3335,7 @@ module.exports = SubMeshBase;
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
+var BlendMode = require("awayjs-core/lib/image/BlendMode");
 var Timeline = (function () {
     function Timeline() {
         this._functions = [];
@@ -3601,6 +3602,7 @@ var Timeline = (function () {
         for (var i = start_index; i < end_index; i++) {
             child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
             if (child) {
+                child.blendMode = BlendMode.ADD;
                 // check if the child is active + not blocked by script
                 this._blocked = Boolean(child.adapter && child.adapter.isBlockedByScript());
                 props_start_idx = this.update_child_props_indices_stream[i];
@@ -3695,7 +3697,7 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
 /**
  *
  */
@@ -11437,7 +11439,11 @@ var TextField = (function (_super) {
                     x_offset += whitespace_width;
                 }
             }
-            y_offset += (this._textFormat.font_table.get_font_em_size() * char_scale);
+            // hack for multiline textfield in icycle.
+            y_offset += (this._textFormat.size + this._textFormat.leading * 1.6);
+            if (this._textFormat.leading >= 11) {
+                y_offset += 2.5;
+            }
         }
         var attributesView = new AttributesView(Float32Array, 5);
         attributesView.set(vertices);
