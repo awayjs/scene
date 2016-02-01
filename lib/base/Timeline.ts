@@ -249,7 +249,6 @@ class Timeline
 						if (!child.adapter.isBlockedByScript()) {
 							child.transform.clearMatrix3D();
 							child.transform.clearColorTransform();
-
 							//this.name="";
 							child.masks = null;
 							child.maskMode = false;

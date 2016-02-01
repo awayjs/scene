@@ -1033,6 +1033,7 @@ class TextField extends Mesh
 							}
 						}
 						x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+
 					}
 					else {
 						// if no char-geometry was found, we insert a "space"
@@ -1043,7 +1044,11 @@ class TextField extends Mesh
 					x_offset+=whitespace_width;
 				}
 			}
-			y_offset+=(this._textFormat.font_table.get_font_em_size() * char_scale);
+			// hack for multiline textfield in icycle.
+			y_offset+=(this._textFormat.size+this._textFormat.leading*1.6);
+			if(this._textFormat.leading>=11){
+				y_offset+=2.5;
+			}
 
 		}
 
