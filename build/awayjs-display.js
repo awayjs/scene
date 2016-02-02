@@ -3335,7 +3335,6 @@ module.exports = SubMeshBase;
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
-var BlendMode = require("awayjs-core/lib/image/BlendMode");
 var Timeline = (function () {
     function Timeline() {
         this._functions = [];
@@ -3602,7 +3601,6 @@ var Timeline = (function () {
         for (var i = start_index; i < end_index; i++) {
             child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
             if (child) {
-                child.blendMode = BlendMode.ADD;
                 // check if the child is active + not blocked by script
                 this._blocked = Boolean(child.adapter && child.adapter.isBlockedByScript());
                 props_start_idx = this.update_child_props_indices_stream[i];
@@ -3697,7 +3695,7 @@ var Timeline = (function () {
 })();
 module.exports = Timeline;
 
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
 /**
  *
  */
@@ -10908,7 +10906,6 @@ var __extends = this.__extends || function (d, b) {
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 var Matrix = require("awayjs-core/lib/geom/Matrix");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-var Rectangle = require("awayjs-core/lib/geom/Rectangle");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Mesh = require("awayjs-display/lib/entities/Mesh");
@@ -11453,12 +11450,10 @@ var TextField = (function (_super) {
         this._geometry.addSubGeometry(curve_sub_geom);
         this.material = this._textFormat.material;
         var sampler = new Sampler2D();
-        sampler.imageRect = new Rectangle(this._textFormat.uv_values[0], this._textFormat.uv_values[1], 0, 0);
-        this.material.imageRect = true;
         this.style = new Style();
         this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
         this.material.animateUVs = true;
-        this.uvTransform = new Matrix(1, 0, 0, 1, 0, 0); //matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+        this.uvTransform = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
     };
     /**
      * Appends the string specified by the <code>newText</code> parameter to the
@@ -11805,7 +11800,7 @@ var TextField = (function (_super) {
 })(Mesh);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/CurveSubGeometry":"awayjs-display/lib/base/CurveSubGeometry","awayjs-display/lib/base/Geometry":"awayjs-display/lib/base/Geometry","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/events/GeometryEvent":"awayjs-display/lib/events/GeometryEvent","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
