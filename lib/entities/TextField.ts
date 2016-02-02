@@ -1063,12 +1063,10 @@ class TextField extends Mesh
 
 		this.material = this._textFormat.material;
 		var sampler:Sampler2D = new Sampler2D();
-		sampler.imageRect = new Rectangle(this._textFormat.uv_values[0], this._textFormat.uv_values[1], 0, 0);
-		this.material.imageRect = true;
 		this.style = new Style();
 		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
 		this.material.animateUVs = true;
-		this.uvTransform = new Matrix(1,0,0,1,0,0);//matrix[0], matrix[2], matrix[1], matrix[3], matrix[4], matrix[5]);
+		this.uvTransform = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
