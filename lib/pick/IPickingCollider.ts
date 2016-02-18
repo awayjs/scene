@@ -2,9 +2,8 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import Billboard					= require("awayjs-display/lib/entities/Billboard");
-import TriangleSubGeometry			= require("awayjs-display/lib/base/TriangleSubGeometry");
-import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
-import LineSubGeometry				= require("awayjs-display/lib/base/LineSubGeometry");
+import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
+import LineElements					= require("awayjs-display/lib/graphics/LineElements");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
@@ -30,34 +29,24 @@ interface IPickingCollider
 	testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
 
 	/**
-	 * Tests a <code>TriangleSubGeometry</code> object for a collision with the picking ray.
+	 * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
 	 *
-	 * @param triangleSubGeometry
+	 * @param triangleElements
 	 * @param material
 	 * @param pickingCollisionVO
 	 * @param shortestCollisionDistance
 	 */
-	testTriangleCollision(triangleSubGeometry:TriangleSubGeometry, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
 
 	/**
-	 * Tests a <code>CurveSubGeometry</code> object for a collision with the picking ray.
+	 * Tests a <code>LineElements</code> object for a collision with the picking ray.
 	 *
-	 * @param curveSubGeometry
+	 * @param lineElements
 	 * @param material
 	 * @param pickingCollisionVO
 	 * @param shortestCollisionDistance
 	 */
-	testCurveCollision(curveSubGeometry:CurveSubGeometry, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
-
-	/**
-	 * Tests a <code>LineSubGeometry</code> object for a collision with the picking ray.
-	 *
-	 * @param lineSubGeometry
-	 * @param material
-	 * @param pickingCollisionVO
-	 * @param shortestCollisionDistance
-	 */
-	testLineCollision(lineSubGeometry:LineSubGeometry, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
 
 }
 

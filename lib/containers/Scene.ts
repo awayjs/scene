@@ -1,6 +1,5 @@
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import BasicPartition				= require("awayjs-display/lib/partition/BasicPartition");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");

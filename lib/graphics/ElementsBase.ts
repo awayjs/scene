@@ -10,28 +10,30 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
-import Geometry						= require("awayjs-display/lib/base/Geometry");
-import SubGeometryEvent				= require("awayjs-display/lib/events/SubGeometryEvent");
+import ElementsEvent				= require("awayjs-display/lib/events/ElementsEvent");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
- * @class away.base.TriangleSubGeometry
+ * @class away.base.TriangleElements
  */
-class SubGeometryBase extends AssetBase
+class ElementsBase extends AssetBase
 {
-	public _pIndices:Short3Attributes;
-
+	private _indices:Short3Attributes;
+	private _customAttributesNames:Array<string> = new Array<string>();
+	private _customAttributes:Object = new Object();
+	
 	private _numElements:number = 0;
 
 	public _concatenatedBuffer:AttributesBuffer;
 
-	private _invalidateIndices:SubGeometryEvent;
+	private _invalidateIndices:ElementsEvent;
 
 	public _verticesDirty:Object = new Object();
 	public _invalidateVertices:Object = new Object();
 
+	
 	public get concatenatedBuffer():AttributesBuffer
 	{
 		return this._concatenatedBuffer;
@@ -42,11 +44,27 @@ class SubGeometryBase extends AssetBase
 	 */
 	public get indices():Short3Attributes
 	{
-		return this._pIndices;
+		return this._indices;
 	}
 
 	/**
-	 * The total amount of triangles in the TriangleSubGeometry.
+	 *
+	 */
+	public getCustomAtributesNames():Array<string>
+	{
+		return this._customAttributes[name];
+	}
+
+	/**
+	 *
+	 */
+	public getCustomAtributes(name:string):AttributesView
+	{
+		return this._customAttributes[name];
+	}
+	
+	/**
+	 * The total amount of triangles in the TriangleElements.
 	 */
 	public get numElements():number
 	{
@@ -68,23 +86,36 @@ class SubGeometryBase extends AssetBase
 		this._concatenatedBuffer = concatenatedBuffer;
 	}
 
+
+	public copyTo(elements:ElementsBase)
+	{
+		if (this.indices)
+			elements.setIndices(this.indices.clone());
+		
+		for (var name in this._customAttributes)
+			elements.setCustomAttributes(name, this.getCustomAtributes(name).clone());
+	}
+	
 	/**
 	 *
 	 */
 	public dispose()
 	{
 		super.dispose();
-		
-		this.parentGeometry = null;
 
-		if (this._pIndices) {
-			this._pIndices.dispose();
-			this._pIndices = null;
+		if (this._indices) {
+			this._indices.dispose();
+			this._indices = null;
+		}
+		
+		for (var name in this._customAttributes) {
+			this._customAttributes[name].dispose();
+			delete this._customAttributes;
 		}
 	}
 
 	/**
-	 * Updates the face indices of the TriangleSubGeometry.
+	 * Updates the face indices of the TriangleElements.
 	 *
 	 * @param indices The face indices to upload.
 	 */
@@ -94,52 +125,70 @@ class SubGeometryBase extends AssetBase
 	public setIndices(values:any, offset:number = 0)
 	{
 		if (values instanceof Short3Attributes) {
-			if (this._pIndices)
+			if (this._indices)
 				this.clearIndices();
 
-			this._pIndices = <Short3Attributes> values;
+			this._indices = <Short3Attributes> values;
 		} else if (values) {
-			if (!this._pIndices)
-				this._pIndices = new Short3Attributes();
+			if (!this._indices)
+				this._indices = new Short3Attributes();
 
-			this._pIndices.set(values, offset);
-		} else if (this._pIndices) {
-			this._pIndices.dispose();
-			this._pIndices = null;
+			this._indices.set(values, offset);
+		} else if (this._indices) {
+			this._indices.dispose();
+			this._indices = null;
 
 			this.clearIndices();
 		}
 
-		if (this._pIndices) {
-			this._numElements = this._pIndices.count;
+		if (this._indices) {
+			this._numElements = this._indices.count;
 
 			this.invalidateIndicies();
 		} else {
 			this._numElements = 0;
 		}
 	}
-
+	
 	/**
-	 * @protected
+	 * Updates custom attributes.
 	 */
-	public pInvalidateBounds()
+	public setCustomAttributes(name:string, array:Array<number>, offset?:number);
+	public setCustomAttributes(name:string, arrayBufferView:ArrayBufferView, offset?:number);
+	public setCustomAttributes(name:string, attributesView:AttributesView, offset?:number);
+	public setCustomAttributes(name:string, values:any, offset:number = 0)
 	{
-		if (this.parentGeometry)
-			this.parentGeometry.iInvalidateBounds(this);
-	}
+		if (values == this._customAttributes[name])
+			return;
 
-	/**
-	 * The Geometry object that 'owns' this TriangleSubGeometry object.
-	 *
-	 * @private
-	 */
-	public parentGeometry:Geometry;
+		if (values instanceof AttributesView) {
+			this.clearVertices(this._customAttributes[name]);
+			this._customAttributes[name] = values;
+		} else if (values) {
+			if (!this._customAttributes[name])
+				this._customAttributes[name] = new Float3Attributes(this._concatenatedBuffer); //default custom atrributes is Float3
+
+			this._customAttributes[name].set(values, offset);
+		} else if (this._customAttributes[name]) {
+			this.clearVertices(this._customAttributes[name]);
+			this._customAttributesNames.splice(this._customAttributesNames.indexOf(name), 1);
+			delete this._customAttributes[name];
+			return;
+		}
+
+		this.invalidateVertices(this._customAttributes[name]);
+
+		this._verticesDirty[this._customAttributes[name].id] = false;
+
+		if (this._customAttributesNames.indexOf(name) == -1)
+			this._customAttributesNames.push(name);
+	}
 
 	/**
 	 * Clones the current object
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():SubGeometryBase
+	public clone():ElementsBase
 	{
 		throw new AbstractMethodError();
 	}
@@ -181,14 +230,14 @@ class SubGeometryBase extends AssetBase
 	private invalidateIndicies()
 	{
 		if (!this._invalidateIndices)
-			this._invalidateIndices = new SubGeometryEvent(SubGeometryEvent.INVALIDATE_INDICES, this._pIndices);
+			this._invalidateIndices = new ElementsEvent(ElementsEvent.INVALIDATE_INDICES, this._indices);
 
 		this.dispatchEvent(this._invalidateIndices);
 	}
 
 	private clearIndices()
 	{
-		this.dispatchEvent(new SubGeometryEvent(SubGeometryEvent.CLEAR_INDICES, this._pIndices));
+		this.dispatchEvent(new ElementsEvent(ElementsEvent.CLEAR_INDICES, this._indices));
 	}
 
 	public invalidateVertices(attributesView:AttributesView)
@@ -199,7 +248,7 @@ class SubGeometryBase extends AssetBase
 		this._verticesDirty[attributesView.id] = true;
 
 		if (!this._invalidateVertices[attributesView.id])
-			this._invalidateVertices[attributesView.id] = new SubGeometryEvent(SubGeometryEvent.INVALIDATE_VERTICES, attributesView);
+			this._invalidateVertices[attributesView.id] = new ElementsEvent(ElementsEvent.INVALIDATE_VERTICES, attributesView);
 
 		this.dispatchEvent(this._invalidateVertices[attributesView.id]);
 	}
@@ -212,7 +261,7 @@ class SubGeometryBase extends AssetBase
 
 		attributesView.dispose();
 
-		this.dispatchEvent(new SubGeometryEvent(SubGeometryEvent.CLEAR_VERTICES, attributesView));
+		this.dispatchEvent(new ElementsEvent(ElementsEvent.CLEAR_VERTICES, attributesView));
 
 		this._verticesDirty[attributesView.id] = null;
 		this._invalidateVertices[attributesView.id] = null;
@@ -224,4 +273,4 @@ class SubGeometryBase extends AssetBase
 	}
 }
 
-export = SubGeometryBase;
+export = ElementsBase;

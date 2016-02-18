@@ -1,7 +1,9 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
+import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
+import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
@@ -27,7 +29,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	public set radius(value:number)
 	{
 		this._radius = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -41,7 +43,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	public set tubeRadius(value:number)
 	{
 		this._tubeRadius = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -55,7 +57,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	public set segmentsR(value:number)
 	{
 		this._segmentsR = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -70,7 +72,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	public set segmentsT(value:number)
 	{
 		this._segmentsT = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -85,7 +87,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	public set yUp(value:boolean)
 	{
 		this._yUp = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -96,9 +98,9 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	 * @param segmentsT Defines the number of vertical segments that make up the torus.
 	 * @param yUp Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(radius:number = 50, tubeRadius:number = 50, segmentsR:number = 16, segmentsT:number = 8, yUp:boolean = true)
+	constructor(material:MaterialBase = null, elementsType:string = "triangle", radius:number = 50, tubeRadius:number = 50, segmentsR:number = 16, segmentsT:number = 8, yUp:boolean = true)
 	{
-		super();
+		super(material, elementsType);
 
 		this._radius = radius;
 		this._tubeRadius = tubeRadius;
@@ -111,10 +113,10 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string)
 	{
 		var indices:Uint16Array;
-		var positions:Float32Array;
+		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
 
@@ -124,20 +126,20 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 		var fidx:number;
 		var numIndices:number = 0;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			// evaluate target number of vertices, triangles and indices
 			this._numVertices = (this._segmentsT + 1)*(this._segmentsR + 1); // segmentsT + 1 because of closure, segmentsR + 1 because of closure
 			numIndices = this._segmentsT*this._segmentsR*6; // each level has segmentR quads, each of 2 triangles
 
 			// need to initialize raw arrays or can be reused?
-			if (this._numVertices == triangleGeometry.numVertices) {
-				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
-				positions = triangleGeometry.positions.get(this._numVertices);
-				normals = triangleGeometry.normals.get(this._numVertices);
-				tangents = triangleGeometry.tangents.get(this._numVertices);
+			if (this._numVertices == triangleGraphics.numVertices) {
+				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+				positions = triangleGraphics.positions.get(this._numVertices);
+				normals = triangleGraphics.normals.get(this._numVertices);
+				tangents = triangleGraphics.tangents.get(this._numVertices);
 			} else {
 				indices = new Uint16Array(numIndices);
 				positions = new Float32Array(this._numVertices*3);
@@ -240,13 +242,13 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			triangleGeometry.setIndices(indices);
+			triangleGraphics.setIndices(indices);
 
-			triangleGeometry.setPositions(positions);
-			triangleGeometry.setNormals(normals);
-			triangleGeometry.setTangents(tangents);
+			triangleGraphics.setPositions(positions);
+			triangleGraphics.setNormals(normals);
+			triangleGraphics.setTangents(tangents);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//TODO
 		}
 	}
@@ -254,20 +256,20 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string)
 	{
 
 		var i:number, j:number;
-		var uvs:Float32Array;
+		var uvs:ArrayBufferView;
 
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			// need to initialize raw array or can be reused?
-			if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-				uvs = triangleGeometry.uvs.get(this._numVertices);
+			if (triangleGraphics.uvs && this._numVertices == triangleGraphics.numVertices) {
+				uvs = triangleGraphics.uvs.get(this._numVertices);
 			} else {
 				uvs = new Float32Array(this._numVertices*2);
 			}
@@ -285,9 +287,9 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			triangleGeometry.setUVs(uvs);
+			triangleGraphics.setUVs(uvs);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here
 		}
 	}

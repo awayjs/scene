@@ -155,8 +155,8 @@ class TouchManager
 			event.localNormal = collider.localNormal? collider.localNormal.clone() : null;
 			// Face index.
 			event.index = collider.index;
-			// SubGeometryIndex.
-			event.subGeometryIndex = collider.index;
+			// ElementsIndex.
+			event.elementsIndex = collider.index;
 			
 		} else {
 			// Set all to null.
@@ -165,7 +165,7 @@ class TouchManager
 			event.localPosition = this._nullVector;
 			event.localNormal = this._nullVector;
 			event.index = 0;
-			event.subGeometryIndex = 0;
+			event.elementsIndex = 0;
 		}
 		
 		// Store event to be dispatched later.

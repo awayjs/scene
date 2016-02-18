@@ -40,9 +40,9 @@ class PickingCollisionVO
 	public index:number;
 
 	/**
-	 * The index of the subGeometry where the event took place.
+	 * The index of the elements where the event took place.
 	 */
-//		public subGeometryIndex:number;
+//		public elementsIndex:number;
 
 	/**
 	 * The starting position of the colliding ray in local coordinates.

@@ -17,6 +17,7 @@ import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
+import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 
 interface IEntity extends IAsset
 {
@@ -126,17 +127,6 @@ interface IEntity extends IAsset
 	_iAssignedPartition:PartitionBase;
 
 	/**
-	 * //TODO
-	 *
-	 * @param shortestCollisionDistance
-	 * @param findClosest
-	 * @returns {boolean}
-	 *
-	 * @internal
-	 */
-	_iTestCollision(shortestCollisionDistance:number, findClosest:boolean):boolean;
-
-	/**
 	 * @internal
 	 */
 	_iIsMouseEnabled():boolean;
@@ -168,7 +158,7 @@ interface IEntity extends IAsset
 	 * @param renderer
 	 * @private
 	 */
-	_applyRenderer(renderer:IRenderer);
+	_acceptTraverser(collector:CollectorBase);
 }
 
 export = IEntity;

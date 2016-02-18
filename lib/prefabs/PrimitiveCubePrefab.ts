@@ -1,8 +1,10 @@
 ﻿import IAsset					= require("awayjs-core/lib/library/IAsset");
 
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
+import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
+import LineElements				= require("awayjs-display/lib/graphics/LineElements");
+import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
@@ -29,9 +31,9 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	 * @param segmentsD The number of segments that make up the cube along the Z-axis.
 	 * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
 	 */
-	constructor(width:number = 100, height:number = 100, depth:number = 100, segmentsW:number = 1, segmentsH:number = 1, segmentsD:number = 1, tile6:boolean = true)
+	constructor(material:MaterialBase = null, elementsType:string = "triangle", width:number = 100, height:number = 100, depth:number = 100, segmentsW:number = 1, segmentsH:number = 1, segmentsD:number = 1, tile6:boolean = true)
 	{
-		super();
+		super(material, elementsType);
 
 		this._width = width;
 		this._height = height;
@@ -54,7 +56,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		this._width = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -69,7 +71,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		this._height = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -84,7 +86,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		this._depth = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -104,7 +106,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		this._tile6 = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -119,7 +121,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		this._segmentsW = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -135,7 +137,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		this._segmentsH = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -151,20 +153,20 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		this._segmentsD = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string)
 	{
 		var indices:Uint16Array;
-		var positions:Float32Array;
+		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
-		
+
 		var tl:number, tr:number, bl:number, br:number;
 		var i:number, j:number, inc:number = 0;
 
@@ -173,27 +175,25 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 		var dw:number, dh:number, dd:number; // deltas
 
 		var outer_pos:number;
-		var numIndices:number;
-		var numVertices:number;
 
 		// half cube dimensions
 		hw = this._width/2;
 		hh = this._height/2;
 		hd = this._depth/2;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
-			numVertices = ((this._segmentsW + 1)*(this._segmentsH + 1) + (this._segmentsW + 1)*(this._segmentsD + 1) + (this._segmentsH + 1)*(this._segmentsD + 1))*2;
+			var numVertices:number = ((this._segmentsW + 1)*(this._segmentsH + 1) + (this._segmentsW + 1)*(this._segmentsD + 1) + (this._segmentsH + 1)*(this._segmentsD + 1))*2;
 
-			numIndices = ((this._segmentsW*this._segmentsH + this._segmentsW*this._segmentsD + this._segmentsH*this._segmentsD)*12);
+			var numIndices:number = ((this._segmentsW*this._segmentsH + this._segmentsW*this._segmentsD + this._segmentsH*this._segmentsD)*12);
 
-			if (numVertices == triangleGeometry.numVertices && triangleGeometry.indices != null) {
-				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
-				positions = triangleGeometry.positions.get(numVertices);
-				normals = triangleGeometry.normals.get(numVertices);
-				tangents = triangleGeometry.tangents.get(numVertices);
+			if (numVertices == triangleGraphics.numVertices && triangleGraphics.indices != null) {
+				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+				positions = triangleGraphics.positions.get(numVertices);
+				normals = triangleGraphics.normals.get(numVertices);
+				tangents = triangleGraphics.tangents.get(numVertices);
 			} else {
 				indices = new Uint16Array(numIndices);
 				positions = new Float32Array(numVertices*3);
@@ -365,17 +365,16 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 				}
 			}
 
-			triangleGeometry.setIndices(indices);
+			triangleGraphics.setIndices(indices);
 
-			triangleGeometry.setPositions(positions);
-			triangleGeometry.setNormals(normals);
-			triangleGeometry.setTangents(tangents);
+			triangleGraphics.setPositions(positions);
+			triangleGraphics.setNormals(normals);
+			triangleGraphics.setTangents(tangents);
 
-		} else if (geometryType == "lineSubGeometry") {
-			var lineGeometry:LineSubGeometry = <LineSubGeometry> target;
+		} else if (elementsType == ElementsType.LINE) {
+			var lineGraphics:LineElements = <LineElements> target;
 
 			var numSegments:number = this._segmentsH*4 +  this._segmentsW*4 + this._segmentsD*4;
-			var positions:Float32Array;
 			var thickness:Float32Array;
 			
 			positions = new Float32Array(numSegments*6);
@@ -522,18 +521,18 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			lineGeometry.setPositions(positions);
-			lineGeometry.setThickness(thickness);
+			lineGraphics.setPositions(positions);
+			lineGraphics.setThickness(thickness);
 		}
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string)
 	{
 		var i:number, j:number, index:number;
-		var uvs:Float32Array;
+		var uvs:ArrayBufferView;
 
 		var u_tile_dim:number, v_tile_dim:number;
 		var u_tile_step:number, v_tile_step:number;
@@ -542,14 +541,14 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 		var du:number, dv:number;
 		var numVertices:number;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
 			numVertices = ((this._segmentsW + 1)*(this._segmentsH + 1) + (this._segmentsW + 1)*(this._segmentsD + 1) + (this._segmentsH + 1)*(this._segmentsD + 1))*2;
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
-			if (numVertices == triangleGeometry.numVertices && triangleGeometry.uvs != null) {
-				uvs = triangleGeometry.uvs.get(numVertices);
+			if (numVertices == triangleGraphics.numVertices && triangleGraphics.uvs != null) {
+				uvs = triangleGraphics.uvs.get(numVertices);
 			} else {
 				uvs = new Float32Array(numVertices*2);
 			}
@@ -563,7 +562,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 			}
 
 			// Create planes two and two, the same way that they were
-			// constructed in the buildGeometry() function. First calculate
+			// constructed in the buildGraphics() function. First calculate
 			// the top-left UV coordinate for both planes, and then loop
 			// over the points, calculating the UVs from these numbers.
 
@@ -627,9 +626,9 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 				}
 			}
 
-			triangleGeometry.setUVs(uvs);
+			triangleGraphics.setUVs(uvs);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here
 		}
 	}

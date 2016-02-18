@@ -3,13 +3,13 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import FontTable					= require("awayjs-display/lib/text/TesselatedFontTable");
 
 /**
- * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+ * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Mesh object.
  *
  *
- * @see away.base.TriangleSubGeometry
+ * @see away.base.TriangleElements
  * @see away.entities.Mesh
  *
- * @class away.base.SubMeshBase
+ * @class away.base.GraphicBase
  */
 class Font extends AssetBase
 {

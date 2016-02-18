@@ -1,8 +1,10 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
+import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
+import LineElements				= require("awayjs-display/lib/graphics/LineElements");
+import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
@@ -29,7 +31,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	{
 		this._radius = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -43,7 +45,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	public set height(value:number)
 	{
 		this._height = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -58,7 +60,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	{
 		this._segmentsW = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -74,7 +76,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	{
 		this._segmentsH = (value%2 == 0)? value + 1 : value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -90,7 +92,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	{
 		this._yUp = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -101,9 +103,9 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	 * @param segmentsH Defines the number of vertical segments that make up the capsule. Defaults to 15. Must be uneven value.
 	 * @param yUp Defines whether the capsule poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(radius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 15, yUp:boolean = true)
+	constructor(material:MaterialBase = null, elementsType:string = "triangle", radius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 15, yUp:boolean = true)
 	{
-		super();
+		super(material, elementsType);
 
 		this._radius = radius;
 		this._height = height;
@@ -115,10 +117,10 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string)
 	{
 		var indices:Uint16Array;
-		var positions:Float32Array;
+		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
 
@@ -130,20 +132,20 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 		var comp1:number, comp2:number, t1:number, t2:number;
 		var numIndices:number = 0;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			// evaluate target number of vertices, triangles and indices
 			this._numVertices = (this._segmentsH + 1)*(this._segmentsW + 1); // segmentsH + 1 because of closure, segmentsW + 1 because of closure
 			numIndices = (this._segmentsH - 1)*this._segmentsW*6; // each level has segmentH quads, each of 2 triangles
 
 			// need to initialize raw arrays or can be reused?
-			if (this._numVertices == triangleGeometry.numVertices) {
-				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
-				positions = triangleGeometry.positions.get(this._numVertices);
-				normals = triangleGeometry.normals.get(this._numVertices);
-				tangents = triangleGeometry.tangents.get(this._numVertices);
+			if (this._numVertices == triangleGraphics.numVertices) {
+				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+				positions = triangleGraphics.positions.get(this._numVertices);
+				normals = triangleGraphics.normals.get(this._numVertices);
+				tangents = triangleGraphics.tangents.get(this._numVertices);
 			} else {
 				indices = new Uint16Array(numIndices);
 				positions = new Float32Array(this._numVertices*3);
@@ -244,13 +246,13 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			triangleGeometry.setIndices(indices);
+			triangleGraphics.setIndices(indices);
 
-			triangleGeometry.setPositions(positions);
-			triangleGeometry.setNormals(normals);
-			triangleGeometry.setTangents(tangents);
+			triangleGraphics.setPositions(positions);
+			triangleGraphics.setNormals(normals);
+			triangleGraphics.setTangents(tangents);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//TODO
 		}
 	}
@@ -258,19 +260,19 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string)
 	{
 		var i:number, j:number;
-		var uvs:Float32Array;
+		var uvs:ArrayBufferView;
 
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			// need to initialize raw array or can be reused?
-			if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-				uvs = triangleGeometry.uvs.get(this._numVertices);
+			if (triangleGraphics.uvs && this._numVertices == triangleGraphics.numVertices) {
+				uvs = triangleGraphics.uvs.get(this._numVertices);
 			} else {
 				uvs = new Float32Array(this._numVertices*2);
 			}
@@ -288,9 +290,9 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			triangleGeometry.setUVs(uvs);
+			triangleGraphics.setUVs(uvs);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here
 		}
 	}

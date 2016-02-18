@@ -12,9 +12,9 @@ import Box						= require("awayjs-core/lib/geom/Box");
 import Sphere					= require("awayjs-core/lib/geom/Sphere");
 import Extensions				= require("awayjs-core/lib/utils/Extensions");
 
-import CurveSubGeometry			= require("awayjs-display/lib/base/CurveSubGeometry");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
 
-class SubGeometryUtils
+class ElementsUtils
 {
 	private static tempFloat32x4:Float32Array = new Float32Array(4);
 
@@ -24,10 +24,10 @@ class SubGeometryUtils
 	
 	private static _indexSwap:Array<number> = new Array<number>();
 
-	public static generateFaceNormals(indexAttributes:Short3Attributes, positionAttributes:Float3Attributes, output:Float4Attributes, count:number, offset:number = 0):Float4Attributes
+	public static generateFaceNormals(indexAttributes:Short3Attributes, positionAttributes:AttributesView, output:Float4Attributes, count:number, offset:number = 0):Float4Attributes
 	{
 		var indices:Uint16Array = indexAttributes.get(count, offset);
-		var positions:Float32Array = positionAttributes.get(positionAttributes.count);
+		var positions:ArrayBufferView = positionAttributes.get(positionAttributes.count);
 
 		if (output == null)
 			output = new Float4Attributes(count + offset);
@@ -54,35 +54,45 @@ class SubGeometryUtils
 		var cx:number, cy:number, cz:number;
 		var d:number;
 
-		while (i < count) {
-			index = indices[i++]*positionDim;
-			x1 = positions[index];
-			y1 = positions[index + 1];
-			z1 = positions[index + 2];
-			index = indices[i++]*positionDim;
-			x2 = positions[index];
-			y2 = positions[index + 1];
-			z2 = positions[index + 2];
-			index = indices[i++]*positionDim;
-			x3 = positions[index];
-			y3 = positions[index + 1];
-			z3 = positions[index + 2];
-			dx1 = x3 - x1;
-			dy1 = y3 - y1;
-			dz1 = z3 - z1;
-			dx2 = x2 - x1;
-			dy2 = y2 - y1;
-			dz2 = z2 - z1;
-			cx = dz1*dy2 - dy1*dz2;
-			cy = dx1*dz2 - dz1*dx2;
-			cz = dy1*dx2 - dx1*dy2;
-			d = Math.sqrt(cx*cx + cy*cy + cz*cz);
-			// length of cross product = 2*triangle area
+		if (positionDim == 3) {
+			while (i < count) {
+				index = indices[i++]*3;
+				x1 = positions[index];
+				y1 = positions[index + 1];
+				z1 = positions[index + 2];
+				index = indices[i++]*3;
+				x2 = positions[index];
+				y2 = positions[index + 1];
+				z2 = positions[index + 2];
+				index = indices[i++]*3;
+				x3 = positions[index];
+				y3 = positions[index + 1];
+				z3 = positions[index + 2];
+				dx1 = x3 - x1;
+				dy1 = y3 - y1;
+				dz1 = z3 - z1;
+				dx2 = x2 - x1;
+				dy2 = y2 - y1;
+				dz2 = z2 - z1;
+				cx = dz1*dy2 - dy1*dz2;
+				cy = dx1*dz2 - dz1*dx2;
+				cz = dy1*dx2 - dx1*dy2;
+				d = Math.sqrt(cx*cx + cy*cy + cz*cz);
+				// length of cross product = 2*triangle area
 
-			faceNormals[j++] = cx;
-			faceNormals[j++] = cy;
-			faceNormals[j++] = cz;
-			faceNormals[j++] = d;
+				faceNormals[j++] = cx;
+				faceNormals[j++] = cy;
+				faceNormals[j++] = cz;
+				faceNormals[j++] = d;
+			}
+		} else if (positionDim == 2) {
+			while (i < count) {
+				faceNormals[j++] = 0;
+				faceNormals[j++] = 0;
+				faceNormals[j++] = 1;
+				faceNormals[j++] = 1;
+				i += 3;
+			}
 		}
 
 		output.set(faceNormals, offset);
@@ -163,11 +173,11 @@ class SubGeometryUtils
 		return output;
 	}
 
-	public static generateFaceTangents(indexAttributes:Short3Attributes, positionAttributes:Float3Attributes, uvAttributes:Float2Attributes, output:Float4Attributes, count:number, offset:number = 0, useFaceWeights:boolean = false):Float4Attributes
+	public static generateFaceTangents(indexAttributes:Short3Attributes, positionAttributes:AttributesView, uvAttributes:AttributesView, output:Float4Attributes, count:number, offset:number = 0, useFaceWeights:boolean = false):Float4Attributes
 	{
 		var indices:Uint16Array = indexAttributes.get(count, offset);
-		var positions:Float32Array = positionAttributes.get(positionAttributes.count);
-		var uvs:Float32Array = uvAttributes.get(uvAttributes.count);
+		var positions:ArrayBufferView = positionAttributes.get(positionAttributes.count);
+		var uvs:Float32Array = <Float32Array> uvAttributes.get(uvAttributes.count);
 
 		if (output == null)
 			output = new Float3Attributes(count + offset);
@@ -184,8 +194,9 @@ class SubGeometryUtils
 		var index1:number;
 		var index2:number;
 		var index3:number;
-		var vi:number;
 		var v0:number;
+		var v1:number;
+		var v2:number;
 		var dv1:number;
 		var dv2:number;
 		var denom:number;
@@ -206,22 +217,29 @@ class SubGeometryUtils
 			dv1 = uvs[index2*uvDim + 1] - v0;
 			dv2 = uvs[index3*uvDim + 1] - v0;
 
-			vi = index1*positionDim;
-			x0 = positions[vi];
-			y0 = positions[vi + 1];
-			z0 = positions[vi + 2];
-			vi = index2*positionDim;
-			dx1 = positions[vi] - x0;
-			dy1 = positions[vi + 1] - y0;
-			dz1 = positions[vi + 2] - z0;
-			vi = index3*positionDim;
-			dx2 = positions[vi] - x0;
-			dy2 = positions[vi + 1] - y0;
-			dz2 = positions[vi + 2] - z0;
+			v0 = index1*positionDim;
+			v1 = index2*positionDim;
+			v2 = index3*positionDim;
 
+			x0 = positions[v0];
+			dx1 = positions[v1] - x0;
+			dx2 = positions[v2] - x0;
 			cx = dv2*dx1 - dv1*dx2;
+
+			y0 = positions[v0 + 1];
+			dy1 = positions[v1 + 1] - y0;
+			dy2 = positions[v2 + 1] - y0;
 			cy = dv2*dy1 - dv1*dy2;
-			cz = dv2*dz1 - dv1*dz2;
+
+			if (positionDim == 3) {
+				z0 = positions[v0 + 2];
+				dz1 = positions[v1 + 2] - z0;
+				dz2 = positions[v2 + 2] - z0;
+				cz = dv2*dz1 - dv1*dz2;
+			} else {
+				cz = 0;
+			}
+
 			denom = 1/Math.sqrt(cx*cx + cy*cy + cz*cz);
 
 			faceTangents[i++] = denom*cx;
@@ -313,33 +331,6 @@ class SubGeometryUtils
 		return output;
 	}
 
-
-	public static generateUVs(indexAttributes:Short3Attributes, output:Float2Attributes, concatenatedBuffer:AttributesBuffer, count:number, offset:number = 0):Float2Attributes
-	{
-		if (output == null)
-			output = new Float2Attributes(concatenatedBuffer);
-
-		var outputDim:number = output.dimensions;
-
-		var uvs:Float32Array = output.get(count, offset);
-
-		var i:number = 0;
-		var j:number = 0;
-		var len:number = count*outputDim;
-
-		while (i < len) {
-			uvs[i++] = j*.5;
-			uvs[i++] = 1.0 - (j & 1);
-
-			if (++j == 3)
-				j = 0;
-		}
-
-		output.set(uvs, offset);
-
-		return output;
-	}
-
 	public static generateColors(indexAttributes:Short3Attributes, output:Byte4Attributes, concatenatedBuffer:AttributesBuffer, count:number, offset:number = 0):Byte4Attributes
 	{
 		if (output == null)
@@ -390,14 +381,14 @@ class SubGeometryUtils
 		output.set(uvs, offset);
 	}
 
-	public static scale(scale:number, output:Float3Attributes, count:number, offset:number = 0)
+	public static scale(scale:number, output:AttributesView, count:number, offset:number = 0)
 	{
 		if (output.count < count + offset)
 			output.count = count + offset;
 
 		var outputDim:number = output.dimensions;
 
-		var positions:Float32Array = output.get(count, offset);
+		var positions:ArrayBufferView = output.get(count, offset);
 
 		var i:number = 0;
 		var j:number = 0;
@@ -412,9 +403,10 @@ class SubGeometryUtils
 		output.set(positions, offset);
 	}
 
-	public static applyTransformation(transform:Matrix3D, positionAttributes:Float3Attributes, normalAttributes:Float3Attributes, tangentAttributes:Float3Attributes, count:number, offset:number = 0)
+	public static applyTransformation(transform:Matrix3D, positionAttributes:AttributesView, normalAttributes:Float3Attributes, tangentAttributes:Float3Attributes, count:number, offset:number = 0)
 	{
-		var positions:Float32Array = positionAttributes.get(count, offset);
+		//todo: make this compatible with 2-dimensional positions
+		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var positionDim:number = positionAttributes.dimensions;
 
 		var normals:Float32Array;
@@ -513,13 +505,13 @@ class SubGeometryUtils
 		indexMappings.length = 0;
 
 		//shortcut for those buffers that fit into the maximum buffer sizes
-		if (numIndices < SubGeometryUtils.LIMIT_INDICES && numVertices < SubGeometryUtils.LIMIT_VERTS)
+		if (numIndices < ElementsUtils.LIMIT_INDICES && numVertices < ElementsUtils.LIMIT_VERTS)
 			return buffer;
 
 		var i:number;
 		var indices:Uint16Array = <Uint16Array> indexAttributes.get(indexAttributes.count, indexOffset);
 		var splitIndices:Array<number> = new Array<number>();
-		var indexSwap:Array<number> = SubGeometryUtils._indexSwap;
+		var indexSwap:Array<number> = ElementsUtils._indexSwap;
 		
 
 		indexSwap.length = numIndices;
@@ -534,7 +526,7 @@ class SubGeometryUtils
 		// Loop over all triangles
 		
 		i = 0;
-		while (i < numIndices + offsetLength && i + 1 < SubGeometryUtils.LIMIT_INDICES && index + 1 < SubGeometryUtils.LIMIT_VERTS) {
+		while (i < numIndices + offsetLength && i + 1 < ElementsUtils.LIMIT_INDICES && index + 1 < ElementsUtils.LIMIT_VERTS) {
 			originalIndex = indices[i];
 
 			if (indexSwap[originalIndex] >= 0) {
@@ -591,17 +583,17 @@ class SubGeometryUtils
 
 	//TODO - generate this dyanamically based on num tris
 
-	public static hitTestCurveGeometry(x:number, y:number, z:number, boundingBox:Box, curveSubGeometry:CurveSubGeometry):boolean
+	public static hitTestTriangleElements(x:number, y:number, z:number, boundingBox:Box, triangleElements:TriangleElements):boolean
 	{
-		var positionAttributes:Short3Attributes = curveSubGeometry.positions;
-		var curveAttributes:Short2Attributes = curveSubGeometry.curves;
-		var count:number = curveSubGeometry.numVertices;
+		var positionAttributes:AttributesView = triangleElements.positions;
+		var curveAttributes:AttributesView = triangleElements.getCustomAtributes("curves");
+		var count:number = triangleElements.numVertices;
 
 		var posDim:number = positionAttributes.dimensions;
 		var curveDim:number = curveAttributes.dimensions;
 
-		var positions:Float32Array = positionAttributes.get(count);
-		var curves:Float32Array = curveAttributes.get(count);
+		var positions:ArrayBufferView = positionAttributes.get(count);
+		var curves:ArrayBufferView = curveAttributes? curveAttributes.get(count) : null;
 
 		var id0:number;
 		var id1:number;
@@ -614,7 +606,7 @@ class SubGeometryUtils
 		var cx:number;
 		var cy:number;
 
-		var index:number = curveSubGeometry.lastCollisionIndex;
+		var index:number = triangleElements.lastCollisionIndex;
 		if(index != -1 && index < count)
 		{
 			precheck:
@@ -667,36 +659,38 @@ class SubGeometryUtils
 				if (dot > 0)
 					break precheck;
 
-				var curvex:number = curves[id0 * curveDim];
+				if (curves) {
+					var curvex:number = curves[id0 * curveDim + 1];
+					//check if not solid
+					if (curvex != 2) {
 
-				//check if not solid
-				if (curvex != 2) {
+						var v0x:number = bx - ax;
+						var v0y:number = by - ay;
+						var v1x:number = cx - ax;
+						var v1y:number = cy - ay;
+						var v2x:number = x - ax;
+						var v2y:number = y - ay;
 
-					var v0x:number = bx - ax;
-					var v0y:number = by - ay;
-					var v1x:number = cx - ax;
-					var v1y:number = cy - ay;
-					var v2x:number = x - ax;
-					var v2y:number = y - ay;
+						var den:number = v0x * v1y - v1x * v0y;
+						var v:number = (v2x * v1y - v1x * v2y) / den;
+						var w:number = (v0x * v2y - v2x * v0y) / den;
+						//var u:number = 1 - v - w;	//commented out as inlined away
 
-					var den:number = v0x * v1y - v1x * v0y;
-					var v:number = (v2x * v1y - v1x * v2y) / den;
-					var w:number = (v0x * v2y - v2x * v0y) / den;
-					//var u:number = 1 - v - w;	//commented out as inlined away
+						//here be dragons
+						var uu:number = 0.5 * v + w;
+						var vv:number = w;
 
-					//here be dragons
-					var uu:number = 0.5 * v + w;
-					var vv:number = w;
+						var d:number = uu * uu - vv;
 
-					var d:number = uu * uu - vv;
-
-					var az:number = positions[id0 * posDim + 2];
-					if (d > 0 && az == -1) {
-						break precheck;;
-					} else if (d < 0 && az == 1) {
-						break precheck;;
+						var az:number = curves[id0 * curveDim];
+						if (d > 0 && az == -1) {
+							break precheck;;
+						} else if (d < 0 && az == 1) {
+							break precheck;;
+						}
 					}
 				}
+
 				return true;
 			}
 		}
@@ -705,8 +699,8 @@ class SubGeometryUtils
 
 		//hard coded min vertex count to bother using a grid for
 		if (count > 150) {
-			var cells:Array<Array<number>> = curveSubGeometry.cells;
-			var divisions:number = cells.length? curveSubGeometry.divisions : (curveSubGeometry.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
+			var cells:Array<Array<number>> = triangleElements.cells;
+			var divisions:number = cells.length? triangleElements.divisions : (triangleElements.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
 			var conversionX:number = divisions/boundingBox.width;
 			var conversionY:number = divisions/boundingBox.height;
 			var minx:number = boundingBox.x;
@@ -808,36 +802,38 @@ class SubGeometryUtils
 				if (dot > 0)
 					continue;
 
-				var curvex:number = curves[id0 * curveDim];
+				if (curves) {
+					var curvex:number = curves[id0 * curveDim + 1];
 
-				//check if not solid
-				if (curvex != 2) {
+					//check if not solid
+					if (curvex != 2) {
 
-					var v0x:number = bx - ax;
-					var v0y:number = by - ay;
-					var v1x:number = cx - ax;
-					var v1y:number = cy - ay;
-					var v2x:number = x - ax;
-					var v2y:number = y - ay;
+						var v0x:number = bx - ax;
+						var v0y:number = by - ay;
+						var v1x:number = cx - ax;
+						var v1y:number = cy - ay;
+						var v2x:number = x - ax;
+						var v2y:number = y - ay;
 
-					var den:number = v0x * v1y - v1x * v0y;
-					var v:number = (v2x * v1y - v1x * v2y) / den;
-					var w:number = (v0x * v2y - v2x * v0y) / den;
-					//var u:number = 1 - v - w;	//commented out as inlined away
+						var den:number = v0x * v1y - v1x * v0y;
+						var v:number = (v2x * v1y - v1x * v2y) / den;
+						var w:number = (v0x * v2y - v2x * v0y) / den;
+						//var u:number = 1 - v - w;	//commented out as inlined away
 
-					//here be dragons
-					var uu:number = 0.5 * v + w;
-					var vv:number = w;
+						//here be dragons
+						var uu:number = 0.5 * v + w;
+						var vv:number = w;
 
-					var d:number = uu * uu - vv;
-					var az:number = positions[id0 * posDim + 2];
+						var d:number = uu * uu - vv;
+						var az:number = curves[id0 * curveDim];
 
-					if (d > 0 && az == -1)
-						continue;
-					else if (d < 0 && az == 1)
-						continue;
+						if (d > 0 && az == -1)
+							continue;
+						else if (d < 0 && az == 1)
+							continue;
+					}
 				}
-				curveSubGeometry.lastCollisionIndex = id2;
+				triangleElements.lastCollisionIndex = id2;
 				return true;
 			}
 			return false;
@@ -895,128 +891,111 @@ class SubGeometryUtils
 			if (dot > 0)
 				continue;
 
-			var curvex:number = curves[id0 * curveDim];
+			if (curves) {
+				var curvex:number = curves[id0 * curveDim + 1];
 
-			//check if not solid
-			if (curvex != 2) {
+				//check if not solid
+				if (curvex != 2) {
 
-				var v0x:number = bx - ax;
-				var v0y:number = by - ay;
-				var v1x:number = cx - ax;
-				var v1y:number = cy - ay;
-				var v2x:number = x - ax;
-				var v2y:number = y - ay;
+					var v0x:number = bx - ax;
+					var v0y:number = by - ay;
+					var v1x:number = cx - ax;
+					var v1y:number = cy - ay;
+					var v2x:number = x - ax;
+					var v2y:number = y - ay;
 
-				var den:number = v0x * v1y - v1x * v0y;
-				var v:number = (v2x * v1y - v1x * v2y) / den;
-				var w:number = (v0x * v2y - v2x * v0y) / den;
-				//var u:number = 1 - v - w;	//commented out as inlined away
+					var den:number = v0x * v1y - v1x * v0y;
+					var v:number = (v2x * v1y - v1x * v2y) / den;
+					var w:number = (v0x * v2y - v2x * v0y) / den;
+					//var u:number = 1 - v - w;	//commented out as inlined away
 
-				//here be dragons
-				var uu:number = 0.5 * v + w;
-				var vv:number = w;
+					//here be dragons
+					var uu:number = 0.5 * v + w;
+					var vv:number = w;
 
-				var d:number = uu * uu - vv;
+					var d:number = uu * uu - vv;
 
-				var az:number = positions[id0 * posDim + 2];
-				if (d > 0 && az == -1) {
-					continue;
-				} else if (d < 0 && az == 1) {
-					continue;
+					var az:number = curves[id0 * curveDim];
+					if (d > 0 && az == -1) {
+						continue;
+					} else if (d < 0 && az == 1) {
+						continue;
+					}
 				}
 			}
-			curveSubGeometry.lastCollisionIndex = id2;
+			triangleElements.lastCollisionIndex = id2;
 			return true;
 		}
 		return false;
 	}
 
-	public static getCurveGeometryBoxBounds(positionAttributes:Float3Attributes, output:Box, count:number, offset:number = 0):Box
+	public static getTriangleGraphicsBoxBounds(positionAttributes:AttributesView, output:Box, count:number, offset:number = 0):Box
 	{
-		var positions:Float32Array = positionAttributes.get(count, offset);
-		var posDim:number = positionAttributes.dimensions;
-		var posDim2:number = posDim*2;
-
-		if (output == null)
-			output = new Box();
-
-		var minX, minY, maxX, maxY, p;
-
-		maxX = output.width + (minX = output.x);
-		maxY = output.height + (minY = output.y);
-
-		var len:number = positions.length;
-		for (var i:number = 0; i < len; i += posDim) {
-			p = positions[i];
-			if (p < minX)
-				minX = p;
-			else if (p > maxX)
-				maxX = p;
-
-			p = positions[i + 1];
-
-			if (p < minY)
-				minY = p;
-			else if (p > maxY)
-				maxY = p;
-		}
-
-		output.width = maxX - (output.x = minX);
-		output.height = maxY - (output.y = minY);
-
-		return output;
-	}
-
-
-	public static getTriangleGeometryBoxBounds(positionAttributes:Float3Attributes, output:Box, count:number, offset:number = 0):Box
-	{
-		var positions:Float32Array = positionAttributes.get(count, offset);
+		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var posDim:number = positionAttributes.dimensions;
 
 		if (output == null)
 			output = new Box();
 
 		var pos:number;
-		var minX:number = output.x;
-		var minY:number = output.y;
-		var minZ:number = output.z;
-		var maxX:number = output.width + minX;
-		var maxY:number = output.height + minY;
-		var maxZ:number = output.depth + minZ;
+		var minX:number = 0, minY:number = 0, minZ:number = 0;
+		var maxX:number = 0, maxY:number = 0, maxZ:number = 0;
 
-		var len:number = positions.length;
+		var len:number = count*posDim;
 		for (var i:number = 0; i < len; i += posDim) {
-			pos = positions[i];
-			if (pos < minX)
-				minX = pos;
-			else if (pos > maxX)
-				maxX = pos;
+			if (i == 0) {
+				maxX = minX = positions[i];
+				maxY = minY = positions[i + 1];
+				maxZ = minZ = (posDim == 3)? positions[i + 2] : 0;
+			} else {
+				pos = positions[i];
+				if (pos < minX)
+					minX = pos;
+				else if (pos > maxX)
+					maxX = pos;
 
-			pos = positions[i + 1];
+				pos = positions[i + 1];
 
-			if (pos < minY)
-				minY = pos;
-			else if (pos > maxY)
-				maxY = pos;
+				if (pos < minY)
+					minY = pos;
+				else if (pos > maxY)
+					maxY = pos;
 
-			pos = positions[i + 2];
+				if (posDim == 3) {
+					pos = positions[i + 2];
 
-			if (pos < minZ)
-				minZ = pos;
-			else if (pos > maxZ)
-				maxZ = pos;
+					if (pos < minZ)
+						minZ = pos;
+					else if (pos > maxZ)
+						maxZ = pos;
+				}
+			}
 		}
 
-		output.width = maxX - (output.x = minX);
-		output.height = maxY - (output.y = minY);
-		output.depth = maxZ - (output.z = minZ);
+		if (output.x > minX)
+			output.x = minX;
+
+		if (output.y > minY)
+			output.y = minY;
+
+		if (output.z > minZ)
+			output.z = minZ;
+
+		if (output.right < maxX)
+			output.right = maxX;
+
+		if (output.bottom < maxY)
+			output.bottom = maxY;
+
+		if (output.back < maxZ)
+			output.back = maxZ;
 
 		return output;
 	}
 
-	public static getTriangleGeometrySphereBounds(positionAttributes:Float3Attributes, center:Vector3D, output:Sphere, count:number, offset:number = 0):Sphere
+	public static getTriangleGraphicsSphereBounds(positionAttributes:AttributesView, center:Vector3D, output:Sphere, count:number, offset:number = 0):Sphere
 	{
-		var positions:Float32Array = positionAttributes.get(count, offset);
+		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var posDim:number = positionAttributes.dimensions;
 
 		if (output == null)
@@ -1024,7 +1003,7 @@ class SubGeometryUtils
 
 		var maxRadiusSquared:number = 0;
 		var radiusSquared:number;
-		var len = positions.length;
+		var len = count*posDim;
 		var distanceX:number;
 		var distanceY:number;
 		var distanceZ:number;
@@ -1032,7 +1011,7 @@ class SubGeometryUtils
 		for (var i:number = 0; i < len; i += posDim) {
 			distanceX = positions[i] - center.x;
 			distanceY = positions[i + 1] - center.y;
-			distanceZ = positions[i + 2] - center.z;
+			distanceZ = (posDim == 3)? positions[i + 2] - center.z : -center.z;
 			radiusSquared = distanceX*distanceX + distanceY*distanceY + distanceZ*distanceZ;
 
 			if (maxRadiusSquared < radiusSquared)
@@ -1049,4 +1028,4 @@ class SubGeometryUtils
 
 }
 
-export = SubGeometryUtils;
+export = ElementsUtils;

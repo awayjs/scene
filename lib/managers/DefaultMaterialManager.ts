@@ -3,13 +3,14 @@ import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
 import BitmapImageCube				= require("awayjs-core/lib/image/BitmapImageCube");
 
 import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
-import LineSubMesh					= require("awayjs-display/lib/base/LineSubMesh");
+import LineElements					= require("awayjs-display/lib/graphics/LineElements");
 import Skybox						= require("awayjs-display/lib/entities/Skybox");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import BasicMaterial				= require("awayjs-display/lib/materials/BasicMaterial");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
+import Graphic						= require("awayjs-display/lib/graphics/Graphic");
 
 class DefaultMaterialManager
 {
@@ -24,7 +25,7 @@ class DefaultMaterialManager
 
 	public static getDefaultMaterial(renderableOwner:IRenderableOwner = null):MaterialBase
 	{
-		if (renderableOwner != null && renderableOwner.isAsset(LineSubMesh)) {
+		if (renderableOwner != null && renderableOwner.isAsset(Graphic) && (<Graphic> renderableOwner).elements.isAsset(LineElements)) {
 			if (!DefaultMaterialManager._defaultColorMaterial)
 				DefaultMaterialManager.createDefaultColorMaterial();
 
@@ -144,7 +145,7 @@ class DefaultMaterialManager
 
 	private static createDefaultColorMaterial()
 	{
-		DefaultMaterialManager._defaultColorMaterial = new BasicMaterial();
+		DefaultMaterialManager._defaultColorMaterial = new BasicMaterial(0xFFFFFF);
 		DefaultMaterialManager._defaultColorMaterial.name = "defaultColorMaterial";
 	}
 

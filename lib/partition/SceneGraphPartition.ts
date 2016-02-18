@@ -1,10 +1,10 @@
+import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
+
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import SceneGraphNodePool			= require("awayjs-display/lib/pool/SceneGraphNodePool");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
 
@@ -13,13 +13,13 @@ import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObject
  */
 class SceneGraphPartition extends PartitionBase
 {
-	public _sceneGraphNodePool:SceneGraphNodePool;
+	private _sceneGraphNodePool:SceneGraphNodePool;
 
 	constructor()
 	{
 		super();
 
-		this._sceneGraphNodePool = new SceneGraphNodePool(this);
+		this._sceneGraphNodePool = new SceneGraphNodePool();
 	}
 
 	public traverse(traverser:CollectorBase)
@@ -70,3 +70,33 @@ class SceneGraphPartition extends PartitionBase
 }
 
 export = SceneGraphPartition;
+
+
+/**
+ * @class away.pool.SceneGraphNodePool
+ */
+class SceneGraphNodePool implements IAbstractionPool
+{
+	private _abstractionPool:Object = new Object();
+
+	/**
+	 * //TODO
+	 *
+	 * @param entity
+	 * @returns EntityNode
+	 */
+	public getAbstraction(displayObjectContainer:DisplayObjectContainer):SceneGraphNode
+	{
+		return (this._abstractionPool[displayObjectContainer.id] || (this._abstractionPool[displayObjectContainer.id] = new SceneGraphNode(displayObjectContainer, this)));
+	}
+
+	/**
+	 * //TODO
+	 *
+	 * @param entity
+	 */
+	public clearAbstraction(displayObjectContainer:DisplayObjectContainer)
+	{
+		delete this._abstractionPool[displayObjectContainer.id];
+	}
+}

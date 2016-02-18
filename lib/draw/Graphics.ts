@@ -20,14 +20,13 @@ import Point					= require("awayjs-core/lib/geom/Point")
 import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
 import AttributesView			= require("awayjs-core/lib/attributes/AttributesView");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
-import Geometry					= require("awayjs-display/lib/base/Geometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import CurveSubGeometry			= require("awayjs-display/lib/base/CurveSubGeometry");
 import Float3Attributes			= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes			= require("awayjs-core/lib/attributes/Float2Attributes");
 
 
 import PartialImplementationError		= require("awayjs-core/lib/errors/PartialImplementationError");
+import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 /**
  * The Graphics class contains a set of methods that you can use to create a
  * vector shape. Display objects that support drawing include Sprite and Shape
@@ -296,7 +295,7 @@ class Graphics
 	public clear()
 	{
 		// todo: do this the correct way
-		this._target.geometry.dispose();
+		this._target.graphics.dispose();
 	}
 
 	/**
@@ -308,12 +307,7 @@ class Graphics
 	 */
 	public copyFrom(sourceGraphics:Graphics)
 	{
-		// todo: do this the correct way
-		var cnt:number=sourceGraphics._target.geometry.subGeometries.length;
-		for(var i=0; i>cnt; i++){
-			this._target.addSubMesh(sourceGraphics._target.geometry.subGeometries[i]);
-		}
-
+		sourceGraphics._target.graphics.copyTo(this._target.graphics);
 	}
 
 	/**
@@ -1602,12 +1596,15 @@ class Graphics
 		attributesView.set(final_vert_list);
 		var attributesBuffer:AttributesBuffer = attributesView.buffer;
 		attributesView.dispose();
-		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(attributesBuffer);
-		curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
-		this._target.geometry.addSubGeometry(curve_sub_geom);
-		this._target.subMeshes[this._target.subMeshes.length-1].material = DefaultMaterialManager.getDefaultMaterial();
-		this._target.subMeshes[this._target.subMeshes.length-1].material.bothSides=true;
-		this._target.subMeshes[this._target.subMeshes.length-1].material.useColorTransform=true;
+		var elements:TriangleElements = new TriangleElements(attributesBuffer);
+		elements.setPositions(new Float2Attributes(attributesBuffer));
+		elements.setCustomAttributes("curves", new Float3Attributes(attributesBuffer));
+		elements.setUVs(new Float2Attributes(attributesBuffer));
+		var material:MaterialBase = DefaultMaterialManager.getDefaultMaterial();
+		material.bothSides = true;
+		material.useColorTransform = true;
+		material.curves = true;
+		this._target.graphics.addGraphic(elements, material);
 		this._active_stroke_path=null;
 	}
 
@@ -1865,11 +1862,15 @@ class Graphics
 		attributesView.set(final_vert_list);
 		var attributesBuffer:AttributesBuffer = attributesView.buffer;
 		attributesView.dispose();
-		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(attributesBuffer);
-		curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
-		this._target.geometry.addSubGeometry(curve_sub_geom);
-		this._target.subMeshes[this._target.subMeshes.length-1].material = DefaultMaterialManager.getDefaultMaterial();
-		//this._subMeshes[this._subMeshes.length-1].material.bothSides=true;
+		var elements:TriangleElements = new TriangleElements(attributesBuffer);
+		elements.setPositions(new Float2Attributes(attributesBuffer));
+		elements.setCustomAttributes("curves", new Float3Attributes(attributesBuffer));
+		elements.setUVs(new Float2Attributes(attributesBuffer));
+		var material:MaterialBase = DefaultMaterialManager.getDefaultMaterial();
+		material.bothSides = true;
+		material.useColorTransform = true;
+		material.curves = true;
+		this._target.graphics.addGraphic(elements, material);
 		this._active_fill_path=null;
 	}
 }

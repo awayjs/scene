@@ -7,18 +7,18 @@ import Box							= require("awayjs-core/lib/geom/Box");
 import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils");
+import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 
 /**
- * @class LineSubGeometry
+ * @class LineElements
  */
-class LineSubGeometry extends SubGeometryBase
+class LineElements extends ElementsBase
 {
-	public static assetType:string = "[asset LineSubGeometry]";
+	public static assetType:string = "[asset LineElements]";
 
 	private _numVertices:number = 0;
 
@@ -32,7 +32,7 @@ class LineSubGeometry extends SubGeometryBase
 	 */
 	public get assetType():string
 	{
-		return LineSubGeometry.assetType;
+		return LineElements.assetType;
 	}
 
 	/**
@@ -63,7 +63,7 @@ class LineSubGeometry extends SubGeometryBase
 	}
 
 	/**
-	 * The total amount of vertices in the LineSubGeometry.
+	 * The total amount of vertices in the LineElements.
 	 */
 	public get numVertices():number
 	{
@@ -96,7 +96,7 @@ class LineSubGeometry extends SubGeometryBase
 	 *
 	 */
 	public setPositions(array:Array<number>, offset?:number);
-	public setPositions(float32Array:Float32Array, offset?:number);
+	public setPositions(arrayBufferView:ArrayBufferView, offset?:number);
 	public setPositions(attributesView:AttributesView, offset?:number);
 	public setPositions(values:any, offset:number = 0)
 	{
@@ -146,8 +146,6 @@ class LineSubGeometry extends SubGeometryBase
 		}
 
 		this._numVertices = this._positions.count;
-
-		this.pInvalidateBounds();
 
 		this.invalidateVertices(this._positions);
 
@@ -247,7 +245,7 @@ class LineSubGeometry extends SubGeometryBase
 			}
 		} else {
 			//auto-derive colors
-			this._colors = SubGeometryUtils.generateColors(this._pIndices, this._colors, this._concatenatedBuffer, this._numVertices);
+			this._colors = ElementsUtils.generateColors(this.indices, this._colors, this._concatenatedBuffer, this._numVertices);
 		}
 
 		this.invalidateVertices(this._colors);
@@ -276,11 +274,11 @@ class LineSubGeometry extends SubGeometryBase
 	 * Clones the current object
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():LineSubGeometry
+	public clone():LineElements
 	{
-		var clone:LineSubGeometry = new LineSubGeometry(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
+		var clone:LineElements = new LineElements(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
 
-		clone.setIndices(this._pIndices.clone());
+		clone.setIndices(this.indices.clone());
 
 		clone.setPositions(this._positions.clone());
 		clone.setThickness(this._thickness.clone());
@@ -295,4 +293,4 @@ class LineSubGeometry extends SubGeometryBase
 	}
 }
 
-export = LineSubGeometry;
+export = LineElements;

@@ -79,9 +79,9 @@ class TouchEvent extends EventBase
 	public index:number;
 	
 	/**
-	 * The index of the subGeometry where the event took place.
+	 * The index of the elements where the event took place.
 	 */
-	public subGeometryIndex:number;
+	public elementsIndex:number;
 	
 	/**
 	 * The position in object space where the event took place
@@ -177,7 +177,7 @@ class TouchEvent extends EventBase
 		result.localPosition = this.localPosition;
 		result.localNormal = this.localNormal;
 		result.index = this.index;
-		result.subGeometryIndex = this.subGeometryIndex;
+		result.elementsIndex = this.elementsIndex;
 		
 		result.ctrlKey = this.ctrlKey;
 		result.shiftKey = this.shiftKey;

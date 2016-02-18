@@ -1,8 +1,10 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
+import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
+import LineElements				= require("awayjs-display/lib/graphics/LineElements");
+import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
@@ -26,10 +28,10 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 	 * @param yUp Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false).
 	 * @param doubleSided Defines whether the plane will be visible from both sides, with correct vertex normals.
 	 */
-	constructor(width:number = 100, height:number = 100, segmentsW:number = 1, segmentsH:number = 1, yUp:boolean = true, doubleSided:boolean = false)
+	constructor(material:MaterialBase = null, elementsType:string = "triangle", width:number = 100, height:number = 100, segmentsW:number = 1, segmentsH:number = 1, yUp:boolean = true, doubleSided:boolean = false)
 	{
 
-		super();
+		super(material, elementsType);
 
 		this._segmentsW = segmentsW;
 		this._segmentsH = segmentsH;
@@ -53,7 +55,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 
 		this._segmentsW = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 
 	}
@@ -72,7 +74,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 
 		this._segmentsH = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 
 	}
@@ -89,7 +91,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 	{
 		this._yUp = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -104,7 +106,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 	{
 		this._doubleSided = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -119,7 +121,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 	{
 		this._width = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -134,13 +136,13 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 	{
 		this._height = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string)
 	{
 		var indices:Uint16Array;
 		var x:number, y:number;
@@ -153,12 +155,12 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 		var xi:number;
 		var yi:number;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			var numVertices:number = (this._segmentsH + 1)*tw;
-			var positions:Float32Array;
+			var positions:ArrayBufferView;
 			var normals:Float32Array;
 			var tangents:Float32Array;
 
@@ -170,18 +172,18 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 			if (this._doubleSided)
 				numIndices *= 2;
 
-			if (triangleGeometry.indices != null && numIndices == triangleGeometry.indices.length) {
-				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
+			if (triangleGraphics.indices != null && numIndices == triangleGraphics.indices.length) {
+				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
 			} else {
 				indices = new Uint16Array(numIndices);
 
 				this._pInvalidateUVs();
 			}
 
-			if (numVertices == triangleGeometry.numVertices) {
-				positions = triangleGeometry.positions.get(numVertices);
-				normals = triangleGeometry.normals.get(numVertices);
-				tangents = triangleGeometry.tangents.get(numVertices);
+			if (numVertices == triangleGraphics.numVertices) {
+				positions = triangleGraphics.positions.get(numVertices);
+				normals = triangleGraphics.normals.get(numVertices);
+				tangents = triangleGraphics.tangents.get(numVertices);
 			} else {
 				positions = new Float32Array(numVertices*3);
 				normals = new Float32Array(numVertices*3);
@@ -264,17 +266,17 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 				}
 			}
 
-			triangleGeometry.setIndices(indices);
+			triangleGraphics.setIndices(indices);
 
-			triangleGeometry.setPositions(positions);
-			triangleGeometry.setNormals(normals);
-			triangleGeometry.setTangents(tangents);
+			triangleGraphics.setPositions(positions);
+			triangleGraphics.setNormals(normals);
+			triangleGraphics.setTangents(tangents);
 
-		} else if (geometryType == "lineSubGeometry") {
-			var lineGeometry:LineSubGeometry = <LineSubGeometry> target;
+		} else if (elementsType == ElementsType.LINE) {
+			var lineGraphics:LineElements = <LineElements> target;
 
 			var numSegments:number = (this._segmentsH + 1) + tw;
-			var positions:Float32Array;
+			var positions:ArrayBufferView;
 			var thickness:Float32Array;
 
 			var hw:number = this._width/2;
@@ -313,33 +315,33 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			lineGeometry.setPositions(positions);
-			lineGeometry.setThickness(thickness);
+			lineGraphics.setPositions(positions);
+			lineGraphics.setThickness(thickness);
 		}
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string)
 	{
-		var uvs:Float32Array;
+		var uvs:ArrayBufferView;
 		var numVertices:number;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
 			numVertices = ( this._segmentsH + 1 )*( this._segmentsW + 1 );
 
 			if (this._doubleSided)
 				numVertices *= 2;
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
-			if (triangleGeometry.uvs && numVertices == triangleGeometry.numVertices) {
-				uvs = triangleGeometry.uvs.get(numVertices);
+			if (triangleGraphics.uvs && numVertices == triangleGraphics.numVertices) {
+				uvs = triangleGraphics.uvs.get(numVertices);
 			} else {
 				uvs = new Float32Array(numVertices*2);
-				this._pInvalidateGeometry()
+				this._pInvalidatePrimitive()
 			}
 
 			var index:number = 0;
@@ -359,10 +361,10 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 				}
 			}
 
-			triangleGeometry.setUVs(uvs);
+			triangleGraphics.setUVs(uvs);
 
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here
 		}
 	}

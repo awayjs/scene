@@ -42,6 +42,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _uvTransform:Matrix;
 	private _colorTransform:ColorTransform;
 	private _owners:Array<IRenderableOwner>;
+	private _curves:boolean = false;
 	private _imageRect:boolean = false;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 	private _style:Style = new Style();
@@ -71,6 +72,24 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 			return;
 
 		this._pAlphaThreshold = value;
+
+		this.invalidatePasses();
+	}
+
+	/**
+	 * Indicates whether skybox should use curves. Defaults to false.
+	 */
+	public get curves():boolean
+	{
+		return this._curves;
+	}
+
+	public set curves(value:boolean)
+	{
+		if (this._curves == value)
+			return;
+
+		this._curves = value;
 
 		this.invalidatePasses();
 	}
@@ -253,11 +272,6 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		return false; //TODO
 	}
 
-	public _applyRenderer(renderer:IRenderer)
-	{
-		//skybox do not get collected in the standard entity list
-	}
-
 	/**
 	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	 *
@@ -299,6 +313,20 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _onInvalidateProperties(event:StyleEvent)
 	{
 		this.invalidatePasses();
+	}
+
+
+	/**
+	 * //TODO
+	 *
+	 * @param shortestCollisionDistance
+	 * @returns {boolean}
+	 *
+	 * @internal
+	 */
+	public _iTestCollision(shortestCollisionDistance:number):boolean
+	{
+		return false;
 	}
 }
 

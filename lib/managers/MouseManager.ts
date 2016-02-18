@@ -204,7 +204,7 @@ class MouseManager
 			event.localPosition = this._nullVector;
 			event.localNormal = this._nullVector;
 			event.index = 0;
-			event.subGeometryIndex = 0;
+			event.elementsIndex = 0;
 		}
 
 		// Store event to be dispatched later.

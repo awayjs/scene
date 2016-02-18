@@ -2,10 +2,10 @@ import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer
 import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
 
 import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
-import Geometry					= require("awayjs-display/lib/base/Geometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
+import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
+import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import LineElements				= require("awayjs-display/lib/graphics/LineElements");
 import Mesh						= require("awayjs-display/lib/entities/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
@@ -17,17 +17,14 @@ class PrimitivePrefabBase extends PrefabBase
 {
 	public static assetType:string = "[asset PrimitivePrefab]";
 
-	public _geomDirty:boolean = true;
+	public _primitiveDirty:boolean = true;
 	public _uvDirty:boolean = true;
 	public _scaleU:number = 1;
 	public _scaleV:number = 1;
 
 	private _material:MaterialBase;
-	private _geometry:Geometry;
-	private _subGeometry:SubGeometryBase;
-	private _geometryType:string;
-	private _geometryTypeDirty:boolean = true;
-
+	private _elements:ElementsBase;
+	private _elementsType:string;
 
 	/**
 	 *
@@ -38,28 +35,11 @@ class PrimitivePrefabBase extends PrefabBase
 	}
 
 	/**
-	 * 
+	 *
 	 */
-	public get geometryType():string
+	public get elementsType():string
 	{
-		return this._geometryType;
-	}
-	
-	public set geometryType(value:string)
-	{
-		if (this._geometryType == value)
-			return;
-
-		this._geometryType = value;
-		
-		this.invalidateGeometryType();
-	}
-
-	public get geometry():Geometry
-	{
-		this._iValidate();
-
-		return this._geometry;
+		return this._elementsType;
 	}
 
 	/**
@@ -119,20 +99,28 @@ class PrimitivePrefabBase extends PrefabBase
 	 *
 	 * @param material The material with which to render the object
 	 */
-	constructor(material:MaterialBase = null, geometryType:string = "triangleSubGeometry")
+	constructor(material:MaterialBase = null, elementsType:string = "triangle")
 	{
 		super();
-
-		this._geometry = new Geometry();
+		
 		this._material = material;
-		this._geometryType = geometryType;
+		this._elementsType = elementsType;
+
+		if (this._elementsType == ElementsType.TRIANGLE) {
+			var triangleElements:TriangleElements = new TriangleElements(new AttributesBuffer());
+			triangleElements.autoDeriveNormals = false;
+			triangleElements.autoDeriveTangents = false;
+			this._elements = triangleElements;
+		} else if (this._elementsType == ElementsType.LINE) {
+			this._elements = new LineElements(new AttributesBuffer());
+		}
 	}
 
 	/**
 	 * Builds the primitive's geometry when invalid. This method should not be called directly. The calling should
-	 * be triggered by the invalidateGeometry method (and in turn by updateGeometry).
+	 * be triggered by the invalidateGraphics method (and in turn by updateGraphics).
 	 */
-	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string)
 	{
 		throw new AbstractMethodError();
 	}
@@ -141,27 +129,17 @@ class PrimitivePrefabBase extends PrefabBase
 	 * Builds the primitive's uv coordinates when invalid. This method should not be called directly. The calling
 	 * should be triggered by the invalidateUVs method (and in turn by updateUVs).
 	 */
-	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string)
 	{
 		throw new AbstractMethodError();
 	}
-
-	/**
-	 * Invalidates the primitive's geometry type, causing it to be updated when requested.
-	 */
-	public invalidateGeometryType()
-	{
-		this._geometryTypeDirty = true;
-		this._geomDirty = true;
-		this._uvDirty = true;
-	}
 	
 	/**
-	 * Invalidates the primitive's geometry, causing it to be updated when requested.
+	 * Invalidates the primitive, causing it to be updated when requested.
 	 */
-	public _pInvalidateGeometry()
+	public _pInvalidatePrimitive()
 	{
-		this._geomDirty = true;
+		this._primitiveDirty = true;
 	}
 
 	/**
@@ -172,38 +150,15 @@ class PrimitivePrefabBase extends PrefabBase
 		this._uvDirty = true;
 	}
 
-	/**
-	 * Updates the subgeometry when invalid.
-	 */
-	private updateGeometryType()
-	{
-		//remove any existing sub geometry
-		if (this._subGeometry)
-			this._geometry.removeSubGeometry(this._subGeometry);
-
-		if (this._geometryType == "triangleSubGeometry") {
-			var triangleGeometry:TriangleSubGeometry = new TriangleSubGeometry(new AttributesBuffer());
-			triangleGeometry.autoDeriveNormals = false;
-			triangleGeometry.autoDeriveTangents = false;
-			triangleGeometry.autoDeriveUVs = false;
-			this._geometry.addSubGeometry(triangleGeometry);
-			this._subGeometry = triangleGeometry;
-		} else if (this._geometryType == "lineSubGeometry") {
-			this._geometry.addSubGeometry(this._subGeometry = new LineSubGeometry(new AttributesBuffer()));
-		}
-
-		this._geometryTypeDirty = false;
-	}
-
 	
 	/**
 	 * Updates the geometry when invalid.
 	 */
-	private updateGeometry()
+	private updateGraphics()
 	{
-		this._pBuildGeometry(this._subGeometry, this._geometryType);
+		this._pBuildGraphics(this._elements, this._elementsType);
 
-		this._geomDirty = false;
+		this._primitiveDirty = false;
 	}
 
 	/**
@@ -211,18 +166,15 @@ class PrimitivePrefabBase extends PrefabBase
 	 */
 	private updateUVs()
 	{
-		this._pBuildUVs(this._subGeometry, this._geometryType);
+		this._pBuildUVs(this._elements, this._elementsType);
 
 		this._uvDirty = false;
 	}
 
 	public _iValidate()
 	{
-		if (this._geometryTypeDirty)
-			this.updateGeometryType();
-		
-		if (this._geomDirty)
-			this.updateGeometry();
+		if (this._primitiveDirty)
+			this.updateGraphics();
 
 		if (this._uvDirty)
 			this.updateUVs();
@@ -231,7 +183,8 @@ class PrimitivePrefabBase extends PrefabBase
 
 	public _pCreateObject():DisplayObject
 	{
-		var mesh:Mesh = new Mesh(this._geometry, this._material);
+		var mesh:Mesh = new Mesh(this._material);
+		mesh.graphics.addGraphic(this._elements);
 		mesh._iSourcePrefab = this;
 
 		return mesh;

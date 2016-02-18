@@ -166,7 +166,7 @@ class LightPickerBase extends AssetBase
 	 */
 	private updateProbeWeights(entity:IEntity)
 	{
-		// todo: this will cause the same calculations to occur per TriangleSubMesh. See if this can be improved.
+		// todo: this will cause the same calculations to occur per TriangleGraphic. See if this can be improved.
 		var objectPos:Vector3D = entity.scenePosition;
 		var lightPos:Vector3D;
 

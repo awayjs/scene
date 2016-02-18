@@ -108,9 +108,9 @@ class MouseEvent extends EventBase
 	public index:number;
 
 	/**
-	 * The index of the subGeometry where the event took place.
+	 * The index of the elements where the event took place.
 	 */
-	public subGeometryIndex:number;
+	public elementsIndex:number;
 
 	/**
 	 * The position in object space where the event took place
@@ -208,7 +208,7 @@ class MouseEvent extends EventBase
 		result.localPosition = this.localPosition;
 		result.localNormal = this.localNormal;
 		result.index = this.index;
-		result.subGeometryIndex = this.subGeometryIndex;
+		result.elementsIndex = this.elementsIndex;
 		result.delta = this.delta;
 
 		result.ctrlKey = this.ctrlKey;

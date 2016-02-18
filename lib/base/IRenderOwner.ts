@@ -19,6 +19,8 @@ interface IRenderOwner extends IAsset
 
 	style:Style;
 
+	curves:boolean;
+
 	imageRect:boolean;
 
 	blendMode:string;

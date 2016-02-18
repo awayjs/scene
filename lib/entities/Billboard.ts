@@ -18,6 +18,7 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -212,12 +213,11 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	 * //TODO
 	 *
 	 * @param shortestCollisionDistance
-	 * @param findClosest
 	 * @returns {boolean}
 	 *
 	 * @internal
 	 */
-	public _iTestCollision(shortestCollisionDistance:number, findClosest:boolean):boolean
+	public _iTestCollision(shortestCollisionDistance:number):boolean
 	{
 		return this._pPickingCollider.testBillboardCollision(this, this.material, this._pPickingCollisionVO, shortestCollisionDistance);
 	}
@@ -230,15 +230,9 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		this._updateDimensions();
 	}
 
-	public _applyRenderer(renderer:IRenderer)
+	public _acceptTraverser(traverser:CollectorBase)
 	{
-		// Since this getter is invoked every iteration of the render loop, and
-		// the prefab construct could affect the sub-meshes, the prefab is
-		// validated here to give it a chance to rebuild.
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-
-		renderer._iApplyRenderableOwner(this);
+		traverser.applyRenderable(this);
 	}
 
 	private _updateDimensions()
@@ -250,8 +244,8 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 		if (image) {
 			var sampler:Sampler2D = <Sampler2D> ((this._style? this._style.getSamplerAt(texture) : null) || (this.material.style? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || DefaultMaterialManager.getDefaultSampler());
 			var rect:Rectangle = sampler.imageRect || image.rect;
-			this._billboardWidth = rect.width;
-			this._billboardHeight = rect.height;
+			this._billboardWidth = rect.width*image.width;
+			this._billboardHeight = rect.height*image.height;
 			this._billboardRect = sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
 		} else {
 			this._billboardWidth = 1;
@@ -261,7 +255,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._pInvalidateBounds();
 
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_GEOMETRY, this));
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this));
 	}
 
 

@@ -14,7 +14,7 @@ class RenderOwnerEvent extends EventBase
 
 
 	/**
-	 * Create a new GeometryEvent
+	 * Create a new GraphicsEvent
 	 * @param type The event type.
 	 * @param dataType An optional data type of the vertex data being updated.
 	 */

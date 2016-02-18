@@ -31,10 +31,7 @@ import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import TransformEvent				= require("awayjs-display/lib/events/TransformEvent");
 import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
-
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
-import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
-
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -2138,20 +2135,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	}
 
 	/**
-	 * //TODO
-	 *
-	 * @param shortestCollisionDistance
-	 * @param findClosest
-	 * @returns {boolean}
-	 *
-	 * @internal
-	 */
-	public _iTestCollision(shortestCollisionDistance:number, findClosest:boolean):boolean
-	{
-		return false;
-	}
-
-	/**
 	 *
 	 */
 	public _iInternalUpdate()
@@ -2228,7 +2211,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
 	}
 
-	public _applyRenderer(renderer:IRenderer)
+	public _acceptTraverser(collector:CollectorBase)
 	{
 		//nothing to do here
 	}

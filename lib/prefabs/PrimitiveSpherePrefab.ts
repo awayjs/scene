@@ -1,8 +1,10 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
+import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
+import LineElements				= require("awayjs-display/lib/graphics/LineElements");
+import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
@@ -27,7 +29,7 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 	{
 		this._radius = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -42,7 +44,7 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 	{
 		this._segmentsW = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -58,7 +60,7 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 	{
 		this._segmentsH = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -74,7 +76,7 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 	{
 		this._yUp = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -85,9 +87,9 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 	 * @param segmentsH Defines the number of vertical segments that make up the sphere.
 	 * @param yUp Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(radius:number = 50, segmentsW:number = 16, segmentsH:number = 12, yUp:boolean = true)
+	constructor(material:MaterialBase = null, elementsType:string = "triangle", radius:number = 50, segmentsW:number = 16, segmentsH:number = 12, yUp:boolean = true)
 	{
-		super();
+		super(material, elementsType);
 
 		this._radius = radius;
 		this._segmentsW = segmentsW;
@@ -98,10 +100,10 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string)
 	{
 		var indices:Uint16Array;
-		var positions:Float32Array;
+		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
 
@@ -114,17 +116,17 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 		var numVertices:number;
 
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			numVertices = (this._segmentsH + 1)*(this._segmentsW + 1);
 
-			if (numVertices == triangleGeometry.numVertices && triangleGeometry.indices != null) {
-				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
-				positions = triangleGeometry.positions.get(numVertices);
-				normals = triangleGeometry.normals.get(numVertices);
-				tangents = triangleGeometry.tangents.get(numVertices);
+			if (numVertices == triangleGraphics.numVertices && triangleGraphics.indices != null) {
+				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+				positions = triangleGraphics.positions.get(numVertices);
+				normals = triangleGraphics.normals.get(numVertices);
+				tangents = triangleGraphics.tangents.get(numVertices);
 			} else {
 				indices = new Uint16Array((this._segmentsH - 1)*this._segmentsW*6);
 				positions = new Float32Array(numVertices*3);
@@ -231,18 +233,18 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 				}
 			}
 
-			triangleGeometry.setIndices(indices);
+			triangleGraphics.setIndices(indices);
 
-			triangleGeometry.setPositions(positions);
-			triangleGeometry.setNormals(normals);
-			triangleGeometry.setTangents(tangents);
+			triangleGraphics.setPositions(positions);
+			triangleGraphics.setNormals(normals);
+			triangleGraphics.setTangents(tangents);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 
-			var lineGeometry:LineSubGeometry = <LineSubGeometry> target;
+			var lineGraphics:LineElements = <LineElements> target;
 
 			var numSegments:number = this._segmentsH*this._segmentsW*2 + this._segmentsW;
-			var positions:Float32Array = new Float32Array(numSegments*6);
+			var positions:ArrayBufferView = new Float32Array(numSegments*6);
 			var thickness:Float32Array = new Float32Array(numSegments);
 
 			vidx = 0;
@@ -303,29 +305,29 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			lineGeometry.setPositions(positions);
-			lineGeometry.setThickness(thickness);
+			lineGraphics.setPositions(positions);
+			lineGraphics.setThickness(thickness);
 		}
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string)
 	{
 		var i:number, j:number;
 		var numVertices:number = (this._segmentsH + 1)*(this._segmentsW + 1);
-		var uvs:Float32Array;
+		var uvs:ArrayBufferView;
 
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
 			numVertices = (this._segmentsH + 1)*(this._segmentsW + 1);
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
-			if (numVertices == triangleGeometry.numVertices && triangleGeometry.uvs != null) {
-				uvs = triangleGeometry.uvs.get(numVertices);
+			if (numVertices == triangleGraphics.numVertices && triangleGraphics.uvs != null) {
+				uvs = triangleGraphics.uvs.get(numVertices);
 			} else {
 				uvs = new Float32Array(numVertices*2);
 			}
@@ -338,9 +340,9 @@ class PrimitiveSpherePrefab extends PrimitivePrefabBase
 				}
 			}
 
-			triangleGeometry.setUVs(uvs);
+			triangleGraphics.setUVs(uvs);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here
 		}
 	}

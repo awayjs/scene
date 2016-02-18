@@ -15,6 +15,7 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 /**
  * A Line Segment primitive.
@@ -66,7 +67,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._startPosition = value;
 
-		this.invalidateGeometry();
+		this.invalidateGraphics();
 	}
 
 	/**
@@ -84,7 +85,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._endPosition = value;
 
-		this.invalidateGeometry();
+		this.invalidateGraphics();
 	}
 
 	/**
@@ -121,7 +122,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._halfThickness = value*0.5;
 
-		this.invalidateGeometry();
+		this.invalidateGraphics();
 	}
 
 	/**
@@ -232,9 +233,9 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	/**
 	 * @private
 	 */
-	private invalidateGeometry()
+	private invalidateGraphics()
 	{
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_GEOMETRY, this));//TODO improve performance by only using one geometry for all line segments
+		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
 	}
 
 	public invalidateRenderOwner()
@@ -247,15 +248,23 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 		this.invalidateRenderOwner();
 	}
 
-	public _applyRenderer(renderer:IRenderer)
+	/**
+	 * //TODO
+	 *
+	 * @param shortestCollisionDistance
+	 * @param findClosest
+	 * @returns {boolean}
+	 *
+	 * @internal
+	 */
+	public _iTestCollision(shortestCollisionDistance:number):boolean
 	{
-		// Since this getter is invoked every iteration of the render loop, and
-		// the prefab construct could affect the sub-meshes, the prefab is
-		// validated here to give it a chance to rebuild.
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
+		return false; //TODO: detect line collisions
+	}
 
-		renderer._iApplyRenderableOwner(this);
+	public _acceptTraverser(traverser:CollectorBase)
+	{
+		traverser.applyRenderable(this);
 	}
 }
 

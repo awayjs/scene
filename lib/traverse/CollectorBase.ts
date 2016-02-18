@@ -1,12 +1,13 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 
 import Scene						= require("awayjs-display/lib/containers/Scene");
-import EntityListItem				= require("awayjs-display/lib/pool/EntityListItem");
-import EntityListItemPool			= require("awayjs-display/lib/pool/EntityListItemPool");
+import RenderableListItem				= require("awayjs-display/lib/pool/RenderableListItem");
+import RenderableListItemPool			= require("awayjs-display/lib/pool/RenderableListItemPool");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import Camera						= require("awayjs-display/lib/entities/Camera");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import INode						= require("awayjs-display/lib/partition/INode");
+import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 
 /**
  * @class away.traverse.CollectorBase
@@ -15,20 +16,18 @@ class CollectorBase
 {
 	public scene:Scene;
 
-	public _pEntityHead:EntityListItem;
-	public _pEntityListItemPool:EntityListItemPool;
+	public _pRenderableHead:RenderableListItem;
+	public _pRenderableListItemPool:RenderableListItemPool;
 	public _pCamera:Camera;
 	private _customCullPlanes:Array<Plane3D>;
 	private _cullPlanes:Array<Plane3D>;
 	private _numCullPlanes:number = 0;
-	public _pNumEntities:number = 0;
-	public _pNumInteractiveEntities:number = 0;
 
 	public isEntityCollector:boolean;
 
 	constructor()
 	{
-		this._pEntityListItemPool = new EntityListItemPool();
+		this._pRenderableListItemPool = new RenderableListItemPool();
 	}
 
 	/**
@@ -61,25 +60,9 @@ class CollectorBase
 	/**
 	 *
 	 */
-	public get entityHead():EntityListItem
+	public get renderableHead():RenderableListItem
 	{
-		return this._pEntityHead;
-	}
-
-	/**
-	 *
-	 */
-	public get numEntities():number
-	{
-		return this._pNumEntities;
-	}
-
-	/**
-	 *
-	 */
-	public get numInteractiveEntities():number
-	{
-		return this._pNumInteractiveEntities;
+		return this._pRenderableHead;
 	}
 
 	/**
@@ -87,11 +70,10 @@ class CollectorBase
 	 */
 	public clear()
 	{
-		this._pNumEntities = this._pNumInteractiveEntities = 0;
 		this._cullPlanes = this._customCullPlanes? this._customCullPlanes : ( this._pCamera? this._pCamera.frustumPlanes : null );
 		this._numCullPlanes = this._cullPlanes? this._cullPlanes.length : 0;
-		this._pEntityHead = null;
-		this._pEntityListItemPool.freeAll();
+		this._pRenderableHead = null;
+		this._pRenderableListItemPool.freeAll();
 	}
 
 	/**
@@ -121,18 +103,13 @@ class CollectorBase
 	 *
 	 * @param entity
 	 */
-	public applyEntity(entity:IEntity)
+	public applyRenderable(renderable:IRenderableOwner)
 	{
-		this._pNumEntities++;
+		var item:RenderableListItem = this._pRenderableListItemPool.getItem();
+		item.renderable = renderable;
 
-		if (entity._iIsMouseEnabled())
-			this._pNumInteractiveEntities++;
-
-		var item:EntityListItem = this._pEntityListItemPool.getItem();
-		item.entity = entity;
-
-		item.next = this._pEntityHead;
-		this._pEntityHead = item;
+		item.next = this._pRenderableHead;
+		this._pRenderableHead = item;
 	}
 
 	/**

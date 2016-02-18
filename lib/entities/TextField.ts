@@ -9,7 +9,6 @@ import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
-import ISubMesh						= require("awayjs-display/lib/base/ISubMesh");
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
@@ -20,15 +19,14 @@ import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
-import GeometryEvent				= require("awayjs-display/lib/events/GeometryEvent");
-import Geometry						= require("awayjs-display/lib/base/Geometry");
-import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
-import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+import Graphics						= require("awayjs-display/lib/graphics/Graphics");
+import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 import TextFormatAlign				= require("awayjs-display/lib/text/TextFormatAlign");
 import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
 
-import Sampler2D						= require("awayjs-core/lib/image/Sampler2D");
+import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import Style 						= require("awayjs-display/lib/base/Style");
 /**
  * The TextField class is used to create display objects for text display and
@@ -115,7 +113,7 @@ class TextField extends Mesh
 
 	public static assetType:string = "[asset TextField]";
 
-	private _textGeometryDirty:boolean;
+	private _textGraphicsDirty:boolean;
 	private _bottomScrollV:number;
 	private _caretIndex:number;
 	private _length:number;
@@ -629,7 +627,7 @@ class TextField extends Mesh
 
 		this._text = value;
 
-		this._textGeometryDirty = true;
+		this._textGraphicsDirty = true;
 	}
 
 	public get textFormat():TextFormat
@@ -644,71 +642,19 @@ class TextField extends Mesh
 
 		this._textFormat = value;
 
-		this._textGeometryDirty = true;
+		this._textGraphicsDirty = true;
 	}
 
 
 	/**
 	 * The geometry used by the mesh that provides it with its shape.
 	 */
-	public get geometry():Geometry
+	public get graphics():Graphics
 	{
-		if (this._textGeometryDirty)
+		if (this._textGraphicsDirty)
 			this.reConstruct();
 
-		return this._geometry;
-	}
-
-	public set geometry(value:Geometry)
-	{
-		if (this._geometry == value)
-			return;
-
-		var i:number;
-
-		if (this._geometry) {
-			this._geometry.removeEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
-			this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
-			this._geometry.removeEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
-
-			for (i = 0; i < this._subMeshes.length; ++i)
-				this._subMeshes[i].dispose();
-
-			this._subMeshes.length = 0;
-		}
-
-		this._geometry = value;
-
-		if (this._geometry) {
-
-			this._geometry.addEventListener(GeometryEvent.BOUNDS_INVALID, this._onGeometryBoundsInvalidDelegate);
-			this._geometry.addEventListener(GeometryEvent.SUB_GEOMETRY_ADDED, this._onSubGeometryAddedDelegate);
-			this._geometry.addEventListener(GeometryEvent.SUB_GEOMETRY_REMOVED, this._onSubGeometryRemovedDelegate);
-
-			var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
-
-			for (i = 0; i < subGeoms.length; ++i)
-				this.addSubMesh(subGeoms[i]);
-		}
-	}
-
-	/**
-	 *
-	 * @param renderer
-	 *
-	 * @internal
-	 */
-	public _applyRenderer(renderer:IRenderer)
-	{
-		// Since this getter is invoked every iteration of the render loop, and
-		// the prefab construct could affect the sub-meshes, the prefab is
-		// validated here to give it a chance to rebuild.
-		if (this._textGeometryDirty)
-			this.reConstruct();
-
-		var len:number /*uint*/ = this._subMeshes.length;
-		for (var i:number /*uint*/ = 0; i < len; i++)
-			renderer._iApplyRenderableOwner(this._subMeshes[i]);
+		return this._graphics;
 	}
 
 	/**
@@ -829,7 +775,7 @@ class TextField extends Mesh
 	 */
 	constructor()
 	{
-		super(new Geometry());
+		super();
 
 		this.type = TextFieldType.STATIC;
 	}
@@ -849,45 +795,23 @@ class TextField extends Mesh
 	 */
 	public disposeValues()
 	{
-		//dispose material before geometry to ensure owners are deleted
-		this.material = null;
-
-		//textfield has a unique geometry that can be disposed here
-		this._geometry.dispose();
-
 		super.disposeValues();
 
 		this._textFormat = null;
 	}
 
 	/**
-	 * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
-	 * material.
-	 */
-	public get subMeshes():Array<ISubMesh>
-	{
-		// Since this getter is invoked every iteration of the render loop, and
-		// the prefab construct could affect the sub-meshes, the prefab is
-		// validated here to give it a chance to rebuild.
-		if (this._textGeometryDirty)
-			this.reConstruct();
-
-		return this._subMeshes;
-	}
-
-	/**
-	 * Reconstructs the Geometry for this Text-field.
+	 * Reconstructs the Graphics for this Text-field.
 	 */
 	public reConstruct() {
 
-		this._textGeometryDirty = false;
+		this._textGraphicsDirty = false;
 
 		if(this._textFormat == null)
 			return;
 
-		var subGeoms:Array<SubGeometryBase> = this._geometry.subGeometries;
-		for (var i:number = subGeoms.length - 1; i>=0; i--)
-			this._geometry.removeSubGeometry(subGeoms[i]);
+		this._graphics.dispose();
+		this._graphics = new Graphics(this);
 
 		if(this._text == "")
 			return;
@@ -921,15 +845,15 @@ class TextField extends Mesh
 				var c_cnt:number = 0;
 				for (var w = 0; w < words[i].length; w++) {
 					char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-					var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.get_subgeo_for_char(words[i].charCodeAt(w).toString());
+					var this_char:TesselatedFontChar = <TesselatedFontChar> this._textFormat.font_table.getChar(words[i].charCodeAt(w).toString());
 					if (this_char == null) {
 						if (this._textFormat.fallback_font_table) {
 							char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
-							this_char = this._textFormat.fallback_font_table.get_subgeo_for_char(words[i].charCodeAt(w).toString());
+							this_char = this._textFormat.fallback_font_table.getChar(words[i].charCodeAt(w).toString());
 						}
 					}
 					if (this_char != null) {
-						var this_subGeom:CurveSubGeometry = this_char.subgeom;
+						var this_subGeom:TriangleElements = this_char.elements;
 						if (this_subGeom != null) {
 							// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
 							var kerning_value:number = 0;
@@ -1009,18 +933,16 @@ class TextField extends Mesh
 				var this_char:TesselatedFontChar = final_lines_chars[i][t];
 				char_scale = final_lines_char_scale[i][t];
 				if (this_char != null) {
-					var this_subGeom:CurveSubGeometry = this_char.subgeom;
-					if (this_subGeom != null) {
-						var positions2:Float32Array = this_subGeom.positions.get(this_subGeom.numVertices);
-						var curveData2:Float32Array = this_subGeom.curves.get(this_subGeom.numVertices);
-						for (var v:number = 0; v < this_subGeom.numVertices; v++) {
-							vertices[j++] = (positions2[v * 3] * char_scale) + x_offset;
-							vertices[j++] = (positions2[v * 3 + 1] * char_scale) + y_offset;
-							vertices[j++] = positions2[v * 3 + 2];
-							vertices[j++] = curveData2[v * 2];
-							vertices[j++] = curveData2[v * 2 + 1];
-							//vertices[j++] = this._textFormat.uv_values[0];
-							//vertices[j++] = this._textFormat.uv_values[1];
+					var elements:TriangleElements = this_char.elements;
+					if (elements != null) {
+						var positions2:ArrayBufferView = elements.positions.get(elements.numVertices);
+						var curveData2:ArrayBufferView = elements.getCustomAtributes("curves").get(elements.numVertices);
+						for (var v:number = 0; v < elements.numVertices; v++) {
+							vertices[j++] = (positions2[v*2]*char_scale) + x_offset;
+							vertices[j++] = (positions2[v*2 + 1]*char_scale) + y_offset;
+							vertices[j++] = curveData2[v*3];
+							vertices[j++] = curveData2[v*3 + 1];
+							vertices[j++] = curveData2[v*3 + 2];
 						}
 						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
 						var kerning_value:number = 0;
@@ -1057,18 +979,18 @@ class TextField extends Mesh
 		attributesView.set(vertices);
 		var vertexBuffer:AttributesBuffer = attributesView.buffer;
 		attributesView.dispose();
-		var curve_sub_geom:CurveSubGeometry = new CurveSubGeometry(vertexBuffer);
+		var curveElements:TriangleElements = new TriangleElements(vertexBuffer);
+		curveElements.setPositions(new Float2Attributes(vertexBuffer));
+		curveElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
 
-		this._geometry.addSubGeometry(curve_sub_geom);
+		this._graphics.addGraphic(curveElements);
 
 		this.material = this._textFormat.material;
 		var sampler:Sampler2D = new Sampler2D();
-		//sampler.imageRect = new Rectangle(this._textFormat.uv_values[0], this._textFormat.uv_values[1], 0, 0);
-		//this.material.imageRect = true;
-		this._subMeshes[0].style = new Style();
-		this._subMeshes[0].style.addSamplerAt(sampler, this._subMeshes[0].material.getTextureAt(0));
-		this._subMeshes[0].material.animateUVs = true;
-		this._subMeshes[0].uvTransform = new Matrix(0,0,0,0,this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+		this.style = new Style();
+		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+		this.material.animateUVs = true;
+		this.uvTransform = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
@@ -1444,9 +1366,6 @@ class TextField extends Mesh
 	public copyTo(newInstance:TextField)
 	{
 		super.copyTo(newInstance);
-
-		// each textfield needs its own geometry.
-		newInstance.geometry = new Geometry();
 
 		newInstance.textWidth = this._textWidth;
 		newInstance.textHeight = this._textHeight;

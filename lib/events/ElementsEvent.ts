@@ -4,28 +4,28 @@ import EventBase				= require("awayjs-core/lib/events/EventBase");
 /**
  * Dispatched to notify changes in a sub geometry object's state.
  *
- * @class away.events.SubGeometryEvent
- * @see away.core.base.Geometry
+ * @class away.events.ElementsEvent
+ * @see away.core.base.Graphics
  */
-class SubGeometryEvent extends EventBase
+class ElementsEvent extends EventBase
 {
 	/**
-	 * Dispatched when a SubGeometry's index data has been updated.
+	 * Dispatched when a Elements's index data has been updated.
 	 */
 	public static INVALIDATE_INDICES:string = "invalidateIndices";
 
 	/**
-	 * Dispatched when a SubGeometry's index data has been disposed.
+	 * Dispatched when a Elements's index data has been disposed.
 	 */
 	public static CLEAR_INDICES:string = "clearIndices";
 	
 	/**
-	 * Dispatched when a SubGeometry's vertex data has been updated.
+	 * Dispatched when a Elements's vertex data has been updated.
 	 */
 	public static INVALIDATE_VERTICES:string = "invalidateVertices";
 
 	/**
-	 * Dispatched when a SubGeometry's vertex data has been disposed.
+	 * Dispatched when a Elements's vertex data has been disposed.
 	 */
 	public static CLEAR_VERTICES:string = "clearVertices";
 
@@ -33,7 +33,7 @@ class SubGeometryEvent extends EventBase
 	private _attributesView:AttributesView;
 
 	/**
-	 * Create a new GeometryEvent
+	 * Create a new GraphicsEvent
 	 * @param type The event type.
 	 * @param attributesView An optional data type of the vertex data being updated.
 	 */
@@ -57,10 +57,10 @@ class SubGeometryEvent extends EventBase
 	 *
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():SubGeometryEvent
+	public clone():ElementsEvent
 	{
-		return new SubGeometryEvent(this.type, this._attributesView);
+		return new ElementsEvent(this.type, this._attributesView);
 	}
 }
 
-export = SubGeometryEvent;
+export = ElementsEvent;

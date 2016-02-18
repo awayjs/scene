@@ -77,6 +77,7 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	public _pBlendMode:string = BlendMode.NORMAL;
 
 	private _imageRect:boolean = false;
+	private _curves:boolean = false;
 
 	public _pLightPicker:LightPickerBase;
 
@@ -207,7 +208,25 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	}
 
 	/**
-	 * Indicates whether or not any used textures should use mipmapping. Defaults to true.
+	 * Indicates whether material should use curves. Defaults to false.
+	 */
+	public get curves():boolean
+	{
+		return this._curves;
+	}
+
+	public set curves(value:boolean)
+	{
+		if (this._curves == value)
+			return;
+
+		this._curves = value;
+
+		this.invalidatePasses();
+	}
+
+	/**
+	 * Indicates whether or not any used textures should use an atlas. Defaults to false.
 	 */
 	public get imageRect():boolean
 	{
@@ -226,7 +245,7 @@ class MaterialBase extends AssetBase implements IRenderOwner
 
 
 	/**
-	 * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
+	 * The style used to render the current TriangleGraphic. If set to null, its parent Mesh's style will be used instead.
 	 */
 	public get style():Style
 	{
@@ -587,6 +606,7 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	{
 		this.invalidatePasses();
 
+		//invalidate renderables for number of images getter (in case it has changed)
 		this.invalidateRenderOwners();
 	}
 

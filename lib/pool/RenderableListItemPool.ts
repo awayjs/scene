@@ -1,30 +1,22 @@
-import EntityListItem				= require("awayjs-display/lib/pool/EntityListItem");
+import RenderableListItem				= require("awayjs-display/lib/pool/RenderableListItem");
 
 /**
- * @class away.pool.EntityListItemPool
+ * @class away.pool.RenderableListItemPool
  */
-class EntityListItemPool
+class RenderableListItemPool
 {
-	private _pool:Array<EntityListItem>;
+	private _pool:Array<RenderableListItem> = new Array<RenderableListItem>();
 	private _index:number = 0;
 	private _poolSize:number = 0;
 
 	/**
 	 *
 	 */
-	constructor()
+	public getItem():RenderableListItem
 	{
-		this._pool = new Array<EntityListItem>();
-	}
-
-	/**
-	 *
-	 */
-	public getItem():EntityListItem
-	{
-		var item:EntityListItem;
+		var item:RenderableListItem;
 		if (this._index == this._poolSize) {
-			item = new EntityListItem();
+			item = new RenderableListItem();
 			this._pool[this._index++] = item;
 			++this._poolSize;
 		} else {
@@ -38,11 +30,11 @@ class EntityListItemPool
 	 */
 	public freeAll()
 	{
-		var item:EntityListItem;
+		var item:RenderableListItem;
 		var len:number = this._pool.length;
 		for (var i:number = 0; i < len; i++) {
 			item = this._pool[i];
-			item.entity = null;
+			item.renderable = null;
 			item.next = null;
 		}
 
@@ -55,4 +47,4 @@ class EntityListItemPool
 	}
 }
 
-export = EntityListItemPool;
+export = RenderableListItemPool;

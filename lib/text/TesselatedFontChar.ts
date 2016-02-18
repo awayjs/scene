@@ -1,6 +1,6 @@
 import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -37,9 +37,9 @@ class TesselatedFontChar
 	public char_width:number;
 
 	/**
-	 * SubGeometry for this char
+	 * Elements for this char
 	 */
-	public subgeom:CurveSubGeometry;
+	public elements:TriangleElements;
 
 	/**
 	 * the char_codes that this geom has kerning set for
@@ -51,15 +51,19 @@ class TesselatedFontChar
 	public kerningValues:Array<number>=new Array<number>();
 
 
-	constructor(subgeom:CurveSubGeometry)
+	constructor(elements:TriangleElements)
 	{
-		this.char_width=0;
-		this.subgeom = subgeom;
-		if (this.subgeom != null) {
-			var positions2:Float32Array = this.subgeom.positions.get(this.subgeom.numVertices);
-			for (var v:number = 0; v < positions2.length/3; v++) {
-				if(positions2[v*3]>this.char_width)
-					this.char_width=positions2[v*3];
+		this.elements = elements;
+
+		this.char_width = 0;
+
+		if (this.elements != null) {
+			var positions2:ArrayBufferView = this.elements.positions.get(this.elements.numVertices);
+			var count:number = this.elements.positions.count;
+			var dim:number = this.elements.positions.dimensions;
+			for (var v:number = 0; v < count*dim; v+=dim) {
+				if(positions2[v] > this.char_width)
+					this.char_width = positions2[v];
 			}
 		}
 	}

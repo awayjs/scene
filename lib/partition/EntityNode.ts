@@ -10,6 +10,8 @@ import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEv
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
+import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import Mesh							= require("awayjs-display/lib/entities/Mesh");
 /**
  * @class away.partition.EntityNode
  */
@@ -84,10 +86,10 @@ class EntityNode extends DisplayObjectNode
 	public acceptTraverser(traverser:CollectorBase)
 	{
 		if (traverser.enterNode(this)) {
-			traverser.applyEntity(<IEntity> this._displayObject);
+			this._displayObject._acceptTraverser(traverser);
 
 			if (this._displayObject.debugVisible && traverser.isEntityCollector)
-				traverser.applyEntity(this.bounds.boundsPrimitive);
+				this.bounds.boundsPrimitive._acceptTraverser(traverser);
 		}
 	}
 

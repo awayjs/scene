@@ -4,6 +4,7 @@ import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
+import ElementsType					= require("awayjs-display/lib/graphics/ElementsType");
 import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
 import IEntity						= require("awayjs-display/lib/entities/IEntity");
 import Mesh							= require("awayjs-display/lib/entities/Mesh");
@@ -115,8 +116,7 @@ class BoundingSphere extends BoundingVolumeBase
 
 	public _pCreateBoundsPrimitive():Mesh
 	{
-		this._prefab = new PrimitiveSpherePrefab();
-		this._prefab.geometryType = "lineSubGeometry";
+		this._prefab = new PrimitiveSpherePrefab(null, ElementsType.LINE);
 
 		return <Mesh> this._prefab.getNewObject();
 	}

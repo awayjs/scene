@@ -1,8 +1,10 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
-import LineSubGeometry			= require("awayjs-display/lib/base/LineSubGeometry");
-import SubGeometryBase			= require("awayjs-display/lib/base/SubGeometryBase");
-import TriangleSubGeometry		= require("awayjs-display/lib/base/TriangleSubGeometry");
+import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
+import LineElements				= require("awayjs-display/lib/graphics/LineElements");
+import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
@@ -34,7 +36,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public set topRadius(value:number)
 	{
 		this._topRadius = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -48,7 +50,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public set bottomRadius(value:number)
 	{
 		this._pBottomRadius = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -62,7 +64,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public set height(value:number)
 	{
 		this._height = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -81,7 +83,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public setSegmentsW(value:number)
 	{
 		this._pSegmentsW = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 	}
 
@@ -103,7 +105,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public setSegmentsH(value:number)
 	{
 		this._pSegmentsH = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
 
 	}
@@ -119,7 +121,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public set topClosed(value:boolean)
 	{
 		this._topClosed = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -133,7 +135,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public set bottomClosed(value:boolean)
 	{
 		this._bottomClosed = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -147,7 +149,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	public set yUp(value:boolean)
 	{
 		this._yUp = value;
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -161,9 +163,9 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	 * @param bottomClosed Defines whether the bottom end of the cylinder is closed (true) or open.
 	 * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(topRadius:number = 50, bottomRadius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 1, topClosed:boolean = true, bottomClosed:boolean = true, surfaceClosed:boolean = true, yUp:boolean = true)
+	constructor(material:MaterialBase = null, elementsType:string = "triangle", topRadius:number = 50, bottomRadius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 1, topClosed:boolean = true, bottomClosed:boolean = true, surfaceClosed:boolean = true, yUp:boolean = true)
 	{
-		super();
+		super(material, elementsType);
 
 		this._topRadius = topRadius;
 		this._pBottomRadius = bottomRadius;
@@ -180,10 +182,10 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGeometry(target:SubGeometryBase, geometryType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string)
 	{
 		var indices:Uint16Array;
-		var positions:Float32Array;
+		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
 
@@ -218,9 +220,9 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 		// evaluate revolution steps
 		var revolutionAngleDelta:number = 2*Math.PI/this._pSegmentsW;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			// evaluate target number of vertices, triangles and indices
 			if (this._surfaceClosed) {
@@ -237,11 +239,11 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			}
 
 			// need to initialize raw arrays or can be reused?
-			if (this._numVertices == triangleGeometry.numVertices) {
-				indices = triangleGeometry.indices.get(triangleGeometry.numElements);
-				positions = triangleGeometry.positions.get(this._numVertices);
-				normals = triangleGeometry.normals.get(this._numVertices);
-				tangents = triangleGeometry.tangents.get(this._numVertices);
+			if (this._numVertices == triangleGraphics.numVertices) {
+				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+				positions = triangleGraphics.positions.get(this._numVertices);
+				normals = triangleGraphics.normals.get(this._numVertices);
+				tangents = triangleGraphics.tangents.get(this._numVertices);
 			} else {
 				indices = new Uint16Array(numIndices);
 				positions = new Float32Array(this._numVertices*3);
@@ -504,17 +506,17 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			triangleGeometry.setIndices(indices);
+			triangleGraphics.setIndices(indices);
 
-			triangleGeometry.setPositions(positions);
-			triangleGeometry.setNormals(normals);
-			triangleGeometry.setTangents(tangents);
+			triangleGraphics.setPositions(positions);
+			triangleGraphics.setNormals(normals);
+			triangleGraphics.setTangents(tangents);
 
-		} else if (geometryType == "lineSubGeometry") {
-			var lineGeometry:LineSubGeometry = <LineSubGeometry> target;
+		} else if (elementsType == ElementsType.LINE) {
+			var lineGraphics:LineElements = <LineElements> target;
 
 			var numSegments:number = this._pSegmentsH*this._pSegmentsW*2 + this._pSegmentsW;
-			var positions:Float32Array = new Float32Array(numSegments*6);
+			positions = new Float32Array(numSegments*6);
 			var thickness:Float32Array = new Float32Array(numSegments);
 
 			vidx = 0;
@@ -574,30 +576,30 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			lineGeometry.setPositions(positions);
-			lineGeometry.setThickness(thickness);
+			lineGraphics.setPositions(positions);
+			lineGraphics.setThickness(thickness);
 		}
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:SubGeometryBase, geometryType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string)
 	{
 		var i:number;
 		var j:number;
 		var x:number;
 		var y:number;
 		var revolutionAngle:number;
-		var uvs:Float32Array;
+		var uvs:ArrayBufferView;
 
-		if (geometryType == "triangleSubGeometry") {
+		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGeometry:TriangleSubGeometry = <TriangleSubGeometry> target;
+			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			// need to initialize raw array or can be reused?
-			if (triangleGeometry.uvs && this._numVertices == triangleGeometry.numVertices) {
-				uvs = triangleGeometry.uvs.get(this._numVertices);
+			if (triangleGraphics.uvs && this._numVertices == triangleGraphics.numVertices) {
+				uvs = triangleGraphics.uvs.get(this._numVertices);
 			} else {
 				uvs = new Float32Array(this._numVertices*2);
 			}
@@ -654,9 +656,9 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			}
 
 			// build real data from raw data
-			triangleGeometry.setUVs(uvs);
+			triangleGraphics.setUVs(uvs);
 
-		} else if (geometryType == "lineSubGeometry") {
+		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here
 		}
 	}

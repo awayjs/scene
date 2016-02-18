@@ -1,17 +1,17 @@
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
-import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
-import CurveSubGeometry				= require("awayjs-display/lib/base/CurveSubGeometry");
+import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 
 /**
- * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+ * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Mesh object.
  *
  *
- * @see away.base.TriangleSubGeometry
+ * @see away.base.TriangleElements
  * @see away.entities.Mesh
  *
- * @class away.base.SubMeshBase
+ * @class away.base.GraphicBase
  */
 class TesselatedFontTable extends AssetBase
 {
@@ -87,19 +87,19 @@ class TesselatedFontTable extends AssetBase
 	/**
 	 *
 	 */
-	public get_subgeo_for_char(char:string):TesselatedFontChar
+	public getChar(name:string):TesselatedFontChar
 	{
-		return this._font_chars_dic[char];
+		return this._font_chars_dic[name];
 	}
 	/**
 	 *
 	 */
-	public set_subgeo_for_char(char:string, subgeo:SubGeometryBase):void
+	public setChar(name:string, elements:ElementsBase):void
 	{
-		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(<CurveSubGeometry>subgeo);
-		subgeo.name=char;
+		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(<TriangleElements> elements);
+		elements.name = name;
 		this._font_chars.push(tesselated_font_char);
-		this._font_chars_dic[char]=tesselated_font_char;
+		this._font_chars_dic[name]=tesselated_font_char;
 	}
 
 }

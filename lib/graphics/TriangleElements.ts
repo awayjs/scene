@@ -10,28 +10,27 @@ import Sphere						= require("awayjs-core/lib/geom/Sphere");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import SubGeometryBase				= require("awayjs-display/lib/base/SubGeometryBase");
+import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import SubGeometryUtils				= require("awayjs-display/lib/utils/SubGeometryUtils");
+import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 
 /**
- * @class away.base.TriangleSubGeometry
+ * @class away.base.TriangleElements
  */
-class TriangleSubGeometry extends SubGeometryBase
+class TriangleElements extends ElementsBase
 {
-	public static assetType:string = "[asset TriangleSubGeometry]";
+	public static assetType:string = "[asset TriangleElements]";
 
 	private _numVertices:number = 0;
 	private _faceNormalsDirty:boolean = true;
 	private _faceTangentsDirty:boolean = true;
 
-	private _positions:Float3Attributes;
+	private _positions:AttributesView;
 	private _normals:Float3Attributes;
 	private _tangents:Float3Attributes;
-	private _uvs:Float2Attributes;
-	private _secondaryUVs:Float2Attributes;
+	private _uvs:AttributesView;
 	private _jointIndices:AttributesView;
 	private _jointWeights:AttributesView;
 
@@ -42,14 +41,18 @@ class TriangleSubGeometry extends SubGeometryBase
 
 	private _autoDeriveNormals:boolean = true;
 	private _autoDeriveTangents:boolean = true;
-	private _autoDeriveUVs:boolean = false;
 
 	private _faceNormals:Float4Attributes;
 	private _faceTangents:Float3Attributes;
 
+	//used for hittesting geometry
+	public cells:Array<Array<number>> = new Array<Array<number>>();
+	public lastCollisionIndex:number = - 1;
+	public divisions:number;
+
 	public get assetType():string
 	{
-		return TriangleSubGeometry.assetType;
+		return TriangleElements.assetType;
 	}
 
 
@@ -99,24 +102,6 @@ class TriangleSubGeometry extends SubGeometryBase
 	}
 
 	/**
-	 * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-	 * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-	 * in cases where UV data is explicitly defined or the material does not require UV data.
-	 */
-	public get autoDeriveUVs():boolean
-	{
-		return this._autoDeriveUVs;
-	}
-
-	public set autoDeriveUVs(value:boolean)
-	{
-		if (this._autoDeriveUVs == value)
-			return;
-
-		this._autoDeriveUVs = value;
-	}
-
-	/**
 	 * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
 	 * explicitly.
 	 */
@@ -153,8 +138,11 @@ class TriangleSubGeometry extends SubGeometryBase
 	/**
 	 *
 	 */
-	public get positions():Float3Attributes
+	public get positions():AttributesView
 	{
+		if (!this._positions)
+			this.setPositions(new Float3Attributes(this._concatenatedBuffer));
+
 		return this._positions;
 	}
 
@@ -205,20 +193,9 @@ class TriangleSubGeometry extends SubGeometryBase
 	/**
 	 *
 	 */
-	public get uvs():Float2Attributes
+	public get uvs():AttributesView
 	{
-		if (!this._uvs || this._verticesDirty[this._uvs.id])
-			this.setUVs(this._uvs);
-
 		return this._uvs;
-	}
-
-	/**
-	 *
-	 */
-	public get secondaryUVs():Float2Attributes
-	{
-		return this._secondaryUVs;
 	}
 
 	/**
@@ -242,26 +219,14 @@ class TriangleSubGeometry extends SubGeometryBase
 		return this._condensedIndexLookUp;
 	}
 
-	/**
-	 *
-	 */
-	constructor(concatenatedBuffer:AttributesBuffer = null)
-	{
-		super(concatenatedBuffer);
-
-		this._positions = this._concatenatedBuffer? <Float3Attributes> this._concatenatedBuffer.getView(0) || new Float3Attributes(this._concatenatedBuffer) : new Float3Attributes();
-
-		this._numVertices = this._positions.count;
-	}
-
 	public getBoxBounds(target:Box = null):Box
 	{
-		return SubGeometryUtils.getTriangleGeometryBoxBounds(this._positions, target, this._numVertices);
+		return ElementsUtils.getTriangleGraphicsBoxBounds(this.positions, target, this._numVertices);
 	}
 
 	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
 	{
-		return SubGeometryUtils.getTriangleGeometrySphereBounds(this._positions, center, target, this._numVertices);
+		return ElementsUtils.getTriangleGraphicsSphereBounds(this.positions, center, target, this._numVertices);
 	}
 
 	public hitTestPoint(x:number, y:number, z:number):boolean
@@ -273,21 +238,24 @@ class TriangleSubGeometry extends SubGeometryBase
 	 *
 	 */
 	public setPositions(array:Array<number>, offset?:number);
-	public setPositions(float32Array:Float32Array, offset?:number);
-	public setPositions(float3Attributes:Float3Attributes, offset?:number);
+	public setPositions(arrayBufferView:ArrayBufferView, offset?:number);
+	public setPositions(attributesView:AttributesView, offset?:number);
 	public setPositions(values:any, offset:number = 0)
 	{
 		if (values == this._positions)
 			return;
 
-		if (values instanceof Float3Attributes) {
+		if (values instanceof AttributesView) {
 			this.clearVertices(this._positions);
-			this._positions = <Float3Attributes> values;
+			this._positions = <AttributesView> values;
 		} else if (values) {
+			if (!this._positions)
+				this._positions = new Float3Attributes(this._concatenatedBuffer);
+
 			this._positions.set(values, offset);
 		} else {
 			this.clearVertices(this._positions);
-			this._positions = new Float3Attributes(this._concatenatedBuffer);
+			this._positions = new Float3Attributes(this._concatenatedBuffer); //positions cannot be null
 		}
 
 		this._numVertices = this._positions.count;
@@ -297,11 +265,6 @@ class TriangleSubGeometry extends SubGeometryBase
 
 		if (this._autoDeriveTangents)
 			this.invalidateVertices(this._tangents);
-
-		if (this._autoDeriveUVs)
-			this.invalidateVertices(this._uvs);
-
-		this.pInvalidateBounds();
 
 		this.invalidateVertices(this._positions);
 
@@ -334,10 +297,7 @@ class TriangleSubGeometry extends SubGeometryBase
 				return;
 			}
 		} else {
-			if (this._faceNormalsDirty)
-				this.updateFaceNormals();
-
-			this._normals = SubGeometryUtils.generateNormals(this._pIndices, this._faceNormals, this._normals, this._concatenatedBuffer);
+			this._normals = ElementsUtils.generateNormals(this.indices, this.faceNormals, this._normals, this._concatenatedBuffer);
 		}
 
 		this.invalidateVertices(this._normals);
@@ -359,7 +319,7 @@ class TriangleSubGeometry extends SubGeometryBase
 
 			if (values instanceof Float3Attributes) {
 				this.clearVertices(this._tangents);
-				this._tangents = <Float3Attributes> values;
+				this._tangents = values;
 			} else if (values) {
 				if (!this._tangents)
 					this._tangents = new Float3Attributes(this._concatenatedBuffer);
@@ -371,13 +331,7 @@ class TriangleSubGeometry extends SubGeometryBase
 				return;
 			}
 		} else {
-			if (this._faceTangentsDirty)
-				this.updateFaceTangents();
-
-			if (this._faceNormalsDirty)
-				this.updateFaceNormals();
-
-			this._tangents = SubGeometryUtils.generateTangents(this._pIndices, this._faceTangents, this._faceNormals, this._tangents, this._concatenatedBuffer);
+			this._tangents = ElementsUtils.generateTangents(this.indices, this.faceTangents, this.faceNormals, this._tangents, this._concatenatedBuffer);
 		}
 
 		this.invalidateVertices(this._tangents);
@@ -389,67 +343,30 @@ class TriangleSubGeometry extends SubGeometryBase
 	 * Updates the uvs based on the geometry.
 	 */
 	public setUVs(array:Array<number>, offset?:number);
-	public setUVs(float32Array:Float32Array, offset?:number);
-	public setUVs(float2Attributes:Float2Attributes, offset?:number);
+	public setUVs(arrayBufferView:ArrayBufferView, offset?:number);
+	public setUVs(attributesView:AttributesView, offset?:number);
 	public setUVs(values:any, offset:number = 0)
 	{
-		if (!this._autoDeriveUVs) {
-			if (values == this._uvs)
-				return;
+		if (values == this._uvs)
+			return;
 
-			if (values instanceof Float2Attributes) {
-				this.clearVertices(this._uvs);
-				this._uvs = <Float2Attributes> values;
-			} else if (values) {
-				if (!this._uvs)
-					this._uvs = new Float2Attributes(this._concatenatedBuffer);
+		if (values instanceof AttributesView) {
+			this.clearVertices(this._uvs);
+			this._uvs = values;
+		} else if (values) {
+			if (!this._uvs)
+				this._uvs = new Float2Attributes(this._concatenatedBuffer);
 
-				this._uvs.set(values, offset);
-			} else if (this._uvs) {
-				this.clearVertices(this._uvs);
-				this._uvs = null;
-				return;
-			}
-		} else {
-			this._uvs = SubGeometryUtils.generateUVs(this._pIndices, this._uvs, this._concatenatedBuffer, this._numVertices);
+			this._uvs.set(values, offset);
+		} else if (this._uvs) {
+			this.clearVertices(this._uvs);
+			this._uvs = null;
+			return;
 		}
-
-		if (this._autoDeriveTangents)
-			this.invalidateVertices(this._tangents);
 
 		this.invalidateVertices(this._uvs);
 
 		this._verticesDirty[this._uvs.id] = false;
-	}
-
-	/**
-	 * Updates the secondary uvs based on the geometry.
-	 */
-	public setSecondaryUVs(array:Array<number>, offset?:number);
-	public setSecondaryUVs(float32Array:Float32Array, offset?:number);
-	public setSecondaryUVs(float2Attributes:Float2Attributes, offset?:number);
-	public setSecondaryUVs(values:any, offset:number = 0)
-	{
-		if (values == this._secondaryUVs)
-			return;
-
-		if (values instanceof Float2Attributes) {
-			this.clearVertices(this._secondaryUVs);
-			this._secondaryUVs = <Float2Attributes> values;
-		} else if (values) {
-			if (!this._secondaryUVs)
-				this._secondaryUVs = new Float2Attributes(this._concatenatedBuffer);
-
-			this._secondaryUVs.set(values, offset);
-		} else if (this._secondaryUVs) {
-			this.clearVertices(this._secondaryUVs);
-			this._secondaryUVs = null;
-			return;
-		}
-
-		this.invalidateVertices(this._secondaryUVs);
-
-		this._verticesDirty[this._secondaryUVs.id] = false;
 	}
 
 	/**
@@ -465,7 +382,7 @@ class TriangleSubGeometry extends SubGeometryBase
 
 		if (values instanceof AttributesView) {
 			this.clearVertices(this._jointIndices);
-			this._jointIndices = <AttributesView> values;
+			this._jointIndices = values;
 		} else if (values) {
 			if (!this._jointIndices)
 				this._jointIndices = new AttributesView(Float32Array, this._jointsPerVertex, this._concatenatedBuffer);
@@ -518,7 +435,7 @@ class TriangleSubGeometry extends SubGeometryBase
 
 		if (values instanceof AttributesView) {
 			this.clearVertices(this._jointWeights);
-			this._jointWeights = <AttributesView> values;
+			this._jointWeights = values;
 		} else if (values) {
 			if (!this._jointWeights)
 				this._jointWeights = new AttributesView(Float32Array, this._jointsPerVertex, this._concatenatedBuffer);
@@ -543,8 +460,10 @@ class TriangleSubGeometry extends SubGeometryBase
 	{
 		super.dispose();
 
-		this._positions.dispose();
-		this._positions = null;
+		if (this._positions) {
+			this._positions.dispose();
+			this._positions = null;
+		}
 
 		if (this._normals) {
 			this._normals.dispose();
@@ -559,11 +478,6 @@ class TriangleSubGeometry extends SubGeometryBase
 		if (this._uvs) {
 			this._uvs.dispose();
 			this._uvs = null;
-		}
-
-		if (this._secondaryUVs) {
-			this._secondaryUVs.dispose();
-			this._secondaryUVs = null;
 		}
 
 		if (this._jointIndices) {
@@ -588,7 +502,7 @@ class TriangleSubGeometry extends SubGeometryBase
 	}
 
 	/**
-	 * Updates the face indices of the TriangleSubGeometry.
+	 * Updates the face indices of the TriangleElements.
 	 *
 	 * @param indices The face indices to upload.
 	 */
@@ -607,58 +521,57 @@ class TriangleSubGeometry extends SubGeometryBase
 
 		if (this._autoDeriveTangents)
 			this.invalidateVertices(this._tangents);
+	}
 
-		if (this._autoDeriveUVs)
-			this.invalidateVertices(this._uvs);
+	public copyTo(elements:TriangleElements)
+	{
+		super.copyTo(elements);
+
+		//temp disable auto derives
+		elements.autoDeriveNormals = false;
+		elements.autoDeriveTangents = false;
+
+		elements.setPositions(this.positions.clone());
+
+		if (this.normals)
+			elements.setNormals(this.normals.clone());
+
+		if (this.tangents)
+			elements.setTangents(this.tangents.clone());
+
+		if (this.uvs)
+			elements.setUVs(this.uvs.clone());
+
+		elements.jointsPerVertex = this._jointsPerVertex;
+
+		if (this.jointIndices)
+			elements.setJointIndices(this.jointIndices.clone());
+
+		if (this.jointWeights)
+			elements.setJointWeights(this.jointWeights.clone());
+
+		//return auto derives to cloned values
+		elements.autoDeriveNormals = this._autoDeriveNormals;
+		elements.autoDeriveTangents = this._autoDeriveTangents;
 	}
 
 	/**
 	 * Clones the current object
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():TriangleSubGeometry
+	public clone():TriangleElements
 	{
-		var clone:TriangleSubGeometry = new TriangleSubGeometry(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
+		var clone:TriangleElements = new TriangleElements(this._concatenatedBuffer? this._concatenatedBuffer.clone() : null);
 
-		//temp disable auto derives
-		clone.autoDeriveNormals = false;
-		clone.autoDeriveTangents = false;
-		clone.autoDeriveUVs = false;
-
-		if (this.indices)
-			clone.setIndices(this.indices.clone());
-
-		if (this.normals)
-			clone.setNormals(this.normals.clone());
-
-		if (this.uvs)
-			clone.setUVs(this.uvs.clone());
-
-		if (this.tangents)
-			clone.setTangents(this.tangents.clone());
-
-		if (this.secondaryUVs)
-			clone.setSecondaryUVs(this.secondaryUVs.clone());
-
-		clone.jointsPerVertex = this._jointsPerVertex;
-
-		if (this.jointIndices)
-			clone.setJointIndices(this.jointIndices.clone());
-
-		if (this.jointWeights)
-			clone.setJointWeights(this.jointWeights.clone());
-
-		//return auto derives to cloned values
-		clone.autoDeriveNormals = this._autoDeriveNormals;
-		clone.autoDeriveTangents = this._autoDeriveTangents;
-		clone.autoDeriveUVs = this._autoDeriveUVs;
+		this.copyTo(clone);
 
 		return clone;
 	}
 
 	public scaleUV(scaleU:number = 1, scaleV:number = 1)
 	{
-		SubGeometryUtils.scaleUVs(scaleU, scaleV, this.uvs, this.uvs.count);
+		if (this.uvs) // only scale if uvs exist
+			ElementsUtils.scaleUVs(scaleU, scaleV, this.uvs, this._numVertices);
 	}
 
 	/**
@@ -667,12 +580,12 @@ class TriangleSubGeometry extends SubGeometryBase
 	 */
 	public scale(scale:number)
 	{
-		SubGeometryUtils.scale(scale, this.positions, this._numVertices);
+		ElementsUtils.scale(scale, this.positions, this._numVertices);
 	}
 
 	public applyTransformation(transform:Matrix3D)
 	{
-		SubGeometryUtils.applyTransformation(transform, this.positions, this.normals, this.tangents, this._numVertices);
+		ElementsUtils.applyTransformation(transform, this.positions, this.normals, this.tangents, this._numVertices);
 	}
 
 	/**
@@ -680,7 +593,7 @@ class TriangleSubGeometry extends SubGeometryBase
 	 */
 	private updateFaceTangents()
 	{
-		this._faceTangents = SubGeometryUtils.generateFaceTangents(this._pIndices, this._positions, this.uvs, this._faceTangents, this._pIndices.count);
+		this._faceTangents = ElementsUtils.generateFaceTangents(this.indices, this.positions, this.uvs || this.positions, this._faceTangents, this.numElements);
 
 		this._faceTangentsDirty = false;
 	}
@@ -690,7 +603,7 @@ class TriangleSubGeometry extends SubGeometryBase
 	 */
 	private updateFaceNormals()
 	{
-		this._faceNormals = SubGeometryUtils.generateFaceNormals(this._pIndices, this._positions, this._faceNormals, this._pIndices.count);
+		this._faceNormals = ElementsUtils.generateFaceNormals(this.indices, this.positions, this._faceNormals, this.numElements);
 
 		this._faceNormalsDirty = false;
 	}
@@ -701,4 +614,4 @@ class TriangleSubGeometry extends SubGeometryBase
 	}
 }
 
-export = TriangleSubGeometry;
+export = TriangleElements;

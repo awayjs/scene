@@ -6,7 +6,7 @@ import IRenderableOwner					= require("awayjs-display/lib/base/IRenderableOwner"
  * Dispatched to notify changes in a sub geometry object's state.
  *
  * @class away.events.RenderableOwnerEvent
- * @see away.core.base.Geometry
+ * @see away.core.base.Graphics
  */
 class RenderableOwnerEvent extends EventBase
 {
@@ -18,12 +18,12 @@ class RenderableOwnerEvent extends EventBase
 	/**
 	 *
 	 */
-	public static INVALIDATE_GEOMETRY:string = "invalidateGeometry";
+	public static INVALIDATE_ELEMENTS:string = "invalidateElements";
 
 	private _renderableOwner:IRenderableOwner;
 
 	/**
-	 * Create a new GeometryEvent
+	 * Create a new GraphicsEvent
 	 * @param type The event type.
 	 * @param dataType An optional data type of the vertex data being updated.
 	 */

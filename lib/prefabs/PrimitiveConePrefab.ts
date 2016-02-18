@@ -1,5 +1,6 @@
 import IAsset					= require("awayjs-core/lib/library/IAsset");
 
+import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitiveCylinderPrefab	= require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 
 /**
@@ -20,7 +21,7 @@ class PrimitiveConePrefab extends PrimitiveCylinderPrefab
 	{
 		this._pBottomRadius = value;
 
-		this._pInvalidateGeometry();
+		this._pInvalidatePrimitive();
 	}
 
 	/**
@@ -31,9 +32,9 @@ class PrimitiveConePrefab extends PrimitiveCylinderPrefab
 	 * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
 	 * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(radius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 1, closed:boolean = true, yUp:boolean = true)
+	constructor(material:MaterialBase = null, elementsType:string = "triangle", radius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 1, closed:boolean = true, yUp:boolean = true)
 	{
-		super(0, radius, height, segmentsW, segmentsH, false, closed, true, yUp);
+		super(material, elementsType, 0, radius, height, segmentsW, segmentsH, false, closed, true, yUp);
 	}
 }
 
