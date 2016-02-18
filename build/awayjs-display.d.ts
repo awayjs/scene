@@ -9,6 +9,85 @@ declare module "awayjs-display/display" {
 	
 }
 
+declare module "awayjs-display/lib/IRenderer" {
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/entities/Camera");
+	/**
+	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderer
+	 */
+	interface IRenderer extends IEventDispatcher {
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    viewPort: Rectangle;
+	    /**
+	     *
+	     */
+	    scissorRect: Rectangle;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(entityCollector: CollectorBase): any;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundR: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundG: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundB: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundAlpha: number;
+	    /**
+	     * @internal
+	     */
+	    _iCreateEntityCollector(): CollectorBase;
+	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
+	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
+	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
+	}
+	export = IRenderer;
+	
+}
+
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -120,6 +199,18 @@ declare module "awayjs-display/lib/animators/IAnimator" {
 	
 }
 
+declare module "awayjs-display/lib/animators/data/ParticleData" {
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+	class ParticleData {
+	    particleIndex: number;
+	    numVertices: number;
+	    startVertexIndex: number;
+	    elements: TriangleElements;
+	}
+	export = ParticleData;
+	
+}
+
 declare module "awayjs-display/lib/animators/nodes/AnimationNodeBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	/**
@@ -164,139 +255,6 @@ declare module "awayjs-display/lib/base/AlignmentMode" {
 	
 }
 
-declare module "awayjs-display/lib/base/CurveSubGeometry" {
-	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
-	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
-	import Box = require("awayjs-core/lib/geom/Box");
-	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	/**
-	 * @class away.base.CurveSubGeometry
-	 */
-	class CurveSubGeometry extends SubGeometryBase {
-	    static assetType: string;
-	    private _numVertices;
-	    private _positions;
-	    private _curves;
-	    private _uvs;
-	    cells: Array<Array<number>>;
-	    lastCollisionIndex: number;
-	    divisions: number;
-	    assetType: string;
-	    numVertices: number;
-	    /**
-	     *
-	     */
-	    positions: Float3Attributes;
-	    /**
-	     *
-	     */
-	    curves: Float2Attributes;
-	    /**
-	     *
-	     */
-	    uvs: AttributesView;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedBuffer?: AttributesBuffer);
-	    getBoxBounds(target?: Box): Box;
-	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
-	    /**
-	     *
-	     */
-	    setPositions(array: Array<number>, offset?: number): any;
-	    setPositions(float32Array: Float32Array, offset?: number): any;
-	    setPositions(float3Attributes: Float3Attributes, offset?: number): any;
-	    /**
-	     * Updates the vertex normals based on the geometry.
-	     */
-	    setCurves(array: Array<number>, offset?: number): any;
-	    setCurves(float32Array: Float32Array, offset?: number): any;
-	    setCurves(float2Attributes: Float2Attributes, offset?: number): any;
-	    /**
-	     * Updates the uvs based on the geometry.
-	     */
-	    setUVs(array: Array<number>, offset?: number): any;
-	    setUVs(float32Array: Float32Array, offset?: number): any;
-	    setUVs(attributesView: AttributesView, offset?: number): any;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): CurveSubGeometry;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    applyTransformation(transform: Matrix3D): void;
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	}
-	export = CurveSubGeometry;
-	
-}
-
-declare module "awayjs-display/lib/base/CurveSubMesh" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * CurveSubMesh wraps a CurveSubGeometry as a scene graph instantiation. A CurveSubMesh is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.CurveSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.CurveSubMesh
-	 */
-	class CurveSubMesh extends SubMeshBase implements ISubMesh {
-	    static _available: Array<CurveSubMesh>;
-	    static assetType: string;
-	    static assetClass: IAssetClass;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
-	     */
-	    subGeometry: CurveSubGeometry;
-	    /**
-	     * Creates a new CurveSubMesh object
-	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this CurveSubMesh.
-	     * @param parentMesh The Mesh object to which this CurveSubMesh belongs.
-	     * @param material An optional material used to render this CurveSubMesh.
-	     */
-	    constructor(subGeometry: CurveSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	}
-	export = CurveSubMesh;
-	
-}
-
 declare module "awayjs-display/lib/base/DisplayObject" {
 	import BlendMode = require("awayjs-core/lib/image/BlendMode");
 	import Box = require("awayjs-core/lib/geom/Box");
@@ -309,7 +267,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import LoaderInfo = require("awayjs-core/lib/library/LoaderInfo");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import Scene = require("awayjs-display/lib/containers/Scene");
@@ -322,6 +279,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	/**
 	 * The DisplayObject class is the base class for all objects that can be
 	 * placed on the display list. The display list manages all objects displayed
@@ -1402,16 +1360,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     */
 	    pUpdateSceneTransform(): void;
 	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
-	    /**
 	     *
 	     */
 	    _iInternalUpdate(): void;
@@ -1433,7 +1381,7 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	     * @internal
 	     */
 	    _iIsMouseEnabled(): boolean;
-	    _applyRenderer(renderer: IRenderer): void;
+	    _acceptTraverser(collector: CollectorBase): void;
 	    /**
 	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
 	     *
@@ -1461,73 +1409,6 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	    invalidatePartitionBounds(): void;
 	}
 	export = DisplayObject;
-	
-}
-
-declare module "awayjs-display/lib/base/Geometry" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	/**
-	 *
-	 * Geometry is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
-	 * normals, uvs, etc. It also contains a reference to an animation class, which defines how the geometry moves.
-	 * A Geometry object is assigned to a Mesh, a scene graph occurence of the geometry, which in turn assigns
-	 * the SubGeometries to its respective TriangleSubMesh objects.
-	 *
-	 *
-	 *
-	 * @see away.core.base.SubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class Geometry
-	 */
-	class Geometry extends AssetBase {
-	    static assetType: string;
-	    private _subGeometries;
-	    assetType: string;
-	    /**
-	     * A collection of TriangleSubGeometry objects, each of which contain geometrical data such as vertices, normals, etc.
-	     */
-	    subGeometries: Array<SubGeometryBase>;
-	    /**
-	     * Creates a new Geometry object.
-	     */
-	    constructor();
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Adds a new TriangleSubGeometry object to the list.
-	     * @param subGeometry The TriangleSubGeometry object to be added.
-	     */
-	    addSubGeometry(subGeometry: SubGeometryBase): void;
-	    /**
-	     * Removes a new TriangleSubGeometry object from the list.
-	     * @param subGeometry The TriangleSubGeometry object to be removed.
-	     */
-	    removeSubGeometry(subGeometry: SubGeometryBase): void;
-	    /**
-	     * Clones the geometry.
-	     * @return An exact duplicate of the current Geometry object.
-	     */
-	    clone(): Geometry;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    /**
-	     * Clears all resources used by the Geometry object, including SubGeometries.
-	     */
-	    dispose(): void;
-	    /**
-	     * Scales the uv coordinates (tiling)
-	     * @param scaleU The amount by which to scale on the u axis. Default is 1;
-	     * @param scaleV The amount by which to scale on the v axis. Default is 1;
-	     */
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    iInvalidateBounds(subGeom: SubGeometryBase): void;
-	}
-	export = Geometry;
 	
 }
 
@@ -1585,32 +1466,6 @@ declare module "awayjs-display/lib/base/IBitmapDrawable" {
 	
 }
 
-declare module "awayjs-display/lib/base/IRenderableOwner" {
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import Style = require("awayjs-display/lib/base/Style");
-	/**
-	 * IRenderableOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderableOwner
-	 */
-	interface IRenderableOwner extends IAsset {
-	    /**
-	     * The animation used by the material owner to assemble the vertex code.
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    style: Style;
-	    invalidateRenderOwner(): any;
-	}
-	export = IRenderableOwner;
-	
-}
-
 declare module "awayjs-display/lib/base/IRenderOwner" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
@@ -1626,6 +1481,7 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	interface IRenderOwner extends IAsset {
 	    alphaThreshold: number;
 	    style: Style;
+	    curves: boolean;
 	    imageRect: boolean;
 	    blendMode: string;
 	    lightPicker: LightPickerBase;
@@ -1640,52 +1496,61 @@ declare module "awayjs-display/lib/base/IRenderOwner" {
 	
 }
 
-declare module "awayjs-display/lib/base/ISubMesh" {
+declare module "awayjs-display/lib/base/IRenderableOwner" {
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import Style = require("awayjs-display/lib/base/Style");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	/**
-	 * ISubMesh is an interface for object SubMesh that is used to
-	 * apply a material to a SubGeometry class
+	 * IRenderableOwner provides an interface for objects that can use materials.
 	 *
-	 * @class away.base.ISubMesh
+	 * @interface away.base.IRenderableOwner
 	 */
-	interface ISubMesh extends IRenderableOwner {
-	    subGeometry: SubGeometryBase;
-	    parentMesh: Mesh;
-	    material: MaterialBase;
-	    _iIndex: number;
-	    invalidateGeometry(): any;
-	    _iGetExplicitMaterial(): MaterialBase;
-	    _iGetExplicitStyle(): Style;
-	    _iGetExplicitUVTransform(): Matrix;
-	}
-	export = ISubMesh;
-	
-}
-
-declare module "awayjs-display/lib/base/ISubMeshClass" {
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * ISubMeshClass is an interface for the constructable class definition ISubMesh that is used to
-	 * apply a material to a SubGeometry class
-	 *
-	 * @class away.base.ISubMeshClass
-	 */
-	interface ISubMeshClass {
-	    _available: Array<ISubMesh>;
+	interface IRenderableOwner extends IAsset {
+	    /**
+	     * The animation used by the material owner to assemble the vertex code.
+	     */
+	    animator: IAnimator;
 	    /**
 	     *
 	     */
-	    new (subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
+	    uvTransform: Matrix;
+	    /**
+	     *
+	     */
+	    style: Style;
+	    invalidateRenderOwner(): any;
+	    /**
+	     *
+	     */
+	    pickingCollider: IPickingCollider;
+	    /**
+	     * @internal
+	     */
+	    _iPickingCollisionVO: PickingCollisionVO;
+	    /**
+	     * @internal
+	     */
+	    _iIsMouseEnabled(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedMasks(): Array<Array<DisplayObject>>;
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
 	}
-	export = ISubMeshClass;
+	export = IRenderableOwner;
 	
 }
 
@@ -1730,132 +1595,6 @@ declare module "awayjs-display/lib/base/LightBase" {
 	    shadowMapper: ShadowMapperBase;
 	}
 	export = LightBase;
-	
-}
-
-declare module "awayjs-display/lib/base/LineSubGeometry" {
-	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
-	import Float1Attributes = require("awayjs-core/lib/attributes/Float1Attributes");
-	import Box = require("awayjs-core/lib/geom/Box");
-	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	/**
-	 * @class LineSubGeometry
-	 */
-	class LineSubGeometry extends SubGeometryBase {
-	    static assetType: string;
-	    private _numVertices;
-	    private _positions;
-	    private _thickness;
-	    private _colors;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    positions: AttributesView;
-	    /**
-	     *
-	     */
-	    thickness: Float1Attributes;
-	    /**
-	     *
-	     */
-	    colors: Byte4Attributes;
-	    /**
-	     * The total amount of vertices in the LineSubGeometry.
-	     */
-	    numVertices: number;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedBuffer?: AttributesBuffer);
-	    getBoxBounds(target?: Box): Box;
-	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
-	    /**
-	     *
-	     */
-	    setPositions(array: Array<number>, offset?: number): any;
-	    setPositions(float32Array: Float32Array, offset?: number): any;
-	    setPositions(attributesView: AttributesView, offset?: number): any;
-	    /**
-	     * Updates the thickness.
-	     */
-	    setThickness(array: Array<number>, offset?: number): any;
-	    setThickness(float32Array: Float32Array, offset?: number): any;
-	    setThickness(float1Attributes: Float1Attributes, offset?: number): any;
-	    /**
-	     *
-	     */
-	    setColors(array: Array<number>, offset?: number): any;
-	    setColors(float32Array: Float32Array, offset?: number): any;
-	    setColors(uint8Array: Uint8Array, offset?: number): any;
-	    setColors(byte4Attributes: Byte4Attributes, offset?: number): any;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): LineSubGeometry;
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	}
-	export = LineSubGeometry;
-	
-}
-
-declare module "awayjs-display/lib/base/LineSubMesh" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * LineSubMesh wraps a LineSubGeometry as a scene graph instantiation. A LineSubMesh is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.LineSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.LineSubMesh
-	 */
-	class LineSubMesh extends SubMeshBase implements ISubMesh {
-	    static _available: Array<LineSubMesh>;
-	    static assetType: string;
-	    static assetClass: IAssetClass;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The LineSubGeometry object which provides the geometry data for this LineSubMesh.
-	     */
-	    subGeometry: LineSubGeometry;
-	    /**
-	     * Creates a new LineSubMesh object
-	     * @param subGeometry The LineSubGeometry object which provides the geometry data for this LineSubMesh.
-	     * @param parentMesh The Mesh object to which this LineSubMesh belongs.
-	     * @param material An optional material used to render this LineSubMesh.
-	     */
-	    constructor(subGeometry: LineSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	}
-	export = LineSubMesh;
 	
 }
 
@@ -1908,163 +1647,6 @@ declare module "awayjs-display/lib/base/Style" {
 	    private _invalidateProperties();
 	}
 	export = Style;
-	
-}
-
-declare module "awayjs-display/lib/base/SubGeometryBase" {
-	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
-	import Box = require("awayjs-core/lib/geom/Box");
-	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * @class away.base.TriangleSubGeometry
-	 */
-	class SubGeometryBase extends AssetBase {
-	    _pIndices: Short3Attributes;
-	    private _numElements;
-	    _concatenatedBuffer: AttributesBuffer;
-	    private _invalidateIndices;
-	    _verticesDirty: Object;
-	    _invalidateVertices: Object;
-	    concatenatedBuffer: AttributesBuffer;
-	    /**
-	     * The raw index data that define the faces.
-	     */
-	    indices: Short3Attributes;
-	    /**
-	     * The total amount of triangles in the TriangleSubGeometry.
-	     */
-	    numElements: number;
-	    numVertices: number;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedBuffer?: AttributesBuffer);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Updates the face indices of the TriangleSubGeometry.
-	     *
-	     * @param indices The face indices to upload.
-	     */
-	    setIndices(array: Array<number>, offset?: number): any;
-	    setIndices(uint16Array: Uint16Array, offset?: number): any;
-	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
-	    /**
-	     * @protected
-	     */
-	    pInvalidateBounds(): void;
-	    /**
-	     * The Geometry object that 'owns' this TriangleSubGeometry object.
-	     *
-	     * @private
-	     */
-	    parentGeometry: Geometry;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): SubGeometryBase;
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    getBoxBounds(target?: Box): Box;
-	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
-	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
-	    private invalidateIndicies();
-	    private clearIndices();
-	    invalidateVertices(attributesView: AttributesView): void;
-	    clearVertices(attributesView: AttributesView): void;
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	}
-	export = SubGeometryBase;
-	
-}
-
-declare module "awayjs-display/lib/base/SubMeshBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Style = require("awayjs-display/lib/base/Style");
-	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.SubMeshBase
-	 */
-	class SubMeshBase extends AssetBase {
-	    _uvTransform: Matrix;
-	    _iIndex: number;
-	    private _style;
-	    _material: MaterialBase;
-	    private _onInvalidatePropertiesDelegate;
-	    /**
-	     * The animator object that provides the state for the TriangleSubMesh's animation.
-	     */
-	    animator: IAnimator;
-	    /**
-	     * The material used to render the current TriangleSubMesh. If set to null, its parent Mesh's material will be used instead.
-	     */
-	    material: MaterialBase;
-	    /**
-	     * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
-	     */
-	    style: Style;
-	    /**
-	     * The scene transform object that transforms from model to world space.
-	     */
-	    sceneTransform: Matrix3D;
-	    /**
-	     * The entity that that initially provided the IRenderable to the render pipeline (ie: the owning Mesh object).
-	     */
-	    parentMesh: Mesh;
-	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    /**
-	     * Creates a new SubMeshBase object
-	     */
-	    constructor(parentMesh: Mesh, material?: MaterialBase, style?: Style);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     *
-	     * @param camera
-	     * @returns {away.geom.Matrix3D}
-	     */
-	    getRenderSceneTransform(camera: Camera): Matrix3D;
-	    invalidateGeometry(): void;
-	    invalidateRenderOwner(): void;
-	    _iGetExplicitMaterial(): MaterialBase;
-	    _iGetExplicitStyle(): Style;
-	    _iGetExplicitUVTransform(): Matrix;
-	    private _onInvalidateProperties(event);
-	}
-	export = SubMeshBase;
 	
 }
 
@@ -2467,240 +2049,6 @@ declare module "awayjs-display/lib/base/Transform" {
 	    private _updateComponents();
 	}
 	export = Transform;
-	
-}
-
-declare module "awayjs-display/lib/base/TriangleSubGeometry" {
-	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import Float4Attributes = require("awayjs-core/lib/attributes/Float4Attributes");
-	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
-	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
-	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
-	import Box = require("awayjs-core/lib/geom/Box");
-	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	/**
-	 * @class away.base.TriangleSubGeometry
-	 */
-	class TriangleSubGeometry extends SubGeometryBase {
-	    static assetType: string;
-	    private _numVertices;
-	    private _faceNormalsDirty;
-	    private _faceTangentsDirty;
-	    private _positions;
-	    private _normals;
-	    private _tangents;
-	    private _uvs;
-	    private _secondaryUVs;
-	    private _jointIndices;
-	    private _jointWeights;
-	    private _useCondensedIndices;
-	    private _condensedIndexLookUp;
-	    private _jointsPerVertex;
-	    private _autoDeriveNormals;
-	    private _autoDeriveTangents;
-	    private _autoDeriveUVs;
-	    private _faceNormals;
-	    private _faceTangents;
-	    assetType: string;
-	    numVertices: number;
-	    /**
-	     * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
-	     * by condensing the number of joint index values required per mesh. Only applicable to
-	     * skeleton animations that utilise more than one mesh object. Defaults to false.
-	     */
-	    useCondensedIndices: boolean;
-	    /**
-	     *
-	     */
-	    jointsPerVertex: number;
-	    /**
-	     * Defines whether a UV buffer should be automatically generated to contain dummy UV coordinates.
-	     * Set to true if a geometry lacks UV data but uses a material that requires it, or leave as false
-	     * in cases where UV data is explicitly defined or the material does not require UV data.
-	     */
-	    autoDeriveUVs: boolean;
-	    /**
-	     * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
-	     * explicitly.
-	     */
-	    autoDeriveNormals: boolean;
-	    /**
-	     * True if the vertex tangents should be derived from the geometry, false if the vertex normals are set
-	     * explicitly.
-	     */
-	    autoDeriveTangents: boolean;
-	    /**
-	     *
-	     */
-	    positions: Float3Attributes;
-	    /**
-	     *
-	     */
-	    normals: Float3Attributes;
-	    /**
-	     *
-	     */
-	    tangents: Float3Attributes;
-	    /**
-	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
-	     */
-	    faceNormals: Float4Attributes;
-	    /**
-	     * The raw data of the face tangets, in the same order as the faces are listed in the index list.
-	     */
-	    faceTangents: Float3Attributes;
-	    /**
-	     *
-	     */
-	    uvs: Float2Attributes;
-	    /**
-	     *
-	     */
-	    secondaryUVs: Float2Attributes;
-	    /**
-	     *
-	     */
-	    jointIndices: AttributesView;
-	    /**
-	     *
-	     */
-	    jointWeights: AttributesView;
-	    condensedIndexLookUp: Array<number>;
-	    /**
-	     *
-	     */
-	    constructor(concatenatedBuffer?: AttributesBuffer);
-	    getBoxBounds(target?: Box): Box;
-	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
-	    hitTestPoint(x: number, y: number, z: number): boolean;
-	    /**
-	     *
-	     */
-	    setPositions(array: Array<number>, offset?: number): any;
-	    setPositions(float32Array: Float32Array, offset?: number): any;
-	    setPositions(float3Attributes: Float3Attributes, offset?: number): any;
-	    /**
-	     * Updates the vertex normals based on the geometry.
-	     */
-	    setNormals(array: Array<number>, offset?: number): any;
-	    setNormals(float32Array: Float32Array, offset?: number): any;
-	    setNormals(float3Attributes: Float3Attributes, offset?: number): any;
-	    /**
-	     * Updates the vertex tangents based on the geometry.
-	     */
-	    setTangents(array: Array<number>, offset?: number): any;
-	    setTangents(float32Array: Float32Array, offset?: number): any;
-	    setTangents(float3Attributes: Float3Attributes, offset?: number): any;
-	    /**
-	     * Updates the uvs based on the geometry.
-	     */
-	    setUVs(array: Array<number>, offset?: number): any;
-	    setUVs(float32Array: Float32Array, offset?: number): any;
-	    setUVs(float2Attributes: Float2Attributes, offset?: number): any;
-	    /**
-	     * Updates the secondary uvs based on the geometry.
-	     */
-	    setSecondaryUVs(array: Array<number>, offset?: number): any;
-	    setSecondaryUVs(float32Array: Float32Array, offset?: number): any;
-	    setSecondaryUVs(float2Attributes: Float2Attributes, offset?: number): any;
-	    /**
-	     * Updates the joint indices
-	     */
-	    setJointIndices(array: Array<number>, offset?: number): any;
-	    setJointIndices(float32Array: Float32Array, offset?: number): any;
-	    setJointIndices(attributesView: AttributesView, offset?: number): any;
-	    /**
-	     * Updates the joint weights.
-	     */
-	    setJointWeights(array: Array<number>, offset?: number): any;
-	    setJointWeights(float32Array: Float32Array, offset?: number): any;
-	    setJointWeights(attributesView: AttributesView, offset?: number): any;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     * Updates the face indices of the TriangleSubGeometry.
-	     *
-	     * @param indices The face indices to upload.
-	     */
-	    setIndices(array: Array<number>, offset?: number): any;
-	    setIndices(uint16Array: Uint16Array, offset?: number): any;
-	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
-	    /**
-	     * Clones the current object
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): TriangleSubGeometry;
-	    scaleUV(scaleU?: number, scaleV?: number): void;
-	    /**
-	     * Scales the geometry.
-	     * @param scale The amount by which to scale.
-	     */
-	    scale(scale: number): void;
-	    applyTransformation(transform: Matrix3D): void;
-	    /**
-	     * Updates the tangents for each face.
-	     */
-	    private updateFaceTangents();
-	    /**
-	     * Updates the normals for each face.
-	     */
-	    private updateFaceNormals();
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	}
-	export = TriangleSubGeometry;
-	
-}
-
-declare module "awayjs-display/lib/base/TriangleSubMesh" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import SubMeshBase = require("awayjs-display/lib/base/SubMeshBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * TriangleSubMesh wraps a TriangleSubGeometry as a scene graph instantiation. A TriangleSubMesh is owned by a Mesh object.
-	 *
-	 *
-	 * @see away.base.TriangleSubGeometry
-	 * @see away.entities.Mesh
-	 *
-	 * @class away.base.TriangleSubMesh
-	 */
-	class TriangleSubMesh extends SubMeshBase implements ISubMesh {
-	    static _available: Array<TriangleSubMesh>;
-	    static assetType: string;
-	    static assetClass: IAssetClass;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
-	     */
-	    subGeometry: TriangleSubGeometry;
-	    /**
-	     * Creates a new TriangleSubMesh object
-	     * @param subGeometry The TriangleSubGeometry object which provides the geometry data for this TriangleSubMesh.
-	     * @param parentMesh The Mesh object to which this TriangleSubMesh belongs.
-	     * @param material An optional material used to render this TriangleSubMesh.
-	     */
-	    constructor(subGeometry: TriangleSubGeometry, parentMesh: Mesh, material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	}
-	export = TriangleSubMesh;
 	
 }
 
@@ -5348,13 +4696,13 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 declare module "awayjs-display/lib/entities/Billboard" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import Style = require("awayjs-display/lib/base/Style");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	/**
 	 * The Billboard class represents display objects that represent bitmap images.
 	 * These can be images that you load with the <code>flash.Assets</code> or
@@ -5442,17 +4790,16 @@ declare module "awayjs-display/lib/entities/Billboard" {
 	     * //TODO
 	     *
 	     * @param shortestCollisionDistance
-	     * @param findClosest
 	     * @returns {boolean}
 	     *
 	     * @internal
 	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
 	    /**
 	     * @private
 	     */
 	    private onInvalidateTexture(event);
-	    _applyRenderer(renderer: IRenderer): void;
+	    _acceptTraverser(traverser: CollectorBase): void;
 	    private _updateDimensions();
 	    invalidateRenderOwner(): void;
 	    private _onInvalidateProperties(event?);
@@ -5570,7 +4917,7 @@ declare module "awayjs-display/lib/entities/IEntity" {
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	interface IEntity extends IAsset {
 	    parent: DisplayObjectContainer;
 	    x: number;
@@ -5655,16 +5002,6 @@ declare module "awayjs-display/lib/entities/IEntity" {
 	     */
 	    _iAssignedPartition: PartitionBase;
 	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
-	    /**
 	     * @internal
 	     */
 	    _iIsMouseEnabled(): boolean;
@@ -5691,7 +5028,7 @@ declare module "awayjs-display/lib/entities/IEntity" {
 	     * @param renderer
 	     * @private
 	     */
-	    _applyRenderer(renderer: IRenderer): any;
+	    _acceptTraverser(collector: CollectorBase): any;
 	}
 	export = IEntity;
 	
@@ -5722,13 +5059,13 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import Style = require("awayjs-display/lib/base/Style");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	/**
 	 * A Line Segment primitive.
 	 */
@@ -5796,10 +5133,20 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 	    /**
 	     * @private
 	     */
-	    private invalidateGeometry();
+	    private invalidateGraphics();
 	    invalidateRenderOwner(): void;
 	    private _onInvalidateProperties(event);
-	    _applyRenderer(renderer: IRenderer): void;
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    _acceptTraverser(traverser: CollectorBase): void;
 	}
 	export = LineSegment;
 	
@@ -5807,42 +5154,28 @@ declare module "awayjs-display/lib/entities/LineSegment" {
 
 declare module "awayjs-display/lib/entities/Mesh" {
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import GeometryEvent = require("awayjs-display/lib/events/GeometryEvent");
+	import Graphics = require("awayjs-display/lib/graphics/Graphics");
+	import GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
 	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import Style = require("awayjs-display/lib/base/Style");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	/**
-	 * Mesh is an instance of a Geometry, augmenting it with a presence in the scene graph, a material, and an animation
-	 * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
-	 * of the geometry to be assigned different materials.
+	 * Mesh is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
+	 * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
+	 * of the graphics to be assigned different materials.
 	 */
 	class Mesh extends DisplayObjectContainer implements IEntity {
 	    private static _meshes;
 	    static assetType: string;
-	    private _uvTransform;
-	    private _style;
 	    private _center;
-	    _subMeshes: Array<ISubMesh>;
-	    _geometry: Geometry;
-	    private _material;
-	    private _animator;
+	    _graphics: Graphics;
 	    private _castsShadows;
-	    private _shareAnimationGeometry;
-	    _onGeometryBoundsInvalidDelegate: (event: GeometryEvent) => void;
-	    _onSubGeometryAddedDelegate: (event: GeometryEvent) => void;
-	    _onSubGeometryRemovedDelegate: (event: GeometryEvent) => void;
-	    private _onInvalidatePropertiesDelegate;
+	    private _shareAnimationGraphics;
+	    _onGraphicsBoundsInvalidDelegate: (event: GraphicsEvent) => void;
 	    private _tempPoint;
-	    /**
-	     * Defines the animator of the mesh. Act on the mesh's geometry.  Default value is <code>null</code>.
-	     */
-	    animator: IAnimator;
 	    /**
 	     *
 	     */
@@ -5852,22 +5185,21 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     */
 	    castsShadows: boolean;
 	    /**
-	     * The geometry used by the mesh that provides it with its shape.
+	     * The graphics used by the mesh that provides it with its shape.
 	     */
-	    geometry: Geometry;
+	    graphics: Graphics;
+	    /**
+	     * Defines the animator of the graphics object.  Default value is <code>null</code>.
+	     */
+	    animator: IAnimator;
 	    /**
 	     * The material with which to render the Mesh.
 	     */
 	    material: MaterialBase;
 	    /**
-	     * Indicates whether or not the mesh share the same animation geometry.
+	     * Indicates whether or not the mesh share the same animation graphics.
 	     */
-	    shareAnimationGeometry: boolean;
-	    /**
-	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
-	     * material.
-	     */
-	    subMeshes: Array<ISubMesh>;
+	    shareAnimationGraphics: boolean;
 	    /**
 	     *
 	     */
@@ -5879,10 +5211,10 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    /**
 	     * Create a new Mesh object.
 	     *
-	     * @param geometry                    The geometry used by the mesh that provides it with its shape.
+	     * @param graphics                    The graphics used by the mesh that provides it with its shape.
 	     * @param material    [optional]        The material with which to render the Mesh.
 	     */
-	    constructor(geometry: Geometry, material?: MaterialBase);
+	    constructor(material?: MaterialBase);
 	    /**
 	     *
 	     */
@@ -5897,29 +5229,22 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	    disposeValues(): void;
 	    /**
 	     * Clones this Mesh instance along with all it's children, while re-using the same
-	     * material, geometry and animation set. The returned result will be a copy of this mesh,
+	     * material, graphics and animation set. The returned result will be a copy of this mesh,
 	     * containing copies of all of it's children.
 	     *
 	     * Properties that are re-used (i.e. not cloned) by the new copy include name,
-	     * geometry, and material. Properties that are cloned or created anew for the copy
+	     * graphics, and material. Properties that are cloned or created anew for the copy
 	     * include subMeshes, children of the mesh, and the animator.
 	     *
-	     * If you want to copy just the mesh, reusing it's geometry and material while not
+	     * If you want to copy just the mesh, reusing it's graphics and material while not
 	     * cloning it's children, the simplest way is to create a new mesh manually:
 	     *
 	     * <code>
-	     * var clone : Mesh = new Mesh(original.geometry, original.material);
+	     * var clone : Mesh = new Mesh(original.graphics, original.material);
 	     * </code>
 	     */
 	    clone(): Mesh;
-	    copyTo(newInstance: Mesh): void;
-	    /**
-	     * //TODO
-	     *
-	     * @param subGeometry
-	     * @returns {SubMeshBase}
-	     */
-	    getSubMeshFromSubGeometry(subGeometry: SubGeometryBase): ISubMesh;
+	    copyTo(mesh: Mesh): void;
 	    /**
 	     * //TODO
 	     *
@@ -5932,47 +5257,16 @@ declare module "awayjs-display/lib/entities/Mesh" {
 	     *
 	     * @private
 	     */
-	    private onGeometryBoundsInvalid(event);
-	    /**
-	     * Called when a SubGeometry was added to the Geometry.
-	     *
-	     * @private
-	     */
-	    private onSubGeometryAdded(event);
-	    /**
-	     * Called when a SubGeometry was removed from the Geometry.
-	     *
-	     * @private
-	     */
-	    private onSubGeometryRemoved(event);
-	    /**
-	     * Adds a SubMeshBase wrapping a SubGeometry.
-	     *
-	     * @param subGeometry
-	     */
-	    addSubMesh(subGeometry: SubGeometryBase): void;
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number, findClosest: boolean): boolean;
+	    private onGraphicsBoundsInvalid(event);
 	    /**
 	     *
 	     * @param renderer
 	     *
 	     * @internal
 	     */
-	    _applyRenderer(renderer: IRenderer): void;
-	    _iInvalidateRenderableGeometries(): void;
-	    _iInvalidateRenderOwners(): void;
+	    _acceptTraverser(traverser: CollectorBase): void;
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	    clear(): void;
-	    private _onInvalidateProperties(event);
 	}
 	export = Mesh;
 	
@@ -6120,7 +5414,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	import ImageCube = require("awayjs-core/lib/image/ImageCube");
 	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
@@ -6147,6 +5440,7 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    private _uvTransform;
 	    private _colorTransform;
 	    private _owners;
+	    private _curves;
 	    private _imageRect;
 	    private _onInvalidatePropertiesDelegate;
 	    private _style;
@@ -6158,6 +5452,10 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
 	     */
 	    alphaThreshold: number;
+	    /**
+	     * Indicates whether skybox should use curves. Defaults to false.
+	     */
+	    curves: boolean;
 	    /**
 	     * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
 	     */
@@ -6217,7 +5515,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    constructor(image?: ImageCube);
 	    assetType: string;
 	    castsShadows: boolean;
-	    _applyRenderer(renderer: IRenderer): void;
 	    /**
 	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	     *
@@ -6229,6 +5526,15 @@ declare module "awayjs-display/lib/entities/Skybox" {
 	    removeTexture(texture: TextureBase): void;
 	    private onTextureInvalidate(event?);
 	    private _onInvalidateProperties(event);
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
 	}
 	export = Skybox;
 	
@@ -6236,8 +5542,6 @@ declare module "awayjs-display/lib/entities/Skybox" {
 
 declare module "awayjs-display/lib/entities/TextField" {
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import AntiAliasType = require("awayjs-display/lib/text/AntiAliasType");
 	import GridFitType = require("awayjs-display/lib/text/GridFitType");
@@ -6247,7 +5551,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	import TextInteractionMode = require("awayjs-display/lib/text/TextInteractionMode");
 	import TextLineMetrics = require("awayjs-display/lib/text/TextLineMetrics");
 	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
+	import Graphics = require("awayjs-display/lib/graphics/Graphics");
 	/**
 	 * The TextField class is used to create display objects for text display and
 	 * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -6330,7 +5634,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	class TextField extends Mesh {
 	    private static _textFields;
 	    static assetType: string;
-	    private _textGeometryDirty;
+	    private _textGraphicsDirty;
 	    private _bottomScrollV;
 	    private _caretIndex;
 	    private _length;
@@ -6775,14 +6079,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	    /**
 	     * The geometry used by the mesh that provides it with its shape.
 	     */
-	    geometry: Geometry;
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    _applyRenderer(renderer: IRenderer): void;
+	    graphics: Graphics;
 	    /**
 	     * The color of the text in a text field, in hexadecimal format. The
 	     * hexadecimal color system uses six digits to represent color values. Each
@@ -6869,12 +6166,7 @@ declare module "awayjs-display/lib/entities/TextField" {
 	     */
 	    disposeValues(): void;
 	    /**
-	     * The SubMeshes out of which the Mesh consists. Every SubMesh can be assigned a material to override the Mesh's
-	     * material.
-	     */
-	    subMeshes: Array<ISubMesh>;
-	    /**
-	     * Reconstructs the Geometry for this Text-field.
+	     * Reconstructs the Graphics for this Text-field.
 	     */
 	    reConstruct(): void;
 	    /**
@@ -7237,46 +6529,74 @@ declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/GeometryEvent" {
+declare module "awayjs-display/lib/events/ElementsEvent" {
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	/**
+	 * Dispatched to notify changes in a sub geometry object's state.
+	 *
+	 * @class away.events.ElementsEvent
+	 * @see away.core.base.Graphics
+	 */
+	class ElementsEvent extends EventBase {
+	    /**
+	     * Dispatched when a Elements's index data has been updated.
+	     */
+	    static INVALIDATE_INDICES: string;
+	    /**
+	     * Dispatched when a Elements's index data has been disposed.
+	     */
+	    static CLEAR_INDICES: string;
+	    /**
+	     * Dispatched when a Elements's vertex data has been updated.
+	     */
+	    static INVALIDATE_VERTICES: string;
+	    /**
+	     * Dispatched when a Elements's vertex data has been disposed.
+	     */
+	    static CLEAR_VERTICES: string;
+	    private _attributesView;
+	    /**
+	     * Create a new GraphicsEvent
+	     * @param type The event type.
+	     * @param attributesView An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, attributesView: AttributesView);
+	    /**
+	     * The attributes view of the vertex data.
+	     */
+	    attributesView: AttributesView;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): ElementsEvent;
+	}
+	export = ElementsEvent;
+	
+}
+
+declare module "awayjs-display/lib/events/GraphicsEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
 	/**
 	* Dispatched to notify changes in a geometry object's state.
 	*
-	* @class away.events.GeometryEvent
-	* @see away3d.core.base.Geometry
+	* @class away.events.GraphicsEvent
+	* @see away3d.core.base.Graphics
 	*/
-	class GeometryEvent extends EventBase {
-	    /**
-	     * Dispatched when a TriangleSubGeometry was added to the dispatching Geometry.
-	     */
-	    static SUB_GEOMETRY_ADDED: string;
-	    /**
-	     * Dispatched when a TriangleSubGeometry was removed from the dispatching Geometry.
-	     */
-	    static SUB_GEOMETRY_REMOVED: string;
+	class GraphicsEvent extends EventBase {
 	    /**
 	     *
 	     */
 	    static BOUNDS_INVALID: string;
-	    private _subGeometry;
-	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param subGeometry An optional TriangleSubGeometry object that is the subject of this event.
-	     */
-	    constructor(type: string, subGeometry?: SubGeometryBase);
-	    /**
-	     * The TriangleSubGeometry object that is the subject of this event, if appropriate.
-	     */
-	    subGeometry: SubGeometryBase;
 	    /**
 	     * Clones the event.
 	     * @return An exact duplicate of the current object.
 	     */
-	    clone(): GeometryEvent;
+	    clone(): GraphicsEvent;
 	}
-	export = GeometryEvent;
+	export = GraphicsEvent;
 	
 }
 
@@ -7377,9 +6697,9 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	     */
 	    index: number;
 	    /**
-	     * The index of the subGeometry where the event took place.
+	     * The index of the elements where the event took place.
 	     */
-	    subGeometryIndex: number;
+	    elementsIndex: number;
 	    /**
 	     * The position in object space where the event took place
 	     */
@@ -7438,6 +6758,35 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/RenderOwnerEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
+	class RenderOwnerEvent extends EventBase {
+	    static INVALIDATE_TEXTURE: string;
+	    static INVALIDATE_ANIMATION: string;
+	    static INVALIDATE_PASSES: string;
+	    private _renderOwner;
+	    /**
+	     * Create a new GraphicsEvent
+	     * @param type The event type.
+	     * @param dataType An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, renderOwner: IRenderOwner);
+	    /**
+	     * The renderobject owner of the renderable owner.
+	     */
+	    renderOwner: IRenderOwner;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): RenderOwnerEvent;
+	}
+	export = RenderOwnerEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
@@ -7445,7 +6794,7 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	 * Dispatched to notify changes in a sub geometry object's state.
 	 *
 	 * @class away.events.RenderableOwnerEvent
-	 * @see away.core.base.Geometry
+	 * @see away.core.base.Graphics
 	 */
 	class RenderableOwnerEvent extends EventBase {
 	    /**
@@ -7455,10 +6804,10 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	    /**
 	     *
 	     */
-	    static INVALIDATE_GEOMETRY: string;
+	    static INVALIDATE_ELEMENTS: string;
 	    private _renderableOwner;
 	    /**
-	     * Create a new GeometryEvent
+	     * Create a new GraphicsEvent
 	     * @param type The event type.
 	     * @param dataType An optional data type of the vertex data being updated.
 	     */
@@ -7486,35 +6835,6 @@ declare module "awayjs-display/lib/events/RendererEvent" {
 	    constructor(type: string);
 	}
 	export = RendererEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/RenderOwnerEvent" {
-	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	class RenderOwnerEvent extends EventBase {
-	    static INVALIDATE_TEXTURE: string;
-	    static INVALIDATE_ANIMATION: string;
-	    static INVALIDATE_PASSES: string;
-	    private _renderOwner;
-	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param dataType An optional data type of the vertex data being updated.
-	     */
-	    constructor(type: string, renderOwner: IRenderOwner);
-	    /**
-	     * The renderobject owner of the renderable owner.
-	     */
-	    renderOwner: IRenderOwner;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): RenderOwnerEvent;
-	}
-	export = RenderOwnerEvent;
 	
 }
 
@@ -7556,54 +6876,6 @@ declare module "awayjs-display/lib/events/StyleEvent" {
 	    clone(): StyleEvent;
 	}
 	export = StyleEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/SubGeometryEvent" {
-	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-	import EventBase = require("awayjs-core/lib/events/EventBase");
-	/**
-	 * Dispatched to notify changes in a sub geometry object's state.
-	 *
-	 * @class away.events.SubGeometryEvent
-	 * @see away.core.base.Geometry
-	 */
-	class SubGeometryEvent extends EventBase {
-	    /**
-	     * Dispatched when a SubGeometry's index data has been updated.
-	     */
-	    static INVALIDATE_INDICES: string;
-	    /**
-	     * Dispatched when a SubGeometry's index data has been disposed.
-	     */
-	    static CLEAR_INDICES: string;
-	    /**
-	     * Dispatched when a SubGeometry's vertex data has been updated.
-	     */
-	    static INVALIDATE_VERTICES: string;
-	    /**
-	     * Dispatched when a SubGeometry's vertex data has been disposed.
-	     */
-	    static CLEAR_VERTICES: string;
-	    private _attributesView;
-	    /**
-	     * Create a new GeometryEvent
-	     * @param type The event type.
-	     * @param attributesView An optional data type of the vertex data being updated.
-	     */
-	    constructor(type: string, attributesView: AttributesView);
-	    /**
-	     * The attributes view of the vertex data.
-	     */
-	    attributesView: AttributesView;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): SubGeometryEvent;
-	}
-	export = SubGeometryEvent;
 	
 }
 
@@ -7671,9 +6943,9 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	     */
 	    index: number;
 	    /**
-	     * The index of the subGeometry where the event took place.
+	     * The index of the elements where the event took place.
 	     */
-	    subGeometryIndex: number;
+	    elementsIndex: number;
 	    /**
 	     * The position in object space where the event took place
 	     */
@@ -7766,82 +7038,563 @@ declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
 	
 }
 
-declare module "awayjs-display/lib/IRenderer" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
+declare module "awayjs-display/lib/graphics/ElementsBase" {
+	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
+	import Box = require("awayjs-core/lib/geom/Box");
+	import Sphere = require("awayjs-core/lib/geom/Sphere");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
-	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderer
+	 * @class away.base.TriangleElements
 	 */
-	interface IRenderer extends IEventDispatcher {
+	class ElementsBase extends AssetBase {
+	    private _indices;
+	    private _customAttributesNames;
+	    private _customAttributes;
+	    private _numElements;
+	    _concatenatedBuffer: AttributesBuffer;
+	    private _invalidateIndices;
+	    _verticesDirty: Object;
+	    _invalidateVertices: Object;
+	    concatenatedBuffer: AttributesBuffer;
+	    /**
+	     * The raw index data that define the faces.
+	     */
+	    indices: Short3Attributes;
 	    /**
 	     *
 	     */
-	    shareContext: boolean;
+	    getCustomAtributesNames(): Array<string>;
 	    /**
 	     *
 	     */
-	    x: number;
+	    getCustomAtributes(name: string): AttributesView;
+	    /**
+	     * The total amount of triangles in the TriangleElements.
+	     */
+	    numElements: number;
+	    numVertices: number;
 	    /**
 	     *
 	     */
-	    y: number;
+	    constructor(concatenatedBuffer?: AttributesBuffer);
+	    copyTo(elements: ElementsBase): void;
 	    /**
 	     *
 	     */
-	    width: number;
+	    dispose(): void;
 	    /**
+	     * Updates the face indices of the TriangleElements.
 	     *
+	     * @param indices The face indices to upload.
 	     */
-	    height: number;
+	    setIndices(array: Array<number>, offset?: number): any;
+	    setIndices(uint16Array: Uint16Array, offset?: number): any;
+	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
 	    /**
-	     *
+	     * Updates custom attributes.
 	     */
-	    viewPort: Rectangle;
+	    setCustomAttributes(name: string, array: Array<number>, offset?: number): any;
+	    setCustomAttributes(name: string, arrayBufferView: ArrayBufferView, offset?: number): any;
+	    setCustomAttributes(name: string, attributesView: AttributesView, offset?: number): any;
 	    /**
-	     *
+	     * Clones the current object
+	     * @return An exact duplicate of the current object.
 	     */
-	    scissorRect: Rectangle;
+	    clone(): ElementsBase;
+	    applyTransformation(transform: Matrix3D): void;
 	    /**
-	     *
+	     * Scales the geometry.
+	     * @param scale The amount by which to scale.
 	     */
-	    dispose(): any;
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(entityCollector: CollectorBase): any;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundR: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundG: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundB: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundAlpha: number;
-	    /**
-	     * @internal
-	     */
-	    _iCreateEntityCollector(): CollectorBase;
-	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
-	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
+	    scale(scale: number): void;
+	    scaleUV(scaleU?: number, scaleV?: number): void;
+	    getBoxBounds(target?: Box): Box;
+	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
+	    hitTestPoint(x: number, y: number, z: number, box: Box): boolean;
+	    private invalidateIndicies();
+	    private clearIndices();
+	    invalidateVertices(attributesView: AttributesView): void;
+	    clearVertices(attributesView: AttributesView): void;
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
-	export = IRenderer;
+	export = ElementsBase;
+	
+}
+
+declare module "awayjs-display/lib/graphics/ElementsType" {
+	class ElementsType {
+	    /**
+	     *
+	     */
+	    static TRIANGLE: string;
+	    /**
+	     *
+	     */
+	    static LINE: string;
+	}
+	export = ElementsType;
+	
+}
+
+declare module "awayjs-display/lib/graphics/Graphic" {
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import Graphics = require("awayjs-display/lib/graphics/Graphics");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	/**
+	 * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Mesh object.
+	 *
+	 *
+	 * @see away.base.ElementsBase
+	 * @see away.entities.Mesh
+	 *
+	 * @class away.base.Graphic
+	 */
+	class Graphic extends AssetBase implements IRenderableOwner {
+	    static _available: Array<Graphic>;
+	    static assetType: string;
+	    _iIndex: number;
+	    private _uvTransform;
+	    private _style;
+	    private _material;
+	    private _onInvalidatePropertiesDelegate;
+	    parent: Graphics;
+	    /**
+	     * The Elements object which provides the geometry data for this Graphic.
+	     */
+	    elements: ElementsBase;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    pickingCollider: IPickingCollider;
+	    /**
+	     * @internal
+	     */
+	    _iPickingCollisionVO: PickingCollisionVO;
+	    /**
+	     * @internal
+	     */
+	    _iIsMouseEnabled(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedMasks(): Array<Array<DisplayObject>>;
+	    /**
+	     * The material used to render the current TriangleGraphic. If set to null, its parent Mesh's material will be used instead.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * The style used to render the current TriangleGraphic. If set to null, its parent Mesh's style will be used instead.
+	     */
+	    style: Style;
+	    /**
+	     *
+	     */
+	    uvTransform: Matrix;
+	    /**
+	     * Creates a new Graphic object
+	     */
+	    constructor(index: number, parent: Graphics, elements: ElementsBase, material?: MaterialBase, style?: Style, uvTransform?: Matrix);
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    invalidateElements(): void;
+	    invalidateRenderOwner(): void;
+	    _iGetExplicitMaterial(): MaterialBase;
+	    _iGetExplicitStyle(): Style;
+	    _iGetExplicitUVTransform(): Matrix;
+	    private _onInvalidateProperties(event);
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	}
+	export = Graphic;
+	
+}
+
+declare module "awayjs-display/lib/graphics/Graphics" {
+	import Box = require("awayjs-core/lib/geom/Box");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import Sphere = require("awayjs-core/lib/geom/Sphere");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import Graphic = require("awayjs-display/lib/graphics/Graphic");
+	import Style = require("awayjs-display/lib/base/Style");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import ParticleData = require("awayjs-display/lib/animators/data/ParticleData");
+	/**
+	 *
+	 * Graphics is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
+	 * normals, uvs, etc. It also contains a reference to an animation class, which defines how the geometry moves.
+	 * A Graphics object is assigned to a Mesh, a scene graph occurence of the geometry, which in turn assigns
+	 * the SubGeometries to its respective TriangleGraphic objects.
+	 *
+	 *
+	 *
+	 * @see away.core.base.SubGraphics
+	 * @see away.entities.Mesh
+	 *
+	 * @class Graphics
+	 */
+	class Graphics extends AssetBase {
+	    static assetType: string;
+	    private _onInvalidatePropertiesDelegate;
+	    private _onInvalidateVerticesDelegate;
+	    private _boxBounds;
+	    private _boxBoundsInvalid;
+	    private _sphereBounds;
+	    private _sphereBoundsInvalid;
+	    private _material;
+	    private _graphics;
+	    private _animator;
+	    private _uvTransform;
+	    private _style;
+	    sourceEntity: IEntity;
+	    assetType: string;
+	    particles: Array<ParticleData>;
+	    numParticles: number;
+	    count: number;
+	    /**
+	     * Defines the animator of the graphics object.  Default value is <code>null</code>.
+	     */
+	    animator: IAnimator;
+	    uvTransform: Matrix;
+	    /**
+	     *
+	     */
+	    style: Style;
+	    /**
+	     * The material with which to render the Graphics.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * Creates a new Graphics object.
+	     */
+	    constructor(sourceEntity: IEntity);
+	    /**
+	     * Adds a GraphicBase wrapping a Elements.
+	     *
+	     * @param elements
+	     */
+	    addGraphic(elements: ElementsBase, material?: MaterialBase, style?: Style, uvTransform?: Matrix): void;
+	    removeGraphic(graphic: Graphic): void;
+	    getGraphicAt(index: number): Graphic;
+	    applyTransformation(transform: Matrix3D): void;
+	    copyTo(graphics: Graphics): void;
+	    /**
+	     * Scales the geometry.
+	     * @param scale The amount by which to scale.
+	     */
+	    scale(scale: number): void;
+	    clear(): void;
+	    /**
+	     * Clears all resources used by the Graphics object, including SubGeometries.
+	     */
+	    dispose(): void;
+	    /**
+	     * Scales the uv coordinates (tiling)
+	     * @param scaleU The amount by which to scale on the u axis. Default is 1;
+	     * @param scaleV The amount by which to scale on the v axis. Default is 1;
+	     */
+	    scaleUV(scaleU?: number, scaleV?: number): void;
+	    getBoxBounds(): Box;
+	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
+	    private _invalidateBounds();
+	    _iInvalidateRenderOwners(): void;
+	    invalidateElements(): void;
+	    _hitTestPointInternal(x: number, y: number): boolean;
+	    acceptTraverser(traverser: CollectorBase): void;
+	    private _onInvalidateProperties(event);
+	    private _onInvalidateVertices(event);
+	}
+	export = Graphics;
+	
+}
+
+declare module "awayjs-display/lib/graphics/LineElements" {
+	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+	import Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
+	import Float1Attributes = require("awayjs-core/lib/attributes/Float1Attributes");
+	import Box = require("awayjs-core/lib/geom/Box");
+	import Sphere = require("awayjs-core/lib/geom/Sphere");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	/**
+	 * @class LineElements
+	 */
+	class LineElements extends ElementsBase {
+	    static assetType: string;
+	    private _numVertices;
+	    private _positions;
+	    private _thickness;
+	    private _colors;
+	    /**
+	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    positions: AttributesView;
+	    /**
+	     *
+	     */
+	    thickness: Float1Attributes;
+	    /**
+	     *
+	     */
+	    colors: Byte4Attributes;
+	    /**
+	     * The total amount of vertices in the LineElements.
+	     */
+	    numVertices: number;
+	    /**
+	     *
+	     */
+	    constructor(concatenatedBuffer?: AttributesBuffer);
+	    getBoxBounds(target?: Box): Box;
+	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
+	    /**
+	     *
+	     */
+	    setPositions(array: Array<number>, offset?: number): any;
+	    setPositions(arrayBufferView: ArrayBufferView, offset?: number): any;
+	    setPositions(attributesView: AttributesView, offset?: number): any;
+	    /**
+	     * Updates the thickness.
+	     */
+	    setThickness(array: Array<number>, offset?: number): any;
+	    setThickness(float32Array: Float32Array, offset?: number): any;
+	    setThickness(float1Attributes: Float1Attributes, offset?: number): any;
+	    /**
+	     *
+	     */
+	    setColors(array: Array<number>, offset?: number): any;
+	    setColors(float32Array: Float32Array, offset?: number): any;
+	    setColors(uint8Array: Uint8Array, offset?: number): any;
+	    setColors(byte4Attributes: Byte4Attributes, offset?: number): any;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     * Clones the current object
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): LineElements;
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	}
+	export = LineElements;
+	
+}
+
+declare module "awayjs-display/lib/graphics/TriangleElements" {
+	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+	import Float4Attributes = require("awayjs-core/lib/attributes/Float4Attributes");
+	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
+	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
+	import Box = require("awayjs-core/lib/geom/Box");
+	import Sphere = require("awayjs-core/lib/geom/Sphere");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	/**
+	 * @class away.base.TriangleElements
+	 */
+	class TriangleElements extends ElementsBase {
+	    static assetType: string;
+	    private _numVertices;
+	    private _faceNormalsDirty;
+	    private _faceTangentsDirty;
+	    private _positions;
+	    private _normals;
+	    private _tangents;
+	    private _uvs;
+	    private _jointIndices;
+	    private _jointWeights;
+	    private _useCondensedIndices;
+	    private _condensedIndexLookUp;
+	    private _jointsPerVertex;
+	    private _autoDeriveNormals;
+	    private _autoDeriveTangents;
+	    private _faceNormals;
+	    private _faceTangents;
+	    cells: Array<Array<number>>;
+	    lastCollisionIndex: number;
+	    divisions: number;
+	    assetType: string;
+	    numVertices: number;
+	    /**
+	     * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
+	     * by condensing the number of joint index values required per mesh. Only applicable to
+	     * skeleton animations that utilise more than one mesh object. Defaults to false.
+	     */
+	    useCondensedIndices: boolean;
+	    /**
+	     *
+	     */
+	    jointsPerVertex: number;
+	    /**
+	     * True if the vertex normals should be derived from the geometry, false if the vertex normals are set
+	     * explicitly.
+	     */
+	    autoDeriveNormals: boolean;
+	    /**
+	     * True if the vertex tangents should be derived from the geometry, false if the vertex normals are set
+	     * explicitly.
+	     */
+	    autoDeriveTangents: boolean;
+	    /**
+	     *
+	     */
+	    positions: AttributesView;
+	    /**
+	     *
+	     */
+	    normals: Float3Attributes;
+	    /**
+	     *
+	     */
+	    tangents: Float3Attributes;
+	    /**
+	     * The raw data of the face normals, in the same order as the faces are listed in the index list.
+	     */
+	    faceNormals: Float4Attributes;
+	    /**
+	     * The raw data of the face tangets, in the same order as the faces are listed in the index list.
+	     */
+	    faceTangents: Float3Attributes;
+	    /**
+	     *
+	     */
+	    uvs: AttributesView;
+	    /**
+	     *
+	     */
+	    jointIndices: AttributesView;
+	    /**
+	     *
+	     */
+	    jointWeights: AttributesView;
+	    condensedIndexLookUp: Array<number>;
+	    getBoxBounds(target?: Box): Box;
+	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
+	    hitTestPoint(x: number, y: number, z: number): boolean;
+	    /**
+	     *
+	     */
+	    setPositions(array: Array<number>, offset?: number): any;
+	    setPositions(arrayBufferView: ArrayBufferView, offset?: number): any;
+	    setPositions(attributesView: AttributesView, offset?: number): any;
+	    /**
+	     * Updates the vertex normals based on the geometry.
+	     */
+	    setNormals(array: Array<number>, offset?: number): any;
+	    setNormals(float32Array: Float32Array, offset?: number): any;
+	    setNormals(float3Attributes: Float3Attributes, offset?: number): any;
+	    /**
+	     * Updates the vertex tangents based on the geometry.
+	     */
+	    setTangents(array: Array<number>, offset?: number): any;
+	    setTangents(float32Array: Float32Array, offset?: number): any;
+	    setTangents(float3Attributes: Float3Attributes, offset?: number): any;
+	    /**
+	     * Updates the uvs based on the geometry.
+	     */
+	    setUVs(array: Array<number>, offset?: number): any;
+	    setUVs(arrayBufferView: ArrayBufferView, offset?: number): any;
+	    setUVs(attributesView: AttributesView, offset?: number): any;
+	    /**
+	     * Updates the joint indices
+	     */
+	    setJointIndices(array: Array<number>, offset?: number): any;
+	    setJointIndices(float32Array: Float32Array, offset?: number): any;
+	    setJointIndices(attributesView: AttributesView, offset?: number): any;
+	    /**
+	     * Updates the joint weights.
+	     */
+	    setJointWeights(array: Array<number>, offset?: number): any;
+	    setJointWeights(float32Array: Float32Array, offset?: number): any;
+	    setJointWeights(attributesView: AttributesView, offset?: number): any;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     * Updates the face indices of the TriangleElements.
+	     *
+	     * @param indices The face indices to upload.
+	     */
+	    setIndices(array: Array<number>, offset?: number): any;
+	    setIndices(uint16Array: Uint16Array, offset?: number): any;
+	    setIndices(short3Attributes: Short3Attributes, offset?: number): any;
+	    copyTo(elements: TriangleElements): void;
+	    /**
+	     * Clones the current object
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): TriangleElements;
+	    scaleUV(scaleU?: number, scaleV?: number): void;
+	    /**
+	     * Scales the geometry.
+	     * @param scale The amount by which to scale.
+	     */
+	    scale(scale: number): void;
+	    applyTransformation(transform: Matrix3D): void;
+	    /**
+	     * Updates the tangents for each face.
+	     */
+	    private updateFaceTangents();
+	    /**
+	     * Updates the normals for each face.
+	     */
+	    private updateFaceNormals();
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	}
+	export = TriangleElements;
 	
 }
 
@@ -8038,6 +7791,242 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	
 }
 
+declare module "awayjs-display/lib/materials/LightSources" {
+	/**
+	 * Enumeration class for defining which lighting types affect the specific material
+	 * lighting component (diffuse and specular). This can be useful if, for example, you
+	 * want to use light probes for diffuse global lighting, but want specular reflections from
+	 * traditional light sources without those affecting the diffuse light.
+	 *
+	 * @see away.materials.ColorMaterial.diffuseLightSources
+	 * @see away.materials.ColorMaterial.specularLightSources
+	 * @see away.materials.TextureMaterial.diffuseLightSources
+	 * @see away.materials.TextureMaterial.specularLightSources
+	 */
+	class LightSources {
+	    /**
+	     * Defines normal lights are to be used as the source for the lighting
+	     * component.
+	     */
+	    static LIGHTS: number;
+	    /**
+	     * Defines that global lighting probes are to be used as the source for the
+	     * lighting component.
+	     */
+	    static PROBES: number;
+	    /**
+	     * Defines that both normal and global lighting probes  are to be used as the
+	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
+	     */
+	    static ALL: number;
+	}
+	export = LightSources;
+	
+}
+
+declare module "awayjs-display/lib/materials/MaterialBase" {
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	/**
+	 * MaterialBase forms an abstract base class for any material.
+	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
+	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
+	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
+	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
+	 *
+	 * Away3D provides default materials trough SinglePassMaterialBase and TriangleMaterial, which use modular
+	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
+	 * shaders, or entire new material frameworks.
+	 */
+	class MaterialBase extends AssetBase implements IRenderOwner {
+	    private _textures;
+	    private _colorTransform;
+	    private _pUseColorTransform;
+	    private _alphaBlending;
+	    private _alpha;
+	    _pAlphaThreshold: number;
+	    _pAnimateUVs: boolean;
+	    private _enableLightFallOff;
+	    private _specularLightSources;
+	    private _diffuseLightSources;
+	    private _onInvalidatePropertiesDelegate;
+	    private _style;
+	    /**
+	     * An object to contain any extra data.
+	     */
+	    extra: Object;
+	    /**
+	     * A value that can be used by materials that only work with a given type of renderer. The renderer can test the
+	     * classification to choose which render path to use. For example, a deferred material could set this value so
+	     * that the deferred renderer knows not to take the forward rendering path.
+	     *
+	     * @private
+	     */
+	    _iClassification: string;
+	    _iBaseScreenPassIndex: number;
+	    private _bothSides;
+	    private _animationSet;
+	    /**
+	     * A list of material owners, renderables or custom Entities.
+	     */
+	    private _owners;
+	    private _alphaPremultiplied;
+	    _pBlendMode: string;
+	    private _imageRect;
+	    private _curves;
+	    _pLightPicker: LightPickerBase;
+	    private _onLightChangeDelegate;
+	    private _onTextureInvalidateDelegate;
+	    /**
+	     * Creates a new MaterialBase object.
+	     */
+	    constructor(image?: ImageBase, alpha?: number);
+	    constructor(color?: number, alpha?: number);
+	    /**
+	     * The alpha of the surface.
+	     */
+	    alpha: number;
+	    /**
+	     * The ColorTransform object to transform the colour of the material with. Defaults to null.
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
+	     * example when using textures of foliage, consider using alphaThreshold instead.
+	     */
+	    alphaBlending: boolean;
+	    /**
+	     *
+	     */
+	    animationSet: IAnimationSet;
+	    /**
+	     * The light picker used by the material to provide lights to the material if it supports lighting.
+	     *
+	     * @see LightPickerBase
+	     * @see StaticLightPicker
+	     */
+	    lightPicker: LightPickerBase;
+	    /**
+	     * Indicates whether material should use curves. Defaults to false.
+	     */
+	    curves: boolean;
+	    /**
+	     * Indicates whether or not any used textures should use an atlas. Defaults to false.
+	     */
+	    imageRect: boolean;
+	    /**
+	     * The style used to render the current TriangleGraphic. If set to null, its parent Mesh's style will be used instead.
+	     */
+	    style: Style;
+	    /**
+	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
+	     */
+	    animateUVs: boolean;
+	    /**
+	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
+	     */
+	    useColorTransform: boolean;
+	    /**
+	     * Whether or not to use fallOff and radius properties for lights. This can be used to improve performance and
+	     * compatibility for constrained mode.
+	     */
+	    enableLightFallOff: boolean;
+	    /**
+	     * Define which light source types to use for diffuse reflections. This allows choosing between regular lights
+	     * and/or light probes for diffuse reflections.
+	     *
+	     * @see away3d.materials.LightSources
+	     */
+	    diffuseLightSources: number;
+	    /**
+	     * Define which light source types to use for specular reflections. This allows choosing between regular lights
+	     * and/or light probes for specular reflections.
+	     *
+	     * @see away3d.materials.LightSources
+	     */
+	    specularLightSources: number;
+	    /**
+	     * Defines whether or not the material should cull triangles facing away from the camera.
+	     */
+	    bothSides: boolean;
+	    /**
+	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	     * <ul>
+	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	     * <li>BlendMode.MULTIPLY</li>
+	     * <li>BlendMode.ADD</li>
+	     * <li>BlendMode.ALPHA</li>
+	     * </ul>
+	     */
+	    blendMode: string;
+	    /**
+	     * Indicates whether visible textures (or other pixels) used by this material have
+	     * already been premultiplied. Toggle this if you are seeing black halos around your
+	     * blended alpha edges.
+	     */
+	    alphaPremultiplied: boolean;
+	    /**
+	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	     * invisible or entirely opaque, often used with textures for foliage, etc.
+	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	     */
+	    alphaThreshold: number;
+	    /**
+	     * Mark an IRenderableOwner as owner of this material.
+	     * Assures we're not using the same material across renderables with different animations, since the
+	     * Programs depend on animation. This method needs to be called when a material is assigned.
+	     *
+	     * @param owner The IRenderableOwner that had this material assigned
+	     *
+	     * @internal
+	     */
+	    iAddOwner(owner: IRenderableOwner): void;
+	    /**
+	     * Removes an IRenderableOwner as owner.
+	     * @param owner
+	     *
+	     * @internal
+	     */
+	    iRemoveOwner(owner: IRenderableOwner): void;
+	    /**
+	     * A list of the IRenderableOwners that use this material
+	     *
+	     * @private
+	     */
+	    iOwners: Array<IRenderableOwner>;
+	    getNumTextures(): number;
+	    getTextureAt(index: number): TextureBase;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    invalidatePasses(): void;
+	    private invalidateAnimation();
+	    invalidateRenderOwners(): void;
+	    /**
+	     * Called when the light picker's configuration changed.
+	     */
+	    private onLightsChange(event);
+	    invalidateTexture(): void;
+	    addTextureAt(texture: TextureBase, index: number): void;
+	    addTexture(texture: TextureBase): void;
+	    removeTexture(texture: TextureBase): void;
+	    private onTextureInvalidate(event?);
+	    private _onInvalidateProperties(event);
+	}
+	export = MaterialBase;
+	
+}
+
 declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
@@ -8177,237 +8166,6 @@ declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
 	    private updatePointCasting(light);
 	}
 	export = StaticLightPicker;
-	
-}
-
-declare module "awayjs-display/lib/materials/LightSources" {
-	/**
-	 * Enumeration class for defining which lighting types affect the specific material
-	 * lighting component (diffuse and specular). This can be useful if, for example, you
-	 * want to use light probes for diffuse global lighting, but want specular reflections from
-	 * traditional light sources without those affecting the diffuse light.
-	 *
-	 * @see away.materials.ColorMaterial.diffuseLightSources
-	 * @see away.materials.ColorMaterial.specularLightSources
-	 * @see away.materials.TextureMaterial.diffuseLightSources
-	 * @see away.materials.TextureMaterial.specularLightSources
-	 */
-	class LightSources {
-	    /**
-	     * Defines normal lights are to be used as the source for the lighting
-	     * component.
-	     */
-	    static LIGHTS: number;
-	    /**
-	     * Defines that global lighting probes are to be used as the source for the
-	     * lighting component.
-	     */
-	    static PROBES: number;
-	    /**
-	     * Defines that both normal and global lighting probes  are to be used as the
-	     * source for the lighting component. This is equivalent to LightSources.LIGHTS | LightSources.PROBES.
-	     */
-	    static ALL: number;
-	}
-	export = LightSources;
-	
-}
-
-declare module "awayjs-display/lib/materials/MaterialBase" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	import Style = require("awayjs-display/lib/base/Style");
-	/**
-	 * MaterialBase forms an abstract base class for any material.
-	 * A material consists of several passes, each of which constitutes at least one render call. Several passes could
-	 * be used for special effects (render lighting for many lights in several passes, render an outline in a separate
-	 * pass) or to provide additional render-to-texture passes (rendering diffuse light to texture for texture-space
-	 * subsurface scattering, or rendering a depth map for specialized self-shadowing).
-	 *
-	 * Away3D provides default materials trough SinglePassMaterialBase and TriangleMaterial, which use modular
-	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
-	 * shaders, or entire new material frameworks.
-	 */
-	class MaterialBase extends AssetBase implements IRenderOwner {
-	    private _textures;
-	    private _colorTransform;
-	    private _pUseColorTransform;
-	    private _alphaBlending;
-	    private _alpha;
-	    _pAlphaThreshold: number;
-	    _pAnimateUVs: boolean;
-	    private _enableLightFallOff;
-	    private _specularLightSources;
-	    private _diffuseLightSources;
-	    private _onInvalidatePropertiesDelegate;
-	    private _style;
-	    /**
-	     * An object to contain any extra data.
-	     */
-	    extra: Object;
-	    /**
-	     * A value that can be used by materials that only work with a given type of renderer. The renderer can test the
-	     * classification to choose which render path to use. For example, a deferred material could set this value so
-	     * that the deferred renderer knows not to take the forward rendering path.
-	     *
-	     * @private
-	     */
-	    _iClassification: string;
-	    _iBaseScreenPassIndex: number;
-	    private _bothSides;
-	    private _animationSet;
-	    /**
-	     * A list of material owners, renderables or custom Entities.
-	     */
-	    private _owners;
-	    private _alphaPremultiplied;
-	    _pBlendMode: string;
-	    private _imageRect;
-	    _pLightPicker: LightPickerBase;
-	    private _onLightChangeDelegate;
-	    private _onTextureInvalidateDelegate;
-	    /**
-	     * Creates a new MaterialBase object.
-	     */
-	    constructor(image?: ImageBase, alpha?: number);
-	    constructor(color?: number, alpha?: number);
-	    /**
-	     * The alpha of the surface.
-	     */
-	    alpha: number;
-	    /**
-	     * The ColorTransform object to transform the colour of the material with. Defaults to null.
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * Indicates whether or not the material has transparency. If binary transparency is sufficient, for
-	     * example when using textures of foliage, consider using alphaThreshold instead.
-	     */
-	    alphaBlending: boolean;
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     * The light picker used by the material to provide lights to the material if it supports lighting.
-	     *
-	     * @see LightPickerBase
-	     * @see StaticLightPicker
-	     */
-	    lightPicker: LightPickerBase;
-	    /**
-	     * Indicates whether or not any used textures should use mipmapping. Defaults to true.
-	     */
-	    imageRect: boolean;
-	    /**
-	     * The style used to render the current TriangleSubMesh. If set to null, its parent Mesh's style will be used instead.
-	     */
-	    style: Style;
-	    /**
-	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
-	     */
-	    animateUVs: boolean;
-	    /**
-	     * Specifies whether or not the UV coordinates should be animated using a transformation matrix.
-	     */
-	    useColorTransform: boolean;
-	    /**
-	     * Whether or not to use fallOff and radius properties for lights. This can be used to improve performance and
-	     * compatibility for constrained mode.
-	     */
-	    enableLightFallOff: boolean;
-	    /**
-	     * Define which light source types to use for diffuse reflections. This allows choosing between regular lights
-	     * and/or light probes for diffuse reflections.
-	     *
-	     * @see away3d.materials.LightSources
-	     */
-	    diffuseLightSources: number;
-	    /**
-	     * Define which light source types to use for specular reflections. This allows choosing between regular lights
-	     * and/or light probes for specular reflections.
-	     *
-	     * @see away3d.materials.LightSources
-	     */
-	    specularLightSources: number;
-	    /**
-	     * Defines whether or not the material should cull triangles facing away from the camera.
-	     */
-	    bothSides: boolean;
-	    /**
-	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
-	     * <ul>
-	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-	     * <li>BlendMode.MULTIPLY</li>
-	     * <li>BlendMode.ADD</li>
-	     * <li>BlendMode.ALPHA</li>
-	     * </ul>
-	     */
-	    blendMode: string;
-	    /**
-	     * Indicates whether visible textures (or other pixels) used by this material have
-	     * already been premultiplied. Toggle this if you are seeing black halos around your
-	     * blended alpha edges.
-	     */
-	    alphaPremultiplied: boolean;
-	    /**
-	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	     * invisible or entirely opaque, often used with textures for foliage, etc.
-	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	     */
-	    alphaThreshold: number;
-	    /**
-	     * Mark an IRenderableOwner as owner of this material.
-	     * Assures we're not using the same material across renderables with different animations, since the
-	     * Programs depend on animation. This method needs to be called when a material is assigned.
-	     *
-	     * @param owner The IRenderableOwner that had this material assigned
-	     *
-	     * @internal
-	     */
-	    iAddOwner(owner: IRenderableOwner): void;
-	    /**
-	     * Removes an IRenderableOwner as owner.
-	     * @param owner
-	     *
-	     * @internal
-	     */
-	    iRemoveOwner(owner: IRenderableOwner): void;
-	    /**
-	     * A list of the IRenderableOwners that use this material
-	     *
-	     * @private
-	     */
-	    iOwners: Array<IRenderableOwner>;
-	    getNumTextures(): number;
-	    getTextureAt(index: number): TextureBase;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    invalidatePasses(): void;
-	    private invalidateAnimation();
-	    invalidateRenderOwners(): void;
-	    /**
-	     * Called when the light picker's configuration changed.
-	     */
-	    private onLightsChange(event);
-	    invalidateTexture(): void;
-	    addTextureAt(texture: TextureBase, index: number): void;
-	    addTexture(texture: TextureBase): void;
-	    removeTexture(texture: TextureBase): void;
-	    private onTextureInvalidate(event?);
-	    private _onInvalidateProperties(event);
-	}
-	export = MaterialBase;
 	
 }
 
@@ -8982,14 +8740,13 @@ declare module "awayjs-display/lib/partition/SceneGraphPartition" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	import SceneGraphNodePool = require("awayjs-display/lib/pool/SceneGraphNodePool");
 	import IContainerNode = require("awayjs-display/lib/partition/IContainerNode");
 	import DisplayObjectNode = require("awayjs-display/lib/partition/DisplayObjectNode");
 	/**
 	 * @class away.partition.Partition
 	 */
 	class SceneGraphPartition extends PartitionBase {
-	    _sceneGraphNodePool: SceneGraphNodePool;
+	    private _sceneGraphNodePool;
 	    constructor();
 	    traverse(traverser: CollectorBase): void;
 	    /**
@@ -9080,9 +8837,8 @@ declare module "awayjs-display/lib/pick/IPicker" {
 declare module "awayjs-display/lib/pick/IPickingCollider" {
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 	import Billboard = require("awayjs-display/lib/entities/Billboard");
-	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
-	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+	import LineElements = require("awayjs-display/lib/graphics/LineElements");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
 	 * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
@@ -9104,41 +8860,31 @@ declare module "awayjs-display/lib/pick/IPickingCollider" {
 	     */
 	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	    /**
-	     * Tests a <code>TriangleSubGeometry</code> object for a collision with the picking ray.
+	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
 	     *
-	     * @param triangleSubGeometry
+	     * @param triangleElements
 	     * @param material
 	     * @param pickingCollisionVO
 	     * @param shortestCollisionDistance
 	     */
-	    testTriangleCollision(triangleSubGeometry: TriangleSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	    /**
-	     * Tests a <code>CurveSubGeometry</code> object for a collision with the picking ray.
+	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
 	     *
-	     * @param curveSubGeometry
+	     * @param lineElements
 	     * @param material
 	     * @param pickingCollisionVO
 	     * @param shortestCollisionDistance
 	     */
-	    testCurveCollision(curveSubGeometry: CurveSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    /**
-	     * Tests a <code>LineSubGeometry</code> object for a collision with the picking ray.
-	     *
-	     * @param lineSubGeometry
-	     * @param material
-	     * @param pickingCollisionVO
-	     * @param shortestCollisionDistance
-	     */
-	    testLineCollision(lineSubGeometry: LineSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
 	export = IPickingCollider;
 	
 }
 
 declare module "awayjs-display/lib/pick/JSPickingCollider" {
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
-	import LineSubGeometry = require("awayjs-display/lib/base/LineSubGeometry");
-	import TriangleSubGeometry = require("awayjs-display/lib/base/TriangleSubGeometry");
+	import LineElements = require("awayjs-display/lib/graphics/LineElements");
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 	import Billboard = require("awayjs-display/lib/entities/Billboard");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
@@ -9169,36 +8915,25 @@ declare module "awayjs-display/lib/pick/JSPickingCollider" {
 	     */
 	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	    /**
-	     * Tests a <code>TriangleSubGeometry</code> object for a collision with the picking ray.
+	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
 	     *
-	     * @param triangleSubGeometry
+	     * @param triangleElements
 	     * @param material
 	     * @param pickingCollisionVO
 	     * @param shortestCollisionDistance
 	     * @returns {boolean}
 	     */
-	    testTriangleCollision(triangleSubGeometry: TriangleSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	    /**
-	     * Tests a <code>CurveSubGeometry</code> object for a collision with the picking ray.
+	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
 	     *
-	     * @param triangleSubGeometry
+	     * @param triangleElements
 	     * @param material
 	     * @param pickingCollisionVO
 	     * @param shortestCollisionDistance
 	     * @returns {boolean}
 	     */
-	    testCurveCollision(curveSubGeometry: CurveSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    /**
-	     * Tests a <code>LineSubGeometry</code> object for a collision with the picking ray.
-	     *
-	     * @param triangleSubGeometry
-	     * @param material
-	     * @param pickingCollisionVO
-	     * @param shortestCollisionDistance
-	     * @returns {boolean}
-	     */
-	    testLineCollision(lineSubGeometry: LineSubGeometry, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
-	    private _getCollisionUV(indices, uvData, triangleIndex, v, w, u, uvDim);
+	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
 	}
 	export = JSPickingCollider;
 	
@@ -9239,7 +8974,7 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	     */
 	    index: number;
 	    /**
-	     * The index of the subGeometry where the event took place.
+	     * The index of the elements where the event took place.
 	     */
 	    /**
 	     * The starting position of the colliding ray in local coordinates.
@@ -9292,7 +9027,7 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	/**
 	 * Picks a 3d object from a view or scene by 3D raycast calculations.
 	 * Performs an initial coarse boundary calculation to return a subset of entities whose bounding volumes intersect with the specified ray,
-	 * then triggers an optional picking collider on individual entity objects to further determine the precise values of the picking ray collision.
+	 * then triggers an optional picking collider on individual renderable objects to further determine the precise values of the picking ray collision.
 	 *
 	 * @class away.pick.RaycastPicker
 	 */
@@ -9302,10 +9037,10 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	    private _view;
 	    private _findClosestCollision;
 	    private _raycastCollector;
-	    private _ignoredEntities;
+	    private _ignoredRenderables;
 	    private _onlyMouseEnabled;
-	    private _entities;
-	    private _numEntities;
+	    private _renderables;
+	    private _numRenderables;
 	    private _hasCollisions;
 	    /**
 	     * @inheritDoc
@@ -9326,9 +9061,9 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	     * @inheritDoc
 	     */
 	    getSceneCollision(rayPosition: Vector3D, rayDirection: Vector3D, scene: Scene): PickingCollisionVO;
-	    setIgnoreList(entities: any): void;
-	    private isIgnored(entity);
-	    private sortOnNearT(entity1, entity2);
+	    setIgnoreList(renderables: any): void;
+	    private isIgnored(renderable);
+	    private sortOnNearT(renderable1, renderable2);
 	    private getPickingCollisionVO(collector);
 	    private getMasksCollision(masks);
 	    private updateLocalPosition(pickingCollisionVO);
@@ -9338,114 +9073,45 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	
 }
 
-declare module "awayjs-display/lib/pool/EntityListItem" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+declare module "awayjs-display/lib/pool/RenderableListItem" {
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	/**
-	 * @class away.pool.EntityListItem
+	 * @class away.pool.RenderableListItem
 	 */
-	class EntityListItem {
+	class RenderableListItem {
 	    /**
 	     *
 	     */
-	    entity: IEntity;
+	    renderable: IRenderableOwner;
 	    /**
 	     *
 	     */
-	    next: EntityListItem;
+	    next: RenderableListItem;
 	}
-	export = EntityListItem;
+	export = RenderableListItem;
 	
 }
 
-declare module "awayjs-display/lib/pool/EntityListItemPool" {
-	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
+declare module "awayjs-display/lib/pool/RenderableListItemPool" {
+	import RenderableListItem = require("awayjs-display/lib/pool/RenderableListItem");
 	/**
-	 * @class away.pool.EntityListItemPool
+	 * @class away.pool.RenderableListItemPool
 	 */
-	class EntityListItemPool {
+	class RenderableListItemPool {
 	    private _pool;
 	    private _index;
 	    private _poolSize;
 	    /**
 	     *
 	     */
-	    constructor();
-	    /**
-	     *
-	     */
-	    getItem(): EntityListItem;
+	    getItem(): RenderableListItem;
 	    /**
 	     *
 	     */
 	    freeAll(): void;
 	    dispose(): void;
 	}
-	export = EntityListItemPool;
-	
-}
-
-declare module "awayjs-display/lib/pool/SceneGraphNodePool" {
-	import IAbstractionPool = require("awayjs-core/lib/library/IAbstractionPool");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import SceneGraphNode = require("awayjs-display/lib/partition/SceneGraphNode");
-	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	/**
-	 * @class away.pool.ContainerNodePool
-	 */
-	class ContainerNodePool implements IAbstractionPool {
-	    private _containerNodePool;
-	    private _partition;
-	    /**
-	     * //TODO
-	     *
-	     * @param entityNodeClass
-	     */
-	    constructor(partition: PartitionBase);
-	    /**
-	     * //TODO
-	     *
-	     * @param entity
-	     * @returns EntityNode
-	     */
-	    getAbstraction(displayObjectContainer: DisplayObjectContainer): SceneGraphNode;
-	    /**
-	     * //TODO
-	     *
-	     * @param entity
-	     */
-	    clearAbstraction(displayObjectContainer: DisplayObjectContainer): void;
-	}
-	export = ContainerNodePool;
-	
-}
-
-declare module "awayjs-display/lib/pool/SubMeshPool" {
-	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
-	import ISubMesh = require("awayjs-display/lib/base/ISubMesh");
-	import ISubMeshClass = require("awayjs-display/lib/base/ISubMeshClass");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * @class away.pool.SubMeshPool
-	 */
-	class SubMeshPool {
-	    private static classPool;
-	    static getNewSubMesh(subGeometry: SubGeometryBase, parentMesh: Mesh, material?: MaterialBase): ISubMesh;
-	    /**
-	     *
-	     * @param subMeshClass
-	     */
-	    static registerClass(subMeshClass: ISubMeshClass, assetClass: IAssetClass): void;
-	    /**
-	     *
-	     * @param subGeometry
-	     */
-	    static getClass(subGeometry: SubGeometryBase): ISubMeshClass;
-	    private static main;
-	    private static addDefaults();
-	}
-	export = SubMeshPool;
+	export = RenderableListItemPool;
 	
 }
 
@@ -9473,7 +9139,8 @@ declare module "awayjs-display/lib/prefabs/PrefabBase" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Capsule primitive mesh.
@@ -9513,21 +9180,22 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	     * @param segmentsH Defines the number of vertical segments that make up the capsule. Defaults to 15. Must be uneven value.
 	     * @param yUp Defines whether the capsule poles should lay on the Y-axis (true) or on the Z-axis (false).
 	     */
-	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, radius?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildGraphics(target: ElementsBase, elementsType: string): void;
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	}
 	export = PrimitiveCapsulePrefab;
 	
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 	/**
 	 * A UV Cone primitive mesh.
@@ -9545,14 +9213,15 @@ declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
 	     * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
 	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	     */
-	    constructor(radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
 	}
 	export = PrimitiveConePrefab;
 	
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Cube primitive prefab.
@@ -9575,7 +9244,7 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
 	     * @param segmentsD The number of segments that make up the cube along the Z-axis.
 	     * @param tile6 The type of uv mapping to use. When true, a texture will be subdivided in a 2x3 grid, each used for a single face. When false, the entire image is mapped on each face.
 	     */
-	    constructor(width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, width?: number, height?: number, depth?: number, segmentsW?: number, segmentsH?: number, segmentsD?: number, tile6?: boolean);
 	    /**
 	     * The size of the cube along its X-axis.
 	     */
@@ -9612,18 +9281,19 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildGraphics(target: ElementsBase, elementsType: string): void;
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	}
 	export = PrimitiveCubePrefab;
 	
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Cylinder primitive mesh.
@@ -9684,22 +9354,23 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab" {
 	     * @param bottomClosed Defines whether the bottom end of the cylinder is closed (true) or open.
 	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	     */
-	    constructor(topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, topRadius?: number, bottomRadius?: number, height?: number, segmentsW?: number, segmentsH?: number, topClosed?: boolean, bottomClosed?: boolean, surfaceClosed?: boolean, yUp?: boolean);
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildGraphics(target: ElementsBase, elementsType: string): void;
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	}
 	export = PrimitiveCylinderPrefab;
 	
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A Plane primitive mesh.
@@ -9720,7 +9391,7 @@ declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
 	     * @param yUp Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false).
 	     * @param doubleSided Defines whether the plane will be visible from both sides, with correct vertex normals.
 	     */
-	    constructor(width?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, doubleSided?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, width?: number, height?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean, doubleSided?: boolean);
 	    /**
 	     * The number of segments that make up the plane along the X-axis. Defaults to 1.
 	     */
@@ -9749,17 +9420,18 @@ declare module "awayjs-display/lib/prefabs/PrimitivePlanePrefab" {
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildGraphics(target: ElementsBase, elementsType: string): void;
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	}
 	export = PrimitivePlanePrefab;
 	
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 	/**
 	 * A UV RegularPolygon primitive mesh.
@@ -9783,7 +9455,7 @@ declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
 	     * @param sides Defines the number of sides of the regular polygon.
 	     * @param yUp Defines whether the regular polygon should lay on the Y-axis (true) or on the Z-axis (false).
 	     */
-	    constructor(radius?: number, sides?: number, yUp?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, radius?: number, sides?: number, yUp?: boolean);
 	}
 	export = PrimitivePolygonPrefab;
 	
@@ -9791,8 +9463,7 @@ declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
 
 declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
 	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Geometry = require("awayjs-display/lib/base/Geometry");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
 	/**
@@ -9800,15 +9471,13 @@ declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
 	 */
 	class PrimitivePrefabBase extends PrefabBase {
 	    static assetType: string;
-	    _geomDirty: boolean;
+	    _primitiveDirty: boolean;
 	    _uvDirty: boolean;
 	    _scaleU: number;
 	    _scaleV: number;
 	    private _material;
-	    private _geometry;
-	    private _subGeometry;
-	    private _geometryType;
-	    private _geometryTypeDirty;
+	    private _elements;
+	    private _elementsType;
 	    /**
 	     *
 	     */
@@ -9816,8 +9485,7 @@ declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
 	    /**
 	     *
 	     */
-	    geometryType: string;
-	    geometry: Geometry;
+	    elementsType: string;
 	    /**
 	     * The material with which to render the primitive.
 	     */
@@ -9829,37 +9497,29 @@ declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
 	     *
 	     * @param material The material with which to render the object
 	     */
-	    constructor(material?: MaterialBase, geometryType?: string);
+	    constructor(material?: MaterialBase, elementsType?: string);
 	    /**
 	     * Builds the primitive's geometry when invalid. This method should not be called directly. The calling should
-	     * be triggered by the invalidateGeometry method (and in turn by updateGeometry).
+	     * be triggered by the invalidateGraphics method (and in turn by updateGraphics).
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildGraphics(target: ElementsBase, elementsType: string): void;
 	    /**
 	     * Builds the primitive's uv coordinates when invalid. This method should not be called directly. The calling
 	     * should be triggered by the invalidateUVs method (and in turn by updateUVs).
 	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	    /**
-	     * Invalidates the primitive's geometry type, causing it to be updated when requested.
+	     * Invalidates the primitive, causing it to be updated when requested.
 	     */
-	    invalidateGeometryType(): void;
-	    /**
-	     * Invalidates the primitive's geometry, causing it to be updated when requested.
-	     */
-	    _pInvalidateGeometry(): void;
+	    _pInvalidatePrimitive(): void;
 	    /**
 	     * Invalidates the primitive's uv coordinates, causing them to be updated when requested.
 	     */
 	    _pInvalidateUVs(): void;
 	    /**
-	     * Updates the subgeometry when invalid.
-	     */
-	    private updateGeometryType();
-	    /**
 	     * Updates the geometry when invalid.
 	     */
-	    private updateGeometry();
+	    private updateGraphics();
 	    /**
 	     * Updates the uv coordinates when invalid.
 	     */
@@ -9872,7 +9532,8 @@ declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A UV Sphere primitive mesh.
@@ -9906,22 +9567,23 @@ declare module "awayjs-display/lib/prefabs/PrimitiveSpherePrefab" {
 	     * @param segmentsH Defines the number of vertical segments that make up the sphere.
 	     * @param yUp Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
 	     */
-	    constructor(radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, radius?: number, segmentsW?: number, segmentsH?: number, yUp?: boolean);
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildGraphics(target: ElementsBase, elementsType: string): void;
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	}
 	export = PrimitiveSpherePrefab;
 	
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 	/**
 	 * A UV Cylinder primitive mesh.
@@ -9961,15 +9623,15 @@ declare module "awayjs-display/lib/prefabs/PrimitiveTorusPrefab" {
 	     * @param segmentsT Defines the number of vertical segments that make up the torus.
 	     * @param yUp Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
 	     */
-	    constructor(radius?: number, tubeRadius?: number, segmentsR?: number, segmentsT?: number, yUp?: boolean);
+	    constructor(material?: MaterialBase, elementsType?: string, radius?: number, tubeRadius?: number, segmentsR?: number, segmentsT?: number, yUp?: boolean);
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildGeometry(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildGraphics(target: ElementsBase, elementsType: string): void;
 	    /**
 	     * @inheritDoc
 	     */
-	    _pBuildUVs(target: SubGeometryBase, geometryType: string): void;
+	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	}
 	export = PrimitiveTorusPrefab;
 	
@@ -10008,13 +9670,13 @@ declare module "awayjs-display/lib/text/Font" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
 	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+	 * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Mesh object.
 	 *
 	 *
-	 * @see away.base.TriangleSubGeometry
+	 * @see away.base.TriangleElements
 	 * @see away.entities.Mesh
 	 *
-	 * @class away.base.SubMeshBase
+	 * @class away.base.GraphicBase
 	 */
 	class Font extends AssetBase {
 	    static assetType: string;
@@ -10078,7 +9740,7 @@ declare module "awayjs-display/lib/text/GridFitType" {
 }
 
 declare module "awayjs-display/lib/text/TesselatedFontChar" {
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 	/**
 	 * The TextFormat class represents character formatting information. Use the
 	 * TextFormat class to create specific text formatting for text fields. You
@@ -10111,9 +9773,9 @@ declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	     */
 	    char_width: number;
 	    /**
-	     * SubGeometry for this char
+	     * Elements for this char
 	     */
-	    subgeom: CurveSubGeometry;
+	    elements: TriangleElements;
 	    /**
 	     * the char_codes that this geom has kerning set for
 	     */
@@ -10122,7 +9784,7 @@ declare module "awayjs-display/lib/text/TesselatedFontChar" {
 	     * the kerning values per char_code
 	     */
 	    kerningValues: Array<number>;
-	    constructor(subgeom: CurveSubGeometry);
+	    constructor(elements: TriangleElements);
 	}
 	export = TesselatedFontChar;
 	
@@ -10130,16 +9792,16 @@ declare module "awayjs-display/lib/text/TesselatedFontChar" {
 
 declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import SubGeometryBase = require("awayjs-display/lib/base/SubGeometryBase");
+	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
 	/**
-	 * SubMeshBase wraps a TriangleSubGeometry as a scene graph instantiation. A SubMeshBase is owned by a Mesh object.
+	 * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Mesh object.
 	 *
 	 *
-	 * @see away.base.TriangleSubGeometry
+	 * @see away.base.TriangleElements
 	 * @see away.entities.Mesh
 	 *
-	 * @class away.base.SubMeshBase
+	 * @class away.base.GraphicBase
 	 */
 	class TesselatedFontTable extends AssetBase {
 	    private _font_chars;
@@ -10167,11 +9829,11 @@ declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	    /**
 	     *
 	     */
-	    get_subgeo_for_char(char: string): TesselatedFontChar;
+	    getChar(name: string): TesselatedFontChar;
 	    /**
 	     *
 	     */
-	    set_subgeo_for_char(char: string, subgeo: SubGeometryBase): void;
+	    setChar(name: string, elements: ElementsBase): void;
 	}
 	export = TesselatedFontTable;
 	
@@ -10707,24 +10369,23 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 declare module "awayjs-display/lib/traverse/CollectorBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Scene = require("awayjs-display/lib/containers/Scene");
-	import EntityListItem = require("awayjs-display/lib/pool/EntityListItem");
-	import EntityListItemPool = require("awayjs-display/lib/pool/EntityListItemPool");
+	import RenderableListItem = require("awayjs-display/lib/pool/RenderableListItem");
+	import RenderableListItemPool = require("awayjs-display/lib/pool/RenderableListItemPool");
 	import Camera = require("awayjs-display/lib/entities/Camera");
 	import IEntity = require("awayjs-display/lib/entities/IEntity");
 	import INode = require("awayjs-display/lib/partition/INode");
+	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
 	/**
 	 * @class away.traverse.CollectorBase
 	 */
 	class CollectorBase {
 	    scene: Scene;
-	    _pEntityHead: EntityListItem;
-	    _pEntityListItemPool: EntityListItemPool;
+	    _pRenderableHead: RenderableListItem;
+	    _pRenderableListItemPool: RenderableListItemPool;
 	    _pCamera: Camera;
 	    private _customCullPlanes;
 	    private _cullPlanes;
 	    private _numCullPlanes;
-	    _pNumEntities: number;
-	    _pNumInteractiveEntities: number;
 	    isEntityCollector: boolean;
 	    constructor();
 	    /**
@@ -10738,15 +10399,7 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    /**
 	     *
 	     */
-	    entityHead: EntityListItem;
-	    /**
-	     *
-	     */
-	    numEntities: number;
-	    /**
-	     *
-	     */
-	    numInteractiveEntities: number;
+	    renderableHead: RenderableListItem;
 	    /**
 	     *
 	     */
@@ -10766,7 +10419,7 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	     *
 	     * @param entity
 	     */
-	    applyEntity(entity: IEntity): void;
+	    applyRenderable(renderable: IRenderableOwner): void;
 	    /**
 	     *
 	     * @param entity
@@ -10784,18 +10437,6 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = CollectorBase;
-	
-}
-
-declare module "awayjs-display/lib/traverse/CSSEntityCollector" {
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * @class away.traverse.CSSEntityCollector
-	 */
-	class CSSEntityCollector extends CollectorBase {
-	    constructor();
-	}
-	export = CSSEntityCollector;
 	
 }
 
@@ -10952,12 +10593,11 @@ declare module "awayjs-display/lib/utils/Cast" {
 	
 }
 
-declare module "awayjs-display/lib/utils/SubGeometryUtils" {
+declare module "awayjs-display/lib/utils/ElementsUtils" {
 	import AttributesBuffer = require("awayjs-core/lib/attributes/AttributesBuffer");
 	import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 	import Short2Attributes = require("awayjs-core/lib/attributes/Short2Attributes");
 	import Short3Attributes = require("awayjs-core/lib/attributes/Short3Attributes");
-	import Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 	import Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 	import Float4Attributes = require("awayjs-core/lib/attributes/Float4Attributes");
 	import Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
@@ -10965,30 +10605,28 @@ declare module "awayjs-display/lib/utils/SubGeometryUtils" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import Box = require("awayjs-core/lib/geom/Box");
 	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import CurveSubGeometry = require("awayjs-display/lib/base/CurveSubGeometry");
-	class SubGeometryUtils {
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+	class ElementsUtils {
 	    private static tempFloat32x4;
 	    private static LIMIT_VERTS;
 	    private static LIMIT_INDICES;
 	    private static _indexSwap;
-	    static generateFaceNormals(indexAttributes: Short3Attributes, positionAttributes: Float3Attributes, output: Float4Attributes, count: number, offset?: number): Float4Attributes;
+	    static generateFaceNormals(indexAttributes: Short3Attributes, positionAttributes: AttributesView, output: Float4Attributes, count: number, offset?: number): Float4Attributes;
 	    static generateNormals(indexAttributes: Short3Attributes, faceNormalAttributes: Float4Attributes, output: Float3Attributes, concatenatedBuffer: AttributesBuffer): Float3Attributes;
-	    static generateFaceTangents(indexAttributes: Short3Attributes, positionAttributes: Float3Attributes, uvAttributes: Float2Attributes, output: Float4Attributes, count: number, offset?: number, useFaceWeights?: boolean): Float4Attributes;
+	    static generateFaceTangents(indexAttributes: Short3Attributes, positionAttributes: AttributesView, uvAttributes: AttributesView, output: Float4Attributes, count: number, offset?: number, useFaceWeights?: boolean): Float4Attributes;
 	    static generateTangents(indexAttributes: Short3Attributes, faceTangentAttributes: Float3Attributes, faceNormalAttributes: Float4Attributes, output: Float3Attributes, concatenatedBuffer: AttributesBuffer): Float3Attributes;
-	    static generateUVs(indexAttributes: Short3Attributes, output: Float2Attributes, concatenatedBuffer: AttributesBuffer, count: number, offset?: number): Float2Attributes;
 	    static generateColors(indexAttributes: Short3Attributes, output: Byte4Attributes, concatenatedBuffer: AttributesBuffer, count: number, offset?: number): Byte4Attributes;
 	    static scaleUVs(scaleU: number, scaleV: number, output: AttributesView, count: number, offset?: number): void;
-	    static scale(scale: number, output: Float3Attributes, count: number, offset?: number): void;
-	    static applyTransformation(transform: Matrix3D, positionAttributes: Float3Attributes, normalAttributes: Float3Attributes, tangentAttributes: Float3Attributes, count: number, offset?: number): void;
+	    static scale(scale: number, output: AttributesView, count: number, offset?: number): void;
+	    static applyTransformation(transform: Matrix3D, positionAttributes: AttributesView, normalAttributes: Float3Attributes, tangentAttributes: Float3Attributes, count: number, offset?: number): void;
 	    static getSubIndices(indexAttributes: Short2Attributes, numVertices: number, indexMappings: Array<number>, indexOffset?: number): AttributesBuffer;
 	    static getSubIndices(indexAttributes: Short3Attributes, numVertices: number, indexMappings: Array<number>, indexOffset?: number): AttributesBuffer;
 	    static getSubVertices(vertexBuffer: AttributesBuffer, indexMappings: Array<number>): AttributesBuffer;
-	    static hitTestCurveGeometry(x: number, y: number, z: number, boundingBox: Box, curveSubGeometry: CurveSubGeometry): boolean;
-	    static getCurveGeometryBoxBounds(positionAttributes: Float3Attributes, output: Box, count: number, offset?: number): Box;
-	    static getTriangleGeometryBoxBounds(positionAttributes: Float3Attributes, output: Box, count: number, offset?: number): Box;
-	    static getTriangleGeometrySphereBounds(positionAttributes: Float3Attributes, center: Vector3D, output: Sphere, count: number, offset?: number): Sphere;
+	    static hitTestTriangleElements(x: number, y: number, z: number, boundingBox: Box, triangleElements: TriangleElements): boolean;
+	    static getTriangleGraphicsBoxBounds(positionAttributes: AttributesView, output: Box, count: number, offset?: number): Box;
+	    static getTriangleGraphicsSphereBounds(positionAttributes: AttributesView, center: Vector3D, output: Sphere, count: number, offset?: number): Sphere;
 	}
-	export = SubGeometryUtils;
+	export = ElementsUtils;
 	
 }
 
