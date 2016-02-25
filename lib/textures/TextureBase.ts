@@ -3,7 +3,7 @@ import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import IRenderOwner					= require("awayjs-display/lib/base/IRenderOwner");
+import ISurface						= require("awayjs-display/lib/base/ISurface");
 /**
  *
  */

@@ -5,14 +5,14 @@ import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import Style						= require("awayjs-display/lib/base/Style");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
-import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 
 /**
- * IRenderableOwner provides an interface for objects that can use materials.
+ * IRenderable provides an interface for objects that can use materials.
  *
- * @interface away.base.IRenderableOwner
+ * @interface away.base.IRenderable
  */
-interface IRenderableOwner extends IAsset
+interface IRenderable extends IAsset
 {
 	/**
 	 * The animation used by the material owner to assemble the vertex code.
@@ -22,14 +22,9 @@ interface IRenderableOwner extends IAsset
 	/**
 	 *
 	 */
-	uvTransform:Matrix;
-
-	/**
-	 *
-	 */
 	style:Style;
 
-	invalidateRenderOwner();
+	invalidateSurface();
 
 
 	/**
@@ -64,4 +59,4 @@ interface IRenderableOwner extends IAsset
 	_iTestCollision(shortestCollisionDistance:number):boolean;
 }
 
-export = IRenderableOwner;
+export = IRenderable;

@@ -6,11 +6,11 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
@@ -20,7 +20,7 @@ import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 /**
  * A Line Segment primitive.
  */
-class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
+class LineSegment extends DisplayObject implements IEntity, IRenderable
 {
 	private _style:Style;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
@@ -29,8 +29,6 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 
 	private _animator:IAnimator;
 	private _material:MaterialBase;
-	private _uvTransform:Matrix;
-	private _colorTransform:ColorTransform;
 
 	public _startPosition:Vector3D;
 	public _endPosition:Vector3D;
@@ -126,31 +124,6 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	}
 
 	/**
-	 *
-	 */
-	public get uvTransform():Matrix
-	{
-		return this._uvTransform;
-	}
-
-	public set uvTransform(value:Matrix)
-	{
-		this._uvTransform = value;
-	}
-	/**
-	 *
-	 */
-	public get colorTransform():ColorTransform
-	{
-		return this._colorTransform;// || this._pParentMesh._colorTransform;
-	}
-
-	public set colorTransform(value:ColorTransform)
-	{
-		this._colorTransform = value;
-	}
-
-	/**
 	 * Create a line segment
 	 *
 	 * @param startPosition Start position of the line segment
@@ -196,7 +169,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 		if (this._style)
 			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-		this.invalidateRenderOwner();
+		this.invalidateSurface();
 	}
 
 
@@ -235,17 +208,17 @@ class LineSegment extends DisplayObject implements IEntity, IRenderableOwner
 	 */
 	private invalidateGraphics()
 	{
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
 	}
 
-	public invalidateRenderOwner()
+	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 
 	private _onInvalidateProperties(event:StyleEvent)
 	{
-		this.invalidateRenderOwner();
+		this.invalidateSurface();
 	}
 
 	/**

@@ -7,12 +7,12 @@ import Matrix						= require("awayjs-core/lib/geom/Matrix");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
-import RenderOwnerEvent				= require("awayjs-display/lib/events/RenderOwnerEvent");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
+import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
+import SurfaceEvent				= require("awayjs-display/lib/events/SurfaceEvent");
 import DefaultMaterialManager		= require("awayjs-display/lib/managers/DefaultMaterialManager");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
@@ -55,7 +55,7 @@ import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
  * contains the Billboard object.</p>
  */
 
-class Billboard extends DisplayObject implements IEntity, IRenderableOwner
+class Billboard extends DisplayObject implements IEntity, IRenderable
 {
 	public static assetType:string = "[asset Billboard]";
 
@@ -64,11 +64,10 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	private _billboardHeight:number;
 	private _billboardRect:Rectangle;
 	private _material:MaterialBase;
-	private _uvTransform:Matrix;
 
 	private _style:Style;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
-	private onInvalidateTextureDelegate:(event:RenderOwnerEvent) => void;
+	private onInvalidateTextureDelegate:(event:SurfaceEvent) => void;
 
 
 	/**
@@ -126,7 +125,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		if (this._material) {
 			this._material.iRemoveOwner(this);
-			this._material.removeEventListener(RenderOwnerEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+			this._material.removeEventListener(SurfaceEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
 		}
 
 
@@ -134,21 +133,8 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		if (this._material) {
 			this._material.iAddOwner(this);
-			this._material.addEventListener(RenderOwnerEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+			this._material.addEventListener(SurfaceEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
 		}
-	}
-
-	/**
-	 *
-	 */
-	public get uvTransform():Matrix
-	{
-		return this._uvTransform;
-	}
-
-	public set uvTransform(value:Matrix)
-	{
-		this._uvTransform = value;
 	}
 
 	constructor(material:MaterialBase, pixelSnapping:string = "auto", smoothing:boolean = false)
@@ -157,7 +143,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._pIsEntity = true;
 
-		this.onInvalidateTextureDelegate = (event:RenderOwnerEvent) => this.onInvalidateTexture(event);
+		this.onInvalidateTextureDelegate = (event:SurfaceEvent) => this.onInvalidateTexture(event);
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 
 		this.material = material;
@@ -225,7 +211,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 	/**
 	 * @private
 	 */
-	private onInvalidateTexture(event:RenderOwnerEvent)
+	private onInvalidateTexture(event:SurfaceEvent)
 	{
 		this._updateDimensions();
 	}
@@ -243,9 +229,14 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		if (image) {
 			var sampler:Sampler2D = <Sampler2D> ((this._style? this._style.getSamplerAt(texture) : null) || (this.material.style? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || DefaultMaterialManager.getDefaultSampler());
-			var rect:Rectangle = sampler.imageRect || image.rect;
-			this._billboardWidth = rect.width*image.width;
-			this._billboardHeight = rect.height*image.height;
+			if (sampler.imageRect) {
+				this._billboardWidth = sampler.imageRect.width*image.width;
+				this._billboardHeight = sampler.imageRect.height*image.height;
+			} else {
+				this._billboardWidth = image.rect.width;
+				this._billboardHeight = image.rect.height;
+			}
+
 			this._billboardRect = sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
 		} else {
 			this._billboardWidth = 1;
@@ -255,18 +246,18 @@ class Billboard extends DisplayObject implements IEntity, IRenderableOwner
 
 		this._pInvalidateBounds();
 
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 
 
-	public invalidateRenderOwner()
+	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 
 	private _onInvalidateProperties(event:StyleEvent = null)
 	{
-		this.invalidateRenderOwner();
+		this.invalidateSurface();
 
 		this._updateDimensions();
 	}

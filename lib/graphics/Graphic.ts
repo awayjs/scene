@@ -6,18 +6,18 @@ import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import Camera						= require("awayjs-display/lib/entities/Camera");
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
-import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
+import Camera						= require("awayjs-display/lib/display/Camera");
+import Mesh							= require("awayjs-display/lib/display/Mesh");
+import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
-import IRenderableOwner 			= require("awayjs-display/lib/base/IRenderableOwner");
+import IRenderable 			= require("awayjs-display/lib/base/IRenderable");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 
 /**
  * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Mesh object.
@@ -28,7 +28,7 @@ import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
  *
  * @class away.base.Graphic
  */
-class Graphic extends AssetBase implements IRenderableOwner
+class Graphic extends AssetBase implements IRenderable
 {
 	public static _available:Array<Graphic> = new Array<Graphic>();
 
@@ -36,7 +36,6 @@ class Graphic extends AssetBase implements IRenderableOwner
 
 	public _iIndex:number = 0;
 
-	private _uvTransform:Matrix;
 	private _style:Style;
 	private _material:MaterialBase;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
@@ -146,27 +145,14 @@ class Graphic extends AssetBase implements IRenderableOwner
 		if (this._style)
 			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-		this.invalidateRenderOwner();
-	}
-
-	/**
-	 *
-	 */
-	public get uvTransform():Matrix
-	{
-		return this._uvTransform || this.parent.uvTransform;
-	}
-
-	public set uvTransform(value:Matrix)
-	{
-		this._uvTransform = value;
+		this.invalidateSurface();
 	}
 
 
 	/**
 	 * Creates a new Graphic object
 	 */
-	constructor(index:number, parent:Graphics, elements:ElementsBase, material:MaterialBase = null, style:Style = null, uvTransform:Matrix = null)
+	constructor(index:number, parent:Graphics, elements:ElementsBase, material:MaterialBase = null, style:Style = null)
 	{
 		super();
 
@@ -177,7 +163,6 @@ class Graphic extends AssetBase implements IRenderableOwner
 		this.elements = elements;
 		this.material = material;
 		this.style = style;
-		this.uvTransform = uvTransform;
 	}
 
 	/**
@@ -195,12 +180,12 @@ class Graphic extends AssetBase implements IRenderableOwner
 
 	public invalidateElements()
 	{
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 
-	public invalidateRenderOwner()
+	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 
 	public _iGetExplicitMaterial():MaterialBase
@@ -213,14 +198,9 @@ class Graphic extends AssetBase implements IRenderableOwner
 		return this._style;
 	}
 
-	public _iGetExplicitUVTransform():Matrix
-	{
-		return this._uvTransform;
-	}
-
 	private _onInvalidateProperties(event:StyleEvent)
 	{
-		this.invalidateRenderOwner();
+		this.invalidateSurface();
 	}
 
 	/**

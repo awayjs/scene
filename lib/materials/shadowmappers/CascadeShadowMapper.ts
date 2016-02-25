@@ -6,8 +6,8 @@ import FreeMatrixProjection			= require("awayjs-core/lib/projections/FreeMatrixP
 import IProjection					= require("awayjs-core/lib/projections/IProjection");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
-import Scene						= require("awayjs-display/lib/containers/Scene");
-import Camera						= require("awayjs-display/lib/entities/Camera");
+import Scene						= require("awayjs-display/lib/display/Scene");
+import Camera						= require("awayjs-display/lib/display/Camera");
 import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 

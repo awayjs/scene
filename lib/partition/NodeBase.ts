@@ -1,10 +1,10 @@
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 import INode						= require("awayjs-display/lib/partition/INode");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 

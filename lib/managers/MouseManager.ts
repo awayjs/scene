@@ -1,8 +1,8 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
-import View							= require("awayjs-display/lib/containers/View");
+import View							= require("awayjs-display/lib/View");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import AwayMouseEvent				= require("awayjs-display/lib/events/MouseEvent");
 import FrameScriptManager			= require("awayjs-display/lib/managers/FrameScriptManager");
@@ -188,7 +188,7 @@ class MouseManager
 		if (collider) {
 			// Object.
 			event.object = collider.displayObject;
-			event.renderableOwner = collider.renderableOwner;
+			event.renderable = collider.renderable;
 			// UV.
 			event.uv = collider.uv;
 			// Position.

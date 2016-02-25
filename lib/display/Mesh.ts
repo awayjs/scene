@@ -7,12 +7,12 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import GraphicsEvent				= require("awayjs-display/lib/events/GraphicsEvent");
-import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
@@ -122,19 +122,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	/**
 	 *
 	 */
-	public get uvTransform():Matrix
-	{
-		return this._graphics.uvTransform;
-	}
-
-	public set uvTransform(value:Matrix)
-	{
-		this._graphics.uvTransform = value;
-	}
-
-	/**
-	 *
-	 */
 	public get style():Style
 	{
 		return this._graphics.style;
@@ -148,7 +135,6 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	/**
 	 * Create a new Mesh object.
 	 *
-	 * @param graphics                    The graphics used by the mesh that provides it with its shape.
 	 * @param material    [optional]        The material with which to render the Mesh.
 	 */
 	constructor(material:MaterialBase = null)

@@ -1,5 +1,6 @@
 import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
+import Matrix						= require("awayjs-core/lib/geom/Matrix");
 
 import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
@@ -14,6 +15,7 @@ class Style extends EventDispatcher
 	private _samplers:Object = new Object();
 	private _image:ImageBase;
 	private _images:Object = new Object();
+	private _uvMatrix:Matrix;
 	private _color:number = 0xFFFFFF;
 
 	public get sampler():SamplerBase
@@ -46,6 +48,21 @@ class Style extends EventDispatcher
 		this._invalidateProperties();
 	}
 
+	public get uvMatrix():Matrix
+	{
+		return this._uvMatrix;
+	}
+
+	public set uvMatrix(value:Matrix)
+	{
+		if (this._uvMatrix == value)
+			return;
+
+		this._uvMatrix = value;
+
+		this._invalidateProperties();
+	}
+	
 	/**
 	 * The diffuse reflectivity color of the surface.
 	 */

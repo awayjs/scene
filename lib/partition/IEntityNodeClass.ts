@@ -1,4 +1,4 @@
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 

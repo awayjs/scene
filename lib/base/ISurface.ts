@@ -3,17 +3,17 @@ import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
 
 /**
- * IRenderOwner provides an interface for objects that can use materials.
+ * ISurface provides an interface for objects that define the properties of a renderable's surface.
  *
- * @interface away.base.IRenderOwner
+ * @interface away.base.ISurface
  */
-interface IRenderOwner extends IAsset
+interface ISurface extends IAsset
 {
 	alphaThreshold:number;
 
@@ -29,7 +29,7 @@ interface IRenderOwner extends IAsset
 
 	animationSet:IAnimationSet;
 
-	iOwners:Array<IRenderableOwner>;
+	iOwners:Array<IRenderable>;
 
 	getNumTextures():number;
 
@@ -40,4 +40,4 @@ interface IRenderOwner extends IAsset
 	removeTexture(texture:TextureBase);
 }
 
-export = IRenderOwner;
+export = ISurface;

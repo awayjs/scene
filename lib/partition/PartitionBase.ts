@@ -1,7 +1,7 @@
 import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
 import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
 
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import IEntityNodeClass				= require("awayjs-display/lib/partition/IEntityNodeClass");

@@ -15,7 +15,7 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import IAnimator 				= require("awayjs-display/lib/animators/IAnimator");
 import ElementsEvent			= require("awayjs-display/lib/events/ElementsEvent");
 import StyleEvent				= require("awayjs-display/lib/events/StyleEvent");
-import IEntity					= require("awayjs-display/lib/entities/IEntity");
+import IEntity					= require("awayjs-display/lib/display/IEntity");
 import IPickingCollider			= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO		= require("awayjs-display/lib/pick/PickingCollisionVO");
 import CollectorBase			= require("awayjs-display/lib/traverse/CollectorBase");
@@ -51,7 +51,6 @@ class Graphics extends AssetBase
 	private _material:MaterialBase;
 	private _graphics:Array<Graphic> = new Array<Graphic>();
 	private _animator:IAnimator;
-	private _uvTransform:Matrix;
 	private _style:Style;
 
 	public sourceEntity:IEntity;
@@ -99,20 +98,6 @@ class Graphics extends AssetBase
 		}
 	}
 
-	/*
-	 *
-	 */
-	public get uvTransform():Matrix
-	{
-		return this._uvTransform;
-	}
-
-	public set uvTransform(value:Matrix)
-	{
-		this._uvTransform = value;
-	}
-
-
 	/**
 	 *
 	 */
@@ -134,7 +119,7 @@ class Graphics extends AssetBase
 		if (this._style)
 			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-		this._iInvalidateRenderOwners();
+		this._iInvalidateSurfaces();
 	}
 
 	/**
@@ -185,7 +170,7 @@ class Graphics extends AssetBase
 	 *
 	 * @param elements
 	 */
-	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null, uvTransform:Matrix = null)
+	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null)
 	{
 		var newGraphic:Graphic;
 
@@ -195,9 +180,8 @@ class Graphics extends AssetBase
 			newGraphic.elements = elements;
 			newGraphic.material = material;
 			newGraphic.style = style;
-			newGraphic.uvTransform = uvTransform;
 		} else {
-			newGraphic = new Graphic(this._graphics.length, this, elements, material, style, uvTransform);
+			newGraphic = new Graphic(this._graphics.length, this, elements, material, style);
 		}
 
 		this._graphics.push(newGraphic);
@@ -238,12 +222,11 @@ class Graphics extends AssetBase
 		graphics.style = this.style;
 		graphics.particles = this.particles;
 		graphics.numParticles = this.numParticles;
-		graphics.uvTransform = this.uvTransform;
 		var graphic:Graphic;
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i) {
 			graphic = this._graphics[i];
-			graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle(), graphic._iGetExplicitUVTransform());
+			graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle());
 		}
 
 		if (this._animator)
@@ -334,11 +317,11 @@ class Graphics extends AssetBase
 			this.dispatchEvent(new GraphicsEvent(GraphicsEvent.BOUNDS_INVALID));
 	}
 
-	public _iInvalidateRenderOwners()
+	public _iInvalidateSurfaces()
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i)
-			this._graphics[i].invalidateRenderOwner();
+			this._graphics[i].invalidateSurface();
 	}
 
 
@@ -369,7 +352,7 @@ class Graphics extends AssetBase
 
 	private _onInvalidateProperties(event:StyleEvent)
 	{
-		this._iInvalidateRenderOwners();
+		this._iInvalidateSurfaces();
 	}
 
 	private _onInvalidateVertices(event:ElementsEvent)

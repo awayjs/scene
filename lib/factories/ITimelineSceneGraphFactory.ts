@@ -1,6 +1,6 @@
 import Timeline = require("awayjs-display/lib/base/Timeline");
-import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-import TextField = require("awayjs-display/lib/entities/TextField");
+import MovieClip = require("awayjs-display/lib/display/MovieClip");
+import TextField = require("awayjs-display/lib/display/TextField");
 
 interface ITimelineSceneGraphFactory
 {

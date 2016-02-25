@@ -2,9 +2,9 @@ import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
 import BitmapImageCube				= require("awayjs-core/lib/image/BitmapImageCube");
 
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 import LineElements					= require("awayjs-display/lib/graphics/LineElements");
-import Skybox						= require("awayjs-display/lib/entities/Skybox");
+import Skybox						= require("awayjs-display/lib/display/Skybox");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import BasicMaterial				= require("awayjs-display/lib/materials/BasicMaterial");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
@@ -23,16 +23,16 @@ class DefaultMaterialManager
 	private static _defaultTexture:Single2DTexture;
 	private static _defaultCubeTexture:SingleCubeTexture;
 
-	public static getDefaultMaterial(renderableOwner:IRenderableOwner = null):MaterialBase
+	public static getDefaultMaterial(renderable:IRenderable = null):MaterialBase
 	{
-		if (renderableOwner != null && renderableOwner.isAsset(Graphic) && (<Graphic> renderableOwner).elements.isAsset(LineElements)) {
+		if (renderable != null && renderable.isAsset(Graphic) && (<Graphic> renderable).elements.isAsset(LineElements)) {
 			if (!DefaultMaterialManager._defaultColorMaterial)
 				DefaultMaterialManager.createDefaultColorMaterial();
 
 			return DefaultMaterialManager._defaultColorMaterial;
 		}
 
-		if (renderableOwner != null && renderableOwner.isAsset(Skybox)) {
+		if (renderable != null && renderable.isAsset(Skybox)) {
 			if (!DefaultMaterialManager._defaultCubeTextureMaterial)
 				DefaultMaterialManager.createDefaultCubeTextureMaterial();
 
@@ -45,9 +45,9 @@ class DefaultMaterialManager
 		return DefaultMaterialManager._defaultTextureMaterial;
 	}
 
-	public static getDefaultTexture(renderableOwner:IRenderableOwner = null):TextureBase
+	public static getDefaultTexture(renderable:IRenderable = null):TextureBase
 	{
-		if (renderableOwner != null && renderableOwner.isAsset(Skybox)) {
+		if (renderable != null && renderable.isAsset(Skybox)) {
 			if (!DefaultMaterialManager._defaultCubeTexture)
 				DefaultMaterialManager.createDefaultCubeTexture();
 

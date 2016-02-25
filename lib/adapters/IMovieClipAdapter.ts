@@ -1,6 +1,6 @@
 import IDisplayObjectAdapter		= require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
 
 interface IMovieClipAdapter extends IDisplayObjectAdapter
 {

@@ -1,8 +1,8 @@
 import Point						= require("awayjs-core/lib/geom/Point");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 
 /**
  * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects
@@ -79,7 +79,7 @@ class PickingCollisionVO
 	/**
 	 * The material ownwer associated with a collision.
 	 */
-	public renderableOwner:IRenderableOwner;
+	public renderable:IRenderable;
 
 	/**
 	 * Creates a new <code>PickingCollisionVO</code> object.
@@ -94,7 +94,7 @@ class PickingCollisionVO
 	public dispose()
 	{
 		this.displayObject = null;
-		this.renderableOwner = null;
+		this.renderable = null;
 	}
 
 }

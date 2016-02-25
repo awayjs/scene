@@ -1,11 +1,11 @@
 import AssetEvent                   = require("awayjs-core/lib/events/AssetEvent");
 import ColorTransform               = require("awayjs-core/lib/geom/ColorTransform");
 
-import DisplayObjectContainer       = require("awayjs-display/lib/containers/DisplayObjectContainer");
-import DisplayObject                = require("awayjs-display/lib/base/DisplayObject");
-import Mesh                         = require("awayjs-display/lib/entities/Mesh");
-import Billboard                    = require("awayjs-display/lib/entities/Billboard");
-import TextField                    = require("awayjs-display/lib/entities/TextField");
+import DisplayObjectContainer       = require("awayjs-display/lib/display/DisplayObjectContainer");
+import DisplayObject                = require("awayjs-display/lib/display/DisplayObject");
+import Mesh                         = require("awayjs-display/lib/display/Mesh");
+import Billboard                    = require("awayjs-display/lib/display/Billboard");
+import TextField                    = require("awayjs-display/lib/display/TextField");
 import MouseEvent                   = require("awayjs-display/lib/events/MouseEvent");
 import IMovieClipAdapter	    	= require("awayjs-display/lib/adapters/IMovieClipAdapter");
 import Timeline                     = require("awayjs-display/lib/base/Timeline");

@@ -2,7 +2,7 @@ import IAsset					= require("awayjs-core/lib/library/IAsset");
 
 import IAnimationSet			= require("awayjs-display/lib/animators/IAnimationSet");
 import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
-import IEntity					= require("awayjs-display/lib/entities/IEntity");
+import IEntity					= require("awayjs-display/lib/display/IEntity");
 
 /**
  * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.

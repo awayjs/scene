@@ -4,8 +4,8 @@ import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
+import Mesh							= require("awayjs-display/lib/display/Mesh");
 
 class BoundingVolumeBase
 {

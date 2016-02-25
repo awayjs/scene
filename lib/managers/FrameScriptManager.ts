@@ -1,5 +1,5 @@
-import DisplayObject					= require("awayjs-display/lib/base/DisplayObject");
-import MovieClip					= require("awayjs-display/lib/entities/MovieClip");
+import DisplayObject					= require("awayjs-display/lib/display/DisplayObject");
+import MovieClip					= require("awayjs-display/lib/display/MovieClip");
 
 class FrameScriptManager
 {

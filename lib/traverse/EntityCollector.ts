@@ -1,10 +1,10 @@
-import LightBase					= require("awayjs-display/lib/base/LightBase");
+import LightBase					= require("awayjs-display/lib/display/LightBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import LightProbe					= require("awayjs-display/lib/entities/LightProbe");
-import PointLight					= require("awayjs-display/lib/entities/PointLight");
-import Skybox						= require("awayjs-display/lib/entities/Skybox");
+import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
+import LightProbe					= require("awayjs-display/lib/display/LightProbe");
+import PointLight					= require("awayjs-display/lib/display/PointLight");
+import Skybox						= require("awayjs-display/lib/display/Skybox");
 
 /**
  * @class away.traverse.EntityCollector

@@ -2,7 +2,7 @@ import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
 import Point							= require("awayjs-core/lib/geom/Point");
 import LineElements						= require("awayjs-display/lib/graphics/LineElements");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
-import Billboard						= require("awayjs-display/lib/entities/Billboard");
+import Billboard						= require("awayjs-display/lib/display/Billboard");
 import PickingCollisionVO				= require("awayjs-display/lib/pick/PickingCollisionVO");
 import IPickingCollider					= require("awayjs-display/lib/pick/IPickingCollider");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
@@ -42,12 +42,12 @@ class JSPickingCollider implements IPickingCollider
 	 */
 	public testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number)
 	{
-		pickingCollisionVO.renderableOwner = null;
+		pickingCollisionVO.renderable = null;
 
 		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollisionVO, shortestCollisionDistance)) {
 		//	shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
 		//
-		//	pickingCollisionVO.renderableOwner = billboard;
+		//	pickingCollisionVO.renderable = billboard;
 		//
 		//	return true;
 		//}

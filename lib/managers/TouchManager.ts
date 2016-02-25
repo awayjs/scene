@@ -1,7 +1,7 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import View							= require("awayjs-display/lib/containers/View");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import View							= require("awayjs-display/lib/View");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import AwayTouchEvent				= require("awayjs-display/lib/events/TouchEvent");
 
@@ -146,7 +146,7 @@ class TouchManager
 		if (collider) {
 			// Object.
 			event.object = collider.displayObject;
-			event.renderableOwner = collider.renderableOwner;
+			event.renderable = collider.renderable;
 			// UV.
 			event.uv = collider.uv;
 			// Position.

@@ -1,7 +1,7 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
-import Billboard					= require("awayjs-display/lib/entities/Billboard");
+import Billboard					= require("awayjs-display/lib/display/Billboard");
 import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
 import LineElements					= require("awayjs-display/lib/graphics/LineElements");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");

@@ -9,8 +9,8 @@ import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
 import ParserEvent					= require("awayjs-core/lib/events/ParserEvent");
 import ParserBase					= require("awayjs-core/lib/parsers/ParserBase");
 
-import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 
 /**
  * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)

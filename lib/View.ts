@@ -5,14 +5,14 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import getTimer						= require("awayjs-core/lib/utils/getTimer");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
-import Scene						= require("awayjs-display/lib/containers/Scene");
+import Scene						= require("awayjs-display/lib/display/Scene");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import RaycastPicker				= require("awayjs-display/lib/pick/RaycastPicker");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import Camera						= require("awayjs-display/lib/entities/Camera");
+import Camera						= require("awayjs-display/lib/display/Camera");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import RendererEvent				= require("awayjs-display/lib/events/RendererEvent");

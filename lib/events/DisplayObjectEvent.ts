@@ -1,6 +1,6 @@
 import EventBase				= require("awayjs-core/lib/events/EventBase");
 
-import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
 
 class DisplayObjectEvent extends EventBase
 {

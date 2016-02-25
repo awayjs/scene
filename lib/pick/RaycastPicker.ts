@@ -1,16 +1,16 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import Scene						= require("awayjs-display/lib/containers/Scene");
-import View							= require("awayjs-display/lib/containers/View");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import Scene						= require("awayjs-display/lib/display/Scene");
+import View							= require("awayjs-display/lib/View");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import RenderableListItem			= require("awayjs-display/lib/pool/RenderableListItem");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import RaycastCollector				= require("awayjs-display/lib/traverse/RaycastCollector");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -29,7 +29,7 @@ class RaycastPicker implements IPicker
 	private _ignoredRenderables = [];
 	private _onlyMouseEnabled:boolean = true;
 
-	private _renderables:Array<IRenderableOwner>;
+	private _renderables:Array<IRenderable>;
 	private _numRenderables:number = 0;
 	private _hasCollisions:boolean;
 
@@ -57,7 +57,7 @@ class RaycastPicker implements IPicker
 		this._raycastCollector = new RaycastCollector();
 
 		this._findClosestCollision = findClosestCollision;
-		this._renderables = new Array<IRenderableOwner>();
+		this._renderables = new Array<IRenderable>();
 	}
 
 	/**
@@ -93,7 +93,7 @@ class RaycastPicker implements IPicker
 
 		this._numRenderables = 0;
 		var node:RenderableListItem = this._raycastCollector.renderableHead;
-		var renderable:IRenderableOwner;
+		var renderable:IRenderable;
 
 		while (node) {
 			if (!this.isIgnored(renderable = node.renderable))
@@ -131,7 +131,7 @@ class RaycastPicker implements IPicker
 		this._ignoredRenderables = renderables;
 	}
 
-	private isIgnored(renderable:IRenderableOwner):boolean
+	private isIgnored(renderable:IRenderable):boolean
 	{
 		if (this._onlyMouseEnabled && !renderable._iIsMouseEnabled())
 			return true;
@@ -144,7 +144,7 @@ class RaycastPicker implements IPicker
 		return false;
 	}
 
-	private sortOnNearT(renderable1:IRenderableOwner, renderable2:IRenderableOwner):number
+	private sortOnNearT(renderable1:IRenderable, renderable2:IRenderable):number
 	{
 		return renderable1._iPickingCollisionVO.rayEntryDistance > renderable2._iPickingCollisionVO.rayEntryDistance? 1 : -1;
 	}
@@ -165,7 +165,7 @@ class RaycastPicker implements IPicker
 		var shortestCollisionDistance:number = Number.MAX_VALUE;
 		var bestCollisionVO:PickingCollisionVO;
 		var pickingCollisionVO:PickingCollisionVO;
-		var renderable:IRenderableOwner;
+		var renderable:IRenderable;
 		var i:number;
 
 		for (i = 0; i < this._numRenderables; ++i) {

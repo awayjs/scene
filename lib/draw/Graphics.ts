@@ -14,12 +14,12 @@ import SpreadMethod				= require("awayjs-display/lib/draw/SpreadMethod");
 import GraphicsPath				= require("awayjs-display/lib/draw/GraphicsPath");
 import GraphicsPathCommand		= require("awayjs-display/lib/draw/GraphicsPathCommand");
 import DefaultMaterialManager	= require("awayjs-display/lib/managers/DefaultMaterialManager");
-import MovieClip				= require("awayjs-display/lib/entities/MovieClip");
+import MovieClip				= require("awayjs-display/lib/display/MovieClip");
 
 import Point					= require("awayjs-core/lib/geom/Point")
 import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
 import AttributesView			= require("awayjs-core/lib/attributes/AttributesView");
-import Mesh						= require("awayjs-display/lib/entities/Mesh");
+import Mesh						= require("awayjs-display/lib/display/Mesh");
 import Float3Attributes			= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes			= require("awayjs-core/lib/attributes/Float2Attributes");
 

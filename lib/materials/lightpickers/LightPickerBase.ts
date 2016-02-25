@@ -1,12 +1,12 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import LightBase					= require("awayjs-display/lib/base/LightBase");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
+import LightBase					= require("awayjs-display/lib/display/LightBase");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
-import LightProbe					= require("awayjs-display/lib/entities/LightProbe");
-import PointLight					= require("awayjs-display/lib/entities/PointLight");
+import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
+import LightProbe					= require("awayjs-display/lib/display/LightProbe");
+import PointLight					= require("awayjs-display/lib/display/PointLight");
 
 /**
  * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for

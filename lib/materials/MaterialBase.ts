@@ -11,10 +11,10 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import IRenderOwner					= require("awayjs-display/lib/base/IRenderOwner");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
-import Camera						= require("awayjs-display/lib/entities/Camera");
-import RenderOwnerEvent				= require("awayjs-display/lib/events/RenderOwnerEvent");
+import ISurface						= require("awayjs-display/lib/base/ISurface");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
+import Camera						= require("awayjs-display/lib/display/Camera");
+import SurfaceEvent				= require("awayjs-display/lib/events/SurfaceEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
@@ -32,7 +32,7 @@ import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
  * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
  * shaders, or entire new material frameworks.
  */
-class MaterialBase extends AssetBase implements IRenderOwner
+class MaterialBase extends AssetBase implements ISurface
 {
 	private _textures:Array<TextureBase> = new Array<TextureBase>();
 	private _colorTransform:ColorTransform;
@@ -70,7 +70,7 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	/**
 	 * A list of material owners, renderables or custom Entities.
 	 */
-	private _owners:Array<IRenderableOwner> = new Array<IRenderableOwner>();
+	private _owners:Array<IRenderable> = new Array<IRenderable>();
 
 	private _alphaPremultiplied:boolean;
 
@@ -457,15 +457,15 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	// MATERIAL MANAGEMENT
 	//
 	/**
-	 * Mark an IRenderableOwner as owner of this material.
+	 * Mark an IRenderable as owner of this material.
 	 * Assures we're not using the same material across renderables with different animations, since the
 	 * Programs depend on animation. This method needs to be called when a material is assigned.
 	 *
-	 * @param owner The IRenderableOwner that had this material assigned
+	 * @param owner The IRenderable that had this material assigned
 	 *
 	 * @internal
 	 */
-	public iAddOwner(owner:IRenderableOwner)
+	public iAddOwner(owner:IRenderable)
 	{
 		this._owners.push(owner);
 
@@ -488,16 +488,16 @@ class MaterialBase extends AssetBase implements IRenderOwner
 			}
 		}
 
-		owner.invalidateRenderOwner();
+		owner.invalidateSurface();
 	}
 
 	/**
-	 * Removes an IRenderableOwner as owner.
+	 * Removes an IRenderable as owner.
 	 * @param owner
 	 *
 	 * @internal
 	 */
-	public iRemoveOwner(owner:IRenderableOwner)
+	public iRemoveOwner(owner:IRenderable)
 	{
 		this._owners.splice(this._owners.indexOf(owner), 1);
 
@@ -507,15 +507,15 @@ class MaterialBase extends AssetBase implements IRenderOwner
 			this.invalidateAnimation();
 		}
 
-		owner.invalidateRenderOwner();
+		owner.invalidateSurface();
 	}
 
 	/**
-	 * A list of the IRenderableOwners that use this material
+	 * A list of the IRenderables that use this material
 	 *
 	 * @private
 	 */
-	public get iOwners():Array<IRenderableOwner>
+	public get iOwners():Array<IRenderable>
 	{
 		return this._owners;
 	}
@@ -537,19 +537,19 @@ class MaterialBase extends AssetBase implements IRenderOwner
 	 */
 	public invalidatePasses()
 	{
-		this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_PASSES, this));
+		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
 	}
 
 	private invalidateAnimation()
 	{
-		this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_ANIMATION, this));
+		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_ANIMATION, this));
 	}
 
-	public invalidateRenderOwners()
+	public invalidateSurfaces()
 	{
 		var len:number = this._owners.length;
 		for (var i:number = 0; i < len; i++)
-			this._owners[i].invalidateRenderOwner();
+			this._owners[i].invalidateSurface();
 	}
 
 	/**
@@ -562,7 +562,7 @@ class MaterialBase extends AssetBase implements IRenderOwner
 
 	public invalidateTexture()
 	{
-		this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_TEXTURE, this));
+		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_TEXTURE, this));
 	}
 
 	public addTextureAt(texture:TextureBase, index:number)
@@ -607,7 +607,7 @@ class MaterialBase extends AssetBase implements IRenderOwner
 		this.invalidatePasses();
 
 		//invalidate renderables for number of images getter (in case it has changed)
-		this.invalidateRenderOwners();
+		this.invalidateSurfaces();
 	}
 
 	private _onInvalidateProperties(event:StyleEvent)

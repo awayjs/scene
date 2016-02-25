@@ -2,16 +2,16 @@ import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
+import Mesh							= require("awayjs-display/lib/display/Mesh");
 /**
  * @class away.partition.EntityNode
  */

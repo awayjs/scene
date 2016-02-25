@@ -2,8 +2,8 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import INode						= require("awayjs-display/lib/partition/INode");
 import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import Camera						= require("awayjs-display/lib/entities/Camera");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import Camera						= require("awayjs-display/lib/display/Camera");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 
 /**
  * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are

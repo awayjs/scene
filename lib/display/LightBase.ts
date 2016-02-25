@@ -1,9 +1,9 @@
 import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
 import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import DisplayObjectContainer	= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import Camera					= require("awayjs-display/lib/entities/Camera");
-import IEntity					= require("awayjs-display/lib/entities/IEntity");
+import DisplayObjectContainer	= require("awayjs-display/lib/display/DisplayObjectContainer");
+import Camera					= require("awayjs-display/lib/display/Camera");
+import IEntity					= require("awayjs-display/lib/display/IEntity");
 import LightEvent				= require("awayjs-display/lib/events/LightEvent");
 import ShadowMapperBase			= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 

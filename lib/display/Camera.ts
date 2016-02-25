@@ -8,8 +8,8 @@ import PerspectiveProjection		= require("awayjs-core/lib/projections/Perspective
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
 
 

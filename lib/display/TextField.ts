@@ -10,7 +10,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
 import GridFitType					= require("awayjs-display/lib/text/GridFitType");
 import TextFieldAutoSize			= require("awayjs-display/lib/text/TextFieldAutoSize");
@@ -18,13 +18,13 @@ import TextFieldType				= require("awayjs-display/lib/text/TextFieldType");
 import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import Mesh							= require("awayjs-display/lib/display/Mesh");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 import TextFormatAlign				= require("awayjs-display/lib/text/TextFormatAlign");
-import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
 
 import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import Style 						= require("awayjs-display/lib/base/Style");
@@ -989,8 +989,8 @@ class TextField extends Mesh
 		var sampler:Sampler2D = new Sampler2D();
 		this.style = new Style();
 		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+		this.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 		this.material.animateUVs = true;
-		this.uvTransform = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the

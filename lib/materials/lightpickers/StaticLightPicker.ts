@@ -1,9 +1,9 @@
 import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
 
-import LightBase					= require("awayjs-display/lib/base/LightBase");
-import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
-import LightProbe					= require("awayjs-display/lib/entities/LightProbe");
-import PointLight					= require("awayjs-display/lib/entities/PointLight");
+import LightBase					= require("awayjs-display/lib/display/LightBase");
+import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
+import LightProbe					= require("awayjs-display/lib/display/LightProbe");
+import PointLight					= require("awayjs-display/lib/display/PointLight");
 import LightEvent					= require("awayjs-display/lib/events/LightEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 

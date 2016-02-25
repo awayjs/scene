@@ -3,9 +3,9 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import PartialImplementationError	= require("awayjs-core/lib/errors/PartialImplementationError");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
 
-import Scene						= require("awayjs-display/lib/containers/Scene");
-import Camera						= require("awayjs-display/lib/entities/Camera");
-import PointLight					= require("awayjs-display/lib/entities/PointLight");
+import Scene						= require("awayjs-display/lib/display/Scene");
+import Camera						= require("awayjs-display/lib/display/Camera");
+import PointLight					= require("awayjs-display/lib/display/PointLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");

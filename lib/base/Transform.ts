@@ -8,7 +8,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
 
 
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import TransformEvent				= require("awayjs-display/lib/events/TransformEvent");
 
 /**

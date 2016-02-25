@@ -1,12 +1,12 @@
 import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
 import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
 import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
 import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
 import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
 import LineElements				= require("awayjs-display/lib/graphics/LineElements");
-import Mesh						= require("awayjs-display/lib/entities/Mesh");
+import Mesh						= require("awayjs-display/lib/display/Mesh");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
 

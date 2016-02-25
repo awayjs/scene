@@ -1,7 +1,7 @@
 import AssetBase				= require("awayjs-core/lib/library/AssetBase");
 import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
 
 /**
  * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating

@@ -1,6 +1,6 @@
 import EventBase				= require("awayjs-core/lib/events/EventBase");
 
-import Camera					= require("awayjs-display/lib/entities/Camera");
+import Camera					= require("awayjs-display/lib/display/Camera");
 
 /**
  * @class away.events.CameraEvent

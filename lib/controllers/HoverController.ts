@@ -1,7 +1,7 @@
 import MathConsts				= require("awayjs-core/lib/geom/MathConsts");
 import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
 
-import DisplayObject			= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
 import LookAtController			= require("awayjs-display/lib/controllers/LookAtController");
 
 /**

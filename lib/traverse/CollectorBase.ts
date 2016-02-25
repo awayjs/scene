@@ -1,13 +1,13 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 
-import Scene						= require("awayjs-display/lib/containers/Scene");
+import Scene						= require("awayjs-display/lib/display/Scene");
 import RenderableListItem				= require("awayjs-display/lib/pool/RenderableListItem");
 import RenderableListItemPool			= require("awayjs-display/lib/pool/RenderableListItemPool");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
-import Camera						= require("awayjs-display/lib/entities/Camera");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
+import Camera						= require("awayjs-display/lib/display/Camera");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
 import INode						= require("awayjs-display/lib/partition/INode");
-import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+import IRenderable = require("awayjs-display/lib/base/IRenderable");
 
 /**
  * @class away.traverse.CollectorBase
@@ -103,7 +103,7 @@ class CollectorBase
 	 *
 	 * @param entity
 	 */
-	public applyRenderable(renderable:IRenderableOwner)
+	public applyRenderable(renderable:IRenderable)
 	{
 		var item:RenderableListItem = this._pRenderableListItemPool.getItem();
 		item.renderable = renderable;

@@ -9,13 +9,13 @@ import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
-import IRenderableOwner				= require("awayjs-display/lib/base/IRenderableOwner");
-import IRenderOwner					= require("awayjs-display/lib/base/IRenderOwner");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import IRenderable					= require("awayjs-display/lib/base/IRenderable");
+import ISurface						= require("awayjs-display/lib/base/ISurface");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import RenderableOwnerEvent			= require("awayjs-display/lib/events/RenderableOwnerEvent");
-import RenderOwnerEvent				= require("awayjs-display/lib/events/RenderOwnerEvent");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
+import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
+import SurfaceEvent				= require("awayjs-display/lib/events/SurfaceEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
@@ -28,7 +28,7 @@ import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner
+class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 {
 	private _textures:Array<TextureBase> = new Array<TextureBase>();
 
@@ -39,9 +39,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	private _animationSet:IAnimationSet;
 	public _pLightPicker:LightPickerBase;
 	public _pBlendMode:string = BlendMode.NORMAL;
-	private _uvTransform:Matrix;
-	private _colorTransform:ColorTransform;
-	private _owners:Array<IRenderableOwner>;
+	private _owners:Array<IRenderable>;
 	private _curves:boolean = false;
 	private _imageRect:boolean = false;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
@@ -158,11 +156,11 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 
 
 	/**
-	 * A list of the IRenderableOwners that use this material
+	 * A list of the IRenderables that use this material
 	 *
 	 * @private
 	 */
-	public get iOwners():Array<IRenderableOwner>
+	public get iOwners():Array<IRenderable>
 	{
 		return this._owners;
 	}
@@ -170,31 +168,6 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	public get animator():IAnimator
 	{
 		return this._animator;
-	}
-
-	/**
-	 *
-	 */
-	public get uvTransform():Matrix
-	{
-		return this._uvTransform;
-	}
-
-	public set uvTransform(value:Matrix)
-	{
-		this._uvTransform = value;
-	}
-	/**
-	 *
-	 */
-	public get colorTransform():ColorTransform
-	{
-		return this._colorTransform;// || this._pParentMesh._colorTransform;
-	}
-
-	public set colorTransform(value:ColorTransform)
-	{
-		this._colorTransform = value;
 	}
 
 	/**
@@ -253,7 +226,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 		this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
 		this._pIsEntity = true;
-		this._owners = new Array<IRenderableOwner>(this);
+		this._owners = new Array<IRenderable>(this);
 
 		this._style.image = image;
 		this.texture =  new SingleCubeTexture();
@@ -279,12 +252,12 @@ class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRender
 	 */
 	public invalidatePasses()
 	{
-		this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_PASSES, this));
+		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
 	}
 
-	public invalidateRenderOwner()
+	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
 	}
 
 	public addTexture(texture:TextureBase)

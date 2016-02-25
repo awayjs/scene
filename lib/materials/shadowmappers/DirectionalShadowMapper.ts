@@ -5,10 +5,10 @@ import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import FreeMatrixProjection			= require("awayjs-core/lib/projections/FreeMatrixProjection");
 
-import Scene						= require("awayjs-display/lib/containers/Scene");
+import Scene						= require("awayjs-display/lib/display/Scene");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
-import Camera						= require("awayjs-display/lib/entities/Camera");
-import DirectionalLight				= require("awayjs-display/lib/entities/DirectionalLight");
+import Camera						= require("awayjs-display/lib/display/Camera");
+import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
 import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
 

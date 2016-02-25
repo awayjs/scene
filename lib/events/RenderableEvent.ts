@@ -1,45 +1,45 @@
 import EventBase					= require("awayjs-core/lib/events/EventBase");
 
-import IRenderableOwner					= require("awayjs-display/lib/base/IRenderableOwner");
+import IRenderable						= require("awayjs-display/lib/base/IRenderable");
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.
  *
- * @class away.events.RenderableOwnerEvent
+ * @class away.events.RenderableEvent
  * @see away.core.base.Graphics
  */
-class RenderableOwnerEvent extends EventBase
+class RenderableEvent extends EventBase
 {
 	/**
 	 * Dispatched when a Renderable owners's render object owner has been updated.
 	 */
-	public static INVALIDATE_RENDER_OWNER:string = "invalidateRenderableOwner";
+	public static INVALIDATE_RENDER_OWNER:string = "invalidateRenderable";
 
 	/**
 	 *
 	 */
 	public static INVALIDATE_ELEMENTS:string = "invalidateElements";
 
-	private _renderableOwner:IRenderableOwner;
+	private _renderable:IRenderable;
 
 	/**
 	 * Create a new GraphicsEvent
 	 * @param type The event type.
 	 * @param dataType An optional data type of the vertex data being updated.
 	 */
-	constructor(type:string, renderableOwner:IRenderableOwner)
+	constructor(type:string, renderable:IRenderable)
 	{
 		super(type);
 
-		this._renderableOwner = renderableOwner;
+		this._renderable = renderable;
 	}
 
 	/**
 	 * The renderobject owner of the renderable owner.
 	 */
-	public get renderableOwner():IRenderableOwner
+	public get renderable():IRenderable
 	{
-		return this._renderableOwner;
+		return this._renderable;
 	}
 
 	/**
@@ -47,10 +47,10 @@ class RenderableOwnerEvent extends EventBase
 	 *
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():RenderableOwnerEvent
+	public clone():RenderableEvent
 	{
-		return new RenderableOwnerEvent(this.type, this._renderableOwner);
+		return new RenderableEvent(this.type, this._renderable);
 	}
 }
 
-export = RenderableOwnerEvent;
+export = RenderableEvent;

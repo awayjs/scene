@@ -6,8 +6,8 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import ElementsType					= require("awayjs-display/lib/graphics/ElementsType");
 import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
-import IEntity						= require("awayjs-display/lib/entities/IEntity");
-import Mesh							= require("awayjs-display/lib/entities/Mesh");
+import IEntity						= require("awayjs-display/lib/display/IEntity");
+import Mesh							= require("awayjs-display/lib/display/Mesh");
 import PrimitiveSpherePrefab		= require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
 
 class BoundingSphere extends BoundingVolumeBase

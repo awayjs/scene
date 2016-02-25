@@ -6,12 +6,12 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import IAsset						= require("awayjs-core/lib/library/IAsset");
 
 import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import Transform					= require("awayjs-display/lib/base/Transform");
-import Scene						= require("awayjs-display/lib/containers/Scene");
-import DisplayObjectContainer		= require("awayjs-display/lib/containers/DisplayObjectContainer");
+import Scene						= require("awayjs-display/lib/display/Scene");
+import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
 import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
-import Camera						= require("awayjs-display/lib/entities/Camera");
+import Camera						= require("awayjs-display/lib/display/Camera");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");

@@ -1,7 +1,7 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import Scene						= require("awayjs-display/lib/containers/Scene");
-import View							= require("awayjs-display/lib/containers/View");
+import Scene						= require("awayjs-display/lib/display/Scene");
+import View							= require("awayjs-display/lib/View");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 
 /**

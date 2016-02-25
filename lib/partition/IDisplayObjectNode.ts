@@ -1,4 +1,4 @@
-import DisplayObject				= require("awayjs-display/lib/base/DisplayObject");
+import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import INode						= require("awayjs-display/lib/partition/INode");
 
 /**
