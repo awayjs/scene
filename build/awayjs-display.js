@@ -1,13 +1,13 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./display.ts":[function(require,module,exports){
-var Camera = require("awayjs-display/lib/entities/Camera");
-var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-var Mesh = require("awayjs-display/lib/entities/Mesh");
-var Billboard = require("awayjs-display/lib/entities/Billboard");
-var LineSegment = require("awayjs-display/lib/entities/LineSegment");
-var TextField = require("awayjs-display/lib/entities/TextField");
-var PointLight = require("awayjs-display/lib/entities/PointLight");
-var LightProbe = require("awayjs-display/lib/entities/LightProbe");
-var Skybox = require("awayjs-display/lib/entities/Skybox");
+var Camera = require("awayjs-display/lib/display/Camera");
+var DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
+var Mesh = require("awayjs-display/lib/display/Mesh");
+var Billboard = require("awayjs-display/lib/display/Billboard");
+var LineSegment = require("awayjs-display/lib/display/LineSegment");
+var TextField = require("awayjs-display/lib/display/TextField");
+var PointLight = require("awayjs-display/lib/display/PointLight");
+var LightProbe = require("awayjs-display/lib/display/LightProbe");
+var Skybox = require("awayjs-display/lib/display/Skybox");
 var CameraNode = require("awayjs-display/lib/partition/CameraNode");
 var DirectionalLightNode = require("awayjs-display/lib/partition/DirectionalLightNode");
 var EntityNode = require("awayjs-display/lib/partition/EntityNode");
@@ -35,9 +35,521 @@ var display = (function () {
 })();
 module.exports = display;
 
-},{"awayjs-display/lib/entities/Billboard":"awayjs-display/lib/entities/Billboard","awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/entities/DirectionalLight":"awayjs-display/lib/entities/DirectionalLight","awayjs-display/lib/entities/LightProbe":"awayjs-display/lib/entities/LightProbe","awayjs-display/lib/entities/LineSegment":"awayjs-display/lib/entities/LineSegment","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/entities/PointLight":"awayjs-display/lib/entities/PointLight","awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/entities/TextField":"awayjs-display/lib/entities/TextField","awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
+},{"awayjs-display/lib/display/Billboard":"awayjs-display/lib/display/Billboard","awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","awayjs-display/lib/display/LightProbe":"awayjs-display/lib/display/LightProbe","awayjs-display/lib/display/LineSegment":"awayjs-display/lib/display/LineSegment","awayjs-display/lib/display/Mesh":"awayjs-display/lib/display/Mesh","awayjs-display/lib/display/PointLight":"awayjs-display/lib/display/PointLight","awayjs-display/lib/display/Skybox":"awayjs-display/lib/display/Skybox","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
 
-},{}],"awayjs-display/lib/adapters/IDisplayObjectAdapter":[function(require,module,exports){
+},{}],"awayjs-display/lib/View":[function(require,module,exports){
+var getTimer = require("awayjs-core/lib/utils/getTimer");
+var TouchPoint = require("awayjs-display/lib/base/TouchPoint");
+var Scene = require("awayjs-display/lib/display/Scene");
+var RaycastPicker = require("awayjs-display/lib/pick/RaycastPicker");
+var Camera = require("awayjs-display/lib/display/Camera");
+var CameraEvent = require("awayjs-display/lib/events/CameraEvent");
+var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
+var RendererEvent = require("awayjs-display/lib/events/RendererEvent");
+var MouseManager = require("awayjs-display/lib/managers/MouseManager");
+var View = (function () {
+    /*
+     ***********************************************************************
+     * Disabled / Not yet implemented
+     ***********************************************************************
+     *
+     * private _background:away.textures.Texture2DBase;
+     *
+     * public _pTouch3DManager:away.managers.Touch3DManager;
+     *
+     */
+    function View(renderer, scene, camera) {
+        var _this = this;
+        if (scene === void 0) { scene = null; }
+        if (camera === void 0) { camera = null; }
+        this._width = 0;
+        this._height = 0;
+        this._time = 0;
+        this._deltaTime = 0;
+        this._backgroundColor = 0x000000;
+        this._backgroundAlpha = 1;
+        this._viewportDirty = true;
+        this._scissorDirty = true;
+        this._mousePicker = new RaycastPicker();
+        this._pTouchPoints = new Array();
+        this._onPartitionChangedDelegate = function (event) { return _this._onPartitionChanged(event); };
+        this._onProjectionChangedDelegate = function (event) { return _this._onProjectionChanged(event); };
+        this._onViewportUpdatedDelegate = function (event) { return _this._onViewportUpdated(event); };
+        this._onScissorUpdatedDelegate = function (event) { return _this._onScissorUpdated(event); };
+        this.scene = scene || new Scene();
+        this.camera = camera || new Camera();
+        this.renderer = renderer;
+        //make sure document border is zero
+        if (document) {
+            document.body.style.margin = "0px";
+            this._htmlElement = document.createElement("div");
+            this._htmlElement.style.position = "absolute";
+            document.body.appendChild(this._htmlElement);
+        }
+        this._mouseManager = MouseManager.getInstance();
+        this._mouseManager.registerView(this);
+        //			if (this._shareContext)
+        //				this._mouse3DManager.addViewLayer(this);
+    }
+    Object.defineProperty(View.prototype, "mouseX", {
+        get: function () {
+            return this._pMouseX;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "mouseY", {
+        get: function () {
+            return this._pMouseY;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "touchPoints", {
+        get: function () {
+            return this._pTouchPoints;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    View.prototype.getLocalMouseX = function (displayObject) {
+        return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
+    };
+    View.prototype.getLocalMouseY = function (displayObject) {
+        return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
+    };
+    View.prototype.getLocalTouchPoints = function (displayObject) {
+        var localPosition;
+        var localTouchPoints = new Array();
+        var len = this._pTouchPoints.length;
+        for (var i = 0; i < len; i++) {
+            localPosition = displayObject.inverseSceneTransform.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
+            localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._pTouchPoints[i].id));
+        }
+        return localTouchPoints;
+    };
+    Object.defineProperty(View.prototype, "htmlElement", {
+        /**
+         *
+         */
+        get: function () {
+            return this._htmlElement;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "renderer", {
+        /**
+         *
+         */
+        get: function () {
+            return this._pRenderer;
+        },
+        set: function (value) {
+            if (this._pRenderer == value)
+                return;
+            if (this._pRenderer) {
+                this._pRenderer.dispose();
+                this._pRenderer.removeEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
+                this._pRenderer.removeEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
+            }
+            this._pRenderer = value;
+            this._pRenderer.addEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
+            this._pRenderer.addEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
+            //reset entity collector
+            this._pEntityCollector = this._pRenderer._iCreateEntityCollector();
+            if (this._pCamera)
+                this._pEntityCollector.camera = this._pCamera;
+            //reset back buffer
+            this._pRenderer._iBackgroundR = ((this._backgroundColor >> 16) & 0xff) / 0xff;
+            this._pRenderer._iBackgroundG = ((this._backgroundColor >> 8) & 0xff) / 0xff;
+            this._pRenderer._iBackgroundB = (this._backgroundColor & 0xff) / 0xff;
+            this._pRenderer._iBackgroundAlpha = this._backgroundAlpha;
+            this._pRenderer.width = this._width;
+            this._pRenderer.height = this._height;
+            this._pRenderer.shareContext = this._shareContext;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "shareContext", {
+        /**
+         *
+         */
+        get: function () {
+            return this._shareContext;
+        },
+        set: function (value) {
+            if (this._shareContext == value)
+                return;
+            this._shareContext = value;
+            if (this._pRenderer)
+                this._pRenderer.shareContext = this._shareContext;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "backgroundColor", {
+        /**
+         *
+         */
+        get: function () {
+            return this._backgroundColor;
+        },
+        set: function (value) {
+            if (this._backgroundColor == value)
+                return;
+            this._backgroundColor = value;
+            this._pRenderer._iBackgroundR = ((value >> 16) & 0xff) / 0xff;
+            this._pRenderer._iBackgroundG = ((value >> 8) & 0xff) / 0xff;
+            this._pRenderer._iBackgroundB = (value & 0xff) / 0xff;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "backgroundAlpha", {
+        /**
+         *
+         * @returns {number}
+         */
+        get: function () {
+            return this._backgroundAlpha;
+        },
+        /**
+         *
+         * @param value
+         */
+        set: function (value) {
+            if (value > 1)
+                value = 1;
+            else if (value < 0)
+                value = 0;
+            if (this._backgroundAlpha == value)
+                return;
+            this._pRenderer._iBackgroundAlpha = this._backgroundAlpha = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "camera", {
+        /**
+         *
+         * @returns {Camera3D}
+         */
+        get: function () {
+            return this._pCamera;
+        },
+        /**
+         * Set camera that's used to render the scene for this viewport
+         */
+        set: function (value) {
+            if (this._pCamera == value)
+                return;
+            if (this._pCamera)
+                this._pCamera.removeEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
+            this._pCamera = value;
+            if (this._pEntityCollector)
+                this._pEntityCollector.camera = this._pCamera;
+            if (this._pScene)
+                this._pScene.partition._iRegisterEntity(this._pCamera);
+            this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
+            this._scissorDirty = true;
+            this._viewportDirty = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "scene", {
+        /**
+         *
+         * @returns {away.containers.Scene3D}
+         */
+        get: function () {
+            return this._pScene;
+        },
+        /**
+         * Set the scene that's used to render for this viewport
+         */
+        set: function (value) {
+            if (this._pScene == value)
+                return;
+            if (this._pScene)
+                this._pScene.removeEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
+            this._pScene = value;
+            this._pScene.addEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
+            if (this._pCamera)
+                this._pScene.partition._iRegisterEntity(this._pCamera);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "deltaTime", {
+        /**
+         *
+         * @returns {number}
+         */
+        get: function () {
+            return this._deltaTime;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "width", {
+        /**
+         *
+         */
+        get: function () {
+            return this._width;
+        },
+        set: function (value) {
+            if (this._width == value)
+                return;
+            this._width = value;
+            this._aspectRatio = this._width / this._height;
+            this._pCamera.projection._iAspectRatio = this._aspectRatio;
+            this._pRenderer.width = value;
+            if (this._htmlElement) {
+                this._htmlElement.style.width = value + "px";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "height", {
+        /**
+         *
+         */
+        get: function () {
+            return this._height;
+        },
+        set: function (value) {
+            if (this._height == value)
+                return;
+            this._height = value;
+            this._aspectRatio = this._width / this._height;
+            this._pCamera.projection._iAspectRatio = this._aspectRatio;
+            this._pRenderer.height = value;
+            if (this._htmlElement) {
+                this._htmlElement.style.height = value + "px";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "mousePicker", {
+        /**
+         *
+         */
+        get: function () {
+            return this._mousePicker;
+        },
+        set: function (value) {
+            if (this._mousePicker == value)
+                return;
+            if (value == null)
+                this._mousePicker = new RaycastPicker();
+            else
+                this._mousePicker = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "x", {
+        /**
+         *
+         */
+        get: function () {
+            return this._pRenderer.x;
+        },
+        set: function (value) {
+            if (this._pRenderer.x == value)
+                return;
+            this._pRenderer.x == value;
+            if (this._htmlElement) {
+                this._htmlElement.style.left = value + "px";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "y", {
+        /**
+         *
+         */
+        get: function () {
+            return this._pRenderer.y;
+        },
+        set: function (value) {
+            if (this._pRenderer.y == value)
+                return;
+            this._pRenderer.y == value;
+            if (this._htmlElement) {
+                this._htmlElement.style.top = value + "px";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "visible", {
+        /**
+         *
+         */
+        get: function () {
+            return (this._htmlElement && this._htmlElement.style.visibility == "visible");
+        },
+        set: function (value) {
+            if (this._htmlElement) {
+                this._htmlElement.style.visibility = value ? "visible" : "hidden";
+            }
+            //TODO transfer visible property to associated context (if one exists)
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(View.prototype, "renderedFacesCount", {
+        /**
+         *
+         * @returns {number}
+         */
+        get: function () {
+            return 0; //TODO
+            //return this._pEntityCollector._pNumTriangles;//numTriangles;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Renders the view.
+     */
+    View.prototype.render = function () {
+        this.pUpdateTime();
+        //update view and size data
+        this._pCamera.projection._iAspectRatio = this._aspectRatio;
+        if (this._scissorDirty) {
+            this._scissorDirty = false;
+            this._pCamera.projection._iUpdateScissorRect(this._pRenderer.scissorRect.x, this._pRenderer.scissorRect.y, this._pRenderer.scissorRect.width, this._pRenderer.scissorRect.height);
+        }
+        if (this._viewportDirty) {
+            this._viewportDirty = false;
+            this._pCamera.projection._iUpdateViewport(this._pRenderer.viewPort.x, this._pRenderer.viewPort.y, this._pRenderer.viewPort.width, this._pRenderer.viewPort.height);
+        }
+        // update picking
+        if (!this._shareContext) {
+            if (this.forceMouseMove && this._htmlElement == this._mouseManager._iActiveDiv && !this._mouseManager._iUpdateDirty)
+                this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+            this._mouseManager.fireMouseEvents(this.forceMouseMove);
+        }
+        //_touch3DManager.updateCollider();
+        //clear entity collector ready for collection
+        this._pEntityCollector.clear();
+        // collect stuff to render
+        this._pScene.traversePartitions(this._pEntityCollector);
+        //render the contents of the entity collector
+        this._pRenderer.render(this._pEntityCollector);
+    };
+    /**
+     *
+     */
+    View.prototype.pUpdateTime = function () {
+        var time = getTimer();
+        if (this._time == 0)
+            this._time = time;
+        this._deltaTime = time - this._time;
+        this._time = time;
+    };
+    /**
+     *
+     */
+    View.prototype.dispose = function () {
+        this._pRenderer.dispose();
+        // TODO: imeplement mouseManager / touch3DManager
+        this._mouseManager.unregisterView(this);
+        //this._touch3DManager.disableTouchListeners(this);
+        //this._touch3DManager.dispose();
+        this._mouseManager = null;
+        //this._touch3DManager = null;
+        this._pRenderer = null;
+        this._pEntityCollector = null;
+    };
+    Object.defineProperty(View.prototype, "iEntityCollector", {
+        /**
+         *
+         */
+        get: function () {
+            return this._pEntityCollector;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     * @param e
+     */
+    View.prototype._onPartitionChanged = function (event) {
+        if (this._pCamera)
+            this._pScene.partition._iRegisterEntity(this._pCamera);
+    };
+    /**
+     *
+     */
+    View.prototype._onProjectionChanged = function (event) {
+        this._scissorDirty = true;
+        this._viewportDirty = true;
+    };
+    /**
+     *
+     */
+    View.prototype._onViewportUpdated = function (event) {
+        this._viewportDirty = true;
+    };
+    /**
+     *
+     */
+    View.prototype._onScissorUpdated = function (event) {
+        this._scissorDirty = true;
+    };
+    View.prototype.project = function (point3d) {
+        var v = this._pCamera.project(point3d);
+        v.x = v.x * this._pRenderer.viewPort.width / 2 + this._width * this._pCamera.projection.originX;
+        v.y = v.y * this._pRenderer.viewPort.height / 2 + this._height * this._pCamera.projection.originY;
+        return v;
+    };
+    View.prototype.unproject = function (sX, sY, sZ) {
+        return this._pCamera.unproject(2 * (sX - this._width * this._pCamera.projection.originX) / this._pRenderer.viewPort.width, 2 * (sY - this._height * this._pCamera.projection.originY) / this._pRenderer.viewPort.height, sZ);
+    };
+    View.prototype.getRay = function (sX, sY, sZ) {
+        return this._pCamera.getRay((sX * 2 - this._width) / this._width, (sY * 2 - this._height) / this._height, sZ);
+    };
+    /*TODO: implement Background
+     public get background():away.textures.Texture2DBase
+     {
+     return this._background;
+     }
+     */
+    /*TODO: implement Background
+     public set background( value:away.textures.Texture2DBase )
+     {
+     this._background = value;
+     this._renderer.background = _background;
+     }
+     */
+    // TODO: required dependency stageGL
+    View.prototype.updateCollider = function () {
+        if (!this._shareContext) {
+            if (this._htmlElement == this._mouseManager._iActiveDiv)
+                this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+        }
+        else {
+            var collidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+            if (this.layeredView || this._mouseManager._iCollidingObject == null || collidingObject.rayEntryDistance < this._mouseManager._iCollidingObject.rayEntryDistance)
+                this._mouseManager._iCollidingObject = collidingObject;
+        }
+    };
+    return View;
+})();
+module.exports = View;
+
+},{"awayjs-core/lib/utils/getTimer":undefined,"awayjs-display/lib/base/TouchPoint":"awayjs-display/lib/base/TouchPoint","awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/display/Scene":"awayjs-display/lib/display/Scene","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/RendererEvent":"awayjs-display/lib/events/RendererEvent","awayjs-display/lib/managers/MouseManager":"awayjs-display/lib/managers/MouseManager","awayjs-display/lib/pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/adapters/IDisplayObjectAdapter":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/adapters/IMovieClipAdapter":[function(require,module,exports){
 
@@ -118,7 +630,3407 @@ var AlignmentMode = (function () {
 })();
 module.exports = AlignmentMode;
 
-},{}],"awayjs-display/lib/base/DisplayObject":[function(require,module,exports){
+},{}],"awayjs-display/lib/base/HierarchicalProperties":[function(require,module,exports){
+/**
+ *
+ */
+var HierarchicalProperties = (function () {
+    function HierarchicalProperties() {
+    }
+    /**
+     *
+     */
+    HierarchicalProperties.MOUSE_ENABLED = 1;
+    /**
+     *
+     */
+    HierarchicalProperties.VISIBLE = 2;
+    /**
+     *
+     */
+    HierarchicalProperties.MASK_ID = 4;
+    /**
+     *
+     */
+    HierarchicalProperties.MASKS = 8;
+    /**
+     *
+     */
+    HierarchicalProperties.COLOR_TRANSFORM = 16;
+    /**
+     *
+     */
+    HierarchicalProperties.SCENE_TRANSFORM = 32;
+    /**
+     *
+     */
+    HierarchicalProperties.ALL = 63;
+    return HierarchicalProperties;
+})();
+module.exports = HierarchicalProperties;
+
+},{}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/base/IRenderable":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/base/ISurface":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/base/OrientationMode":[function(require,module,exports){
+var OrientationMode = (function () {
+    function OrientationMode() {
+    }
+    /**
+     *
+     */
+    OrientationMode.DEFAULT = "default";
+    /**
+     *
+     */
+    OrientationMode.CAMERA_PLANE = "cameraPlane";
+    /**
+     *
+     */
+    OrientationMode.CAMERA_POSITION = "cameraPosition";
+    return OrientationMode;
+})();
+module.exports = OrientationMode;
+
+},{}],"awayjs-display/lib/base/Style":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
+/**
+ *
+ */
+var Style = (function (_super) {
+    __extends(Style, _super);
+    function Style() {
+        _super.call(this);
+        this._samplers = new Object();
+        this._images = new Object();
+        this._color = 0xFFFFFF;
+    }
+    Object.defineProperty(Style.prototype, "sampler", {
+        get: function () {
+            return this._sampler;
+        },
+        set: function (value) {
+            if (this._sampler == value)
+                return;
+            this._sampler = value;
+            this._invalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Style.prototype, "image", {
+        get: function () {
+            return this._image;
+        },
+        set: function (value) {
+            if (this._image == value)
+                return;
+            this._image = value;
+            this._invalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Style.prototype, "uvMatrix", {
+        get: function () {
+            return this._uvMatrix;
+        },
+        set: function (value) {
+            if (this._uvMatrix == value)
+                return;
+            this._uvMatrix = value;
+            this._invalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Style.prototype, "color", {
+        /**
+         * The diffuse reflectivity color of the surface.
+         */
+        get: function () {
+            return this._color;
+        },
+        set: function (value) {
+            if (this._color == value)
+                return;
+            this._color = value;
+            this._invalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Style.prototype.getImageAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        return (this._images[texture.id] ? this._images[texture.id][index] : null) || this._image;
+    };
+    Style.prototype.getSamplerAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        return (this._samplers[texture.id] ? this._samplers[texture.id][index] : null) || this._sampler;
+    };
+    Style.prototype.addImageAt = function (image, texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._images[texture.id])
+            this._images[texture.id] = new Array();
+        this._images[texture.id][index] = image;
+    };
+    Style.prototype.addSamplerAt = function (sampler, texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._samplers[texture.id])
+            this._samplers[texture.id] = new Array();
+        this._samplers[texture.id][index] = sampler;
+        this._invalidateProperties();
+    };
+    Style.prototype.removeImageAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._images[texture.id])
+            return;
+        this._images[texture.id][index] = null;
+        this._invalidateProperties();
+    };
+    Style.prototype.removeSamplerAt = function (texture, index) {
+        if (index === void 0) { index = 0; }
+        if (!this._samplers[texture.id])
+            return;
+        this._samplers[texture.id][index] = null;
+        this._invalidateProperties();
+    };
+    Style.prototype._invalidateProperties = function () {
+        this.dispatchEvent(new StyleEvent(StyleEvent.INVALIDATE_PROPERTIES, this));
+    };
+    return Style;
+})(EventDispatcher);
+module.exports = Style;
+
+},{"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
+var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
+var Timeline = (function () {
+    function Timeline() {
+        this._functions = [];
+        this._update_indices = [];
+        this.numKeyFrames = 0;
+        this.keyframe_indices = [];
+        this._potentialPrototypes = [];
+        this._labels = {};
+        this._framescripts = {};
+        this._framescripts_translated = {};
+        //cache functions
+        this._functions[1] = this.update_mtx_all;
+        this._functions[2] = this.update_colortransform;
+        this._functions[3] = this.update_masks;
+        this._functions[4] = this.update_name;
+        this._functions[5] = this.update_button_name;
+        this._functions[6] = this.update_visibility;
+        this._functions[11] = this.update_mtx_scale_rot;
+        this._functions[12] = this.update_mtx_pos;
+        this._functions[200] = this.enable_maskmode;
+        this._functions[201] = this.remove_masks;
+    }
+    Timeline.prototype.init = function () {
+        if ((this.frame_command_indices == null) || (this.frame_recipe == null) || (this.keyframe_durations == null))
+            return;
+        this.keyframe_firstframes = [];
+        this.keyframe_constructframes = [];
+        var frame_cnt = 0;
+        var ic = 0;
+        var ic2 = 0;
+        var keyframe_cnt = 0;
+        var last_construct_frame = 0;
+        for (ic = 0; ic < this.numKeyFrames; ic++) {
+            var duration = this.keyframe_durations[(ic)];
+            if (this.frame_recipe[ic] & 1)
+                last_construct_frame = keyframe_cnt;
+            this.keyframe_firstframes[keyframe_cnt] = frame_cnt;
+            this.keyframe_constructframes[keyframe_cnt++] = last_construct_frame;
+            for (ic2 = 0; ic2 < duration; ic2++)
+                this.keyframe_indices[frame_cnt++] = ic;
+        }
+    };
+    Timeline.prototype.get_framescript = function (keyframe_index) {
+        if (this._framescripts[keyframe_index] == null)
+            return "";
+        if (typeof this._framescripts[keyframe_index] == "string")
+            return this._framescripts[keyframe_index];
+        else {
+            throw new Error("Framescript is already translated to Function!!!");
+        }
+        return "";
+    };
+    Timeline.prototype.add_framescript = function (value, keyframe_index) {
+        if (FrameScriptManager.frameScriptDebug) {
+            // if we are in debug mode, we try to extract the function name from the first line of framescript code,
+            // and check if this function is available on the object that is set as frameScriptDebug
+            // try to get the functions name (it should be the first line as comment)
+            var functionname = value.split(/[\r\n]+/g)[0].split("//")[1];
+            if (FrameScriptManager.frameScriptDebug[functionname]) {
+                this._framescripts[keyframe_index] = FrameScriptManager.frameScriptDebug[functionname];
+                this._framescripts_translated[keyframe_index] = true;
+                return;
+            }
+            else {
+                throw new Error("Framescript could not be found on FrameScriptManager.frameScriptDebug.\n the Object set as FrameScriptmanager.frameScriptDebug should contain a function with the name '" + functionname + "' !!!");
+            }
+        }
+        this._framescripts[keyframe_index] = value;
+    };
+    Timeline.prototype.regexIndexOf = function (str, regex, startpos) {
+        var indexOf = str.substring(startpos || 0).search(regex);
+        return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
+    };
+    Timeline.prototype.add_script_for_postcontruct = function (target_mc, keyframe_idx, scriptPass1) {
+        if (scriptPass1 === void 0) { scriptPass1 = false; }
+        if (this._framescripts[keyframe_idx] != null) {
+            if (this._framescripts_translated[keyframe_idx] == null) {
+                this._framescripts[keyframe_idx] = target_mc.adapter.evalScript(this._framescripts[keyframe_idx]);
+                this._framescripts_translated[keyframe_idx] = true;
+            }
+            if (scriptPass1)
+                FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[keyframe_idx]);
+            else
+                FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
+        }
+    };
+    Object.defineProperty(Timeline.prototype, "numFrames", {
+        get: function () {
+            return this.keyframe_indices.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Timeline.prototype.getPotentialChildPrototype = function (id) {
+        return this._potentialPrototypes[id];
+    };
+    Timeline.prototype.getKeyframeIndexForFrameIndex = function (frame_index) {
+        return this.keyframe_indices[frame_index];
+    };
+    Timeline.prototype.getPotentialChildInstance = function (id) {
+        var this_clone = this._potentialPrototypes[id].clone();
+        this_clone.name = "";
+        return this_clone;
+    };
+    Timeline.prototype.registerPotentialChild = function (prototype) {
+        var id = this._potentialPrototypes.length;
+        this._potentialPrototypes[id] = prototype;
+    };
+    Timeline.prototype.jumpToLabel = function (target_mc, label) {
+        var key_frame_index = this._labels[label];
+        if (key_frame_index >= 0)
+            target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
+    };
+    Timeline.prototype.gotoFrame = function (target_mc, value, skip_script) {
+        if (skip_script === void 0) { skip_script = false; }
+        var current_keyframe_idx = target_mc.constructedKeyFrameIndex;
+        var target_keyframe_idx = this.keyframe_indices[value];
+        if (current_keyframe_idx == target_keyframe_idx)
+            return;
+        if (current_keyframe_idx + 1 == target_keyframe_idx) {
+            this.constructNextFrame(target_mc, !skip_script, true);
+            return;
+        }
+        var break_frame_idx = this.keyframe_constructframes[target_keyframe_idx];
+        //we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
+        var jump_forward = (target_keyframe_idx > current_keyframe_idx);
+        var jump_gap = (break_frame_idx > current_keyframe_idx);
+        // in case we jump forward, but not jump a gap, we start at current_keyframe_idx + 1
+        // in case we jump back or we jump a gap, we want to start constructing at BreakFrame
+        var start_construct_idx = (jump_forward && !jump_gap) ? current_keyframe_idx + 1 : break_frame_idx;
+        var i;
+        var k;
+        if (jump_gap)
+            for (i = target_mc.numChildren - 1; i >= 0; i--)
+                if (target_mc._children[i]._depthID < 0)
+                    target_mc.removeChildAt(i);
+        //if we jump back, we want to reset all objects (but not the timelines of the mcs)
+        if (!jump_forward)
+            target_mc.resetSessionIDs();
+        // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
+        var depth_sessionIDs = target_mc.getSessionIDDepths();
+        //pass1: only apply add/remove commands into depth_sessionIDs.
+        this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs);
+        // check what childs are alive on both frames.
+        // childs that are not alive anymore get removed and unregistered
+        // childs that are alive on both frames have their properties reset if we are jumping back
+        var child;
+        for (i = target_mc.numChildren - 1; i >= 0; i--) {
+            child = target_mc._children[i];
+            if (child._depthID < 0) {
+                if (depth_sessionIDs[child._depthID] != child._sessionID) {
+                    target_mc.removeChildAt(i);
+                }
+                else if (!jump_forward) {
+                    if (child.adapter) {
+                        if (!child.adapter.isBlockedByScript()) {
+                            child.transform.clearMatrix3D();
+                            child.transform.clearColorTransform();
+                            //this.name="";
+                            child.masks = null;
+                            child.maskMode = false;
+                        }
+                        if (!child.adapter.isVisibilityByScript()) {
+                            child.visible = true;
+                        }
+                    }
+                }
+            }
+        }
+        for (var key in depth_sessionIDs) {
+            child = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key] * 2]);
+            if (child._sessionID == -1)
+                target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
+        }
+        if (!skip_script && this.keyframe_firstframes[target_keyframe_idx] == value)
+            this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
+        //pass2: apply update commands for objects on stage (only if they are not blocked by script)
+        this.pass2(target_mc);
+        target_mc.constructedKeyFrameIndex = target_keyframe_idx;
+    };
+    Timeline.prototype.pass1 = function (start_construct_idx, target_keyframe_idx, depth_sessionIDs) {
+        var i;
+        var k;
+        this._update_indices.length = 0; // store a list of updatecommand_indices, so we dont have to read frame_recipe again
+        var update_cnt = 0;
+        var start_index;
+        var end_index;
+        for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
+            var frame_command_idx = this.frame_command_indices[k];
+            var frame_recipe = this.frame_recipe[k];
+            if (frame_recipe & 2) {
+                // remove childs
+                start_index = this.command_index_stream[frame_command_idx];
+                end_index = start_index + this.command_length_stream[frame_command_idx++];
+                for (i = start_index; i < end_index; i++)
+                    delete depth_sessionIDs[this.remove_child_stream[i] - 16383];
+            }
+            if (frame_recipe & 4) {
+                start_index = this.command_index_stream[frame_command_idx];
+                end_index = start_index + this.command_length_stream[frame_command_idx++];
+                for (i = end_index - 1; i >= start_index; i--)
+                    depth_sessionIDs[this.add_child_stream[i * 2 + 1] - 16383] = i;
+            }
+            if (frame_recipe & 8)
+                this._update_indices[update_cnt++] = frame_command_idx; // execute update command later
+        }
+    };
+    Timeline.prototype.pass2 = function (target_mc) {
+        var k;
+        var len = this._update_indices.length;
+        for (k = 0; k < len; k++)
+            this.update_childs(target_mc, this._update_indices[k]);
+    };
+    Timeline.prototype.constructNextFrame = function (target_mc, queueScript, scriptPass1) {
+        if (queueScript === void 0) { queueScript = true; }
+        if (scriptPass1 === void 0) { scriptPass1 = false; }
+        var frameIndex = target_mc.currentFrameIndex;
+        var new_keyFrameIndex = this.keyframe_indices[frameIndex];
+        if (queueScript && this.keyframe_firstframes[new_keyFrameIndex] == frameIndex)
+            this.add_script_for_postcontruct(target_mc, new_keyFrameIndex, scriptPass1);
+        if (target_mc.constructedKeyFrameIndex != new_keyFrameIndex) {
+            target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
+            var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
+            var frame_recipe = this.frame_recipe[new_keyFrameIndex];
+            if (frame_recipe & 1) {
+                for (var i = target_mc.numChildren - 1; i >= 0; i--)
+                    if (target_mc._children[i]._depthID < 0)
+                        target_mc.removeChildAt(i);
+            }
+            else if (frame_recipe & 2) {
+                this.remove_childs_continous(target_mc, frame_command_idx++);
+            }
+            if (frame_recipe & 4)
+                this.add_childs_continous(target_mc, frame_command_idx++);
+            if (frame_recipe & 8)
+                this.update_childs(target_mc, frame_command_idx++);
+        }
+    };
+    Timeline.prototype.remove_childs_continous = function (sourceMovieClip, frame_command_idx) {
+        var start_index = this.command_index_stream[frame_command_idx];
+        var end_index = start_index + this.command_length_stream[frame_command_idx];
+        for (var i = start_index; i < end_index; i++)
+            sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[i] - 16383));
+    };
+    // used to add childs when jumping between frames
+    Timeline.prototype.add_childs_continous = function (sourceMovieClip, frame_command_idx) {
+        // apply add commands in reversed order to have script exeucted in correct order.
+        // this could be changed in exporter
+        var idx;
+        var start_index = this.command_index_stream[frame_command_idx];
+        var end_index = start_index + this.command_length_stream[frame_command_idx];
+        for (var i = end_index - 1; i >= start_index; i--) {
+            idx = i * 2;
+            sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
+        }
+    };
+    Timeline.prototype.update_childs = function (target_mc, frame_command_idx) {
+        var p;
+        var props_start_idx;
+        var props_end_index;
+        var start_index = this.command_index_stream[frame_command_idx];
+        var end_index = start_index + this.command_length_stream[frame_command_idx];
+        var child;
+        for (var i = start_index; i < end_index; i++) {
+            child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
+            if (child) {
+                // check if the child is active + not blocked by script
+                this._blocked = Boolean(child.adapter && child.adapter.isBlockedByScript());
+                props_start_idx = this.update_child_props_indices_stream[i];
+                props_end_index = props_start_idx + this.update_child_props_length_stream[i];
+                for (p = props_start_idx; p < props_end_index; p++)
+                    this._functions[this.property_type_stream[p]].call(this, child, target_mc, this.property_index_stream[p]);
+            }
+        }
+    };
+    Timeline.prototype.update_mtx_all = function (child, target_mc, i) {
+        if (this._blocked)
+            return;
+        i *= 6;
+        var new_matrix = child.transform.matrix3D;
+        new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[i++];
+        new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[i++];
+        new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[i++];
+        new_matrix.rawData[5] = this.properties_stream_f32_mtx_all[i++];
+        new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[i++];
+        new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[i];
+        child.transform.invalidateComponents();
+    };
+    Timeline.prototype.update_colortransform = function (child, target_mc, i) {
+        if (this._blocked)
+            return;
+        i *= 8;
+        var new_ct = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
+        new_ct.redMultiplier = this.properties_stream_f32_ct[i++];
+        new_ct.greenMultiplier = this.properties_stream_f32_ct[i++];
+        new_ct.blueMultiplier = this.properties_stream_f32_ct[i++];
+        new_ct.alphaMultiplier = this.properties_stream_f32_ct[i++];
+        new_ct.redOffset = this.properties_stream_f32_ct[i++];
+        new_ct.greenOffset = this.properties_stream_f32_ct[i++];
+        new_ct.blueOffset = this.properties_stream_f32_ct[i++];
+        new_ct.alphaOffset = this.properties_stream_f32_ct[i];
+        child.transform.invalidateColorTransform();
+    };
+    Timeline.prototype.update_masks = function (child, target_mc, i) {
+        // an object could have multiple groups of masks, in case a graphic clip was merged into the timeline
+        // this is not implmeented in the runtime yet
+        // for now, a second mask-groupd would overwrite the first one
+        var mask;
+        var masks = new Array();
+        var numMasks = this.properties_stream_int[i++];
+        for (var m = 0; m < numMasks; m++)
+            if ((mask = target_mc.getChildAtSessionID(this.properties_stream_int[i++])))
+                masks.push(mask);
+        child.masks = masks;
+    };
+    Timeline.prototype.update_name = function (child, target_mc, i) {
+        child.name = this.properties_stream_strings[i];
+        target_mc.adapter.registerScriptObject(child);
+    };
+    Timeline.prototype.update_button_name = function (target, sourceMovieClip, i) {
+        target.name = this.properties_stream_strings[i];
+        // todo: creating the buttonlistenrs later should also be done, but for icycle i dont think this will cause problems
+        target.addButtonListeners();
+        sourceMovieClip.adapter.registerScriptObject(target);
+    };
+    Timeline.prototype.update_visibility = function (child, target_mc, i) {
+        if (!child.adapter || !child.adapter.isVisibilityByScript())
+            child.visible = Boolean(i);
+    };
+    Timeline.prototype.update_mtx_scale_rot = function (child, target_mc, i) {
+        if (this._blocked)
+            return;
+        i *= 4;
+        var new_matrix = child.transform.matrix3D;
+        new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[i++];
+        new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[i++];
+        new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[i++];
+        new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[i];
+        child.transform.invalidateComponents();
+        child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+    };
+    Timeline.prototype.update_mtx_pos = function (child, target_mc, i) {
+        if (this._blocked)
+            return;
+        i *= 2;
+        var new_matrix = child.transform.matrix3D;
+        new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[i++];
+        new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[i];
+        child.transform.invalidatePosition();
+    };
+    Timeline.prototype.enable_maskmode = function (child, target_mc, i) {
+        child.maskMode = true;
+    };
+    Timeline.prototype.remove_masks = function (child, target_mc, i) {
+        child.masks = null;
+    };
+    return Timeline;
+})();
+module.exports = Timeline;
+
+},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
+/**
+ *
+ */
+var TouchPoint = (function () {
+    function TouchPoint(x, y, id) {
+        this.x = x;
+        this.y = y;
+        this.id = id;
+    }
+    return TouchPoint;
+})();
+module.exports = TouchPoint;
+
+},{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var TransformEvent = require("awayjs-display/lib/events/TransformEvent");
+/**
+ * The Transform class provides access to color adjustment properties and two-
+ * or three-dimensional transformation objects that can be applied to a
+ * display object. During the transformation, the color or the orientation and
+ * position of a display object is adjusted(offset) from the current values
+ * or coordinates to new values or coordinates. The Transform class also
+ * collects data about color and two-dimensional matrix transformations that
+ * are applied to a display object and all of its parent objects. You can
+ * access these combined transformations through the
+ * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
+ * properties.
+ *
+ * <p>To apply color transformations: create a ColorTransform object, set the
+ * color adjustments using the object's methods and properties, and then
+ * assign the <code>colorTransformation</code> property of the
+ * <code>transform</code> property of the display object to the new
+ * ColorTransformation object.</p>
+ *
+ * <p>To apply two-dimensional transformations: create a Matrix object, set
+ * the matrix's two-dimensional transformation, and then assign the
+ * <code>transform.matrix</code> property of the display object to the new
+ * Matrix object.</p>
+ *
+ * <p>To apply three-dimensional transformations: start with a
+ * three-dimensional display object. A three-dimensional display object has a
+ * <code>z</code> property value other than zero. You do not need to create
+ * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
+ * is created automatically when you assign a <code>z</code> value to a
+ * display object. You can access the display object's Matrix3D object through
+ * the display object's <code>transform</code> property. Using the methods of
+ * the Matrix3D class, you can add to or modify the existing transformation
+ * settings. Also, you can create a custom Matrix3D object, set the custom
+ * Matrix3D object's transformation elements, and then assign the new Matrix3D
+ * object to the display object using the <code>transform.matrix</code>
+ * property.</p>
+ *
+ * <p>To modify a perspective projection of the stage or root object: use the
+ * <code>transform.matrix</code> property of the root display object to gain
+ * access to the PerspectiveProjection object. Or, apply different perspective
+ * projection properties to a display object by setting the perspective
+ * projection properties of the display object's parent. The child display
+ * object inherits the new properties. Specifically, create a
+ * PerspectiveProjection object and set its properties, then assign the
+ * PerspectiveProjection object to the <code>perspectiveProjection</code>
+ * property of the parent display object's <code>transform</code> property.
+ * The specified projection transformation then applies to all the display
+ * object's three-dimensional children.</p>
+ *
+ * <p>Since both PerspectiveProjection and Matrix3D objects perform
+ * perspective transformations, do not assign both to a display object at the
+ * same time. Use the PerspectiveProjection object for focal length and
+ * projection center changes. For more control over the perspective
+ * transformation, create a perspective projection Matrix3D object.</p>
+ */
+var Transform = (function (_super) {
+    __extends(Transform, _super);
+    function Transform() {
+        _super.call(this);
+        this._matrix3D = new Matrix3D();
+        this._rotation = new Vector3D();
+        this._skew = new Vector3D();
+        this._scale = new Vector3D(1, 1, 1);
+        // Cached vector of transformation components used when
+        // recomposing the transform matrix in updateTransform()
+        this._components = new Array(4);
+        this._components[1] = this._rotation;
+        this._components[2] = this._skew;
+        this._components[3] = this._scale;
+    }
+    Object.defineProperty(Transform.prototype, "backVector", {
+        /**
+         *
+         */
+        get: function () {
+            var director = Matrix3DUtils.getForward(this._matrix3D);
+            director.negate();
+            return director;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "colorTransform", {
+        /**
+         * A ColorTransform object containing values that universally adjust the
+         * colors in the display object.
+         *
+         * @throws TypeError The colorTransform is null when being set
+         */
+        get: function () {
+            return this._colorTransform;
+        },
+        set: function (val) {
+            if (this._colorTransform == val)
+                return;
+            this._colorTransform = val;
+            this.invalidateColorTransform();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "concatenatedColorTransform", {
+        /**
+         * A ColorTransform object representing the combined color transformations
+         * applied to the display object and all of its parent objects, back to the
+         * root level. If different color transformations have been applied at
+         * different levels, all of those transformations are concatenated into one
+         * ColorTransform object for this property.
+         */
+        get: function () {
+            return this._concatenatedColorTransform; //TODO
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "concatenatedMatrix", {
+        /**
+         * A Matrix object representing the combined transformation matrixes of the
+         * display object and all of its parent objects, back to the root level. If
+         * different transformation matrixes have been applied at different levels,
+         * all of those matrixes are concatenated into one matrix for this property.
+         * Also, for resizeable SWF content running in the browser, this property
+         * factors in the difference between stage coordinates and window coordinates
+         * due to window resizing. Thus, the property converts local coordinates to
+         * window coordinates, which may not be the same coordinate space as that of
+         * the Scene.
+         */
+        get: function () {
+            return this._concatenatedMatrix; //TODO
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "downVector", {
+        /**
+         *
+         */
+        get: function () {
+            var director = Matrix3DUtils.getUp(this._matrix3D);
+            director.negate();
+            return director;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "forwardVector", {
+        /**
+         *
+         */
+        get: function () {
+            return Matrix3DUtils.getForward(this._matrix3D);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "leftVector", {
+        /**
+         *
+         */
+        get: function () {
+            var director = Matrix3DUtils.getRight(this._matrix3D);
+            director.negate();
+            return director;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "matrix3D", {
+        /**
+         * Provides access to the Matrix3D object of a three-dimensional display
+         * object. The Matrix3D object represents a transformation matrix that
+         * determines the display object's position and orientation. A Matrix3D
+         * object can also perform perspective projection.
+         *
+         * <p>If the <code>matrix</code> property is set to a value(not
+         * <code>null</code>), the <code>matrix3D</code> property is
+         * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+         * value(not <code>null</code>), the <code>matrix</code> property is
+         * <code>null</code>.</p>
+         */
+        get: function () {
+            if (this._matrix3DDirty)
+                this._updateMatrix3D();
+            return this._matrix3D;
+        },
+        set: function (val) {
+            for (var i = 0; i < 15; i++)
+                this._matrix3D.rawData[i] = val.rawData[i];
+            this.invalidateComponents();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "pixelBounds", {
+        /**
+         * A Rectangle object that defines the bounding rectangle of the display
+         * object on the stage.
+         */
+        get: function () {
+            return this._pixelBounds;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "position", {
+        /**
+         * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+         */
+        get: function () {
+            return this._matrix3D.position;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rightVector", {
+        /**
+         *
+         */
+        get: function () {
+            return Matrix3DUtils.getRight(this.matrix3D);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Transform.prototype, "rotation", {
+        /**
+         * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+         */
+        get: function () {
+            if (this._componentsDirty)
+                this._updateComponents();
+            return this._rotation;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Rotates the 3d object directly to a euler angle
+     *
+     * @param    ax        The angle in degrees of the rotation around the x axis.
+     * @param    ay        The angle in degrees of the rotation around the y axis.
+     * @param    az        The angle in degrees of the rotation around the z axis.
+     */
+    Transform.prototype.rotateTo = function (ax, ay, az) {
+        if (this._componentsDirty)
+            this._updateComponents();
+        this._rotation.x = ax;
+        this._rotation.y = ay;
+        this._rotation.z = az;
+        this.invalidateMatrix3D();
+    };
+    Object.defineProperty(Transform.prototype, "scale", {
+        /**
+         * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+         */
+        get: function () {
+            if (this._componentsDirty)
+                this._updateComponents();
+            return this._scale;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Transform.prototype.scaleTo = function (sx, sy, sz) {
+        if (this._componentsDirty)
+            this._updateComponents();
+        this._scale.x = sx;
+        this._scale.y = sy;
+        this._scale.z = sz;
+        this.invalidateMatrix3D();
+    };
+    Object.defineProperty(Transform.prototype, "skew", {
+        /**
+         * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+         */
+        get: function () {
+            if (this._componentsDirty)
+                this._updateComponents();
+            return this._skew;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Transform.prototype.skewTo = function (sx, sy, sz) {
+        if (this._componentsDirty)
+            this._updateComponents();
+        this._skew.x = sx;
+        this._skew.y = sy;
+        this._skew.z = sz;
+        this.invalidateMatrix3D();
+    };
+    Object.defineProperty(Transform.prototype, "upVector", {
+        /**
+         *
+         */
+        get: function () {
+            return Matrix3DUtils.getUp(this.matrix3D);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Transform.prototype.dispose = function () {
+    };
+    /**
+     * Returns a Matrix3D object, which can transform the space of a specified
+     * display object in relation to the current display object's space. You can
+     * use the <code>getRelativeMatrix3D()</code> method to move one
+     * three-dimensional display object relative to another three-dimensional
+     * display object.
+     *
+     * @param relativeTo The display object relative to which the transformation
+     *                   occurs. To get a Matrix3D object relative to the stage,
+     *                   set the parameter to the <code>root</code> or
+     *                   <code>stage</code> object. To get the world-relative
+     *                   matrix of the display object, set the parameter to a
+     *                   display object that has a perspective transformation
+     *                   applied to it.
+     * @return A Matrix3D object that can be used to transform the space from the
+     *         <code>relativeTo</code> display object to the current display
+     *         object space.
+     */
+    Transform.prototype.getRelativeMatrix3D = function (relativeTo) {
+        return new Matrix3D(); //TODO
+    };
+    /**
+     * Moves the 3d object forwards along it's local z axis
+     *
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.moveForward = function (distance) {
+        this.translateLocal(Vector3D.Z_AXIS, distance);
+    };
+    /**
+     * Moves the 3d object backwards along it's local z axis
+     *
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.moveBackward = function (distance) {
+        this.translateLocal(Vector3D.Z_AXIS, -distance);
+    };
+    /**
+     * Moves the 3d object backwards along it's local x axis
+     *
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.moveLeft = function (distance) {
+        this.translateLocal(Vector3D.X_AXIS, -distance);
+    };
+    /**
+     * Moves the 3d object forwards along it's local x axis
+     *
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.moveRight = function (distance) {
+        this.translateLocal(Vector3D.X_AXIS, distance);
+    };
+    /**
+     * Moves the 3d object forwards along it's local y axis
+     *
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.moveUp = function (distance) {
+        this.translateLocal(Vector3D.Y_AXIS, distance);
+    };
+    /**
+     * Moves the 3d object backwards along it's local y axis
+     *
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.moveDown = function (distance) {
+        this.translateLocal(Vector3D.Y_AXIS, -distance);
+    };
+    /**
+     * Moves the 3d object directly to a point in space
+     *
+     * @param    dx        The amount of movement along the local x axis.
+     * @param    dy        The amount of movement along the local y axis.
+     * @param    dz        The amount of movement along the local z axis.
+     */
+    Transform.prototype.moveTo = function (dx, dy, dz) {
+        this._matrix3D.rawData[12] = dx;
+        this._matrix3D.rawData[13] = dy;
+        this._matrix3D.rawData[14] = dz;
+        this.invalidatePosition();
+    };
+    /**
+     * Rotates the 3d object around it's local x-axis
+     *
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.pitch = function (angle) {
+        this.rotate(Vector3D.X_AXIS, angle);
+    };
+    /**
+     * Rotates the 3d object around it's local z-axis
+     *
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.roll = function (angle) {
+        this.rotate(Vector3D.Z_AXIS, angle);
+    };
+    /**
+     * Rotates the 3d object around it's local y-axis
+     *
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.yaw = function (angle) {
+        this.rotate(Vector3D.Y_AXIS, angle);
+    };
+    /**
+     * Rotates the 3d object around an axis by a defined angle
+     *
+     * @param    axis        The vector defining the axis of rotation
+     * @param    angle        The amount of rotation in degrees
+     */
+    Transform.prototype.rotate = function (axis, angle) {
+        this.matrix3D.prependRotation(angle, axis);
+        this.invalidateComponents();
+    };
+    /**
+     * Moves the 3d object along a vector by a defined length
+     *
+     * @param    axis        The vector defining the axis of movement
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.translate = function (axis, distance) {
+        var x = axis.x, y = axis.y, z = axis.z;
+        var len = distance / Math.sqrt(x * x + y * y + z * z);
+        this.matrix3D.appendTranslation(x * len, y * len, z * len);
+        this.invalidatePosition();
+    };
+    /**
+     * Moves the 3d object along a vector by a defined length
+     *
+     * @param    axis        The vector defining the axis of movement
+     * @param    distance    The length of the movement
+     */
+    Transform.prototype.translateLocal = function (axis, distance) {
+        var x = axis.x, y = axis.y, z = axis.z;
+        var len = distance / Math.sqrt(x * x + y * y + z * z);
+        this.matrix3D.prependTranslation(x * len, y * len, z * len);
+        this.invalidatePosition();
+    };
+    Transform.prototype.clearMatrix3D = function () {
+        this._matrix3D.identity();
+        this.invalidateComponents();
+    };
+    Transform.prototype.clearColorTransform = function () {
+        if (!this._colorTransform)
+            return;
+        this._colorTransform.clear();
+        this.invalidateColorTransform();
+    };
+    /**
+     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
+     *
+     * @private
+     */
+    Transform.prototype.invalidateMatrix3D = function () {
+        this._matrix3DDirty = true;
+        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
+    };
+    Transform.prototype.invalidateComponents = function () {
+        this.invalidatePosition();
+        this._componentsDirty = true;
+    };
+    /**
+     *
+     */
+    Transform.prototype.invalidatePosition = function () {
+        this._matrix3D.invalidatePosition();
+        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
+    };
+    Transform.prototype.invalidateColorTransform = function () {
+        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_COLOR_TRANSFORM, this));
+    };
+    /**
+     *
+     */
+    Transform.prototype._updateMatrix3D = function () {
+        this._matrix3D.recompose(this._components);
+        this._matrix3DDirty = false;
+    };
+    Transform.prototype._updateComponents = function () {
+        var elements = this._matrix3D.decompose();
+        var vec;
+        vec = elements[1];
+        this._rotation.x = vec.x;
+        this._rotation.y = vec.y;
+        this._rotation.z = vec.z;
+        vec = elements[2];
+        this._skew.x = vec.x;
+        this._skew.y = vec.y;
+        this._skew.z = vec.z;
+        vec = elements[3];
+        this._scale.x = vec.x;
+        this._scale.y = vec.y;
+        this._scale.z = vec.z;
+        this._componentsDirty = false;
+    };
+    return Transform;
+})(EventDispatcher);
+module.exports = Transform;
+
+},{"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
+var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
+var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+var PrimitiveCubePrefab = require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
+/**
+ * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
+ * This is useful for most meshes.
+ */
+var AxisAlignedBoundingBox = (function (_super) {
+    __extends(AxisAlignedBoundingBox, _super);
+    /**
+     * Creates a new <code>AxisAlignedBoundingBox</code> object.
+     */
+    function AxisAlignedBoundingBox(entity) {
+        _super.call(this, entity);
+        this._x = 0;
+        this._y = 0;
+        this._z = 0;
+        this._width = 0;
+        this._height = 0;
+        this._depth = 0;
+        this._centerX = 0;
+        this._centerY = 0;
+        this._centerZ = 0;
+        this._halfExtentsX = 0;
+        this._halfExtentsY = 0;
+        this._halfExtentsZ = 0;
+    }
+    /**
+     * @inheritDoc
+     */
+    AxisAlignedBoundingBox.prototype.nullify = function () {
+        this._x = this._y = this._z = 0;
+        this._width = this._height = this._depth = 0;
+        this._centerX = this._centerY = this._centerZ = 0;
+        this._halfExtentsX = this._halfExtentsY = this._halfExtentsZ = 0;
+    };
+    /**
+     * @inheritDoc
+     */
+    AxisAlignedBoundingBox.prototype.isInFrustum = function (planes, numPlanes) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        for (var i = 0; i < numPlanes; ++i) {
+            var plane = planes[i];
+            var a = plane.a;
+            var b = plane.b;
+            var c = plane.c;
+            var flippedExtentX = a < 0 ? -this._halfExtentsX : this._halfExtentsX;
+            var flippedExtentY = b < 0 ? -this._halfExtentsY : this._halfExtentsY;
+            var flippedExtentZ = c < 0 ? -this._halfExtentsZ : this._halfExtentsZ;
+            var projDist = a * (this._centerX + flippedExtentX) + b * (this._centerY + flippedExtentY) + c * (this._centerZ + flippedExtentZ) - plane.d;
+            if (projDist < 0)
+                return false;
+        }
+        return true;
+    };
+    AxisAlignedBoundingBox.prototype.rayIntersection = function (position, direction, targetNormal) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        return this._box.rayIntersection(position, direction, targetNormal);
+    };
+    AxisAlignedBoundingBox.prototype.classifyToPlane = function (plane) {
+        var a = plane.a;
+        var b = plane.b;
+        var c = plane.c;
+        var centerDistance = a * this._centerX + b * this._centerY + c * this._centerZ - plane.d;
+        if (a < 0)
+            a = -a;
+        if (b < 0)
+            b = -b;
+        if (c < 0)
+            c = -c;
+        var boundOffset = a * this._halfExtentsX + b * this._halfExtentsY + c * this._halfExtentsZ;
+        return centerDistance > boundOffset ? PlaneClassification.FRONT : centerDistance < -boundOffset ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
+    };
+    AxisAlignedBoundingBox.prototype._pUpdate = function () {
+        _super.prototype._pUpdate.call(this);
+        this._box = this._pEntity.getBox();
+        var matrix = this._pEntity.sceneTransform;
+        var hx = this._box.width / 2;
+        var hy = this._box.height / 2;
+        var hz = this._box.depth / 2;
+        var cx = this._box.x + hx;
+        var cy = this._box.y + hy;
+        var cz = this._box.z + hz;
+        var raw = matrix.rawData;
+        var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
+        var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
+        var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
+        this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
+        this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
+        this._centerZ = cx * m31 + cy * m32 + cz * m33 + m34;
+        this._halfExtentsX = Math.abs(hx * m11 + hy * m12 + hz * m13);
+        this._halfExtentsY = Math.abs(hx * m21 + hy * m22 + hz * m23);
+        this._halfExtentsZ = Math.abs(hx * m31 + hy * m32 + hz * m33);
+        if (this._prefab) {
+            this._prefab.width = this._box.width;
+            this._prefab.height = this._box.height;
+            this._prefab.depth = this._box.depth;
+            this._pBoundsPrimitive.transform.matrix3D = matrix;
+        }
+        this._width = this._halfExtentsX * 2;
+        this._height = this._halfExtentsY * 2;
+        this._depth = this._halfExtentsZ * 2;
+        this._x = this._centerX - this._halfExtentsX;
+        this._y = this._centerY - this._halfExtentsY;
+        this._z = this._centerZ - this._halfExtentsZ;
+    };
+    AxisAlignedBoundingBox.prototype._pCreateBoundsPrimitive = function () {
+        this._prefab = new PrimitiveCubePrefab(null, ElementsType.LINE);
+        return this._prefab.getNewObject();
+    };
+    return AxisAlignedBoundingBox;
+})(BoundingVolumeBase);
+module.exports = AxisAlignedBoundingBox;
+
+},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab"}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
+var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
+var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+var PrimitiveSpherePrefab = require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
+var BoundingSphere = (function (_super) {
+    __extends(BoundingSphere, _super);
+    function BoundingSphere(entity) {
+        _super.call(this, entity);
+        this._radius = 0;
+        this._centerX = 0;
+        this._centerY = 0;
+        this._centerZ = 0;
+    }
+    BoundingSphere.prototype.nullify = function () {
+        this._centerX = this._centerY = this._centerZ = 0;
+        this._radius = 0;
+    };
+    BoundingSphere.prototype.isInFrustum = function (planes, numPlanes) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        for (var i = 0; i < numPlanes; ++i) {
+            var plane = planes[i];
+            var flippedExtentX = plane.a < 0 ? -this._radius : this._radius;
+            var flippedExtentY = plane.b < 0 ? -this._radius : this._radius;
+            var flippedExtentZ = plane.c < 0 ? -this._radius : this._radius;
+            var projDist = plane.a * (this._centerX + flippedExtentX) + plane.b * (this._centerY + flippedExtentY) + plane.c * (this._centerZ + flippedExtentZ) - plane.d;
+            if (projDist < 0) {
+                return false;
+            }
+        }
+        return true;
+    };
+    BoundingSphere.prototype.rayIntersection = function (position, direction, targetNormal) {
+        if (this._pInvalidated)
+            this._pUpdate();
+        return this._sphere.rayIntersection(position, direction, targetNormal);
+    };
+    //@override
+    BoundingSphere.prototype.classifyToPlane = function (plane) {
+        var a = plane.a;
+        var b = plane.b;
+        var c = plane.c;
+        var dd = a * this._centerX + b * this._centerY + c * this._centerZ - plane.d;
+        if (a < 0)
+            a = -a;
+        if (b < 0)
+            b = -b;
+        if (c < 0)
+            c = -c;
+        var rr = (a + b + c) * this._radius;
+        return dd > rr ? PlaneClassification.FRONT : dd < -rr ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
+    };
+    BoundingSphere.prototype._pUpdate = function () {
+        _super.prototype._pUpdate.call(this);
+        this._sphere = this._pEntity.getSphere();
+        var matrix = this._pEntity.sceneTransform;
+        var cx = this._sphere.x;
+        var cy = this._sphere.y;
+        var cz = this._sphere.z;
+        var r = this._sphere.radius;
+        var raw = matrix.rawData;
+        var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
+        var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
+        var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
+        this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
+        this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
+        this._centerZ = cx * m31 + cy * m32 + cz * m33 + m34;
+        var rx = m11 + m12 + m13;
+        var ry = m21 + m22 + m23;
+        var rz = m31 + m32 + m33;
+        this._radius = r * Math.sqrt((rx * rx + ry * ry + rz * rz) / 3);
+        if (this._prefab) {
+            this._prefab.radius = r;
+            this._pBoundsPrimitive.x = cx;
+            this._pBoundsPrimitive.y = cy;
+            this._pBoundsPrimitive.z = cz;
+            this._pBoundsPrimitive.transform.matrix3D = matrix;
+        }
+    };
+    BoundingSphere.prototype._pCreateBoundsPrimitive = function () {
+        this._prefab = new PrimitiveSpherePrefab(null, ElementsType.LINE);
+        return this._prefab.getNewObject();
+    };
+    return BoundingSphere;
+})(BoundingVolumeBase);
+module.exports = BoundingSphere;
+
+},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab"}],"awayjs-display/lib/bounds/BoundingVolumeBase":[function(require,module,exports){
+var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
+var BoundingVolumeBase = (function () {
+    function BoundingVolumeBase(entity) {
+        this._pInvalidated = true;
+        this._pEntity = entity;
+    }
+    BoundingVolumeBase.prototype.dispose = function () {
+        this._pEntity = null;
+        this._pBoundsPrimitive = null;
+    };
+    Object.defineProperty(BoundingVolumeBase.prototype, "boundsPrimitive", {
+        get: function () {
+            if (this._pBoundsPrimitive == null) {
+                this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
+                this._pInvalidated = true;
+            }
+            if (this._pInvalidated)
+                this._pUpdate();
+            return this._pBoundsPrimitive;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BoundingVolumeBase.prototype.nullify = function () {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype.isInFrustum = function (planes, numPlanes) {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype.clone = function () {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype.rayIntersection = function (position, direction, targetNormal) {
+        return -1;
+    };
+    BoundingVolumeBase.prototype.classifyToPlane = function (plane) {
+        throw new AbstractMethodError();
+    };
+    BoundingVolumeBase.prototype._pUpdate = function () {
+        this._pInvalidated = false;
+    };
+    BoundingVolumeBase.prototype.invalidate = function () {
+        this._pInvalidated = true;
+    };
+    BoundingVolumeBase.prototype._pCreateBoundsPrimitive = function () {
+        throw new AbstractMethodError();
+    };
+    return BoundingVolumeBase;
+})();
+module.exports = BoundingVolumeBase;
+
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/bounds/BoundsType":[function(require,module,exports){
+/**
+ *
+ */
+var BoundsType = (function () {
+    function BoundsType() {
+    }
+    /**
+     *
+     */
+    BoundsType.SPHERE = "sphere";
+    /**
+     *
+     */
+    BoundsType.AXIS_ALIGNED_BOX = "axisAlignedBox";
+    /**
+     *
+     */
+    BoundsType.NULL = "null";
+    return BoundsType;
+})();
+module.exports = BoundsType;
+
+},{}],"awayjs-display/lib/bounds/NullBounds":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
+var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+var NullBounds = (function (_super) {
+    __extends(NullBounds, _super);
+    function NullBounds(alwaysIn) {
+        if (alwaysIn === void 0) { alwaysIn = true; }
+        _super.call(this, null);
+        this._alwaysIn = alwaysIn;
+    }
+    //@override
+    NullBounds.prototype.clone = function () {
+        return new NullBounds(this._alwaysIn);
+    };
+    //@override
+    NullBounds.prototype.isInFrustum = function (planes, numPlanes) {
+        return this._alwaysIn;
+    };
+    NullBounds.prototype.classifyToPlane = function (plane) {
+        return PlaneClassification.INTERSECT;
+    };
+    return NullBounds;
+})(BoundingVolumeBase);
+module.exports = NullBounds;
+
+},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
+var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
+var ControllerBase = (function () {
+    function ControllerBase(targetObject) {
+        if (targetObject === void 0) { targetObject = null; }
+        this._pAutoUpdate = true;
+        this.targetObject = targetObject;
+    }
+    ControllerBase.prototype.pNotifyUpdate = function () {
+        if (this._pTargetObject)
+            this._pTargetObject.invalidatePartitionBounds();
+    };
+    Object.defineProperty(ControllerBase.prototype, "targetObject", {
+        get: function () {
+            return this._pTargetObject;
+        },
+        set: function (val) {
+            if (this._pTargetObject == val)
+                return;
+            if (this._pTargetObject && this._pAutoUpdate)
+                this._pTargetObject._iController = null;
+            this._pTargetObject = val;
+            if (this._pTargetObject && this._pAutoUpdate)
+                this._pTargetObject._iController = this;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ControllerBase.prototype, "autoUpdate", {
+        get: function () {
+            return this._pAutoUpdate;
+        },
+        set: function (val) {
+            if (this._pAutoUpdate == val)
+                return;
+            this._pAutoUpdate = val;
+            if (this._pTargetObject) {
+                if (this._pAutoUpdate)
+                    this._pTargetObject._iController = this;
+                else
+                    this._pTargetObject._iController = null;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ControllerBase.prototype.update = function (interpolate) {
+        if (interpolate === void 0) { interpolate = true; }
+        throw new AbstractMethodError();
+    };
+    ControllerBase.prototype.updateController = function () {
+        if (this._pControllerDirty && this._pAutoUpdate) {
+            this._pControllerDirty = false;
+            this.pNotifyUpdate();
+        }
+    };
+    return ControllerBase;
+})();
+module.exports = ControllerBase;
+
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/controllers/FirstPersonController":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var MathConsts = require("awayjs-core/lib/geom/MathConsts");
+var ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+/**
+ * Extended camera used to hover round a specified target object.
+ *
+ * @see    away3d.containers.View3D
+ */
+var FirstPersonController = (function (_super) {
+    __extends(FirstPersonController, _super);
+    /**
+     * Creates a new <code>HoverController</code> object.
+     */
+    function FirstPersonController(targetObject, panAngle, tiltAngle, minTiltAngle, maxTiltAngle, steps, wrapPanAngle) {
+        if (targetObject === void 0) { targetObject = null; }
+        if (panAngle === void 0) { panAngle = 0; }
+        if (tiltAngle === void 0) { tiltAngle = 90; }
+        if (minTiltAngle === void 0) { minTiltAngle = -90; }
+        if (maxTiltAngle === void 0) { maxTiltAngle = 90; }
+        if (steps === void 0) { steps = 8; }
+        if (wrapPanAngle === void 0) { wrapPanAngle = false; }
+        _super.call(this, targetObject);
+        this._iCurrentPanAngle = 0;
+        this._iCurrentTiltAngle = 90;
+        this._panAngle = 0;
+        this._tiltAngle = 90;
+        this._minTiltAngle = -90;
+        this._maxTiltAngle = 90;
+        this._steps = 8;
+        this._walkIncrement = 0;
+        this._strafeIncrement = 0;
+        this._wrapPanAngle = false;
+        this.fly = false;
+        this.panAngle = panAngle;
+        this.tiltAngle = tiltAngle;
+        this.minTiltAngle = minTiltAngle;
+        this.maxTiltAngle = maxTiltAngle;
+        this.steps = steps;
+        this.wrapPanAngle = wrapPanAngle;
+        //values passed in contrustor are applied immediately
+        this._iCurrentPanAngle = this._panAngle;
+        this._iCurrentTiltAngle = this._tiltAngle;
+    }
+    Object.defineProperty(FirstPersonController.prototype, "steps", {
+        /**
+         * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+         *
+         * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+         *
+         * @see    #tiltAngle
+         * @see    #panAngle
+         */
+        get: function () {
+            return this._steps;
+        },
+        set: function (val) {
+            val = (val < 1) ? 1 : val;
+            if (this._steps == val)
+                return;
+            this._steps = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirstPersonController.prototype, "panAngle", {
+        /**
+         * Rotation of the camera in degrees around the y axis. Defaults to 0.
+         */
+        get: function () {
+            return this._panAngle;
+        },
+        set: function (val) {
+            if (this._panAngle == val)
+                return;
+            this._panAngle = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirstPersonController.prototype, "tiltAngle", {
+        /**
+         * Elevation angle of the camera in degrees. Defaults to 90.
+         */
+        get: function () {
+            return this._tiltAngle;
+        },
+        set: function (val) {
+            val = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, val));
+            if (this._tiltAngle == val)
+                return;
+            this._tiltAngle = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirstPersonController.prototype, "minTiltAngle", {
+        /**
+         * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+         *
+         * @see    #tiltAngle
+         */
+        get: function () {
+            return this._minTiltAngle;
+        },
+        set: function (val) {
+            if (this._minTiltAngle == val)
+                return;
+            this._minTiltAngle = val;
+            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirstPersonController.prototype, "maxTiltAngle", {
+        /**
+         * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+         *
+         * @see    #tiltAngle
+         */
+        get: function () {
+            return this._maxTiltAngle;
+        },
+        set: function (val) {
+            if (this._maxTiltAngle == val)
+                return;
+            this._maxTiltAngle = val;
+            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirstPersonController.prototype, "wrapPanAngle", {
+        /**
+         * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+         */
+        get: function () {
+            return this._wrapPanAngle;
+        },
+        set: function (val) {
+            if (this._wrapPanAngle == val)
+                return;
+            this._wrapPanAngle = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Updates the current tilt angle and pan angle values.
+     *
+     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+     *
+     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+     *
+     * @see    #tiltAngle
+     * @see    #panAngle
+     * @see    #steps
+     */
+    FirstPersonController.prototype.update = function (interpolate) {
+        if (interpolate === void 0) { interpolate = true; }
+        if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
+            this._pControllerDirty = true;
+            if (this._wrapPanAngle) {
+                if (this._panAngle < 0) {
+                    this._iCurrentPanAngle += this._panAngle % 360 + 360 - this._panAngle;
+                    this._panAngle = this._panAngle % 360 + 360;
+                }
+                else {
+                    this._iCurrentPanAngle += this._panAngle % 360 - this._panAngle;
+                    this._panAngle = this._panAngle % 360;
+                }
+                while (this._panAngle - this._iCurrentPanAngle < -180)
+                    this._iCurrentPanAngle -= 360;
+                while (this._panAngle - this._iCurrentPanAngle > 180)
+                    this._iCurrentPanAngle += 360;
+            }
+            if (interpolate) {
+                this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle) / (this.steps + 1);
+                this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle) / (this.steps + 1);
+            }
+            else {
+                this._iCurrentTiltAngle = this._tiltAngle;
+                this._iCurrentPanAngle = this._panAngle;
+            }
+            //snap coords if angle differences are close
+            if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01) && (Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
+                this._iCurrentTiltAngle = this._tiltAngle;
+                this._iCurrentPanAngle = this._panAngle;
+            }
+        }
+        this.targetObject.rotationX = this._iCurrentTiltAngle;
+        this.targetObject.rotationY = this._iCurrentPanAngle;
+        if (this._walkIncrement) {
+            if (this.fly) {
+                this.targetObject.transform.moveForward(this._walkIncrement);
+            }
+            else {
+                this.targetObject.x += this._walkIncrement * Math.sin(this._panAngle * MathConsts.DEGREES_TO_RADIANS);
+                this.targetObject.z += this._walkIncrement * Math.cos(this._panAngle * MathConsts.DEGREES_TO_RADIANS);
+            }
+            this._walkIncrement = 0;
+        }
+        if (this._strafeIncrement) {
+            this.targetObject.transform.moveRight(this._strafeIncrement);
+            this._strafeIncrement = 0;
+        }
+    };
+    FirstPersonController.prototype.incrementWalk = function (val) {
+        if (val == 0)
+            return;
+        this._walkIncrement += val;
+        this.pNotifyUpdate();
+    };
+    FirstPersonController.prototype.incrementStrafe = function (val) {
+        if (val == 0)
+            return;
+        this._strafeIncrement += val;
+        this.pNotifyUpdate();
+    };
+    return FirstPersonController;
+})(ControllerBase);
+module.exports = FirstPersonController;
+
+},{"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-display/lib/controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase"}],"awayjs-display/lib/controllers/FollowController":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var HoverController = require("awayjs-display/lib/controllers/HoverController");
+/**
+ * Controller used to follow behind an object on the XZ plane, with an optional
+ * elevation (tiltAngle).
+ *
+ * @see    away3d.containers.View3D
+ */
+var FollowController = (function (_super) {
+    __extends(FollowController, _super);
+    function FollowController(targetObject, lookAtObject, tiltAngle, distance) {
+        if (targetObject === void 0) { targetObject = null; }
+        if (lookAtObject === void 0) { lookAtObject = null; }
+        if (tiltAngle === void 0) { tiltAngle = 45; }
+        if (distance === void 0) { distance = 700; }
+        _super.call(this, targetObject, lookAtObject, 0, tiltAngle, distance);
+    }
+    FollowController.prototype.update = function (interpolate) {
+        if (interpolate === void 0) { interpolate = true; }
+        if (!this.lookAtObject)
+            return;
+        this.panAngle = this._pLookAtObject.rotationY - 180;
+        _super.prototype.update.call(this);
+    };
+    return FollowController;
+})(HoverController);
+module.exports = FollowController;
+
+},{"awayjs-display/lib/controllers/HoverController":"awayjs-display/lib/controllers/HoverController"}],"awayjs-display/lib/controllers/HoverController":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var MathConsts = require("awayjs-core/lib/geom/MathConsts");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+/**
+ * Extended camera used to hover round a specified target object.
+ *
+ * @see    away.containers.View
+ */
+var HoverController = (function (_super) {
+    __extends(HoverController, _super);
+    /**
+     * Creates a new <code>HoverController</code> object.
+     */
+    function HoverController(targetObject, lookAtObject, panAngle, tiltAngle, distance, minTiltAngle, maxTiltAngle, minPanAngle, maxPanAngle, steps, yFactor, wrapPanAngle) {
+        if (targetObject === void 0) { targetObject = null; }
+        if (lookAtObject === void 0) { lookAtObject = null; }
+        if (panAngle === void 0) { panAngle = 0; }
+        if (tiltAngle === void 0) { tiltAngle = 90; }
+        if (distance === void 0) { distance = 1000; }
+        if (minTiltAngle === void 0) { minTiltAngle = -90; }
+        if (maxTiltAngle === void 0) { maxTiltAngle = 90; }
+        if (minPanAngle === void 0) { minPanAngle = null; }
+        if (maxPanAngle === void 0) { maxPanAngle = null; }
+        if (steps === void 0) { steps = 8; }
+        if (yFactor === void 0) { yFactor = 2; }
+        if (wrapPanAngle === void 0) { wrapPanAngle = false; }
+        _super.call(this, targetObject, lookAtObject);
+        this._iCurrentPanAngle = 0;
+        this._iCurrentTiltAngle = 90;
+        this._panAngle = 0;
+        this._tiltAngle = 90;
+        this._distance = 1000;
+        this._minPanAngle = -Infinity;
+        this._maxPanAngle = Infinity;
+        this._minTiltAngle = -90;
+        this._maxTiltAngle = 90;
+        this._steps = 8;
+        this._yFactor = 2;
+        this._wrapPanAngle = false;
+        this._upAxis = new Vector3D();
+        this.distance = distance;
+        this.panAngle = panAngle;
+        this.tiltAngle = tiltAngle;
+        this.minPanAngle = (minPanAngle != null) ? minPanAngle : -Infinity;
+        this.maxPanAngle = (maxPanAngle != null) ? maxPanAngle : Infinity;
+        this.minTiltAngle = minTiltAngle;
+        this.maxTiltAngle = maxTiltAngle;
+        this.steps = steps;
+        this.yFactor = yFactor;
+        this.wrapPanAngle = wrapPanAngle;
+        //values passed in contrustor are applied immediately
+        this._iCurrentPanAngle = this._panAngle;
+        this._iCurrentTiltAngle = this._tiltAngle;
+    }
+    Object.defineProperty(HoverController.prototype, "steps", {
+        /**
+         * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+         *
+         * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+         *
+         * @see    #tiltAngle
+         * @see    #panAngle
+         */
+        get: function () {
+            return this._steps;
+        },
+        set: function (val) {
+            val = (val < 1) ? 1 : val;
+            if (this._steps == val)
+                return;
+            this._steps = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "panAngle", {
+        /**
+         * Rotation of the camera in degrees around the y axis. Defaults to 0.
+         */
+        get: function () {
+            return this._panAngle;
+        },
+        set: function (val) {
+            val = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, val));
+            if (this._panAngle == val)
+                return;
+            this._panAngle = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "tiltAngle", {
+        /**
+         * Elevation angle of the camera in degrees. Defaults to 90.
+         */
+        get: function () {
+            return this._tiltAngle;
+        },
+        set: function (val) {
+            val = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, val));
+            if (this._tiltAngle == val)
+                return;
+            this._tiltAngle = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "distance", {
+        /**
+         * Distance between the camera and the specified target. Defaults to 1000.
+         */
+        get: function () {
+            return this._distance;
+        },
+        set: function (val) {
+            if (this._distance == val)
+                return;
+            this._distance = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "minPanAngle", {
+        /**
+         * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
+         *
+         * @see    #panAngle
+         */
+        get: function () {
+            return this._minPanAngle;
+        },
+        set: function (val) {
+            if (this._minPanAngle == val)
+                return;
+            this._minPanAngle = val;
+            this.panAngle = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, this._panAngle));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "maxPanAngle", {
+        /**
+         * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
+         *
+         * @see    #panAngle
+         */
+        get: function () {
+            return this._maxPanAngle;
+        },
+        set: function (val) {
+            if (this._maxPanAngle == val)
+                return;
+            this._maxPanAngle = val;
+            this.panAngle = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, this._panAngle));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "minTiltAngle", {
+        /**
+         * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+         *
+         * @see    #tiltAngle
+         */
+        get: function () {
+            return this._minTiltAngle;
+        },
+        set: function (val) {
+            if (this._minTiltAngle == val)
+                return;
+            this._minTiltAngle = val;
+            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "maxTiltAngle", {
+        /**
+         * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+         *
+         * @see    #tiltAngle
+         */
+        get: function () {
+            return this._maxTiltAngle;
+        },
+        set: function (val) {
+            if (this._maxTiltAngle == val)
+                return;
+            this._maxTiltAngle = val;
+            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "yFactor", {
+        /**
+         * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
+         *
+         * @see    #distance
+         */
+        get: function () {
+            return this._yFactor;
+        },
+        set: function (val) {
+            if (this._yFactor == val)
+                return;
+            this._yFactor = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HoverController.prototype, "wrapPanAngle", {
+        /**
+         * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+         */
+        get: function () {
+            return this._wrapPanAngle;
+        },
+        set: function (val) {
+            if (this._wrapPanAngle == val)
+                return;
+            this._wrapPanAngle = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Updates the current tilt angle and pan angle values.
+     *
+     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+     *
+     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+     *
+     * @see    #tiltAngle
+     * @see    #panAngle
+     * @see    #steps
+     */
+    HoverController.prototype.update = function (interpolate) {
+        if (interpolate === void 0) { interpolate = true; }
+        if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
+            this._pControllerDirty = true;
+            if (this._wrapPanAngle) {
+                if (this._panAngle < 0) {
+                    this._iCurrentPanAngle += this._panAngle % 360 + 360 - this._panAngle;
+                    this._panAngle = this._panAngle % 360 + 360;
+                }
+                else {
+                    this._iCurrentPanAngle += this._panAngle % 360 - this._panAngle;
+                    this._panAngle = this._panAngle % 360;
+                }
+                while (this._panAngle - this._iCurrentPanAngle < -180)
+                    this._iCurrentPanAngle -= 360;
+                while (this._panAngle - this._iCurrentPanAngle > 180)
+                    this._iCurrentPanAngle += 360;
+            }
+            if (interpolate) {
+                this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle) / (this.steps + 1);
+                this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle) / (this.steps + 1);
+            }
+            else {
+                this._iCurrentPanAngle = this._panAngle;
+                this._iCurrentTiltAngle = this._tiltAngle;
+            }
+            //snap coords if angle differences are close
+            if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01) && (Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
+                this._iCurrentTiltAngle = this._tiltAngle;
+                this._iCurrentPanAngle = this._panAngle;
+            }
+        }
+        var pos = (this.lookAtObject) ? this.lookAtObject.transform.position : (this.lookAtPosition) ? this.lookAtPosition : this._pOrigin;
+        this.targetObject.x = pos.x + this.distance * Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+        this.targetObject.y = pos.y + this.distance * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS) * this.yFactor;
+        this.targetObject.z = pos.z + this.distance * Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+        this._upAxis.x = -Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+        this._upAxis.y = Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+        this._upAxis.z = -Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+        if (this._pTargetObject) {
+            if (this._pLookAtPosition)
+                this._pTargetObject.lookAt(this._pLookAtPosition, this._upAxis);
+            else if (this._pLookAtObject)
+                this._pTargetObject.lookAt(this._pLookAtObject.scene ? this._pLookAtObject.scenePosition : this._pLookAtObject.transform.position, this._upAxis);
+        }
+    };
+    return HoverController;
+})(LookAtController);
+module.exports = HoverController;
+
+},{"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController"}],"awayjs-display/lib/controllers/LookAtController":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
+var LookAtController = (function (_super) {
+    __extends(LookAtController, _super);
+    function LookAtController(targetObject, lookAtObject) {
+        var _this = this;
+        if (targetObject === void 0) { targetObject = null; }
+        if (lookAtObject === void 0) { lookAtObject = null; }
+        _super.call(this, targetObject);
+        this._pOrigin = new Vector3D(0.0, 0.0, 0.0);
+        this._onLookAtObjectChangedDelegate = function (event) { return _this.onLookAtObjectChanged(event); };
+        if (lookAtObject)
+            this.lookAtObject = lookAtObject;
+        else
+            this.lookAtPosition = new Vector3D();
+    }
+    Object.defineProperty(LookAtController.prototype, "lookAtPosition", {
+        get: function () {
+            return this._pLookAtPosition;
+        },
+        set: function (val) {
+            if (this._pLookAtObject) {
+                this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
+                this._pLookAtObject = null;
+            }
+            this._pLookAtPosition = val;
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LookAtController.prototype, "lookAtObject", {
+        get: function () {
+            return this._pLookAtObject;
+        },
+        set: function (val) {
+            if (this._pLookAtPosition)
+                this._pLookAtPosition = null;
+            if (this._pLookAtObject == val)
+                return;
+            if (this._pLookAtObject)
+                this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
+            this._pLookAtObject = val;
+            if (this._pLookAtObject)
+                this._pLookAtObject.addEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
+            this.pNotifyUpdate();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //@override
+    LookAtController.prototype.update = function (interpolate) {
+        if (interpolate === void 0) { interpolate = true; }
+        if (this._pTargetObject) {
+            if (this._pLookAtPosition)
+                this._pTargetObject.lookAt(this._pLookAtPosition);
+            else if (this._pLookAtObject)
+                this._pTargetObject.lookAt(this._pLookAtObject.scene ? this._pLookAtObject.scenePosition : this._pLookAtObject.transform.position);
+        }
+    };
+    LookAtController.prototype.onLookAtObjectChanged = function (event) {
+        this.pNotifyUpdate();
+    };
+    return LookAtController;
+})(ControllerBase);
+module.exports = LookAtController;
+
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent"}],"awayjs-display/lib/controllers/SpringController":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+/**
+ * Uses spring physics to animate the target object towards a position that is
+ * defined as the lookAtTarget object's position plus the vector defined by the
+ * positionOffset property.
+ */
+var SpringController = (function (_super) {
+    __extends(SpringController, _super);
+    function SpringController(targetObject, lookAtObject, stiffness, mass, damping) {
+        if (targetObject === void 0) { targetObject = null; }
+        if (lookAtObject === void 0) { lookAtObject = null; }
+        if (stiffness === void 0) { stiffness = 1; }
+        if (mass === void 0) { mass = 40; }
+        if (damping === void 0) { damping = 4; }
+        _super.call(this, targetObject, lookAtObject);
+        /**
+         * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
+         */
+        this.positionOffset = new Vector3D(0, 500, -1000);
+        this.stiffness = stiffness;
+        this.damping = damping;
+        this.mass = mass;
+        this._velocity = new Vector3D();
+        this._dv = new Vector3D();
+        this._stretch = new Vector3D();
+        this._force = new Vector3D();
+        this._acceleration = new Vector3D();
+        this._desiredPosition = new Vector3D();
+    }
+    SpringController.prototype.update = function (interpolate) {
+        if (interpolate === void 0) { interpolate = true; }
+        var offs;
+        if (!this._pLookAtObject || !this._pTargetObject)
+            return;
+        this._pControllerDirty = true;
+        offs = this._pLookAtObject.transform.matrix3D.deltaTransformVector(this.positionOffset);
+        this._desiredPosition.x = this._pLookAtObject.x + offs.x;
+        this._desiredPosition.y = this._pLookAtObject.y + offs.y;
+        this._desiredPosition.z = this._pLookAtObject.z + offs.z;
+        this._stretch = this._pTargetObject.transform.position.add(this._desiredPosition);
+        this._stretch.scaleBy(-this.stiffness);
+        this._dv.copyFrom(this._velocity);
+        this._dv.scaleBy(this.damping);
+        this._force.x = this._stretch.x - this._dv.x;
+        this._force.y = this._stretch.y - this._dv.y;
+        this._force.z = this._stretch.z - this._dv.z;
+        this._acceleration.copyFrom(this._force);
+        this._acceleration.scaleBy(1 / this.mass);
+        this._velocity.incrementBy(this._acceleration);
+        this._pTargetObject.transform.position = this._pTargetObject.transform.position.add(this._velocity);
+        _super.prototype.update.call(this);
+    };
+    return SpringController;
+})(LookAtController);
+module.exports = SpringController;
+
+},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController"}],"awayjs-display/lib/display/Billboard":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Rectangle = require("awayjs-core/lib/geom/Rectangle");
+var DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var RenderableEvent = require("awayjs-display/lib/events/RenderableEvent");
+var SurfaceEvent = require("awayjs-display/lib/events/SurfaceEvent");
+var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
+/**
+ * The Billboard class represents display objects that represent bitmap images.
+ * These can be images that you load with the <code>flash.Assets</code> or
+ * <code>flash.display.Loader</code> classes, or they can be images that you
+ * create with the <code>Billboard()</code> constructor.
+ *
+ * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
+ * object that contains a reference to a Image2D object. After you create a
+ * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
+ * method of the parent DisplayObjectContainer instance to place the bitmap on
+ * the display list.</p>
+ *
+ * <p>A Billboard object can share its Image2D reference among several Billboard
+ * objects, independent of translation or rotation properties. Because you can
+ * create multiple Billboard objects that reference the same Image2D object,
+ * multiple display objects can use the same complex Image2D object without
+ * incurring the memory overhead of a Image2D object for each display
+ * object instance.</p>
+ *
+ * <p>A Image2D object can be drawn to the screen by a Billboard object in one
+ * of two ways: by using the default hardware renderer with a single hardware surface,
+ * or by using the slower software renderer when 3D acceleration is not available.</p>
+ *
+ * <p>If you would prefer to perform a batch rendering command, rather than using a
+ * single surface for each Billboard object, you can also draw to the screen using the
+ * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
+ * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
+ * objects.</code></p>
+ *
+ * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
+ * class, so it cannot dispatch mouse events. However, you can use the
+ * <code>addEventListener()</code> method of the display object container that
+ * contains the Billboard object.</p>
+ */
+var Billboard = (function (_super) {
+    __extends(Billboard, _super);
+    function Billboard(material, pixelSnapping, smoothing) {
+        var _this = this;
+        if (pixelSnapping === void 0) { pixelSnapping = "auto"; }
+        if (smoothing === void 0) { smoothing = false; }
+        _super.call(this);
+        this._pIsEntity = true;
+        this.onInvalidateTextureDelegate = function (event) { return _this.onInvalidateTexture(event); };
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
+        this.material = material;
+        this._updateDimensions();
+        //default bounds type
+        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
+    }
+    Object.defineProperty(Billboard.prototype, "animator", {
+        /**
+         * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
+         */
+        get: function () {
+            return this._animator;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Billboard.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return Billboard.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Billboard.prototype, "billboardRect", {
+        /**
+         *
+         */
+        get: function () {
+            return this._billboardRect;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Billboard.prototype, "billboardHeight", {
+        /**
+         *
+         */
+        get: function () {
+            return this._billboardHeight;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Billboard.prototype, "billboardWidth", {
+        /**
+         *
+         */
+        get: function () {
+            return this._billboardWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Billboard.prototype, "material", {
+        /**
+         *
+         */
+        get: function () {
+            return this._material;
+        },
+        set: function (value) {
+            if (value == this._material)
+                return;
+            if (this._material) {
+                this._material.iRemoveOwner(this);
+                this._material.removeEventListener(SurfaceEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+            }
+            this._material = value;
+            if (this._material) {
+                this._material.iAddOwner(this);
+                this._material.addEventListener(SurfaceEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @protected
+     */
+    Billboard.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        this._pBoxBounds.width = this._billboardRect.width;
+        this._pBoxBounds.height = this._billboardRect.height;
+    };
+    Billboard.prototype.clone = function () {
+        var clone = new Billboard(this.material);
+        return clone;
+    };
+    Object.defineProperty(Billboard.prototype, "style", {
+        /**
+         * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
+         */
+        get: function () {
+            return this._style;
+        },
+        set: function (value) {
+            if (this._style == value)
+                return;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._onInvalidateProperties();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * //TODO
+     *
+     * @param shortestCollisionDistance
+     * @returns {boolean}
+     *
+     * @internal
+     */
+    Billboard.prototype._iTestCollision = function (shortestCollisionDistance) {
+        return this._pPickingCollider.testBillboardCollision(this, this.material, this._pPickingCollisionVO, shortestCollisionDistance);
+    };
+    /**
+     * @private
+     */
+    Billboard.prototype.onInvalidateTexture = function (event) {
+        this._updateDimensions();
+    };
+    Billboard.prototype._acceptTraverser = function (traverser) {
+        traverser.applyRenderable(this);
+    };
+    Billboard.prototype._updateDimensions = function () {
+        var texture = this.material.getTextureAt(0);
+        var image = texture ? ((this._style ? this._style.getImageAt(texture) : null) || (this.material.style ? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
+        if (image) {
+            var sampler = ((this._style ? this._style.getSamplerAt(texture) : null) || (this.material.style ? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || DefaultMaterialManager.getDefaultSampler());
+            if (sampler.imageRect) {
+                this._billboardWidth = sampler.imageRect.width * image.width;
+                this._billboardHeight = sampler.imageRect.height * image.height;
+            }
+            else {
+                this._billboardWidth = image.rect.width;
+                this._billboardHeight = image.rect.height;
+            }
+            this._billboardRect = sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
+        }
+        else {
+            this._billboardWidth = 1;
+            this._billboardHeight = 1;
+            this._billboardRect = new Rectangle(0, 0, 1, 1);
+        }
+        this._pInvalidateBounds();
+        this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
+    };
+    Billboard.prototype.invalidateSurface = function () {
+        this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
+    };
+    Billboard.prototype._onInvalidateProperties = function (event) {
+        if (event === void 0) { event = null; }
+        this.invalidateSurface();
+        this._updateDimensions();
+    };
+    Billboard.assetType = "[asset Billboard]";
+    return Billboard;
+})(DisplayObject);
+module.exports = Billboard;
+
+},{"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-display/lib/managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager"}],"awayjs-display/lib/display/Camera":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var Plane3D = require("awayjs-core/lib/geom/Plane3D");
+var ProjectionEvent = require("awayjs-core/lib/events/ProjectionEvent");
+var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+var CameraEvent = require("awayjs-display/lib/events/CameraEvent");
+var Camera = (function (_super) {
+    __extends(Camera, _super);
+    function Camera(projection) {
+        var _this = this;
+        if (projection === void 0) { projection = null; }
+        _super.call(this);
+        this._viewProjection = new Matrix3D();
+        this._viewProjectionDirty = true;
+        this._frustumPlanesDirty = true;
+        this._pIsEntity = true;
+        this._onProjectionMatrixChangedDelegate = function (event) { return _this.onProjectionMatrixChanged(event); };
+        this._projection = projection || new PerspectiveProjection();
+        this._projection.addEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
+        this._frustumPlanes = [];
+        for (var i = 0; i < 6; ++i)
+            this._frustumPlanes[i] = new Plane3D();
+        this.z = -1000;
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
+    }
+    Object.defineProperty(Camera.prototype, "assetType", {
+        //@override
+        get: function () {
+            return Camera.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Camera.prototype.onProjectionMatrixChanged = function (event) {
+        this._viewProjectionDirty = true;
+        this._frustumPlanesDirty = true;
+        this.dispatchEvent(event);
+    };
+    Object.defineProperty(Camera.prototype, "frustumPlanes", {
+        get: function () {
+            if (this._frustumPlanesDirty)
+                this.updateFrustum();
+            return this._frustumPlanes;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Camera.prototype.updateFrustum = function () {
+        var a, b, c;
+        //var d : Number;
+        var c11, c12, c13, c14;
+        var c21, c22, c23, c24;
+        var c31, c32, c33, c34;
+        var c41, c42, c43, c44;
+        var p;
+        var raw = this.viewProjection.rawData;
+        var invLen;
+        c11 = raw[0];
+        c12 = raw[4];
+        c13 = raw[8];
+        c14 = raw[12];
+        c21 = raw[1];
+        c22 = raw[5];
+        c23 = raw[9];
+        c24 = raw[13];
+        c31 = raw[2];
+        c32 = raw[6];
+        c33 = raw[10];
+        c34 = raw[14];
+        c41 = raw[3];
+        c42 = raw[7];
+        c43 = raw[11];
+        c44 = raw[15];
+        // left plane
+        p = this._frustumPlanes[0];
+        a = c41 + c11;
+        b = c42 + c12;
+        c = c43 + c13;
+        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+        p.a = a * invLen;
+        p.b = b * invLen;
+        p.c = c * invLen;
+        p.d = -(c44 + c14) * invLen;
+        // right plane
+        p = this._frustumPlanes[1];
+        a = c41 - c11;
+        b = c42 - c12;
+        c = c43 - c13;
+        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+        p.a = a * invLen;
+        p.b = b * invLen;
+        p.c = c * invLen;
+        p.d = (c14 - c44) * invLen;
+        // bottom
+        p = this._frustumPlanes[2];
+        a = c41 + c21;
+        b = c42 + c22;
+        c = c43 + c23;
+        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+        p.a = a * invLen;
+        p.b = b * invLen;
+        p.c = c * invLen;
+        p.d = -(c44 + c24) * invLen;
+        // top
+        p = this._frustumPlanes[3];
+        a = c41 - c21;
+        b = c42 - c22;
+        c = c43 - c23;
+        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+        p.a = a * invLen;
+        p.b = b * invLen;
+        p.c = c * invLen;
+        p.d = (c24 - c44) * invLen;
+        // near
+        p = this._frustumPlanes[4];
+        a = c31;
+        b = c32;
+        c = c33;
+        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+        p.a = a * invLen;
+        p.b = b * invLen;
+        p.c = c * invLen;
+        p.d = -c34 * invLen;
+        // far
+        p = this._frustumPlanes[5];
+        a = c41 - c31;
+        b = c42 - c32;
+        c = c43 - c33;
+        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
+        p.a = a * invLen;
+        p.b = b * invLen;
+        p.c = c * invLen;
+        p.d = (c34 - c44) * invLen;
+        this._frustumPlanesDirty = false;
+    };
+    Camera.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
+        if (_super.prototype.pInvalidateHierarchicalProperties.call(this, bitFlag))
+            return true;
+        if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
+            this._viewProjectionDirty = true;
+            this._frustumPlanesDirty = true;
+        }
+        return false;
+    };
+    Object.defineProperty(Camera.prototype, "projection", {
+        /**
+         *
+         */
+        get: function () {
+            return this._projection;
+        },
+        set: function (value) {
+            if (this._projection == value)
+                return;
+            if (!value)
+                throw new Error("Projection cannot be null!");
+            this._projection.removeEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
+            this._projection = value;
+            this._projection.addEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
+            this.dispatchEvent(new CameraEvent(CameraEvent.PROJECTION_CHANGED, this));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Camera.prototype, "viewProjection", {
+        /**
+         *
+         */
+        get: function () {
+            if (this._viewProjectionDirty) {
+                this._viewProjection.copyFrom(this.inverseSceneTransform);
+                this._viewProjection.append(this._projection.matrix);
+                this._viewProjectionDirty = false;
+            }
+            return this._viewProjection;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
+     *
+     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
+     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
+     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+     * @return The ray from the camera to the scene space position of the given screen coordinates.
+     */
+    Camera.prototype.getRay = function (nX, nY, sZ) {
+        return this.sceneTransform.deltaTransformVector(this._projection.unproject(nX, nY, sZ));
+    };
+    /**
+     * Calculates the normalised position in screen space of the given scene position.
+     *
+     * @param point3d the position vector of the scene coordinates to be projected.
+     * @return The normalised screen position of the given scene coordinates.
+     */
+    Camera.prototype.project = function (point3d) {
+        return this._projection.project(this.inverseSceneTransform.transformVector(point3d));
+    };
+    /**
+     * Calculates the scene position of the given normalized coordinates in screen space.
+     *
+     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
+     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
+     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+     * @return The scene position of the given screen coordinates.
+     */
+    Camera.prototype.unproject = function (nX, nY, sZ) {
+        return this.sceneTransform.transformVector(this._projection.unproject(nX, nY, sZ));
+    };
+    Camera.prototype._applyRenderer = function (renderer) {
+        // Since this getter is invoked every iteration of the render loop, and
+        // the prefab construct could affect the sub-meshes, the prefab is
+        // validated here to give it a chance to rebuild.
+        if (this._iSourcePrefab)
+            this._iSourcePrefab._iValidate();
+        //nothing to do here
+    };
+    Camera.assetType = "[asset Camera]";
+    return Camera;
+})(DisplayObjectContainer);
+module.exports = Camera;
+
+},{"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent"}],"awayjs-display/lib/display/DirectionalLight":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
+var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var LightBase = require("awayjs-display/lib/display/LightBase");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+var DirectionalLight = (function (_super) {
+    __extends(DirectionalLight, _super);
+    function DirectionalLight(xDir, yDir, zDir) {
+        if (xDir === void 0) { xDir = 0; }
+        if (yDir === void 0) { yDir = -1; }
+        if (zDir === void 0) { zDir = 1; }
+        _super.call(this);
+        this._pAabbPoints = new Array(24);
+        this._pIsEntity = true;
+        this.direction = new Vector3D(xDir, yDir, zDir);
+        this._sceneDirection = new Vector3D();
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
+    }
+    Object.defineProperty(DirectionalLight.prototype, "assetType", {
+        get: function () {
+            return DirectionalLight.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectionalLight.prototype, "sceneDirection", {
+        get: function () {
+            if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
+                this.pUpdateSceneTransform();
+            return this._sceneDirection;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DirectionalLight.prototype, "direction", {
+        get: function () {
+            return this._direction;
+        },
+        set: function (value) {
+            this._direction = value;
+            if (!this._tmpLookAt)
+                this._tmpLookAt = new Vector3D();
+            this._tmpLookAt.x = this.x + this._direction.x;
+            this._tmpLookAt.y = this.y + this._direction.y;
+            this._tmpLookAt.z = this.z + this._direction.z;
+            this.lookAt(this._tmpLookAt);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //@override
+    DirectionalLight.prototype.pUpdateSceneTransform = function () {
+        _super.prototype.pUpdateSceneTransform.call(this);
+        this.sceneTransform.copyColumnTo(2, this._sceneDirection);
+        this._sceneDirection.normalize();
+    };
+    //@override
+    DirectionalLight.prototype.pCreateShadowMapper = function () {
+        return new DirectionalShadowMapper();
+    };
+    //override
+    DirectionalLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
+        if (target === void 0) { target = null; }
+        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
+        var m = new Matrix3D();
+        m.copyFrom(entity.getRenderSceneTransform(camera));
+        m.append(this.inverseSceneTransform);
+        if (!this._projAABBPoints)
+            this._projAABBPoints = [];
+        m.transformVectors(this._pAabbPoints, this._projAABBPoints);
+        var xMin = Infinity, xMax = -Infinity;
+        var yMin = Infinity, yMax = -Infinity;
+        var zMin = Infinity, zMax = -Infinity;
+        var d;
+        for (var i = 0; i < 24;) {
+            d = this._projAABBPoints[i++];
+            if (d < xMin)
+                xMin = d;
+            if (d > xMax)
+                xMax = d;
+            d = this._projAABBPoints[i++];
+            if (d < yMin)
+                yMin = d;
+            if (d > yMax)
+                yMax = d;
+            d = this._projAABBPoints[i++];
+            if (d < zMin)
+                zMin = d;
+            if (d > zMax)
+                zMax = d;
+        }
+        var invXRange = 1 / (xMax - xMin);
+        var invYRange = 1 / (yMax - yMin);
+        var invZRange = 1 / (zMax - zMin);
+        raw[0] = 2 * invXRange;
+        raw[5] = 2 * invYRange;
+        raw[10] = invZRange;
+        raw[12] = -(xMax + xMin) * invXRange;
+        raw[13] = -(yMax + yMin) * invYRange;
+        raw[14] = -zMin * invZRange;
+        raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[11] = 0;
+        raw[15] = 1;
+        if (!target)
+            target = new Matrix3D();
+        target.copyRawDataFrom(raw);
+        target.prepend(m);
+        return target;
+    };
+    /**
+     * //TODO
+     *
+     * @protected
+     */
+    DirectionalLight.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        //update points
+        var minX = this._pBoxBounds.x;
+        var minY = this._pBoxBounds.y - this._pBoxBounds.height;
+        var minZ = this._pBoxBounds.z;
+        var maxX = this._pBoxBounds.x + this._pBoxBounds.width;
+        var maxY = this._pBoxBounds.y;
+        var maxZ = this._pBoxBounds.z + this._pBoxBounds.depth;
+        this._pAabbPoints[0] = minX;
+        this._pAabbPoints[1] = minY;
+        this._pAabbPoints[2] = minZ;
+        this._pAabbPoints[3] = maxX;
+        this._pAabbPoints[4] = minY;
+        this._pAabbPoints[5] = minZ;
+        this._pAabbPoints[6] = minX;
+        this._pAabbPoints[7] = maxY;
+        this._pAabbPoints[8] = minZ;
+        this._pAabbPoints[9] = maxX;
+        this._pAabbPoints[10] = maxY;
+        this._pAabbPoints[11] = minZ;
+        this._pAabbPoints[12] = minX;
+        this._pAabbPoints[13] = minY;
+        this._pAabbPoints[14] = maxZ;
+        this._pAabbPoints[15] = maxX;
+        this._pAabbPoints[16] = minY;
+        this._pAabbPoints[17] = maxZ;
+        this._pAabbPoints[18] = minX;
+        this._pAabbPoints[19] = maxY;
+        this._pAabbPoints[20] = maxZ;
+        this._pAabbPoints[21] = maxX;
+        this._pAabbPoints[22] = maxY;
+        this._pAabbPoints[23] = maxZ;
+    };
+    DirectionalLight.assetType = "[light DirectionalLight]";
+    return DirectionalLight;
+})(LightBase);
+module.exports = DirectionalLight;
+
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/LightBase":"awayjs-display/lib/display/LightBase","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/display/DisplayObjectContainer":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var ArgumentError = require("awayjs-core/lib/errors/ArgumentError");
+var RangeError = require("awayjs-core/lib/errors/RangeError");
+var DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
+/**
+ * The DisplayObjectContainer class is the base class for all objects that can
+ * serve as display object containers on the display list. The display list
+ * manages all objects displayed in the Flash runtimes. Use the
+ * DisplayObjectContainer class to arrange the display objects in the display
+ * list. Each DisplayObjectContainer object has its own child list for
+ * organizing the z-order of the objects. The z-order is the front-to-back
+ * order that determines which object is drawn in front, which is behind, and
+ * so on.
+ *
+ * <p>DisplayObject is an abstract base class; therefore, you cannot call
+ * DisplayObject directly. Invoking <code>new DisplayObject()</code> throws an
+ * <code>ArgumentError</code> exception.</p>
+ * The DisplayObjectContainer class is an abstract base class for all objects
+ * that can contain child objects. It cannot be instantiated directly; calling
+ * the <code>new DisplayObjectContainer()</code> constructor throws an
+ * <code>ArgumentError</code> exception.
+ *
+ * <p>For more information, see the "Display Programming" chapter of the
+ * <i>ActionScript 3.0 Developer's Guide</i>.</p>
+ */
+var DisplayObjectContainer = (function (_super) {
+    __extends(DisplayObjectContainer, _super);
+    /**
+     * Calling the <code>new DisplayObjectContainer()</code> constructor throws
+     * an <code>ArgumentError</code> exception. You <i>can</i>, however, call
+     * constructors for the following subclasses of DisplayObjectContainer:
+     * <ul>
+     *   <li><code>new Loader()</code></li>
+     *   <li><code>new Sprite()</code></li>
+     *   <li><code>new MovieClip()</code></li>
+     * </ul>
+     */
+    function DisplayObjectContainer() {
+        _super.call(this);
+        this._mouseChildren = true;
+        this._depth_childs = {};
+        this._nextHighestDepth = 0;
+        this._children = new Array();
+        this._pIsContainer = true;
+    }
+    Object.defineProperty(DisplayObjectContainer.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return DisplayObjectContainer.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObjectContainer.prototype, "mouseChildren", {
+        /**
+         * Determines whether or not the children of the object are mouse, or user
+         * input device, enabled. If an object is enabled, a user can interact with
+         * it by using a mouse or user input device. The default is
+         * <code>true</code>.
+         *
+         * <p>This property is useful when you create a button with an instance of
+         * the Sprite class(instead of using the SimpleButton class). When you use a
+         * Sprite instance to create a button, you can choose to decorate the button
+         * by using the <code>addChild()</code> method to add additional Sprite
+         * instances. This process can cause unexpected behavior with mouse events
+         * because the Sprite instances you add as children can become the target
+         * object of a mouse event when you expect the parent instance to be the
+         * target object. To ensure that the parent instance serves as the target
+         * objects for mouse events, you can set the <code>mouseChildren</code>
+         * property of the parent instance to <code>false</code>.</p>
+         *
+         * <p> No event is dispatched by setting this property. You must use the
+         * <code>addEventListener()</code> method to create interactive
+         * functionality.</p>
+         */
+        get: function () {
+            if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
+                this._updateMouseEnabled();
+            return this._mouseChildren;
+        },
+        set: function (value) {
+            if (this._mouseChildren == value)
+                return;
+            this._mouseChildren = value;
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.MOUSE_ENABLED);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DisplayObjectContainer.prototype, "numChildren", {
+        /**
+         * Returns the number of children of this object.
+         */
+        get: function () {
+            return this._children.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Adds a child DisplayObject instance to this DisplayObjectContainer
+     * instance. The child is added to the front(top) of all other children in
+     * this DisplayObjectContainer instance.(To add a child to a specific index
+     * position, use the <code>addChildAt()</code> method.)
+     *
+     * <p>If you add a child object that already has a different display object
+     * container as a parent, the object is removed from the child list of the
+     * other display object container. </p>
+     *
+     * <p><b>Note:</b> The command <code>stage.addChild()</code> can cause
+     * problems with a published SWF file, including security problems and
+     * conflicts with other loaded SWF files. There is only one Stage within a
+     * Flash runtime instance, no matter how many SWF files you load into the
+     * runtime. So, generally, objects should not be added to the Stage,
+     * directly, at all. The only object the Stage should contain is the root
+     * object. Create a DisplayObjectContainer to contain all of the items on the
+     * display list. Then, if necessary, add that DisplayObjectContainer instance
+     * to the Stage.</p>
+     *
+     * @param child The DisplayObject instance to add as a child of this
+     *              DisplayObjectContainer instance.
+     * @return The DisplayObject instance that you pass in the <code>child</code>
+     *         parameter.
+     * @throws ArgumentError Throws if the child is the same as the parent. Also
+     *                       throws if the caller is a child(or grandchild etc.)
+     *                       of the child being added.
+     * @event added Dispatched when a display object is added to the display
+     *              list.
+     */
+    DisplayObjectContainer.prototype.addChild = function (child) {
+        return this.addChildAt(child, this._children.length);
+    };
+    DisplayObjectContainer.prototype.addChildAtDepth = function (child, depth, replace) {
+        if (replace === void 0) { replace = true; }
+        if (child == null)
+            throw new ArgumentError("Parameter child cannot be null.");
+        //if child already has a parent, remove it.
+        if (child._pParent)
+            child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
+        var index = this.getDepthIndexInternal(depth);
+        if (index != -1) {
+            if (replace) {
+                this.removeChildAt(index);
+            }
+            else {
+                //move depth of existing child up by 1
+                this.addChildAtDepth(this._children[index], depth + 1, false);
+            }
+        }
+        if (this._nextHighestDepth < depth + 1)
+            this._nextHighestDepth = depth + 1;
+        this._depth_childs[depth] = child;
+        this._children.push(child);
+        child._depthID = depth;
+        child.iSetParent(this);
+        this._pInvalidateBounds();
+        return child;
+    };
+    /**
+     * Adds a child DisplayObject instance to this DisplayObjectContainer
+     * instance. The child is added at the index position specified. An index of
+     * 0 represents the back(bottom) of the display list for this
+     * DisplayObjectContainer object.
+     *
+     * <p>For example, the following example shows three display objects, labeled
+     * a, b, and c, at index positions 0, 2, and 1, respectively:</p>
+     *
+     * <p>If you add a child object that already has a different display object
+     * container as a parent, the object is removed from the child list of the
+     * other display object container. </p>
+     *
+     * @param child The DisplayObject instance to add as a child of this
+     *              DisplayObjectContainer instance.
+     * @param index The index position to which the child is added. If you
+     *              specify a currently occupied index position, the child object
+     *              that exists at that position and all higher positions are
+     *              moved up one position in the child list.
+     * @return The DisplayObject instance that you pass in the <code>child</code>
+     *         parameter.
+     * @throws ArgumentError Throws if the child is the same as the parent. Also
+     *                       throws if the caller is a child(or grandchild etc.)
+     *                       of the child being added.
+     * @throws RangeError    Throws if the index position does not exist in the
+     *                       child list.
+     * @event added Dispatched when a display object is added to the display
+     *              list.
+     */
+    DisplayObjectContainer.prototype.addChildAt = function (child, index) {
+        return this.addChildAtDepth(child, (index < this._children.length) ? this._children[index]._depthID : this.getNextHighestDepth(), false);
+    };
+    DisplayObjectContainer.prototype.addChildren = function () {
+        var childarray = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            childarray[_i - 0] = arguments[_i];
+        }
+        var len = childarray.length;
+        for (var i = 0; i < len; i++)
+            this.addChild(childarray[i]);
+    };
+    /**
+     *
+     */
+    DisplayObjectContainer.prototype.clone = function () {
+        var newInstance = new DisplayObjectContainer();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    DisplayObjectContainer.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.mouseChildren = this._mouseChildren;
+        var len = this._children.length;
+        for (var i = 0; i < len; ++i)
+            newInstance.addChild(this._children[i].clone());
+    };
+    /**
+     * Determines whether the specified display object is a child of the
+     * DisplayObjectContainer instance or the instance itself. The search
+     * includes the entire display list including this DisplayObjectContainer
+     * instance. Grandchildren, great-grandchildren, and so on each return
+     * <code>true</code>.
+     *
+     * @param child The child object to test.
+     * @return <code>true</code> if the <code>child</code> object is a child of
+     *         the DisplayObjectContainer or the container itself; otherwise
+     *         <code>false</code>.
+     */
+    DisplayObjectContainer.prototype.contains = function (child) {
+        return this._children.indexOf(child) >= 0;
+    };
+    /**
+     *
+     */
+    DisplayObjectContainer.prototype.disposeValues = function () {
+        for (var i = this._children.length - 1; i >= 0; i--)
+            this.removeChild(this._children[i]);
+        _super.prototype.disposeValues.call(this);
+    };
+    DisplayObjectContainer.prototype.getChildAtDepth = function (depth) {
+        return this._depth_childs[depth];
+    };
+    /**
+     * Returns the child display object instance that exists at the specified
+     * index.
+     *
+     * @param index The index position of the child object.
+     * @return The child display object at the specified index position.
+     * @throws RangeError    Throws if the index does not exist in the child
+     *                       list.
+     */
+    DisplayObjectContainer.prototype.getChildAt = function (index /*int*/) {
+        var child = this._children[index];
+        if (child == null)
+            throw new RangeError("Index does not exist in the child list of the caller");
+        return child;
+    };
+    /**
+     * Returns the child display object that exists with the specified name. If
+     * more that one child display object has the specified name, the method
+     * returns the first object in the child list.
+     *
+     * <p>The <code>getChildAt()</code> method is faster than the
+     * <code>getChildByName()</code> method. The <code>getChildAt()</code> method
+     * accesses a child from a cached array, whereas the
+     * <code>getChildByName()</code> method has to traverse a linked list to
+     * access a child.</p>
+     *
+     * @param name The name of the child to return.
+     * @return The child display object with the specified name.
+     */
+    DisplayObjectContainer.prototype.getChildByName = function (name) {
+        var len = this._children.length;
+        for (var i = 0; i < len; ++i)
+            if (this._children[i].name == name)
+                return this._children[i];
+        return null;
+    };
+    /**
+     * Returns the index position of a <code>child</code> DisplayObject instance.
+     *
+     * @param child The DisplayObject instance to identify.
+     * @return The index position of the child display object to identify.
+     * @throws ArgumentError Throws if the child parameter is not a child of this
+     *                       object.
+     */
+    DisplayObjectContainer.prototype.getChildIndex = function (child) {
+        var childIndex = this._children.indexOf(child);
+        if (childIndex == -1)
+            throw new ArgumentError("Child parameter is not a child of the caller");
+        return childIndex;
+    };
+    DisplayObjectContainer.prototype.getNextHighestDepth = function () {
+        if (this._nextHighestDepthDirty)
+            this._updateNextHighestDepth();
+        return this._nextHighestDepth;
+    };
+    /**
+     * Returns an array of objects that lie under the specified point and are
+     * children(or grandchildren, and so on) of this DisplayObjectContainer
+     * instance. Any child objects that are inaccessible for security reasons are
+     * omitted from the returned array. To determine whether this security
+     * restriction affects the returned array, call the
+     * <code>areInaccessibleObjectsUnderPoint()</code> method.
+     *
+     * <p>The <code>point</code> parameter is in the coordinate space of the
+     * Stage, which may differ from the coordinate space of the display object
+     * container(unless the display object container is the Stage). You can use
+     * the <code>globalToLocal()</code> and the <code>localToGlobal()</code>
+     * methods to convert points between these coordinate spaces.</p>
+     *
+     * @param point The point under which to look.
+     * @return An array of objects that lie under the specified point and are
+     *         children(or grandchildren, and so on) of this
+     *         DisplayObjectContainer instance.
+     */
+    DisplayObjectContainer.prototype.getObjectsUnderPoint = function (point) {
+        return new Array();
+    };
+    /**
+     * Removes the specified <code>child</code> DisplayObject instance from the
+     * child list of the DisplayObjectContainer instance. The <code>parent</code>
+     * property of the removed child is set to <code>null</code> , and the object
+     * is garbage collected if no other references to the child exist. The index
+     * positions of any display objects above the child in the
+     * DisplayObjectContainer are decreased by 1.
+     *
+     * <p>The garbage collector reallocates unused memory space. When a variable
+     * or object is no longer actively referenced or stored somewhere, the
+     * garbage collector sweeps through and wipes out the memory space it used to
+     * occupy if no other references to it exist.</p>
+     *
+     * @param child The DisplayObject instance to remove.
+     * @return The DisplayObject instance that you pass in the <code>child</code>
+     *         parameter.
+     * @throws ArgumentError Throws if the child parameter is not a child of this
+     *                       object.
+     */
+    DisplayObjectContainer.prototype.removeChild = function (child) {
+        if (child == null)
+            throw new ArgumentError("Parameter child cannot be null");
+        this.removeChildAt(this.getChildIndex(child));
+        return child;
+    };
+    DisplayObjectContainer.prototype.removeChildAtDepth = function (depth /*int*/) {
+        return this.removeChildAt(this.getDepthIndexInternal(depth));
+    };
+    /**
+     * Removes a child DisplayObject from the specified <code>index</code>
+     * position in the child list of the DisplayObjectContainer. The
+     * <code>parent</code> property of the removed child is set to
+     * <code>null</code>, and the object is garbage collected if no other
+     * references to the child exist. The index positions of any display objects
+     * above the child in the DisplayObjectContainer are decreased by 1.
+     *
+     * <p>The garbage collector reallocates unused memory space. When a variable
+     * or object is no longer actively referenced or stored somewhere, the
+     * garbage collector sweeps through and wipes out the memory space it used to
+     * occupy if no other references to it exist.</p>
+     *
+     * @param index The child index of the DisplayObject to remove.
+     * @return The DisplayObject instance that was removed.
+     * @throws RangeError    Throws if the index does not exist in the child
+     *                       list.
+     * @throws SecurityError This child display object belongs to a sandbox to
+     *                       which the calling object does not have access. You
+     *                       can avoid this situation by having the child movie
+     *                       call the <code>Security.allowDomain()</code> method.
+     */
+    DisplayObjectContainer.prototype.removeChildAt = function (index /*int*/) {
+        var child = this.removeChildAtInternal(index);
+        child.iSetParent(null);
+        this._pInvalidateBounds();
+        return child;
+    };
+    /**
+     * Removes all <code>child</code> DisplayObject instances from the child list
+     * of the DisplayObjectContainer instance. The <code>parent</code> property
+     * of the removed children is set to <code>null</code>, and the objects are
+     * garbage collected if no other references to the children exist.
+     *
+     * The garbage collector reallocates unused memory space. When a variable or
+     * object is no longer actively referenced or stored somewhere, the garbage
+     * collector sweeps through and wipes out the memory space it used to occupy
+     * if no other references to it exist.
+     *
+     * @param beginIndex The beginning position. A value smaller than 0 throws a RangeError.
+     * @param endIndex The ending position. A value smaller than 0 throws a RangeError.
+     * @throws RangeError    Throws if the beginIndex or endIndex positions do
+     *                       not exist in the child list.
+     */
+    DisplayObjectContainer.prototype.removeChildren = function (beginIndex, endIndex) {
+        if (beginIndex === void 0) { beginIndex = 0; }
+        if (endIndex === void 0) { endIndex = 2147483647; }
+        if (beginIndex < 0)
+            throw new RangeError("beginIndex is out of range of the child list");
+        if (endIndex > this._children.length)
+            throw new RangeError("endIndex is out of range of the child list");
+        for (var i = beginIndex; i < endIndex; i++)
+            this.removeChild(this._children[i]);
+    };
+    /**
+     * Changes the position of an existing child in the display object container.
+     * This affects the layering of child objects. For example, the following
+     * example shows three display objects, labeled a, b, and c, at index
+     * positions 0, 1, and 2, respectively:
+     *
+     * <p>When you use the <code>setChildIndex()</code> method and specify an
+     * index position that is already occupied, the only positions that change
+     * are those in between the display object's former and new position. All
+     * others will stay the same. If a child is moved to an index LOWER than its
+     * current index, all children in between will INCREASE by 1 for their index
+     * reference. If a child is moved to an index HIGHER than its current index,
+     * all children in between will DECREASE by 1 for their index reference. For
+     * example, if the display object container in the previous example is named
+     * <code>container</code>, you can swap the position of the display objects
+     * labeled a and b by calling the following code:</p>
+     *
+     * <p>This code results in the following arrangement of objects:</p>
+     *
+     * @param child The child DisplayObject instance for which you want to change
+     *              the index number.
+     * @param index The resulting index number for the <code>child</code> display
+     *              object.
+     * @throws ArgumentError Throws if the child parameter is not a child of this
+     *                       object.
+     * @throws RangeError    Throws if the index does not exist in the child
+     *                       list.
+     */
+    DisplayObjectContainer.prototype.setChildIndex = function (child, index /*int*/) {
+        //TODO
+    };
+    /**
+     * Swaps the z-order (front-to-back order) of the two specified child
+     * objects. All other child objects in the display object container remain in
+     * the same index positions.
+     *
+     * @param child1 The first child object.
+     * @param child2 The second child object.
+     * @throws ArgumentError Throws if either child parameter is not a child of
+     *                       this object.
+     */
+    DisplayObjectContainer.prototype.swapChildren = function (child1, child2) {
+        this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2));
+    };
+    /**
+     * Swaps the z-order(front-to-back order) of the child objects at the two
+     * specified index positions in the child list. All other child objects in
+     * the display object container remain in the same index positions.
+     *
+     * @param index1 The index position of the first child object.
+     * @param index2 The index position of the second child object.
+     * @throws RangeError If either index does not exist in the child list.
+     */
+    DisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
+        var depth = this._children[index2]._depthID;
+        var child = this._children[index1];
+        this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
+        this.addChildAtDepth(child, depth);
+    };
+    /**
+     * //TODO
+     *
+     * @protected
+     */
+    DisplayObjectContainer.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        var box;
+        var numChildren = this._children.length;
+        if (numChildren > 0) {
+            var min;
+            var max;
+            var minX, minY, minZ;
+            var maxX, maxY, maxZ;
+            for (var i = 0; i < numChildren; ++i) {
+                box = this._children[i].getBox(this);
+                if (i == 0) {
+                    maxX = box.width + (minX = box.x);
+                    maxY = box.height + (minY = box.y);
+                    maxZ = box.depth + (minZ = box.z);
+                }
+                else {
+                    max = box.width + (min = box.x);
+                    if (min < minX)
+                        minX = min;
+                    if (max > maxX)
+                        maxX = max;
+                    max = box.height + (min = box.y);
+                    if (min < minY)
+                        minY = min;
+                    if (max > maxY)
+                        maxY = max;
+                    max = box.depth + (min = box.z);
+                    if (min < minZ)
+                        minZ = min;
+                    if (max > maxZ)
+                        maxZ = max;
+                }
+            }
+            this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
+            this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
+            this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
+        }
+        else {
+            this._pBoxBounds.setEmpty();
+        }
+    };
+    /**
+     * @protected
+     */
+    DisplayObjectContainer.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
+        if (_super.prototype.pInvalidateHierarchicalProperties.call(this, bitFlag))
+            return true;
+        var len = this._children.length;
+        for (var i = 0; i < len; ++i)
+            this._children[i].pInvalidateHierarchicalProperties(bitFlag);
+        return false;
+    };
+    /**
+     * @internal
+     */
+    DisplayObjectContainer.prototype._iSetScene = function (value, partition) {
+        _super.prototype._iSetScene.call(this, value, partition);
+        var len = this._children.length;
+        for (var i = 0; i < len; ++i)
+            this._children[i]._iSetScene(value, partition);
+    };
+    /**
+     * @private
+     *
+     * @param child
+     */
+    DisplayObjectContainer.prototype.removeChildAtInternal = function (index) {
+        var child = this._children.splice(index, 1)[0];
+        //update next highest depth
+        if (this._nextHighestDepth == child._depthID + 1)
+            this._nextHighestDepthDirty = true;
+        delete this._depth_childs[child._depthID];
+        child._depthID = -16384;
+        return child;
+    };
+    DisplayObjectContainer.prototype.getDepthIndexInternal = function (depth /*int*/) {
+        if (!this._depth_childs[depth])
+            return -1;
+        return this._children.indexOf(this._depth_childs[depth]);
+    };
+    DisplayObjectContainer.prototype._updateNextHighestDepth = function () {
+        this._nextHighestDepthDirty = false;
+        this._nextHighestDepth = 0;
+        var len = this._children.length;
+        for (var i = 0; i < len; i++)
+            if (this._nextHighestDepth < this._children[i]._depthID)
+                this._nextHighestDepth = this._children[i]._depthID;
+        this._nextHighestDepth += 1;
+    };
+    /**
+     * Evaluates the display object to see if it overlaps or intersects with the
+     * point specified by the <code>x</code> and <code>y</code> parameters. The
+     * <code>x</code> and <code>y</code> parameters specify a point in the
+     * coordinate space of the Scene, not the display object container that
+     * contains the display object(unless that display object container is the
+     * Scene).
+     *
+     * @param x         The <i>x</i> coordinate to test against this object.
+     * @param y         The <i>y</i> coordinate to test against this object.
+     * @param shapeFlag Whether to check against the actual pixels of the object
+     *                 (<code>true</code>) or the bounding box
+     *                 (<code>false</code>).
+     * @return <code>true</code> if the display object overlaps or intersects
+     *         with the specified point; <code>false</code> otherwise.
+     */
+    DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
+        if (shapeFlag === void 0) { shapeFlag = false; }
+        if (masksFlag === void 0) { masksFlag = false; }
+        if (!this._pImplicitVisibility)
+            return;
+        if (this._pImplicitMaskId != -1 && !masksFlag)
+            return;
+        if (this._explicitMasks) {
+            var numMasks = this._explicitMasks.length;
+            var maskHit = false;
+            for (var i = 0; i < numMasks; i++) {
+                if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
+                    maskHit = true;
+                    break;
+                }
+            }
+            if (!maskHit)
+                return false;
+        }
+        return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
+    };
+    DisplayObjectContainer.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
+        var numChildren = this._children.length;
+        for (var i = 0; i < numChildren; i++)
+            if (this._children[i].hitTestPoint(x, y, shapeFlag, masksFlag))
+                return true;
+        return false;
+    };
+    DisplayObjectContainer.prototype._updateMaskMode = function () {
+        if (this.maskMode)
+            this.mouseChildren = false;
+        _super.prototype._updateMaskMode.call(this);
+    };
+    DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
+    return DisplayObjectContainer;
+})(DisplayObject);
+module.exports = DisplayObjectContainer;
+
+},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject"}],"awayjs-display/lib/display/DisplayObject":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2001,52 +5913,9 @@ var DisplayObject = (function (_super) {
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/base/HierarchicalProperties":[function(require,module,exports){
-/**
- *
- */
-var HierarchicalProperties = (function () {
-    function HierarchicalProperties() {
-    }
-    /**
-     *
-     */
-    HierarchicalProperties.MOUSE_ENABLED = 1;
-    /**
-     *
-     */
-    HierarchicalProperties.VISIBLE = 2;
-    /**
-     *
-     */
-    HierarchicalProperties.MASK_ID = 4;
-    /**
-     *
-     */
-    HierarchicalProperties.MASKS = 8;
-    /**
-     *
-     */
-    HierarchicalProperties.COLOR_TRANSFORM = 16;
-    /**
-     *
-     */
-    HierarchicalProperties.SCENE_TRANSFORM = 32;
-    /**
-     *
-     */
-    HierarchicalProperties.ALL = 63;
-    return HierarchicalProperties;
-})();
-module.exports = HierarchicalProperties;
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/display/IEntity":[function(require,module,exports){
 
-},{}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/base/IRenderOwner":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/base/IRenderableOwner":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/base/LightBase":[function(require,module,exports){
+},{}],"awayjs-display/lib/display/LightBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2054,7 +5923,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
 var LightEvent = require("awayjs-display/lib/events/LightEvent");
 var LightBase = (function (_super) {
     __extends(LightBase, _super);
@@ -2206,1964 +6075,248 @@ var LightBase = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = LightBase;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/LightEvent":"awayjs-display/lib/events/LightEvent"}],"awayjs-display/lib/base/OrientationMode":[function(require,module,exports){
-var OrientationMode = (function () {
-    function OrientationMode() {
-    }
-    /**
-     *
-     */
-    OrientationMode.DEFAULT = "default";
-    /**
-     *
-     */
-    OrientationMode.CAMERA_PLANE = "cameraPlane";
-    /**
-     *
-     */
-    OrientationMode.CAMERA_POSITION = "cameraPosition";
-    return OrientationMode;
-})();
-module.exports = OrientationMode;
-
-},{}],"awayjs-display/lib/base/Style":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/events/LightEvent":"awayjs-display/lib/events/LightEvent"}],"awayjs-display/lib/display/LightProbe":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+var SamplerCube = require("awayjs-core/lib/image/SamplerCube");
+var ErrorBase = require("awayjs-core/lib/errors/ErrorBase");
+var LightBase = require("awayjs-display/lib/display/LightBase");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var LightProbe = (function (_super) {
+    __extends(LightProbe, _super);
+    function LightProbe(diffuseMap, specularMap) {
+        if (specularMap === void 0) { specularMap = null; }
+        _super.call(this);
+        this.diffuseSampler = new SamplerCube();
+        this.specularSampler = new SamplerCube();
+        this._pIsEntity = true;
+        this.diffuseMap = diffuseMap;
+        this.specularMap = specularMap;
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
+    }
+    Object.defineProperty(LightProbe.prototype, "assetType", {
+        get: function () {
+            return LightProbe.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    //@override
+    LightProbe.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
+        if (target === void 0) { target = null; }
+        throw new ErrorBase("Object projection matrices are not supported for LightProbe objects!");
+    };
+    LightProbe.assetType = "[light LightProbe]";
+    return LightProbe;
+})(LightBase);
+module.exports = LightProbe;
+
+},{"awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/image/SamplerCube":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/LightBase":"awayjs-display/lib/display/LightBase"}],"awayjs-display/lib/display/LineSegment":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var RenderableEvent = require("awayjs-display/lib/events/RenderableEvent");
 var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
- *
+ * A Line Segment primitive.
  */
-var Style = (function (_super) {
-    __extends(Style, _super);
-    function Style() {
+var LineSegment = (function (_super) {
+    __extends(LineSegment, _super);
+    /**
+     * Create a line segment
+     *
+     * @param startPosition Start position of the line segment
+     * @param endPosition Ending position of the line segment
+     * @param thickness Thickness of the line
+     */
+    function LineSegment(material, startPosition, endPosition, thickness) {
+        var _this = this;
+        if (thickness === void 0) { thickness = 1; }
         _super.call(this);
-        this._samplers = new Object();
-        this._images = new Object();
-        this._color = 0xFFFFFF;
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
+        this._pIsEntity = true;
+        this.material = material;
+        this._startPosition = startPosition;
+        this._endPosition = endPosition;
+        this._halfThickness = thickness * 0.5;
+        //default bounds type
+        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
     }
-    Object.defineProperty(Style.prototype, "sampler", {
+    Object.defineProperty(LineSegment.prototype, "animator", {
+        /**
+         * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
+         */
         get: function () {
-            return this._sampler;
+            return this._animator;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LineSegment.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return LineSegment.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LineSegment.prototype, "startPostion", {
+        /**
+         *
+         */
+        get: function () {
+            return this._startPosition;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LineSegment.prototype, "startPosition", {
+        set: function (value) {
+            if (this._startPosition == value)
+                return;
+            this._startPosition = value;
+            this.invalidateGraphics();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LineSegment.prototype, "endPosition", {
+        /**
+         *
+         */
+        get: function () {
+            return this._endPosition;
         },
         set: function (value) {
-            if (this._sampler == value)
+            if (this._endPosition == value)
                 return;
-            this._sampler = value;
-            this._invalidateProperties();
+            this._endPosition = value;
+            this.invalidateGraphics();
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Style.prototype, "image", {
+    Object.defineProperty(LineSegment.prototype, "material", {
+        /**
+         *
+         */
         get: function () {
-            return this._image;
+            return this._material;
         },
         set: function (value) {
-            if (this._image == value)
-                return;
-            this._image = value;
-            this._invalidateProperties();
+            if (this.material)
+                this.material.iRemoveOwner(this);
+            this._material = value;
+            if (this.material)
+                this.material.iAddOwner(this);
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Style.prototype, "color", {
+    Object.defineProperty(LineSegment.prototype, "thickness", {
         /**
-         * The diffuse reflectivity color of the surface.
+         *
          */
         get: function () {
-            return this._color;
+            return this._halfThickness * 2;
         },
         set: function (value) {
-            if (this._color == value)
+            if (this._halfThickness == value)
                 return;
-            this._color = value;
-            this._invalidateProperties();
+            this._halfThickness = value * 0.5;
+            this.invalidateGraphics();
         },
         enumerable: true,
         configurable: true
     });
-    Style.prototype.getImageAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        return (this._images[texture.id] ? this._images[texture.id][index] : null) || this._image;
-    };
-    Style.prototype.getSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        return (this._samplers[texture.id] ? this._samplers[texture.id][index] : null) || this._sampler;
-    };
-    Style.prototype.addImageAt = function (image, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._images[texture.id])
-            this._images[texture.id] = new Array();
-        this._images[texture.id][index] = image;
-    };
-    Style.prototype.addSamplerAt = function (sampler, texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            this._samplers[texture.id] = new Array();
-        this._samplers[texture.id][index] = sampler;
-        this._invalidateProperties();
-    };
-    Style.prototype.removeImageAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._images[texture.id])
-            return;
-        this._images[texture.id][index] = null;
-        this._invalidateProperties();
-    };
-    Style.prototype.removeSamplerAt = function (texture, index) {
-        if (index === void 0) { index = 0; }
-        if (!this._samplers[texture.id])
-            return;
-        this._samplers[texture.id][index] = null;
-        this._invalidateProperties();
-    };
-    Style.prototype._invalidateProperties = function () {
-        this.dispatchEvent(new StyleEvent(StyleEvent.INVALIDATE_PROPERTIES, this));
-    };
-    return Style;
-})(EventDispatcher);
-module.exports = Style;
-
-},{"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
-var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
-var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
-var Timeline = (function () {
-    function Timeline() {
-        this._functions = [];
-        this._update_indices = [];
-        this.numKeyFrames = 0;
-        this.keyframe_indices = [];
-        this._potentialPrototypes = [];
-        this._labels = {};
-        this._framescripts = {};
-        this._framescripts_translated = {};
-        //cache functions
-        this._functions[1] = this.update_mtx_all;
-        this._functions[2] = this.update_colortransform;
-        this._functions[3] = this.update_masks;
-        this._functions[4] = this.update_name;
-        this._functions[5] = this.update_button_name;
-        this._functions[6] = this.update_visibility;
-        this._functions[11] = this.update_mtx_scale_rot;
-        this._functions[12] = this.update_mtx_pos;
-        this._functions[200] = this.enable_maskmode;
-        this._functions[201] = this.remove_masks;
-    }
-    Timeline.prototype.init = function () {
-        if ((this.frame_command_indices == null) || (this.frame_recipe == null) || (this.keyframe_durations == null))
-            return;
-        this.keyframe_firstframes = [];
-        this.keyframe_constructframes = [];
-        var frame_cnt = 0;
-        var ic = 0;
-        var ic2 = 0;
-        var keyframe_cnt = 0;
-        var last_construct_frame = 0;
-        for (ic = 0; ic < this.numKeyFrames; ic++) {
-            var duration = this.keyframe_durations[(ic)];
-            if (this.frame_recipe[ic] & 1)
-                last_construct_frame = keyframe_cnt;
-            this.keyframe_firstframes[keyframe_cnt] = frame_cnt;
-            this.keyframe_constructframes[keyframe_cnt++] = last_construct_frame;
-            for (ic2 = 0; ic2 < duration; ic2++)
-                this.keyframe_indices[frame_cnt++] = ic;
-        }
-    };
-    Timeline.prototype.get_framescript = function (keyframe_index) {
-        if (this._framescripts[keyframe_index] == null)
-            return "";
-        if (typeof this._framescripts[keyframe_index] == "string")
-            return this._framescripts[keyframe_index];
-        else {
-            throw new Error("Framescript is already translated to Function!!!");
-        }
-        return "";
-    };
-    Timeline.prototype.add_framescript = function (value, keyframe_index) {
-        if (FrameScriptManager.frameScriptDebug) {
-            // if we are in debug mode, we try to extract the function name from the first line of framescript code,
-            // and check if this function is available on the object that is set as frameScriptDebug
-            // try to get the functions name (it should be the first line as comment)
-            var functionname = value.split(/[\r\n]+/g)[0].split("//")[1];
-            if (FrameScriptManager.frameScriptDebug[functionname]) {
-                this._framescripts[keyframe_index] = FrameScriptManager.frameScriptDebug[functionname];
-                this._framescripts_translated[keyframe_index] = true;
+    Object.defineProperty(LineSegment.prototype, "style", {
+        /**
+         * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
+         */
+        get: function () {
+            return this._style;
+        },
+        set: function (value) {
+            if (this._style == value)
                 return;
-            }
-            else {
-                throw new Error("Framescript could not be found on FrameScriptManager.frameScriptDebug.\n the Object set as FrameScriptmanager.frameScriptDebug should contain a function with the name '" + functionname + "' !!!");
-            }
-        }
-        this._framescripts[keyframe_index] = value;
-    };
-    Timeline.prototype.regexIndexOf = function (str, regex, startpos) {
-        var indexOf = str.substring(startpos || 0).search(regex);
-        return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
-    };
-    Timeline.prototype.add_script_for_postcontruct = function (target_mc, keyframe_idx, scriptPass1) {
-        if (scriptPass1 === void 0) { scriptPass1 = false; }
-        if (this._framescripts[keyframe_idx] != null) {
-            if (this._framescripts_translated[keyframe_idx] == null) {
-                this._framescripts[keyframe_idx] = target_mc.adapter.evalScript(this._framescripts[keyframe_idx]);
-                this._framescripts_translated[keyframe_idx] = true;
-            }
-            if (scriptPass1)
-                FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[keyframe_idx]);
-            else
-                FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
-        }
-    };
-    Object.defineProperty(Timeline.prototype, "numFrames", {
-        get: function () {
-            return this.keyframe_indices.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Timeline.prototype.getPotentialChildPrototype = function (id) {
-        return this._potentialPrototypes[id];
-    };
-    Timeline.prototype.getKeyframeIndexForFrameIndex = function (frame_index) {
-        return this.keyframe_indices[frame_index];
-    };
-    Timeline.prototype.getPotentialChildInstance = function (id) {
-        var this_clone = this._potentialPrototypes[id].clone();
-        this_clone.name = "";
-        return this_clone;
-    };
-    Timeline.prototype.registerPotentialChild = function (prototype) {
-        var id = this._potentialPrototypes.length;
-        this._potentialPrototypes[id] = prototype;
-    };
-    Timeline.prototype.jumpToLabel = function (target_mc, label) {
-        var key_frame_index = this._labels[label];
-        if (key_frame_index >= 0)
-            target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
-    };
-    Timeline.prototype.gotoFrame = function (target_mc, value, skip_script) {
-        if (skip_script === void 0) { skip_script = false; }
-        var current_keyframe_idx = target_mc.constructedKeyFrameIndex;
-        var target_keyframe_idx = this.keyframe_indices[value];
-        if (current_keyframe_idx == target_keyframe_idx)
-            return;
-        if (current_keyframe_idx + 1 == target_keyframe_idx) {
-            this.constructNextFrame(target_mc, !skip_script, true);
-            return;
-        }
-        var break_frame_idx = this.keyframe_constructframes[target_keyframe_idx];
-        //we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
-        var jump_forward = (target_keyframe_idx > current_keyframe_idx);
-        var jump_gap = (break_frame_idx > current_keyframe_idx);
-        // in case we jump forward, but not jump a gap, we start at current_keyframe_idx + 1
-        // in case we jump back or we jump a gap, we want to start constructing at BreakFrame
-        var start_construct_idx = (jump_forward && !jump_gap) ? current_keyframe_idx + 1 : break_frame_idx;
-        var i;
-        var k;
-        if (jump_gap)
-            for (i = target_mc.numChildren - 1; i >= 0; i--)
-                if (target_mc._children[i]._depthID < 0)
-                    target_mc.removeChildAt(i);
-        //if we jump back, we want to reset all objects (but not the timelines of the mcs)
-        if (!jump_forward)
-            target_mc.resetSessionIDs();
-        // in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-        var depth_sessionIDs = target_mc.getSessionIDDepths();
-        //pass1: only apply add/remove commands into depth_sessionIDs.
-        this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs);
-        // check what childs are alive on both frames.
-        // childs that are not alive anymore get removed and unregistered
-        // childs that are alive on both frames have their properties reset if we are jumping back
-        var child;
-        for (i = target_mc.numChildren - 1; i >= 0; i--) {
-            child = target_mc._children[i];
-            if (child._depthID < 0) {
-                if (depth_sessionIDs[child._depthID] != child._sessionID) {
-                    target_mc.removeChildAt(i);
-                }
-                else if (!jump_forward) {
-                    if (child.adapter) {
-                        if (!child.adapter.isBlockedByScript()) {
-                            child.transform.clearMatrix3D();
-                            child.transform.clearColorTransform();
-                            //this.name="";
-                            child.masks = null;
-                            child.maskMode = false;
-                        }
-                        if (!child.adapter.isVisibilityByScript()) {
-                            child.visible = true;
-                        }
-                    }
-                }
-            }
-        }
-        for (var key in depth_sessionIDs) {
-            child = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key] * 2]);
-            if (child._sessionID == -1)
-                target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
-        }
-        if (!skip_script && this.keyframe_firstframes[target_keyframe_idx] == value)
-            this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
-        //pass2: apply update commands for objects on stage (only if they are not blocked by script)
-        this.pass2(target_mc);
-        target_mc.constructedKeyFrameIndex = target_keyframe_idx;
-    };
-    Timeline.prototype.pass1 = function (start_construct_idx, target_keyframe_idx, depth_sessionIDs) {
-        var i;
-        var k;
-        this._update_indices.length = 0; // store a list of updatecommand_indices, so we dont have to read frame_recipe again
-        var update_cnt = 0;
-        var start_index;
-        var end_index;
-        for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
-            var frame_command_idx = this.frame_command_indices[k];
-            var frame_recipe = this.frame_recipe[k];
-            if (frame_recipe & 2) {
-                // remove childs
-                start_index = this.command_index_stream[frame_command_idx];
-                end_index = start_index + this.command_length_stream[frame_command_idx++];
-                for (i = start_index; i < end_index; i++)
-                    delete depth_sessionIDs[this.remove_child_stream[i] - 16383];
-            }
-            if (frame_recipe & 4) {
-                start_index = this.command_index_stream[frame_command_idx];
-                end_index = start_index + this.command_length_stream[frame_command_idx++];
-                for (i = end_index - 1; i >= start_index; i--)
-                    depth_sessionIDs[this.add_child_stream[i * 2 + 1] - 16383] = i;
-            }
-            if (frame_recipe & 8)
-                this._update_indices[update_cnt++] = frame_command_idx; // execute update command later
-        }
-    };
-    Timeline.prototype.pass2 = function (target_mc) {
-        var k;
-        var len = this._update_indices.length;
-        for (k = 0; k < len; k++)
-            this.update_childs(target_mc, this._update_indices[k]);
-    };
-    Timeline.prototype.constructNextFrame = function (target_mc, queueScript, scriptPass1) {
-        if (queueScript === void 0) { queueScript = true; }
-        if (scriptPass1 === void 0) { scriptPass1 = false; }
-        var frameIndex = target_mc.currentFrameIndex;
-        var new_keyFrameIndex = this.keyframe_indices[frameIndex];
-        if (queueScript && this.keyframe_firstframes[new_keyFrameIndex] == frameIndex)
-            this.add_script_for_postcontruct(target_mc, new_keyFrameIndex, scriptPass1);
-        if (target_mc.constructedKeyFrameIndex != new_keyFrameIndex) {
-            target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
-            var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
-            var frame_recipe = this.frame_recipe[new_keyFrameIndex];
-            if (frame_recipe & 1) {
-                for (var i = target_mc.numChildren - 1; i >= 0; i--)
-                    if (target_mc._children[i]._depthID < 0)
-                        target_mc.removeChildAt(i);
-            }
-            else if (frame_recipe & 2) {
-                this.remove_childs_continous(target_mc, frame_command_idx++);
-            }
-            if (frame_recipe & 4)
-                this.add_childs_continous(target_mc, frame_command_idx++);
-            if (frame_recipe & 8)
-                this.update_childs(target_mc, frame_command_idx++);
-        }
-    };
-    Timeline.prototype.remove_childs_continous = function (sourceMovieClip, frame_command_idx) {
-        var start_index = this.command_index_stream[frame_command_idx];
-        var end_index = start_index + this.command_length_stream[frame_command_idx];
-        for (var i = start_index; i < end_index; i++)
-            sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[i] - 16383));
-    };
-    // used to add childs when jumping between frames
-    Timeline.prototype.add_childs_continous = function (sourceMovieClip, frame_command_idx) {
-        // apply add commands in reversed order to have script exeucted in correct order.
-        // this could be changed in exporter
-        var idx;
-        var start_index = this.command_index_stream[frame_command_idx];
-        var end_index = start_index + this.command_length_stream[frame_command_idx];
-        for (var i = end_index - 1; i >= start_index; i--) {
-            idx = i * 2;
-            sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
-        }
-    };
-    Timeline.prototype.update_childs = function (target_mc, frame_command_idx) {
-        var p;
-        var props_start_idx;
-        var props_end_index;
-        var start_index = this.command_index_stream[frame_command_idx];
-        var end_index = start_index + this.command_length_stream[frame_command_idx];
-        var child;
-        for (var i = start_index; i < end_index; i++) {
-            child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
-            if (child) {
-                // check if the child is active + not blocked by script
-                this._blocked = Boolean(child.adapter && child.adapter.isBlockedByScript());
-                props_start_idx = this.update_child_props_indices_stream[i];
-                props_end_index = props_start_idx + this.update_child_props_length_stream[i];
-                for (p = props_start_idx; p < props_end_index; p++)
-                    this._functions[this.property_type_stream[p]].call(this, child, target_mc, this.property_index_stream[p]);
-            }
-        }
-    };
-    Timeline.prototype.update_mtx_all = function (child, target_mc, i) {
-        if (this._blocked)
-            return;
-        i *= 6;
-        var new_matrix = child.transform.matrix3D;
-        new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[i++];
-        new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[i++];
-        new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[i++];
-        new_matrix.rawData[5] = this.properties_stream_f32_mtx_all[i++];
-        new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[i++];
-        new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[i];
-        child.transform.invalidateComponents();
-    };
-    Timeline.prototype.update_colortransform = function (child, target_mc, i) {
-        if (this._blocked)
-            return;
-        i *= 8;
-        var new_ct = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
-        new_ct.redMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.greenMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.blueMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.alphaMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.redOffset = this.properties_stream_f32_ct[i++];
-        new_ct.greenOffset = this.properties_stream_f32_ct[i++];
-        new_ct.blueOffset = this.properties_stream_f32_ct[i++];
-        new_ct.alphaOffset = this.properties_stream_f32_ct[i];
-        child.transform.invalidateColorTransform();
-    };
-    Timeline.prototype.update_masks = function (child, target_mc, i) {
-        // an object could have multiple groups of masks, in case a graphic clip was merged into the timeline
-        // this is not implmeented in the runtime yet
-        // for now, a second mask-groupd would overwrite the first one
-        var mask;
-        var masks = new Array();
-        var numMasks = this.properties_stream_int[i++];
-        for (var m = 0; m < numMasks; m++)
-            if ((mask = target_mc.getChildAtSessionID(this.properties_stream_int[i++])))
-                masks.push(mask);
-        child.masks = masks;
-    };
-    Timeline.prototype.update_name = function (child, target_mc, i) {
-        child.name = this.properties_stream_strings[i];
-        target_mc.adapter.registerScriptObject(child);
-    };
-    Timeline.prototype.update_button_name = function (target, sourceMovieClip, i) {
-        target.name = this.properties_stream_strings[i];
-        // todo: creating the buttonlistenrs later should also be done, but for icycle i dont think this will cause problems
-        target.addButtonListeners();
-        sourceMovieClip.adapter.registerScriptObject(target);
-    };
-    Timeline.prototype.update_visibility = function (child, target_mc, i) {
-        if (!child.adapter || !child.adapter.isVisibilityByScript())
-            child.visible = Boolean(i);
-    };
-    Timeline.prototype.update_mtx_scale_rot = function (child, target_mc, i) {
-        if (this._blocked)
-            return;
-        i *= 4;
-        var new_matrix = child.transform.matrix3D;
-        new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[i++];
-        new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[i++];
-        new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[i++];
-        new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[i];
-        child.transform.invalidateComponents();
-        child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-    };
-    Timeline.prototype.update_mtx_pos = function (child, target_mc, i) {
-        if (this._blocked)
-            return;
-        i *= 2;
-        var new_matrix = child.transform.matrix3D;
-        new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[i++];
-        new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[i];
-        child.transform.invalidatePosition();
-    };
-    Timeline.prototype.enable_maskmode = function (child, target_mc, i) {
-        child.maskMode = true;
-    };
-    Timeline.prototype.remove_masks = function (child, target_mc, i) {
-        child.masks = null;
-    };
-    return Timeline;
-})();
-module.exports = Timeline;
-
-},{"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
-/**
- *
- */
-var TouchPoint = (function () {
-    function TouchPoint(x, y, id) {
-        this.x = x;
-        this.y = y;
-        this.id = id;
-    }
-    return TouchPoint;
-})();
-module.exports = TouchPoint;
-
-},{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var TransformEvent = require("awayjs-display/lib/events/TransformEvent");
-/**
- * The Transform class provides access to color adjustment properties and two-
- * or three-dimensional transformation objects that can be applied to a
- * display object. During the transformation, the color or the orientation and
- * position of a display object is adjusted(offset) from the current values
- * or coordinates to new values or coordinates. The Transform class also
- * collects data about color and two-dimensional matrix transformations that
- * are applied to a display object and all of its parent objects. You can
- * access these combined transformations through the
- * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
- * properties.
- *
- * <p>To apply color transformations: create a ColorTransform object, set the
- * color adjustments using the object's methods and properties, and then
- * assign the <code>colorTransformation</code> property of the
- * <code>transform</code> property of the display object to the new
- * ColorTransformation object.</p>
- *
- * <p>To apply two-dimensional transformations: create a Matrix object, set
- * the matrix's two-dimensional transformation, and then assign the
- * <code>transform.matrix</code> property of the display object to the new
- * Matrix object.</p>
- *
- * <p>To apply three-dimensional transformations: start with a
- * three-dimensional display object. A three-dimensional display object has a
- * <code>z</code> property value other than zero. You do not need to create
- * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
- * is created automatically when you assign a <code>z</code> value to a
- * display object. You can access the display object's Matrix3D object through
- * the display object's <code>transform</code> property. Using the methods of
- * the Matrix3D class, you can add to or modify the existing transformation
- * settings. Also, you can create a custom Matrix3D object, set the custom
- * Matrix3D object's transformation elements, and then assign the new Matrix3D
- * object to the display object using the <code>transform.matrix</code>
- * property.</p>
- *
- * <p>To modify a perspective projection of the stage or root object: use the
- * <code>transform.matrix</code> property of the root display object to gain
- * access to the PerspectiveProjection object. Or, apply different perspective
- * projection properties to a display object by setting the perspective
- * projection properties of the display object's parent. The child display
- * object inherits the new properties. Specifically, create a
- * PerspectiveProjection object and set its properties, then assign the
- * PerspectiveProjection object to the <code>perspectiveProjection</code>
- * property of the parent display object's <code>transform</code> property.
- * The specified projection transformation then applies to all the display
- * object's three-dimensional children.</p>
- *
- * <p>Since both PerspectiveProjection and Matrix3D objects perform
- * perspective transformations, do not assign both to a display object at the
- * same time. Use the PerspectiveProjection object for focal length and
- * projection center changes. For more control over the perspective
- * transformation, create a perspective projection Matrix3D object.</p>
- */
-var Transform = (function (_super) {
-    __extends(Transform, _super);
-    function Transform() {
-        _super.call(this);
-        this._matrix3D = new Matrix3D();
-        this._rotation = new Vector3D();
-        this._skew = new Vector3D();
-        this._scale = new Vector3D(1, 1, 1);
-        // Cached vector of transformation components used when
-        // recomposing the transform matrix in updateTransform()
-        this._components = new Array(4);
-        this._components[1] = this._rotation;
-        this._components[2] = this._skew;
-        this._components[3] = this._scale;
-    }
-    Object.defineProperty(Transform.prototype, "backVector", {
-        /**
-         *
-         */
-        get: function () {
-            var director = Matrix3DUtils.getForward(this._matrix3D);
-            director.negate();
-            return director;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "colorTransform", {
-        /**
-         * A ColorTransform object containing values that universally adjust the
-         * colors in the display object.
-         *
-         * @throws TypeError The colorTransform is null when being set
-         */
-        get: function () {
-            return this._colorTransform;
-        },
-        set: function (val) {
-            if (this._colorTransform == val)
-                return;
-            this._colorTransform = val;
-            this.invalidateColorTransform();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "concatenatedColorTransform", {
-        /**
-         * A ColorTransform object representing the combined color transformations
-         * applied to the display object and all of its parent objects, back to the
-         * root level. If different color transformations have been applied at
-         * different levels, all of those transformations are concatenated into one
-         * ColorTransform object for this property.
-         */
-        get: function () {
-            return this._concatenatedColorTransform; //TODO
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "concatenatedMatrix", {
-        /**
-         * A Matrix object representing the combined transformation matrixes of the
-         * display object and all of its parent objects, back to the root level. If
-         * different transformation matrixes have been applied at different levels,
-         * all of those matrixes are concatenated into one matrix for this property.
-         * Also, for resizeable SWF content running in the browser, this property
-         * factors in the difference between stage coordinates and window coordinates
-         * due to window resizing. Thus, the property converts local coordinates to
-         * window coordinates, which may not be the same coordinate space as that of
-         * the Scene.
-         */
-        get: function () {
-            return this._concatenatedMatrix; //TODO
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "downVector", {
-        /**
-         *
-         */
-        get: function () {
-            var director = Matrix3DUtils.getUp(this._matrix3D);
-            director.negate();
-            return director;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "forwardVector", {
-        /**
-         *
-         */
-        get: function () {
-            return Matrix3DUtils.getForward(this._matrix3D);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "leftVector", {
-        /**
-         *
-         */
-        get: function () {
-            var director = Matrix3DUtils.getRight(this._matrix3D);
-            director.negate();
-            return director;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "matrix3D", {
-        /**
-         * Provides access to the Matrix3D object of a three-dimensional display
-         * object. The Matrix3D object represents a transformation matrix that
-         * determines the display object's position and orientation. A Matrix3D
-         * object can also perform perspective projection.
-         *
-         * <p>If the <code>matrix</code> property is set to a value(not
-         * <code>null</code>), the <code>matrix3D</code> property is
-         * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-         * value(not <code>null</code>), the <code>matrix</code> property is
-         * <code>null</code>.</p>
-         */
-        get: function () {
-            if (this._matrix3DDirty)
-                this._updateMatrix3D();
-            return this._matrix3D;
-        },
-        set: function (val) {
-            for (var i = 0; i < 15; i++)
-                this._matrix3D.rawData[i] = val.rawData[i];
-            this.invalidateComponents();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "pixelBounds", {
-        /**
-         * A Rectangle object that defines the bounding rectangle of the display
-         * object on the stage.
-         */
-        get: function () {
-            return this._pixelBounds;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "position", {
-        /**
-         * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-         */
-        get: function () {
-            return this._matrix3D.position;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "rightVector", {
-        /**
-         *
-         */
-        get: function () {
-            return Matrix3DUtils.getRight(this.matrix3D);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Transform.prototype, "rotation", {
-        /**
-         * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-         */
-        get: function () {
-            if (this._componentsDirty)
-                this._updateComponents();
-            return this._rotation;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this.invalidateSurface();
         },
         enumerable: true,
         configurable: true
     });
     /**
-     * Rotates the 3d object directly to a euler angle
-     *
-     * @param    ax        The angle in degrees of the rotation around the x axis.
-     * @param    ay        The angle in degrees of the rotation around the y axis.
-     * @param    az        The angle in degrees of the rotation around the z axis.
+     * @protected
      */
-    Transform.prototype.rotateTo = function (ax, ay, az) {
-        if (this._componentsDirty)
-            this._updateComponents();
-        this._rotation.x = ax;
-        this._rotation.y = ay;
-        this._rotation.z = az;
-        this.invalidateMatrix3D();
+    LineSegment.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        this._pBoxBounds.x = Math.min(this._startPosition.x, this._endPosition.x);
+        this._pBoxBounds.y = Math.min(this._startPosition.y, this._endPosition.y);
+        this._pBoxBounds.z = Math.min(this._startPosition.z, this._endPosition.z);
+        this._pBoxBounds.width = Math.abs(this._startPosition.x - this._endPosition.x);
+        this._pBoxBounds.height = Math.abs(this._startPosition.y - this._endPosition.y);
+        this._pBoxBounds.depth = Math.abs(this._startPosition.z - this._endPosition.z);
     };
-    Object.defineProperty(Transform.prototype, "scale", {
-        /**
-         * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-         */
-        get: function () {
-            if (this._componentsDirty)
-                this._updateComponents();
-            return this._scale;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Transform.prototype.scaleTo = function (sx, sy, sz) {
-        if (this._componentsDirty)
-            this._updateComponents();
-        this._scale.x = sx;
-        this._scale.y = sy;
-        this._scale.z = sz;
-        this.invalidateMatrix3D();
-    };
-    Object.defineProperty(Transform.prototype, "skew", {
-        /**
-         * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-         */
-        get: function () {
-            if (this._componentsDirty)
-                this._updateComponents();
-            return this._skew;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Transform.prototype.skewTo = function (sx, sy, sz) {
-        if (this._componentsDirty)
-            this._updateComponents();
-        this._skew.x = sx;
-        this._skew.y = sy;
-        this._skew.z = sz;
-        this.invalidateMatrix3D();
-    };
-    Object.defineProperty(Transform.prototype, "upVector", {
-        /**
-         *
-         */
-        get: function () {
-            return Matrix3DUtils.getUp(this.matrix3D);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Transform.prototype.dispose = function () {
+    LineSegment.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        this._pUpdateBoxBounds();
+        var halfWidth = (this._endPosition.x - this._startPosition.x) / 2;
+        var halfHeight = (this._endPosition.y - this._startPosition.y) / 2;
+        var halfDepth = (this._endPosition.z - this._startPosition.z) / 2;
+        this._pSphereBounds.x = this._startPosition.x + halfWidth;
+        this._pSphereBounds.y = this._startPosition.y + halfHeight;
+        this._pSphereBounds.z = this._startPosition.z + halfDepth;
+        this._pSphereBounds.radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
     };
     /**
-     * Returns a Matrix3D object, which can transform the space of a specified
-     * display object in relation to the current display object's space. You can
-     * use the <code>getRelativeMatrix3D()</code> method to move one
-     * three-dimensional display object relative to another three-dimensional
-     * display object.
-     *
-     * @param relativeTo The display object relative to which the transformation
-     *                   occurs. To get a Matrix3D object relative to the stage,
-     *                   set the parameter to the <code>root</code> or
-     *                   <code>stage</code> object. To get the world-relative
-     *                   matrix of the display object, set the parameter to a
-     *                   display object that has a perspective transformation
-     *                   applied to it.
-     * @return A Matrix3D object that can be used to transform the space from the
-     *         <code>relativeTo</code> display object to the current display
-     *         object space.
-     */
-    Transform.prototype.getRelativeMatrix3D = function (relativeTo) {
-        return new Matrix3D(); //TODO
-    };
-    /**
-     * Moves the 3d object forwards along it's local z axis
-     *
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.moveForward = function (distance) {
-        this.translateLocal(Vector3D.Z_AXIS, distance);
-    };
-    /**
-     * Moves the 3d object backwards along it's local z axis
-     *
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.moveBackward = function (distance) {
-        this.translateLocal(Vector3D.Z_AXIS, -distance);
-    };
-    /**
-     * Moves the 3d object backwards along it's local x axis
-     *
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.moveLeft = function (distance) {
-        this.translateLocal(Vector3D.X_AXIS, -distance);
-    };
-    /**
-     * Moves the 3d object forwards along it's local x axis
-     *
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.moveRight = function (distance) {
-        this.translateLocal(Vector3D.X_AXIS, distance);
-    };
-    /**
-     * Moves the 3d object forwards along it's local y axis
-     *
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.moveUp = function (distance) {
-        this.translateLocal(Vector3D.Y_AXIS, distance);
-    };
-    /**
-     * Moves the 3d object backwards along it's local y axis
-     *
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.moveDown = function (distance) {
-        this.translateLocal(Vector3D.Y_AXIS, -distance);
-    };
-    /**
-     * Moves the 3d object directly to a point in space
-     *
-     * @param    dx        The amount of movement along the local x axis.
-     * @param    dy        The amount of movement along the local y axis.
-     * @param    dz        The amount of movement along the local z axis.
-     */
-    Transform.prototype.moveTo = function (dx, dy, dz) {
-        this._matrix3D.rawData[12] = dx;
-        this._matrix3D.rawData[13] = dy;
-        this._matrix3D.rawData[14] = dz;
-        this.invalidatePosition();
-    };
-    /**
-     * Rotates the 3d object around it's local x-axis
-     *
-     * @param    angle        The amount of rotation in degrees
-     */
-    Transform.prototype.pitch = function (angle) {
-        this.rotate(Vector3D.X_AXIS, angle);
-    };
-    /**
-     * Rotates the 3d object around it's local z-axis
-     *
-     * @param    angle        The amount of rotation in degrees
-     */
-    Transform.prototype.roll = function (angle) {
-        this.rotate(Vector3D.Z_AXIS, angle);
-    };
-    /**
-     * Rotates the 3d object around it's local y-axis
-     *
-     * @param    angle        The amount of rotation in degrees
-     */
-    Transform.prototype.yaw = function (angle) {
-        this.rotate(Vector3D.Y_AXIS, angle);
-    };
-    /**
-     * Rotates the 3d object around an axis by a defined angle
-     *
-     * @param    axis        The vector defining the axis of rotation
-     * @param    angle        The amount of rotation in degrees
-     */
-    Transform.prototype.rotate = function (axis, angle) {
-        this.matrix3D.prependRotation(angle, axis);
-        this.invalidateComponents();
-    };
-    /**
-     * Moves the 3d object along a vector by a defined length
-     *
-     * @param    axis        The vector defining the axis of movement
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.translate = function (axis, distance) {
-        var x = axis.x, y = axis.y, z = axis.z;
-        var len = distance / Math.sqrt(x * x + y * y + z * z);
-        this.matrix3D.appendTranslation(x * len, y * len, z * len);
-        this.invalidatePosition();
-    };
-    /**
-     * Moves the 3d object along a vector by a defined length
-     *
-     * @param    axis        The vector defining the axis of movement
-     * @param    distance    The length of the movement
-     */
-    Transform.prototype.translateLocal = function (axis, distance) {
-        var x = axis.x, y = axis.y, z = axis.z;
-        var len = distance / Math.sqrt(x * x + y * y + z * z);
-        this.matrix3D.prependTranslation(x * len, y * len, z * len);
-        this.invalidatePosition();
-    };
-    Transform.prototype.clearMatrix3D = function () {
-        this._matrix3D.identity();
-        this.invalidateComponents();
-    };
-    Transform.prototype.clearColorTransform = function () {
-        if (!this._colorTransform)
-            return;
-        this._colorTransform.clear();
-        this.invalidateColorTransform();
-    };
-    /**
-     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
-     *
      * @private
      */
-    Transform.prototype.invalidateMatrix3D = function () {
-        this._matrix3DDirty = true;
-        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
+    LineSegment.prototype.invalidateGraphics = function () {
+        this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this)); //TODO improve performance by only using one geometry for all line segments
     };
-    Transform.prototype.invalidateComponents = function () {
-        this.invalidatePosition();
-        this._componentsDirty = true;
+    LineSegment.prototype.invalidateSurface = function () {
+        this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
     };
-    /**
-     *
-     */
-    Transform.prototype.invalidatePosition = function () {
-        this._matrix3D.invalidatePosition();
-        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
-    };
-    Transform.prototype.invalidateColorTransform = function () {
-        this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_COLOR_TRANSFORM, this));
-    };
-    /**
-     *
-     */
-    Transform.prototype._updateMatrix3D = function () {
-        this._matrix3D.recompose(this._components);
-        this._matrix3DDirty = false;
-    };
-    Transform.prototype._updateComponents = function () {
-        var elements = this._matrix3D.decompose();
-        var vec;
-        vec = elements[1];
-        this._rotation.x = vec.x;
-        this._rotation.y = vec.y;
-        this._rotation.z = vec.z;
-        vec = elements[2];
-        this._skew.x = vec.x;
-        this._skew.y = vec.y;
-        this._skew.z = vec.z;
-        vec = elements[3];
-        this._scale.x = vec.x;
-        this._scale.y = vec.y;
-        this._scale.z = vec.z;
-        this._componentsDirty = false;
-    };
-    return Transform;
-})(EventDispatcher);
-module.exports = Transform;
-
-},{"awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
-var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
-var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-var PrimitiveCubePrefab = require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
-/**
- * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
- * This is useful for most meshes.
- */
-var AxisAlignedBoundingBox = (function (_super) {
-    __extends(AxisAlignedBoundingBox, _super);
-    /**
-     * Creates a new <code>AxisAlignedBoundingBox</code> object.
-     */
-    function AxisAlignedBoundingBox(entity) {
-        _super.call(this, entity);
-        this._x = 0;
-        this._y = 0;
-        this._z = 0;
-        this._width = 0;
-        this._height = 0;
-        this._depth = 0;
-        this._centerX = 0;
-        this._centerY = 0;
-        this._centerZ = 0;
-        this._halfExtentsX = 0;
-        this._halfExtentsY = 0;
-        this._halfExtentsZ = 0;
-    }
-    /**
-     * @inheritDoc
-     */
-    AxisAlignedBoundingBox.prototype.nullify = function () {
-        this._x = this._y = this._z = 0;
-        this._width = this._height = this._depth = 0;
-        this._centerX = this._centerY = this._centerZ = 0;
-        this._halfExtentsX = this._halfExtentsY = this._halfExtentsZ = 0;
-    };
-    /**
-     * @inheritDoc
-     */
-    AxisAlignedBoundingBox.prototype.isInFrustum = function (planes, numPlanes) {
-        if (this._pInvalidated)
-            this._pUpdate();
-        for (var i = 0; i < numPlanes; ++i) {
-            var plane = planes[i];
-            var a = plane.a;
-            var b = plane.b;
-            var c = plane.c;
-            var flippedExtentX = a < 0 ? -this._halfExtentsX : this._halfExtentsX;
-            var flippedExtentY = b < 0 ? -this._halfExtentsY : this._halfExtentsY;
-            var flippedExtentZ = c < 0 ? -this._halfExtentsZ : this._halfExtentsZ;
-            var projDist = a * (this._centerX + flippedExtentX) + b * (this._centerY + flippedExtentY) + c * (this._centerZ + flippedExtentZ) - plane.d;
-            if (projDist < 0)
-                return false;
-        }
-        return true;
-    };
-    AxisAlignedBoundingBox.prototype.rayIntersection = function (position, direction, targetNormal) {
-        if (this._pInvalidated)
-            this._pUpdate();
-        return this._box.rayIntersection(position, direction, targetNormal);
-    };
-    AxisAlignedBoundingBox.prototype.classifyToPlane = function (plane) {
-        var a = plane.a;
-        var b = plane.b;
-        var c = plane.c;
-        var centerDistance = a * this._centerX + b * this._centerY + c * this._centerZ - plane.d;
-        if (a < 0)
-            a = -a;
-        if (b < 0)
-            b = -b;
-        if (c < 0)
-            c = -c;
-        var boundOffset = a * this._halfExtentsX + b * this._halfExtentsY + c * this._halfExtentsZ;
-        return centerDistance > boundOffset ? PlaneClassification.FRONT : centerDistance < -boundOffset ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
-    };
-    AxisAlignedBoundingBox.prototype._pUpdate = function () {
-        _super.prototype._pUpdate.call(this);
-        this._box = this._pEntity.getBox();
-        var matrix = this._pEntity.sceneTransform;
-        var hx = this._box.width / 2;
-        var hy = this._box.height / 2;
-        var hz = this._box.depth / 2;
-        var cx = this._box.x + hx;
-        var cy = this._box.y + hy;
-        var cz = this._box.z + hz;
-        var raw = matrix.rawData;
-        var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
-        var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
-        var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
-        this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
-        this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
-        this._centerZ = cx * m31 + cy * m32 + cz * m33 + m34;
-        this._halfExtentsX = Math.abs(hx * m11 + hy * m12 + hz * m13);
-        this._halfExtentsY = Math.abs(hx * m21 + hy * m22 + hz * m23);
-        this._halfExtentsZ = Math.abs(hx * m31 + hy * m32 + hz * m33);
-        if (this._prefab) {
-            this._prefab.width = this._box.width;
-            this._prefab.height = this._box.height;
-            this._prefab.depth = this._box.depth;
-            this._pBoundsPrimitive.transform.matrix3D = matrix;
-        }
-        this._width = this._halfExtentsX * 2;
-        this._height = this._halfExtentsY * 2;
-        this._depth = this._halfExtentsZ * 2;
-        this._x = this._centerX - this._halfExtentsX;
-        this._y = this._centerY - this._halfExtentsY;
-        this._z = this._centerZ - this._halfExtentsZ;
-    };
-    AxisAlignedBoundingBox.prototype._pCreateBoundsPrimitive = function () {
-        this._prefab = new PrimitiveCubePrefab(null, ElementsType.LINE);
-        return this._prefab.getNewObject();
-    };
-    return AxisAlignedBoundingBox;
-})(BoundingVolumeBase);
-module.exports = AxisAlignedBoundingBox;
-
-},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab"}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
-var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
-var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-var PrimitiveSpherePrefab = require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
-var BoundingSphere = (function (_super) {
-    __extends(BoundingSphere, _super);
-    function BoundingSphere(entity) {
-        _super.call(this, entity);
-        this._radius = 0;
-        this._centerX = 0;
-        this._centerY = 0;
-        this._centerZ = 0;
-    }
-    BoundingSphere.prototype.nullify = function () {
-        this._centerX = this._centerY = this._centerZ = 0;
-        this._radius = 0;
-    };
-    BoundingSphere.prototype.isInFrustum = function (planes, numPlanes) {
-        if (this._pInvalidated)
-            this._pUpdate();
-        for (var i = 0; i < numPlanes; ++i) {
-            var plane = planes[i];
-            var flippedExtentX = plane.a < 0 ? -this._radius : this._radius;
-            var flippedExtentY = plane.b < 0 ? -this._radius : this._radius;
-            var flippedExtentZ = plane.c < 0 ? -this._radius : this._radius;
-            var projDist = plane.a * (this._centerX + flippedExtentX) + plane.b * (this._centerY + flippedExtentY) + plane.c * (this._centerZ + flippedExtentZ) - plane.d;
-            if (projDist < 0) {
-                return false;
-            }
-        }
-        return true;
-    };
-    BoundingSphere.prototype.rayIntersection = function (position, direction, targetNormal) {
-        if (this._pInvalidated)
-            this._pUpdate();
-        return this._sphere.rayIntersection(position, direction, targetNormal);
-    };
-    //@override
-    BoundingSphere.prototype.classifyToPlane = function (plane) {
-        var a = plane.a;
-        var b = plane.b;
-        var c = plane.c;
-        var dd = a * this._centerX + b * this._centerY + c * this._centerZ - plane.d;
-        if (a < 0)
-            a = -a;
-        if (b < 0)
-            b = -b;
-        if (c < 0)
-            c = -c;
-        var rr = (a + b + c) * this._radius;
-        return dd > rr ? PlaneClassification.FRONT : dd < -rr ? PlaneClassification.BACK : PlaneClassification.INTERSECT;
-    };
-    BoundingSphere.prototype._pUpdate = function () {
-        _super.prototype._pUpdate.call(this);
-        this._sphere = this._pEntity.getSphere();
-        var matrix = this._pEntity.sceneTransform;
-        var cx = this._sphere.x;
-        var cy = this._sphere.y;
-        var cz = this._sphere.z;
-        var r = this._sphere.radius;
-        var raw = matrix.rawData;
-        var m11 = raw[0], m12 = raw[4], m13 = raw[8], m14 = raw[12];
-        var m21 = raw[1], m22 = raw[5], m23 = raw[9], m24 = raw[13];
-        var m31 = raw[2], m32 = raw[6], m33 = raw[10], m34 = raw[14];
-        this._centerX = cx * m11 + cy * m12 + cz * m13 + m14;
-        this._centerY = cx * m21 + cy * m22 + cz * m23 + m24;
-        this._centerZ = cx * m31 + cy * m32 + cz * m33 + m34;
-        var rx = m11 + m12 + m13;
-        var ry = m21 + m22 + m23;
-        var rz = m31 + m32 + m33;
-        this._radius = r * Math.sqrt((rx * rx + ry * ry + rz * rz) / 3);
-        if (this._prefab) {
-            this._prefab.radius = r;
-            this._pBoundsPrimitive.x = cx;
-            this._pBoundsPrimitive.y = cy;
-            this._pBoundsPrimitive.z = cz;
-            this._pBoundsPrimitive.transform.matrix3D = matrix;
-        }
-    };
-    BoundingSphere.prototype._pCreateBoundsPrimitive = function () {
-        this._prefab = new PrimitiveSpherePrefab(null, ElementsType.LINE);
-        return this._prefab.getNewObject();
-    };
-    return BoundingSphere;
-})(BoundingVolumeBase);
-module.exports = BoundingSphere;
-
-},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab"}],"awayjs-display/lib/bounds/BoundingVolumeBase":[function(require,module,exports){
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
-var BoundingVolumeBase = (function () {
-    function BoundingVolumeBase(entity) {
-        this._pInvalidated = true;
-        this._pEntity = entity;
-    }
-    BoundingVolumeBase.prototype.dispose = function () {
-        this._pEntity = null;
-        this._pBoundsPrimitive = null;
-    };
-    Object.defineProperty(BoundingVolumeBase.prototype, "boundsPrimitive", {
-        get: function () {
-            if (this._pBoundsPrimitive == null) {
-                this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
-                this._pInvalidated = true;
-            }
-            if (this._pInvalidated)
-                this._pUpdate();
-            return this._pBoundsPrimitive;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    BoundingVolumeBase.prototype.nullify = function () {
-        throw new AbstractMethodError();
-    };
-    BoundingVolumeBase.prototype.isInFrustum = function (planes, numPlanes) {
-        throw new AbstractMethodError();
-    };
-    BoundingVolumeBase.prototype.clone = function () {
-        throw new AbstractMethodError();
-    };
-    BoundingVolumeBase.prototype.rayIntersection = function (position, direction, targetNormal) {
-        return -1;
-    };
-    BoundingVolumeBase.prototype.classifyToPlane = function (plane) {
-        throw new AbstractMethodError();
-    };
-    BoundingVolumeBase.prototype._pUpdate = function () {
-        this._pInvalidated = false;
-    };
-    BoundingVolumeBase.prototype.invalidate = function () {
-        this._pInvalidated = true;
-    };
-    BoundingVolumeBase.prototype._pCreateBoundsPrimitive = function () {
-        throw new AbstractMethodError();
-    };
-    return BoundingVolumeBase;
-})();
-module.exports = BoundingVolumeBase;
-
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/bounds/BoundsType":[function(require,module,exports){
-/**
- *
- */
-var BoundsType = (function () {
-    function BoundsType() {
-    }
-    /**
-     *
-     */
-    BoundsType.SPHERE = "sphere";
-    /**
-     *
-     */
-    BoundsType.AXIS_ALIGNED_BOX = "axisAlignedBox";
-    /**
-     *
-     */
-    BoundsType.NULL = "null";
-    return BoundsType;
-})();
-module.exports = BoundsType;
-
-},{}],"awayjs-display/lib/bounds/NullBounds":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var PlaneClassification = require("awayjs-core/lib/geom/PlaneClassification");
-var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-var NullBounds = (function (_super) {
-    __extends(NullBounds, _super);
-    function NullBounds(alwaysIn) {
-        if (alwaysIn === void 0) { alwaysIn = true; }
-        _super.call(this, null);
-        this._alwaysIn = alwaysIn;
-    }
-    //@override
-    NullBounds.prototype.clone = function () {
-        return new NullBounds(this._alwaysIn);
-    };
-    //@override
-    NullBounds.prototype.isInFrustum = function (planes, numPlanes) {
-        return this._alwaysIn;
-    };
-    NullBounds.prototype.classifyToPlane = function (plane) {
-        return PlaneClassification.INTERSECT;
-    };
-    return NullBounds;
-})(BoundingVolumeBase);
-module.exports = NullBounds;
-
-},{"awayjs-core/lib/geom/PlaneClassification":undefined,"awayjs-display/lib/bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase"}],"awayjs-display/lib/containers/DisplayObjectContainer":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var ArgumentError = require("awayjs-core/lib/errors/ArgumentError");
-var RangeError = require("awayjs-core/lib/errors/RangeError");
-var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
-/**
- * The DisplayObjectContainer class is the base class for all objects that can
- * serve as display object containers on the display list. The display list
- * manages all objects displayed in the Flash runtimes. Use the
- * DisplayObjectContainer class to arrange the display objects in the display
- * list. Each DisplayObjectContainer object has its own child list for
- * organizing the z-order of the objects. The z-order is the front-to-back
- * order that determines which object is drawn in front, which is behind, and
- * so on.
- *
- * <p>DisplayObject is an abstract base class; therefore, you cannot call
- * DisplayObject directly. Invoking <code>new DisplayObject()</code> throws an
- * <code>ArgumentError</code> exception.</p>
- * The DisplayObjectContainer class is an abstract base class for all objects
- * that can contain child objects. It cannot be instantiated directly; calling
- * the <code>new DisplayObjectContainer()</code> constructor throws an
- * <code>ArgumentError</code> exception.
- *
- * <p>For more information, see the "Display Programming" chapter of the
- * <i>ActionScript 3.0 Developer's Guide</i>.</p>
- */
-var DisplayObjectContainer = (function (_super) {
-    __extends(DisplayObjectContainer, _super);
-    /**
-     * Calling the <code>new DisplayObjectContainer()</code> constructor throws
-     * an <code>ArgumentError</code> exception. You <i>can</i>, however, call
-     * constructors for the following subclasses of DisplayObjectContainer:
-     * <ul>
-     *   <li><code>new Loader()</code></li>
-     *   <li><code>new Sprite()</code></li>
-     *   <li><code>new MovieClip()</code></li>
-     * </ul>
-     */
-    function DisplayObjectContainer() {
-        _super.call(this);
-        this._mouseChildren = true;
-        this._depth_childs = {};
-        this._nextHighestDepth = 0;
-        this._children = new Array();
-        this._pIsContainer = true;
-    }
-    Object.defineProperty(DisplayObjectContainer.prototype, "assetType", {
-        /**
-         *
-         */
-        get: function () {
-            return DisplayObjectContainer.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObjectContainer.prototype, "mouseChildren", {
-        /**
-         * Determines whether or not the children of the object are mouse, or user
-         * input device, enabled. If an object is enabled, a user can interact with
-         * it by using a mouse or user input device. The default is
-         * <code>true</code>.
-         *
-         * <p>This property is useful when you create a button with an instance of
-         * the Sprite class(instead of using the SimpleButton class). When you use a
-         * Sprite instance to create a button, you can choose to decorate the button
-         * by using the <code>addChild()</code> method to add additional Sprite
-         * instances. This process can cause unexpected behavior with mouse events
-         * because the Sprite instances you add as children can become the target
-         * object of a mouse event when you expect the parent instance to be the
-         * target object. To ensure that the parent instance serves as the target
-         * objects for mouse events, you can set the <code>mouseChildren</code>
-         * property of the parent instance to <code>false</code>.</p>
-         *
-         * <p> No event is dispatched by setting this property. You must use the
-         * <code>addEventListener()</code> method to create interactive
-         * functionality.</p>
-         */
-        get: function () {
-            if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
-                this._updateMouseEnabled();
-            return this._mouseChildren;
-        },
-        set: function (value) {
-            if (this._mouseChildren == value)
-                return;
-            this._mouseChildren = value;
-            this.pInvalidateHierarchicalProperties(HierarchicalProperties.MOUSE_ENABLED);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObjectContainer.prototype, "numChildren", {
-        /**
-         * Returns the number of children of this object.
-         */
-        get: function () {
-            return this._children.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Adds a child DisplayObject instance to this DisplayObjectContainer
-     * instance. The child is added to the front(top) of all other children in
-     * this DisplayObjectContainer instance.(To add a child to a specific index
-     * position, use the <code>addChildAt()</code> method.)
-     *
-     * <p>If you add a child object that already has a different display object
-     * container as a parent, the object is removed from the child list of the
-     * other display object container. </p>
-     *
-     * <p><b>Note:</b> The command <code>stage.addChild()</code> can cause
-     * problems with a published SWF file, including security problems and
-     * conflicts with other loaded SWF files. There is only one Stage within a
-     * Flash runtime instance, no matter how many SWF files you load into the
-     * runtime. So, generally, objects should not be added to the Stage,
-     * directly, at all. The only object the Stage should contain is the root
-     * object. Create a DisplayObjectContainer to contain all of the items on the
-     * display list. Then, if necessary, add that DisplayObjectContainer instance
-     * to the Stage.</p>
-     *
-     * @param child The DisplayObject instance to add as a child of this
-     *              DisplayObjectContainer instance.
-     * @return The DisplayObject instance that you pass in the <code>child</code>
-     *         parameter.
-     * @throws ArgumentError Throws if the child is the same as the parent. Also
-     *                       throws if the caller is a child(or grandchild etc.)
-     *                       of the child being added.
-     * @event added Dispatched when a display object is added to the display
-     *              list.
-     */
-    DisplayObjectContainer.prototype.addChild = function (child) {
-        return this.addChildAt(child, this._children.length);
-    };
-    DisplayObjectContainer.prototype.addChildAtDepth = function (child, depth, replace) {
-        if (replace === void 0) { replace = true; }
-        if (child == null)
-            throw new ArgumentError("Parameter child cannot be null.");
-        //if child already has a parent, remove it.
-        if (child._pParent)
-            child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
-        var index = this.getDepthIndexInternal(depth);
-        if (index != -1) {
-            if (replace) {
-                this.removeChildAt(index);
-            }
-            else {
-                //move depth of existing child up by 1
-                this.addChildAtDepth(this._children[index], depth + 1, false);
-            }
-        }
-        if (this._nextHighestDepth < depth + 1)
-            this._nextHighestDepth = depth + 1;
-        this._depth_childs[depth] = child;
-        this._children.push(child);
-        child._depthID = depth;
-        child.iSetParent(this);
-        this._pInvalidateBounds();
-        return child;
-    };
-    /**
-     * Adds a child DisplayObject instance to this DisplayObjectContainer
-     * instance. The child is added at the index position specified. An index of
-     * 0 represents the back(bottom) of the display list for this
-     * DisplayObjectContainer object.
-     *
-     * <p>For example, the following example shows three display objects, labeled
-     * a, b, and c, at index positions 0, 2, and 1, respectively:</p>
-     *
-     * <p>If you add a child object that already has a different display object
-     * container as a parent, the object is removed from the child list of the
-     * other display object container. </p>
-     *
-     * @param child The DisplayObject instance to add as a child of this
-     *              DisplayObjectContainer instance.
-     * @param index The index position to which the child is added. If you
-     *              specify a currently occupied index position, the child object
-     *              that exists at that position and all higher positions are
-     *              moved up one position in the child list.
-     * @return The DisplayObject instance that you pass in the <code>child</code>
-     *         parameter.
-     * @throws ArgumentError Throws if the child is the same as the parent. Also
-     *                       throws if the caller is a child(or grandchild etc.)
-     *                       of the child being added.
-     * @throws RangeError    Throws if the index position does not exist in the
-     *                       child list.
-     * @event added Dispatched when a display object is added to the display
-     *              list.
-     */
-    DisplayObjectContainer.prototype.addChildAt = function (child, index) {
-        return this.addChildAtDepth(child, (index < this._children.length) ? this._children[index]._depthID : this.getNextHighestDepth(), false);
-    };
-    DisplayObjectContainer.prototype.addChildren = function () {
-        var childarray = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            childarray[_i - 0] = arguments[_i];
-        }
-        var len = childarray.length;
-        for (var i = 0; i < len; i++)
-            this.addChild(childarray[i]);
-    };
-    /**
-     *
-     */
-    DisplayObjectContainer.prototype.clone = function () {
-        var newInstance = new DisplayObjectContainer();
-        this.copyTo(newInstance);
-        return newInstance;
-    };
-    DisplayObjectContainer.prototype.copyTo = function (newInstance) {
-        _super.prototype.copyTo.call(this, newInstance);
-        newInstance.mouseChildren = this._mouseChildren;
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            newInstance.addChild(this._children[i].clone());
-    };
-    /**
-     * Determines whether the specified display object is a child of the
-     * DisplayObjectContainer instance or the instance itself. The search
-     * includes the entire display list including this DisplayObjectContainer
-     * instance. Grandchildren, great-grandchildren, and so on each return
-     * <code>true</code>.
-     *
-     * @param child The child object to test.
-     * @return <code>true</code> if the <code>child</code> object is a child of
-     *         the DisplayObjectContainer or the container itself; otherwise
-     *         <code>false</code>.
-     */
-    DisplayObjectContainer.prototype.contains = function (child) {
-        return this._children.indexOf(child) >= 0;
-    };
-    /**
-     *
-     */
-    DisplayObjectContainer.prototype.disposeValues = function () {
-        for (var i = this._children.length - 1; i >= 0; i--)
-            this.removeChild(this._children[i]);
-        _super.prototype.disposeValues.call(this);
-    };
-    DisplayObjectContainer.prototype.getChildAtDepth = function (depth) {
-        return this._depth_childs[depth];
-    };
-    /**
-     * Returns the child display object instance that exists at the specified
-     * index.
-     *
-     * @param index The index position of the child object.
-     * @return The child display object at the specified index position.
-     * @throws RangeError    Throws if the index does not exist in the child
-     *                       list.
-     */
-    DisplayObjectContainer.prototype.getChildAt = function (index /*int*/) {
-        var child = this._children[index];
-        if (child == null)
-            throw new RangeError("Index does not exist in the child list of the caller");
-        return child;
-    };
-    /**
-     * Returns the child display object that exists with the specified name. If
-     * more that one child display object has the specified name, the method
-     * returns the first object in the child list.
-     *
-     * <p>The <code>getChildAt()</code> method is faster than the
-     * <code>getChildByName()</code> method. The <code>getChildAt()</code> method
-     * accesses a child from a cached array, whereas the
-     * <code>getChildByName()</code> method has to traverse a linked list to
-     * access a child.</p>
-     *
-     * @param name The name of the child to return.
-     * @return The child display object with the specified name.
-     */
-    DisplayObjectContainer.prototype.getChildByName = function (name) {
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            if (this._children[i].name == name)
-                return this._children[i];
-        return null;
-    };
-    /**
-     * Returns the index position of a <code>child</code> DisplayObject instance.
-     *
-     * @param child The DisplayObject instance to identify.
-     * @return The index position of the child display object to identify.
-     * @throws ArgumentError Throws if the child parameter is not a child of this
-     *                       object.
-     */
-    DisplayObjectContainer.prototype.getChildIndex = function (child) {
-        var childIndex = this._children.indexOf(child);
-        if (childIndex == -1)
-            throw new ArgumentError("Child parameter is not a child of the caller");
-        return childIndex;
-    };
-    DisplayObjectContainer.prototype.getNextHighestDepth = function () {
-        if (this._nextHighestDepthDirty)
-            this._updateNextHighestDepth();
-        return this._nextHighestDepth;
-    };
-    /**
-     * Returns an array of objects that lie under the specified point and are
-     * children(or grandchildren, and so on) of this DisplayObjectContainer
-     * instance. Any child objects that are inaccessible for security reasons are
-     * omitted from the returned array. To determine whether this security
-     * restriction affects the returned array, call the
-     * <code>areInaccessibleObjectsUnderPoint()</code> method.
-     *
-     * <p>The <code>point</code> parameter is in the coordinate space of the
-     * Stage, which may differ from the coordinate space of the display object
-     * container(unless the display object container is the Stage). You can use
-     * the <code>globalToLocal()</code> and the <code>localToGlobal()</code>
-     * methods to convert points between these coordinate spaces.</p>
-     *
-     * @param point The point under which to look.
-     * @return An array of objects that lie under the specified point and are
-     *         children(or grandchildren, and so on) of this
-     *         DisplayObjectContainer instance.
-     */
-    DisplayObjectContainer.prototype.getObjectsUnderPoint = function (point) {
-        return new Array();
-    };
-    /**
-     * Removes the specified <code>child</code> DisplayObject instance from the
-     * child list of the DisplayObjectContainer instance. The <code>parent</code>
-     * property of the removed child is set to <code>null</code> , and the object
-     * is garbage collected if no other references to the child exist. The index
-     * positions of any display objects above the child in the
-     * DisplayObjectContainer are decreased by 1.
-     *
-     * <p>The garbage collector reallocates unused memory space. When a variable
-     * or object is no longer actively referenced or stored somewhere, the
-     * garbage collector sweeps through and wipes out the memory space it used to
-     * occupy if no other references to it exist.</p>
-     *
-     * @param child The DisplayObject instance to remove.
-     * @return The DisplayObject instance that you pass in the <code>child</code>
-     *         parameter.
-     * @throws ArgumentError Throws if the child parameter is not a child of this
-     *                       object.
-     */
-    DisplayObjectContainer.prototype.removeChild = function (child) {
-        if (child == null)
-            throw new ArgumentError("Parameter child cannot be null");
-        this.removeChildAt(this.getChildIndex(child));
-        return child;
-    };
-    DisplayObjectContainer.prototype.removeChildAtDepth = function (depth /*int*/) {
-        return this.removeChildAt(this.getDepthIndexInternal(depth));
-    };
-    /**
-     * Removes a child DisplayObject from the specified <code>index</code>
-     * position in the child list of the DisplayObjectContainer. The
-     * <code>parent</code> property of the removed child is set to
-     * <code>null</code>, and the object is garbage collected if no other
-     * references to the child exist. The index positions of any display objects
-     * above the child in the DisplayObjectContainer are decreased by 1.
-     *
-     * <p>The garbage collector reallocates unused memory space. When a variable
-     * or object is no longer actively referenced or stored somewhere, the
-     * garbage collector sweeps through and wipes out the memory space it used to
-     * occupy if no other references to it exist.</p>
-     *
-     * @param index The child index of the DisplayObject to remove.
-     * @return The DisplayObject instance that was removed.
-     * @throws RangeError    Throws if the index does not exist in the child
-     *                       list.
-     * @throws SecurityError This child display object belongs to a sandbox to
-     *                       which the calling object does not have access. You
-     *                       can avoid this situation by having the child movie
-     *                       call the <code>Security.allowDomain()</code> method.
-     */
-    DisplayObjectContainer.prototype.removeChildAt = function (index /*int*/) {
-        var child = this.removeChildAtInternal(index);
-        child.iSetParent(null);
-        this._pInvalidateBounds();
-        return child;
-    };
-    /**
-     * Removes all <code>child</code> DisplayObject instances from the child list
-     * of the DisplayObjectContainer instance. The <code>parent</code> property
-     * of the removed children is set to <code>null</code>, and the objects are
-     * garbage collected if no other references to the children exist.
-     *
-     * The garbage collector reallocates unused memory space. When a variable or
-     * object is no longer actively referenced or stored somewhere, the garbage
-     * collector sweeps through and wipes out the memory space it used to occupy
-     * if no other references to it exist.
-     *
-     * @param beginIndex The beginning position. A value smaller than 0 throws a RangeError.
-     * @param endIndex The ending position. A value smaller than 0 throws a RangeError.
-     * @throws RangeError    Throws if the beginIndex or endIndex positions do
-     *                       not exist in the child list.
-     */
-    DisplayObjectContainer.prototype.removeChildren = function (beginIndex, endIndex) {
-        if (beginIndex === void 0) { beginIndex = 0; }
-        if (endIndex === void 0) { endIndex = 2147483647; }
-        if (beginIndex < 0)
-            throw new RangeError("beginIndex is out of range of the child list");
-        if (endIndex > this._children.length)
-            throw new RangeError("endIndex is out of range of the child list");
-        for (var i = beginIndex; i < endIndex; i++)
-            this.removeChild(this._children[i]);
-    };
-    /**
-     * Changes the position of an existing child in the display object container.
-     * This affects the layering of child objects. For example, the following
-     * example shows three display objects, labeled a, b, and c, at index
-     * positions 0, 1, and 2, respectively:
-     *
-     * <p>When you use the <code>setChildIndex()</code> method and specify an
-     * index position that is already occupied, the only positions that change
-     * are those in between the display object's former and new position. All
-     * others will stay the same. If a child is moved to an index LOWER than its
-     * current index, all children in between will INCREASE by 1 for their index
-     * reference. If a child is moved to an index HIGHER than its current index,
-     * all children in between will DECREASE by 1 for their index reference. For
-     * example, if the display object container in the previous example is named
-     * <code>container</code>, you can swap the position of the display objects
-     * labeled a and b by calling the following code:</p>
-     *
-     * <p>This code results in the following arrangement of objects:</p>
-     *
-     * @param child The child DisplayObject instance for which you want to change
-     *              the index number.
-     * @param index The resulting index number for the <code>child</code> display
-     *              object.
-     * @throws ArgumentError Throws if the child parameter is not a child of this
-     *                       object.
-     * @throws RangeError    Throws if the index does not exist in the child
-     *                       list.
-     */
-    DisplayObjectContainer.prototype.setChildIndex = function (child, index /*int*/) {
-        //TODO
-    };
-    /**
-     * Swaps the z-order (front-to-back order) of the two specified child
-     * objects. All other child objects in the display object container remain in
-     * the same index positions.
-     *
-     * @param child1 The first child object.
-     * @param child2 The second child object.
-     * @throws ArgumentError Throws if either child parameter is not a child of
-     *                       this object.
-     */
-    DisplayObjectContainer.prototype.swapChildren = function (child1, child2) {
-        this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2));
-    };
-    /**
-     * Swaps the z-order(front-to-back order) of the child objects at the two
-     * specified index positions in the child list. All other child objects in
-     * the display object container remain in the same index positions.
-     *
-     * @param index1 The index position of the first child object.
-     * @param index2 The index position of the second child object.
-     * @throws RangeError If either index does not exist in the child list.
-     */
-    DisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
-        var depth = this._children[index2]._depthID;
-        var child = this._children[index1];
-        this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
-        this.addChildAtDepth(child, depth);
+    LineSegment.prototype._onInvalidateProperties = function (event) {
+        this.invalidateSurface();
     };
     /**
      * //TODO
      *
-     * @protected
-     */
-    DisplayObjectContainer.prototype._pUpdateBoxBounds = function () {
-        _super.prototype._pUpdateBoxBounds.call(this);
-        var box;
-        var numChildren = this._children.length;
-        if (numChildren > 0) {
-            var min;
-            var max;
-            var minX, minY, minZ;
-            var maxX, maxY, maxZ;
-            for (var i = 0; i < numChildren; ++i) {
-                box = this._children[i].getBox(this);
-                if (i == 0) {
-                    maxX = box.width + (minX = box.x);
-                    maxY = box.height + (minY = box.y);
-                    maxZ = box.depth + (minZ = box.z);
-                }
-                else {
-                    max = box.width + (min = box.x);
-                    if (min < minX)
-                        minX = min;
-                    if (max > maxX)
-                        maxX = max;
-                    max = box.height + (min = box.y);
-                    if (min < minY)
-                        minY = min;
-                    if (max > maxY)
-                        maxY = max;
-                    max = box.depth + (min = box.z);
-                    if (min < minZ)
-                        minZ = min;
-                    if (max > maxZ)
-                        maxZ = max;
-                }
-            }
-            this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
-            this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
-            this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
-        }
-        else {
-            this._pBoxBounds.setEmpty();
-        }
-    };
-    /**
-     * @protected
-     */
-    DisplayObjectContainer.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
-        if (_super.prototype.pInvalidateHierarchicalProperties.call(this, bitFlag))
-            return true;
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i].pInvalidateHierarchicalProperties(bitFlag);
-        return false;
-    };
-    /**
+     * @param shortestCollisionDistance
+     * @param findClosest
+     * @returns {boolean}
+     *
      * @internal
      */
-    DisplayObjectContainer.prototype._iSetScene = function (value, partition) {
-        _super.prototype._iSetScene.call(this, value, partition);
-        var len = this._children.length;
-        for (var i = 0; i < len; ++i)
-            this._children[i]._iSetScene(value, partition);
+    LineSegment.prototype._iTestCollision = function (shortestCollisionDistance) {
+        return false; //TODO: detect line collisions
     };
-    /**
-     * @private
-     *
-     * @param child
-     */
-    DisplayObjectContainer.prototype.removeChildAtInternal = function (index) {
-        var child = this._children.splice(index, 1)[0];
-        //update next highest depth
-        if (this._nextHighestDepth == child._depthID + 1)
-            this._nextHighestDepthDirty = true;
-        delete this._depth_childs[child._depthID];
-        child._depthID = -16384;
-        return child;
+    LineSegment.prototype._acceptTraverser = function (traverser) {
+        traverser.applyRenderable(this);
     };
-    DisplayObjectContainer.prototype.getDepthIndexInternal = function (depth /*int*/) {
-        if (!this._depth_childs[depth])
-            return -1;
-        return this._children.indexOf(this._depth_childs[depth]);
-    };
-    DisplayObjectContainer.prototype._updateNextHighestDepth = function () {
-        this._nextHighestDepthDirty = false;
-        this._nextHighestDepth = 0;
-        var len = this._children.length;
-        for (var i = 0; i < len; i++)
-            if (this._nextHighestDepth < this._children[i]._depthID)
-                this._nextHighestDepth = this._children[i]._depthID;
-        this._nextHighestDepth += 1;
-    };
-    /**
-     * Evaluates the display object to see if it overlaps or intersects with the
-     * point specified by the <code>x</code> and <code>y</code> parameters. The
-     * <code>x</code> and <code>y</code> parameters specify a point in the
-     * coordinate space of the Scene, not the display object container that
-     * contains the display object(unless that display object container is the
-     * Scene).
-     *
-     * @param x         The <i>x</i> coordinate to test against this object.
-     * @param y         The <i>y</i> coordinate to test against this object.
-     * @param shapeFlag Whether to check against the actual pixels of the object
-     *                 (<code>true</code>) or the bounding box
-     *                 (<code>false</code>).
-     * @return <code>true</code> if the display object overlaps or intersects
-     *         with the specified point; <code>false</code> otherwise.
-     */
-    DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
-        if (shapeFlag === void 0) { shapeFlag = false; }
-        if (masksFlag === void 0) { masksFlag = false; }
-        if (!this._pImplicitVisibility)
-            return;
-        if (this._pImplicitMaskId != -1 && !masksFlag)
-            return;
-        if (this._explicitMasks) {
-            var numMasks = this._explicitMasks.length;
-            var maskHit = false;
-            for (var i = 0; i < numMasks; i++) {
-                if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
-                    maskHit = true;
-                    break;
-                }
-            }
-            if (!maskHit)
-                return false;
-        }
-        return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
-    };
-    DisplayObjectContainer.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
-        var numChildren = this._children.length;
-        for (var i = 0; i < numChildren; i++)
-            if (this._children[i].hitTestPoint(x, y, shapeFlag, masksFlag))
-                return true;
-        return false;
-    };
-    DisplayObjectContainer.prototype._updateMaskMode = function () {
-        if (this.maskMode)
-            this.mouseChildren = false;
-        _super.prototype._updateMaskMode.call(this);
-    };
-    DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
-    return DisplayObjectContainer;
+    LineSegment.assetType = "[asset LineSegment]";
+    return LineSegment;
 })(DisplayObject);
-module.exports = DisplayObjectContainer;
+module.exports = LineSegment;
 
-},{"awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/RangeError":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties"}],"awayjs-display/lib/containers/LoaderContainer":[function(require,module,exports){
+},{"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/display/LoaderContainer":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4176,7 +6329,7 @@ var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var URLLoaderEvent = require("awayjs-core/lib/events/URLLoaderEvent");
 var LoaderEvent = require("awayjs-core/lib/events/LoaderEvent");
 var ParserEvent = require("awayjs-core/lib/events/ParserEvent");
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
 /**
  * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)
  * files. Use the <code>load()</code> method to initiate loading. The loaded
@@ -4725,14 +6878,695 @@ var LoaderContainer = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = LoaderContainer;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer"}],"awayjs-display/lib/containers/Scene":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer"}],"awayjs-display/lib/display/Mesh":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+var Point = require("awayjs-core/lib/geom/Point");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var Graphics = require("awayjs-display/lib/graphics/Graphics");
+var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
+var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+/**
+ * Mesh is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
+ * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
+ * of the graphics to be assigned different materials.
+ */
+var Mesh = (function (_super) {
+    __extends(Mesh, _super);
+    /**
+     * Create a new Mesh object.
+     *
+     * @param material    [optional]        The material with which to render the Mesh.
+     */
+    function Mesh(material) {
+        var _this = this;
+        if (material === void 0) { material = null; }
+        _super.call(this);
+        this._castsShadows = true;
+        this._shareAnimationGraphics = true;
+        //temp point used in hit testing
+        this._tempPoint = new Point();
+        this._pIsEntity = true;
+        this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
+        this._graphics = new Graphics(this); //unique graphics object for each Mesh
+        this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
+        this.material = material;
+    }
+    Object.defineProperty(Mesh.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return Mesh.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mesh.prototype, "castsShadows", {
+        /**
+         * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
+         */
+        get: function () {
+            return this._castsShadows;
+        },
+        set: function (value) {
+            this._castsShadows = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mesh.prototype, "graphics", {
+        /**
+         * The graphics used by the mesh that provides it with its shape.
+         */
+        get: function () {
+            if (this._iSourcePrefab)
+                this._iSourcePrefab._iValidate();
+            return this._graphics;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mesh.prototype, "animator", {
+        /**
+         * Defines the animator of the graphics object.  Default value is <code>null</code>.
+         */
+        get: function () {
+            return this._graphics.animator;
+        },
+        set: function (value) {
+            if (this._graphics.animator)
+                this._graphics.animator.removeOwner(this);
+            this._graphics.animator = value;
+            if (this._graphics.animator)
+                this._graphics.animator.addOwner(this);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mesh.prototype, "material", {
+        /**
+         * The material with which to render the Mesh.
+         */
+        get: function () {
+            return this._graphics.material;
+        },
+        set: function (value) {
+            this._graphics.material = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mesh.prototype, "shareAnimationGraphics", {
+        /**
+         * Indicates whether or not the mesh share the same animation graphics.
+         */
+        get: function () {
+            return this._shareAnimationGraphics;
+        },
+        set: function (value) {
+            this._shareAnimationGraphics = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mesh.prototype, "style", {
+        /**
+         *
+         */
+        get: function () {
+            return this._graphics.style;
+        },
+        set: function (value) {
+            this._graphics.style = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    Mesh.prototype.bakeTransformations = function () {
+        this._graphics.applyTransformation(this.transform.matrix3D);
+        this.transform.clearMatrix3D();
+    };
+    /**
+     * @inheritDoc
+     */
+    Mesh.prototype.dispose = function () {
+        this.disposeValues();
+        Mesh._meshes.push(this);
+    };
+    /**
+     * @inheritDoc
+     */
+    Mesh.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
+        this._graphics.dispose();
+    };
+    /**
+     * Clones this Mesh instance along with all it's children, while re-using the same
+     * material, graphics and animation set. The returned result will be a copy of this mesh,
+     * containing copies of all of it's children.
+     *
+     * Properties that are re-used (i.e. not cloned) by the new copy include name,
+     * graphics, and material. Properties that are cloned or created anew for the copy
+     * include subMeshes, children of the mesh, and the animator.
+     *
+     * If you want to copy just the mesh, reusing it's graphics and material while not
+     * cloning it's children, the simplest way is to create a new mesh manually:
+     *
+     * <code>
+     * var clone : Mesh = new Mesh(original.graphics, original.material);
+     * </code>
+     */
+    Mesh.prototype.clone = function () {
+        var newInstance = (Mesh._meshes.length) ? Mesh._meshes.pop() : new Mesh();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    Mesh.prototype.copyTo = function (mesh) {
+        _super.prototype.copyTo.call(this, mesh);
+        mesh.castsShadows = this._castsShadows;
+        mesh.shareAnimationGraphics = this._shareAnimationGraphics;
+        this._graphics.copyTo(mesh.graphics);
+    };
+    /**
+     * //TODO
+     *
+     * @protected
+     */
+    Mesh.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
+    };
+    Mesh.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        var box = this.getBox();
+        if (!this._center)
+            this._center = new Vector3D();
+        this._center.x = box.x + box.width / 2;
+        this._center.y = box.y + box.height / 2;
+        this._center.z = box.z + box.depth / 2;
+        this._pSphereBounds = this._graphics.getSphereBounds(this._center, this._pSphereBounds);
+    };
+    /**
+     * //TODO
+     *
+     * @private
+     */
+    Mesh.prototype.onGraphicsBoundsInvalid = function (event) {
+        this._pInvalidateBounds();
+    };
+    /**
+     *
+     * @param renderer
+     *
+     * @internal
+     */
+    Mesh.prototype._acceptTraverser = function (traverser) {
+        this.graphics.acceptTraverser(traverser);
+    };
+    Mesh.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
+        if (this._graphics.count) {
+            this._tempPoint.setTo(x, y);
+            var local = this.globalToLocal(this._tempPoint, this._tempPoint);
+            var box;
+            //early out for box test
+            if (!(box = this.getBox()).contains(local.x, local.y, 0))
+                return false;
+            //early out for non-shape tests
+            if (!shapeFlag)
+                return true;
+            //ok do the graphics thing
+            if (this._graphics._hitTestPointInternal(local.x, local.y))
+                return true;
+        }
+        return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
+    };
+    Mesh.prototype.clear = function () {
+        _super.prototype.clear.call(this);
+        this._graphics.clear();
+    };
+    Mesh._meshes = new Array();
+    Mesh.assetType = "[asset Mesh]";
+    return Mesh;
+})(DisplayObjectContainer);
+module.exports = Mesh;
+
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/MovieClip":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
+var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+var TextField = require("awayjs-display/lib/display/TextField");
+var MouseEvent = require("awayjs-display/lib/events/MouseEvent");
+var Timeline = require("awayjs-display/lib/base/Timeline");
+var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
+var MovieClip = (function (_super) {
+    __extends(MovieClip, _super);
+    function MovieClip(timeline) {
+        var _this = this;
+        if (timeline === void 0) { timeline = null; }
+        _super.call(this);
+        this._isButton = false;
+        this._time = 0; // the current time inside the animation
+        this._currentFrameIndex = -1; // the current frame
+        this._isPlaying = true; // false if paused or stopped
+        this._isInit = true;
+        this._potentialInstances = {};
+        this._depth_sessionIDs = {};
+        this._sessionID_childs = {};
+        /**
+         *
+         */
+        this.loop = true;
+        /**
+         * the current index of the current active frame
+         */
+        this.constructedKeyFrameIndex = -1;
+        this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
+        this.inheritColorTransform = true;
+        this._onMouseOver = function (event) { return _this.currentFrameIndex = 1; };
+        this._onMouseOut = function (event) { return _this.currentFrameIndex = 0; };
+        this._onMouseDown = function (event) { return _this.currentFrameIndex = 2; };
+        this._onMouseUp = function (event) { return _this.currentFrameIndex = _this.currentFrameIndex == 0 ? 0 : 1; };
+        this._timeline = timeline || new Timeline();
+    }
+    Object.defineProperty(MovieClip.prototype, "adapter", {
+        /**
+         * adapter is used to provide MovieClip to scripts taken from different platforms
+         * setter typically managed by factory
+         */
+        get: function () {
+            return this._adapter;
+        },
+        set: function (value) {
+            this._adapter = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    MovieClip.prototype.dispose = function () {
+        this.disposeValues();
+        MovieClip._movieClips.push(this);
+    };
+    MovieClip.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
+        this._potentialInstances = {};
+        this._depth_sessionIDs = {};
+        this._sessionID_childs = {};
+    };
+    MovieClip.prototype.reset_textclones = function () {
+        if (this.timeline) {
+            for (var key in this._potentialInstances) {
+                if (this._potentialInstances[key] != null) {
+                    if (this._potentialInstances[key].isAsset(TextField)) {
+                        this._potentialInstances[key].text = this.timeline.getPotentialChildPrototype(key).text;
+                    }
+                    else if (this._potentialInstances[key].isAsset(MovieClip)) {
+                        this._potentialInstances[key].reset_textclones();
+                    }
+                }
+            }
+        }
+    };
+    Object.defineProperty(MovieClip.prototype, "isInit", {
+        get: function () {
+            return this._isInit;
+        },
+        set: function (value) {
+            this._isInit = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MovieClip.prototype, "timeline", {
+        get: function () {
+            return this._timeline;
+        },
+        set: function (value) {
+            this._timeline = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MovieClip.prototype, "numFrames", {
+        get: function () {
+            return this._timeline.numFrames;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    MovieClip.prototype.jumpToLabel = function (label) {
+        // the timeline.jumpTolabel will set currentFrameIndex
+        this._timeline.jumpToLabel(this, label);
+    };
+    MovieClip.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+        // time only is relevant for the root mc, as it is the only one that executes the update function
+        this._time = 0;
+        if (this.adapter)
+            this.adapter.freeFromScript();
+        this.constructedKeyFrameIndex = -1;
+        for (var i = this.numChildren - 1; i >= 0; i--)
+            this.removeChildAt(i);
+        this._skipAdvance = MovieClip._skipAdvance;
+        var numFrames = this._timeline.keyframe_indices.length;
+        this._isPlaying = Boolean(numFrames > 1);
+        if (numFrames) {
+            this._currentFrameIndex = 0;
+            this._timeline.constructNextFrame(this, true, true);
+        }
+        else {
+            this._currentFrameIndex = -1;
+        }
+    };
+    MovieClip.prototype.resetSessionIDs = function () {
+        this._depth_sessionIDs = {};
+    };
+    Object.defineProperty(MovieClip.prototype, "currentFrameIndex", {
+        /*
+        * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
+         */
+        get: function () {
+            return this._currentFrameIndex;
+        },
+        set: function (value) {
+            //if currentFrame is set greater than the available number of
+            //frames, the playhead is moved to the last frame in the timeline.
+            //But because the frame specified was not a keyframe, no scripts are
+            //executed, even if they exist on the last frame.
+            var skip_script = false;
+            var numFrames = this._timeline.keyframe_indices.length;
+            if (!numFrames)
+                return;
+            if (value < 0) {
+                value = 0;
+            }
+            else if (value >= numFrames) {
+                value = numFrames - 1;
+                skip_script = true;
+            }
+            if (this._currentFrameIndex == value)
+                return;
+            this._currentFrameIndex = value;
+            //changing current frame will ignore advance command for that
+            //update's advanceFrame function, unless advanceFrame has
+            //already been executed
+            this._skipAdvance = MovieClip._skipAdvance;
+            this._timeline.gotoFrame(this, value, skip_script);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    MovieClip.prototype.addButtonListeners = function () {
+        this._isButton = true;
+        this.stop();
+        this.addEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
+        this.addEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
+        this.addEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
+        this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
+    };
+    MovieClip.prototype.removeButtonListeners = function () {
+        this.removeEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
+        this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
+        this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
+        this.removeEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
+    };
+    MovieClip.prototype.getChildAtSessionID = function (sessionID) {
+        return this._sessionID_childs[sessionID];
+    };
+    MovieClip.prototype.getSessionIDDepths = function () {
+        return this._depth_sessionIDs;
+    };
+    MovieClip.prototype.addChildAtDepth = function (child, depth, replace) {
+        if (replace === void 0) { replace = true; }
+        //this should be implemented for all display objects
+        child.inheritColorTransform = true;
+        child.reset(); // this takes care of transform and visibility
+        return _super.prototype.addChildAtDepth.call(this, child, depth, replace);
+    };
+    MovieClip.prototype._addTimelineChildAt = function (child, depth, sessionID) {
+        this._depth_sessionIDs[depth] = child._sessionID = sessionID;
+        this._sessionID_childs[sessionID] = child;
+        return this.addChildAtDepth(child, depth);
+    };
+    MovieClip.prototype.removeChildAtInternal = function (index) {
+        var child = this._children[index];
+        if (child.adapter)
+            child.adapter.freeFromScript();
+        this.adapter.unregisterScriptObject(child);
+        //check to make sure _depth_sessionIDs wasn't modified with a new child
+        if (this._depth_sessionIDs[child._depthID] == child._sessionID)
+            delete this._depth_sessionIDs[child._depthID];
+        delete this._sessionID_childs[child._sessionID];
+        child._sessionID = -1;
+        return _super.prototype.removeChildAtInternal.call(this, index);
+    };
+    Object.defineProperty(MovieClip.prototype, "assetType", {
+        get: function () {
+            return MovieClip.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Starts playback of animation from current position
+     */
+    MovieClip.prototype.play = function () {
+        if (this._timeline.keyframe_indices.length > 1)
+            this._isPlaying = true;
+    };
+    /**
+     * should be called right before the call to away3d-render.
+     */
+    MovieClip.prototype.update = function () {
+        MovieClip._skipAdvance = true;
+        this.advanceFrame();
+        MovieClip._skipAdvance = false;
+        // after we advanced the scenegraph, we might have some script that needs executing
+        FrameScriptManager.execute_queue();
+        // now we want to execute the onEnter
+        this.dispatchEvent(this._enterFrame);
+        // after we executed the onEnter, we might have some script that needs executing
+        FrameScriptManager.execute_queue();
+        // now we execute any intervals queued
+        FrameScriptManager.execute_intervals();
+        // finally, we execute any scripts that were added from intervals
+        FrameScriptManager.execute_queue();
+        //execute any disposes as a result of framescripts
+        FrameScriptManager.execute_dispose();
+    };
+    MovieClip.prototype.getPotentialChildInstance = function (id) {
+        if (!this._potentialInstances[id])
+            this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
+        return this._potentialInstances[id];
+    };
+    /**
+     * Stop playback of animation and hold current position
+     */
+    MovieClip.prototype.stop = function () {
+        this._isPlaying = false;
+    };
+    MovieClip.prototype.clone = function () {
+        var newInstance = (MovieClip._movieClips.length) ? MovieClip._movieClips.pop() : new MovieClip(this._timeline);
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    MovieClip.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.timeline = this._timeline;
+        newInstance.loop = this.loop;
+    };
+    MovieClip.prototype.advanceFrame = function () {
+        if (this._isPlaying && !this._skipAdvance) {
+            if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
+                if (this.loop)
+                    this.currentFrameIndex = 0;
+                else
+                    this._isPlaying = false;
+            }
+            else {
+                this._currentFrameIndex++;
+                this._timeline.constructNextFrame(this);
+            }
+        }
+        var len = this._children.length;
+        var child;
+        for (var i = 0; i < len; ++i) {
+            child = this._children[i];
+            if (child.isAsset(MovieClip))
+                child.advanceFrame();
+        }
+        this._skipAdvance = false;
+    };
+    // DEBUG CODE:
+    MovieClip.prototype.logHierarchy = function (depth) {
+        if (depth === void 0) { depth = 0; }
+        this.printHierarchyName(depth, this);
+        var len = this._children.length;
+        var child;
+        for (var i = 0; i < len; i++) {
+            child = this._children[i];
+            if (child.isAsset(MovieClip))
+                child.logHierarchy(depth + 1);
+            else
+                this.printHierarchyName(depth + 1, child);
+        }
+    };
+    MovieClip.prototype.printHierarchyName = function (depth, target) {
+        var str = "";
+        for (var i = 0; i < depth; ++i)
+            str += "--";
+        str += " " + target.name + " = " + target.id;
+        console.log(str);
+    };
+    MovieClip.prototype.clear = function () {
+        for (var key in this._potentialInstances) {
+            var instance = this._potentialInstances[key];
+            //only dispose instances that are not used in script ie. do not have an instance name
+            if (instance.name == "") {
+                FrameScriptManager.add_child_to_dispose(instance);
+                delete this._potentialInstances[key];
+            }
+        }
+        _super.prototype.clear.call(this);
+    };
+    MovieClip._movieClips = new Array();
+    MovieClip.assetType = "[asset MovieClip]";
+    return MovieClip;
+})(DisplayObjectContainer);
+module.exports = MovieClip;
+
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-display/lib/base/Timeline":"awayjs-display/lib/base/Timeline","awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/display/PointLight":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var LightBase = require("awayjs-display/lib/display/LightBase");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
+var PointLight = (function (_super) {
+    __extends(PointLight, _super);
+    function PointLight() {
+        _super.call(this);
+        this._pRadius = 90000;
+        this._pFallOff = 100000;
+        this._pIsEntity = true;
+        this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
+        //default bounds type
+        this._boundsType = BoundsType.SPHERE;
+    }
+    Object.defineProperty(PointLight.prototype, "assetType", {
+        get: function () {
+            return PointLight.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PointLight.prototype.pCreateShadowMapper = function () {
+        return new CubeMapShadowMapper();
+    };
+    Object.defineProperty(PointLight.prototype, "radius", {
+        get: function () {
+            return this._pRadius;
+        },
+        set: function (value) {
+            this._pRadius = value;
+            if (this._pRadius < 0) {
+                this._pRadius = 0;
+            }
+            else if (this._pRadius > this._pFallOff) {
+                this._pFallOff = this._pRadius;
+                this._pInvalidateBounds();
+            }
+            this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PointLight.prototype.iFallOffFactor = function () {
+        return this._pFallOffFactor;
+    };
+    Object.defineProperty(PointLight.prototype, "fallOff", {
+        get: function () {
+            return this._pFallOff;
+        },
+        set: function (value) {
+            this._pFallOff = value;
+            if (this._pFallOff < 0)
+                this._pFallOff = 0;
+            if (this._pFallOff < this._pRadius)
+                this._pRadius = this._pFallOff;
+            this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
+            this._pInvalidateBounds();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    PointLight.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        this._pSphereBounds.radius = this._pFallOff;
+    };
+    PointLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
+        if (target === void 0) { target = null; }
+        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
+        var m = new Matrix3D();
+        // todo: do not use lookAt on Light
+        m.copyFrom(entity.getRenderSceneTransform(camera));
+        m.append(this._pParent.inverseSceneTransform);
+        this.lookAt(m.position);
+        m.copyFrom(entity.getRenderSceneTransform(camera));
+        m.append(this.inverseSceneTransform);
+        var box = entity.getBox();
+        var v1 = m.deltaTransformVector(new Vector3D(box.left, box.bottom, box.front));
+        var v2 = m.deltaTransformVector(new Vector3D(box.right, box.top, box.back));
+        var d1 = v1.x * v1.x + v1.y * v1.y + v1.z * v1.z;
+        var d2 = v2.x * v2.x + v2.y * v2.y + v2.z * v2.z;
+        var d = Math.sqrt(d1 > d2 ? d1 : d2);
+        var zMin;
+        var zMax;
+        var z = m.rawData[14];
+        zMin = z - d;
+        zMax = z + d;
+        raw[5] = raw[0] = zMin / d;
+        raw[10] = zMax / (zMax - zMin);
+        raw[11] = 1;
+        raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
+        raw[14] = -zMin * raw[10];
+        if (!target)
+            target = new Matrix3D();
+        target.copyRawDataFrom(raw);
+        target.prepend(m);
+        return target;
+    };
+    PointLight.assetType = "[light PointLight]";
+    return PointLight;
+})(LightBase);
+module.exports = PointLight;
+
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/LightBase":"awayjs-display/lib/display/LightBase","awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper"}],"awayjs-display/lib/display/Scene":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
 var BasicPartition = require("awayjs-display/lib/partition/BasicPartition");
 var Scene = (function (_super) {
     __extends(Scene, _super);
@@ -4776,1285 +7610,1169 @@ var Scene = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = Scene;
 
-},{"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/containers/View":[function(require,module,exports){
-var getTimer = require("awayjs-core/lib/utils/getTimer");
-var TouchPoint = require("awayjs-display/lib/base/TouchPoint");
-var Scene = require("awayjs-display/lib/containers/Scene");
-var RaycastPicker = require("awayjs-display/lib/pick/RaycastPicker");
-var Camera = require("awayjs-display/lib/entities/Camera");
-var CameraEvent = require("awayjs-display/lib/events/CameraEvent");
-var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
-var RendererEvent = require("awayjs-display/lib/events/RendererEvent");
-var MouseManager = require("awayjs-display/lib/managers/MouseManager");
-var View = (function () {
-    /*
-     ***********************************************************************
-     * Disabled / Not yet implemented
-     ***********************************************************************
-     *
-     * private _background:away.textures.Texture2DBase;
-     *
-     * public _pTouch3DManager:away.managers.Touch3DManager;
-     *
+},{"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/display/Shape":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+/**
+ * This class is used to create lightweight shapes using the ActionScript
+ * drawing application program interface(API). The Shape class includes a
+ * <code>graphics</code> property, which lets you access methods from the
+ * Graphics class.
+ *
+ * <p>The Sprite class also includes a <code>graphics</code>property, and it
+ * includes other features not available to the Shape class. For example, a
+ * Sprite object is a display object container, whereas a Shape object is not
+ * (and cannot contain child display objects). For this reason, Shape objects
+ * consume less memory than Sprite objects that contain the same graphics.
+ * However, a Sprite object supports user input events, while a Shape object
+ * does not.</p>
+ */
+var Shape = (function (_super) {
+    __extends(Shape, _super);
+    /**
+     * Creates a new Shape object.
      */
-    function View(renderer, scene, camera) {
-        var _this = this;
-        if (scene === void 0) { scene = null; }
-        if (camera === void 0) { camera = null; }
-        this._width = 0;
-        this._height = 0;
-        this._time = 0;
-        this._deltaTime = 0;
-        this._backgroundColor = 0x000000;
-        this._backgroundAlpha = 1;
-        this._viewportDirty = true;
-        this._scissorDirty = true;
-        this._mousePicker = new RaycastPicker();
-        this._pTouchPoints = new Array();
-        this._onPartitionChangedDelegate = function (event) { return _this._onPartitionChanged(event); };
-        this._onProjectionChangedDelegate = function (event) { return _this._onProjectionChanged(event); };
-        this._onViewportUpdatedDelegate = function (event) { return _this._onViewportUpdated(event); };
-        this._onScissorUpdatedDelegate = function (event) { return _this._onScissorUpdated(event); };
-        this.scene = scene || new Scene();
-        this.camera = camera || new Camera();
-        this.renderer = renderer;
-        //make sure document border is zero
-        if (document) {
-            document.body.style.margin = "0px";
-            this._htmlElement = document.createElement("div");
-            this._htmlElement.style.position = "absolute";
-            document.body.appendChild(this._htmlElement);
-        }
-        this._mouseManager = MouseManager.getInstance();
-        this._mouseManager.registerView(this);
-        //			if (this._shareContext)
-        //				this._mouse3DManager.addViewLayer(this);
+    function Shape() {
+        _super.call(this);
     }
-    Object.defineProperty(View.prototype, "mouseX", {
+    Object.defineProperty(Shape.prototype, "graphics", {
+        /**
+         * Specifies the Graphics object belonging to this Shape object, where vector
+         * drawing commands can occur.
+         */
         get: function () {
-            return this._pMouseX;
+            return this._graphics;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(View.prototype, "mouseY", {
-        get: function () {
-            return this._pMouseY;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "touchPoints", {
-        get: function () {
-            return this._pTouchPoints;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    View.prototype.getLocalMouseX = function (displayObject) {
-        return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).x;
+    Shape.prototype.clone = function () {
+        var clone = new Shape();
+        clone.pivot = this.pivot;
+        clone.transform.matrix3D = this.transform.matrix3D;
+        clone.name = name;
+        clone.maskMode = this.maskMode;
+        clone.masks = this.masks ? this.masks.concat() : null;
+        clone._graphics = this._graphics;
+        return clone;
     };
-    View.prototype.getLocalMouseY = function (displayObject) {
-        return displayObject.inverseSceneTransform.transformVector(this.unproject(this._pMouseX, this._pMouseY, 1000)).y;
-    };
-    View.prototype.getLocalTouchPoints = function (displayObject) {
-        var localPosition;
-        var localTouchPoints = new Array();
-        var len = this._pTouchPoints.length;
-        for (var i = 0; i < len; i++) {
-            localPosition = displayObject.inverseSceneTransform.transformVector(this.unproject(this._pTouchPoints[i].x, this._pTouchPoints[i].y, 1000));
-            localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._pTouchPoints[i].id));
-        }
-        return localTouchPoints;
-    };
-    Object.defineProperty(View.prototype, "htmlElement", {
+    return Shape;
+})(DisplayObject);
+module.exports = Shape;
+
+},{"awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject"}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
+var BlendMode = require("awayjs-core/lib/image/BlendMode");
+var DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
+var RenderableEvent = require("awayjs-display/lib/events/RenderableEvent");
+var SurfaceEvent = require("awayjs-display/lib/events/SurfaceEvent");
+var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+var Style = require("awayjs-display/lib/base/Style");
+var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
+/**
+ * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
+ * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
+ * the sky box is always as large as possible without being clipped.
+ */
+var Skybox = (function (_super) {
+    __extends(Skybox, _super);
+    /**
+     * Create a new Skybox object.
+     *
+     * @param material	The material with which to render the Skybox.
+     */
+    function Skybox(image) {
+        var _this = this;
+        if (image === void 0) { image = null; }
+        _super.call(this);
+        this._textures = new Array();
+        this._pAlphaThreshold = 0;
+        this._pBlendMode = BlendMode.NORMAL;
+        this._curves = false;
+        this._imageRect = false;
+        this._style = new Style();
+        this._onTextureInvalidateDelegate = function (event) { return _this.onTextureInvalidate(event); };
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
+        this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+        this._pIsEntity = true;
+        this._owners = new Array(this);
+        this._style.image = image;
+        this.texture = new SingleCubeTexture();
+        //default bounds type
+        this._boundsType = BoundsType.NULL;
+    }
+    Object.defineProperty(Skybox.prototype, "alphaThreshold", {
         /**
-         *
+         * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+         * invisible or entirely opaque, often used with textures for foliage, etc.
+         * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
          */
         get: function () {
-            return this._htmlElement;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "renderer", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pRenderer;
+            return this._pAlphaThreshold;
         },
         set: function (value) {
-            if (this._pRenderer == value)
-                return;
-            if (this._pRenderer) {
-                this._pRenderer.dispose();
-                this._pRenderer.removeEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
-                this._pRenderer.removeEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
-            }
-            this._pRenderer = value;
-            this._pRenderer.addEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
-            this._pRenderer.addEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
-            //reset entity collector
-            this._pEntityCollector = this._pRenderer._iCreateEntityCollector();
-            if (this._pCamera)
-                this._pEntityCollector.camera = this._pCamera;
-            //reset back buffer
-            this._pRenderer._iBackgroundR = ((this._backgroundColor >> 16) & 0xff) / 0xff;
-            this._pRenderer._iBackgroundG = ((this._backgroundColor >> 8) & 0xff) / 0xff;
-            this._pRenderer._iBackgroundB = (this._backgroundColor & 0xff) / 0xff;
-            this._pRenderer._iBackgroundAlpha = this._backgroundAlpha;
-            this._pRenderer.width = this._width;
-            this._pRenderer.height = this._height;
-            this._pRenderer.shareContext = this._shareContext;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "shareContext", {
-        /**
-         *
-         */
-        get: function () {
-            return this._shareContext;
-        },
-        set: function (value) {
-            if (this._shareContext == value)
-                return;
-            this._shareContext = value;
-            if (this._pRenderer)
-                this._pRenderer.shareContext = this._shareContext;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "backgroundColor", {
-        /**
-         *
-         */
-        get: function () {
-            return this._backgroundColor;
-        },
-        set: function (value) {
-            if (this._backgroundColor == value)
-                return;
-            this._backgroundColor = value;
-            this._pRenderer._iBackgroundR = ((value >> 16) & 0xff) / 0xff;
-            this._pRenderer._iBackgroundG = ((value >> 8) & 0xff) / 0xff;
-            this._pRenderer._iBackgroundB = (value & 0xff) / 0xff;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "backgroundAlpha", {
-        /**
-         *
-         * @returns {number}
-         */
-        get: function () {
-            return this._backgroundAlpha;
-        },
-        /**
-         *
-         * @param value
-         */
-        set: function (value) {
-            if (value > 1)
-                value = 1;
-            else if (value < 0)
+            if (value < 0)
                 value = 0;
-            if (this._backgroundAlpha == value)
+            else if (value > 1)
+                value = 1;
+            if (this._pAlphaThreshold == value)
                 return;
-            this._pRenderer._iBackgroundAlpha = this._backgroundAlpha = value;
+            this._pAlphaThreshold = value;
+            this.invalidatePasses();
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(View.prototype, "camera", {
+    Object.defineProperty(Skybox.prototype, "curves", {
         /**
-         *
-         * @returns {Camera3D}
+         * Indicates whether skybox should use curves. Defaults to false.
          */
         get: function () {
-            return this._pCamera;
-        },
-        /**
-         * Set camera that's used to render the scene for this viewport
-         */
-        set: function (value) {
-            if (this._pCamera == value)
-                return;
-            if (this._pCamera)
-                this._pCamera.removeEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
-            this._pCamera = value;
-            if (this._pEntityCollector)
-                this._pEntityCollector.camera = this._pCamera;
-            if (this._pScene)
-                this._pScene.partition._iRegisterEntity(this._pCamera);
-            this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
-            this._scissorDirty = true;
-            this._viewportDirty = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "scene", {
-        /**
-         *
-         * @returns {away.containers.Scene3D}
-         */
-        get: function () {
-            return this._pScene;
-        },
-        /**
-         * Set the scene that's used to render for this viewport
-         */
-        set: function (value) {
-            if (this._pScene == value)
-                return;
-            if (this._pScene)
-                this._pScene.removeEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
-            this._pScene = value;
-            this._pScene.addEventListener(DisplayObjectEvent.PARTITION_CHANGED, this._onPartitionChangedDelegate);
-            if (this._pCamera)
-                this._pScene.partition._iRegisterEntity(this._pCamera);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "deltaTime", {
-        /**
-         *
-         * @returns {number}
-         */
-        get: function () {
-            return this._deltaTime;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "width", {
-        /**
-         *
-         */
-        get: function () {
-            return this._width;
+            return this._curves;
         },
         set: function (value) {
-            if (this._width == value)
+            if (this._curves == value)
                 return;
-            this._width = value;
-            this._aspectRatio = this._width / this._height;
-            this._pCamera.projection._iAspectRatio = this._aspectRatio;
-            this._pRenderer.width = value;
-            if (this._htmlElement) {
-                this._htmlElement.style.width = value + "px";
-            }
+            this._curves = value;
+            this.invalidatePasses();
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(View.prototype, "height", {
+    Object.defineProperty(Skybox.prototype, "imageRect", {
         /**
-         *
+         * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
          */
         get: function () {
-            return this._height;
+            return this._imageRect;
         },
         set: function (value) {
-            if (this._height == value)
+            if (this._imageRect == value)
                 return;
-            this._height = value;
-            this._aspectRatio = this._width / this._height;
-            this._pCamera.projection._iAspectRatio = this._aspectRatio;
-            this._pRenderer.height = value;
-            if (this._htmlElement) {
-                this._htmlElement.style.height = value + "px";
-            }
+            this._imageRect = value;
+            this.invalidatePasses();
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(View.prototype, "mousePicker", {
+    Object.defineProperty(Skybox.prototype, "lightPicker", {
+        /**
+         * The light picker used by the material to provide lights to the material if it supports lighting.
+         *
+         * @see LightPickerBase
+         * @see StaticLightPicker
+         */
+        get: function () {
+            return this._pLightPicker;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "animationSet", {
         /**
          *
          */
         get: function () {
-            return this._mousePicker;
+            return this._animationSet;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "blendMode", {
+        /**
+         * The blend mode to use when drawing this renderable. The following blend modes are supported:
+         * <ul>
+         * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+         * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+         * <li>BlendMode.MULTIPLY</li>
+         * <li>BlendMode.ADD</li>
+         * <li>BlendMode.ALPHA</li>
+         * </ul>
+         */
+        get: function () {
+            return this._pBlendMode;
         },
         set: function (value) {
-            if (this._mousePicker == value)
+            if (this._pBlendMode == value)
                 return;
-            if (value == null)
-                this._mousePicker = new RaycastPicker();
-            else
-                this._mousePicker = value;
+            this._pBlendMode = value;
+            this.invalidate();
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(View.prototype, "x", {
+    Object.defineProperty(Skybox.prototype, "iOwners", {
         /**
+         * A list of the IRenderables that use this material
          *
+         * @private
          */
         get: function () {
-            return this._pRenderer.x;
+            return this._owners;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "animator", {
+        get: function () {
+            return this._animator;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "texture", {
+        /**
+        * The cube texture to use as the skybox.
+        */
+        get: function () {
+            return this._texture;
         },
         set: function (value) {
-            if (this._pRenderer.x == value)
+            if (this._texture == value)
                 return;
-            this._pRenderer.x == value;
-            if (this._htmlElement) {
-                this._htmlElement.style.left = value + "px";
-            }
+            if (this._texture)
+                this.removeTexture(this._texture);
+            this._texture = value;
+            if (this._texture)
+                this.addTexture(this._texture);
+            this.invalidatePasses();
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(View.prototype, "y", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pRenderer.y;
-        },
-        set: function (value) {
-            if (this._pRenderer.y == value)
-                return;
-            this._pRenderer.y == value;
-            if (this._htmlElement) {
-                this._htmlElement.style.top = value + "px";
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "visible", {
-        /**
-         *
-         */
-        get: function () {
-            return (this._htmlElement && this._htmlElement.style.visibility == "visible");
-        },
-        set: function (value) {
-            if (this._htmlElement) {
-                this._htmlElement.style.visibility = value ? "visible" : "hidden";
-            }
-            //TODO transfer visible property to associated context (if one exists)
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(View.prototype, "renderedFacesCount", {
-        /**
-         *
-         * @returns {number}
-         */
-        get: function () {
-            return 0; //TODO
-            //return this._pEntityCollector._pNumTriangles;//numTriangles;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Renders the view.
-     */
-    View.prototype.render = function () {
-        this.pUpdateTime();
-        //update view and size data
-        this._pCamera.projection._iAspectRatio = this._aspectRatio;
-        if (this._scissorDirty) {
-            this._scissorDirty = false;
-            this._pCamera.projection._iUpdateScissorRect(this._pRenderer.scissorRect.x, this._pRenderer.scissorRect.y, this._pRenderer.scissorRect.width, this._pRenderer.scissorRect.height);
-        }
-        if (this._viewportDirty) {
-            this._viewportDirty = false;
-            this._pCamera.projection._iUpdateViewport(this._pRenderer.viewPort.x, this._pRenderer.viewPort.y, this._pRenderer.viewPort.width, this._pRenderer.viewPort.height);
-        }
-        // update picking
-        if (!this._shareContext) {
-            if (this.forceMouseMove && this._htmlElement == this._mouseManager._iActiveDiv && !this._mouseManager._iUpdateDirty)
-                this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
-            this._mouseManager.fireMouseEvents(this.forceMouseMove);
-        }
-        //_touch3DManager.updateCollider();
-        //clear entity collector ready for collection
-        this._pEntityCollector.clear();
-        // collect stuff to render
-        this._pScene.traversePartitions(this._pEntityCollector);
-        //render the contents of the entity collector
-        this._pRenderer.render(this._pEntityCollector);
+    Skybox.prototype.getNumTextures = function () {
+        return this._textures.length;
     };
+    Skybox.prototype.getTextureAt = function (index) {
+        return this._textures[index];
+    };
+    Object.defineProperty(Skybox.prototype, "style", {
+        /**
+         *
+         */
+        get: function () {
+            return this._style;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "assetType", {
+        get: function () {
+            return Skybox.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Skybox.prototype, "castsShadows", {
+        get: function () {
+            return false; //TODO
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
+     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
      *
+     * @private
      */
-    View.prototype.pUpdateTime = function () {
-        var time = getTimer();
-        if (this._time == 0)
-            this._time = time;
-        this._deltaTime = time - this._time;
-        this._time = time;
+    Skybox.prototype.invalidatePasses = function () {
+        this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
+    };
+    Skybox.prototype.invalidateSurface = function () {
+        this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
+    };
+    Skybox.prototype.addTexture = function (texture) {
+        this._textures.push(texture);
+        texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+        this.onTextureInvalidate();
+    };
+    Skybox.prototype.removeTexture = function (texture) {
+        this._textures.splice(this._textures.indexOf(texture), 1);
+        texture.removeEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
+        this.onTextureInvalidate();
+    };
+    Skybox.prototype.onTextureInvalidate = function (event) {
+        if (event === void 0) { event = null; }
+        this.invalidate();
+    };
+    Skybox.prototype._onInvalidateProperties = function (event) {
+        this.invalidatePasses();
     };
     /**
+     * //TODO
      *
-     */
-    View.prototype.dispose = function () {
-        this._pRenderer.dispose();
-        // TODO: imeplement mouseManager / touch3DManager
-        this._mouseManager.unregisterView(this);
-        //this._touch3DManager.disableTouchListeners(this);
-        //this._touch3DManager.dispose();
-        this._mouseManager = null;
-        //this._touch3DManager = null;
-        this._pRenderer = null;
-        this._pEntityCollector = null;
-    };
-    Object.defineProperty(View.prototype, "iEntityCollector", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pEntityCollector;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
+     * @param shortestCollisionDistance
+     * @returns {boolean}
      *
-     * @param e
+     * @internal
      */
-    View.prototype._onPartitionChanged = function (event) {
-        if (this._pCamera)
-            this._pScene.partition._iRegisterEntity(this._pCamera);
+    Skybox.prototype._iTestCollision = function (shortestCollisionDistance) {
+        return false;
     };
-    /**
-     *
-     */
-    View.prototype._onProjectionChanged = function (event) {
-        this._scissorDirty = true;
-        this._viewportDirty = true;
-    };
-    /**
-     *
-     */
-    View.prototype._onViewportUpdated = function (event) {
-        this._viewportDirty = true;
-    };
-    /**
-     *
-     */
-    View.prototype._onScissorUpdated = function (event) {
-        this._scissorDirty = true;
-    };
-    View.prototype.project = function (point3d) {
-        var v = this._pCamera.project(point3d);
-        v.x = v.x * this._pRenderer.viewPort.width / 2 + this._width * this._pCamera.projection.originX;
-        v.y = v.y * this._pRenderer.viewPort.height / 2 + this._height * this._pCamera.projection.originY;
-        return v;
-    };
-    View.prototype.unproject = function (sX, sY, sZ) {
-        return this._pCamera.unproject(2 * (sX - this._width * this._pCamera.projection.originX) / this._pRenderer.viewPort.width, 2 * (sY - this._height * this._pCamera.projection.originY) / this._pRenderer.viewPort.height, sZ);
-    };
-    View.prototype.getRay = function (sX, sY, sZ) {
-        return this._pCamera.getRay((sX * 2 - this._width) / this._width, (sY * 2 - this._height) / this._height, sZ);
-    };
-    /*TODO: implement Background
-     public get background():away.textures.Texture2DBase
-     {
-     return this._background;
-     }
-     */
-    /*TODO: implement Background
-     public set background( value:away.textures.Texture2DBase )
-     {
-     this._background = value;
-     this._renderer.background = _background;
-     }
-     */
-    // TODO: required dependency stageGL
-    View.prototype.updateCollider = function () {
-        if (!this._shareContext) {
-            if (this._htmlElement == this._mouseManager._iActiveDiv)
-                this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
-        }
-        else {
-            var collidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
-            if (this.layeredView || this._mouseManager._iCollidingObject == null || collidingObject.rayEntryDistance < this._mouseManager._iCollidingObject.rayEntryDistance)
-                this._mouseManager._iCollidingObject = collidingObject;
-        }
-    };
-    return View;
-})();
-module.exports = View;
+    Skybox.assetType = "[asset Skybox]";
+    return Skybox;
+})(DisplayObject);
+module.exports = Skybox;
 
-},{"awayjs-core/lib/utils/getTimer":undefined,"awayjs-display/lib/base/TouchPoint":"awayjs-display/lib/base/TouchPoint","awayjs-display/lib/containers/Scene":"awayjs-display/lib/containers/Scene","awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/RendererEvent":"awayjs-display/lib/events/RendererEvent","awayjs-display/lib/managers/MouseManager":"awayjs-display/lib/managers/MouseManager","awayjs-display/lib/pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
-var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
-var ControllerBase = (function () {
-    function ControllerBase(targetObject) {
-        if (targetObject === void 0) { targetObject = null; }
-        this._pAutoUpdate = true;
-        this.targetObject = targetObject;
-    }
-    ControllerBase.prototype.pNotifyUpdate = function () {
-        if (this._pTargetObject)
-            this._pTargetObject.invalidatePartitionBounds();
-    };
-    Object.defineProperty(ControllerBase.prototype, "targetObject", {
-        get: function () {
-            return this._pTargetObject;
-        },
-        set: function (val) {
-            if (this._pTargetObject == val)
-                return;
-            if (this._pTargetObject && this._pAutoUpdate)
-                this._pTargetObject._iController = null;
-            this._pTargetObject = val;
-            if (this._pTargetObject && this._pAutoUpdate)
-                this._pTargetObject._iController = this;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ControllerBase.prototype, "autoUpdate", {
-        get: function () {
-            return this._pAutoUpdate;
-        },
-        set: function (val) {
-            if (this._pAutoUpdate == val)
-                return;
-            this._pAutoUpdate = val;
-            if (this._pTargetObject) {
-                if (this._pAutoUpdate)
-                    this._pTargetObject._iController = this;
-                else
-                    this._pTargetObject._iController = null;
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ControllerBase.prototype.update = function (interpolate) {
-        if (interpolate === void 0) { interpolate = true; }
-        throw new AbstractMethodError();
-    };
-    ControllerBase.prototype.updateController = function () {
-        if (this._pControllerDirty && this._pAutoUpdate) {
-            this._pControllerDirty = false;
-            this.pNotifyUpdate();
-        }
-    };
-    return ControllerBase;
-})();
-module.exports = ControllerBase;
-
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/controllers/FirstPersonController":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var MathConsts = require("awayjs-core/lib/geom/MathConsts");
-var ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+var Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
+var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
+var Matrix = require("awayjs-core/lib/geom/Matrix");
+var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
+var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
+var Mesh = require("awayjs-display/lib/display/Mesh");
+var Graphics = require("awayjs-display/lib/graphics/Graphics");
+var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
+var Style = require("awayjs-display/lib/base/Style");
 /**
- * Extended camera used to hover round a specified target object.
+ * The TextField class is used to create display objects for text display and
+ * input. <ph outputclass="flexonly">You can use the TextField class to
+ * perform low-level text rendering. However, in Flex, you typically use the
+ * Label, Text, TextArea, and TextInput controls to process text. <ph
+ * outputclass="flashonly">You can give a text field an instance name in the
+ * Property inspector and use the methods and properties of the TextField
+ * class to manipulate it with ActionScript. TextField instance names are
+ * displayed in the Movie Explorer and in the Insert Target Path dialog box in
+ * the Actions panel.
  *
- * @see    away3d.containers.View3D
+ * <p>To create a text field dynamically, use the <code>TextField()</code>
+ * constructor.</p>
+ *
+ * <p>The methods of the TextField class let you set, select, and manipulate
+ * text in a dynamic or input text field that you create during authoring or
+ * at runtime. </p>
+ *
+ * <p>ActionScript provides several ways to format your text at runtime. The
+ * TextFormat class lets you set character and paragraph formatting for
+ * TextField objects. You can apply Cascading Style Sheets(CSS) styles to
+ * text fields by using the <code>TextField.styleSheet</code> property and the
+ * StyleSheet class. You can use CSS to style built-in HTML tags, define new
+ * formatting tags, or apply styles. You can assign HTML formatted text, which
+ * optionally uses CSS styles, directly to a text field. HTML text that you
+ * assign to a text field can contain embedded media(movie clips, SWF files,
+ * GIF files, PNG files, and JPEG files). The text wraps around the embedded
+ * media in the same way that a web browser wraps text around media embedded
+ * in an HTML document. </p>
+ *
+ * <p>Flash Player supports a subset of HTML tags that you can use to format
+ * text. See the list of supported HTML tags in the description of the
+ * <code>htmlText</code> property.</p>
+ *
+ * @event change                    Dispatched after a control value is
+ *                                  modified, unlike the
+ *                                  <code>textInput</code> event, which is
+ *                                  dispatched before the value is modified.
+ *                                  Unlike the W3C DOM Event Model version of
+ *                                  the <code>change</code> event, which
+ *                                  dispatches the event only after the
+ *                                  control loses focus, the ActionScript 3.0
+ *                                  version of the <code>change</code> event
+ *                                  is dispatched any time the control
+ *                                  changes. For example, if a user types text
+ *                                  into a text field, a <code>change</code>
+ *                                  event is dispatched after every keystroke.
+ * @event link                      Dispatched when a user clicks a hyperlink
+ *                                  in an HTML-enabled text field, where the
+ *                                  URL begins with "event:". The remainder of
+ *                                  the URL after "event:" is placed in the
+ *                                  text property of the LINK event.
+ *
+ *                                  <p><b>Note:</b> The default behavior,
+ *                                  adding the text to the text field, occurs
+ *                                  only when Flash Player generates the
+ *                                  event, which in this case happens when a
+ *                                  user attempts to input text. You cannot
+ *                                  put text into a text field by sending it
+ *                                  <code>textInput</code> events.</p>
+ * @event scroll                    Dispatched by a TextField object
+ *                                  <i>after</i> the user scrolls.
+ * @event textInput                 Flash Player dispatches the
+ *                                  <code>textInput</code> event when a user
+ *                                  enters one or more characters of text.
+ *                                  Various text input methods can generate
+ *                                  this event, including standard keyboards,
+ *                                  input method editors(IMEs), voice or
+ *                                  speech recognition systems, and even the
+ *                                  act of pasting plain text with no
+ *                                  formatting or style information.
+ * @event textInteractionModeChange Flash Player dispatches the
+ *                                  <code>textInteractionModeChange</code>
+ *                                  event when a user changes the interaction
+ *                                  mode of a text field. for example on
+ *                                  Android, one can toggle from NORMAL mode
+ *                                  to SELECTION mode using context menu
+ *                                  options
  */
-var FirstPersonController = (function (_super) {
-    __extends(FirstPersonController, _super);
+var TextField = (function (_super) {
+    __extends(TextField, _super);
     /**
-     * Creates a new <code>HoverController</code> object.
+     * Creates a new TextField instance. After you create the TextField instance,
+     * call the <code>addChild()</code> or <code>addChildAt()</code> method of
+     * the parent DisplayObjectContainer object to add the TextField instance to
+     * the display list.
+     *
+     * <p>The default size for a text field is 100 x 100 pixels.</p>
      */
-    function FirstPersonController(targetObject, panAngle, tiltAngle, minTiltAngle, maxTiltAngle, steps, wrapPanAngle) {
-        if (targetObject === void 0) { targetObject = null; }
-        if (panAngle === void 0) { panAngle = 0; }
-        if (tiltAngle === void 0) { tiltAngle = 90; }
-        if (minTiltAngle === void 0) { minTiltAngle = -90; }
-        if (maxTiltAngle === void 0) { maxTiltAngle = 90; }
-        if (steps === void 0) { steps = 8; }
-        if (wrapPanAngle === void 0) { wrapPanAngle = false; }
-        _super.call(this, targetObject);
-        this._iCurrentPanAngle = 0;
-        this._iCurrentTiltAngle = 90;
-        this._panAngle = 0;
-        this._tiltAngle = 90;
-        this._minTiltAngle = -90;
-        this._maxTiltAngle = 90;
-        this._steps = 8;
-        this._walkIncrement = 0;
-        this._strafeIncrement = 0;
-        this._wrapPanAngle = false;
-        this.fly = false;
-        this.panAngle = panAngle;
-        this.tiltAngle = tiltAngle;
-        this.minTiltAngle = minTiltAngle;
-        this.maxTiltAngle = maxTiltAngle;
-        this.steps = steps;
-        this.wrapPanAngle = wrapPanAngle;
-        //values passed in contrustor are applied immediately
-        this._iCurrentPanAngle = this._panAngle;
-        this._iCurrentTiltAngle = this._tiltAngle;
+    function TextField() {
+        _super.call(this);
+        this._text = "";
+        this.type = TextFieldType.STATIC;
     }
-    Object.defineProperty(FirstPersonController.prototype, "steps", {
+    Object.defineProperty(TextField.prototype, "assetType", {
         /**
-         * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
          *
-         * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+         * @returns {string}
+         */
+        get: function () {
+            return TextField.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "bottomScrollV", {
+        /**
+         * An integer(1-based index) that indicates the bottommost line that is
+         * currently visible in the specified text field. Think of the text field as
+         * a window onto a block of text. The <code>scrollV</code> property is the
+         * 1-based index of the topmost visible line in the window.
          *
-         * @see    #tiltAngle
-         * @see    #panAngle
+         * <p>All the text between the lines indicated by <code>scrollV</code> and
+         * <code>bottomScrollV</code> is currently visible in the text field.</p>
          */
         get: function () {
-            return this._steps;
-        },
-        set: function (val) {
-            val = (val < 1) ? 1 : val;
-            if (this._steps == val)
-                return;
-            this._steps = val;
-            this.pNotifyUpdate();
+            return this._bottomScrollV;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(FirstPersonController.prototype, "panAngle", {
+    Object.defineProperty(TextField.prototype, "caretIndex", {
         /**
-         * Rotation of the camera in degrees around the y axis. Defaults to 0.
-         */
-        get: function () {
-            return this._panAngle;
-        },
-        set: function (val) {
-            if (this._panAngle == val)
-                return;
-            this._panAngle = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(FirstPersonController.prototype, "tiltAngle", {
-        /**
-         * Elevation angle of the camera in degrees. Defaults to 90.
-         */
-        get: function () {
-            return this._tiltAngle;
-        },
-        set: function (val) {
-            val = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, val));
-            if (this._tiltAngle == val)
-                return;
-            this._tiltAngle = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(FirstPersonController.prototype, "minTiltAngle", {
-        /**
-         * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+         * The index of the insertion point(caret) position. If no insertion point
+         * is displayed, the value is the position the insertion point would be if
+         * you restored focus to the field(typically where the insertion point last
+         * was, or 0 if the field has not had focus).
          *
-         * @see    #tiltAngle
+         * <p>Selection span indexes are zero-based(for example, the first position
+         * is 0, the second position is 1, and so on).</p>
          */
         get: function () {
-            return this._minTiltAngle;
-        },
-        set: function (val) {
-            if (this._minTiltAngle == val)
-                return;
-            this._minTiltAngle = val;
-            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
+            return this._caretIndex;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(FirstPersonController.prototype, "maxTiltAngle", {
+    Object.defineProperty(TextField.prototype, "length", {
         /**
-         * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-         *
-         * @see    #tiltAngle
+         * The number of characters in a text field. A character such as tab
+         * (<code>\t</code>) counts as one character.
          */
         get: function () {
-            return this._maxTiltAngle;
-        },
-        set: function (val) {
-            if (this._maxTiltAngle == val)
-                return;
-            this._maxTiltAngle = val;
-            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(FirstPersonController.prototype, "wrapPanAngle", {
-        /**
-         * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-         */
-        get: function () {
-            return this._wrapPanAngle;
-        },
-        set: function (val) {
-            if (this._wrapPanAngle == val)
-                return;
-            this._wrapPanAngle = val;
-            this.pNotifyUpdate();
+            return this._length;
         },
         enumerable: true,
         configurable: true
     });
     /**
-     * Updates the current tilt angle and pan angle values.
-     *
-     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-     *
-     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-     *
-     * @see    #tiltAngle
-     * @see    #panAngle
-     * @see    #steps
+     * The maximum value of <code>scrollH</code>.
      */
-    FirstPersonController.prototype.update = function (interpolate) {
-        if (interpolate === void 0) { interpolate = true; }
-        if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
-            this._pControllerDirty = true;
-            if (this._wrapPanAngle) {
-                if (this._panAngle < 0) {
-                    this._iCurrentPanAngle += this._panAngle % 360 + 360 - this._panAngle;
-                    this._panAngle = this._panAngle % 360 + 360;
+    TextField.prototype.maxScrollH = function () {
+        return this._maxScrollH;
+    };
+    /**
+     * The maximum value of <code>scrollV</code>.
+     */
+    TextField.prototype.maxScrollV = function () {
+        return this._maxScrollV;
+    };
+    Object.defineProperty(TextField.prototype, "numLines", {
+        /**
+         * Defines the number of text lines in a multiline text field. If
+         * <code>wordWrap</code> property is set to <code>true</code>, the number of
+         * lines increases when text wraps.
+         */
+        get: function () {
+            return this._numLines;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "selectionBeginIndex", {
+        /**
+         * The zero-based character index value of the first character in the current
+         * selection. For example, the first character is 0, the second character is
+         * 1, and so on. If no text is selected, this property is the value of
+         * <code>caretIndex</code>.
+         */
+        get: function () {
+            return this._selectionBeginIndex;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "selectionEndIndex", {
+        /**
+         * The zero-based character index value of the last character in the current
+         * selection. For example, the first character is 0, the second character is
+         * 1, and so on. If no text is selected, this property is the value of
+         * <code>caretIndex</code>.
+         */
+        get: function () {
+            return this._selectionEndIndex;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "text", {
+        /**
+         * A string that is the current text in the text field. Lines are separated
+         * by the carriage return character(<code>'\r'</code>, ASCII 13). This
+         * property contains unformatted text in the text field, without HTML tags.
+         *
+         * <p>To get the text in HTML form, use the <code>htmlText</code>
+         * property.</p>
+         */
+        get: function () {
+            return this._text;
+        },
+        set: function (value) {
+            value = value.toString();
+            if (this._text == value)
+                return;
+            this._text = value;
+            this._textGraphicsDirty = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textFormat", {
+        get: function () {
+            return this._textFormat;
+        },
+        set: function (value) {
+            if (this._textFormat == value)
+                return;
+            this._textFormat = value;
+            this._textGraphicsDirty = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "graphics", {
+        /**
+         * The geometry used by the mesh that provides it with its shape.
+         */
+        get: function () {
+            if (this._textGraphicsDirty)
+                this.reConstruct();
+            return this._graphics;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textColor", {
+        get: function () {
+            return this._textColor;
+        },
+        set: function (value) {
+            this._textColor = value;
+            if (!this.transform.colorTransform)
+                this.transform.colorTransform = new ColorTransform();
+            this.transform.colorTransform.color = value;
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textInteractionMode", {
+        /**
+         * The interaction mode property, Default value is
+         * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
+         * that the text can be scrolled but not selected. One can switch to the
+         * selectable mode through the in-built context menu on the text field. On
+         * Desktop, the normal mode implies that the text is in scrollable as well as
+         * selection mode.
+         */
+        get: function () {
+            return this._textInteractionMode;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textWidth", {
+        /**
+         * The width of the text in pixels.
+         */
+        get: function () {
+            return this._textWidth;
+        },
+        set: function (value) {
+            this._textWidth = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "textHeight", {
+        /**
+         * The width of the text in pixels.
+         */
+        get: function () {
+            return this._textHeight;
+        },
+        set: function (value) {
+            this._textHeight = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @inheritDoc
+     */
+    TextField.prototype.dispose = function () {
+        this.disposeValues();
+        TextField._textFields.push(this);
+    };
+    /**
+     * @inheritDoc
+     */
+    TextField.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
+        this._textFormat = null;
+    };
+    /**
+     * Reconstructs the Graphics for this Text-field.
+     */
+    TextField.prototype.reConstruct = function () {
+        this._textGraphicsDirty = false;
+        if (this._textFormat == null)
+            return;
+        this._graphics.dispose();
+        this._graphics = new Graphics(this);
+        if (this._text == "")
+            return;
+        var vertices = new Array();
+        var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+        var additional_margin_x = this._textFormat.font_table.offset_x;
+        var additional_margin_y = this._textFormat.font_table.offset_y;
+        var y_offset = additional_margin_y;
+        var prev_char = null;
+        var j = 0;
+        var k = 0;
+        var whitespace_width = (this._textFormat.font_table.get_whitespace_width() * char_scale);
+        var textlines = this.text.toString().split("\\n");
+        var final_lines_chars = [];
+        var final_lines_char_scale = [];
+        var final_lines_width = [];
+        for (var tl = 0; tl < textlines.length; tl++) {
+            final_lines_chars.push([]);
+            final_lines_char_scale.push([]);
+            final_lines_width.push(0);
+            var words = textlines[tl].split(" ");
+            for (var i = 0; i < words.length; i++) {
+                var word_width = 0;
+                var word_chars = [];
+                var word_chars_scale = [];
+                var c_cnt = 0;
+                for (var w = 0; w < words[i].length; w++) {
+                    char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+                    var this_char = this._textFormat.font_table.getChar(words[i].charCodeAt(w).toString());
+                    if (this_char == null) {
+                        if (this._textFormat.fallback_font_table) {
+                            char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
+                            this_char = this._textFormat.fallback_font_table.getChar(words[i].charCodeAt(w).toString());
+                        }
+                    }
+                    if (this_char != null) {
+                        var this_subGeom = this_char.elements;
+                        if (this_subGeom != null) {
+                            // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                            var kerning_value = 0;
+                            if (prev_char != null) {
+                                for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                    if (prev_char.kerningCharCodes[k] == words[i].charCodeAt(w)) {
+                                        kerning_value = prev_char.kerningValues[k];
+                                        break;
+                                    }
+                                }
+                            }
+                            word_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                        }
+                        else {
+                            // if no char-geometry was found, we insert a "space"
+                            word_width += whitespace_width;
+                        }
+                    }
+                    else {
+                        // if no char-geometry was found, we insert a "space"
+                        //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                        word_width += whitespace_width;
+                    }
+                    word_chars_scale[c_cnt] = char_scale;
+                    word_chars[c_cnt++] = this_char;
+                }
+                if ((final_lines_width[final_lines_width.length - 1] + word_width) <= this.textWidth) {
+                    for (var fw = 0; fw < word_chars_scale.length; fw++) {
+                        final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+                        final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+                    }
+                    final_lines_width[final_lines_width.length - 1] += word_width;
                 }
                 else {
-                    this._iCurrentPanAngle += this._panAngle % 360 - this._panAngle;
-                    this._panAngle = this._panAngle % 360;
+                    // word does not fit
+                    // todo respect multiline and autowrapping properties.
+                    // right now we just pretend everything has autowrapping and multiline
+                    final_lines_chars.push([]);
+                    final_lines_char_scale.push([]);
+                    final_lines_width.push(0);
+                    for (var fw = 0; fw < word_chars_scale.length; fw++) {
+                        final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+                        final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+                    }
+                    final_lines_width[final_lines_width.length - 1] = word_width;
                 }
-                while (this._panAngle - this._iCurrentPanAngle < -180)
-                    this._iCurrentPanAngle -= 360;
-                while (this._panAngle - this._iCurrentPanAngle > 180)
-                    this._iCurrentPanAngle += 360;
-            }
-            if (interpolate) {
-                this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle) / (this.steps + 1);
-                this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle) / (this.steps + 1);
-            }
-            else {
-                this._iCurrentTiltAngle = this._tiltAngle;
-                this._iCurrentPanAngle = this._panAngle;
-            }
-            //snap coords if angle differences are close
-            if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01) && (Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
-                this._iCurrentTiltAngle = this._tiltAngle;
-                this._iCurrentPanAngle = this._panAngle;
+                if (i < (words.length - 1)) {
+                    if ((final_lines_width[final_lines_width.length - 1] + whitespace_width) <= this.textWidth) {
+                        final_lines_chars[final_lines_chars.length - 1].push(null);
+                        final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
+                        final_lines_width[final_lines_width.length - 1] += whitespace_width;
+                    }
+                    else {
+                        final_lines_chars.push([null]);
+                        final_lines_char_scale.push([char_scale]);
+                        final_lines_width.push(whitespace_width);
+                    }
+                }
             }
         }
-        this.targetObject.rotationX = this._iCurrentTiltAngle;
-        this.targetObject.rotationY = this._iCurrentPanAngle;
-        if (this._walkIncrement) {
-            if (this.fly) {
-                this.targetObject.transform.moveForward(this._walkIncrement);
+        for (var i = 0; i < final_lines_chars.length; i++) {
+            var x_offset = additional_margin_x;
+            if (this._textFormat.align == "center") {
+                x_offset = (this._textWidth - final_lines_width[i]) / 2;
             }
-            else {
-                this.targetObject.x += this._walkIncrement * Math.sin(this._panAngle * MathConsts.DEGREES_TO_RADIANS);
-                this.targetObject.z += this._walkIncrement * Math.cos(this._panAngle * MathConsts.DEGREES_TO_RADIANS);
+            else if (this._textFormat.align == "right") {
+                x_offset = (this._textWidth - final_lines_width[i]) - additional_margin_x;
             }
-            this._walkIncrement = 0;
-        }
-        if (this._strafeIncrement) {
-            this.targetObject.transform.moveRight(this._strafeIncrement);
-            this._strafeIncrement = 0;
-        }
-    };
-    FirstPersonController.prototype.incrementWalk = function (val) {
-        if (val == 0)
-            return;
-        this._walkIncrement += val;
-        this.pNotifyUpdate();
-    };
-    FirstPersonController.prototype.incrementStrafe = function (val) {
-        if (val == 0)
-            return;
-        this._strafeIncrement += val;
-        this.pNotifyUpdate();
-    };
-    return FirstPersonController;
-})(ControllerBase);
-module.exports = FirstPersonController;
-
-},{"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-display/lib/controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase"}],"awayjs-display/lib/controllers/FollowController":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var HoverController = require("awayjs-display/lib/controllers/HoverController");
-/**
- * Controller used to follow behind an object on the XZ plane, with an optional
- * elevation (tiltAngle).
- *
- * @see    away3d.containers.View3D
- */
-var FollowController = (function (_super) {
-    __extends(FollowController, _super);
-    function FollowController(targetObject, lookAtObject, tiltAngle, distance) {
-        if (targetObject === void 0) { targetObject = null; }
-        if (lookAtObject === void 0) { lookAtObject = null; }
-        if (tiltAngle === void 0) { tiltAngle = 45; }
-        if (distance === void 0) { distance = 700; }
-        _super.call(this, targetObject, lookAtObject, 0, tiltAngle, distance);
-    }
-    FollowController.prototype.update = function (interpolate) {
-        if (interpolate === void 0) { interpolate = true; }
-        if (!this.lookAtObject)
-            return;
-        this.panAngle = this._pLookAtObject.rotationY - 180;
-        _super.prototype.update.call(this);
-    };
-    return FollowController;
-})(HoverController);
-module.exports = FollowController;
-
-},{"awayjs-display/lib/controllers/HoverController":"awayjs-display/lib/controllers/HoverController"}],"awayjs-display/lib/controllers/HoverController":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var MathConsts = require("awayjs-core/lib/geom/MathConsts");
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-/**
- * Extended camera used to hover round a specified target object.
- *
- * @see    away.containers.View
- */
-var HoverController = (function (_super) {
-    __extends(HoverController, _super);
-    /**
-     * Creates a new <code>HoverController</code> object.
-     */
-    function HoverController(targetObject, lookAtObject, panAngle, tiltAngle, distance, minTiltAngle, maxTiltAngle, minPanAngle, maxPanAngle, steps, yFactor, wrapPanAngle) {
-        if (targetObject === void 0) { targetObject = null; }
-        if (lookAtObject === void 0) { lookAtObject = null; }
-        if (panAngle === void 0) { panAngle = 0; }
-        if (tiltAngle === void 0) { tiltAngle = 90; }
-        if (distance === void 0) { distance = 1000; }
-        if (minTiltAngle === void 0) { minTiltAngle = -90; }
-        if (maxTiltAngle === void 0) { maxTiltAngle = 90; }
-        if (minPanAngle === void 0) { minPanAngle = null; }
-        if (maxPanAngle === void 0) { maxPanAngle = null; }
-        if (steps === void 0) { steps = 8; }
-        if (yFactor === void 0) { yFactor = 2; }
-        if (wrapPanAngle === void 0) { wrapPanAngle = false; }
-        _super.call(this, targetObject, lookAtObject);
-        this._iCurrentPanAngle = 0;
-        this._iCurrentTiltAngle = 90;
-        this._panAngle = 0;
-        this._tiltAngle = 90;
-        this._distance = 1000;
-        this._minPanAngle = -Infinity;
-        this._maxPanAngle = Infinity;
-        this._minTiltAngle = -90;
-        this._maxTiltAngle = 90;
-        this._steps = 8;
-        this._yFactor = 2;
-        this._wrapPanAngle = false;
-        this._upAxis = new Vector3D();
-        this.distance = distance;
-        this.panAngle = panAngle;
-        this.tiltAngle = tiltAngle;
-        this.minPanAngle = (minPanAngle != null) ? minPanAngle : -Infinity;
-        this.maxPanAngle = (maxPanAngle != null) ? maxPanAngle : Infinity;
-        this.minTiltAngle = minTiltAngle;
-        this.maxTiltAngle = maxTiltAngle;
-        this.steps = steps;
-        this.yFactor = yFactor;
-        this.wrapPanAngle = wrapPanAngle;
-        //values passed in contrustor are applied immediately
-        this._iCurrentPanAngle = this._panAngle;
-        this._iCurrentTiltAngle = this._tiltAngle;
-    }
-    Object.defineProperty(HoverController.prototype, "steps", {
-        /**
-         * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-         *
-         * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-         *
-         * @see    #tiltAngle
-         * @see    #panAngle
-         */
-        get: function () {
-            return this._steps;
-        },
-        set: function (val) {
-            val = (val < 1) ? 1 : val;
-            if (this._steps == val)
-                return;
-            this._steps = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "panAngle", {
-        /**
-         * Rotation of the camera in degrees around the y axis. Defaults to 0.
-         */
-        get: function () {
-            return this._panAngle;
-        },
-        set: function (val) {
-            val = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, val));
-            if (this._panAngle == val)
-                return;
-            this._panAngle = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "tiltAngle", {
-        /**
-         * Elevation angle of the camera in degrees. Defaults to 90.
-         */
-        get: function () {
-            return this._tiltAngle;
-        },
-        set: function (val) {
-            val = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, val));
-            if (this._tiltAngle == val)
-                return;
-            this._tiltAngle = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "distance", {
-        /**
-         * Distance between the camera and the specified target. Defaults to 1000.
-         */
-        get: function () {
-            return this._distance;
-        },
-        set: function (val) {
-            if (this._distance == val)
-                return;
-            this._distance = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "minPanAngle", {
-        /**
-         * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
-         *
-         * @see    #panAngle
-         */
-        get: function () {
-            return this._minPanAngle;
-        },
-        set: function (val) {
-            if (this._minPanAngle == val)
-                return;
-            this._minPanAngle = val;
-            this.panAngle = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, this._panAngle));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "maxPanAngle", {
-        /**
-         * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
-         *
-         * @see    #panAngle
-         */
-        get: function () {
-            return this._maxPanAngle;
-        },
-        set: function (val) {
-            if (this._maxPanAngle == val)
-                return;
-            this._maxPanAngle = val;
-            this.panAngle = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, this._panAngle));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "minTiltAngle", {
-        /**
-         * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-         *
-         * @see    #tiltAngle
-         */
-        get: function () {
-            return this._minTiltAngle;
-        },
-        set: function (val) {
-            if (this._minTiltAngle == val)
-                return;
-            this._minTiltAngle = val;
-            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "maxTiltAngle", {
-        /**
-         * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-         *
-         * @see    #tiltAngle
-         */
-        get: function () {
-            return this._maxTiltAngle;
-        },
-        set: function (val) {
-            if (this._maxTiltAngle == val)
-                return;
-            this._maxTiltAngle = val;
-            this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "yFactor", {
-        /**
-         * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
-         *
-         * @see    #distance
-         */
-        get: function () {
-            return this._yFactor;
-        },
-        set: function (val) {
-            if (this._yFactor == val)
-                return;
-            this._yFactor = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(HoverController.prototype, "wrapPanAngle", {
-        /**
-         * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-         */
-        get: function () {
-            return this._wrapPanAngle;
-        },
-        set: function (val) {
-            if (this._wrapPanAngle == val)
-                return;
-            this._wrapPanAngle = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Updates the current tilt angle and pan angle values.
-     *
-     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-     *
-     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-     *
-     * @see    #tiltAngle
-     * @see    #panAngle
-     * @see    #steps
-     */
-    HoverController.prototype.update = function (interpolate) {
-        if (interpolate === void 0) { interpolate = true; }
-        if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
-            this._pControllerDirty = true;
-            if (this._wrapPanAngle) {
-                if (this._panAngle < 0) {
-                    this._iCurrentPanAngle += this._panAngle % 360 + 360 - this._panAngle;
-                    this._panAngle = this._panAngle % 360 + 360;
+            for (var t = 0; t < final_lines_chars[i].length; t++) {
+                var this_char = final_lines_chars[i][t];
+                char_scale = final_lines_char_scale[i][t];
+                if (this_char != null) {
+                    var elements = this_char.elements;
+                    if (elements != null) {
+                        var positions2 = elements.positions.get(elements.numVertices);
+                        var curveData2 = elements.getCustomAtributes("curves").get(elements.numVertices);
+                        for (var v = 0; v < elements.numVertices; v++) {
+                            vertices[j++] = (positions2[v * 2] * char_scale) + x_offset;
+                            vertices[j++] = (positions2[v * 2 + 1] * char_scale) + y_offset;
+                            vertices[j++] = curveData2[v * 3];
+                            vertices[j++] = curveData2[v * 3 + 1];
+                            vertices[j++] = curveData2[v * 3 + 2];
+                        }
+                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+                        var kerning_value = 0;
+                        if (prev_char != null) {
+                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
+                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+                                    kerning_value = prev_char.kerningValues[k];
+                                    break;
+                                }
+                            }
+                        }
+                        x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                    }
+                    else {
+                        // if no char-geometry was found, we insert a "space"
+                        x_offset += whitespace_width;
+                    }
                 }
                 else {
-                    this._iCurrentPanAngle += this._panAngle % 360 - this._panAngle;
-                    this._panAngle = this._panAngle % 360;
+                    x_offset += whitespace_width;
                 }
-                while (this._panAngle - this._iCurrentPanAngle < -180)
-                    this._iCurrentPanAngle -= 360;
-                while (this._panAngle - this._iCurrentPanAngle > 180)
-                    this._iCurrentPanAngle += 360;
             }
-            if (interpolate) {
-                this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle) / (this.steps + 1);
-                this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle) / (this.steps + 1);
-            }
-            else {
-                this._iCurrentPanAngle = this._panAngle;
-                this._iCurrentTiltAngle = this._tiltAngle;
-            }
-            //snap coords if angle differences are close
-            if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01) && (Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
-                this._iCurrentTiltAngle = this._tiltAngle;
-                this._iCurrentPanAngle = this._panAngle;
+            // hack for multiline textfield in icycle.
+            y_offset += (this._textFormat.size + this._textFormat.leading * 1.6);
+            if (this._textFormat.leading >= 11) {
+                y_offset += 2.5;
             }
         }
-        var pos = (this.lookAtObject) ? this.lookAtObject.transform.position : (this.lookAtPosition) ? this.lookAtPosition : this._pOrigin;
-        this.targetObject.x = pos.x + this.distance * Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-        this.targetObject.y = pos.y + this.distance * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS) * this.yFactor;
-        this.targetObject.z = pos.z + this.distance * Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-        this._upAxis.x = -Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-        this._upAxis.y = Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-        this._upAxis.z = -Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-        if (this._pTargetObject) {
-            if (this._pLookAtPosition)
-                this._pTargetObject.lookAt(this._pLookAtPosition, this._upAxis);
-            else if (this._pLookAtObject)
-                this._pTargetObject.lookAt(this._pLookAtObject.scene ? this._pLookAtObject.scenePosition : this._pLookAtObject.transform.position, this._upAxis);
-        }
+        var attributesView = new AttributesView(Float32Array, 5);
+        attributesView.set(vertices);
+        var vertexBuffer = attributesView.buffer;
+        attributesView.dispose();
+        var curveElements = new TriangleElements(vertexBuffer);
+        curveElements.setPositions(new Float2Attributes(vertexBuffer));
+        curveElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+        this._graphics.addGraphic(curveElements);
+        this.material = this._textFormat.material;
+        var sampler = new Sampler2D();
+        this.style = new Style();
+        this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+        this.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+        this.material.animateUVs = true;
     };
-    return HoverController;
-})(LookAtController);
-module.exports = HoverController;
+    /**
+     * Appends the string specified by the <code>newText</code> parameter to the
+     * end of the text of the text field. This method is more efficient than an
+     * addition assignment(<code>+=</code>) on a <code>text</code> property
+     * (such as <code>someTextField.text += moreText</code>), particularly for a
+     * text field that contains a significant amount of content.
+     *
+     * @param newText The string to append to the existing text.
+     */
+    TextField.prototype.appendText = function (newText) {
+        this._text += newText;
+    };
+    /**
+     * *tells the Textfield that a paragraph is defined completly.
+     * e.g. the textfield will start a new line for future added text.
+     */
+    TextField.prototype.closeParagraph = function () {
+        //TODO
+    };
+    /**
+     * Returns a rectangle that is the bounding box of the character.
+     *
+     * @param charIndex The zero-based index value for the character(for
+     *                  example, the first position is 0, the second position is
+     *                  1, and so on).
+     * @return A rectangle with <code>x</code> and <code>y</code> minimum and
+     *         maximum values defining the bounding box of the character.
+     */
+    TextField.prototype.getCharBoundaries = function (charIndex) {
+        return this._charBoundaries;
+    };
+    /**
+     * Returns the zero-based index value of the character at the point specified
+     * by the <code>x</code> and <code>y</code> parameters.
+     *
+     * @param x The <i>x</i> coordinate of the character.
+     * @param y The <i>y</i> coordinate of the character.
+     * @return The zero-based index value of the character(for example, the
+     *         first position is 0, the second position is 1, and so on). Returns
+     *         -1 if the point is not over any character.
+     */
+    TextField.prototype.getCharIndexAtPoint = function (x, y) {
+        return this._charIndexAtPoint;
+    };
+    /**
+     * Given a character index, returns the index of the first character in the
+     * same paragraph.
+     *
+     * @param charIndex The zero-based index value of the character(for example,
+     *                  the first character is 0, the second character is 1, and
+     *                  so on).
+     * @return The zero-based index value of the first character in the same
+     *         paragraph.
+     * @throws RangeError The character index specified is out of range.
+     */
+    TextField.prototype.getFirstCharInParagraph = function (charIndex /*int*/) {
+        return this._firstCharInParagraph;
+    };
+    /**
+     * Returns a DisplayObject reference for the given <code>id</code>, for an
+     * image or SWF file that has been added to an HTML-formatted text field by
+     * using an <code><img></code> tag. The <code><img></code> tag is in the
+     * following format:
+     *
+     * <p><pre xml:space="preserve"><code> <img src = 'filename.jpg' id =
+     * 'instanceName' ></code></pre></p>
+     *
+     * @param id The <code>id</code> to match(in the <code>id</code> attribute
+     *           of the <code><img></code> tag).
+     * @return The display object corresponding to the image or SWF file with the
+     *         matching <code>id</code> attribute in the <code><img></code> tag
+     *         of the text field. For media loaded from an external source, this
+     *         object is a Loader object, and, once loaded, the media object is a
+     *         child of that Loader object. For media embedded in the SWF file,
+     *         it is the loaded object. If no <code><img></code> tag with the
+     *         matching <code>id</code> exists, the method returns
+     *         <code>null</code>.
+     */
+    TextField.prototype.getImageReference = function (id) {
+        return this._imageReference;
+    };
+    /**
+     * Returns the zero-based index value of the line at the point specified by
+     * the <code>x</code> and <code>y</code> parameters.
+     *
+     * @param x The <i>x</i> coordinate of the line.
+     * @param y The <i>y</i> coordinate of the line.
+     * @return The zero-based index value of the line(for example, the first
+     *         line is 0, the second line is 1, and so on). Returns -1 if the
+     *         point is not over any line.
+     */
+    TextField.prototype.getLineIndexAtPoint = function (x, y) {
+        return this._lineIndexAtPoint;
+    };
+    /**
+     * Returns the zero-based index value of the line containing the character
+     * specified by the <code>charIndex</code> parameter.
+     *
+     * @param charIndex The zero-based index value of the character(for example,
+     *                  the first character is 0, the second character is 1, and
+     *                  so on).
+     * @return The zero-based index value of the line.
+     * @throws RangeError The character index specified is out of range.
+     */
+    TextField.prototype.getLineIndexOfChar = function (charIndex /*int*/) {
+        return this._lineIndexOfChar;
+    };
+    /**
+     * Returns the number of characters in a specific text line.
+     *
+     * @param lineIndex The line number for which you want the length.
+     * @return The number of characters in the line.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextField.prototype.getLineLength = function (lineIndex /*int*/) {
+        return this._lineLength;
+    };
+    /**
+     * Returns metrics information about a given text line.
+     *
+     * @param lineIndex The line number for which you want metrics information.
+     * @return A TextLineMetrics object.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextField.prototype.getLineMetrics = function (lineIndex /*int*/) {
+        return this._lineMetrics;
+    };
+    /**
+     * Returns the character index of the first character in the line that the
+     * <code>lineIndex</code> parameter specifies.
+     *
+     * @param lineIndex The zero-based index value of the line(for example, the
+     *                  first line is 0, the second line is 1, and so on).
+     * @return The zero-based index value of the first character in the line.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextField.prototype.getLineOffset = function (lineIndex /*int*/) {
+        return this._lineOffset;
+    };
+    /**
+     * Returns the text of the line specified by the <code>lineIndex</code>
+     * parameter.
+     *
+     * @param lineIndex The zero-based index value of the line(for example, the
+     *                  first line is 0, the second line is 1, and so on).
+     * @return The text string contained in the specified line.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextField.prototype.getLineText = function (lineIndex /*int*/) {
+        return this._lineText;
+    };
+    /**
+     * Given a character index, returns the length of the paragraph containing
+     * the given character. The length is relative to the first character in the
+     * paragraph(as returned by <code>getFirstCharInParagraph()</code>), not to
+     * the character index passed in.
+     *
+     * @param charIndex The zero-based index value of the character(for example,
+     *                  the first character is 0, the second character is 1, and
+     *                  so on).
+     * @return Returns the number of characters in the paragraph.
+     * @throws RangeError The character index specified is out of range.
+     */
+    TextField.prototype.getParagraphLength = function (charIndex /*int*/) {
+        return this._paragraphLength;
+    };
+    /**
+     * Returns a TextFormat object that contains formatting information for the
+     * range of text that the <code>beginIndex</code> and <code>endIndex</code>
+     * parameters specify. Only properties that are common to the entire text
+     * specified are set in the resulting TextFormat object. Any property that is
+     * <i>mixed</i>, meaning that it has different values at different points in
+     * the text, has a value of <code>null</code>.
+     *
+     * <p>If you do not specify values for these parameters, this method is
+     * applied to all the text in the text field. </p>
+     *
+     * <p>The following table describes three possible usages:</p>
+     *
+     * @return The TextFormat object that represents the formatting properties
+     *         for the specified text.
+     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
+     *                    specified is out of range.
+     */
+    TextField.prototype.getTextFormat = function (beginIndex, endIndex) {
+        if (beginIndex === void 0) { beginIndex = -1; }
+        if (endIndex === void 0) { endIndex = -1; }
+        return this._textFormat;
+    };
+    /**
+     * Replaces the current selection with the contents of the <code>value</code>
+     * parameter. The text is inserted at the position of the current selection,
+     * using the current default character format and default paragraph format.
+     * The text is not treated as HTML.
+     *
+     * <p>You can use the <code>replaceSelectedText()</code> method to insert and
+     * delete text without disrupting the character and paragraph formatting of
+     * the rest of the text.</p>
+     *
+     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+     * the text field.</p>
+     *
+     * @param value The string to replace the currently selected text.
+     * @throws Error This method cannot be used on a text field with a style
+     *               sheet.
+     */
+    TextField.prototype.replaceSelectedText = function (value) {
+    };
+    /**
+     * Replaces the range of characters that the <code>beginIndex</code> and
+     * <code>endIndex</code> parameters specify with the contents of the
+     * <code>newText</code> parameter. As designed, the text from
+     * <code>beginIndex</code> to <code>endIndex-1</code> is replaced.
+     *
+     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+     * the text field.</p>
+     *
+     * @param beginIndex The zero-based index value for the start position of the
+     *                   replacement range.
+     * @param endIndex   The zero-based index position of the first character
+     *                   after the desired text span.
+     * @param newText    The text to use to replace the specified range of
+     *                   characters.
+     * @throws Error This method cannot be used on a text field with a style
+     *               sheet.
+     */
+    TextField.prototype.replaceText = function (beginIndex /*int*/, endIndex /*int*/, newText) {
+    };
+    /**
+     * Sets as selected the text designated by the index values of the first and
+     * last characters, which are specified with the <code>beginIndex</code> and
+     * <code>endIndex</code> parameters. If the two parameter values are the
+     * same, this method sets the insertion point, as if you set the
+     * <code>caretIndex</code> property.
+     *
+     * @param beginIndex The zero-based index value of the first character in the
+     *                   selection(for example, the first character is 0, the
+     *                   second character is 1, and so on).
+     * @param endIndex   The zero-based index value of the last character in the
+     *                   selection.
+     */
+    TextField.prototype.setSelection = function (beginIndex /*int*/, endIndex /*int*/) {
+    };
+    /**
+     * Applies the text formatting that the <code>format</code> parameter
+     * specifies to the specified text in a text field. The value of
+     * <code>format</code> must be a TextFormat object that specifies the desired
+     * text formatting changes. Only the non-null properties of
+     * <code>format</code> are applied to the text field. Any property of
+     * <code>format</code> that is set to <code>null</code> is not applied. By
+     * default, all of the properties of a newly created TextFormat object are
+     * set to <code>null</code>.
+     *
+     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+     * the text field.</p>
+     *
+     * <p>The <code>setTextFormat()</code> method changes the text formatting
+     * applied to a range of characters or to the entire body of text in a text
+     * field. To apply the properties of format to all text in the text field, do
+     * not specify values for <code>beginIndex</code> and <code>endIndex</code>.
+     * To apply the properties of the format to a range of text, specify values
+     * for the <code>beginIndex</code> and the <code>endIndex</code> parameters.
+     * You can use the <code>length</code> property to determine the index
+     * values.</p>
+     *
+     * <p>The two types of formatting information in a TextFormat object are
+     * character level formatting and paragraph level formatting. Each character
+     * in a text field can have its own character formatting settings, such as
+     * font name, font size, bold, and italic.</p>
+     *
+     * <p>For paragraphs, the first character of the paragraph is examined for
+     * the paragraph formatting settings for the entire paragraph. Examples of
+     * paragraph formatting settings are left margin, right margin, and
+     * indentation.</p>
+     *
+     * <p>Any text inserted manually by the user, or replaced by the
+     * <code>replaceSelectedText()</code> method, receives the default text field
+     * formatting for new text, and not the formatting specified for the text
+     * insertion point. To set the default formatting for new text, use
+     * <code>defaultTextFormat</code>.</p>
+     *
+     * @param format A TextFormat object that contains character and paragraph
+     *               formatting information.
+     * @throws Error      This method cannot be used on a text field with a style
+     *                    sheet.
+     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
+     *                    specified is out of range.
+     */
+    TextField.prototype.setTextFormat = function (format, beginIndex, endIndex) {
+        if (beginIndex === void 0) { beginIndex = -1; }
+        if (endIndex === void 0) { endIndex = -1; }
+    };
+    /**
+     * Returns true if an embedded font is available with the specified
+     * <code>fontName</code> and <code>fontStyle</code> where
+     * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
+     * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
+     * SWF file. Normal embedded fonts are only used with TextField objects. CFF
+     * embedded fonts are only used with the flash.text.engine classes. The two
+     * types are distinguished by the <code>fontType</code> property of the
+     * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
+     * function.
+     *
+     * <p>TextField cannot use a font of type <code>EMBEDDED_CFF</code>. If
+     * <code>embedFonts</code> is set to <code>true</code> and the only font
+     * available at run time with the specified name and style is of type
+     * <code>EMBEDDED_CFF</code>, Flash Player fails to render the text, as if no
+     * embedded font were available with the specified name and style.</p>
+     *
+     * <p>If both <code>EMBEDDED</code> and <code>EMBEDDED_CFF</code> fonts are
+     * available with the same name and style, the <code>EMBEDDED</code> font is
+     * selected and text renders with the <code>EMBEDDED</code> font.</p>
+     *
+     * @param fontName  The name of the embedded font to check.
+     * @param fontStyle Specifies the font style to check. Use
+     *                  <code>flash.text.FontStyle</code>
+     * @return <code>true</code> if a compatible embedded font is available,
+     *         otherwise <code>false</code>.
+     * @throws ArgumentError The <code>fontStyle</code> specified is not a member
+     *                       of <code>flash.text.FontStyle</code>.
+     */
+    TextField.isFontCompatible = function (fontName, fontStyle) {
+        return false;
+    };
+    TextField.prototype.clone = function () {
+        var newInstance = (TextField._textFields.length) ? TextField._textFields.pop() : new TextField();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    TextField.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.textWidth = this._textWidth;
+        newInstance.textHeight = this._textHeight;
+        newInstance.textFormat = this._textFormat;
+        //newInstance.textColor = this._textColor;
+        newInstance.text = this._text;
+    };
+    TextField._textFields = new Array();
+    TextField.assetType = "[asset TextField]";
+    return TextField;
+})(Mesh);
+module.exports = TextField;
 
-},{"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController"}],"awayjs-display/lib/controllers/LookAtController":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
-var LookAtController = (function (_super) {
-    __extends(LookAtController, _super);
-    function LookAtController(targetObject, lookAtObject) {
-        var _this = this;
-        if (targetObject === void 0) { targetObject = null; }
-        if (lookAtObject === void 0) { lookAtObject = null; }
-        _super.call(this, targetObject);
-        this._pOrigin = new Vector3D(0.0, 0.0, 0.0);
-        this._onLookAtObjectChangedDelegate = function (event) { return _this.onLookAtObjectChanged(event); };
-        if (lookAtObject)
-            this.lookAtObject = lookAtObject;
-        else
-            this.lookAtPosition = new Vector3D();
-    }
-    Object.defineProperty(LookAtController.prototype, "lookAtPosition", {
-        get: function () {
-            return this._pLookAtPosition;
-        },
-        set: function (val) {
-            if (this._pLookAtObject) {
-                this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
-                this._pLookAtObject = null;
-            }
-            this._pLookAtPosition = val;
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LookAtController.prototype, "lookAtObject", {
-        get: function () {
-            return this._pLookAtObject;
-        },
-        set: function (val) {
-            if (this._pLookAtPosition)
-                this._pLookAtPosition = null;
-            if (this._pLookAtObject == val)
-                return;
-            if (this._pLookAtObject)
-                this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
-            this._pLookAtObject = val;
-            if (this._pLookAtObject)
-                this._pLookAtObject.addEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
-            this.pNotifyUpdate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    //@override
-    LookAtController.prototype.update = function (interpolate) {
-        if (interpolate === void 0) { interpolate = true; }
-        if (this._pTargetObject) {
-            if (this._pLookAtPosition)
-                this._pTargetObject.lookAt(this._pLookAtPosition);
-            else if (this._pLookAtObject)
-                this._pTargetObject.lookAt(this._pLookAtObject.scene ? this._pLookAtObject.scenePosition : this._pLookAtObject.transform.position);
-        }
-    };
-    LookAtController.prototype.onLookAtObjectChanged = function (event) {
-        this.pNotifyUpdate();
-    };
-    return LookAtController;
-})(ControllerBase);
-module.exports = LookAtController;
-
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent"}],"awayjs-display/lib/controllers/SpringController":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-/**
- * Uses spring physics to animate the target object towards a position that is
- * defined as the lookAtTarget object's position plus the vector defined by the
- * positionOffset property.
- */
-var SpringController = (function (_super) {
-    __extends(SpringController, _super);
-    function SpringController(targetObject, lookAtObject, stiffness, mass, damping) {
-        if (targetObject === void 0) { targetObject = null; }
-        if (lookAtObject === void 0) { lookAtObject = null; }
-        if (stiffness === void 0) { stiffness = 1; }
-        if (mass === void 0) { mass = 40; }
-        if (damping === void 0) { damping = 4; }
-        _super.call(this, targetObject, lookAtObject);
-        /**
-         * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
-         */
-        this.positionOffset = new Vector3D(0, 500, -1000);
-        this.stiffness = stiffness;
-        this.damping = damping;
-        this.mass = mass;
-        this._velocity = new Vector3D();
-        this._dv = new Vector3D();
-        this._stretch = new Vector3D();
-        this._force = new Vector3D();
-        this._acceleration = new Vector3D();
-        this._desiredPosition = new Vector3D();
-    }
-    SpringController.prototype.update = function (interpolate) {
-        if (interpolate === void 0) { interpolate = true; }
-        var offs;
-        if (!this._pLookAtObject || !this._pTargetObject)
-            return;
-        this._pControllerDirty = true;
-        offs = this._pLookAtObject.transform.matrix3D.deltaTransformVector(this.positionOffset);
-        this._desiredPosition.x = this._pLookAtObject.x + offs.x;
-        this._desiredPosition.y = this._pLookAtObject.y + offs.y;
-        this._desiredPosition.z = this._pLookAtObject.z + offs.z;
-        this._stretch = this._pTargetObject.transform.position.add(this._desiredPosition);
-        this._stretch.scaleBy(-this.stiffness);
-        this._dv.copyFrom(this._velocity);
-        this._dv.scaleBy(this.damping);
-        this._force.x = this._stretch.x - this._dv.x;
-        this._force.y = this._stretch.y - this._dv.y;
-        this._force.z = this._stretch.z - this._dv.z;
-        this._acceleration.copyFrom(this._force);
-        this._acceleration.scaleBy(1 / this.mass);
-        this._velocity.incrementBy(this._acceleration);
-        this._pTargetObject.transform.position = this._pTargetObject.transform.position.add(this._velocity);
-        _super.prototype.update.call(this);
-    };
-    return SpringController;
-})(LookAtController);
-module.exports = SpringController;
-
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/display/Mesh":"awayjs-display/lib/display/Mesh","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 /**
  * The CapsStyle class is an enumeration of constant values that specify the
  * caps style to use in drawing lines. The constants are provided for use as
@@ -8345,2786 +11063,7 @@ var TriangleCulling = (function () {
 })();
 module.exports = TriangleCulling;
 
-},{}],"awayjs-display/lib/entities/Billboard":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Rectangle = require("awayjs-core/lib/geom/Rectangle");
-var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
-var RenderOwnerEvent = require("awayjs-display/lib/events/RenderOwnerEvent");
-var DefaultMaterialManager = require("awayjs-display/lib/managers/DefaultMaterialManager");
-var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
-/**
- * The Billboard class represents display objects that represent bitmap images.
- * These can be images that you load with the <code>flash.Assets</code> or
- * <code>flash.display.Loader</code> classes, or they can be images that you
- * create with the <code>Billboard()</code> constructor.
- *
- * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
- * object that contains a reference to a Image2D object. After you create a
- * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
- * method of the parent DisplayObjectContainer instance to place the bitmap on
- * the display list.</p>
- *
- * <p>A Billboard object can share its Image2D reference among several Billboard
- * objects, independent of translation or rotation properties. Because you can
- * create multiple Billboard objects that reference the same Image2D object,
- * multiple display objects can use the same complex Image2D object without
- * incurring the memory overhead of a Image2D object for each display
- * object instance.</p>
- *
- * <p>A Image2D object can be drawn to the screen by a Billboard object in one
- * of two ways: by using the default hardware renderer with a single hardware surface,
- * or by using the slower software renderer when 3D acceleration is not available.</p>
- *
- * <p>If you would prefer to perform a batch rendering command, rather than using a
- * single surface for each Billboard object, you can also draw to the screen using the
- * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
- * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
- * objects.</code></p>
- *
- * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
- * class, so it cannot dispatch mouse events. However, you can use the
- * <code>addEventListener()</code> method of the display object container that
- * contains the Billboard object.</p>
- */
-var Billboard = (function (_super) {
-    __extends(Billboard, _super);
-    function Billboard(material, pixelSnapping, smoothing) {
-        var _this = this;
-        if (pixelSnapping === void 0) { pixelSnapping = "auto"; }
-        if (smoothing === void 0) { smoothing = false; }
-        _super.call(this);
-        this._pIsEntity = true;
-        this.onInvalidateTextureDelegate = function (event) { return _this.onInvalidateTexture(event); };
-        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
-        this.material = material;
-        this._updateDimensions();
-        //default bounds type
-        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
-    }
-    Object.defineProperty(Billboard.prototype, "animator", {
-        /**
-         * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
-         */
-        get: function () {
-            return this._animator;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Billboard.prototype, "assetType", {
-        /**
-         *
-         */
-        get: function () {
-            return Billboard.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Billboard.prototype, "billboardRect", {
-        /**
-         *
-         */
-        get: function () {
-            return this._billboardRect;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Billboard.prototype, "billboardHeight", {
-        /**
-         *
-         */
-        get: function () {
-            return this._billboardHeight;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Billboard.prototype, "billboardWidth", {
-        /**
-         *
-         */
-        get: function () {
-            return this._billboardWidth;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Billboard.prototype, "material", {
-        /**
-         *
-         */
-        get: function () {
-            return this._material;
-        },
-        set: function (value) {
-            if (value == this._material)
-                return;
-            if (this._material) {
-                this._material.iRemoveOwner(this);
-                this._material.removeEventListener(RenderOwnerEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
-            }
-            this._material = value;
-            if (this._material) {
-                this._material.iAddOwner(this);
-                this._material.addEventListener(RenderOwnerEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Billboard.prototype, "uvTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._uvTransform;
-        },
-        set: function (value) {
-            this._uvTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * @protected
-     */
-    Billboard.prototype._pUpdateBoxBounds = function () {
-        _super.prototype._pUpdateBoxBounds.call(this);
-        this._pBoxBounds.width = this._billboardRect.width;
-        this._pBoxBounds.height = this._billboardRect.height;
-    };
-    Billboard.prototype.clone = function () {
-        var clone = new Billboard(this.material);
-        return clone;
-    };
-    Object.defineProperty(Billboard.prototype, "style", {
-        /**
-         * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
-         */
-        get: function () {
-            return this._style;
-        },
-        set: function (value) {
-            if (this._style == value)
-                return;
-            if (this._style)
-                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this._style = value;
-            if (this._style)
-                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this._onInvalidateProperties();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * //TODO
-     *
-     * @param shortestCollisionDistance
-     * @returns {boolean}
-     *
-     * @internal
-     */
-    Billboard.prototype._iTestCollision = function (shortestCollisionDistance) {
-        return this._pPickingCollider.testBillboardCollision(this, this.material, this._pPickingCollisionVO, shortestCollisionDistance);
-    };
-    /**
-     * @private
-     */
-    Billboard.prototype.onInvalidateTexture = function (event) {
-        this._updateDimensions();
-    };
-    Billboard.prototype._acceptTraverser = function (traverser) {
-        traverser.applyRenderable(this);
-    };
-    Billboard.prototype._updateDimensions = function () {
-        var texture = this.material.getTextureAt(0);
-        var image = texture ? ((this._style ? this._style.getImageAt(texture) : null) || (this.material.style ? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
-        if (image) {
-            var sampler = ((this._style ? this._style.getSamplerAt(texture) : null) || (this.material.style ? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || DefaultMaterialManager.getDefaultSampler());
-            var rect = sampler.imageRect || image.rect;
-            this._billboardWidth = rect.width * image.width;
-            this._billboardHeight = rect.height * image.height;
-            this._billboardRect = sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
-        }
-        else {
-            this._billboardWidth = 1;
-            this._billboardHeight = 1;
-            this._billboardRect = new Rectangle(0, 0, 1, 1);
-        }
-        this._pInvalidateBounds();
-        this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this));
-    };
-    Billboard.prototype.invalidateRenderOwner = function () {
-        this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
-    };
-    Billboard.prototype._onInvalidateProperties = function (event) {
-        if (event === void 0) { event = null; }
-        this.invalidateRenderOwner();
-        this._updateDimensions();
-    };
-    Billboard.assetType = "[asset Billboard]";
-    return Billboard;
-})(DisplayObject);
-module.exports = Billboard;
-
-},{"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager"}],"awayjs-display/lib/entities/Camera":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-var Plane3D = require("awayjs-core/lib/geom/Plane3D");
-var ProjectionEvent = require("awayjs-core/lib/events/ProjectionEvent");
-var PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
-var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-var CameraEvent = require("awayjs-display/lib/events/CameraEvent");
-var Camera = (function (_super) {
-    __extends(Camera, _super);
-    function Camera(projection) {
-        var _this = this;
-        if (projection === void 0) { projection = null; }
-        _super.call(this);
-        this._viewProjection = new Matrix3D();
-        this._viewProjectionDirty = true;
-        this._frustumPlanesDirty = true;
-        this._pIsEntity = true;
-        this._onProjectionMatrixChangedDelegate = function (event) { return _this.onProjectionMatrixChanged(event); };
-        this._projection = projection || new PerspectiveProjection();
-        this._projection.addEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
-        this._frustumPlanes = [];
-        for (var i = 0; i < 6; ++i)
-            this._frustumPlanes[i] = new Plane3D();
-        this.z = -1000;
-        //default bounds type
-        this._boundsType = BoundsType.NULL;
-    }
-    Object.defineProperty(Camera.prototype, "assetType", {
-        //@override
-        get: function () {
-            return Camera.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Camera.prototype.onProjectionMatrixChanged = function (event) {
-        this._viewProjectionDirty = true;
-        this._frustumPlanesDirty = true;
-        this.dispatchEvent(event);
-    };
-    Object.defineProperty(Camera.prototype, "frustumPlanes", {
-        get: function () {
-            if (this._frustumPlanesDirty)
-                this.updateFrustum();
-            return this._frustumPlanes;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Camera.prototype.updateFrustum = function () {
-        var a, b, c;
-        //var d : Number;
-        var c11, c12, c13, c14;
-        var c21, c22, c23, c24;
-        var c31, c32, c33, c34;
-        var c41, c42, c43, c44;
-        var p;
-        var raw = this.viewProjection.rawData;
-        var invLen;
-        c11 = raw[0];
-        c12 = raw[4];
-        c13 = raw[8];
-        c14 = raw[12];
-        c21 = raw[1];
-        c22 = raw[5];
-        c23 = raw[9];
-        c24 = raw[13];
-        c31 = raw[2];
-        c32 = raw[6];
-        c33 = raw[10];
-        c34 = raw[14];
-        c41 = raw[3];
-        c42 = raw[7];
-        c43 = raw[11];
-        c44 = raw[15];
-        // left plane
-        p = this._frustumPlanes[0];
-        a = c41 + c11;
-        b = c42 + c12;
-        c = c43 + c13;
-        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-        p.a = a * invLen;
-        p.b = b * invLen;
-        p.c = c * invLen;
-        p.d = -(c44 + c14) * invLen;
-        // right plane
-        p = this._frustumPlanes[1];
-        a = c41 - c11;
-        b = c42 - c12;
-        c = c43 - c13;
-        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-        p.a = a * invLen;
-        p.b = b * invLen;
-        p.c = c * invLen;
-        p.d = (c14 - c44) * invLen;
-        // bottom
-        p = this._frustumPlanes[2];
-        a = c41 + c21;
-        b = c42 + c22;
-        c = c43 + c23;
-        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-        p.a = a * invLen;
-        p.b = b * invLen;
-        p.c = c * invLen;
-        p.d = -(c44 + c24) * invLen;
-        // top
-        p = this._frustumPlanes[3];
-        a = c41 - c21;
-        b = c42 - c22;
-        c = c43 - c23;
-        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-        p.a = a * invLen;
-        p.b = b * invLen;
-        p.c = c * invLen;
-        p.d = (c24 - c44) * invLen;
-        // near
-        p = this._frustumPlanes[4];
-        a = c31;
-        b = c32;
-        c = c33;
-        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-        p.a = a * invLen;
-        p.b = b * invLen;
-        p.c = c * invLen;
-        p.d = -c34 * invLen;
-        // far
-        p = this._frustumPlanes[5];
-        a = c41 - c31;
-        b = c42 - c32;
-        c = c43 - c33;
-        invLen = 1 / Math.sqrt(a * a + b * b + c * c);
-        p.a = a * invLen;
-        p.b = b * invLen;
-        p.c = c * invLen;
-        p.d = (c34 - c44) * invLen;
-        this._frustumPlanesDirty = false;
-    };
-    Camera.prototype.pInvalidateHierarchicalProperties = function (bitFlag) {
-        if (_super.prototype.pInvalidateHierarchicalProperties.call(this, bitFlag))
-            return true;
-        if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {
-            this._viewProjectionDirty = true;
-            this._frustumPlanesDirty = true;
-        }
-        return false;
-    };
-    Object.defineProperty(Camera.prototype, "projection", {
-        /**
-         *
-         */
-        get: function () {
-            return this._projection;
-        },
-        set: function (value) {
-            if (this._projection == value)
-                return;
-            if (!value)
-                throw new Error("Projection cannot be null!");
-            this._projection.removeEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
-            this._projection = value;
-            this._projection.addEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
-            this.dispatchEvent(new CameraEvent(CameraEvent.PROJECTION_CHANGED, this));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Camera.prototype, "viewProjection", {
-        /**
-         *
-         */
-        get: function () {
-            if (this._viewProjectionDirty) {
-                this._viewProjection.copyFrom(this.inverseSceneTransform);
-                this._viewProjection.append(this._projection.matrix);
-                this._viewProjectionDirty = false;
-            }
-            return this._viewProjection;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
-     *
-     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
-     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
-     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-     * @return The ray from the camera to the scene space position of the given screen coordinates.
-     */
-    Camera.prototype.getRay = function (nX, nY, sZ) {
-        return this.sceneTransform.deltaTransformVector(this._projection.unproject(nX, nY, sZ));
-    };
-    /**
-     * Calculates the normalised position in screen space of the given scene position.
-     *
-     * @param point3d the position vector of the scene coordinates to be projected.
-     * @return The normalised screen position of the given scene coordinates.
-     */
-    Camera.prototype.project = function (point3d) {
-        return this._projection.project(this.inverseSceneTransform.transformVector(point3d));
-    };
-    /**
-     * Calculates the scene position of the given normalized coordinates in screen space.
-     *
-     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
-     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
-     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-     * @return The scene position of the given screen coordinates.
-     */
-    Camera.prototype.unproject = function (nX, nY, sZ) {
-        return this.sceneTransform.transformVector(this._projection.unproject(nX, nY, sZ));
-    };
-    Camera.prototype._applyRenderer = function (renderer) {
-        // Since this getter is invoked every iteration of the render loop, and
-        // the prefab construct could affect the sub-meshes, the prefab is
-        // validated here to give it a chance to rebuild.
-        if (this._iSourcePrefab)
-            this._iSourcePrefab._iValidate();
-        //nothing to do here
-    };
-    Camera.assetType = "[asset Camera]";
-    return Camera;
-})(DisplayObjectContainer);
-module.exports = Camera;
-
-},{"awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/CameraEvent":"awayjs-display/lib/events/CameraEvent"}],"awayjs-display/lib/entities/DirectionalLight":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
-var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var LightBase = require("awayjs-display/lib/base/LightBase");
-var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-var DirectionalLight = (function (_super) {
-    __extends(DirectionalLight, _super);
-    function DirectionalLight(xDir, yDir, zDir) {
-        if (xDir === void 0) { xDir = 0; }
-        if (yDir === void 0) { yDir = -1; }
-        if (zDir === void 0) { zDir = 1; }
-        _super.call(this);
-        this._pAabbPoints = new Array(24);
-        this._pIsEntity = true;
-        this.direction = new Vector3D(xDir, yDir, zDir);
-        this._sceneDirection = new Vector3D();
-        //default bounds type
-        this._boundsType = BoundsType.NULL;
-    }
-    Object.defineProperty(DirectionalLight.prototype, "assetType", {
-        get: function () {
-            return DirectionalLight.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DirectionalLight.prototype, "sceneDirection", {
-        get: function () {
-            if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
-                this.pUpdateSceneTransform();
-            return this._sceneDirection;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DirectionalLight.prototype, "direction", {
-        get: function () {
-            return this._direction;
-        },
-        set: function (value) {
-            this._direction = value;
-            if (!this._tmpLookAt)
-                this._tmpLookAt = new Vector3D();
-            this._tmpLookAt.x = this.x + this._direction.x;
-            this._tmpLookAt.y = this.y + this._direction.y;
-            this._tmpLookAt.z = this.z + this._direction.z;
-            this.lookAt(this._tmpLookAt);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    //@override
-    DirectionalLight.prototype.pUpdateSceneTransform = function () {
-        _super.prototype.pUpdateSceneTransform.call(this);
-        this.sceneTransform.copyColumnTo(2, this._sceneDirection);
-        this._sceneDirection.normalize();
-    };
-    //@override
-    DirectionalLight.prototype.pCreateShadowMapper = function () {
-        return new DirectionalShadowMapper();
-    };
-    //override
-    DirectionalLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
-        if (target === void 0) { target = null; }
-        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
-        var m = new Matrix3D();
-        m.copyFrom(entity.getRenderSceneTransform(camera));
-        m.append(this.inverseSceneTransform);
-        if (!this._projAABBPoints)
-            this._projAABBPoints = [];
-        m.transformVectors(this._pAabbPoints, this._projAABBPoints);
-        var xMin = Infinity, xMax = -Infinity;
-        var yMin = Infinity, yMax = -Infinity;
-        var zMin = Infinity, zMax = -Infinity;
-        var d;
-        for (var i = 0; i < 24;) {
-            d = this._projAABBPoints[i++];
-            if (d < xMin)
-                xMin = d;
-            if (d > xMax)
-                xMax = d;
-            d = this._projAABBPoints[i++];
-            if (d < yMin)
-                yMin = d;
-            if (d > yMax)
-                yMax = d;
-            d = this._projAABBPoints[i++];
-            if (d < zMin)
-                zMin = d;
-            if (d > zMax)
-                zMax = d;
-        }
-        var invXRange = 1 / (xMax - xMin);
-        var invYRange = 1 / (yMax - yMin);
-        var invZRange = 1 / (zMax - zMin);
-        raw[0] = 2 * invXRange;
-        raw[5] = 2 * invYRange;
-        raw[10] = invZRange;
-        raw[12] = -(xMax + xMin) * invXRange;
-        raw[13] = -(yMax + yMin) * invYRange;
-        raw[14] = -zMin * invZRange;
-        raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[11] = 0;
-        raw[15] = 1;
-        if (!target)
-            target = new Matrix3D();
-        target.copyRawDataFrom(raw);
-        target.prepend(m);
-        return target;
-    };
-    /**
-     * //TODO
-     *
-     * @protected
-     */
-    DirectionalLight.prototype._pUpdateBoxBounds = function () {
-        _super.prototype._pUpdateBoxBounds.call(this);
-        //update points
-        var minX = this._pBoxBounds.x;
-        var minY = this._pBoxBounds.y - this._pBoxBounds.height;
-        var minZ = this._pBoxBounds.z;
-        var maxX = this._pBoxBounds.x + this._pBoxBounds.width;
-        var maxY = this._pBoxBounds.y;
-        var maxZ = this._pBoxBounds.z + this._pBoxBounds.depth;
-        this._pAabbPoints[0] = minX;
-        this._pAabbPoints[1] = minY;
-        this._pAabbPoints[2] = minZ;
-        this._pAabbPoints[3] = maxX;
-        this._pAabbPoints[4] = minY;
-        this._pAabbPoints[5] = minZ;
-        this._pAabbPoints[6] = minX;
-        this._pAabbPoints[7] = maxY;
-        this._pAabbPoints[8] = minZ;
-        this._pAabbPoints[9] = maxX;
-        this._pAabbPoints[10] = maxY;
-        this._pAabbPoints[11] = minZ;
-        this._pAabbPoints[12] = minX;
-        this._pAabbPoints[13] = minY;
-        this._pAabbPoints[14] = maxZ;
-        this._pAabbPoints[15] = maxX;
-        this._pAabbPoints[16] = minY;
-        this._pAabbPoints[17] = maxZ;
-        this._pAabbPoints[18] = minX;
-        this._pAabbPoints[19] = maxY;
-        this._pAabbPoints[20] = maxZ;
-        this._pAabbPoints[21] = maxX;
-        this._pAabbPoints[22] = maxY;
-        this._pAabbPoints[23] = maxZ;
-    };
-    DirectionalLight.assetType = "[light DirectionalLight]";
-    return DirectionalLight;
-})(LightBase);
-module.exports = DirectionalLight;
-
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/entities/IEntity":[function(require,module,exports){
-
-},{}],"awayjs-display/lib/entities/LightProbe":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var SamplerCube = require("awayjs-core/lib/image/SamplerCube");
-var ErrorBase = require("awayjs-core/lib/errors/ErrorBase");
-var LightBase = require("awayjs-display/lib/base/LightBase");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var LightProbe = (function (_super) {
-    __extends(LightProbe, _super);
-    function LightProbe(diffuseMap, specularMap) {
-        if (specularMap === void 0) { specularMap = null; }
-        _super.call(this);
-        this.diffuseSampler = new SamplerCube();
-        this.specularSampler = new SamplerCube();
-        this._pIsEntity = true;
-        this.diffuseMap = diffuseMap;
-        this.specularMap = specularMap;
-        //default bounds type
-        this._boundsType = BoundsType.NULL;
-    }
-    Object.defineProperty(LightProbe.prototype, "assetType", {
-        get: function () {
-            return LightProbe.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    //@override
-    LightProbe.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
-        if (target === void 0) { target = null; }
-        throw new ErrorBase("Object projection matrices are not supported for LightProbe objects!");
-    };
-    LightProbe.assetType = "[light LightProbe]";
-    return LightProbe;
-})(LightBase);
-module.exports = LightProbe;
-
-},{"awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/image/SamplerCube":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType"}],"awayjs-display/lib/entities/LineSegment":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
-var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
-/**
- * A Line Segment primitive.
- */
-var LineSegment = (function (_super) {
-    __extends(LineSegment, _super);
-    /**
-     * Create a line segment
-     *
-     * @param startPosition Start position of the line segment
-     * @param endPosition Ending position of the line segment
-     * @param thickness Thickness of the line
-     */
-    function LineSegment(material, startPosition, endPosition, thickness) {
-        var _this = this;
-        if (thickness === void 0) { thickness = 1; }
-        _super.call(this);
-        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
-        this._pIsEntity = true;
-        this.material = material;
-        this._startPosition = startPosition;
-        this._endPosition = endPosition;
-        this._halfThickness = thickness * 0.5;
-        //default bounds type
-        this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
-    }
-    Object.defineProperty(LineSegment.prototype, "animator", {
-        /**
-         * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
-         */
-        get: function () {
-            return this._animator;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "assetType", {
-        /**
-         *
-         */
-        get: function () {
-            return LineSegment.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "startPostion", {
-        /**
-         *
-         */
-        get: function () {
-            return this._startPosition;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "startPosition", {
-        set: function (value) {
-            if (this._startPosition == value)
-                return;
-            this._startPosition = value;
-            this.invalidateGraphics();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "endPosition", {
-        /**
-         *
-         */
-        get: function () {
-            return this._endPosition;
-        },
-        set: function (value) {
-            if (this._endPosition == value)
-                return;
-            this._endPosition = value;
-            this.invalidateGraphics();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "material", {
-        /**
-         *
-         */
-        get: function () {
-            return this._material;
-        },
-        set: function (value) {
-            if (this.material)
-                this.material.iRemoveOwner(this);
-            this._material = value;
-            if (this.material)
-                this.material.iAddOwner(this);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "thickness", {
-        /**
-         *
-         */
-        get: function () {
-            return this._halfThickness * 2;
-        },
-        set: function (value) {
-            if (this._halfThickness == value)
-                return;
-            this._halfThickness = value * 0.5;
-            this.invalidateGraphics();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "uvTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._uvTransform;
-        },
-        set: function (value) {
-            this._uvTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "colorTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._colorTransform; // || this._pParentMesh._colorTransform;
-        },
-        set: function (value) {
-            this._colorTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineSegment.prototype, "style", {
-        /**
-         * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
-         */
-        get: function () {
-            return this._style;
-        },
-        set: function (value) {
-            if (this._style == value)
-                return;
-            if (this._style)
-                this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this._style = value;
-            if (this._style)
-                this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this.invalidateRenderOwner();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * @protected
-     */
-    LineSegment.prototype._pUpdateBoxBounds = function () {
-        _super.prototype._pUpdateBoxBounds.call(this);
-        this._pBoxBounds.x = Math.min(this._startPosition.x, this._endPosition.x);
-        this._pBoxBounds.y = Math.min(this._startPosition.y, this._endPosition.y);
-        this._pBoxBounds.z = Math.min(this._startPosition.z, this._endPosition.z);
-        this._pBoxBounds.width = Math.abs(this._startPosition.x - this._endPosition.x);
-        this._pBoxBounds.height = Math.abs(this._startPosition.y - this._endPosition.y);
-        this._pBoxBounds.depth = Math.abs(this._startPosition.z - this._endPosition.z);
-    };
-    LineSegment.prototype._pUpdateSphereBounds = function () {
-        _super.prototype._pUpdateSphereBounds.call(this);
-        this._pUpdateBoxBounds();
-        var halfWidth = (this._endPosition.x - this._startPosition.x) / 2;
-        var halfHeight = (this._endPosition.y - this._startPosition.y) / 2;
-        var halfDepth = (this._endPosition.z - this._startPosition.z) / 2;
-        this._pSphereBounds.x = this._startPosition.x + halfWidth;
-        this._pSphereBounds.y = this._startPosition.y + halfHeight;
-        this._pSphereBounds.z = this._startPosition.z + halfDepth;
-        this._pSphereBounds.radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
-    };
-    /**
-     * @private
-     */
-    LineSegment.prototype.invalidateGraphics = function () {
-        this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this)); //TODO improve performance by only using one geometry for all line segments
-    };
-    LineSegment.prototype.invalidateRenderOwner = function () {
-        this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
-    };
-    LineSegment.prototype._onInvalidateProperties = function (event) {
-        this.invalidateRenderOwner();
-    };
-    /**
-     * //TODO
-     *
-     * @param shortestCollisionDistance
-     * @param findClosest
-     * @returns {boolean}
-     *
-     * @internal
-     */
-    LineSegment.prototype._iTestCollision = function (shortestCollisionDistance) {
-        return false; //TODO: detect line collisions
-    };
-    LineSegment.prototype._acceptTraverser = function (traverser) {
-        traverser.applyRenderable(this);
-    };
-    LineSegment.assetType = "[asset LineSegment]";
-    return LineSegment;
-})(DisplayObject);
-module.exports = LineSegment;
-
-},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/entities/Mesh":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Point = require("awayjs-core/lib/geom/Point");
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var Graphics = require("awayjs-display/lib/graphics/Graphics");
-var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-/**
- * Mesh is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
- * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
- * of the graphics to be assigned different materials.
- */
-var Mesh = (function (_super) {
-    __extends(Mesh, _super);
-    /**
-     * Create a new Mesh object.
-     *
-     * @param graphics                    The graphics used by the mesh that provides it with its shape.
-     * @param material    [optional]        The material with which to render the Mesh.
-     */
-    function Mesh(material) {
-        var _this = this;
-        if (material === void 0) { material = null; }
-        _super.call(this);
-        this._castsShadows = true;
-        this._shareAnimationGraphics = true;
-        //temp point used in hit testing
-        this._tempPoint = new Point();
-        this._pIsEntity = true;
-        this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
-        this._graphics = new Graphics(this); //unique graphics object for each Mesh
-        this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
-        this.material = material;
-    }
-    Object.defineProperty(Mesh.prototype, "assetType", {
-        /**
-         *
-         */
-        get: function () {
-            return Mesh.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "castsShadows", {
-        /**
-         * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
-         */
-        get: function () {
-            return this._castsShadows;
-        },
-        set: function (value) {
-            this._castsShadows = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "graphics", {
-        /**
-         * The graphics used by the mesh that provides it with its shape.
-         */
-        get: function () {
-            if (this._iSourcePrefab)
-                this._iSourcePrefab._iValidate();
-            return this._graphics;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "animator", {
-        /**
-         * Defines the animator of the graphics object.  Default value is <code>null</code>.
-         */
-        get: function () {
-            return this._graphics.animator;
-        },
-        set: function (value) {
-            if (this._graphics.animator)
-                this._graphics.animator.removeOwner(this);
-            this._graphics.animator = value;
-            if (this._graphics.animator)
-                this._graphics.animator.addOwner(this);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "material", {
-        /**
-         * The material with which to render the Mesh.
-         */
-        get: function () {
-            return this._graphics.material;
-        },
-        set: function (value) {
-            this._graphics.material = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "shareAnimationGraphics", {
-        /**
-         * Indicates whether or not the mesh share the same animation graphics.
-         */
-        get: function () {
-            return this._shareAnimationGraphics;
-        },
-        set: function (value) {
-            this._shareAnimationGraphics = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "uvTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._graphics.uvTransform;
-        },
-        set: function (value) {
-            this._graphics.uvTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "style", {
-        /**
-         *
-         */
-        get: function () {
-            return this._graphics.style;
-        },
-        set: function (value) {
-            this._graphics.style = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     */
-    Mesh.prototype.bakeTransformations = function () {
-        this._graphics.applyTransformation(this.transform.matrix3D);
-        this.transform.clearMatrix3D();
-    };
-    /**
-     * @inheritDoc
-     */
-    Mesh.prototype.dispose = function () {
-        this.disposeValues();
-        Mesh._meshes.push(this);
-    };
-    /**
-     * @inheritDoc
-     */
-    Mesh.prototype.disposeValues = function () {
-        _super.prototype.disposeValues.call(this);
-        this._graphics.dispose();
-    };
-    /**
-     * Clones this Mesh instance along with all it's children, while re-using the same
-     * material, graphics and animation set. The returned result will be a copy of this mesh,
-     * containing copies of all of it's children.
-     *
-     * Properties that are re-used (i.e. not cloned) by the new copy include name,
-     * graphics, and material. Properties that are cloned or created anew for the copy
-     * include subMeshes, children of the mesh, and the animator.
-     *
-     * If you want to copy just the mesh, reusing it's graphics and material while not
-     * cloning it's children, the simplest way is to create a new mesh manually:
-     *
-     * <code>
-     * var clone : Mesh = new Mesh(original.graphics, original.material);
-     * </code>
-     */
-    Mesh.prototype.clone = function () {
-        var newInstance = (Mesh._meshes.length) ? Mesh._meshes.pop() : new Mesh();
-        this.copyTo(newInstance);
-        return newInstance;
-    };
-    Mesh.prototype.copyTo = function (mesh) {
-        _super.prototype.copyTo.call(this, mesh);
-        mesh.castsShadows = this._castsShadows;
-        mesh.shareAnimationGraphics = this._shareAnimationGraphics;
-        this._graphics.copyTo(mesh.graphics);
-    };
-    /**
-     * //TODO
-     *
-     * @protected
-     */
-    Mesh.prototype._pUpdateBoxBounds = function () {
-        _super.prototype._pUpdateBoxBounds.call(this);
-        this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
-    };
-    Mesh.prototype._pUpdateSphereBounds = function () {
-        _super.prototype._pUpdateSphereBounds.call(this);
-        var box = this.getBox();
-        if (!this._center)
-            this._center = new Vector3D();
-        this._center.x = box.x + box.width / 2;
-        this._center.y = box.y + box.height / 2;
-        this._center.z = box.z + box.depth / 2;
-        this._pSphereBounds = this._graphics.getSphereBounds(this._center, this._pSphereBounds);
-    };
-    /**
-     * //TODO
-     *
-     * @private
-     */
-    Mesh.prototype.onGraphicsBoundsInvalid = function (event) {
-        this._pInvalidateBounds();
-    };
-    /**
-     *
-     * @param renderer
-     *
-     * @internal
-     */
-    Mesh.prototype._acceptTraverser = function (traverser) {
-        this.graphics.acceptTraverser(traverser);
-    };
-    Mesh.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
-        if (this._graphics.count) {
-            this._tempPoint.setTo(x, y);
-            var local = this.globalToLocal(this._tempPoint, this._tempPoint);
-            var box;
-            //early out for box test
-            if (!(box = this.getBox()).contains(local.x, local.y, 0))
-                return false;
-            //early out for non-shape tests
-            if (!shapeFlag)
-                return true;
-            //ok do the graphics thing
-            if (this._graphics._hitTestPointInternal(local.x, local.y))
-                return true;
-        }
-        return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
-    };
-    Mesh.prototype.clear = function () {
-        _super.prototype.clear.call(this);
-        this._graphics.clear();
-    };
-    Mesh._meshes = new Array();
-    Mesh.assetType = "[asset Mesh]";
-    return Mesh;
-})(DisplayObjectContainer);
-module.exports = Mesh;
-
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/entities/MovieClip":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
-var DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-var TextField = require("awayjs-display/lib/entities/TextField");
-var MouseEvent = require("awayjs-display/lib/events/MouseEvent");
-var Timeline = require("awayjs-display/lib/base/Timeline");
-var FrameScriptManager = require("awayjs-display/lib/managers/FrameScriptManager");
-var MovieClip = (function (_super) {
-    __extends(MovieClip, _super);
-    function MovieClip(timeline) {
-        var _this = this;
-        if (timeline === void 0) { timeline = null; }
-        _super.call(this);
-        this._isButton = false;
-        this._time = 0; // the current time inside the animation
-        this._currentFrameIndex = -1; // the current frame
-        this._isPlaying = true; // false if paused or stopped
-        this._isInit = true;
-        this._potentialInstances = {};
-        this._depth_sessionIDs = {};
-        this._sessionID_childs = {};
-        /**
-         *
-         */
-        this.loop = true;
-        /**
-         * the current index of the current active frame
-         */
-        this.constructedKeyFrameIndex = -1;
-        this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
-        this.inheritColorTransform = true;
-        this._onMouseOver = function (event) { return _this.currentFrameIndex = 1; };
-        this._onMouseOut = function (event) { return _this.currentFrameIndex = 0; };
-        this._onMouseDown = function (event) { return _this.currentFrameIndex = 2; };
-        this._onMouseUp = function (event) { return _this.currentFrameIndex = _this.currentFrameIndex == 0 ? 0 : 1; };
-        this._timeline = timeline || new Timeline();
-    }
-    Object.defineProperty(MovieClip.prototype, "adapter", {
-        /**
-         * adapter is used to provide MovieClip to scripts taken from different platforms
-         * setter typically managed by factory
-         */
-        get: function () {
-            return this._adapter;
-        },
-        set: function (value) {
-            this._adapter = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MovieClip.prototype.dispose = function () {
-        this.disposeValues();
-        MovieClip._movieClips.push(this);
-    };
-    MovieClip.prototype.disposeValues = function () {
-        _super.prototype.disposeValues.call(this);
-        this._potentialInstances = {};
-        this._depth_sessionIDs = {};
-        this._sessionID_childs = {};
-    };
-    MovieClip.prototype.reset_textclones = function () {
-        if (this.timeline) {
-            for (var key in this._potentialInstances) {
-                if (this._potentialInstances[key] != null) {
-                    if (this._potentialInstances[key].isAsset(TextField)) {
-                        this._potentialInstances[key].text = this.timeline.getPotentialChildPrototype(key).text;
-                    }
-                    else if (this._potentialInstances[key].isAsset(MovieClip)) {
-                        this._potentialInstances[key].reset_textclones();
-                    }
-                }
-            }
-        }
-    };
-    Object.defineProperty(MovieClip.prototype, "isInit", {
-        get: function () {
-            return this._isInit;
-        },
-        set: function (value) {
-            this._isInit = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MovieClip.prototype, "timeline", {
-        get: function () {
-            return this._timeline;
-        },
-        set: function (value) {
-            this._timeline = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MovieClip.prototype, "numFrames", {
-        get: function () {
-            return this._timeline.numFrames;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MovieClip.prototype.jumpToLabel = function (label) {
-        // the timeline.jumpTolabel will set currentFrameIndex
-        this._timeline.jumpToLabel(this, label);
-    };
-    MovieClip.prototype.reset = function () {
-        _super.prototype.reset.call(this);
-        // time only is relevant for the root mc, as it is the only one that executes the update function
-        this._time = 0;
-        if (this.adapter)
-            this.adapter.freeFromScript();
-        this.constructedKeyFrameIndex = -1;
-        for (var i = this.numChildren - 1; i >= 0; i--)
-            this.removeChildAt(i);
-        this._skipAdvance = MovieClip._skipAdvance;
-        var numFrames = this._timeline.keyframe_indices.length;
-        this._isPlaying = Boolean(numFrames > 1);
-        if (numFrames) {
-            this._currentFrameIndex = 0;
-            this._timeline.constructNextFrame(this, true, true);
-        }
-        else {
-            this._currentFrameIndex = -1;
-        }
-    };
-    MovieClip.prototype.resetSessionIDs = function () {
-        this._depth_sessionIDs = {};
-    };
-    Object.defineProperty(MovieClip.prototype, "currentFrameIndex", {
-        /*
-        * Setting the currentFrameIndex will move the playhead for this movieclip to the new position
-         */
-        get: function () {
-            return this._currentFrameIndex;
-        },
-        set: function (value) {
-            //if currentFrame is set greater than the available number of
-            //frames, the playhead is moved to the last frame in the timeline.
-            //But because the frame specified was not a keyframe, no scripts are
-            //executed, even if they exist on the last frame.
-            var skip_script = false;
-            var numFrames = this._timeline.keyframe_indices.length;
-            if (!numFrames)
-                return;
-            if (value < 0) {
-                value = 0;
-            }
-            else if (value >= numFrames) {
-                value = numFrames - 1;
-                skip_script = true;
-            }
-            if (this._currentFrameIndex == value)
-                return;
-            this._currentFrameIndex = value;
-            //changing current frame will ignore advance command for that
-            //update's advanceFrame function, unless advanceFrame has
-            //already been executed
-            this._skipAdvance = MovieClip._skipAdvance;
-            this._timeline.gotoFrame(this, value, skip_script);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MovieClip.prototype.addButtonListeners = function () {
-        this._isButton = true;
-        this.stop();
-        this.addEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
-        this.addEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
-        this.addEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
-        this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
-    };
-    MovieClip.prototype.removeButtonListeners = function () {
-        this.removeEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
-        this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
-        this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
-        this.removeEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
-    };
-    MovieClip.prototype.getChildAtSessionID = function (sessionID) {
-        return this._sessionID_childs[sessionID];
-    };
-    MovieClip.prototype.getSessionIDDepths = function () {
-        return this._depth_sessionIDs;
-    };
-    MovieClip.prototype.addChildAtDepth = function (child, depth, replace) {
-        if (replace === void 0) { replace = true; }
-        //this should be implemented for all display objects
-        child.inheritColorTransform = true;
-        child.reset(); // this takes care of transform and visibility
-        return _super.prototype.addChildAtDepth.call(this, child, depth, replace);
-    };
-    MovieClip.prototype._addTimelineChildAt = function (child, depth, sessionID) {
-        this._depth_sessionIDs[depth] = child._sessionID = sessionID;
-        this._sessionID_childs[sessionID] = child;
-        return this.addChildAtDepth(child, depth);
-    };
-    MovieClip.prototype.removeChildAtInternal = function (index) {
-        var child = this._children[index];
-        if (child.adapter)
-            child.adapter.freeFromScript();
-        this.adapter.unregisterScriptObject(child);
-        //check to make sure _depth_sessionIDs wasn't modified with a new child
-        if (this._depth_sessionIDs[child._depthID] == child._sessionID)
-            delete this._depth_sessionIDs[child._depthID];
-        delete this._sessionID_childs[child._sessionID];
-        child._sessionID = -1;
-        return _super.prototype.removeChildAtInternal.call(this, index);
-    };
-    Object.defineProperty(MovieClip.prototype, "assetType", {
-        get: function () {
-            return MovieClip.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Starts playback of animation from current position
-     */
-    MovieClip.prototype.play = function () {
-        if (this._timeline.keyframe_indices.length > 1)
-            this._isPlaying = true;
-    };
-    /**
-     * should be called right before the call to away3d-render.
-     */
-    MovieClip.prototype.update = function () {
-        MovieClip._skipAdvance = true;
-        this.advanceFrame();
-        MovieClip._skipAdvance = false;
-        // after we advanced the scenegraph, we might have some script that needs executing
-        FrameScriptManager.execute_queue();
-        // now we want to execute the onEnter
-        this.dispatchEvent(this._enterFrame);
-        // after we executed the onEnter, we might have some script that needs executing
-        FrameScriptManager.execute_queue();
-        // now we execute any intervals queued
-        FrameScriptManager.execute_intervals();
-        // finally, we execute any scripts that were added from intervals
-        FrameScriptManager.execute_queue();
-        //execute any disposes as a result of framescripts
-        FrameScriptManager.execute_dispose();
-    };
-    MovieClip.prototype.getPotentialChildInstance = function (id) {
-        if (!this._potentialInstances[id])
-            this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
-        return this._potentialInstances[id];
-    };
-    /**
-     * Stop playback of animation and hold current position
-     */
-    MovieClip.prototype.stop = function () {
-        this._isPlaying = false;
-    };
-    MovieClip.prototype.clone = function () {
-        var newInstance = (MovieClip._movieClips.length) ? MovieClip._movieClips.pop() : new MovieClip(this._timeline);
-        this.copyTo(newInstance);
-        return newInstance;
-    };
-    MovieClip.prototype.copyTo = function (newInstance) {
-        _super.prototype.copyTo.call(this, newInstance);
-        newInstance.timeline = this._timeline;
-        newInstance.loop = this.loop;
-    };
-    MovieClip.prototype.advanceFrame = function () {
-        if (this._isPlaying && !this._skipAdvance) {
-            if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
-                if (this.loop)
-                    this.currentFrameIndex = 0;
-                else
-                    this._isPlaying = false;
-            }
-            else {
-                this._currentFrameIndex++;
-                this._timeline.constructNextFrame(this);
-            }
-        }
-        var len = this._children.length;
-        var child;
-        for (var i = 0; i < len; ++i) {
-            child = this._children[i];
-            if (child.isAsset(MovieClip))
-                child.advanceFrame();
-        }
-        this._skipAdvance = false;
-    };
-    // DEBUG CODE:
-    MovieClip.prototype.logHierarchy = function (depth) {
-        if (depth === void 0) { depth = 0; }
-        this.printHierarchyName(depth, this);
-        var len = this._children.length;
-        var child;
-        for (var i = 0; i < len; i++) {
-            child = this._children[i];
-            if (child.isAsset(MovieClip))
-                child.logHierarchy(depth + 1);
-            else
-                this.printHierarchyName(depth + 1, child);
-        }
-    };
-    MovieClip.prototype.printHierarchyName = function (depth, target) {
-        var str = "";
-        for (var i = 0; i < depth; ++i)
-            str += "--";
-        str += " " + target.name + " = " + target.id;
-        console.log(str);
-    };
-    MovieClip.prototype.clear = function () {
-        for (var key in this._potentialInstances) {
-            var instance = this._potentialInstances[key];
-            //only dispose instances that are not used in script ie. do not have an instance name
-            if (instance.name == "") {
-                FrameScriptManager.add_child_to_dispose(instance);
-                delete this._potentialInstances[key];
-            }
-        }
-        _super.prototype.clear.call(this);
-    };
-    MovieClip._movieClips = new Array();
-    MovieClip.assetType = "[asset MovieClip]";
-    return MovieClip;
-})(DisplayObjectContainer);
-module.exports = MovieClip;
-
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-display/lib/base/Timeline":"awayjs-display/lib/base/Timeline","awayjs-display/lib/containers/DisplayObjectContainer":"awayjs-display/lib/containers/DisplayObjectContainer","awayjs-display/lib/entities/TextField":"awayjs-display/lib/entities/TextField","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/entities/PointLight":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var LightBase = require("awayjs-display/lib/base/LightBase");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
-var PointLight = (function (_super) {
-    __extends(PointLight, _super);
-    function PointLight() {
-        _super.call(this);
-        this._pRadius = 90000;
-        this._pFallOff = 100000;
-        this._pIsEntity = true;
-        this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
-        //default bounds type
-        this._boundsType = BoundsType.SPHERE;
-    }
-    Object.defineProperty(PointLight.prototype, "assetType", {
-        get: function () {
-            return PointLight.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    PointLight.prototype.pCreateShadowMapper = function () {
-        return new CubeMapShadowMapper();
-    };
-    Object.defineProperty(PointLight.prototype, "radius", {
-        get: function () {
-            return this._pRadius;
-        },
-        set: function (value) {
-            this._pRadius = value;
-            if (this._pRadius < 0) {
-                this._pRadius = 0;
-            }
-            else if (this._pRadius > this._pFallOff) {
-                this._pFallOff = this._pRadius;
-                this._pInvalidateBounds();
-            }
-            this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    PointLight.prototype.iFallOffFactor = function () {
-        return this._pFallOffFactor;
-    };
-    Object.defineProperty(PointLight.prototype, "fallOff", {
-        get: function () {
-            return this._pFallOff;
-        },
-        set: function (value) {
-            this._pFallOff = value;
-            if (this._pFallOff < 0)
-                this._pFallOff = 0;
-            if (this._pFallOff < this._pRadius)
-                this._pRadius = this._pFallOff;
-            this._pFallOffFactor = 1 / (this._pFallOff * this._pFallOff - this._pRadius * this._pRadius);
-            this._pInvalidateBounds();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    PointLight.prototype._pUpdateSphereBounds = function () {
-        _super.prototype._pUpdateSphereBounds.call(this);
-        this._pSphereBounds.radius = this._pFallOff;
-    };
-    PointLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
-        if (target === void 0) { target = null; }
-        var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
-        var m = new Matrix3D();
-        // todo: do not use lookAt on Light
-        m.copyFrom(entity.getRenderSceneTransform(camera));
-        m.append(this._pParent.inverseSceneTransform);
-        this.lookAt(m.position);
-        m.copyFrom(entity.getRenderSceneTransform(camera));
-        m.append(this.inverseSceneTransform);
-        var box = entity.getBox();
-        var v1 = m.deltaTransformVector(new Vector3D(box.left, box.bottom, box.front));
-        var v2 = m.deltaTransformVector(new Vector3D(box.right, box.top, box.back));
-        var d1 = v1.x * v1.x + v1.y * v1.y + v1.z * v1.z;
-        var d2 = v2.x * v2.x + v2.y * v2.y + v2.z * v2.z;
-        var d = Math.sqrt(d1 > d2 ? d1 : d2);
-        var zMin;
-        var zMax;
-        var z = m.rawData[14];
-        zMin = z - d;
-        zMax = z + d;
-        raw[5] = raw[0] = zMin / d;
-        raw[10] = zMax / (zMax - zMin);
-        raw[11] = 1;
-        raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-        raw[14] = -zMin * raw[10];
-        if (!target)
-            target = new Matrix3D();
-        target.copyRawDataFrom(raw);
-        target.prepend(m);
-        return target;
-    };
-    PointLight.assetType = "[light PointLight]";
-    return PointLight;
-})(LightBase);
-module.exports = PointLight;
-
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/base/LightBase":"awayjs-display/lib/base/LightBase","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper"}],"awayjs-display/lib/entities/Shape":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-/**
- * This class is used to create lightweight shapes using the ActionScript
- * drawing application program interface(API). The Shape class includes a
- * <code>graphics</code> property, which lets you access methods from the
- * Graphics class.
- *
- * <p>The Sprite class also includes a <code>graphics</code>property, and it
- * includes other features not available to the Shape class. For example, a
- * Sprite object is a display object container, whereas a Shape object is not
- * (and cannot contain child display objects). For this reason, Shape objects
- * consume less memory than Sprite objects that contain the same graphics.
- * However, a Sprite object supports user input events, while a Shape object
- * does not.</p>
- */
-var Shape = (function (_super) {
-    __extends(Shape, _super);
-    /**
-     * Creates a new Shape object.
-     */
-    function Shape() {
-        _super.call(this);
-    }
-    Object.defineProperty(Shape.prototype, "graphics", {
-        /**
-         * Specifies the Graphics object belonging to this Shape object, where vector
-         * drawing commands can occur.
-         */
-        get: function () {
-            return this._graphics;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Shape.prototype.clone = function () {
-        var clone = new Shape();
-        clone.pivot = this.pivot;
-        clone.transform.matrix3D = this.transform.matrix3D;
-        clone.name = name;
-        clone.maskMode = this.maskMode;
-        clone.masks = this.masks ? this.masks.concat() : null;
-        clone._graphics = this._graphics;
-        return clone;
-    };
-    return Shape;
-})(DisplayObject);
-module.exports = Shape;
-
-},{"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject"}],"awayjs-display/lib/entities/Skybox":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
-var BlendMode = require("awayjs-core/lib/image/BlendMode");
-var DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
-var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
-var RenderOwnerEvent = require("awayjs-display/lib/events/RenderOwnerEvent");
-var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
-var Style = require("awayjs-display/lib/base/Style");
-var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
-/**
- * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
- * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
- * the sky box is always as large as possible without being clipped.
- */
-var Skybox = (function (_super) {
-    __extends(Skybox, _super);
-    /**
-     * Create a new Skybox object.
-     *
-     * @param material	The material with which to render the Skybox.
-     */
-    function Skybox(image) {
-        var _this = this;
-        if (image === void 0) { image = null; }
-        _super.call(this);
-        this._textures = new Array();
-        this._pAlphaThreshold = 0;
-        this._pBlendMode = BlendMode.NORMAL;
-        this._curves = false;
-        this._imageRect = false;
-        this._style = new Style();
-        this._onTextureInvalidateDelegate = function (event) { return _this.onTextureInvalidate(event); };
-        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
-        this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-        this._pIsEntity = true;
-        this._owners = new Array(this);
-        this._style.image = image;
-        this.texture = new SingleCubeTexture();
-        //default bounds type
-        this._boundsType = BoundsType.NULL;
-    }
-    Object.defineProperty(Skybox.prototype, "alphaThreshold", {
-        /**
-         * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-         * invisible or entirely opaque, often used with textures for foliage, etc.
-         * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-         */
-        get: function () {
-            return this._pAlphaThreshold;
-        },
-        set: function (value) {
-            if (value < 0)
-                value = 0;
-            else if (value > 1)
-                value = 1;
-            if (this._pAlphaThreshold == value)
-                return;
-            this._pAlphaThreshold = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "curves", {
-        /**
-         * Indicates whether skybox should use curves. Defaults to false.
-         */
-        get: function () {
-            return this._curves;
-        },
-        set: function (value) {
-            if (this._curves == value)
-                return;
-            this._curves = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "imageRect", {
-        /**
-         * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
-         */
-        get: function () {
-            return this._imageRect;
-        },
-        set: function (value) {
-            if (this._imageRect == value)
-                return;
-            this._imageRect = value;
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "lightPicker", {
-        /**
-         * The light picker used by the material to provide lights to the material if it supports lighting.
-         *
-         * @see LightPickerBase
-         * @see StaticLightPicker
-         */
-        get: function () {
-            return this._pLightPicker;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "animationSet", {
-        /**
-         *
-         */
-        get: function () {
-            return this._animationSet;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "blendMode", {
-        /**
-         * The blend mode to use when drawing this renderable. The following blend modes are supported:
-         * <ul>
-         * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-         * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-         * <li>BlendMode.MULTIPLY</li>
-         * <li>BlendMode.ADD</li>
-         * <li>BlendMode.ALPHA</li>
-         * </ul>
-         */
-        get: function () {
-            return this._pBlendMode;
-        },
-        set: function (value) {
-            if (this._pBlendMode == value)
-                return;
-            this._pBlendMode = value;
-            this.invalidate();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "iOwners", {
-        /**
-         * A list of the IRenderableOwners that use this material
-         *
-         * @private
-         */
-        get: function () {
-            return this._owners;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "animator", {
-        get: function () {
-            return this._animator;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "uvTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._uvTransform;
-        },
-        set: function (value) {
-            this._uvTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "colorTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._colorTransform; // || this._pParentMesh._colorTransform;
-        },
-        set: function (value) {
-            this._colorTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "texture", {
-        /**
-        * The cube texture to use as the skybox.
-        */
-        get: function () {
-            return this._texture;
-        },
-        set: function (value) {
-            if (this._texture == value)
-                return;
-            if (this._texture)
-                this.removeTexture(this._texture);
-            this._texture = value;
-            if (this._texture)
-                this.addTexture(this._texture);
-            this.invalidatePasses();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Skybox.prototype.getNumTextures = function () {
-        return this._textures.length;
-    };
-    Skybox.prototype.getTextureAt = function (index) {
-        return this._textures[index];
-    };
-    Object.defineProperty(Skybox.prototype, "style", {
-        /**
-         *
-         */
-        get: function () {
-            return this._style;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "assetType", {
-        get: function () {
-            return Skybox.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Skybox.prototype, "castsShadows", {
-        get: function () {
-            return false; //TODO
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-     *
-     * @private
-     */
-    Skybox.prototype.invalidatePasses = function () {
-        this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_PASSES, this));
-    };
-    Skybox.prototype.invalidateRenderOwner = function () {
-        this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
-    };
-    Skybox.prototype.addTexture = function (texture) {
-        this._textures.push(texture);
-        texture.addEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
-        this.onTextureInvalidate();
-    };
-    Skybox.prototype.removeTexture = function (texture) {
-        this._textures.splice(this._textures.indexOf(texture), 1);
-        texture.removeEventListener(AssetEvent.INVALIDATE, this._onTextureInvalidateDelegate);
-        this.onTextureInvalidate();
-    };
-    Skybox.prototype.onTextureInvalidate = function (event) {
-        if (event === void 0) { event = null; }
-        this.invalidate();
-    };
-    Skybox.prototype._onInvalidateProperties = function (event) {
-        this.invalidatePasses();
-    };
-    /**
-     * //TODO
-     *
-     * @param shortestCollisionDistance
-     * @returns {boolean}
-     *
-     * @internal
-     */
-    Skybox.prototype._iTestCollision = function (shortestCollisionDistance) {
-        return false;
-    };
-    Skybox.assetType = "[asset Skybox]";
-    return Skybox;
-})(DisplayObject);
-module.exports = Skybox;
-
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/DisplayObject":"awayjs-display/lib/base/DisplayObject","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/entities/TextField":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-var Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
-var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
-var Matrix = require("awayjs-core/lib/geom/Matrix");
-var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
-var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
-var Mesh = require("awayjs-display/lib/entities/Mesh");
-var Graphics = require("awayjs-display/lib/graphics/Graphics");
-var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
-var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
-var Style = require("awayjs-display/lib/base/Style");
-/**
- * The TextField class is used to create display objects for text display and
- * input. <ph outputclass="flexonly">You can use the TextField class to
- * perform low-level text rendering. However, in Flex, you typically use the
- * Label, Text, TextArea, and TextInput controls to process text. <ph
- * outputclass="flashonly">You can give a text field an instance name in the
- * Property inspector and use the methods and properties of the TextField
- * class to manipulate it with ActionScript. TextField instance names are
- * displayed in the Movie Explorer and in the Insert Target Path dialog box in
- * the Actions panel.
- *
- * <p>To create a text field dynamically, use the <code>TextField()</code>
- * constructor.</p>
- *
- * <p>The methods of the TextField class let you set, select, and manipulate
- * text in a dynamic or input text field that you create during authoring or
- * at runtime. </p>
- *
- * <p>ActionScript provides several ways to format your text at runtime. The
- * TextFormat class lets you set character and paragraph formatting for
- * TextField objects. You can apply Cascading Style Sheets(CSS) styles to
- * text fields by using the <code>TextField.styleSheet</code> property and the
- * StyleSheet class. You can use CSS to style built-in HTML tags, define new
- * formatting tags, or apply styles. You can assign HTML formatted text, which
- * optionally uses CSS styles, directly to a text field. HTML text that you
- * assign to a text field can contain embedded media(movie clips, SWF files,
- * GIF files, PNG files, and JPEG files). The text wraps around the embedded
- * media in the same way that a web browser wraps text around media embedded
- * in an HTML document. </p>
- *
- * <p>Flash Player supports a subset of HTML tags that you can use to format
- * text. See the list of supported HTML tags in the description of the
- * <code>htmlText</code> property.</p>
- *
- * @event change                    Dispatched after a control value is
- *                                  modified, unlike the
- *                                  <code>textInput</code> event, which is
- *                                  dispatched before the value is modified.
- *                                  Unlike the W3C DOM Event Model version of
- *                                  the <code>change</code> event, which
- *                                  dispatches the event only after the
- *                                  control loses focus, the ActionScript 3.0
- *                                  version of the <code>change</code> event
- *                                  is dispatched any time the control
- *                                  changes. For example, if a user types text
- *                                  into a text field, a <code>change</code>
- *                                  event is dispatched after every keystroke.
- * @event link                      Dispatched when a user clicks a hyperlink
- *                                  in an HTML-enabled text field, where the
- *                                  URL begins with "event:". The remainder of
- *                                  the URL after "event:" is placed in the
- *                                  text property of the LINK event.
- *
- *                                  <p><b>Note:</b> The default behavior,
- *                                  adding the text to the text field, occurs
- *                                  only when Flash Player generates the
- *                                  event, which in this case happens when a
- *                                  user attempts to input text. You cannot
- *                                  put text into a text field by sending it
- *                                  <code>textInput</code> events.</p>
- * @event scroll                    Dispatched by a TextField object
- *                                  <i>after</i> the user scrolls.
- * @event textInput                 Flash Player dispatches the
- *                                  <code>textInput</code> event when a user
- *                                  enters one or more characters of text.
- *                                  Various text input methods can generate
- *                                  this event, including standard keyboards,
- *                                  input method editors(IMEs), voice or
- *                                  speech recognition systems, and even the
- *                                  act of pasting plain text with no
- *                                  formatting or style information.
- * @event textInteractionModeChange Flash Player dispatches the
- *                                  <code>textInteractionModeChange</code>
- *                                  event when a user changes the interaction
- *                                  mode of a text field. for example on
- *                                  Android, one can toggle from NORMAL mode
- *                                  to SELECTION mode using context menu
- *                                  options
- */
-var TextField = (function (_super) {
-    __extends(TextField, _super);
-    /**
-     * Creates a new TextField instance. After you create the TextField instance,
-     * call the <code>addChild()</code> or <code>addChildAt()</code> method of
-     * the parent DisplayObjectContainer object to add the TextField instance to
-     * the display list.
-     *
-     * <p>The default size for a text field is 100 x 100 pixels.</p>
-     */
-    function TextField() {
-        _super.call(this);
-        this._text = "";
-        this.type = TextFieldType.STATIC;
-    }
-    Object.defineProperty(TextField.prototype, "assetType", {
-        /**
-         *
-         * @returns {string}
-         */
-        get: function () {
-            return TextField.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "bottomScrollV", {
-        /**
-         * An integer(1-based index) that indicates the bottommost line that is
-         * currently visible in the specified text field. Think of the text field as
-         * a window onto a block of text. The <code>scrollV</code> property is the
-         * 1-based index of the topmost visible line in the window.
-         *
-         * <p>All the text between the lines indicated by <code>scrollV</code> and
-         * <code>bottomScrollV</code> is currently visible in the text field.</p>
-         */
-        get: function () {
-            return this._bottomScrollV;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "caretIndex", {
-        /**
-         * The index of the insertion point(caret) position. If no insertion point
-         * is displayed, the value is the position the insertion point would be if
-         * you restored focus to the field(typically where the insertion point last
-         * was, or 0 if the field has not had focus).
-         *
-         * <p>Selection span indexes are zero-based(for example, the first position
-         * is 0, the second position is 1, and so on).</p>
-         */
-        get: function () {
-            return this._caretIndex;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "length", {
-        /**
-         * The number of characters in a text field. A character such as tab
-         * (<code>\t</code>) counts as one character.
-         */
-        get: function () {
-            return this._length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * The maximum value of <code>scrollH</code>.
-     */
-    TextField.prototype.maxScrollH = function () {
-        return this._maxScrollH;
-    };
-    /**
-     * The maximum value of <code>scrollV</code>.
-     */
-    TextField.prototype.maxScrollV = function () {
-        return this._maxScrollV;
-    };
-    Object.defineProperty(TextField.prototype, "numLines", {
-        /**
-         * Defines the number of text lines in a multiline text field. If
-         * <code>wordWrap</code> property is set to <code>true</code>, the number of
-         * lines increases when text wraps.
-         */
-        get: function () {
-            return this._numLines;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "selectionBeginIndex", {
-        /**
-         * The zero-based character index value of the first character in the current
-         * selection. For example, the first character is 0, the second character is
-         * 1, and so on. If no text is selected, this property is the value of
-         * <code>caretIndex</code>.
-         */
-        get: function () {
-            return this._selectionBeginIndex;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "selectionEndIndex", {
-        /**
-         * The zero-based character index value of the last character in the current
-         * selection. For example, the first character is 0, the second character is
-         * 1, and so on. If no text is selected, this property is the value of
-         * <code>caretIndex</code>.
-         */
-        get: function () {
-            return this._selectionEndIndex;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "text", {
-        /**
-         * A string that is the current text in the text field. Lines are separated
-         * by the carriage return character(<code>'\r'</code>, ASCII 13). This
-         * property contains unformatted text in the text field, without HTML tags.
-         *
-         * <p>To get the text in HTML form, use the <code>htmlText</code>
-         * property.</p>
-         */
-        get: function () {
-            return this._text;
-        },
-        set: function (value) {
-            value = value.toString();
-            if (this._text == value)
-                return;
-            this._text = value;
-            this._textGraphicsDirty = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "textFormat", {
-        get: function () {
-            return this._textFormat;
-        },
-        set: function (value) {
-            if (this._textFormat == value)
-                return;
-            this._textFormat = value;
-            this._textGraphicsDirty = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "graphics", {
-        /**
-         * The geometry used by the mesh that provides it with its shape.
-         */
-        get: function () {
-            if (this._textGraphicsDirty)
-                this.reConstruct();
-            return this._graphics;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "textColor", {
-        get: function () {
-            return this._textColor;
-        },
-        set: function (value) {
-            this._textColor = value;
-            if (!this.transform.colorTransform)
-                this.transform.colorTransform = new ColorTransform();
-            this.transform.colorTransform.color = value;
-            this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "textInteractionMode", {
-        /**
-         * The interaction mode property, Default value is
-         * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
-         * that the text can be scrolled but not selected. One can switch to the
-         * selectable mode through the in-built context menu on the text field. On
-         * Desktop, the normal mode implies that the text is in scrollable as well as
-         * selection mode.
-         */
-        get: function () {
-            return this._textInteractionMode;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "textWidth", {
-        /**
-         * The width of the text in pixels.
-         */
-        get: function () {
-            return this._textWidth;
-        },
-        set: function (value) {
-            this._textWidth = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextField.prototype, "textHeight", {
-        /**
-         * The width of the text in pixels.
-         */
-        get: function () {
-            return this._textHeight;
-        },
-        set: function (value) {
-            this._textHeight = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * @inheritDoc
-     */
-    TextField.prototype.dispose = function () {
-        this.disposeValues();
-        TextField._textFields.push(this);
-    };
-    /**
-     * @inheritDoc
-     */
-    TextField.prototype.disposeValues = function () {
-        _super.prototype.disposeValues.call(this);
-        this._textFormat = null;
-    };
-    /**
-     * Reconstructs the Graphics for this Text-field.
-     */
-    TextField.prototype.reConstruct = function () {
-        this._textGraphicsDirty = false;
-        if (this._textFormat == null)
-            return;
-        this._graphics.dispose();
-        this._graphics = new Graphics(this);
-        if (this._text == "")
-            return;
-        var vertices = new Array();
-        var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-        var additional_margin_x = this._textFormat.font_table.offset_x;
-        var additional_margin_y = this._textFormat.font_table.offset_y;
-        var y_offset = additional_margin_y;
-        var prev_char = null;
-        var j = 0;
-        var k = 0;
-        var whitespace_width = (this._textFormat.font_table.get_whitespace_width() * char_scale);
-        var textlines = this.text.toString().split("\\n");
-        var final_lines_chars = [];
-        var final_lines_char_scale = [];
-        var final_lines_width = [];
-        for (var tl = 0; tl < textlines.length; tl++) {
-            final_lines_chars.push([]);
-            final_lines_char_scale.push([]);
-            final_lines_width.push(0);
-            var words = textlines[tl].split(" ");
-            for (var i = 0; i < words.length; i++) {
-                var word_width = 0;
-                var word_chars = [];
-                var word_chars_scale = [];
-                var c_cnt = 0;
-                for (var w = 0; w < words[i].length; w++) {
-                    char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-                    var this_char = this._textFormat.font_table.getChar(words[i].charCodeAt(w).toString());
-                    if (this_char == null) {
-                        if (this._textFormat.fallback_font_table) {
-                            char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
-                            this_char = this._textFormat.fallback_font_table.getChar(words[i].charCodeAt(w).toString());
-                        }
-                    }
-                    if (this_char != null) {
-                        var this_subGeom = this_char.elements;
-                        if (this_subGeom != null) {
-                            // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-                            var kerning_value = 0;
-                            if (prev_char != null) {
-                                for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
-                                    if (prev_char.kerningCharCodes[k] == words[i].charCodeAt(w)) {
-                                        kerning_value = prev_char.kerningValues[k];
-                                        break;
-                                    }
-                                }
-                            }
-                            word_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
-                        }
-                        else {
-                            // if no char-geometry was found, we insert a "space"
-                            word_width += whitespace_width;
-                        }
-                    }
-                    else {
-                        // if no char-geometry was found, we insert a "space"
-                        //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
-                        word_width += whitespace_width;
-                    }
-                    word_chars_scale[c_cnt] = char_scale;
-                    word_chars[c_cnt++] = this_char;
-                }
-                if ((final_lines_width[final_lines_width.length - 1] + word_width) <= this.textWidth) {
-                    for (var fw = 0; fw < word_chars_scale.length; fw++) {
-                        final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
-                        final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
-                    }
-                    final_lines_width[final_lines_width.length - 1] += word_width;
-                }
-                else {
-                    // word does not fit
-                    // todo respect multiline and autowrapping properties.
-                    // right now we just pretend everything has autowrapping and multiline
-                    final_lines_chars.push([]);
-                    final_lines_char_scale.push([]);
-                    final_lines_width.push(0);
-                    for (var fw = 0; fw < word_chars_scale.length; fw++) {
-                        final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
-                        final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
-                    }
-                    final_lines_width[final_lines_width.length - 1] = word_width;
-                }
-                if (i < (words.length - 1)) {
-                    if ((final_lines_width[final_lines_width.length - 1] + whitespace_width) <= this.textWidth) {
-                        final_lines_chars[final_lines_chars.length - 1].push(null);
-                        final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
-                        final_lines_width[final_lines_width.length - 1] += whitespace_width;
-                    }
-                    else {
-                        final_lines_chars.push([null]);
-                        final_lines_char_scale.push([char_scale]);
-                        final_lines_width.push(whitespace_width);
-                    }
-                }
-            }
-        }
-        for (var i = 0; i < final_lines_chars.length; i++) {
-            var x_offset = additional_margin_x;
-            if (this._textFormat.align == "center") {
-                x_offset = (this._textWidth - final_lines_width[i]) / 2;
-            }
-            else if (this._textFormat.align == "right") {
-                x_offset = (this._textWidth - final_lines_width[i]) - additional_margin_x;
-            }
-            for (var t = 0; t < final_lines_chars[i].length; t++) {
-                var this_char = final_lines_chars[i][t];
-                char_scale = final_lines_char_scale[i][t];
-                if (this_char != null) {
-                    var elements = this_char.elements;
-                    if (elements != null) {
-                        var positions2 = elements.positions.get(elements.numVertices);
-                        var curveData2 = elements.getCustomAtributes("curves").get(elements.numVertices);
-                        for (var v = 0; v < elements.numVertices; v++) {
-                            vertices[j++] = (positions2[v * 2] * char_scale) + x_offset;
-                            vertices[j++] = (positions2[v * 2 + 1] * char_scale) + y_offset;
-                            vertices[j++] = curveData2[v * 3];
-                            vertices[j++] = curveData2[v * 3 + 1];
-                            vertices[j++] = curveData2[v * 3 + 2];
-                        }
-                        // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-                        var kerning_value = 0;
-                        if (prev_char != null) {
-                            for (var k = 0; k < prev_char.kerningCharCodes.length; k++) {
-                                if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-                                    kerning_value = prev_char.kerningValues[k];
-                                    break;
-                                }
-                            }
-                        }
-                        x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
-                    }
-                    else {
-                        // if no char-geometry was found, we insert a "space"
-                        x_offset += whitespace_width;
-                    }
-                }
-                else {
-                    x_offset += whitespace_width;
-                }
-            }
-            // hack for multiline textfield in icycle.
-            y_offset += (this._textFormat.size + this._textFormat.leading * 1.6);
-            if (this._textFormat.leading >= 11) {
-                y_offset += 2.5;
-            }
-        }
-        var attributesView = new AttributesView(Float32Array, 5);
-        attributesView.set(vertices);
-        var vertexBuffer = attributesView.buffer;
-        attributesView.dispose();
-        var curveElements = new TriangleElements(vertexBuffer);
-        curveElements.setPositions(new Float2Attributes(vertexBuffer));
-        curveElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
-        this._graphics.addGraphic(curveElements);
-        this.material = this._textFormat.material;
-        var sampler = new Sampler2D();
-        this.style = new Style();
-        this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
-        this.material.animateUVs = true;
-        this.uvTransform = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
-    };
-    /**
-     * Appends the string specified by the <code>newText</code> parameter to the
-     * end of the text of the text field. This method is more efficient than an
-     * addition assignment(<code>+=</code>) on a <code>text</code> property
-     * (such as <code>someTextField.text += moreText</code>), particularly for a
-     * text field that contains a significant amount of content.
-     *
-     * @param newText The string to append to the existing text.
-     */
-    TextField.prototype.appendText = function (newText) {
-        this._text += newText;
-    };
-    /**
-     * *tells the Textfield that a paragraph is defined completly.
-     * e.g. the textfield will start a new line for future added text.
-     */
-    TextField.prototype.closeParagraph = function () {
-        //TODO
-    };
-    /**
-     * Returns a rectangle that is the bounding box of the character.
-     *
-     * @param charIndex The zero-based index value for the character(for
-     *                  example, the first position is 0, the second position is
-     *                  1, and so on).
-     * @return A rectangle with <code>x</code> and <code>y</code> minimum and
-     *         maximum values defining the bounding box of the character.
-     */
-    TextField.prototype.getCharBoundaries = function (charIndex) {
-        return this._charBoundaries;
-    };
-    /**
-     * Returns the zero-based index value of the character at the point specified
-     * by the <code>x</code> and <code>y</code> parameters.
-     *
-     * @param x The <i>x</i> coordinate of the character.
-     * @param y The <i>y</i> coordinate of the character.
-     * @return The zero-based index value of the character(for example, the
-     *         first position is 0, the second position is 1, and so on). Returns
-     *         -1 if the point is not over any character.
-     */
-    TextField.prototype.getCharIndexAtPoint = function (x, y) {
-        return this._charIndexAtPoint;
-    };
-    /**
-     * Given a character index, returns the index of the first character in the
-     * same paragraph.
-     *
-     * @param charIndex The zero-based index value of the character(for example,
-     *                  the first character is 0, the second character is 1, and
-     *                  so on).
-     * @return The zero-based index value of the first character in the same
-     *         paragraph.
-     * @throws RangeError The character index specified is out of range.
-     */
-    TextField.prototype.getFirstCharInParagraph = function (charIndex /*int*/) {
-        return this._firstCharInParagraph;
-    };
-    /**
-     * Returns a DisplayObject reference for the given <code>id</code>, for an
-     * image or SWF file that has been added to an HTML-formatted text field by
-     * using an <code><img></code> tag. The <code><img></code> tag is in the
-     * following format:
-     *
-     * <p><pre xml:space="preserve"><code> <img src = 'filename.jpg' id =
-     * 'instanceName' ></code></pre></p>
-     *
-     * @param id The <code>id</code> to match(in the <code>id</code> attribute
-     *           of the <code><img></code> tag).
-     * @return The display object corresponding to the image or SWF file with the
-     *         matching <code>id</code> attribute in the <code><img></code> tag
-     *         of the text field. For media loaded from an external source, this
-     *         object is a Loader object, and, once loaded, the media object is a
-     *         child of that Loader object. For media embedded in the SWF file,
-     *         it is the loaded object. If no <code><img></code> tag with the
-     *         matching <code>id</code> exists, the method returns
-     *         <code>null</code>.
-     */
-    TextField.prototype.getImageReference = function (id) {
-        return this._imageReference;
-    };
-    /**
-     * Returns the zero-based index value of the line at the point specified by
-     * the <code>x</code> and <code>y</code> parameters.
-     *
-     * @param x The <i>x</i> coordinate of the line.
-     * @param y The <i>y</i> coordinate of the line.
-     * @return The zero-based index value of the line(for example, the first
-     *         line is 0, the second line is 1, and so on). Returns -1 if the
-     *         point is not over any line.
-     */
-    TextField.prototype.getLineIndexAtPoint = function (x, y) {
-        return this._lineIndexAtPoint;
-    };
-    /**
-     * Returns the zero-based index value of the line containing the character
-     * specified by the <code>charIndex</code> parameter.
-     *
-     * @param charIndex The zero-based index value of the character(for example,
-     *                  the first character is 0, the second character is 1, and
-     *                  so on).
-     * @return The zero-based index value of the line.
-     * @throws RangeError The character index specified is out of range.
-     */
-    TextField.prototype.getLineIndexOfChar = function (charIndex /*int*/) {
-        return this._lineIndexOfChar;
-    };
-    /**
-     * Returns the number of characters in a specific text line.
-     *
-     * @param lineIndex The line number for which you want the length.
-     * @return The number of characters in the line.
-     * @throws RangeError The line number specified is out of range.
-     */
-    TextField.prototype.getLineLength = function (lineIndex /*int*/) {
-        return this._lineLength;
-    };
-    /**
-     * Returns metrics information about a given text line.
-     *
-     * @param lineIndex The line number for which you want metrics information.
-     * @return A TextLineMetrics object.
-     * @throws RangeError The line number specified is out of range.
-     */
-    TextField.prototype.getLineMetrics = function (lineIndex /*int*/) {
-        return this._lineMetrics;
-    };
-    /**
-     * Returns the character index of the first character in the line that the
-     * <code>lineIndex</code> parameter specifies.
-     *
-     * @param lineIndex The zero-based index value of the line(for example, the
-     *                  first line is 0, the second line is 1, and so on).
-     * @return The zero-based index value of the first character in the line.
-     * @throws RangeError The line number specified is out of range.
-     */
-    TextField.prototype.getLineOffset = function (lineIndex /*int*/) {
-        return this._lineOffset;
-    };
-    /**
-     * Returns the text of the line specified by the <code>lineIndex</code>
-     * parameter.
-     *
-     * @param lineIndex The zero-based index value of the line(for example, the
-     *                  first line is 0, the second line is 1, and so on).
-     * @return The text string contained in the specified line.
-     * @throws RangeError The line number specified is out of range.
-     */
-    TextField.prototype.getLineText = function (lineIndex /*int*/) {
-        return this._lineText;
-    };
-    /**
-     * Given a character index, returns the length of the paragraph containing
-     * the given character. The length is relative to the first character in the
-     * paragraph(as returned by <code>getFirstCharInParagraph()</code>), not to
-     * the character index passed in.
-     *
-     * @param charIndex The zero-based index value of the character(for example,
-     *                  the first character is 0, the second character is 1, and
-     *                  so on).
-     * @return Returns the number of characters in the paragraph.
-     * @throws RangeError The character index specified is out of range.
-     */
-    TextField.prototype.getParagraphLength = function (charIndex /*int*/) {
-        return this._paragraphLength;
-    };
-    /**
-     * Returns a TextFormat object that contains formatting information for the
-     * range of text that the <code>beginIndex</code> and <code>endIndex</code>
-     * parameters specify. Only properties that are common to the entire text
-     * specified are set in the resulting TextFormat object. Any property that is
-     * <i>mixed</i>, meaning that it has different values at different points in
-     * the text, has a value of <code>null</code>.
-     *
-     * <p>If you do not specify values for these parameters, this method is
-     * applied to all the text in the text field. </p>
-     *
-     * <p>The following table describes three possible usages:</p>
-     *
-     * @return The TextFormat object that represents the formatting properties
-     *         for the specified text.
-     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
-     *                    specified is out of range.
-     */
-    TextField.prototype.getTextFormat = function (beginIndex, endIndex) {
-        if (beginIndex === void 0) { beginIndex = -1; }
-        if (endIndex === void 0) { endIndex = -1; }
-        return this._textFormat;
-    };
-    /**
-     * Replaces the current selection with the contents of the <code>value</code>
-     * parameter. The text is inserted at the position of the current selection,
-     * using the current default character format and default paragraph format.
-     * The text is not treated as HTML.
-     *
-     * <p>You can use the <code>replaceSelectedText()</code> method to insert and
-     * delete text without disrupting the character and paragraph formatting of
-     * the rest of the text.</p>
-     *
-     * <p><b>Note:</b> This method does not work if a style sheet is applied to
-     * the text field.</p>
-     *
-     * @param value The string to replace the currently selected text.
-     * @throws Error This method cannot be used on a text field with a style
-     *               sheet.
-     */
-    TextField.prototype.replaceSelectedText = function (value) {
-    };
-    /**
-     * Replaces the range of characters that the <code>beginIndex</code> and
-     * <code>endIndex</code> parameters specify with the contents of the
-     * <code>newText</code> parameter. As designed, the text from
-     * <code>beginIndex</code> to <code>endIndex-1</code> is replaced.
-     *
-     * <p><b>Note:</b> This method does not work if a style sheet is applied to
-     * the text field.</p>
-     *
-     * @param beginIndex The zero-based index value for the start position of the
-     *                   replacement range.
-     * @param endIndex   The zero-based index position of the first character
-     *                   after the desired text span.
-     * @param newText    The text to use to replace the specified range of
-     *                   characters.
-     * @throws Error This method cannot be used on a text field with a style
-     *               sheet.
-     */
-    TextField.prototype.replaceText = function (beginIndex /*int*/, endIndex /*int*/, newText) {
-    };
-    /**
-     * Sets as selected the text designated by the index values of the first and
-     * last characters, which are specified with the <code>beginIndex</code> and
-     * <code>endIndex</code> parameters. If the two parameter values are the
-     * same, this method sets the insertion point, as if you set the
-     * <code>caretIndex</code> property.
-     *
-     * @param beginIndex The zero-based index value of the first character in the
-     *                   selection(for example, the first character is 0, the
-     *                   second character is 1, and so on).
-     * @param endIndex   The zero-based index value of the last character in the
-     *                   selection.
-     */
-    TextField.prototype.setSelection = function (beginIndex /*int*/, endIndex /*int*/) {
-    };
-    /**
-     * Applies the text formatting that the <code>format</code> parameter
-     * specifies to the specified text in a text field. The value of
-     * <code>format</code> must be a TextFormat object that specifies the desired
-     * text formatting changes. Only the non-null properties of
-     * <code>format</code> are applied to the text field. Any property of
-     * <code>format</code> that is set to <code>null</code> is not applied. By
-     * default, all of the properties of a newly created TextFormat object are
-     * set to <code>null</code>.
-     *
-     * <p><b>Note:</b> This method does not work if a style sheet is applied to
-     * the text field.</p>
-     *
-     * <p>The <code>setTextFormat()</code> method changes the text formatting
-     * applied to a range of characters or to the entire body of text in a text
-     * field. To apply the properties of format to all text in the text field, do
-     * not specify values for <code>beginIndex</code> and <code>endIndex</code>.
-     * To apply the properties of the format to a range of text, specify values
-     * for the <code>beginIndex</code> and the <code>endIndex</code> parameters.
-     * You can use the <code>length</code> property to determine the index
-     * values.</p>
-     *
-     * <p>The two types of formatting information in a TextFormat object are
-     * character level formatting and paragraph level formatting. Each character
-     * in a text field can have its own character formatting settings, such as
-     * font name, font size, bold, and italic.</p>
-     *
-     * <p>For paragraphs, the first character of the paragraph is examined for
-     * the paragraph formatting settings for the entire paragraph. Examples of
-     * paragraph formatting settings are left margin, right margin, and
-     * indentation.</p>
-     *
-     * <p>Any text inserted manually by the user, or replaced by the
-     * <code>replaceSelectedText()</code> method, receives the default text field
-     * formatting for new text, and not the formatting specified for the text
-     * insertion point. To set the default formatting for new text, use
-     * <code>defaultTextFormat</code>.</p>
-     *
-     * @param format A TextFormat object that contains character and paragraph
-     *               formatting information.
-     * @throws Error      This method cannot be used on a text field with a style
-     *                    sheet.
-     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
-     *                    specified is out of range.
-     */
-    TextField.prototype.setTextFormat = function (format, beginIndex, endIndex) {
-        if (beginIndex === void 0) { beginIndex = -1; }
-        if (endIndex === void 0) { endIndex = -1; }
-    };
-    /**
-     * Returns true if an embedded font is available with the specified
-     * <code>fontName</code> and <code>fontStyle</code> where
-     * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
-     * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
-     * SWF file. Normal embedded fonts are only used with TextField objects. CFF
-     * embedded fonts are only used with the flash.text.engine classes. The two
-     * types are distinguished by the <code>fontType</code> property of the
-     * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
-     * function.
-     *
-     * <p>TextField cannot use a font of type <code>EMBEDDED_CFF</code>. If
-     * <code>embedFonts</code> is set to <code>true</code> and the only font
-     * available at run time with the specified name and style is of type
-     * <code>EMBEDDED_CFF</code>, Flash Player fails to render the text, as if no
-     * embedded font were available with the specified name and style.</p>
-     *
-     * <p>If both <code>EMBEDDED</code> and <code>EMBEDDED_CFF</code> fonts are
-     * available with the same name and style, the <code>EMBEDDED</code> font is
-     * selected and text renders with the <code>EMBEDDED</code> font.</p>
-     *
-     * @param fontName  The name of the embedded font to check.
-     * @param fontStyle Specifies the font style to check. Use
-     *                  <code>flash.text.FontStyle</code>
-     * @return <code>true</code> if a compatible embedded font is available,
-     *         otherwise <code>false</code>.
-     * @throws ArgumentError The <code>fontStyle</code> specified is not a member
-     *                       of <code>flash.text.FontStyle</code>.
-     */
-    TextField.isFontCompatible = function (fontName, fontStyle) {
-        return false;
-    };
-    TextField.prototype.clone = function () {
-        var newInstance = (TextField._textFields.length) ? TextField._textFields.pop() : new TextField();
-        this.copyTo(newInstance);
-        return newInstance;
-    };
-    TextField.prototype.copyTo = function (newInstance) {
-        _super.prototype.copyTo.call(this, newInstance);
-        newInstance.textWidth = this._textWidth;
-        newInstance.textHeight = this._textHeight;
-        newInstance.textFormat = this._textFormat;
-        //newInstance.textColor = this._textColor;
-        newInstance.text = this._text;
-    };
-    TextField._textFields = new Array();
-    TextField.assetType = "[asset TextField]";
-    return TextField;
-})(Mesh);
-module.exports = TextField;
-
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+},{}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11413,7 +11352,7 @@ var MouseEvent = (function (_super) {
         result.screenY = this.screenY;
         result.view = this.view;
         result.object = this.object;
-        result.renderableOwner = this.renderableOwner;
+        result.renderable = this.renderable;
         result.material = this.material;
         result.uv = this.uv;
         result.localPosition = this.localPosition;
@@ -11493,51 +11432,7 @@ var MouseEvent = (function (_super) {
 })(EventBase);
 module.exports = MouseEvent;
 
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderOwnerEvent":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var EventBase = require("awayjs-core/lib/events/EventBase");
-var RenderOwnerEvent = (function (_super) {
-    __extends(RenderOwnerEvent, _super);
-    /**
-     * Create a new GraphicsEvent
-     * @param type The event type.
-     * @param dataType An optional data type of the vertex data being updated.
-     */
-    function RenderOwnerEvent(type, renderOwner) {
-        _super.call(this, type);
-        this._renderOwner = renderOwner;
-    }
-    Object.defineProperty(RenderOwnerEvent.prototype, "renderOwner", {
-        /**
-         * The renderobject owner of the renderable owner.
-         */
-        get: function () {
-            return this._renderOwner;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     *
-     * @return An exact duplicate of the current object.
-     */
-    RenderOwnerEvent.prototype.clone = function () {
-        return new RenderOwnerEvent(this.type, this._renderOwner);
-    };
-    RenderOwnerEvent.INVALIDATE_TEXTURE = "invalidateTexture";
-    RenderOwnerEvent.INVALIDATE_ANIMATION = "invalidateAnimation";
-    RenderOwnerEvent.INVALIDATE_PASSES = "invalidatePasses";
-    return RenderOwnerEvent;
-})(EventBase);
-module.exports = RenderOwnerEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderableOwnerEvent":[function(require,module,exports){
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderableEvent":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -11548,26 +11443,26 @@ var EventBase = require("awayjs-core/lib/events/EventBase");
 /**
  * Dispatched to notify changes in a sub geometry object's state.
  *
- * @class away.events.RenderableOwnerEvent
+ * @class away.events.RenderableEvent
  * @see away.core.base.Graphics
  */
-var RenderableOwnerEvent = (function (_super) {
-    __extends(RenderableOwnerEvent, _super);
+var RenderableEvent = (function (_super) {
+    __extends(RenderableEvent, _super);
     /**
      * Create a new GraphicsEvent
      * @param type The event type.
      * @param dataType An optional data type of the vertex data being updated.
      */
-    function RenderableOwnerEvent(type, renderableOwner) {
+    function RenderableEvent(type, renderable) {
         _super.call(this, type);
-        this._renderableOwner = renderableOwner;
+        this._renderable = renderable;
     }
-    Object.defineProperty(RenderableOwnerEvent.prototype, "renderableOwner", {
+    Object.defineProperty(RenderableEvent.prototype, "renderable", {
         /**
          * The renderobject owner of the renderable owner.
          */
         get: function () {
-            return this._renderableOwner;
+            return this._renderable;
         },
         enumerable: true,
         configurable: true
@@ -11577,20 +11472,20 @@ var RenderableOwnerEvent = (function (_super) {
      *
      * @return An exact duplicate of the current object.
      */
-    RenderableOwnerEvent.prototype.clone = function () {
-        return new RenderableOwnerEvent(this.type, this._renderableOwner);
+    RenderableEvent.prototype.clone = function () {
+        return new RenderableEvent(this.type, this._renderable);
     };
     /**
      * Dispatched when a Renderable owners's render object owner has been updated.
      */
-    RenderableOwnerEvent.INVALIDATE_RENDER_OWNER = "invalidateRenderableOwner";
+    RenderableEvent.INVALIDATE_RENDER_OWNER = "invalidateRenderable";
     /**
      *
      */
-    RenderableOwnerEvent.INVALIDATE_ELEMENTS = "invalidateElements";
-    return RenderableOwnerEvent;
+    RenderableEvent.INVALIDATE_ELEMENTS = "invalidateElements";
+    return RenderableEvent;
 })(EventBase);
-module.exports = RenderableOwnerEvent;
+module.exports = RenderableEvent;
 
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RendererEvent":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
@@ -11691,6 +11586,50 @@ var StyleEvent = (function (_super) {
 })(EventBase);
 module.exports = StyleEvent;
 
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/SurfaceEvent":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var EventBase = require("awayjs-core/lib/events/EventBase");
+var SurfaceEvent = (function (_super) {
+    __extends(SurfaceEvent, _super);
+    /**
+     * Create a new GraphicsEvent
+     * @param type The event type.
+     * @param dataType An optional data type of the vertex data being updated.
+     */
+    function SurfaceEvent(type, surface) {
+        _super.call(this, type);
+        this._surface = surface;
+    }
+    Object.defineProperty(SurfaceEvent.prototype, "surface", {
+        /**
+         * The surface of the renderable.
+         */
+        get: function () {
+            return this._surface;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     *
+     * @return An exact duplicate of the current object.
+     */
+    SurfaceEvent.prototype.clone = function () {
+        return new SurfaceEvent(this.type, this._surface);
+    };
+    SurfaceEvent.INVALIDATE_TEXTURE = "invalidateTexture";
+    SurfaceEvent.INVALIDATE_ANIMATION = "invalidateAnimation";
+    SurfaceEvent.INVALIDATE_PASSES = "invalidatePasses";
+    return SurfaceEvent;
+})(EventBase);
+module.exports = SurfaceEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -11752,7 +11691,7 @@ var TouchEvent = (function (_super) {
         result.screenY = this.screenY;
         result.view = this.view;
         result.object = this.object;
-        result.renderableOwner = this.renderableOwner;
+        result.renderable = this.renderable;
         result.material = this.material;
         result.uv = this.uv;
         result.localPosition = this.localPosition;
@@ -12157,19 +12096,6 @@ var Graphics = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Graphics.prototype, "uvTransform", {
-        /*
-         *
-         */
-        get: function () {
-            return this._uvTransform;
-        },
-        set: function (value) {
-            this._uvTransform = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Graphics.prototype, "style", {
         /**
          *
@@ -12185,7 +12111,7 @@ var Graphics = (function (_super) {
             this._style = value;
             if (this._style)
                 this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this._iInvalidateRenderOwners();
+            this._iInvalidateSurfaces();
         },
         enumerable: true,
         configurable: true
@@ -12221,10 +12147,9 @@ var Graphics = (function (_super) {
      *
      * @param elements
      */
-    Graphics.prototype.addGraphic = function (elements, material, style, uvTransform) {
+    Graphics.prototype.addGraphic = function (elements, material, style) {
         if (material === void 0) { material = null; }
         if (style === void 0) { style = null; }
-        if (uvTransform === void 0) { uvTransform = null; }
         var newGraphic;
         if (Graphic._available.length) {
             newGraphic = Graphic._available.pop();
@@ -12232,10 +12157,9 @@ var Graphics = (function (_super) {
             newGraphic.elements = elements;
             newGraphic.material = material;
             newGraphic.style = style;
-            newGraphic.uvTransform = uvTransform;
         }
         else {
-            newGraphic = new Graphic(this._graphics.length, this, elements, material, style, uvTransform);
+            newGraphic = new Graphic(this._graphics.length, this, elements, material, style);
         }
         this._graphics.push(newGraphic);
         elements.addEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
@@ -12262,12 +12186,11 @@ var Graphics = (function (_super) {
         graphics.style = this.style;
         graphics.particles = this.particles;
         graphics.numParticles = this.numParticles;
-        graphics.uvTransform = this.uvTransform;
         var graphic;
         var len = this._graphics.length;
         for (var i = 0; i < len; ++i) {
             graphic = this._graphics[i];
-            graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle(), graphic._iGetExplicitUVTransform());
+            graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle());
         }
         if (this._animator)
             graphics.animator = this._animator.clone();
@@ -12337,10 +12260,10 @@ var Graphics = (function (_super) {
         if (this.hasEventListener(GraphicsEvent.BOUNDS_INVALID))
             this.dispatchEvent(new GraphicsEvent(GraphicsEvent.BOUNDS_INVALID));
     };
-    Graphics.prototype._iInvalidateRenderOwners = function () {
+    Graphics.prototype._iInvalidateSurfaces = function () {
         var len = this._graphics.length;
         for (var i = 0; i < len; ++i)
-            this._graphics[i].invalidateRenderOwner();
+            this._graphics[i].invalidateSurface();
     };
     Graphics.prototype.invalidateElements = function () {
         var len = this._graphics.length;
@@ -12361,7 +12284,7 @@ var Graphics = (function (_super) {
             traverser.applyRenderable(this._graphics[i]);
     };
     Graphics.prototype._onInvalidateProperties = function (event) {
-        this._iInvalidateRenderOwners();
+        this._iInvalidateSurfaces();
     };
     Graphics.prototype._onInvalidateVertices = function (event) {
         if (event.attributesView != event.target.positions)
@@ -12381,7 +12304,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
-var RenderableOwnerEvent = require("awayjs-display/lib/events/RenderableOwnerEvent");
+var RenderableEvent = require("awayjs-display/lib/events/RenderableEvent");
 var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
  * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Mesh object.
@@ -12397,11 +12320,10 @@ var Graphic = (function (_super) {
     /**
      * Creates a new Graphic object
      */
-    function Graphic(index, parent, elements, material, style, uvTransform) {
+    function Graphic(index, parent, elements, material, style) {
         var _this = this;
         if (material === void 0) { material = null; }
         if (style === void 0) { style = null; }
-        if (uvTransform === void 0) { uvTransform = null; }
         _super.call(this);
         this._iIndex = 0;
         this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
@@ -12410,7 +12332,6 @@ var Graphic = (function (_super) {
         this.elements = elements;
         this.material = material;
         this.style = style;
-        this.uvTransform = uvTransform;
     }
     Object.defineProperty(Graphic.prototype, "assetType", {
         /**
@@ -12502,20 +12423,7 @@ var Graphic = (function (_super) {
             this._style = value;
             if (this._style)
                 this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this.invalidateRenderOwner();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Graphic.prototype, "uvTransform", {
-        /**
-         *
-         */
-        get: function () {
-            return this._uvTransform || this.parent.uvTransform;
-        },
-        set: function (value) {
-            this._uvTransform = value;
+            this.invalidateSurface();
         },
         enumerable: true,
         configurable: true
@@ -12530,10 +12438,10 @@ var Graphic = (function (_super) {
         Graphic._available.push(this);
     };
     Graphic.prototype.invalidateElements = function () {
-        this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_ELEMENTS, this));
+        this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
     };
-    Graphic.prototype.invalidateRenderOwner = function () {
-        this.dispatchEvent(new RenderableOwnerEvent(RenderableOwnerEvent.INVALIDATE_RENDER_OWNER, this));
+    Graphic.prototype.invalidateSurface = function () {
+        this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
     };
     Graphic.prototype._iGetExplicitMaterial = function () {
         return this._material;
@@ -12541,11 +12449,8 @@ var Graphic = (function (_super) {
     Graphic.prototype._iGetExplicitStyle = function () {
         return this._style;
     };
-    Graphic.prototype._iGetExplicitUVTransform = function () {
-        return this._uvTransform;
-    };
     Graphic.prototype._onInvalidateProperties = function (event) {
-        this.invalidateRenderOwner();
+        this.invalidateSurface();
     };
     /**
      * //TODO
@@ -12565,7 +12470,7 @@ var Graphic = (function (_super) {
 })(AssetBase);
 module.exports = Graphic;
 
-},{"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/RenderableOwnerEvent":"awayjs-display/lib/events/RenderableOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13304,7 +13209,7 @@ var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
 var BitmapImageCube = require("awayjs-core/lib/image/BitmapImageCube");
 var LineElements = require("awayjs-display/lib/graphics/LineElements");
-var Skybox = require("awayjs-display/lib/entities/Skybox");
+var Skybox = require("awayjs-display/lib/display/Skybox");
 var BasicMaterial = require("awayjs-display/lib/materials/BasicMaterial");
 var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
@@ -13312,14 +13217,14 @@ var Graphic = require("awayjs-display/lib/graphics/Graphic");
 var DefaultMaterialManager = (function () {
     function DefaultMaterialManager() {
     }
-    DefaultMaterialManager.getDefaultMaterial = function (renderableOwner) {
-        if (renderableOwner === void 0) { renderableOwner = null; }
-        if (renderableOwner != null && renderableOwner.isAsset(Graphic) && renderableOwner.elements.isAsset(LineElements)) {
+    DefaultMaterialManager.getDefaultMaterial = function (renderable) {
+        if (renderable === void 0) { renderable = null; }
+        if (renderable != null && renderable.isAsset(Graphic) && renderable.elements.isAsset(LineElements)) {
             if (!DefaultMaterialManager._defaultColorMaterial)
                 DefaultMaterialManager.createDefaultColorMaterial();
             return DefaultMaterialManager._defaultColorMaterial;
         }
-        if (renderableOwner != null && renderableOwner.isAsset(Skybox)) {
+        if (renderable != null && renderable.isAsset(Skybox)) {
             if (!DefaultMaterialManager._defaultCubeTextureMaterial)
                 DefaultMaterialManager.createDefaultCubeTextureMaterial();
             return DefaultMaterialManager._defaultCubeTextureMaterial;
@@ -13328,9 +13233,9 @@ var DefaultMaterialManager = (function () {
             DefaultMaterialManager.createDefaultTextureMaterial();
         return DefaultMaterialManager._defaultTextureMaterial;
     };
-    DefaultMaterialManager.getDefaultTexture = function (renderableOwner) {
-        if (renderableOwner === void 0) { renderableOwner = null; }
-        if (renderableOwner != null && renderableOwner.isAsset(Skybox)) {
+    DefaultMaterialManager.getDefaultTexture = function (renderable) {
+        if (renderable === void 0) { renderable = null; }
+        if (renderable != null && renderable.isAsset(Skybox)) {
             if (!DefaultMaterialManager._defaultCubeTexture)
                 DefaultMaterialManager.createDefaultCubeTexture();
             return DefaultMaterialManager._defaultCubeTexture;
@@ -13405,7 +13310,7 @@ var DefaultMaterialManager = (function () {
 })();
 module.exports = DefaultMaterialManager;
 
-},{"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/entities/Skybox":"awayjs-display/lib/entities/Skybox","awayjs-display/lib/graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-display/lib/graphics/LineElements":"awayjs-display/lib/graphics/LineElements","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
+},{"awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/display/Skybox":"awayjs-display/lib/display/Skybox","awayjs-display/lib/graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-display/lib/graphics/LineElements":"awayjs-display/lib/graphics/LineElements","awayjs-display/lib/materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
 var FrameScriptManager = (function () {
     function FrameScriptManager() {
     }
@@ -13627,7 +13532,7 @@ var MouseManager = (function () {
         if (collider) {
             // Object.
             event.object = collider.displayObject;
-            event.renderableOwner = collider.renderableOwner;
+            event.renderable = collider.renderable;
             // UV.
             event.uv = collider.uv;
             // Position.
@@ -13837,7 +13742,7 @@ var TouchManager = (function () {
         if (collider) {
             // Object.
             event.object = collider.displayObject;
-            event.renderableOwner = collider.renderableOwner;
+            event.renderable = collider.renderable;
             // UV.
             event.uv = collider.uv;
             // Position.
@@ -14039,7 +13944,7 @@ var ImageBase = require("awayjs-core/lib/image/ImageBase");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
-var RenderOwnerEvent = require("awayjs-display/lib/events/RenderOwnerEvent");
+var SurfaceEvent = require("awayjs-display/lib/events/SurfaceEvent");
 var Style = require("awayjs-display/lib/base/Style");
 var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
@@ -14399,11 +14304,11 @@ var MaterialBase = (function (_super) {
     // MATERIAL MANAGEMENT
     //
     /**
-     * Mark an IRenderableOwner as owner of this material.
+     * Mark an IRenderable as owner of this material.
      * Assures we're not using the same material across renderables with different animations, since the
      * Programs depend on animation. This method needs to be called when a material is assigned.
      *
-     * @param owner The IRenderableOwner that had this material assigned
+     * @param owner The IRenderable that had this material assigned
      *
      * @internal
      */
@@ -14424,10 +14329,10 @@ var MaterialBase = (function (_super) {
                 }
             }
         }
-        owner.invalidateRenderOwner();
+        owner.invalidateSurface();
     };
     /**
-     * Removes an IRenderableOwner as owner.
+     * Removes an IRenderable as owner.
      * @param owner
      *
      * @internal
@@ -14438,11 +14343,11 @@ var MaterialBase = (function (_super) {
             this._animationSet = null;
             this.invalidateAnimation();
         }
-        owner.invalidateRenderOwner();
+        owner.invalidateSurface();
     };
     Object.defineProperty(MaterialBase.prototype, "iOwners", {
         /**
-         * A list of the IRenderableOwners that use this material
+         * A list of the IRenderables that use this material
          *
          * @private
          */
@@ -14464,15 +14369,15 @@ var MaterialBase = (function (_super) {
      * @private
      */
     MaterialBase.prototype.invalidatePasses = function () {
-        this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_PASSES, this));
+        this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
     };
     MaterialBase.prototype.invalidateAnimation = function () {
-        this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_ANIMATION, this));
+        this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_ANIMATION, this));
     };
-    MaterialBase.prototype.invalidateRenderOwners = function () {
+    MaterialBase.prototype.invalidateSurfaces = function () {
         var len = this._owners.length;
         for (var i = 0; i < len; i++)
-            this._owners[i].invalidateRenderOwner();
+            this._owners[i].invalidateSurface();
     };
     /**
      * Called when the light picker's configuration changed.
@@ -14481,7 +14386,7 @@ var MaterialBase = (function (_super) {
         this.invalidate();
     };
     MaterialBase.prototype.invalidateTexture = function () {
-        this.dispatchEvent(new RenderOwnerEvent(RenderOwnerEvent.INVALIDATE_TEXTURE, this));
+        this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_TEXTURE, this));
     };
     MaterialBase.prototype.addTextureAt = function (texture, index) {
         var i = this._textures.indexOf(texture);
@@ -14509,7 +14414,7 @@ var MaterialBase = (function (_super) {
         if (event === void 0) { event = null; }
         this.invalidatePasses();
         //invalidate renderables for number of images getter (in case it has changed)
-        this.invalidateRenderOwners();
+        this.invalidateSurfaces();
     };
     MaterialBase.prototype._onInvalidateProperties = function (event) {
         this.invalidatePasses();
@@ -14518,7 +14423,7 @@ var MaterialBase = (function (_super) {
 })(AssetBase);
 module.exports = MaterialBase;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/ImageBase":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/events/RenderOwnerEvent":"awayjs-display/lib/events/RenderOwnerEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/ImageBase":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent"}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14729,9 +14634,9 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
-var DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-var LightProbe = require("awayjs-display/lib/entities/LightProbe");
-var PointLight = require("awayjs-display/lib/entities/PointLight");
+var DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
+var LightProbe = require("awayjs-display/lib/display/LightProbe");
+var PointLight = require("awayjs-display/lib/display/PointLight");
 var LightEvent = require("awayjs-display/lib/events/LightEvent");
 var LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 /**
@@ -14870,7 +14775,7 @@ var StaticLightPicker = (function (_super) {
 })(LightPickerBase);
 module.exports = StaticLightPicker;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-display/lib/entities/DirectionalLight":"awayjs-display/lib/entities/DirectionalLight","awayjs-display/lib/entities/LightProbe":"awayjs-display/lib/entities/LightProbe","awayjs-display/lib/entities/PointLight":"awayjs-display/lib/entities/PointLight","awayjs-display/lib/events/LightEvent":"awayjs-display/lib/events/LightEvent","awayjs-display/lib/materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase"}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-display/lib/display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","awayjs-display/lib/display/LightProbe":"awayjs-display/lib/display/LightProbe","awayjs-display/lib/display/PointLight":"awayjs-display/lib/display/PointLight","awayjs-display/lib/events/LightEvent":"awayjs-display/lib/events/LightEvent","awayjs-display/lib/materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase"}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -14881,7 +14786,7 @@ var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var Rectangle = require("awayjs-core/lib/geom/Rectangle");
 var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var FreeMatrixProjection = require("awayjs-core/lib/projections/FreeMatrixProjection");
-var Camera = require("awayjs-display/lib/entities/Camera");
+var Camera = require("awayjs-display/lib/display/Camera");
 var DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 var CascadeShadowMapper = (function (_super) {
     __extends(CascadeShadowMapper, _super);
@@ -15062,7 +14967,7 @@ var CascadeShadowMapper = (function (_super) {
 })(DirectionalShadowMapper);
 module.exports = CascadeShadowMapper;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15070,7 +14975,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var ImageCube = require("awayjs-core/lib/image/ImageCube");
-var Camera = require("awayjs-display/lib/entities/Camera");
+var Camera = require("awayjs-display/lib/display/Camera");
 var ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 var SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 var CubeMapShadowMapper = (function (_super) {
@@ -15134,7 +15039,7 @@ var CubeMapShadowMapper = (function (_super) {
 })(ShadowMapperBase);
 module.exports = CubeMapShadowMapper;
 
-},{"awayjs-core/lib/image/ImageCube":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/image/ImageCube":undefined,"awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15145,7 +15050,7 @@ var Image2D = require("awayjs-core/lib/image/Image2D");
 var Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 var Matrix3DUtils = require("awayjs-core/lib/geom/Matrix3DUtils");
 var FreeMatrixProjection = require("awayjs-core/lib/projections/FreeMatrixProjection");
-var Camera = require("awayjs-display/lib/entities/Camera");
+var Camera = require("awayjs-display/lib/display/Camera");
 var ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 var Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 var DirectionalShadowMapper = (function (_super) {
@@ -15316,7 +15221,7 @@ var DirectionalShadowMapper = (function (_super) {
 })(ShadowMapperBase);
 module.exports = DirectionalShadowMapper;
 
-},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/entities/Camera":"awayjs-display/lib/entities/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined,"awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","awayjs-display/lib/textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture"}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16263,11 +16168,11 @@ var JSPickingCollider = (function () {
      * @param findClosest
      */
     JSPickingCollider.prototype.testBillboardCollision = function (billboard, material, pickingCollisionVO, shortestCollisionDistance) {
-        pickingCollisionVO.renderableOwner = null;
+        pickingCollisionVO.renderable = null;
         //if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollisionVO, shortestCollisionDistance)) {
         //	shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
         //
-        //	pickingCollisionVO.renderableOwner = billboard;
+        //	pickingCollisionVO.renderable = billboard;
         //
         //	return true;
         //}
@@ -16589,7 +16494,7 @@ var PickingCollisionVO = (function () {
     }
     PickingCollisionVO.prototype.dispose = function () {
         this.displayObject = null;
-        this.renderableOwner = null;
+        this.renderable = null;
     };
     return PickingCollisionVO;
 })();
@@ -18704,7 +18609,7 @@ var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var LineElements = require("awayjs-display/lib/graphics/LineElements");
-var Mesh = require("awayjs-display/lib/entities/Mesh");
+var Mesh = require("awayjs-display/lib/display/Mesh");
 var PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
 /**
  * PrimitivePrefabBase is an abstract base class for polytope prefabs, which are simple pre-built geometric shapes
@@ -18857,7 +18762,7 @@ var PrimitivePrefabBase = (function (_super) {
 })(PrefabBase);
 module.exports = PrimitivePrefabBase;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/entities/Mesh":"awayjs-display/lib/entities/Mesh","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/graphics/LineElements":"awayjs-display/lib/graphics/LineElements","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/display/Mesh":"awayjs-display/lib/display/Mesh","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/graphics/LineElements":"awayjs-display/lib/graphics/LineElements","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

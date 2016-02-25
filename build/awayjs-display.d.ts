@@ -13,9 +13,9 @@ declare module "awayjs-display/lib/IRenderer" {
 	import ImageBase = require("awayjs-core/lib/image/ImageBase");
 	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Camera = require("awayjs-display/lib/display/Camera");
 	/**
 	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
 	 * contents of a partition
@@ -82,14 +82,174 @@ declare module "awayjs-display/lib/IRenderer" {
 	    _iCreateEntityCollector(): CollectorBase;
 	    _iRender(entityCollector: CollectorBase, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
 	    _iRenderCascades(entityCollector: CollectorBase, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
-	    _iApplyRenderableOwner(renderableOwner: IRenderableOwner): any;
+	    _iApplyRenderable(renderable: IRenderable): any;
 	}
 	export = IRenderer;
 	
 }
 
+declare module "awayjs-display/lib/View" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import TouchPoint = require("awayjs-display/lib/base/TouchPoint");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import IPicker = require("awayjs-display/lib/pick/IPicker");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	class View {
+	    _pScene: Scene;
+	    _pCamera: Camera;
+	    _pEntityCollector: CollectorBase;
+	    _pRenderer: IRenderer;
+	    private _aspectRatio;
+	    private _width;
+	    private _height;
+	    private _time;
+	    private _deltaTime;
+	    private _backgroundColor;
+	    private _backgroundAlpha;
+	    private _viewportDirty;
+	    private _scissorDirty;
+	    private _onPartitionChangedDelegate;
+	    private _onProjectionChangedDelegate;
+	    private _onViewportUpdatedDelegate;
+	    private _onScissorUpdatedDelegate;
+	    private _mouseManager;
+	    private _mousePicker;
+	    private _htmlElement;
+	    private _shareContext;
+	    _pMouseX: number;
+	    _pMouseY: number;
+	    _pTouchPoints: Array<TouchPoint>;
+	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
+	    layeredView: boolean;
+	    mouseX: number;
+	    mouseY: number;
+	    touchPoints: Array<TouchPoint>;
+	    getLocalMouseX(displayObject: DisplayObject): number;
+	    getLocalMouseY(displayObject: DisplayObject): number;
+	    getLocalTouchPoints(displayObject: DisplayObject): Array<TouchPoint>;
+	    /**
+	     *
+	     */
+	    htmlElement: HTMLDivElement;
+	    /**
+	     *
+	     */
+	    renderer: IRenderer;
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    backgroundColor: number;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    /**
+	     *
+	     * @param value
+	     */
+	    backgroundAlpha: number;
+	    /**
+	     *
+	     * @returns {Camera3D}
+	     */
+	    /**
+	     * Set camera that's used to render the scene for this viewport
+	     */
+	    camera: Camera;
+	    /**
+	     *
+	     * @returns {away.containers.Scene3D}
+	     */
+	    /**
+	     * Set the scene that's used to render for this viewport
+	     */
+	    scene: Scene;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    deltaTime: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    mousePicker: IPicker;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    visible: boolean;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    renderedFacesCount: number;
+	    /**
+	     * Renders the view.
+	     */
+	    render(): void;
+	    /**
+	     *
+	     */
+	    pUpdateTime(): void;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     *
+	     */
+	    iEntityCollector: CollectorBase;
+	    /**
+	     *
+	     * @param e
+	     */
+	    private _onPartitionChanged(event);
+	    /**
+	     *
+	     */
+	    private _onProjectionChanged(event);
+	    /**
+	     *
+	     */
+	    private _onViewportUpdated(event);
+	    /**
+	     *
+	     */
+	    private _onScissorUpdated(event);
+	    project(point3d: Vector3D): Vector3D;
+	    unproject(sX: number, sY: number, sZ: number): Vector3D;
+	    getRay(sX: number, sY: number, sZ: number): Vector3D;
+	    forceMouseMove: boolean;
+	    updateCollider(): void;
+	}
+	export = View;
+	
+}
+
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	interface IDisplayObjectAdapter {
 	    adaptee: DisplayObject;
 	    isBlockedByScript(): boolean;
@@ -104,7 +264,7 @@ declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 
 declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
 	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	interface IMovieClipAdapter extends IDisplayObjectAdapter {
 	    evalScript(str: string): Function;
 	    registerScriptObject(child: DisplayObject): void;
@@ -163,7 +323,7 @@ declare module "awayjs-display/lib/animators/IAnimationSet" {
 declare module "awayjs-display/lib/animators/IAnimator" {
 	import IAsset = require("awayjs-core/lib/library/IAsset");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	/**
 	 * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.
 	 *
@@ -255,7 +415,1204 @@ declare module "awayjs-display/lib/base/AlignmentMode" {
 	
 }
 
-declare module "awayjs-display/lib/base/DisplayObject" {
+declare module "awayjs-display/lib/base/HierarchicalProperties" {
+	/**
+	 *
+	 */
+	class HierarchicalProperties {
+	    /**
+	     *
+	     */
+	    static MOUSE_ENABLED: number;
+	    /**
+	     *
+	     */
+	    static VISIBLE: number;
+	    /**
+	     *
+	     */
+	    static MASK_ID: number;
+	    /**
+	     *
+	     */
+	    static MASKS: number;
+	    /**
+	     *
+	     */
+	    static COLOR_TRANSFORM: number;
+	    /**
+	     *
+	     */
+	    static SCENE_TRANSFORM: number;
+	    /**
+	     *
+	     */
+	    static ALL: number;
+	}
+	export = HierarchicalProperties;
+	
+}
+
+declare module "awayjs-display/lib/base/IBitmapDrawable" {
+	/**
+	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
+	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
+	 * objects are of type BitmapData or DisplayObject.
+	 *
+	 * @see away.base.BitmapData#draw()
+	 * @see away.base.BitmapData
+	 * @see away.base.DisplayObject
+	 */
+	interface IBitmapDrawable {
+	}
+	export = IBitmapDrawable;
+	
+}
+
+declare module "awayjs-display/lib/base/IRenderable" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import Style = require("awayjs-display/lib/base/Style");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	/**
+	 * IRenderable provides an interface for objects that can use materials.
+	 *
+	 * @interface away.base.IRenderable
+	 */
+	interface IRenderable extends IAsset {
+	    /**
+	     * The animation used by the material owner to assemble the vertex code.
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    style: Style;
+	    invalidateSurface(): any;
+	    /**
+	     *
+	     */
+	    pickingCollider: IPickingCollider;
+	    /**
+	     * @internal
+	     */
+	    _iPickingCollisionVO: PickingCollisionVO;
+	    /**
+	     * @internal
+	     */
+	    _iIsMouseEnabled(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedMasks(): Array<Array<DisplayObject>>;
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	}
+	export = IRenderable;
+	
+}
+
+declare module "awayjs-display/lib/base/ISurface" {
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	/**
+	 * ISurface provides an interface for objects that define the properties of a renderable's surface.
+	 *
+	 * @interface away.base.ISurface
+	 */
+	interface ISurface extends IAsset {
+	    alphaThreshold: number;
+	    style: Style;
+	    curves: boolean;
+	    imageRect: boolean;
+	    blendMode: string;
+	    lightPicker: LightPickerBase;
+	    animationSet: IAnimationSet;
+	    iOwners: Array<IRenderable>;
+	    getNumTextures(): number;
+	    getTextureAt(index: number): TextureBase;
+	    addTexture(texture: TextureBase): any;
+	    removeTexture(texture: TextureBase): any;
+	}
+	export = ISurface;
+	
+}
+
+declare module "awayjs-display/lib/base/OrientationMode" {
+	class OrientationMode {
+	    /**
+	     *
+	     */
+	    static DEFAULT: string;
+	    /**
+	     *
+	     */
+	    static CAMERA_PLANE: string;
+	    /**
+	     *
+	     */
+	    static CAMERA_POSITION: string;
+	}
+	export = OrientationMode;
+	
+}
+
+declare module "awayjs-display/lib/base/Style" {
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	/**
+	 *
+	 */
+	class Style extends EventDispatcher {
+	    private _sampler;
+	    private _samplers;
+	    private _image;
+	    private _images;
+	    private _uvMatrix;
+	    private _color;
+	    sampler: SamplerBase;
+	    image: ImageBase;
+	    uvMatrix: Matrix;
+	    /**
+	     * The diffuse reflectivity color of the surface.
+	     */
+	    color: number;
+	    constructor();
+	    getImageAt(texture: TextureBase, index?: number): ImageBase;
+	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
+	    addImageAt(image: ImageBase, texture: TextureBase, index?: number): void;
+	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
+	    removeImageAt(texture: TextureBase, index?: number): void;
+	    removeSamplerAt(texture: TextureBase, index?: number): void;
+	    private _invalidateProperties();
+	}
+	export = Style;
+	
+}
+
+declare module "awayjs-display/lib/base/Timeline" {
+	import MovieClip = require("awayjs-display/lib/display/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	class Timeline {
+	    private _functions;
+	    private _blocked;
+	    _update_indices: Array<number>;
+	    _labels: Object;
+	    _framescripts: Object;
+	    _framescripts_translated: Object;
+	    keyframe_indices: Array<number>;
+	    keyframe_firstframes: Array<number>;
+	    keyframe_constructframes: Array<number>;
+	    keyframe_durations: ArrayBufferView;
+	    frame_command_indices: ArrayBufferView;
+	    frame_recipe: ArrayBufferView;
+	    command_index_stream: ArrayBufferView;
+	    command_length_stream: ArrayBufferView;
+	    add_child_stream: ArrayBufferView;
+	    remove_child_stream: ArrayBufferView;
+	    update_child_stream: ArrayBufferView;
+	    update_child_props_length_stream: ArrayBufferView;
+	    update_child_props_indices_stream: ArrayBufferView;
+	    property_index_stream: ArrayBufferView;
+	    property_type_stream: ArrayBufferView;
+	    properties_stream_int: ArrayBufferView;
+	    properties_stream_f32_mtx_all: ArrayBufferView;
+	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
+	    properties_stream_f32_mtx_pos: ArrayBufferView;
+	    properties_stream_f32_ct: ArrayBufferView;
+	    properties_stream_strings: Array<string>;
+	    private _potentialPrototypes;
+	    numKeyFrames: number;
+	    constructor();
+	    init(): void;
+	    get_framescript(keyframe_index: number): string;
+	    add_framescript(value: string, keyframe_index: number): void;
+	    private regexIndexOf(str, regex, startpos);
+	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
+	    numFrames: number;
+	    getPotentialChildPrototype(id: number): DisplayObject;
+	    getKeyframeIndexForFrameIndex(frame_index: number): number;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    registerPotentialChild(prototype: DisplayObject): void;
+	    jumpToLabel(target_mc: MovieClip, label: string): void;
+	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
+	    pass1(start_construct_idx: number, target_keyframe_idx: number, depth_sessionIDs: Object): void;
+	    pass2(target_mc: MovieClip): void;
+	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
+	    remove_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
+	    add_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
+	    update_childs(target_mc: MovieClip, frame_command_idx: number): void;
+	    update_mtx_all(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_colortransform(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_name(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_button_name(target: DisplayObject, sourceMovieClip: MovieClip, i: number): void;
+	    update_visibility(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_mtx_scale_rot(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    update_mtx_pos(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    enable_maskmode(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	    remove_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
+	}
+	export = Timeline;
+	
+}
+
+declare module "awayjs-display/lib/base/TouchPoint" {
+	/**
+	 *
+	 */
+	class TouchPoint {
+	    x: number;
+	    y: number;
+	    id: number;
+	    constructor(x: number, y: number, id: number);
+	}
+	export = TouchPoint;
+	
+}
+
+declare module "awayjs-display/lib/base/Transform" {
+	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Matrix = require("awayjs-core/lib/geom/Matrix");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	/**
+	 * The Transform class provides access to color adjustment properties and two-
+	 * or three-dimensional transformation objects that can be applied to a
+	 * display object. During the transformation, the color or the orientation and
+	 * position of a display object is adjusted(offset) from the current values
+	 * or coordinates to new values or coordinates. The Transform class also
+	 * collects data about color and two-dimensional matrix transformations that
+	 * are applied to a display object and all of its parent objects. You can
+	 * access these combined transformations through the
+	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
+	 * properties.
+	 *
+	 * <p>To apply color transformations: create a ColorTransform object, set the
+	 * color adjustments using the object's methods and properties, and then
+	 * assign the <code>colorTransformation</code> property of the
+	 * <code>transform</code> property of the display object to the new
+	 * ColorTransformation object.</p>
+	 *
+	 * <p>To apply two-dimensional transformations: create a Matrix object, set
+	 * the matrix's two-dimensional transformation, and then assign the
+	 * <code>transform.matrix</code> property of the display object to the new
+	 * Matrix object.</p>
+	 *
+	 * <p>To apply three-dimensional transformations: start with a
+	 * three-dimensional display object. A three-dimensional display object has a
+	 * <code>z</code> property value other than zero. You do not need to create
+	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
+	 * is created automatically when you assign a <code>z</code> value to a
+	 * display object. You can access the display object's Matrix3D object through
+	 * the display object's <code>transform</code> property. Using the methods of
+	 * the Matrix3D class, you can add to or modify the existing transformation
+	 * settings. Also, you can create a custom Matrix3D object, set the custom
+	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
+	 * object to the display object using the <code>transform.matrix</code>
+	 * property.</p>
+	 *
+	 * <p>To modify a perspective projection of the stage or root object: use the
+	 * <code>transform.matrix</code> property of the root display object to gain
+	 * access to the PerspectiveProjection object. Or, apply different perspective
+	 * projection properties to a display object by setting the perspective
+	 * projection properties of the display object's parent. The child display
+	 * object inherits the new properties. Specifically, create a
+	 * PerspectiveProjection object and set its properties, then assign the
+	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
+	 * property of the parent display object's <code>transform</code> property.
+	 * The specified projection transformation then applies to all the display
+	 * object's three-dimensional children.</p>
+	 *
+	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
+	 * perspective transformations, do not assign both to a display object at the
+	 * same time. Use the PerspectiveProjection object for focal length and
+	 * projection center changes. For more control over the perspective
+	 * transformation, create a perspective projection Matrix3D object.</p>
+	 */
+	class Transform extends EventDispatcher {
+	    private _concatenatedColorTransform;
+	    private _concatenatedMatrix;
+	    private _pixelBounds;
+	    private _colorTransform;
+	    private _matrix3D;
+	    private _matrix3DDirty;
+	    private _rotation;
+	    private _skew;
+	    private _scale;
+	    private _components;
+	    private _componentsDirty;
+	    /**
+	     *
+	     */
+	    backVector: Vector3D;
+	    /**
+	     * A ColorTransform object containing values that universally adjust the
+	     * colors in the display object.
+	     *
+	     * @throws TypeError The colorTransform is null when being set
+	     */
+	    colorTransform: ColorTransform;
+	    /**
+	     * A ColorTransform object representing the combined color transformations
+	     * applied to the display object and all of its parent objects, back to the
+	     * root level. If different color transformations have been applied at
+	     * different levels, all of those transformations are concatenated into one
+	     * ColorTransform object for this property.
+	     */
+	    concatenatedColorTransform: ColorTransform;
+	    /**
+	     * A Matrix object representing the combined transformation matrixes of the
+	     * display object and all of its parent objects, back to the root level. If
+	     * different transformation matrixes have been applied at different levels,
+	     * all of those matrixes are concatenated into one matrix for this property.
+	     * Also, for resizeable SWF content running in the browser, this property
+	     * factors in the difference between stage coordinates and window coordinates
+	     * due to window resizing. Thus, the property converts local coordinates to
+	     * window coordinates, which may not be the same coordinate space as that of
+	     * the Scene.
+	     */
+	    concatenatedMatrix: Matrix;
+	    /**
+	     *
+	     */
+	    downVector: Vector3D;
+	    /**
+	     *
+	     */
+	    forwardVector: Vector3D;
+	    /**
+	     *
+	     */
+	    leftVector: Vector3D;
+	    /**
+	     * A Matrix object containing values that alter the scaling, rotation, and
+	     * translation of the display object.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     *
+	     * @throws TypeError The matrix is null when being set
+	     */
+	    matrix: Matrix;
+	    /**
+	     * Provides access to the Matrix3D object of a three-dimensional display
+	     * object. The Matrix3D object represents a transformation matrix that
+	     * determines the display object's position and orientation. A Matrix3D
+	     * object can also perform perspective projection.
+	     *
+	     * <p>If the <code>matrix</code> property is set to a value(not
+	     * <code>null</code>), the <code>matrix3D</code> property is
+	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
+	     * value(not <code>null</code>), the <code>matrix</code> property is
+	     * <code>null</code>.</p>
+	     */
+	    matrix3D: Matrix3D;
+	    /**
+	     * Provides access to the PerspectiveProjection object of a three-dimensional
+	     * display object. The PerspectiveProjection object can be used to modify the
+	     * perspective transformation of the stage or to assign a perspective
+	     * transformation to all the three-dimensional children of a display object.
+	     *
+	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
+	     * a default PerspectiveProjection object is assigned to the root object.</p>
+	     */
+	    perspectiveProjection: PerspectiveProjection;
+	    /**
+	     * A Rectangle object that defines the bounding rectangle of the display
+	     * object on the stage.
+	     */
+	    pixelBounds: Rectangle;
+	    /**
+	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    position: Vector3D;
+	    /**
+	     *
+	     */
+	    rightVector: Vector3D;
+	    /**
+	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    rotation: Vector3D;
+	    /**
+	     * Rotates the 3d object directly to a euler angle
+	     *
+	     * @param    ax        The angle in degrees of the rotation around the x axis.
+	     * @param    ay        The angle in degrees of the rotation around the y axis.
+	     * @param    az        The angle in degrees of the rotation around the z axis.
+	     */
+	    rotateTo(ax: number, ay: number, az: number): void;
+	    /**
+	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    scale: Vector3D;
+	    scaleTo(sx: number, sy: number, sz: number): void;
+	    /**
+	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	     */
+	    skew: Vector3D;
+	    skewTo(sx: number, sy: number, sz: number): void;
+	    /**
+	     *
+	     */
+	    upVector: Vector3D;
+	    constructor();
+	    dispose(): void;
+	    /**
+	     * Returns a Matrix3D object, which can transform the space of a specified
+	     * display object in relation to the current display object's space. You can
+	     * use the <code>getRelativeMatrix3D()</code> method to move one
+	     * three-dimensional display object relative to another three-dimensional
+	     * display object.
+	     *
+	     * @param relativeTo The display object relative to which the transformation
+	     *                   occurs. To get a Matrix3D object relative to the stage,
+	     *                   set the parameter to the <code>root</code> or
+	     *                   <code>stage</code> object. To get the world-relative
+	     *                   matrix of the display object, set the parameter to a
+	     *                   display object that has a perspective transformation
+	     *                   applied to it.
+	     * @return A Matrix3D object that can be used to transform the space from the
+	     *         <code>relativeTo</code> display object to the current display
+	     *         object space.
+	     */
+	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
+	    /**
+	     * Moves the 3d object forwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveForward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local z axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveBackward(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveLeft(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local x axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveRight(distance: number): void;
+	    /**
+	     * Moves the 3d object forwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveUp(distance: number): void;
+	    /**
+	     * Moves the 3d object backwards along it's local y axis
+	     *
+	     * @param    distance    The length of the movement
+	     */
+	    moveDown(distance: number): void;
+	    /**
+	     * Moves the 3d object directly to a point in space
+	     *
+	     * @param    dx        The amount of movement along the local x axis.
+	     * @param    dy        The amount of movement along the local y axis.
+	     * @param    dz        The amount of movement along the local z axis.
+	     */
+	    moveTo(dx: number, dy: number, dz: number): void;
+	    /**
+	     * Rotates the 3d object around it's local x-axis
+	     *
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    pitch(angle: number): void;
+	    /**
+	     * Rotates the 3d object around it's local z-axis
+	     *
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    roll(angle: number): void;
+	    /**
+	     * Rotates the 3d object around it's local y-axis
+	     *
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    yaw(angle: number): void;
+	    /**
+	     * Rotates the 3d object around an axis by a defined angle
+	     *
+	     * @param    axis        The vector defining the axis of rotation
+	     * @param    angle        The amount of rotation in degrees
+	     */
+	    rotate(axis: Vector3D, angle: number): void;
+	    /**
+	     * Moves the 3d object along a vector by a defined length
+	     *
+	     * @param    axis        The vector defining the axis of movement
+	     * @param    distance    The length of the movement
+	     */
+	    translate(axis: Vector3D, distance: number): void;
+	    /**
+	     * Moves the 3d object along a vector by a defined length
+	     *
+	     * @param    axis        The vector defining the axis of movement
+	     * @param    distance    The length of the movement
+	     */
+	    translateLocal(axis: Vector3D, distance: number): void;
+	    clearMatrix3D(): void;
+	    clearColorTransform(): void;
+	    /**
+	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
+	     *
+	     * @private
+	     */
+	    invalidateMatrix3D(): void;
+	    invalidateComponents(): void;
+	    /**
+	     *
+	     */
+	    invalidatePosition(): void;
+	    invalidateColorTransform(): void;
+	    /**
+	     *
+	     */
+	    private _updateMatrix3D();
+	    private _updateComponents();
+	}
+	export = Transform;
+	
+}
+
+declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
+	import Box = require("awayjs-core/lib/geom/Box");
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import Mesh = require("awayjs-display/lib/display/Mesh");
+	/**
+	 * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
+	 * This is useful for most meshes.
+	 */
+	class AxisAlignedBoundingBox extends BoundingVolumeBase {
+	    _box: Box;
+	    private _x;
+	    private _y;
+	    private _z;
+	    private _width;
+	    private _height;
+	    private _depth;
+	    private _centerX;
+	    private _centerY;
+	    private _centerZ;
+	    private _halfExtentsX;
+	    private _halfExtentsY;
+	    private _halfExtentsZ;
+	    private _prefab;
+	    /**
+	     * Creates a new <code>AxisAlignedBoundingBox</code> object.
+	     */
+	    constructor(entity: IEntity);
+	    /**
+	     * @inheritDoc
+	     */
+	    nullify(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
+	}
+	export = AxisAlignedBoundingBox;
+	
+}
+
+declare module "awayjs-display/lib/bounds/BoundingSphere" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import Mesh = require("awayjs-display/lib/display/Mesh");
+	class BoundingSphere extends BoundingVolumeBase {
+	    private _sphere;
+	    private _radius;
+	    private _centerX;
+	    private _centerY;
+	    private _centerZ;
+	    private _prefab;
+	    constructor(entity: IEntity);
+	    nullify(): void;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
+	}
+	export = BoundingSphere;
+	
+}
+
+declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import Mesh = require("awayjs-display/lib/display/Mesh");
+	class BoundingVolumeBase {
+	    _pEntity: IEntity;
+	    _pBoundsPrimitive: Mesh;
+	    _pInvalidated: boolean;
+	    constructor(entity: any);
+	    dispose(): void;
+	    boundsPrimitive: IEntity;
+	    nullify(): void;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    clone(): BoundingVolumeBase;
+	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
+	    classifyToPlane(plane: Plane3D): number;
+	    _pUpdate(): void;
+	    invalidate(): void;
+	    _pCreateBoundsPrimitive(): Mesh;
+	}
+	export = BoundingVolumeBase;
+	
+}
+
+declare module "awayjs-display/lib/bounds/BoundsType" {
+	/**
+	 *
+	 */
+	class BoundsType {
+	    /**
+	     *
+	     */
+	    static SPHERE: string;
+	    /**
+	     *
+	     */
+	    static AXIS_ALIGNED_BOX: string;
+	    /**
+	     *
+	     */
+	    static NULL: string;
+	}
+	export = BoundsType;
+	
+}
+
+declare module "awayjs-display/lib/bounds/NullBounds" {
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
+	class NullBounds extends BoundingVolumeBase {
+	    private _alwaysIn;
+	    constructor(alwaysIn?: boolean);
+	    clone(): BoundingVolumeBase;
+	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
+	    classifyToPlane(plane: Plane3D): number;
+	}
+	export = NullBounds;
+	
+}
+
+declare module "awayjs-display/lib/controllers/ControllerBase" {
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	class ControllerBase {
+	    _pControllerDirty: boolean;
+	    _pAutoUpdate: boolean;
+	    _pTargetObject: DisplayObject;
+	    constructor(targetObject?: DisplayObject);
+	    pNotifyUpdate(): void;
+	    targetObject: DisplayObject;
+	    autoUpdate: boolean;
+	    update(interpolate?: boolean): void;
+	    updateController(): void;
+	}
+	export = ControllerBase;
+	
+}
+
+declare module "awayjs-display/lib/controllers/FirstPersonController" {
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FirstPersonController extends ControllerBase {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _walkIncrement;
+	    private _strafeIncrement;
+	    private _wrapPanAngle;
+	    fly: boolean;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	    incrementWalk(val: number): void;
+	    incrementStrafe(val: number): void;
+	}
+	export = FirstPersonController;
+	
+}
+
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
+	
+}
+
+declare module "awayjs-display/lib/controllers/HoverController" {
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Extended camera used to hover round a specified target object.
+	 *
+	 * @see    away.containers.View
+	 */
+	class HoverController extends LookAtController {
+	    _iCurrentPanAngle: number;
+	    _iCurrentTiltAngle: number;
+	    private _panAngle;
+	    private _tiltAngle;
+	    private _distance;
+	    private _minPanAngle;
+	    private _maxPanAngle;
+	    private _minTiltAngle;
+	    private _maxTiltAngle;
+	    private _steps;
+	    private _yFactor;
+	    private _wrapPanAngle;
+	    private _upAxis;
+	    /**
+	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
+	     *
+	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     */
+	    steps: number;
+	    /**
+	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
+	     */
+	    panAngle: number;
+	    /**
+	     * Elevation angle of the camera in degrees. Defaults to 90.
+	     */
+	    tiltAngle: number;
+	    /**
+	     * Distance between the camera and the specified target. Defaults to 1000.
+	     */
+	    distance: number;
+	    /**
+	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    minPanAngle: number;
+	    /**
+	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
+	     *
+	     * @see    #panAngle
+	     */
+	    maxPanAngle: number;
+	    /**
+	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    minTiltAngle: number;
+	    /**
+	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
+	     *
+	     * @see    #tiltAngle
+	     */
+	    maxTiltAngle: number;
+	    /**
+	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
+	     *
+	     * @see    #distance
+	     */
+	    yFactor: number;
+	    /**
+	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
+	     */
+	    wrapPanAngle: boolean;
+	    /**
+	     * Creates a new <code>HoverController</code> object.
+	     */
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
+	    /**
+	     * Updates the current tilt angle and pan angle values.
+	     *
+	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	     *
+	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
+	     *
+	     * @see    #tiltAngle
+	     * @see    #panAngle
+	     * @see    #steps
+	     */
+	    update(interpolate?: boolean): void;
+	}
+	export = HoverController;
+	
+}
+
+declare module "awayjs-display/lib/controllers/LookAtController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	class LookAtController extends ControllerBase {
+	    _pLookAtPosition: Vector3D;
+	    _pLookAtObject: DisplayObject;
+	    _pOrigin: Vector3D;
+	    private _onLookAtObjectChangedDelegate;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
+	    lookAtPosition: Vector3D;
+	    lookAtObject: DisplayObject;
+	    update(interpolate?: boolean): void;
+	    private onLookAtObjectChanged(event);
+	}
+	export = LookAtController;
+	
+}
+
+declare module "awayjs-display/lib/controllers/SpringController" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
+	/**
+	 * Uses spring physics to animate the target object towards a position that is
+	 * defined as the lookAtTarget object's position plus the vector defined by the
+	 * positionOffset property.
+	 */
+	class SpringController extends LookAtController {
+	    private _velocity;
+	    private _dv;
+	    private _stretch;
+	    private _force;
+	    private _acceleration;
+	    private _desiredPosition;
+	    /**
+	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
+	     * A number between 1 and 20 is recommended.
+	     */
+	    stiffness: number;
+	    /**
+	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
+	     * A number between 1 and 20 is recommended.
+	     */
+	    damping: number;
+	    /**
+	     * Mass of the camera, if over 120 and it'll be very heavy to move.
+	     */
+	    mass: number;
+	    /**
+	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
+	     */
+	    positionOffset: Vector3D;
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = SpringController;
+	
+}
+
+declare module "awayjs-display/lib/display/Billboard" {
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * The Billboard class represents display objects that represent bitmap images.
+	 * These can be images that you load with the <code>flash.Assets</code> or
+	 * <code>flash.display.Loader</code> classes, or they can be images that you
+	 * create with the <code>Billboard()</code> constructor.
+	 *
+	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
+	 * object that contains a reference to a Image2D object. After you create a
+	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
+	 * method of the parent DisplayObjectContainer instance to place the bitmap on
+	 * the display list.</p>
+	 *
+	 * <p>A Billboard object can share its Image2D reference among several Billboard
+	 * objects, independent of translation or rotation properties. Because you can
+	 * create multiple Billboard objects that reference the same Image2D object,
+	 * multiple display objects can use the same complex Image2D object without
+	 * incurring the memory overhead of a Image2D object for each display
+	 * object instance.</p>
+	 *
+	 * <p>A Image2D object can be drawn to the screen by a Billboard object in one
+	 * of two ways: by using the default hardware renderer with a single hardware surface,
+	 * or by using the slower software renderer when 3D acceleration is not available.</p>
+	 *
+	 * <p>If you would prefer to perform a batch rendering command, rather than using a
+	 * single surface for each Billboard object, you can also draw to the screen using the
+	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
+	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
+	 * objects.</code></p>
+	 *
+	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
+	 * class, so it cannot dispatch mouse events. However, you can use the
+	 * <code>addEventListener()</code> method of the display object container that
+	 * contains the Billboard object.</p>
+	 */
+	class Billboard extends DisplayObject implements IEntity, IRenderable {
+	    static assetType: string;
+	    private _animator;
+	    private _billboardWidth;
+	    private _billboardHeight;
+	    private _billboardRect;
+	    private _material;
+	    private _style;
+	    private _onInvalidatePropertiesDelegate;
+	    private onInvalidateTextureDelegate;
+	    /**
+	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    billboardRect: Rectangle;
+	    /**
+	     *
+	     */
+	    billboardHeight: number;
+	    /**
+	     *
+	     */
+	    billboardWidth: number;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
+	    /**
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    clone(): DisplayObject;
+	    /**
+	     * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
+	     */
+	    style: Style;
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    /**
+	     * @private
+	     */
+	    private onInvalidateTexture(event);
+	    _acceptTraverser(traverser: CollectorBase): void;
+	    private _updateDimensions();
+	    invalidateSurface(): void;
+	    private _onInvalidateProperties(event?);
+	}
+	export = Billboard;
+	
+}
+
+declare module "awayjs-display/lib/display/Camera" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IProjection = require("awayjs-core/lib/projections/IProjection");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	class Camera extends DisplayObjectContainer implements IEntity {
+	    static assetType: string;
+	    private _viewProjection;
+	    private _viewProjectionDirty;
+	    private _projection;
+	    private _frustumPlanes;
+	    private _frustumPlanesDirty;
+	    private _onProjectionMatrixChangedDelegate;
+	    constructor(projection?: IProjection);
+	    assetType: string;
+	    private onProjectionMatrixChanged(event);
+	    frustumPlanes: Array<Plane3D>;
+	    private updateFrustum();
+	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
+	    /**
+	     *
+	     */
+	    projection: IProjection;
+	    /**
+	     *
+	     */
+	    viewProjection: Matrix3D;
+	    /**
+	     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
+	     *
+	     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
+	     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
+	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+	     * @return The ray from the camera to the scene space position of the given screen coordinates.
+	     */
+	    getRay(nX: number, nY: number, sZ: number): Vector3D;
+	    /**
+	     * Calculates the normalised position in screen space of the given scene position.
+	     *
+	     * @param point3d the position vector of the scene coordinates to be projected.
+	     * @return The normalised screen position of the given scene coordinates.
+	     */
+	    project(point3d: Vector3D): Vector3D;
+	    /**
+	     * Calculates the scene position of the given normalized coordinates in screen space.
+	     *
+	     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
+	     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
+	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
+	     * @return The scene position of the given screen coordinates.
+	     */
+	    unproject(nX: number, nY: number, sZ: number): Vector3D;
+	    _applyRenderer(renderer: IRenderer): void;
+	}
+	export = Camera;
+	
+}
+
+declare module "awayjs-display/lib/display/DirectionalLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+	class DirectionalLight extends LightBase implements IEntity {
+	    static assetType: string;
+	    private _direction;
+	    private _tmpLookAt;
+	    private _sceneDirection;
+	    private _pAabbPoints;
+	    private _projAABBPoints;
+	    constructor(xDir?: number, yDir?: number, zDir?: number);
+	    assetType: string;
+	    sceneDirection: Vector3D;
+	    direction: Vector3D;
+	    pUpdateSceneTransform(): void;
+	    pCreateShadowMapper(): DirectionalShadowMapper;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	}
+	export = DirectionalLight;
+	
+}
+
+declare module "awayjs-display/lib/display/DisplayObject" {
 	import BlendMode = require("awayjs-core/lib/image/BlendMode");
 	import Box = require("awayjs-core/lib/geom/Box");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -268,16 +1625,16 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	import LoaderInfo = require("awayjs-core/lib/library/LoaderInfo");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
 	import IDisplayObjectAdapter = require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Scene = require("awayjs-display/lib/containers/Scene");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import Scene = require("awayjs-display/lib/display/Scene");
 	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
 	import IBitmapDrawable = require("awayjs-display/lib/base/IBitmapDrawable");
 	import Transform = require("awayjs-display/lib/base/Transform");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	/**
@@ -1412,784 +2769,11 @@ declare module "awayjs-display/lib/base/DisplayObject" {
 	
 }
 
-declare module "awayjs-display/lib/base/HierarchicalProperties" {
-	/**
-	 *
-	 */
-	class HierarchicalProperties {
-	    /**
-	     *
-	     */
-	    static MOUSE_ENABLED: number;
-	    /**
-	     *
-	     */
-	    static VISIBLE: number;
-	    /**
-	     *
-	     */
-	    static MASK_ID: number;
-	    /**
-	     *
-	     */
-	    static MASKS: number;
-	    /**
-	     *
-	     */
-	    static COLOR_TRANSFORM: number;
-	    /**
-	     *
-	     */
-	    static SCENE_TRANSFORM: number;
-	    /**
-	     *
-	     */
-	    static ALL: number;
-	}
-	export = HierarchicalProperties;
-	
-}
-
-declare module "awayjs-display/lib/base/IBitmapDrawable" {
-	/**
-	 * The IBitmapDrawable interface is implemented by objects that can be passed as the
-	 * source parameter of the <code>draw()</code> method of the BitmapData class. These
-	 * objects are of type BitmapData or DisplayObject.
-	 *
-	 * @see away.base.BitmapData#draw()
-	 * @see away.base.BitmapData
-	 * @see away.base.DisplayObject
-	 */
-	interface IBitmapDrawable {
-	}
-	export = IBitmapDrawable;
-	
-}
-
-declare module "awayjs-display/lib/base/IRenderOwner" {
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	import Style = require("awayjs-display/lib/base/Style");
-	/**
-	 * IRenderOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderOwner
-	 */
-	interface IRenderOwner extends IAsset {
-	    alphaThreshold: number;
-	    style: Style;
-	    curves: boolean;
-	    imageRect: boolean;
-	    blendMode: string;
-	    lightPicker: LightPickerBase;
-	    animationSet: IAnimationSet;
-	    iOwners: Array<IRenderableOwner>;
-	    getNumTextures(): number;
-	    getTextureAt(index: number): TextureBase;
-	    addTexture(texture: TextureBase): any;
-	    removeTexture(texture: TextureBase): any;
-	}
-	export = IRenderOwner;
-	
-}
-
-declare module "awayjs-display/lib/base/IRenderableOwner" {
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import Style = require("awayjs-display/lib/base/Style");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * IRenderableOwner provides an interface for objects that can use materials.
-	 *
-	 * @interface away.base.IRenderableOwner
-	 */
-	interface IRenderableOwner extends IAsset {
-	    /**
-	     * The animation used by the material owner to assemble the vertex code.
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    /**
-	     *
-	     */
-	    style: Style;
-	    invalidateRenderOwner(): any;
-	    /**
-	     *
-	     */
-	    pickingCollider: IPickingCollider;
-	    /**
-	     * @internal
-	     */
-	    _iPickingCollisionVO: PickingCollisionVO;
-	    /**
-	     * @internal
-	     */
-	    _iIsMouseEnabled(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedMasks(): Array<Array<DisplayObject>>;
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
-	}
-	export = IRenderableOwner;
-	
-}
-
-declare module "awayjs-display/lib/base/LightBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	class LightBase extends DisplayObjectContainer {
-	    private _color;
-	    private _colorR;
-	    private _colorG;
-	    private _colorB;
-	    private _ambientColor;
-	    private _ambient;
-	    _iAmbientR: number;
-	    _iAmbientG: number;
-	    _iAmbientB: number;
-	    private _specular;
-	    _iSpecularR: number;
-	    _iSpecularG: number;
-	    _iSpecularB: number;
-	    private _diffuse;
-	    _iDiffuseR: number;
-	    _iDiffuseG: number;
-	    _iDiffuseB: number;
-	    private _castsShadows;
-	    private _shadowMapper;
-	    constructor();
-	    castsShadows: boolean;
-	    pCreateShadowMapper(): ShadowMapperBase;
-	    specular: number;
-	    diffuse: number;
-	    color: number;
-	    ambient: number;
-	    ambientColor: number;
-	    private updateAmbient();
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    private updateSpecular();
-	    private updateDiffuse();
-	    shadowMapper: ShadowMapperBase;
-	}
-	export = LightBase;
-	
-}
-
-declare module "awayjs-display/lib/base/OrientationMode" {
-	class OrientationMode {
-	    /**
-	     *
-	     */
-	    static DEFAULT: string;
-	    /**
-	     *
-	     */
-	    static CAMERA_PLANE: string;
-	    /**
-	     *
-	     */
-	    static CAMERA_POSITION: string;
-	}
-	export = OrientationMode;
-	
-}
-
-declare module "awayjs-display/lib/base/Style" {
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import SamplerBase = require("awayjs-core/lib/image/SamplerBase");
-	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	/**
-	 *
-	 */
-	class Style extends EventDispatcher {
-	    private _sampler;
-	    private _samplers;
-	    private _image;
-	    private _images;
-	    private _color;
-	    sampler: SamplerBase;
-	    image: ImageBase;
-	    /**
-	     * The diffuse reflectivity color of the surface.
-	     */
-	    color: number;
-	    constructor();
-	    getImageAt(texture: TextureBase, index?: number): ImageBase;
-	    getSamplerAt(texture: TextureBase, index?: number): SamplerBase;
-	    addImageAt(image: ImageBase, texture: TextureBase, index?: number): void;
-	    addSamplerAt(sampler: SamplerBase, texture: TextureBase, index?: number): void;
-	    removeImageAt(texture: TextureBase, index?: number): void;
-	    removeSamplerAt(texture: TextureBase, index?: number): void;
-	    private _invalidateProperties();
-	}
-	export = Style;
-	
-}
-
-declare module "awayjs-display/lib/base/Timeline" {
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class Timeline {
-	    private _functions;
-	    private _blocked;
-	    _update_indices: Array<number>;
-	    _labels: Object;
-	    _framescripts: Object;
-	    _framescripts_translated: Object;
-	    keyframe_indices: Array<number>;
-	    keyframe_firstframes: Array<number>;
-	    keyframe_constructframes: Array<number>;
-	    keyframe_durations: ArrayBufferView;
-	    frame_command_indices: ArrayBufferView;
-	    frame_recipe: ArrayBufferView;
-	    command_index_stream: ArrayBufferView;
-	    command_length_stream: ArrayBufferView;
-	    add_child_stream: ArrayBufferView;
-	    remove_child_stream: ArrayBufferView;
-	    update_child_stream: ArrayBufferView;
-	    update_child_props_length_stream: ArrayBufferView;
-	    update_child_props_indices_stream: ArrayBufferView;
-	    property_index_stream: ArrayBufferView;
-	    property_type_stream: ArrayBufferView;
-	    properties_stream_int: ArrayBufferView;
-	    properties_stream_f32_mtx_all: ArrayBufferView;
-	    properties_stream_f32_mtx_scale_rot: ArrayBufferView;
-	    properties_stream_f32_mtx_pos: ArrayBufferView;
-	    properties_stream_f32_ct: ArrayBufferView;
-	    properties_stream_strings: Array<string>;
-	    private _potentialPrototypes;
-	    numKeyFrames: number;
-	    constructor();
-	    init(): void;
-	    get_framescript(keyframe_index: number): string;
-	    add_framescript(value: string, keyframe_index: number): void;
-	    private regexIndexOf(str, regex, startpos);
-	    add_script_for_postcontruct(target_mc: MovieClip, keyframe_idx: number, scriptPass1?: Boolean): void;
-	    numFrames: number;
-	    getPotentialChildPrototype(id: number): DisplayObject;
-	    getKeyframeIndexForFrameIndex(frame_index: number): number;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    registerPotentialChild(prototype: DisplayObject): void;
-	    jumpToLabel(target_mc: MovieClip, label: string): void;
-	    gotoFrame(target_mc: MovieClip, value: number, skip_script?: boolean): void;
-	    pass1(start_construct_idx: number, target_keyframe_idx: number, depth_sessionIDs: Object): void;
-	    pass2(target_mc: MovieClip): void;
-	    constructNextFrame(target_mc: MovieClip, queueScript?: Boolean, scriptPass1?: Boolean): void;
-	    remove_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
-	    add_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void;
-	    update_childs(target_mc: MovieClip, frame_command_idx: number): void;
-	    update_mtx_all(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_colortransform(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_name(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_button_name(target: DisplayObject, sourceMovieClip: MovieClip, i: number): void;
-	    update_visibility(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_mtx_scale_rot(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    update_mtx_pos(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    enable_maskmode(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	    remove_masks(child: DisplayObject, target_mc: MovieClip, i: number): void;
-	}
-	export = Timeline;
-	
-}
-
-declare module "awayjs-display/lib/base/TouchPoint" {
-	/**
-	 *
-	 */
-	class TouchPoint {
-	    x: number;
-	    y: number;
-	    id: number;
-	    constructor(x: number, y: number, id: number);
-	}
-	export = TouchPoint;
-	
-}
-
-declare module "awayjs-display/lib/base/Transform" {
-	import EventDispatcher = require("awayjs-core/lib/events/EventDispatcher");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import PerspectiveProjection = require("awayjs-core/lib/projections/PerspectiveProjection");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * The Transform class provides access to color adjustment properties and two-
-	 * or three-dimensional transformation objects that can be applied to a
-	 * display object. During the transformation, the color or the orientation and
-	 * position of a display object is adjusted(offset) from the current values
-	 * or coordinates to new values or coordinates. The Transform class also
-	 * collects data about color and two-dimensional matrix transformations that
-	 * are applied to a display object and all of its parent objects. You can
-	 * access these combined transformations through the
-	 * <code>concatenatedColorTransform</code> and <code>concatenatedMatrix</code>
-	 * properties.
-	 *
-	 * <p>To apply color transformations: create a ColorTransform object, set the
-	 * color adjustments using the object's methods and properties, and then
-	 * assign the <code>colorTransformation</code> property of the
-	 * <code>transform</code> property of the display object to the new
-	 * ColorTransformation object.</p>
-	 *
-	 * <p>To apply two-dimensional transformations: create a Matrix object, set
-	 * the matrix's two-dimensional transformation, and then assign the
-	 * <code>transform.matrix</code> property of the display object to the new
-	 * Matrix object.</p>
-	 *
-	 * <p>To apply three-dimensional transformations: start with a
-	 * three-dimensional display object. A three-dimensional display object has a
-	 * <code>z</code> property value other than zero. You do not need to create
-	 * the Matrix3D object. For all three-dimensional objects, a Matrix3D object
-	 * is created automatically when you assign a <code>z</code> value to a
-	 * display object. You can access the display object's Matrix3D object through
-	 * the display object's <code>transform</code> property. Using the methods of
-	 * the Matrix3D class, you can add to or modify the existing transformation
-	 * settings. Also, you can create a custom Matrix3D object, set the custom
-	 * Matrix3D object's transformation elements, and then assign the new Matrix3D
-	 * object to the display object using the <code>transform.matrix</code>
-	 * property.</p>
-	 *
-	 * <p>To modify a perspective projection of the stage or root object: use the
-	 * <code>transform.matrix</code> property of the root display object to gain
-	 * access to the PerspectiveProjection object. Or, apply different perspective
-	 * projection properties to a display object by setting the perspective
-	 * projection properties of the display object's parent. The child display
-	 * object inherits the new properties. Specifically, create a
-	 * PerspectiveProjection object and set its properties, then assign the
-	 * PerspectiveProjection object to the <code>perspectiveProjection</code>
-	 * property of the parent display object's <code>transform</code> property.
-	 * The specified projection transformation then applies to all the display
-	 * object's three-dimensional children.</p>
-	 *
-	 * <p>Since both PerspectiveProjection and Matrix3D objects perform
-	 * perspective transformations, do not assign both to a display object at the
-	 * same time. Use the PerspectiveProjection object for focal length and
-	 * projection center changes. For more control over the perspective
-	 * transformation, create a perspective projection Matrix3D object.</p>
-	 */
-	class Transform extends EventDispatcher {
-	    private _concatenatedColorTransform;
-	    private _concatenatedMatrix;
-	    private _pixelBounds;
-	    private _colorTransform;
-	    private _matrix3D;
-	    private _matrix3DDirty;
-	    private _rotation;
-	    private _skew;
-	    private _scale;
-	    private _components;
-	    private _componentsDirty;
-	    /**
-	     *
-	     */
-	    backVector: Vector3D;
-	    /**
-	     * A ColorTransform object containing values that universally adjust the
-	     * colors in the display object.
-	     *
-	     * @throws TypeError The colorTransform is null when being set
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * A ColorTransform object representing the combined color transformations
-	     * applied to the display object and all of its parent objects, back to the
-	     * root level. If different color transformations have been applied at
-	     * different levels, all of those transformations are concatenated into one
-	     * ColorTransform object for this property.
-	     */
-	    concatenatedColorTransform: ColorTransform;
-	    /**
-	     * A Matrix object representing the combined transformation matrixes of the
-	     * display object and all of its parent objects, back to the root level. If
-	     * different transformation matrixes have been applied at different levels,
-	     * all of those matrixes are concatenated into one matrix for this property.
-	     * Also, for resizeable SWF content running in the browser, this property
-	     * factors in the difference between stage coordinates and window coordinates
-	     * due to window resizing. Thus, the property converts local coordinates to
-	     * window coordinates, which may not be the same coordinate space as that of
-	     * the Scene.
-	     */
-	    concatenatedMatrix: Matrix;
-	    /**
-	     *
-	     */
-	    downVector: Vector3D;
-	    /**
-	     *
-	     */
-	    forwardVector: Vector3D;
-	    /**
-	     *
-	     */
-	    leftVector: Vector3D;
-	    /**
-	     * A Matrix object containing values that alter the scaling, rotation, and
-	     * translation of the display object.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     *
-	     * @throws TypeError The matrix is null when being set
-	     */
-	    matrix: Matrix;
-	    /**
-	     * Provides access to the Matrix3D object of a three-dimensional display
-	     * object. The Matrix3D object represents a transformation matrix that
-	     * determines the display object's position and orientation. A Matrix3D
-	     * object can also perform perspective projection.
-	     *
-	     * <p>If the <code>matrix</code> property is set to a value(not
-	     * <code>null</code>), the <code>matrix3D</code> property is
-	     * <code>null</code>. And if the <code>matrix3D</code> property is set to a
-	     * value(not <code>null</code>), the <code>matrix</code> property is
-	     * <code>null</code>.</p>
-	     */
-	    matrix3D: Matrix3D;
-	    /**
-	     * Provides access to the PerspectiveProjection object of a three-dimensional
-	     * display object. The PerspectiveProjection object can be used to modify the
-	     * perspective transformation of the stage or to assign a perspective
-	     * transformation to all the three-dimensional children of a display object.
-	     *
-	     * <p>Based on the field of view and aspect ratio(dimensions) of the stage,
-	     * a default PerspectiveProjection object is assigned to the root object.</p>
-	     */
-	    perspectiveProjection: PerspectiveProjection;
-	    /**
-	     * A Rectangle object that defines the bounding rectangle of the display
-	     * object on the stage.
-	     */
-	    pixelBounds: Rectangle;
-	    /**
-	     * Defines the position of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    position: Vector3D;
-	    /**
-	     *
-	     */
-	    rightVector: Vector3D;
-	    /**
-	     * Defines the rotation of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    rotation: Vector3D;
-	    /**
-	     * Rotates the 3d object directly to a euler angle
-	     *
-	     * @param    ax        The angle in degrees of the rotation around the x axis.
-	     * @param    ay        The angle in degrees of the rotation around the y axis.
-	     * @param    az        The angle in degrees of the rotation around the z axis.
-	     */
-	    rotateTo(ax: number, ay: number, az: number): void;
-	    /**
-	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    scale: Vector3D;
-	    scaleTo(sx: number, sy: number, sz: number): void;
-	    /**
-	     * Defines the scale of the 3d object, relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
-	     */
-	    skew: Vector3D;
-	    skewTo(sx: number, sy: number, sz: number): void;
-	    /**
-	     *
-	     */
-	    upVector: Vector3D;
-	    constructor();
-	    dispose(): void;
-	    /**
-	     * Returns a Matrix3D object, which can transform the space of a specified
-	     * display object in relation to the current display object's space. You can
-	     * use the <code>getRelativeMatrix3D()</code> method to move one
-	     * three-dimensional display object relative to another three-dimensional
-	     * display object.
-	     *
-	     * @param relativeTo The display object relative to which the transformation
-	     *                   occurs. To get a Matrix3D object relative to the stage,
-	     *                   set the parameter to the <code>root</code> or
-	     *                   <code>stage</code> object. To get the world-relative
-	     *                   matrix of the display object, set the parameter to a
-	     *                   display object that has a perspective transformation
-	     *                   applied to it.
-	     * @return A Matrix3D object that can be used to transform the space from the
-	     *         <code>relativeTo</code> display object to the current display
-	     *         object space.
-	     */
-	    getRelativeMatrix3D(relativeTo: DisplayObject): Matrix3D;
-	    /**
-	     * Moves the 3d object forwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveForward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local z axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveBackward(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveLeft(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local x axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveRight(distance: number): void;
-	    /**
-	     * Moves the 3d object forwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveUp(distance: number): void;
-	    /**
-	     * Moves the 3d object backwards along it's local y axis
-	     *
-	     * @param    distance    The length of the movement
-	     */
-	    moveDown(distance: number): void;
-	    /**
-	     * Moves the 3d object directly to a point in space
-	     *
-	     * @param    dx        The amount of movement along the local x axis.
-	     * @param    dy        The amount of movement along the local y axis.
-	     * @param    dz        The amount of movement along the local z axis.
-	     */
-	    moveTo(dx: number, dy: number, dz: number): void;
-	    /**
-	     * Rotates the 3d object around it's local x-axis
-	     *
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    pitch(angle: number): void;
-	    /**
-	     * Rotates the 3d object around it's local z-axis
-	     *
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    roll(angle: number): void;
-	    /**
-	     * Rotates the 3d object around it's local y-axis
-	     *
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    yaw(angle: number): void;
-	    /**
-	     * Rotates the 3d object around an axis by a defined angle
-	     *
-	     * @param    axis        The vector defining the axis of rotation
-	     * @param    angle        The amount of rotation in degrees
-	     */
-	    rotate(axis: Vector3D, angle: number): void;
-	    /**
-	     * Moves the 3d object along a vector by a defined length
-	     *
-	     * @param    axis        The vector defining the axis of movement
-	     * @param    distance    The length of the movement
-	     */
-	    translate(axis: Vector3D, distance: number): void;
-	    /**
-	     * Moves the 3d object along a vector by a defined length
-	     *
-	     * @param    axis        The vector defining the axis of movement
-	     * @param    distance    The length of the movement
-	     */
-	    translateLocal(axis: Vector3D, distance: number): void;
-	    clearMatrix3D(): void;
-	    clearColorTransform(): void;
-	    /**
-	     * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
-	     *
-	     * @private
-	     */
-	    invalidateMatrix3D(): void;
-	    invalidateComponents(): void;
-	    /**
-	     *
-	     */
-	    invalidatePosition(): void;
-	    invalidateColorTransform(): void;
-	    /**
-	     *
-	     */
-	    private _updateMatrix3D();
-	    private _updateComponents();
-	}
-	export = Transform;
-	
-}
-
-declare module "awayjs-display/lib/bounds/AxisAlignedBoundingBox" {
-	import Box = require("awayjs-core/lib/geom/Box");
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	/**
-	 * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
-	 * This is useful for most meshes.
-	 */
-	class AxisAlignedBoundingBox extends BoundingVolumeBase {
-	    _box: Box;
-	    private _x;
-	    private _y;
-	    private _z;
-	    private _width;
-	    private _height;
-	    private _depth;
-	    private _centerX;
-	    private _centerY;
-	    private _centerZ;
-	    private _halfExtentsX;
-	    private _halfExtentsY;
-	    private _halfExtentsZ;
-	    private _prefab;
-	    /**
-	     * Creates a new <code>AxisAlignedBoundingBox</code> object.
-	     */
-	    constructor(entity: IEntity);
-	    /**
-	     * @inheritDoc
-	     */
-	    nullify(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
-	}
-	export = AxisAlignedBoundingBox;
-	
-}
-
-declare module "awayjs-display/lib/bounds/BoundingSphere" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	class BoundingSphere extends BoundingVolumeBase {
-	    private _sphere;
-	    private _radius;
-	    private _centerX;
-	    private _centerY;
-	    private _centerZ;
-	    private _prefab;
-	    constructor(entity: IEntity);
-	    nullify(): void;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
-	}
-	export = BoundingSphere;
-	
-}
-
-declare module "awayjs-display/lib/bounds/BoundingVolumeBase" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	class BoundingVolumeBase {
-	    _pEntity: IEntity;
-	    _pBoundsPrimitive: Mesh;
-	    _pInvalidated: boolean;
-	    constructor(entity: any);
-	    dispose(): void;
-	    boundsPrimitive: IEntity;
-	    nullify(): void;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    clone(): BoundingVolumeBase;
-	    rayIntersection(position: Vector3D, direction: Vector3D, targetNormal: Vector3D): number;
-	    classifyToPlane(plane: Plane3D): number;
-	    _pUpdate(): void;
-	    invalidate(): void;
-	    _pCreateBoundsPrimitive(): Mesh;
-	}
-	export = BoundingVolumeBase;
-	
-}
-
-declare module "awayjs-display/lib/bounds/BoundsType" {
-	/**
-	 *
-	 */
-	class BoundsType {
-	    /**
-	     *
-	     */
-	    static SPHERE: string;
-	    /**
-	     *
-	     */
-	    static AXIS_ALIGNED_BOX: string;
-	    /**
-	     *
-	     */
-	    static NULL: string;
-	}
-	export = BoundsType;
-	
-}
-
-declare module "awayjs-display/lib/bounds/NullBounds" {
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
-	class NullBounds extends BoundingVolumeBase {
-	    private _alwaysIn;
-	    constructor(alwaysIn?: boolean);
-	    clone(): BoundingVolumeBase;
-	    isInFrustum(planes: Array<Plane3D>, numPlanes: number): boolean;
-	    classifyToPlane(plane: Plane3D): number;
-	}
-	export = NullBounds;
-	
-}
-
-declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
+declare module "awayjs-display/lib/display/DisplayObjectContainer" {
 	import Point = require("awayjs-core/lib/geom/Point");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	import Scene = require("awayjs-display/lib/containers/Scene");
+	import Scene = require("awayjs-display/lib/display/Scene");
 	/**
 	 * The DisplayObjectContainer class is the base class for all objects that can
 	 * serve as display object containers on the display list. The display list
@@ -2571,12 +3155,295 @@ declare module "awayjs-display/lib/containers/DisplayObjectContainer" {
 	
 }
 
-declare module "awayjs-display/lib/containers/LoaderContainer" {
+declare module "awayjs-display/lib/display/IEntity" {
+	import Box = require("awayjs-core/lib/geom/Box");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Sphere = require("awayjs-core/lib/geom/Sphere");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import Transform = require("awayjs-display/lib/base/Transform");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	interface IEntity extends IAsset {
+	    parent: DisplayObjectContainer;
+	    x: number;
+	    y: number;
+	    z: number;
+	    rotationX: number;
+	    rotationY: number;
+	    rotationZ: number;
+	    scaleX: number;
+	    scaleY: number;
+	    scaleZ: number;
+	    _iMasksConfig(): Array<Array<number>>;
+	    _iAssignedMaskId(): number;
+	    _iAssignedColorTransform(): ColorTransform;
+	    /**
+	     *
+	     */
+	    debugVisible: boolean;
+	    /**
+	     *
+	     */
+	    boundsType: string;
+	    /**
+	     *
+	     */
+	    castsShadows: boolean;
+	    /**
+	     *
+	     */
+	    inverseSceneTransform: Matrix3D;
+	    /**
+	     *
+	     */
+	    pickingCollider: IPickingCollider;
+	    /**
+	     *
+	     */
+	    transform: Transform;
+	    /**
+	     *
+	     */
+	    scene: Scene;
+	    /**
+	     *
+	     */
+	    scenePosition: Vector3D;
+	    /**
+	     *
+	     */
+	    sceneTransform: Matrix3D;
+	    /**
+	     *
+	     */
+	    zOffset: number;
+	    /**
+	     *
+	     * @param targetCoordinateSpace
+	     */
+	    getBox(targetCoordinateSpace?: DisplayObject): Box;
+	    /**
+	     *
+	     * @param targetCoordinateSpace
+	     */
+	    getSphere(targetCoordinateSpace?: DisplayObject): Sphere;
+	    /**
+	     *
+	     *
+	     * @param target
+	     * @param upAxis
+	     */
+	    lookAt(target: Vector3D, upAxis?: Vector3D): any;
+	    /**
+	     * @internal
+	     */
+	    _iPickingCollisionVO: PickingCollisionVO;
+	    /**
+	     * @internal
+	     */
+	    _iController: ControllerBase;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedPartition: PartitionBase;
+	    /**
+	     * @internal
+	     */
+	    _iIsMouseEnabled(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iIsVisible(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedMasks(): Array<Array<DisplayObject>>;
+	    /**
+	     * @internal
+	     */
+	    _iInternalUpdate(): any;
+	    /**
+	     * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
+	     * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
+	     * return the scene transform.
+	     */
+	    getRenderSceneTransform(camera: Camera): Matrix3D;
+	    /**
+	     *
+	     * @param renderer
+	     * @private
+	     */
+	    _acceptTraverser(collector: CollectorBase): any;
+	}
+	export = IEntity;
+	
+}
+
+declare module "awayjs-display/lib/display/LightBase" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	class LightBase extends DisplayObjectContainer {
+	    private _color;
+	    private _colorR;
+	    private _colorG;
+	    private _colorB;
+	    private _ambientColor;
+	    private _ambient;
+	    _iAmbientR: number;
+	    _iAmbientG: number;
+	    _iAmbientB: number;
+	    private _specular;
+	    _iSpecularR: number;
+	    _iSpecularG: number;
+	    _iSpecularB: number;
+	    private _diffuse;
+	    _iDiffuseR: number;
+	    _iDiffuseG: number;
+	    _iDiffuseB: number;
+	    private _castsShadows;
+	    private _shadowMapper;
+	    constructor();
+	    castsShadows: boolean;
+	    pCreateShadowMapper(): ShadowMapperBase;
+	    specular: number;
+	    diffuse: number;
+	    color: number;
+	    ambient: number;
+	    ambientColor: number;
+	    private updateAmbient();
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	    private updateSpecular();
+	    private updateDiffuse();
+	    shadowMapper: ShadowMapperBase;
+	}
+	export = LightBase;
+	
+}
+
+declare module "awayjs-display/lib/display/LightProbe" {
+	import ImageCube = require("awayjs-core/lib/image/ImageCube");
+	import SamplerCube = require("awayjs-core/lib/image/SamplerCube");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	class LightProbe extends LightBase implements IEntity {
+	    static assetType: string;
+	    diffuseMap: ImageCube;
+	    diffuseSampler: SamplerCube;
+	    specularMap: ImageCube;
+	    specularSampler: SamplerCube;
+	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
+	    assetType: string;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	}
+	export = LightProbe;
+	
+}
+
+declare module "awayjs-display/lib/display/LineSegment" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * A Line Segment primitive.
+	 */
+	class LineSegment extends DisplayObject implements IEntity, IRenderable {
+	    private _style;
+	    private _onInvalidatePropertiesDelegate;
+	    static assetType: string;
+	    private _animator;
+	    private _material;
+	    _startPosition: Vector3D;
+	    _endPosition: Vector3D;
+	    _halfThickness: number;
+	    /**
+	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
+	     */
+	    animator: IAnimator;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     *
+	     */
+	    startPostion: Vector3D;
+	    startPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    endPosition: Vector3D;
+	    /**
+	     *
+	     */
+	    material: MaterialBase;
+	    /**
+	     *
+	     */
+	    thickness: number;
+	    /**
+	     * Create a line segment
+	     *
+	     * @param startPosition Start position of the line segment
+	     * @param endPosition Ending position of the line segment
+	     * @param thickness Thickness of the line
+	     */
+	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
+	    /**
+	     * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
+	     */
+	    style: Style;
+	    /**
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    _pUpdateSphereBounds(): void;
+	    /**
+	     * @private
+	     */
+	    private invalidateGraphics();
+	    invalidateSurface(): void;
+	    private _onInvalidateProperties(event);
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @param findClosest
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    _acceptTraverser(traverser: CollectorBase): void;
+	}
+	export = LineSegment;
+	
+}
+
+declare module "awayjs-display/lib/display/LoaderContainer" {
 	import LoaderContext = require("awayjs-core/lib/library/LoaderContext");
 	import URLRequest = require("awayjs-core/lib/net/URLRequest");
 	import ParserBase = require("awayjs-core/lib/parsers/ParserBase");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	/**
 	 * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)
 	 * files. Use the <code>load()</code> method to initiate loading. The loaded
@@ -3054,8 +3921,226 @@ declare module "awayjs-display/lib/containers/LoaderContainer" {
 	
 }
 
-declare module "awayjs-display/lib/containers/Scene" {
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
+declare module "awayjs-display/lib/display/Mesh" {
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import Graphics = require("awayjs-display/lib/graphics/Graphics");
+	import GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+	/**
+	 * Mesh is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
+	 * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
+	 * of the graphics to be assigned different materials.
+	 */
+	class Mesh extends DisplayObjectContainer implements IEntity {
+	    private static _meshes;
+	    static assetType: string;
+	    private _center;
+	    _graphics: Graphics;
+	    private _castsShadows;
+	    private _shareAnimationGraphics;
+	    _onGraphicsBoundsInvalidDelegate: (event: GraphicsEvent) => void;
+	    private _tempPoint;
+	    /**
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
+	     */
+	    castsShadows: boolean;
+	    /**
+	     * The graphics used by the mesh that provides it with its shape.
+	     */
+	    graphics: Graphics;
+	    /**
+	     * Defines the animator of the graphics object.  Default value is <code>null</code>.
+	     */
+	    animator: IAnimator;
+	    /**
+	     * The material with which to render the Mesh.
+	     */
+	    material: MaterialBase;
+	    /**
+	     * Indicates whether or not the mesh share the same animation graphics.
+	     */
+	    shareAnimationGraphics: boolean;
+	    /**
+	     *
+	     */
+	    style: Style;
+	    /**
+	     * Create a new Mesh object.
+	     *
+	     * @param material    [optional]        The material with which to render the Mesh.
+	     */
+	    constructor(material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    bakeTransformations(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    disposeValues(): void;
+	    /**
+	     * Clones this Mesh instance along with all it's children, while re-using the same
+	     * material, graphics and animation set. The returned result will be a copy of this mesh,
+	     * containing copies of all of it's children.
+	     *
+	     * Properties that are re-used (i.e. not cloned) by the new copy include name,
+	     * graphics, and material. Properties that are cloned or created anew for the copy
+	     * include subMeshes, children of the mesh, and the animator.
+	     *
+	     * If you want to copy just the mesh, reusing it's graphics and material while not
+	     * cloning it's children, the simplest way is to create a new mesh manually:
+	     *
+	     * <code>
+	     * var clone : Mesh = new Mesh(original.graphics, original.material);
+	     * </code>
+	     */
+	    clone(): Mesh;
+	    copyTo(mesh: Mesh): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    _pUpdateSphereBounds(): void;
+	    /**
+	     * //TODO
+	     *
+	     * @private
+	     */
+	    private onGraphicsBoundsInvalid(event);
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    _acceptTraverser(traverser: CollectorBase): void;
+	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
+	    clear(): void;
+	}
+	export = Mesh;
+	
+}
+
+declare module "awayjs-display/lib/display/MovieClip" {
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
+	import Timeline = require("awayjs-display/lib/base/Timeline");
+	class MovieClip extends DisplayObjectContainer {
+	    private static _skipAdvance;
+	    private static _movieClips;
+	    static assetType: string;
+	    private _timeline;
+	    private _isButton;
+	    private _onMouseOver;
+	    private _onMouseOut;
+	    private _onMouseDown;
+	    private _onMouseUp;
+	    private _time;
+	    private _currentFrameIndex;
+	    private _isPlaying;
+	    private _enterFrame;
+	    private _skipAdvance;
+	    private _isInit;
+	    private _potentialInstances;
+	    private _depth_sessionIDs;
+	    private _sessionID_childs;
+	    /**
+	     * adapter is used to provide MovieClip to scripts taken from different platforms
+	     * setter typically managed by factory
+	     */
+	    adapter: IMovieClipAdapter;
+	    constructor(timeline?: Timeline);
+	    dispose(): void;
+	    disposeValues(): void;
+	    reset_textclones(): void;
+	    isInit: boolean;
+	    timeline: Timeline;
+	    /**
+	     *
+	     */
+	    loop: boolean;
+	    numFrames: number;
+	    jumpToLabel(label: string): void;
+	    /**
+	     * the current index of the current active frame
+	     */
+	    constructedKeyFrameIndex: number;
+	    reset(): void;
+	    resetSessionIDs(): void;
+	    currentFrameIndex: number;
+	    addButtonListeners(): void;
+	    removeButtonListeners(): void;
+	    getChildAtSessionID(sessionID: number): DisplayObject;
+	    getSessionIDDepths(): Object;
+	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
+	    _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject;
+	    removeChildAtInternal(index: number): DisplayObject;
+	    assetType: string;
+	    /**
+	     * Starts playback of animation from current position
+	     */
+	    play(): void;
+	    /**
+	     * should be called right before the call to away3d-render.
+	     */
+	    update(): void;
+	    getPotentialChildInstance(id: number): DisplayObject;
+	    /**
+	     * Stop playback of animation and hold current position
+	     */
+	    stop(): void;
+	    clone(): MovieClip;
+	    copyTo(newInstance: MovieClip): void;
+	    advanceFrame(): void;
+	    logHierarchy(depth?: number): void;
+	    printHierarchyName(depth: number, target: DisplayObject): void;
+	    clear(): void;
+	}
+	export = MovieClip;
+	
+}
+
+declare module "awayjs-display/lib/display/PointLight" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
+	class PointLight extends LightBase implements IEntity {
+	    static assetType: string;
+	    _pRadius: number;
+	    _pFallOff: number;
+	    _pFallOffFactor: number;
+	    constructor();
+	    assetType: string;
+	    pCreateShadowMapper(): CubeMapShadowMapper;
+	    radius: number;
+	    iFallOffFactor(): number;
+	    fallOff: number;
+	    _pUpdateSphereBounds(): void;
+	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
+	}
+	export = PointLight;
+	
+}
+
+declare module "awayjs-display/lib/display/Scene" {
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	class Scene extends DisplayObjectContainer {
@@ -3077,431 +4162,1077 @@ declare module "awayjs-display/lib/containers/Scene" {
 	
 }
 
-declare module "awayjs-display/lib/containers/View" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import TouchPoint = require("awayjs-display/lib/base/TouchPoint");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import IPicker = require("awayjs-display/lib/pick/IPicker");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	class View {
-	    _pScene: Scene;
-	    _pCamera: Camera;
-	    _pEntityCollector: CollectorBase;
-	    _pRenderer: IRenderer;
-	    private _aspectRatio;
-	    private _width;
-	    private _height;
-	    private _time;
-	    private _deltaTime;
-	    private _backgroundColor;
-	    private _backgroundAlpha;
-	    private _viewportDirty;
-	    private _scissorDirty;
-	    private _onPartitionChangedDelegate;
-	    private _onProjectionChangedDelegate;
-	    private _onViewportUpdatedDelegate;
-	    private _onScissorUpdatedDelegate;
-	    private _mouseManager;
-	    private _mousePicker;
-	    private _htmlElement;
-	    private _shareContext;
-	    _pMouseX: number;
-	    _pMouseY: number;
-	    _pTouchPoints: Array<TouchPoint>;
-	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
-	    layeredView: boolean;
-	    mouseX: number;
-	    mouseY: number;
-	    touchPoints: Array<TouchPoint>;
-	    getLocalMouseX(displayObject: DisplayObject): number;
-	    getLocalMouseY(displayObject: DisplayObject): number;
-	    getLocalTouchPoints(displayObject: DisplayObject): Array<TouchPoint>;
+declare module "awayjs-display/lib/display/Shape" {
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import Graphics = require("awayjs-display/lib/draw/Graphics");
+	/**
+	 * This class is used to create lightweight shapes using the ActionScript
+	 * drawing application program interface(API). The Shape class includes a
+	 * <code>graphics</code> property, which lets you access methods from the
+	 * Graphics class.
+	 *
+	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
+	 * includes other features not available to the Shape class. For example, a
+	 * Sprite object is a display object container, whereas a Shape object is not
+	 * (and cannot contain child display objects). For this reason, Shape objects
+	 * consume less memory than Sprite objects that contain the same graphics.
+	 * However, a Sprite object supports user input events, while a Shape object
+	 * does not.</p>
+	 */
+	class Shape extends DisplayObject {
+	    private _graphics;
+	    /**
+	     * Specifies the Graphics object belonging to this Shape object, where vector
+	     * drawing commands can occur.
+	     */
+	    graphics: Graphics;
+	    /**
+	     * Creates a new Shape object.
+	     */
+	    constructor();
+	    clone(): DisplayObject;
+	}
+	export = Shape;
+	
+}
+
+declare module "awayjs-display/lib/display/Skybox" {
+	import ImageCube = require("awayjs-core/lib/image/ImageCube");
+	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
+	import ISurface = require("awayjs-display/lib/base/ISurface");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
+	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
+	import Style = require("awayjs-display/lib/base/Style");
+	/**
+	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
+	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
+	 * the sky box is always as large as possible without being clipped.
+	 */
+	class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface {
+	    private _textures;
+	    static assetType: string;
+	    private _texture;
+	    _pAlphaThreshold: number;
+	    private _animationSet;
+	    _pLightPicker: LightPickerBase;
+	    _pBlendMode: string;
+	    private _owners;
+	    private _curves;
+	    private _imageRect;
+	    private _onInvalidatePropertiesDelegate;
+	    private _style;
+	    private _animator;
+	    private _onTextureInvalidateDelegate;
+	    /**
+	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
+	     * invisible or entirely opaque, often used with textures for foliage, etc.
+	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
+	     */
+	    alphaThreshold: number;
+	    /**
+	     * Indicates whether skybox should use curves. Defaults to false.
+	     */
+	    curves: boolean;
+	    /**
+	     * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
+	     */
+	    imageRect: boolean;
+	    /**
+	     * The light picker used by the material to provide lights to the material if it supports lighting.
+	     *
+	     * @see LightPickerBase
+	     * @see StaticLightPicker
+	     */
+	    lightPicker: LightPickerBase;
 	    /**
 	     *
 	     */
-	    htmlElement: HTMLDivElement;
+	    animationSet: IAnimationSet;
+	    /**
+	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
+	     * <ul>
+	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	     * <li>BlendMode.MULTIPLY</li>
+	     * <li>BlendMode.ADD</li>
+	     * <li>BlendMode.ALPHA</li>
+	     * </ul>
+	     */
+	    blendMode: string;
+	    /**
+	     * A list of the IRenderables that use this material
+	     *
+	     * @private
+	     */
+	    iOwners: Array<IRenderable>;
+	    animator: IAnimator;
+	    /**
+	    * The cube texture to use as the skybox.
+	    */
+	    texture: SingleCubeTexture;
+	    getNumTextures(): number;
+	    getTextureAt(index: number): TextureBase;
 	    /**
 	     *
 	     */
-	    renderer: IRenderer;
+	    style: Style;
 	    /**
+	     * Create a new Skybox object.
 	     *
+	     * @param material	The material with which to render the Skybox.
 	     */
-	    shareContext: boolean;
+	    constructor(image?: ImageCube);
+	    assetType: string;
+	    castsShadows: boolean;
+	    /**
+	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
+	     *
+	     * @private
+	     */
+	    invalidatePasses(): void;
+	    invalidateSurface(): void;
+	    addTexture(texture: TextureBase): void;
+	    removeTexture(texture: TextureBase): void;
+	    private onTextureInvalidate(event?);
+	    private _onInvalidateProperties(event);
+	    /**
+	     * //TODO
+	     *
+	     * @param shortestCollisionDistance
+	     * @returns {boolean}
+	     *
+	     * @internal
+	     */
+	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	}
+	export = Skybox;
+	
+}
+
+declare module "awayjs-display/lib/display/TextField" {
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import AntiAliasType = require("awayjs-display/lib/text/AntiAliasType");
+	import GridFitType = require("awayjs-display/lib/text/GridFitType");
+	import TextFieldAutoSize = require("awayjs-display/lib/text/TextFieldAutoSize");
+	import TextFieldType = require("awayjs-display/lib/text/TextFieldType");
+	import TextFormat = require("awayjs-display/lib/text/TextFormat");
+	import TextInteractionMode = require("awayjs-display/lib/text/TextInteractionMode");
+	import TextLineMetrics = require("awayjs-display/lib/text/TextLineMetrics");
+	import Mesh = require("awayjs-display/lib/display/Mesh");
+	import Graphics = require("awayjs-display/lib/graphics/Graphics");
+	/**
+	 * The TextField class is used to create display objects for text display and
+	 * input. <ph outputclass="flexonly">You can use the TextField class to
+	 * perform low-level text rendering. However, in Flex, you typically use the
+	 * Label, Text, TextArea, and TextInput controls to process text. <ph
+	 * outputclass="flashonly">You can give a text field an instance name in the
+	 * Property inspector and use the methods and properties of the TextField
+	 * class to manipulate it with ActionScript. TextField instance names are
+	 * displayed in the Movie Explorer and in the Insert Target Path dialog box in
+	 * the Actions panel.
+	 *
+	 * <p>To create a text field dynamically, use the <code>TextField()</code>
+	 * constructor.</p>
+	 *
+	 * <p>The methods of the TextField class let you set, select, and manipulate
+	 * text in a dynamic or input text field that you create during authoring or
+	 * at runtime. </p>
+	 *
+	 * <p>ActionScript provides several ways to format your text at runtime. The
+	 * TextFormat class lets you set character and paragraph formatting for
+	 * TextField objects. You can apply Cascading Style Sheets(CSS) styles to
+	 * text fields by using the <code>TextField.styleSheet</code> property and the
+	 * StyleSheet class. You can use CSS to style built-in HTML tags, define new
+	 * formatting tags, or apply styles. You can assign HTML formatted text, which
+	 * optionally uses CSS styles, directly to a text field. HTML text that you
+	 * assign to a text field can contain embedded media(movie clips, SWF files,
+	 * GIF files, PNG files, and JPEG files). The text wraps around the embedded
+	 * media in the same way that a web browser wraps text around media embedded
+	 * in an HTML document. </p>
+	 *
+	 * <p>Flash Player supports a subset of HTML tags that you can use to format
+	 * text. See the list of supported HTML tags in the description of the
+	 * <code>htmlText</code> property.</p>
+	 *
+	 * @event change                    Dispatched after a control value is
+	 *                                  modified, unlike the
+	 *                                  <code>textInput</code> event, which is
+	 *                                  dispatched before the value is modified.
+	 *                                  Unlike the W3C DOM Event Model version of
+	 *                                  the <code>change</code> event, which
+	 *                                  dispatches the event only after the
+	 *                                  control loses focus, the ActionScript 3.0
+	 *                                  version of the <code>change</code> event
+	 *                                  is dispatched any time the control
+	 *                                  changes. For example, if a user types text
+	 *                                  into a text field, a <code>change</code>
+	 *                                  event is dispatched after every keystroke.
+	 * @event link                      Dispatched when a user clicks a hyperlink
+	 *                                  in an HTML-enabled text field, where the
+	 *                                  URL begins with "event:". The remainder of
+	 *                                  the URL after "event:" is placed in the
+	 *                                  text property of the LINK event.
+	 *
+	 *                                  <p><b>Note:</b> The default behavior,
+	 *                                  adding the text to the text field, occurs
+	 *                                  only when Flash Player generates the
+	 *                                  event, which in this case happens when a
+	 *                                  user attempts to input text. You cannot
+	 *                                  put text into a text field by sending it
+	 *                                  <code>textInput</code> events.</p>
+	 * @event scroll                    Dispatched by a TextField object
+	 *                                  <i>after</i> the user scrolls.
+	 * @event textInput                 Flash Player dispatches the
+	 *                                  <code>textInput</code> event when a user
+	 *                                  enters one or more characters of text.
+	 *                                  Various text input methods can generate
+	 *                                  this event, including standard keyboards,
+	 *                                  input method editors(IMEs), voice or
+	 *                                  speech recognition systems, and even the
+	 *                                  act of pasting plain text with no
+	 *                                  formatting or style information.
+	 * @event textInteractionModeChange Flash Player dispatches the
+	 *                                  <code>textInteractionModeChange</code>
+	 *                                  event when a user changes the interaction
+	 *                                  mode of a text field. for example on
+	 *                                  Android, one can toggle from NORMAL mode
+	 *                                  to SELECTION mode using context menu
+	 *                                  options
+	 */
+	class TextField extends Mesh {
+	    private static _textFields;
+	    static assetType: string;
+	    private _textGraphicsDirty;
+	    private _bottomScrollV;
+	    private _caretIndex;
+	    private _length;
+	    private _maxScrollH;
+	    private _maxScrollV;
+	    private _numLines;
+	    private _selectionBeginIndex;
+	    private _selectionEndIndex;
+	    private _text;
+	    private _textHeight;
+	    private _textInteractionMode;
+	    private _textWidth;
+	    private _charBoundaries;
+	    private _charIndexAtPoint;
+	    private _firstCharInParagraph;
+	    private _imageReference;
+	    private _lineIndexAtPoint;
+	    private _lineIndexOfChar;
+	    private _lineLength;
+	    private _lineMetrics;
+	    private _lineOffset;
+	    private _lineText;
+	    private _paragraphLength;
+	    private _textFormat;
+	    /**
+	     * When set to <code>true</code> and the text field is not in focus, Flash
+	     * Player highlights the selection in the text field in gray. When set to
+	     * <code>false</code> and the text field is not in focus, Flash Player does
+	     * not highlight the selection in the text field.
+	     *
+	     * @default false
+	     */
+	    alwaysShowSelection: boolean;
+	    /**
+	     * The type of anti-aliasing used for this text field. Use
+	     * <code>flash.text.AntiAliasType</code> constants for this property. You can
+	     * control this setting only if the font is embedded(with the
+	     * <code>embedFonts</code> property set to <code>true</code>). The default
+	     * setting is <code>flash.text.AntiAliasType.NORMAL</code>.
+	     *
+	     * <p>To set values for this property, use the following string values:</p>
+	     */
+	    antiAliasType: AntiAliasType;
+	    /**
+	     * Controls automatic sizing and alignment of text fields. Acceptable values
+	     * for the <code>TextFieldAutoSize</code> constants:
+	     * <code>TextFieldAutoSize.NONE</code>(the default),
+	     * <code>TextFieldAutoSize.LEFT</code>, <code>TextFieldAutoSize.RIGHT</code>,
+	     * and <code>TextFieldAutoSize.CENTER</code>.
+	     *
+	     * <p>If <code>autoSize</code> is set to <code>TextFieldAutoSize.NONE</code>
+	     * (the default) no resizing occurs.</p>
+	     *
+	     * <p>If <code>autoSize</code> is set to <code>TextFieldAutoSize.LEFT</code>,
+	     * the text is treated as left-justified text, meaning that the left margin
+	     * of the text field remains fixed and any resizing of a single line of the
+	     * text field is on the right margin. If the text includes a line break(for
+	     * example, <code>"\n"</code> or <code>"\r"</code>), the bottom is also
+	     * resized to fit the next line of text. If <code>wordWrap</code> is also set
+	     * to <code>true</code>, only the bottom of the text field is resized and the
+	     * right side remains fixed.</p>
+	     *
+	     * <p>If <code>autoSize</code> is set to
+	     * <code>TextFieldAutoSize.RIGHT</code>, the text is treated as
+	     * right-justified text, meaning that the right margin of the text field
+	     * remains fixed and any resizing of a single line of the text field is on
+	     * the left margin. If the text includes a line break(for example,
+	     * <code>"\n" or "\r")</code>, the bottom is also resized to fit the next
+	     * line of text. If <code>wordWrap</code> is also set to <code>true</code>,
+	     * only the bottom of the text field is resized and the left side remains
+	     * fixed.</p>
+	     *
+	     * <p>If <code>autoSize</code> is set to
+	     * <code>TextFieldAutoSize.CENTER</code>, the text is treated as
+	     * center-justified text, meaning that any resizing of a single line of the
+	     * text field is equally distributed to both the right and left margins. If
+	     * the text includes a line break(for example, <code>"\n"</code> or
+	     * <code>"\r"</code>), the bottom is also resized to fit the next line of
+	     * text. If <code>wordWrap</code> is also set to <code>true</code>, only the
+	     * bottom of the text field is resized and the left and right sides remain
+	     * fixed.</p>
+	     *
+	     * @throws ArgumentError The <code>autoSize</code> specified is not a member
+	     *                       of flash.text.TextFieldAutoSize.
+	     */
+	    autoSize: TextFieldAutoSize;
 	    /**
 	     *
+	     * @returns {string}
+	     */
+	    assetType: string;
+	    /**
+	     * Specifies whether the text field has a background fill. If
+	     * <code>true</code>, the text field has a background fill. If
+	     * <code>false</code>, the text field has no background fill. Use the
+	     * <code>backgroundColor</code> property to set the background color of a
+	     * text field.
+	     *
+	     * @default false
+	     */
+	    background: boolean;
+	    /**
+	     * The color of the text field background. The default value is
+	     * <code>0xFFFFFF</code>(white). This property can be retrieved or set, even
+	     * if there currently is no background, but the color is visible only if the
+	     * text field has the <code>background</code> property set to
+	     * <code>true</code>.
 	     */
 	    backgroundColor: number;
 	    /**
+	     * Specifies whether the text field has a border. If <code>true</code>, the
+	     * text field has a border. If <code>false</code>, the text field has no
+	     * border. Use the <code>borderColor</code> property to set the border color.
 	     *
-	     * @returns {number}
+	     * @default false
 	     */
+	    border: boolean;
 	    /**
+	     * The color of the text field border. The default value is
+	     * <code>0x000000</code>(black). This property can be retrieved or set, even
+	     * if there currently is no border, but the color is visible only if the text
+	     * field has the <code>border</code> property set to <code>true</code>.
+	     */
+	    borderColor: number;
+	    /**
+	     * An integer(1-based index) that indicates the bottommost line that is
+	     * currently visible in the specified text field. Think of the text field as
+	     * a window onto a block of text. The <code>scrollV</code> property is the
+	     * 1-based index of the topmost visible line in the window.
 	     *
-	     * @param value
+	     * <p>All the text between the lines indicated by <code>scrollV</code> and
+	     * <code>bottomScrollV</code> is currently visible in the text field.</p>
 	     */
-	    backgroundAlpha: number;
+	    bottomScrollV: number;
 	    /**
+	     * The index of the insertion point(caret) position. If no insertion point
+	     * is displayed, the value is the position the insertion point would be if
+	     * you restored focus to the field(typically where the insertion point last
+	     * was, or 0 if the field has not had focus).
 	     *
-	     * @returns {Camera3D}
+	     * <p>Selection span indexes are zero-based(for example, the first position
+	     * is 0, the second position is 1, and so on).</p>
 	     */
+	    caretIndex: number;
 	    /**
-	     * Set camera that's used to render the scene for this viewport
-	     */
-	    camera: Camera;
-	    /**
+	     * A Boolean value that specifies whether extra white space(spaces, line
+	     * breaks, and so on) in a text field with HTML text is removed. The default
+	     * value is <code>false</code>. The <code>condenseWhite</code> property only
+	     * affects text set with the <code>htmlText</code> property, not the
+	     * <code>text</code> property. If you set text with the <code>text</code>
+	     * property, <code>condenseWhite</code> is ignored.
 	     *
-	     * @returns {away.containers.Scene3D}
-	     */
-	    /**
-	     * Set the scene that's used to render for this viewport
-	     */
-	    scene: Scene;
-	    /**
+	     * <p>If <code>condenseWhite</code> is set to <code>true</code>, use standard
+	     * HTML commands such as <code><BR></code> and <code><P></code> to place line
+	     * breaks in the text field.</p>
 	     *
-	     * @returns {number}
+	     * <p>Set the <code>condenseWhite</code> property before setting the
+	     * <code>htmlText</code> property.</p>
 	     */
-	    deltaTime: number;
+	    condenseWhite: boolean;
 	    /**
+	     * Specifies the format applied to newly inserted text, such as text entered
+	     * by a user or text inserted with the <code>replaceSelectedText()</code>
+	     * method.
 	     *
-	     */
-	    width: number;
-	    /**
+	     * <p><b>Note:</b> When selecting characters to be replaced with
+	     * <code>setSelection()</code> and <code>replaceSelectedText()</code>, the
+	     * <code>defaultTextFormat</code> will be applied only if the text has been
+	     * selected up to and including the last character. Here is an example:</p>
+	     * <pre xml:space="preserve"> public my_txt:TextField new TextField();
+	     * my_txt.text = "Flash Macintosh version"; public my_fmt:TextFormat = new
+	     * TextFormat(); my_fmt.color = 0xFF0000; my_txt.defaultTextFormat = my_fmt;
+	     * my_txt.setSelection(6,15); // partial text selected - defaultTextFormat
+	     * not applied my_txt.setSelection(6,23); // text selected to end -
+	     * defaultTextFormat applied my_txt.replaceSelectedText("Windows version");
+	     * </pre>
 	     *
-	     */
-	    height: number;
-	    /**
+	     * <p>When you access the <code>defaultTextFormat</code> property, the
+	     * returned TextFormat object has all of its properties defined. No property
+	     * is <code>null</code>.</p>
 	     *
-	     */
-	    mousePicker: IPicker;
-	    /**
+	     * <p><b>Note:</b> You can't set this property if a style sheet is applied to
+	     * the text field.</p>
 	     *
+	     * @throws Error This method cannot be used on a text field with a style
+	     *               sheet.
 	     */
-	    x: number;
+	    defaultTextFormat: TextFormat;
 	    /**
+	     * Specifies whether the text field is a password text field. If the value of
+	     * this property is <code>true</code>, the text field is treated as a
+	     * password text field and hides the input characters using asterisks instead
+	     * of the actual characters. If <code>false</code>, the text field is not
+	     * treated as a password text field. When password mode is enabled, the Cut
+	     * and Copy commands and their corresponding keyboard shortcuts will not
+	     * function. This security mechanism prevents an unscrupulous user from using
+	     * the shortcuts to discover a password on an unattended computer.
 	     *
+	     * @default false
 	     */
-	    y: number;
+	    displayAsPassword: boolean;
 	    /**
+	     * Specifies whether to render by using embedded font outlines. If
+	     * <code>false</code>, Flash Player renders the text field by using device
+	     * fonts.
 	     *
-	     */
-	    visible: boolean;
-	    /**
+	     * <p>If you set the <code>embedFonts</code> property to <code>true</code>
+	     * for a text field, you must specify a font for that text by using the
+	     * <code>font</code> property of a TextFormat object applied to the text
+	     * field. If the specified font is not embedded in the SWF file, the text is
+	     * not displayed.</p>
 	     *
-	     * @returns {number}
+	     * @default false
 	     */
-	    renderedFacesCount: number;
+	    embedFonts: boolean;
 	    /**
-	     * Renders the view.
-	     */
-	    render(): void;
-	    /**
+	     * The type of grid fitting used for this text field. This property applies
+	     * only if the <code>flash.text.AntiAliasType</code> property of the text
+	     * field is set to <code>flash.text.AntiAliasType.ADVANCED</code>.
 	     *
-	     */
-	    pUpdateTime(): void;
-	    /**
+	     * <p>The type of grid fitting used determines whether Flash Player forces
+	     * strong horizontal and vertical lines to fit to a pixel or subpixel grid,
+	     * or not at all.</p>
 	     *
+	     * <p>For the <code>flash.text.GridFitType</code> property, you can use the
+	     * following string values:</p>
+	     *
+	     * @default pixel
+	     */
+	    gridFitType: GridFitType;
+	    /**
+	     * Contains the HTML representation of the text field contents.
+	     *
+	     * <p>Flash Player supports the following HTML tags:</p>
+	     *
+	     * <p>Flash Player and AIR also support explicit character codes, such as
+	     * &#38;(ASCII ampersand) and &#x20AC;(Unicode € symbol). </p>
+	     */
+	    htmlText: string;
+	    /**
+	     * The number of characters in a text field. A character such as tab
+	     * (<code>\t</code>) counts as one character.
+	     */
+	    length: number;
+	    /**
+	     * The maximum number of characters that the text field can contain, as
+	     * entered by a user. A script can insert more text than
+	     * <code>maxChars</code> allows; the <code>maxChars</code> property indicates
+	     * only how much text a user can enter. If the value of this property is
+	     * <code>0</code>, a user can enter an unlimited amount of text.
+	     *
+	     * @default 0
+	     */
+	    maxChars: number;
+	    /**
+	     * The maximum value of <code>scrollH</code>.
+	     */
+	    maxScrollH(): number;
+	    /**
+	     * The maximum value of <code>scrollV</code>.
+	     */
+	    maxScrollV(): number;
+	    /**
+	     * A Boolean value that indicates whether Flash Player automatically scrolls
+	     * multiline text fields when the user clicks a text field and rolls the
+	     * mouse wheel. By default, this value is <code>true</code>. This property is
+	     * useful if you want to prevent mouse wheel scrolling of text fields, or
+	     * implement your own text field scrolling.
+	     */
+	    mouseWheelEnabled: boolean;
+	    /**
+	     * Indicates whether field is a multiline text field. If the value is
+	     * <code>true</code>, the text field is multiline; if the value is
+	     * <code>false</code>, the text field is a single-line text field. In a field
+	     * of type <code>TextFieldType.INPUT</code>, the <code>multiline</code> value
+	     * determines whether the <code>Enter</code> key creates a new line(a value
+	     * of <code>false</code>, and the <code>Enter</code> key is ignored). If you
+	     * paste text into a <code>TextField</code> with a <code>multiline</code>
+	     * value of <code>false</code>, newlines are stripped out of the text.
+	     *
+	     * @default false
+	     */
+	    multiline: boolean;
+	    /**
+	     * Defines the number of text lines in a multiline text field. If
+	     * <code>wordWrap</code> property is set to <code>true</code>, the number of
+	     * lines increases when text wraps.
+	     */
+	    numLines: number;
+	    /**
+	     * Indicates the set of characters that a user can enter into the text field.
+	     * If the value of the <code>restrict</code> property is <code>null</code>,
+	     * you can enter any character. If the value of the <code>restrict</code>
+	     * property is an empty string, you cannot enter any character. If the value
+	     * of the <code>restrict</code> property is a string of characters, you can
+	     * enter only characters in the string into the text field. The string is
+	     * scanned from left to right. You can specify a range by using the hyphen
+	     * (-) character. Only user interaction is restricted; a script can put any
+	     * text into the text field. <ph outputclass="flashonly">This property does
+	     * not synchronize with the Embed font options in the Property inspector.
+	     *
+	     * <p>If the string begins with a caret(^) character, all characters are
+	     * initially accepted and succeeding characters in the string are excluded
+	     * from the set of accepted characters. If the string does not begin with a
+	     * caret(^) character, no characters are initially accepted and succeeding
+	     * characters in the string are included in the set of accepted
+	     * characters.</p>
+	     *
+	     * <p>The following example allows only uppercase characters, spaces, and
+	     * numbers to be entered into a text field:</p>
+	     * <pre xml:space="preserve"> my_txt.restrict = "A-Z 0-9"; </pre>
+	     *
+	     * <p>The following example includes all characters, but excludes lowercase
+	     * letters:</p>
+	     * <pre xml:space="preserve"> my_txt.restrict = "^a-z"; </pre>
+	     *
+	     * <p>You can use a backslash to enter a ^ or - verbatim. The accepted
+	     * backslash sequences are \-, \^ or \\. The backslash must be an actual
+	     * character in the string, so when specified in ActionScript, a double
+	     * backslash must be used. For example, the following code includes only the
+	     * dash(-) and caret(^):</p>
+	     * <pre xml:space="preserve"> my_txt.restrict = "\\-\\^"; </pre>
+	     *
+	     * <p>The ^ can be used anywhere in the string to toggle between including
+	     * characters and excluding characters. The following code includes only
+	     * uppercase letters, but excludes the uppercase letter Q:</p>
+	     * <pre xml:space="preserve"> my_txt.restrict = "A-Z^Q"; </pre>
+	     *
+	     * <p>You can use the <code>\u</code> escape sequence to construct
+	     * <code>restrict</code> strings. The following code includes only the
+	     * characters from ASCII 32(space) to ASCII 126(tilde).</p>
+	     * <pre xml:space="preserve"> my_txt.restrict = "\u0020-\u007E"; </pre>
+	     *
+	     * @default null
+	     */
+	    restrict: string;
+	    /**
+	     * The current horizontal scrolling position. If the <code>scrollH</code>
+	     * property is 0, the text is not horizontally scrolled. This property value
+	     * is an integer that represents the horizontal position in pixels.
+	     *
+	     * <p>The units of horizontal scrolling are pixels, whereas the units of
+	     * vertical scrolling are lines. Horizontal scrolling is measured in pixels
+	     * because most fonts you typically use are proportionally spaced; that is,
+	     * the characters can have different widths. Flash Player performs vertical
+	     * scrolling by line because users usually want to see a complete line of
+	     * text rather than a partial line. Even if a line uses multiple fonts, the
+	     * height of the line adjusts to fit the largest font in use.</p>
+	     *
+	     * <p><b>Note: </b>The <code>scrollH</code> property is zero-based, not
+	     * 1-based like the <code>scrollV</code> vertical scrolling property.</p>
+	     */
+	    scrollH: number;
+	    /**
+	     * The vertical position of text in a text field. The <code>scrollV</code>
+	     * property is useful for directing users to a specific paragraph in a long
+	     * passage, or creating scrolling text fields.
+	     *
+	     * <p>The units of vertical scrolling are lines, whereas the units of
+	     * horizontal scrolling are pixels. If the first line displayed is the first
+	     * line in the text field, scrollV is set to 1(not 0). Horizontal scrolling
+	     * is measured in pixels because most fonts are proportionally spaced; that
+	     * is, the characters can have different widths. Flash performs vertical
+	     * scrolling by line because users usually want to see a complete line of
+	     * text rather than a partial line. Even if there are multiple fonts on a
+	     * line, the height of the line adjusts to fit the largest font in use.</p>
+	     */
+	    scrollV: number;
+	    /**
+	     * A Boolean value that indicates whether the text field is selectable. The
+	     * value <code>true</code> indicates that the text is selectable. The
+	     * <code>selectable</code> property controls whether a text field is
+	     * selectable, not whether a text field is editable. A dynamic text field can
+	     * be selectable even if it is not editable. If a dynamic text field is not
+	     * selectable, the user cannot select its text.
+	     *
+	     * <p>If <code>selectable</code> is set to <code>false</code>, the text in
+	     * the text field does not respond to selection commands from the mouse or
+	     * keyboard, and the text cannot be copied with the Copy command. If
+	     * <code>selectable</code> is set to <code>true</code>, the text in the text
+	     * field can be selected with the mouse or keyboard, and the text can be
+	     * copied with the Copy command. You can select text this way even if the
+	     * text field is a dynamic text field instead of an input text field. </p>
+	     *
+	     * @default true
+	     */
+	    selectable: boolean;
+	    /**
+	     * The zero-based character index value of the first character in the current
+	     * selection. For example, the first character is 0, the second character is
+	     * 1, and so on. If no text is selected, this property is the value of
+	     * <code>caretIndex</code>.
+	     */
+	    selectionBeginIndex: number;
+	    /**
+	     * The zero-based character index value of the last character in the current
+	     * selection. For example, the first character is 0, the second character is
+	     * 1, and so on. If no text is selected, this property is the value of
+	     * <code>caretIndex</code>.
+	     */
+	    selectionEndIndex: number;
+	    /**
+	     * The sharpness of the glyph edges in this text field. This property applies
+	     * only if the <code>flash.text.AntiAliasType</code> property of the text
+	     * field is set to <code>flash.text.AntiAliasType.ADVANCED</code>. The range
+	     * for <code>sharpness</code> is a number from -400 to 400. If you attempt to
+	     * set <code>sharpness</code> to a value outside that range, Flash sets the
+	     * property to the nearest value in the range(either -400 or 400).
+	     *
+	     * @default 0
+	     */
+	    sharpness: number;
+	    /**
+	     * Attaches a style sheet to the text field. For information on creating
+	     * style sheets, see the StyleSheet class and the <i>ActionScript 3.0
+	     * Developer's Guide</i>.
+	     *
+	     * <p>You can change the style sheet associated with a text field at any
+	     * time. If you change the style sheet in use, the text field is redrawn with
+	     * the new style sheet. You can set the style sheet to <code>null</code> or
+	     * <code>undefined</code> to remove the style sheet. If the style sheet in
+	     * use is removed, the text field is redrawn without a style sheet. </p>
+	     *
+	     * <p><b>Note:</b> If the style sheet is removed, the contents of both
+	     * <code>TextField.text</code> and <code> TextField.htmlText</code> change to
+	     * incorporate the formatting previously applied by the style sheet. To
+	     * preserve the original <code>TextField.htmlText</code> contents without the
+	     * formatting, save the value in a variable before removing the style
+	     * sheet.</p>
+	     */
+	    styleSheet: StyleSheet;
+	    /**
+	     * A string that is the current text in the text field. Lines are separated
+	     * by the carriage return character(<code>'\r'</code>, ASCII 13). This
+	     * property contains unformatted text in the text field, without HTML tags.
+	     *
+	     * <p>To get the text in HTML form, use the <code>htmlText</code>
+	     * property.</p>
+	     */
+	    text: string;
+	    textFormat: TextFormat;
+	    /**
+	     * The geometry used by the mesh that provides it with its shape.
+	     */
+	    graphics: Graphics;
+	    /**
+	     * The color of the text in a text field, in hexadecimal format. The
+	     * hexadecimal color system uses six digits to represent color values. Each
+	     * digit has 16 possible values or characters. The characters range from 0-9
+	     * and then A-F. For example, black is <code>0x000000</code>; white is
+	     * <code>0xFFFFFF</code>.
+	     *
+	     * @default 0(0x000000)
+	     */
+	    _textColor: number;
+	    textColor: number;
+	    /**
+	     * The interaction mode property, Default value is
+	     * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
+	     * that the text can be scrolled but not selected. One can switch to the
+	     * selectable mode through the in-built context menu on the text field. On
+	     * Desktop, the normal mode implies that the text is in scrollable as well as
+	     * selection mode.
+	     */
+	    textInteractionMode: TextInteractionMode;
+	    /**
+	     * The width of the text in pixels.
+	     */
+	    textWidth: number;
+	    /**
+	     * The width of the text in pixels.
+	     */
+	    textHeight: number;
+	    /**
+	     * The thickness of the glyph edges in this text field. This property applies
+	     * only when <code>AntiAliasType</code> is set to
+	     * <code>AntiAliasType.ADVANCED</code>.
+	     *
+	     * <p>The range for <code>thickness</code> is a number from -200 to 200. If
+	     * you attempt to set <code>thickness</code> to a value outside that range,
+	     * the property is set to the nearest value in the range(either -200 or
+	     * 200).</p>
+	     *
+	     * @default 0
+	     */
+	    thickness: number;
+	    /**
+	     * The type of the text field. Either one of the following TextFieldType
+	     * constants: <code>TextFieldType.DYNAMIC</code>, which specifies a dynamic
+	     * text field, which a user cannot edit, or <code>TextFieldType.INPUT</code>,
+	     * which specifies an input text field, which a user can edit.
+	     *
+	     * @default dynamic
+	     * @throws ArgumentError The <code>type</code> specified is not a member of
+	     *                       flash.text.TextFieldType.
+	     */
+	    type: TextFieldType;
+	    /**
+	     * Specifies whether to copy and paste the text formatting along with the
+	     * text. When set to <code>true</code>, Flash Player copies and pastes
+	     * formatting(such as alignment, bold, and italics) when you copy and paste
+	     * between text fields. Both the origin and destination text fields for the
+	     * copy and paste procedure must have <code>useRichTextClipboard</code> set
+	     * to <code>true</code>. The default value is <code>false</code>.
+	     */
+	    useRichTextClipboard: boolean;
+	    /**
+	     * A Boolean value that indicates whether the text field has word wrap. If
+	     * the value of <code>wordWrap</code> is <code>true</code>, the text field
+	     * has word wrap; if the value is <code>false</code>, the text field does not
+	     * have word wrap. The default value is <code>false</code>.
+	     */
+	    wordWrap: boolean;
+	    /**
+	     * Creates a new TextField instance. After you create the TextField instance,
+	     * call the <code>addChild()</code> or <code>addChildAt()</code> method of
+	     * the parent DisplayObjectContainer object to add the TextField instance to
+	     * the display list.
+	     *
+	     * <p>The default size for a text field is 100 x 100 pixels.</p>
+	     */
+	    constructor();
+	    /**
+	     * @inheritDoc
 	     */
 	    dispose(): void;
 	    /**
-	     *
+	     * @inheritDoc
 	     */
-	    iEntityCollector: CollectorBase;
+	    disposeValues(): void;
 	    /**
-	     *
-	     * @param e
+	     * Reconstructs the Graphics for this Text-field.
 	     */
-	    private _onPartitionChanged(event);
+	    reConstruct(): void;
 	    /**
+	     * Appends the string specified by the <code>newText</code> parameter to the
+	     * end of the text of the text field. This method is more efficient than an
+	     * addition assignment(<code>+=</code>) on a <code>text</code> property
+	     * (such as <code>someTextField.text += moreText</code>), particularly for a
+	     * text field that contains a significant amount of content.
 	     *
+	     * @param newText The string to append to the existing text.
 	     */
-	    private _onProjectionChanged(event);
+	    appendText(newText: string): void;
 	    /**
-	     *
+	     * *tells the Textfield that a paragraph is defined completly.
+	     * e.g. the textfield will start a new line for future added text.
 	     */
-	    private _onViewportUpdated(event);
+	    closeParagraph(): void;
 	    /**
+	     * Returns a rectangle that is the bounding box of the character.
 	     *
+	     * @param charIndex The zero-based index value for the character(for
+	     *                  example, the first position is 0, the second position is
+	     *                  1, and so on).
+	     * @return A rectangle with <code>x</code> and <code>y</code> minimum and
+	     *         maximum values defining the bounding box of the character.
 	     */
-	    private _onScissorUpdated(event);
-	    project(point3d: Vector3D): Vector3D;
-	    unproject(sX: number, sY: number, sZ: number): Vector3D;
-	    getRay(sX: number, sY: number, sZ: number): Vector3D;
-	    forceMouseMove: boolean;
-	    updateCollider(): void;
+	    getCharBoundaries(charIndex: number): Rectangle;
+	    /**
+	     * Returns the zero-based index value of the character at the point specified
+	     * by the <code>x</code> and <code>y</code> parameters.
+	     *
+	     * @param x The <i>x</i> coordinate of the character.
+	     * @param y The <i>y</i> coordinate of the character.
+	     * @return The zero-based index value of the character(for example, the
+	     *         first position is 0, the second position is 1, and so on). Returns
+	     *         -1 if the point is not over any character.
+	     */
+	    getCharIndexAtPoint(x: number, y: number): number;
+	    /**
+	     * Given a character index, returns the index of the first character in the
+	     * same paragraph.
+	     *
+	     * @param charIndex The zero-based index value of the character(for example,
+	     *                  the first character is 0, the second character is 1, and
+	     *                  so on).
+	     * @return The zero-based index value of the first character in the same
+	     *         paragraph.
+	     * @throws RangeError The character index specified is out of range.
+	     */
+	    getFirstCharInParagraph(charIndex: number): number;
+	    /**
+	     * Returns a DisplayObject reference for the given <code>id</code>, for an
+	     * image or SWF file that has been added to an HTML-formatted text field by
+	     * using an <code><img></code> tag. The <code><img></code> tag is in the
+	     * following format:
+	     *
+	     * <p><pre xml:space="preserve"><code> <img src = 'filename.jpg' id =
+	     * 'instanceName' ></code></pre></p>
+	     *
+	     * @param id The <code>id</code> to match(in the <code>id</code> attribute
+	     *           of the <code><img></code> tag).
+	     * @return The display object corresponding to the image or SWF file with the
+	     *         matching <code>id</code> attribute in the <code><img></code> tag
+	     *         of the text field. For media loaded from an external source, this
+	     *         object is a Loader object, and, once loaded, the media object is a
+	     *         child of that Loader object. For media embedded in the SWF file,
+	     *         it is the loaded object. If no <code><img></code> tag with the
+	     *         matching <code>id</code> exists, the method returns
+	     *         <code>null</code>.
+	     */
+	    getImageReference(id: string): DisplayObject;
+	    /**
+	     * Returns the zero-based index value of the line at the point specified by
+	     * the <code>x</code> and <code>y</code> parameters.
+	     *
+	     * @param x The <i>x</i> coordinate of the line.
+	     * @param y The <i>y</i> coordinate of the line.
+	     * @return The zero-based index value of the line(for example, the first
+	     *         line is 0, the second line is 1, and so on). Returns -1 if the
+	     *         point is not over any line.
+	     */
+	    getLineIndexAtPoint(x: number, y: number): number;
+	    /**
+	     * Returns the zero-based index value of the line containing the character
+	     * specified by the <code>charIndex</code> parameter.
+	     *
+	     * @param charIndex The zero-based index value of the character(for example,
+	     *                  the first character is 0, the second character is 1, and
+	     *                  so on).
+	     * @return The zero-based index value of the line.
+	     * @throws RangeError The character index specified is out of range.
+	     */
+	    getLineIndexOfChar(charIndex: number): number;
+	    /**
+	     * Returns the number of characters in a specific text line.
+	     *
+	     * @param lineIndex The line number for which you want the length.
+	     * @return The number of characters in the line.
+	     * @throws RangeError The line number specified is out of range.
+	     */
+	    getLineLength(lineIndex: number): number;
+	    /**
+	     * Returns metrics information about a given text line.
+	     *
+	     * @param lineIndex The line number for which you want metrics information.
+	     * @return A TextLineMetrics object.
+	     * @throws RangeError The line number specified is out of range.
+	     */
+	    getLineMetrics(lineIndex: number): TextLineMetrics;
+	    /**
+	     * Returns the character index of the first character in the line that the
+	     * <code>lineIndex</code> parameter specifies.
+	     *
+	     * @param lineIndex The zero-based index value of the line(for example, the
+	     *                  first line is 0, the second line is 1, and so on).
+	     * @return The zero-based index value of the first character in the line.
+	     * @throws RangeError The line number specified is out of range.
+	     */
+	    getLineOffset(lineIndex: number): number;
+	    /**
+	     * Returns the text of the line specified by the <code>lineIndex</code>
+	     * parameter.
+	     *
+	     * @param lineIndex The zero-based index value of the line(for example, the
+	     *                  first line is 0, the second line is 1, and so on).
+	     * @return The text string contained in the specified line.
+	     * @throws RangeError The line number specified is out of range.
+	     */
+	    getLineText(lineIndex: number): string;
+	    /**
+	     * Given a character index, returns the length of the paragraph containing
+	     * the given character. The length is relative to the first character in the
+	     * paragraph(as returned by <code>getFirstCharInParagraph()</code>), not to
+	     * the character index passed in.
+	     *
+	     * @param charIndex The zero-based index value of the character(for example,
+	     *                  the first character is 0, the second character is 1, and
+	     *                  so on).
+	     * @return Returns the number of characters in the paragraph.
+	     * @throws RangeError The character index specified is out of range.
+	     */
+	    getParagraphLength(charIndex: number): number;
+	    /**
+	     * Returns a TextFormat object that contains formatting information for the
+	     * range of text that the <code>beginIndex</code> and <code>endIndex</code>
+	     * parameters specify. Only properties that are common to the entire text
+	     * specified are set in the resulting TextFormat object. Any property that is
+	     * <i>mixed</i>, meaning that it has different values at different points in
+	     * the text, has a value of <code>null</code>.
+	     *
+	     * <p>If you do not specify values for these parameters, this method is
+	     * applied to all the text in the text field. </p>
+	     *
+	     * <p>The following table describes three possible usages:</p>
+	     *
+	     * @return The TextFormat object that represents the formatting properties
+	     *         for the specified text.
+	     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
+	     *                    specified is out of range.
+	     */
+	    getTextFormat(beginIndex?: number, endIndex?: number): TextFormat;
+	    /**
+	     * Replaces the current selection with the contents of the <code>value</code>
+	     * parameter. The text is inserted at the position of the current selection,
+	     * using the current default character format and default paragraph format.
+	     * The text is not treated as HTML.
+	     *
+	     * <p>You can use the <code>replaceSelectedText()</code> method to insert and
+	     * delete text without disrupting the character and paragraph formatting of
+	     * the rest of the text.</p>
+	     *
+	     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+	     * the text field.</p>
+	     *
+	     * @param value The string to replace the currently selected text.
+	     * @throws Error This method cannot be used on a text field with a style
+	     *               sheet.
+	     */
+	    replaceSelectedText(value: string): void;
+	    /**
+	     * Replaces the range of characters that the <code>beginIndex</code> and
+	     * <code>endIndex</code> parameters specify with the contents of the
+	     * <code>newText</code> parameter. As designed, the text from
+	     * <code>beginIndex</code> to <code>endIndex-1</code> is replaced.
+	     *
+	     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+	     * the text field.</p>
+	     *
+	     * @param beginIndex The zero-based index value for the start position of the
+	     *                   replacement range.
+	     * @param endIndex   The zero-based index position of the first character
+	     *                   after the desired text span.
+	     * @param newText    The text to use to replace the specified range of
+	     *                   characters.
+	     * @throws Error This method cannot be used on a text field with a style
+	     *               sheet.
+	     */
+	    replaceText(beginIndex: number, endIndex: number, newText: string): void;
+	    /**
+	     * Sets as selected the text designated by the index values of the first and
+	     * last characters, which are specified with the <code>beginIndex</code> and
+	     * <code>endIndex</code> parameters. If the two parameter values are the
+	     * same, this method sets the insertion point, as if you set the
+	     * <code>caretIndex</code> property.
+	     *
+	     * @param beginIndex The zero-based index value of the first character in the
+	     *                   selection(for example, the first character is 0, the
+	     *                   second character is 1, and so on).
+	     * @param endIndex   The zero-based index value of the last character in the
+	     *                   selection.
+	     */
+	    setSelection(beginIndex: number, endIndex: number): void;
+	    /**
+	     * Applies the text formatting that the <code>format</code> parameter
+	     * specifies to the specified text in a text field. The value of
+	     * <code>format</code> must be a TextFormat object that specifies the desired
+	     * text formatting changes. Only the non-null properties of
+	     * <code>format</code> are applied to the text field. Any property of
+	     * <code>format</code> that is set to <code>null</code> is not applied. By
+	     * default, all of the properties of a newly created TextFormat object are
+	     * set to <code>null</code>.
+	     *
+	     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+	     * the text field.</p>
+	     *
+	     * <p>The <code>setTextFormat()</code> method changes the text formatting
+	     * applied to a range of characters or to the entire body of text in a text
+	     * field. To apply the properties of format to all text in the text field, do
+	     * not specify values for <code>beginIndex</code> and <code>endIndex</code>.
+	     * To apply the properties of the format to a range of text, specify values
+	     * for the <code>beginIndex</code> and the <code>endIndex</code> parameters.
+	     * You can use the <code>length</code> property to determine the index
+	     * values.</p>
+	     *
+	     * <p>The two types of formatting information in a TextFormat object are
+	     * character level formatting and paragraph level formatting. Each character
+	     * in a text field can have its own character formatting settings, such as
+	     * font name, font size, bold, and italic.</p>
+	     *
+	     * <p>For paragraphs, the first character of the paragraph is examined for
+	     * the paragraph formatting settings for the entire paragraph. Examples of
+	     * paragraph formatting settings are left margin, right margin, and
+	     * indentation.</p>
+	     *
+	     * <p>Any text inserted manually by the user, or replaced by the
+	     * <code>replaceSelectedText()</code> method, receives the default text field
+	     * formatting for new text, and not the formatting specified for the text
+	     * insertion point. To set the default formatting for new text, use
+	     * <code>defaultTextFormat</code>.</p>
+	     *
+	     * @param format A TextFormat object that contains character and paragraph
+	     *               formatting information.
+	     * @throws Error      This method cannot be used on a text field with a style
+	     *                    sheet.
+	     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
+	     *                    specified is out of range.
+	     */
+	    setTextFormat(format: TextFormat, beginIndex?: number, endIndex?: number): void;
+	    /**
+	     * Returns true if an embedded font is available with the specified
+	     * <code>fontName</code> and <code>fontStyle</code> where
+	     * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
+	     * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
+	     * SWF file. Normal embedded fonts are only used with TextField objects. CFF
+	     * embedded fonts are only used with the flash.text.engine classes. The two
+	     * types are distinguished by the <code>fontType</code> property of the
+	     * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
+	     * function.
+	     *
+	     * <p>TextField cannot use a font of type <code>EMBEDDED_CFF</code>. If
+	     * <code>embedFonts</code> is set to <code>true</code> and the only font
+	     * available at run time with the specified name and style is of type
+	     * <code>EMBEDDED_CFF</code>, Flash Player fails to render the text, as if no
+	     * embedded font were available with the specified name and style.</p>
+	     *
+	     * <p>If both <code>EMBEDDED</code> and <code>EMBEDDED_CFF</code> fonts are
+	     * available with the same name and style, the <code>EMBEDDED</code> font is
+	     * selected and text renders with the <code>EMBEDDED</code> font.</p>
+	     *
+	     * @param fontName  The name of the embedded font to check.
+	     * @param fontStyle Specifies the font style to check. Use
+	     *                  <code>flash.text.FontStyle</code>
+	     * @return <code>true</code> if a compatible embedded font is available,
+	     *         otherwise <code>false</code>.
+	     * @throws ArgumentError The <code>fontStyle</code> specified is not a member
+	     *                       of <code>flash.text.FontStyle</code>.
+	     */
+	    static isFontCompatible(fontName: string, fontStyle: string): boolean;
+	    clone(): TextField;
+	    copyTo(newInstance: TextField): void;
 	}
-	export = View;
-	
-}
-
-declare module "awayjs-display/lib/controllers/ControllerBase" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	class ControllerBase {
-	    _pControllerDirty: boolean;
-	    _pAutoUpdate: boolean;
-	    _pTargetObject: DisplayObject;
-	    constructor(targetObject?: DisplayObject);
-	    pNotifyUpdate(): void;
-	    targetObject: DisplayObject;
-	    autoUpdate: boolean;
-	    update(interpolate?: boolean): void;
-	    updateController(): void;
-	}
-	export = ControllerBase;
-	
-}
-
-declare module "awayjs-display/lib/controllers/FirstPersonController" {
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FirstPersonController extends ControllerBase {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _walkIncrement;
-	    private _strafeIncrement;
-	    private _wrapPanAngle;
-	    fly: boolean;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, panAngle?: number, tiltAngle?: number, minTiltAngle?: number, maxTiltAngle?: number, steps?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	    incrementWalk(val: number): void;
-	    incrementStrafe(val: number): void;
-	}
-	export = FirstPersonController;
-	
-}
-
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
-	
-}
-
-declare module "awayjs-display/lib/controllers/HoverController" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Extended camera used to hover round a specified target object.
-	 *
-	 * @see    away.containers.View
-	 */
-	class HoverController extends LookAtController {
-	    _iCurrentPanAngle: number;
-	    _iCurrentTiltAngle: number;
-	    private _panAngle;
-	    private _tiltAngle;
-	    private _distance;
-	    private _minPanAngle;
-	    private _maxPanAngle;
-	    private _minTiltAngle;
-	    private _maxTiltAngle;
-	    private _steps;
-	    private _yFactor;
-	    private _wrapPanAngle;
-	    private _upAxis;
-	    /**
-	     * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
-	     *
-	     * Affects the speed at which the <code>tiltAngle</code> and <code>panAngle</code> resolve to their targets.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     */
-	    steps: number;
-	    /**
-	     * Rotation of the camera in degrees around the y axis. Defaults to 0.
-	     */
-	    panAngle: number;
-	    /**
-	     * Elevation angle of the camera in degrees. Defaults to 90.
-	     */
-	    tiltAngle: number;
-	    /**
-	     * Distance between the camera and the specified target. Defaults to 1000.
-	     */
-	    distance: number;
-	    /**
-	     * Minimum bounds for the <code>panAngle</code>. Defaults to -Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    minPanAngle: number;
-	    /**
-	     * Maximum bounds for the <code>panAngle</code>. Defaults to Infinity.
-	     *
-	     * @see    #panAngle
-	     */
-	    maxPanAngle: number;
-	    /**
-	     * Minimum bounds for the <code>tiltAngle</code>. Defaults to -90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    minTiltAngle: number;
-	    /**
-	     * Maximum bounds for the <code>tiltAngle</code>. Defaults to 90.
-	     *
-	     * @see    #tiltAngle
-	     */
-	    maxTiltAngle: number;
-	    /**
-	     * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
-	     *
-	     * @see    #distance
-	     */
-	    yFactor: number;
-	    /**
-	     * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
-	     */
-	    wrapPanAngle: boolean;
-	    /**
-	     * Creates a new <code>HoverController</code> object.
-	     */
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, panAngle?: number, tiltAngle?: number, distance?: number, minTiltAngle?: number, maxTiltAngle?: number, minPanAngle?: number, maxPanAngle?: number, steps?: number, yFactor?: number, wrapPanAngle?: boolean);
-	    /**
-	     * Updates the current tilt angle and pan angle values.
-	     *
-	     * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
-	     *
-	     * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
-	     *
-	     * @see    #tiltAngle
-	     * @see    #panAngle
-	     * @see    #steps
-	     */
-	    update(interpolate?: boolean): void;
-	}
-	export = HoverController;
-	
-}
-
-declare module "awayjs-display/lib/controllers/LookAtController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	class LookAtController extends ControllerBase {
-	    _pLookAtPosition: Vector3D;
-	    _pLookAtObject: DisplayObject;
-	    _pOrigin: Vector3D;
-	    private _onLookAtObjectChangedDelegate;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject);
-	    lookAtPosition: Vector3D;
-	    lookAtObject: DisplayObject;
-	    update(interpolate?: boolean): void;
-	    private onLookAtObjectChanged(event);
-	}
-	export = LookAtController;
-	
-}
-
-declare module "awayjs-display/lib/controllers/SpringController" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
-	/**
-	 * Uses spring physics to animate the target object towards a position that is
-	 * defined as the lookAtTarget object's position plus the vector defined by the
-	 * positionOffset property.
-	 */
-	class SpringController extends LookAtController {
-	    private _velocity;
-	    private _dv;
-	    private _stretch;
-	    private _force;
-	    private _acceleration;
-	    private _desiredPosition;
-	    /**
-	     * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
-	     * A number between 1 and 20 is recommended.
-	     */
-	    stiffness: number;
-	    /**
-	     * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
-	     * A number between 1 and 20 is recommended.
-	     */
-	    damping: number;
-	    /**
-	     * Mass of the camera, if over 120 and it'll be very heavy to move.
-	     */
-	    mass: number;
-	    /**
-	     * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
-	     */
-	    positionOffset: Vector3D;
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, stiffness?: number, mass?: number, damping?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = SpringController;
+	export = TextField;
 	
 }
 
@@ -3567,7 +5298,7 @@ declare module "awayjs-display/lib/draw/Graphics" {
 	import LineScaleMode = require("awayjs-display/lib/draw/LineScaleMode");
 	import TriangleCulling = require("awayjs-display/lib/draw/TriangleCulling");
 	import SpreadMethod = require("awayjs-display/lib/draw/SpreadMethod");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
+	import Mesh = require("awayjs-display/lib/display/Mesh");
 	/**
 	 * The Graphics class contains a set of methods that you can use to create a
 	 * vector shape. Display objects that support drawing include Sprite and Shape
@@ -4693,1775 +6424,6 @@ declare module "awayjs-display/lib/draw/TriangleCulling" {
 	
 }
 
-declare module "awayjs-display/lib/entities/Billboard" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Style = require("awayjs-display/lib/base/Style");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * The Billboard class represents display objects that represent bitmap images.
-	 * These can be images that you load with the <code>flash.Assets</code> or
-	 * <code>flash.display.Loader</code> classes, or they can be images that you
-	 * create with the <code>Billboard()</code> constructor.
-	 *
-	 * <p>The <code>Billboard()</code> constructor allows you to create a Billboard
-	 * object that contains a reference to a Image2D object. After you create a
-	 * Billboard object, use the <code>addChild()</code> or <code>addChildAt()</code>
-	 * method of the parent DisplayObjectContainer instance to place the bitmap on
-	 * the display list.</p>
-	 *
-	 * <p>A Billboard object can share its Image2D reference among several Billboard
-	 * objects, independent of translation or rotation properties. Because you can
-	 * create multiple Billboard objects that reference the same Image2D object,
-	 * multiple display objects can use the same complex Image2D object without
-	 * incurring the memory overhead of a Image2D object for each display
-	 * object instance.</p>
-	 *
-	 * <p>A Image2D object can be drawn to the screen by a Billboard object in one
-	 * of two ways: by using the default hardware renderer with a single hardware surface,
-	 * or by using the slower software renderer when 3D acceleration is not available.</p>
-	 *
-	 * <p>If you would prefer to perform a batch rendering command, rather than using a
-	 * single surface for each Billboard object, you can also draw to the screen using the
-	 * <code>drawTiles()</code> or <code>drawTriangles()</code> methods which are
-	 * available to <code>flash.display.Tilesheet</code> and <code>flash.display.Graphics
-	 * objects.</code></p>
-	 *
-	 * <p><b>Note:</b> The Billboard class is not a subclass of the InteractiveObject
-	 * class, so it cannot dispatch mouse events. However, you can use the
-	 * <code>addEventListener()</code> method of the display object container that
-	 * contains the Billboard object.</p>
-	 */
-	class Billboard extends DisplayObject implements IEntity, IRenderableOwner {
-	    static assetType: string;
-	    private _animator;
-	    private _billboardWidth;
-	    private _billboardHeight;
-	    private _billboardRect;
-	    private _material;
-	    private _uvTransform;
-	    private _style;
-	    private _onInvalidatePropertiesDelegate;
-	    private onInvalidateTextureDelegate;
-	    /**
-	     * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    billboardRect: Rectangle;
-	    /**
-	     *
-	     */
-	    billboardHeight: number;
-	    /**
-	     *
-	     */
-	    billboardWidth: number;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    constructor(material: MaterialBase, pixelSnapping?: string, smoothing?: boolean);
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    clone(): DisplayObject;
-	    /**
-	     * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
-	     */
-	    style: Style;
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
-	    /**
-	     * @private
-	     */
-	    private onInvalidateTexture(event);
-	    _acceptTraverser(traverser: CollectorBase): void;
-	    private _updateDimensions();
-	    invalidateRenderOwner(): void;
-	    private _onInvalidateProperties(event?);
-	}
-	export = Billboard;
-	
-}
-
-declare module "awayjs-display/lib/entities/Camera" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IProjection = require("awayjs-core/lib/projections/IProjection");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	class Camera extends DisplayObjectContainer implements IEntity {
-	    static assetType: string;
-	    private _viewProjection;
-	    private _viewProjectionDirty;
-	    private _projection;
-	    private _frustumPlanes;
-	    private _frustumPlanesDirty;
-	    private _onProjectionMatrixChangedDelegate;
-	    constructor(projection?: IProjection);
-	    assetType: string;
-	    private onProjectionMatrixChanged(event);
-	    frustumPlanes: Array<Plane3D>;
-	    private updateFrustum();
-	    pInvalidateHierarchicalProperties(bitFlag: number): boolean;
-	    /**
-	     *
-	     */
-	    projection: IProjection;
-	    /**
-	     *
-	     */
-	    viewProjection: Matrix3D;
-	    /**
-	     * Calculates the ray in scene space from the camera to the given normalized coordinates in screen space.
-	     *
-	     * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
-	     * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
-	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-	     * @return The ray from the camera to the scene space position of the given screen coordinates.
-	     */
-	    getRay(nX: number, nY: number, sZ: number): Vector3D;
-	    /**
-	     * Calculates the normalised position in screen space of the given scene position.
-	     *
-	     * @param point3d the position vector of the scene coordinates to be projected.
-	     * @return The normalised screen position of the given scene coordinates.
-	     */
-	    project(point3d: Vector3D): Vector3D;
-	    /**
-	     * Calculates the scene position of the given normalized coordinates in screen space.
-	     *
-	     * @param nX The normalised x coordinate in screen space, minus the originX offset of the projection property.
-	     * @param nY The normalised y coordinate in screen space, minus the originY offset of the projection property.
-	     * @param sZ The z coordinate in screen space, representing the distance into the screen.
-	     * @return The scene position of the given screen coordinates.
-	     */
-	    unproject(nX: number, nY: number, sZ: number): Vector3D;
-	    _applyRenderer(renderer: IRenderer): void;
-	}
-	export = Camera;
-	
-}
-
-declare module "awayjs-display/lib/entities/DirectionalLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-	class DirectionalLight extends LightBase implements IEntity {
-	    static assetType: string;
-	    private _direction;
-	    private _tmpLookAt;
-	    private _sceneDirection;
-	    private _pAabbPoints;
-	    private _projAABBPoints;
-	    constructor(xDir?: number, yDir?: number, zDir?: number);
-	    assetType: string;
-	    sceneDirection: Vector3D;
-	    direction: Vector3D;
-	    pUpdateSceneTransform(): void;
-	    pCreateShadowMapper(): DirectionalShadowMapper;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	}
-	export = DirectionalLight;
-	
-}
-
-declare module "awayjs-display/lib/entities/IEntity" {
-	import Box = require("awayjs-core/lib/geom/Box");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Transform = require("awayjs-display/lib/base/Transform");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	interface IEntity extends IAsset {
-	    parent: DisplayObjectContainer;
-	    x: number;
-	    y: number;
-	    z: number;
-	    rotationX: number;
-	    rotationY: number;
-	    rotationZ: number;
-	    scaleX: number;
-	    scaleY: number;
-	    scaleZ: number;
-	    _iMasksConfig(): Array<Array<number>>;
-	    _iAssignedMaskId(): number;
-	    _iAssignedColorTransform(): ColorTransform;
-	    /**
-	     *
-	     */
-	    debugVisible: boolean;
-	    /**
-	     *
-	     */
-	    boundsType: string;
-	    /**
-	     *
-	     */
-	    castsShadows: boolean;
-	    /**
-	     *
-	     */
-	    inverseSceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    pickingCollider: IPickingCollider;
-	    /**
-	     *
-	     */
-	    transform: Transform;
-	    /**
-	     *
-	     */
-	    scene: Scene;
-	    /**
-	     *
-	     */
-	    scenePosition: Vector3D;
-	    /**
-	     *
-	     */
-	    sceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    zOffset: number;
-	    /**
-	     *
-	     * @param targetCoordinateSpace
-	     */
-	    getBox(targetCoordinateSpace?: DisplayObject): Box;
-	    /**
-	     *
-	     * @param targetCoordinateSpace
-	     */
-	    getSphere(targetCoordinateSpace?: DisplayObject): Sphere;
-	    /**
-	     *
-	     *
-	     * @param target
-	     * @param upAxis
-	     */
-	    lookAt(target: Vector3D, upAxis?: Vector3D): any;
-	    /**
-	     * @internal
-	     */
-	    _iPickingCollisionVO: PickingCollisionVO;
-	    /**
-	     * @internal
-	     */
-	    _iController: ControllerBase;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedPartition: PartitionBase;
-	    /**
-	     * @internal
-	     */
-	    _iIsMouseEnabled(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iIsVisible(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedMasks(): Array<Array<DisplayObject>>;
-	    /**
-	     * @internal
-	     */
-	    _iInternalUpdate(): any;
-	    /**
-	     * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
-	     * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
-	     * return the scene transform.
-	     */
-	    getRenderSceneTransform(camera: Camera): Matrix3D;
-	    /**
-	     *
-	     * @param renderer
-	     * @private
-	     */
-	    _acceptTraverser(collector: CollectorBase): any;
-	}
-	export = IEntity;
-	
-}
-
-declare module "awayjs-display/lib/entities/LightProbe" {
-	import ImageCube = require("awayjs-core/lib/image/ImageCube");
-	import SamplerCube = require("awayjs-core/lib/image/SamplerCube");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	class LightProbe extends LightBase implements IEntity {
-	    static assetType: string;
-	    diffuseMap: ImageCube;
-	    diffuseSampler: SamplerCube;
-	    specularMap: ImageCube;
-	    specularSampler: SamplerCube;
-	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
-	    assetType: string;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	}
-	export = LightProbe;
-	
-}
-
-declare module "awayjs-display/lib/entities/LineSegment" {
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Style = require("awayjs-display/lib/base/Style");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * A Line Segment primitive.
-	 */
-	class LineSegment extends DisplayObject implements IEntity, IRenderableOwner {
-	    private _style;
-	    private _onInvalidatePropertiesDelegate;
-	    static assetType: string;
-	    private _animator;
-	    private _material;
-	    private _uvTransform;
-	    private _colorTransform;
-	    _startPosition: Vector3D;
-	    _endPosition: Vector3D;
-	    _halfThickness: number;
-	    /**
-	     * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
-	     */
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     *
-	     */
-	    startPostion: Vector3D;
-	    startPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    endPosition: Vector3D;
-	    /**
-	     *
-	     */
-	    material: MaterialBase;
-	    /**
-	     *
-	     */
-	    thickness: number;
-	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	     * Create a line segment
-	     *
-	     * @param startPosition Start position of the line segment
-	     * @param endPosition Ending position of the line segment
-	     * @param thickness Thickness of the line
-	     */
-	    constructor(material: MaterialBase, startPosition: Vector3D, endPosition: Vector3D, thickness?: number);
-	    /**
-	     * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
-	     */
-	    style: Style;
-	    /**
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    _pUpdateSphereBounds(): void;
-	    /**
-	     * @private
-	     */
-	    private invalidateGraphics();
-	    invalidateRenderOwner(): void;
-	    private _onInvalidateProperties(event);
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @param findClosest
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
-	    _acceptTraverser(traverser: CollectorBase): void;
-	}
-	export = LineSegment;
-	
-}
-
-declare module "awayjs-display/lib/entities/Mesh" {
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import Graphics = require("awayjs-display/lib/graphics/Graphics");
-	import GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import Style = require("awayjs-display/lib/base/Style");
-	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	/**
-	 * Mesh is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
-	 * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
-	 * of the graphics to be assigned different materials.
-	 */
-	class Mesh extends DisplayObjectContainer implements IEntity {
-	    private static _meshes;
-	    static assetType: string;
-	    private _center;
-	    _graphics: Graphics;
-	    private _castsShadows;
-	    private _shareAnimationGraphics;
-	    _onGraphicsBoundsInvalidDelegate: (event: GraphicsEvent) => void;
-	    private _tempPoint;
-	    /**
-	     *
-	     */
-	    assetType: string;
-	    /**
-	     * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
-	     */
-	    castsShadows: boolean;
-	    /**
-	     * The graphics used by the mesh that provides it with its shape.
-	     */
-	    graphics: Graphics;
-	    /**
-	     * Defines the animator of the graphics object.  Default value is <code>null</code>.
-	     */
-	    animator: IAnimator;
-	    /**
-	     * The material with which to render the Mesh.
-	     */
-	    material: MaterialBase;
-	    /**
-	     * Indicates whether or not the mesh share the same animation graphics.
-	     */
-	    shareAnimationGraphics: boolean;
-	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    /**
-	     *
-	     */
-	    style: Style;
-	    /**
-	     * Create a new Mesh object.
-	     *
-	     * @param graphics                    The graphics used by the mesh that provides it with its shape.
-	     * @param material    [optional]        The material with which to render the Mesh.
-	     */
-	    constructor(material?: MaterialBase);
-	    /**
-	     *
-	     */
-	    bakeTransformations(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    disposeValues(): void;
-	    /**
-	     * Clones this Mesh instance along with all it's children, while re-using the same
-	     * material, graphics and animation set. The returned result will be a copy of this mesh,
-	     * containing copies of all of it's children.
-	     *
-	     * Properties that are re-used (i.e. not cloned) by the new copy include name,
-	     * graphics, and material. Properties that are cloned or created anew for the copy
-	     * include subMeshes, children of the mesh, and the animator.
-	     *
-	     * If you want to copy just the mesh, reusing it's graphics and material while not
-	     * cloning it's children, the simplest way is to create a new mesh manually:
-	     *
-	     * <code>
-	     * var clone : Mesh = new Mesh(original.graphics, original.material);
-	     * </code>
-	     */
-	    clone(): Mesh;
-	    copyTo(mesh: Mesh): void;
-	    /**
-	     * //TODO
-	     *
-	     * @protected
-	     */
-	    _pUpdateBoxBounds(): void;
-	    _pUpdateSphereBounds(): void;
-	    /**
-	     * //TODO
-	     *
-	     * @private
-	     */
-	    private onGraphicsBoundsInvalid(event);
-	    /**
-	     *
-	     * @param renderer
-	     *
-	     * @internal
-	     */
-	    _acceptTraverser(traverser: CollectorBase): void;
-	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
-	    clear(): void;
-	}
-	export = Mesh;
-	
-}
-
-declare module "awayjs-display/lib/entities/MovieClip" {
-	import DisplayObjectContainer = require("awayjs-display/lib/containers/DisplayObjectContainer");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
-	import Timeline = require("awayjs-display/lib/base/Timeline");
-	class MovieClip extends DisplayObjectContainer {
-	    private static _skipAdvance;
-	    private static _movieClips;
-	    static assetType: string;
-	    private _timeline;
-	    private _isButton;
-	    private _onMouseOver;
-	    private _onMouseOut;
-	    private _onMouseDown;
-	    private _onMouseUp;
-	    private _time;
-	    private _currentFrameIndex;
-	    private _isPlaying;
-	    private _enterFrame;
-	    private _skipAdvance;
-	    private _isInit;
-	    private _potentialInstances;
-	    private _depth_sessionIDs;
-	    private _sessionID_childs;
-	    /**
-	     * adapter is used to provide MovieClip to scripts taken from different platforms
-	     * setter typically managed by factory
-	     */
-	    adapter: IMovieClipAdapter;
-	    constructor(timeline?: Timeline);
-	    dispose(): void;
-	    disposeValues(): void;
-	    reset_textclones(): void;
-	    isInit: boolean;
-	    timeline: Timeline;
-	    /**
-	     *
-	     */
-	    loop: boolean;
-	    numFrames: number;
-	    jumpToLabel(label: string): void;
-	    /**
-	     * the current index of the current active frame
-	     */
-	    constructedKeyFrameIndex: number;
-	    reset(): void;
-	    resetSessionIDs(): void;
-	    currentFrameIndex: number;
-	    addButtonListeners(): void;
-	    removeButtonListeners(): void;
-	    getChildAtSessionID(sessionID: number): DisplayObject;
-	    getSessionIDDepths(): Object;
-	    addChildAtDepth(child: DisplayObject, depth: number, replace?: boolean): DisplayObject;
-	    _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject;
-	    removeChildAtInternal(index: number): DisplayObject;
-	    assetType: string;
-	    /**
-	     * Starts playback of animation from current position
-	     */
-	    play(): void;
-	    /**
-	     * should be called right before the call to away3d-render.
-	     */
-	    update(): void;
-	    getPotentialChildInstance(id: number): DisplayObject;
-	    /**
-	     * Stop playback of animation and hold current position
-	     */
-	    stop(): void;
-	    clone(): MovieClip;
-	    copyTo(newInstance: MovieClip): void;
-	    advanceFrame(): void;
-	    logHierarchy(depth?: number): void;
-	    printHierarchyName(depth: number, target: DisplayObject): void;
-	    clear(): void;
-	}
-	export = MovieClip;
-	
-}
-
-declare module "awayjs-display/lib/entities/PointLight" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import CubeMapShadowMapper = require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
-	class PointLight extends LightBase implements IEntity {
-	    static assetType: string;
-	    _pRadius: number;
-	    _pFallOff: number;
-	    _pFallOffFactor: number;
-	    constructor();
-	    assetType: string;
-	    pCreateShadowMapper(): CubeMapShadowMapper;
-	    radius: number;
-	    iFallOffFactor(): number;
-	    fallOff: number;
-	    _pUpdateSphereBounds(): void;
-	    iGetObjectProjectionMatrix(entity: IEntity, camera: Camera, target?: Matrix3D): Matrix3D;
-	}
-	export = PointLight;
-	
-}
-
-declare module "awayjs-display/lib/entities/Shape" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import Graphics = require("awayjs-display/lib/draw/Graphics");
-	/**
-	 * This class is used to create lightweight shapes using the ActionScript
-	 * drawing application program interface(API). The Shape class includes a
-	 * <code>graphics</code> property, which lets you access methods from the
-	 * Graphics class.
-	 *
-	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
-	 * includes other features not available to the Shape class. For example, a
-	 * Sprite object is a display object container, whereas a Shape object is not
-	 * (and cannot contain child display objects). For this reason, Shape objects
-	 * consume less memory than Sprite objects that contain the same graphics.
-	 * However, a Sprite object supports user input events, while a Shape object
-	 * does not.</p>
-	 */
-	class Shape extends DisplayObject {
-	    private _graphics;
-	    /**
-	     * Specifies the Graphics object belonging to this Shape object, where vector
-	     * drawing commands can occur.
-	     */
-	    graphics: Graphics;
-	    /**
-	     * Creates a new Shape object.
-	     */
-	    constructor();
-	    clone(): DisplayObject;
-	}
-	export = Shape;
-	
-}
-
-declare module "awayjs-display/lib/entities/Skybox" {
-	import ImageCube = require("awayjs-core/lib/image/ImageCube");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
-	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
-	import Style = require("awayjs-display/lib/base/Style");
-	/**
-	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
-	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
-	 * the sky box is always as large as possible without being clipped.
-	 */
-	class Skybox extends DisplayObject implements IEntity, IRenderableOwner, IRenderOwner {
-	    private _textures;
-	    static assetType: string;
-	    private _texture;
-	    _pAlphaThreshold: number;
-	    private _animationSet;
-	    _pLightPicker: LightPickerBase;
-	    _pBlendMode: string;
-	    private _uvTransform;
-	    private _colorTransform;
-	    private _owners;
-	    private _curves;
-	    private _imageRect;
-	    private _onInvalidatePropertiesDelegate;
-	    private _style;
-	    private _animator;
-	    private _onTextureInvalidateDelegate;
-	    /**
-	     * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	     * invisible or entirely opaque, often used with textures for foliage, etc.
-	     * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	     */
-	    alphaThreshold: number;
-	    /**
-	     * Indicates whether skybox should use curves. Defaults to false.
-	     */
-	    curves: boolean;
-	    /**
-	     * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
-	     */
-	    imageRect: boolean;
-	    /**
-	     * The light picker used by the material to provide lights to the material if it supports lighting.
-	     *
-	     * @see LightPickerBase
-	     * @see StaticLightPicker
-	     */
-	    lightPicker: LightPickerBase;
-	    /**
-	     *
-	     */
-	    animationSet: IAnimationSet;
-	    /**
-	     * The blend mode to use when drawing this renderable. The following blend modes are supported:
-	     * <ul>
-	     * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	     * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
-	     * <li>BlendMode.MULTIPLY</li>
-	     * <li>BlendMode.ADD</li>
-	     * <li>BlendMode.ALPHA</li>
-	     * </ul>
-	     */
-	    blendMode: string;
-	    /**
-	     * A list of the IRenderableOwners that use this material
-	     *
-	     * @private
-	     */
-	    iOwners: Array<IRenderableOwner>;
-	    animator: IAnimator;
-	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    /**
-	     *
-	     */
-	    colorTransform: ColorTransform;
-	    /**
-	    * The cube texture to use as the skybox.
-	    */
-	    texture: SingleCubeTexture;
-	    getNumTextures(): number;
-	    getTextureAt(index: number): TextureBase;
-	    /**
-	     *
-	     */
-	    style: Style;
-	    /**
-	     * Create a new Skybox object.
-	     *
-	     * @param material	The material with which to render the Skybox.
-	     */
-	    constructor(image?: ImageCube);
-	    assetType: string;
-	    castsShadows: boolean;
-	    /**
-	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
-	     *
-	     * @private
-	     */
-	    invalidatePasses(): void;
-	    invalidateRenderOwner(): void;
-	    addTexture(texture: TextureBase): void;
-	    removeTexture(texture: TextureBase): void;
-	    private onTextureInvalidate(event?);
-	    private _onInvalidateProperties(event);
-	    /**
-	     * //TODO
-	     *
-	     * @param shortestCollisionDistance
-	     * @returns {boolean}
-	     *
-	     * @internal
-	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
-	}
-	export = Skybox;
-	
-}
-
-declare module "awayjs-display/lib/entities/TextField" {
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import AntiAliasType = require("awayjs-display/lib/text/AntiAliasType");
-	import GridFitType = require("awayjs-display/lib/text/GridFitType");
-	import TextFieldAutoSize = require("awayjs-display/lib/text/TextFieldAutoSize");
-	import TextFieldType = require("awayjs-display/lib/text/TextFieldType");
-	import TextFormat = require("awayjs-display/lib/text/TextFormat");
-	import TextInteractionMode = require("awayjs-display/lib/text/TextInteractionMode");
-	import TextLineMetrics = require("awayjs-display/lib/text/TextLineMetrics");
-	import Mesh = require("awayjs-display/lib/entities/Mesh");
-	import Graphics = require("awayjs-display/lib/graphics/Graphics");
-	/**
-	 * The TextField class is used to create display objects for text display and
-	 * input. <ph outputclass="flexonly">You can use the TextField class to
-	 * perform low-level text rendering. However, in Flex, you typically use the
-	 * Label, Text, TextArea, and TextInput controls to process text. <ph
-	 * outputclass="flashonly">You can give a text field an instance name in the
-	 * Property inspector and use the methods and properties of the TextField
-	 * class to manipulate it with ActionScript. TextField instance names are
-	 * displayed in the Movie Explorer and in the Insert Target Path dialog box in
-	 * the Actions panel.
-	 *
-	 * <p>To create a text field dynamically, use the <code>TextField()</code>
-	 * constructor.</p>
-	 *
-	 * <p>The methods of the TextField class let you set, select, and manipulate
-	 * text in a dynamic or input text field that you create during authoring or
-	 * at runtime. </p>
-	 *
-	 * <p>ActionScript provides several ways to format your text at runtime. The
-	 * TextFormat class lets you set character and paragraph formatting for
-	 * TextField objects. You can apply Cascading Style Sheets(CSS) styles to
-	 * text fields by using the <code>TextField.styleSheet</code> property and the
-	 * StyleSheet class. You can use CSS to style built-in HTML tags, define new
-	 * formatting tags, or apply styles. You can assign HTML formatted text, which
-	 * optionally uses CSS styles, directly to a text field. HTML text that you
-	 * assign to a text field can contain embedded media(movie clips, SWF files,
-	 * GIF files, PNG files, and JPEG files). The text wraps around the embedded
-	 * media in the same way that a web browser wraps text around media embedded
-	 * in an HTML document. </p>
-	 *
-	 * <p>Flash Player supports a subset of HTML tags that you can use to format
-	 * text. See the list of supported HTML tags in the description of the
-	 * <code>htmlText</code> property.</p>
-	 *
-	 * @event change                    Dispatched after a control value is
-	 *                                  modified, unlike the
-	 *                                  <code>textInput</code> event, which is
-	 *                                  dispatched before the value is modified.
-	 *                                  Unlike the W3C DOM Event Model version of
-	 *                                  the <code>change</code> event, which
-	 *                                  dispatches the event only after the
-	 *                                  control loses focus, the ActionScript 3.0
-	 *                                  version of the <code>change</code> event
-	 *                                  is dispatched any time the control
-	 *                                  changes. For example, if a user types text
-	 *                                  into a text field, a <code>change</code>
-	 *                                  event is dispatched after every keystroke.
-	 * @event link                      Dispatched when a user clicks a hyperlink
-	 *                                  in an HTML-enabled text field, where the
-	 *                                  URL begins with "event:". The remainder of
-	 *                                  the URL after "event:" is placed in the
-	 *                                  text property of the LINK event.
-	 *
-	 *                                  <p><b>Note:</b> The default behavior,
-	 *                                  adding the text to the text field, occurs
-	 *                                  only when Flash Player generates the
-	 *                                  event, which in this case happens when a
-	 *                                  user attempts to input text. You cannot
-	 *                                  put text into a text field by sending it
-	 *                                  <code>textInput</code> events.</p>
-	 * @event scroll                    Dispatched by a TextField object
-	 *                                  <i>after</i> the user scrolls.
-	 * @event textInput                 Flash Player dispatches the
-	 *                                  <code>textInput</code> event when a user
-	 *                                  enters one or more characters of text.
-	 *                                  Various text input methods can generate
-	 *                                  this event, including standard keyboards,
-	 *                                  input method editors(IMEs), voice or
-	 *                                  speech recognition systems, and even the
-	 *                                  act of pasting plain text with no
-	 *                                  formatting or style information.
-	 * @event textInteractionModeChange Flash Player dispatches the
-	 *                                  <code>textInteractionModeChange</code>
-	 *                                  event when a user changes the interaction
-	 *                                  mode of a text field. for example on
-	 *                                  Android, one can toggle from NORMAL mode
-	 *                                  to SELECTION mode using context menu
-	 *                                  options
-	 */
-	class TextField extends Mesh {
-	    private static _textFields;
-	    static assetType: string;
-	    private _textGraphicsDirty;
-	    private _bottomScrollV;
-	    private _caretIndex;
-	    private _length;
-	    private _maxScrollH;
-	    private _maxScrollV;
-	    private _numLines;
-	    private _selectionBeginIndex;
-	    private _selectionEndIndex;
-	    private _text;
-	    private _textHeight;
-	    private _textInteractionMode;
-	    private _textWidth;
-	    private _charBoundaries;
-	    private _charIndexAtPoint;
-	    private _firstCharInParagraph;
-	    private _imageReference;
-	    private _lineIndexAtPoint;
-	    private _lineIndexOfChar;
-	    private _lineLength;
-	    private _lineMetrics;
-	    private _lineOffset;
-	    private _lineText;
-	    private _paragraphLength;
-	    private _textFormat;
-	    /**
-	     * When set to <code>true</code> and the text field is not in focus, Flash
-	     * Player highlights the selection in the text field in gray. When set to
-	     * <code>false</code> and the text field is not in focus, Flash Player does
-	     * not highlight the selection in the text field.
-	     *
-	     * @default false
-	     */
-	    alwaysShowSelection: boolean;
-	    /**
-	     * The type of anti-aliasing used for this text field. Use
-	     * <code>flash.text.AntiAliasType</code> constants for this property. You can
-	     * control this setting only if the font is embedded(with the
-	     * <code>embedFonts</code> property set to <code>true</code>). The default
-	     * setting is <code>flash.text.AntiAliasType.NORMAL</code>.
-	     *
-	     * <p>To set values for this property, use the following string values:</p>
-	     */
-	    antiAliasType: AntiAliasType;
-	    /**
-	     * Controls automatic sizing and alignment of text fields. Acceptable values
-	     * for the <code>TextFieldAutoSize</code> constants:
-	     * <code>TextFieldAutoSize.NONE</code>(the default),
-	     * <code>TextFieldAutoSize.LEFT</code>, <code>TextFieldAutoSize.RIGHT</code>,
-	     * and <code>TextFieldAutoSize.CENTER</code>.
-	     *
-	     * <p>If <code>autoSize</code> is set to <code>TextFieldAutoSize.NONE</code>
-	     * (the default) no resizing occurs.</p>
-	     *
-	     * <p>If <code>autoSize</code> is set to <code>TextFieldAutoSize.LEFT</code>,
-	     * the text is treated as left-justified text, meaning that the left margin
-	     * of the text field remains fixed and any resizing of a single line of the
-	     * text field is on the right margin. If the text includes a line break(for
-	     * example, <code>"\n"</code> or <code>"\r"</code>), the bottom is also
-	     * resized to fit the next line of text. If <code>wordWrap</code> is also set
-	     * to <code>true</code>, only the bottom of the text field is resized and the
-	     * right side remains fixed.</p>
-	     *
-	     * <p>If <code>autoSize</code> is set to
-	     * <code>TextFieldAutoSize.RIGHT</code>, the text is treated as
-	     * right-justified text, meaning that the right margin of the text field
-	     * remains fixed and any resizing of a single line of the text field is on
-	     * the left margin. If the text includes a line break(for example,
-	     * <code>"\n" or "\r")</code>, the bottom is also resized to fit the next
-	     * line of text. If <code>wordWrap</code> is also set to <code>true</code>,
-	     * only the bottom of the text field is resized and the left side remains
-	     * fixed.</p>
-	     *
-	     * <p>If <code>autoSize</code> is set to
-	     * <code>TextFieldAutoSize.CENTER</code>, the text is treated as
-	     * center-justified text, meaning that any resizing of a single line of the
-	     * text field is equally distributed to both the right and left margins. If
-	     * the text includes a line break(for example, <code>"\n"</code> or
-	     * <code>"\r"</code>), the bottom is also resized to fit the next line of
-	     * text. If <code>wordWrap</code> is also set to <code>true</code>, only the
-	     * bottom of the text field is resized and the left and right sides remain
-	     * fixed.</p>
-	     *
-	     * @throws ArgumentError The <code>autoSize</code> specified is not a member
-	     *                       of flash.text.TextFieldAutoSize.
-	     */
-	    autoSize: TextFieldAutoSize;
-	    /**
-	     *
-	     * @returns {string}
-	     */
-	    assetType: string;
-	    /**
-	     * Specifies whether the text field has a background fill. If
-	     * <code>true</code>, the text field has a background fill. If
-	     * <code>false</code>, the text field has no background fill. Use the
-	     * <code>backgroundColor</code> property to set the background color of a
-	     * text field.
-	     *
-	     * @default false
-	     */
-	    background: boolean;
-	    /**
-	     * The color of the text field background. The default value is
-	     * <code>0xFFFFFF</code>(white). This property can be retrieved or set, even
-	     * if there currently is no background, but the color is visible only if the
-	     * text field has the <code>background</code> property set to
-	     * <code>true</code>.
-	     */
-	    backgroundColor: number;
-	    /**
-	     * Specifies whether the text field has a border. If <code>true</code>, the
-	     * text field has a border. If <code>false</code>, the text field has no
-	     * border. Use the <code>borderColor</code> property to set the border color.
-	     *
-	     * @default false
-	     */
-	    border: boolean;
-	    /**
-	     * The color of the text field border. The default value is
-	     * <code>0x000000</code>(black). This property can be retrieved or set, even
-	     * if there currently is no border, but the color is visible only if the text
-	     * field has the <code>border</code> property set to <code>true</code>.
-	     */
-	    borderColor: number;
-	    /**
-	     * An integer(1-based index) that indicates the bottommost line that is
-	     * currently visible in the specified text field. Think of the text field as
-	     * a window onto a block of text. The <code>scrollV</code> property is the
-	     * 1-based index of the topmost visible line in the window.
-	     *
-	     * <p>All the text between the lines indicated by <code>scrollV</code> and
-	     * <code>bottomScrollV</code> is currently visible in the text field.</p>
-	     */
-	    bottomScrollV: number;
-	    /**
-	     * The index of the insertion point(caret) position. If no insertion point
-	     * is displayed, the value is the position the insertion point would be if
-	     * you restored focus to the field(typically where the insertion point last
-	     * was, or 0 if the field has not had focus).
-	     *
-	     * <p>Selection span indexes are zero-based(for example, the first position
-	     * is 0, the second position is 1, and so on).</p>
-	     */
-	    caretIndex: number;
-	    /**
-	     * A Boolean value that specifies whether extra white space(spaces, line
-	     * breaks, and so on) in a text field with HTML text is removed. The default
-	     * value is <code>false</code>. The <code>condenseWhite</code> property only
-	     * affects text set with the <code>htmlText</code> property, not the
-	     * <code>text</code> property. If you set text with the <code>text</code>
-	     * property, <code>condenseWhite</code> is ignored.
-	     *
-	     * <p>If <code>condenseWhite</code> is set to <code>true</code>, use standard
-	     * HTML commands such as <code><BR></code> and <code><P></code> to place line
-	     * breaks in the text field.</p>
-	     *
-	     * <p>Set the <code>condenseWhite</code> property before setting the
-	     * <code>htmlText</code> property.</p>
-	     */
-	    condenseWhite: boolean;
-	    /**
-	     * Specifies the format applied to newly inserted text, such as text entered
-	     * by a user or text inserted with the <code>replaceSelectedText()</code>
-	     * method.
-	     *
-	     * <p><b>Note:</b> When selecting characters to be replaced with
-	     * <code>setSelection()</code> and <code>replaceSelectedText()</code>, the
-	     * <code>defaultTextFormat</code> will be applied only if the text has been
-	     * selected up to and including the last character. Here is an example:</p>
-	     * <pre xml:space="preserve"> public my_txt:TextField new TextField();
-	     * my_txt.text = "Flash Macintosh version"; public my_fmt:TextFormat = new
-	     * TextFormat(); my_fmt.color = 0xFF0000; my_txt.defaultTextFormat = my_fmt;
-	     * my_txt.setSelection(6,15); // partial text selected - defaultTextFormat
-	     * not applied my_txt.setSelection(6,23); // text selected to end -
-	     * defaultTextFormat applied my_txt.replaceSelectedText("Windows version");
-	     * </pre>
-	     *
-	     * <p>When you access the <code>defaultTextFormat</code> property, the
-	     * returned TextFormat object has all of its properties defined. No property
-	     * is <code>null</code>.</p>
-	     *
-	     * <p><b>Note:</b> You can't set this property if a style sheet is applied to
-	     * the text field.</p>
-	     *
-	     * @throws Error This method cannot be used on a text field with a style
-	     *               sheet.
-	     */
-	    defaultTextFormat: TextFormat;
-	    /**
-	     * Specifies whether the text field is a password text field. If the value of
-	     * this property is <code>true</code>, the text field is treated as a
-	     * password text field and hides the input characters using asterisks instead
-	     * of the actual characters. If <code>false</code>, the text field is not
-	     * treated as a password text field. When password mode is enabled, the Cut
-	     * and Copy commands and their corresponding keyboard shortcuts will not
-	     * function. This security mechanism prevents an unscrupulous user from using
-	     * the shortcuts to discover a password on an unattended computer.
-	     *
-	     * @default false
-	     */
-	    displayAsPassword: boolean;
-	    /**
-	     * Specifies whether to render by using embedded font outlines. If
-	     * <code>false</code>, Flash Player renders the text field by using device
-	     * fonts.
-	     *
-	     * <p>If you set the <code>embedFonts</code> property to <code>true</code>
-	     * for a text field, you must specify a font for that text by using the
-	     * <code>font</code> property of a TextFormat object applied to the text
-	     * field. If the specified font is not embedded in the SWF file, the text is
-	     * not displayed.</p>
-	     *
-	     * @default false
-	     */
-	    embedFonts: boolean;
-	    /**
-	     * The type of grid fitting used for this text field. This property applies
-	     * only if the <code>flash.text.AntiAliasType</code> property of the text
-	     * field is set to <code>flash.text.AntiAliasType.ADVANCED</code>.
-	     *
-	     * <p>The type of grid fitting used determines whether Flash Player forces
-	     * strong horizontal and vertical lines to fit to a pixel or subpixel grid,
-	     * or not at all.</p>
-	     *
-	     * <p>For the <code>flash.text.GridFitType</code> property, you can use the
-	     * following string values:</p>
-	     *
-	     * @default pixel
-	     */
-	    gridFitType: GridFitType;
-	    /**
-	     * Contains the HTML representation of the text field contents.
-	     *
-	     * <p>Flash Player supports the following HTML tags:</p>
-	     *
-	     * <p>Flash Player and AIR also support explicit character codes, such as
-	     * &#38;(ASCII ampersand) and &#x20AC;(Unicode € symbol). </p>
-	     */
-	    htmlText: string;
-	    /**
-	     * The number of characters in a text field. A character such as tab
-	     * (<code>\t</code>) counts as one character.
-	     */
-	    length: number;
-	    /**
-	     * The maximum number of characters that the text field can contain, as
-	     * entered by a user. A script can insert more text than
-	     * <code>maxChars</code> allows; the <code>maxChars</code> property indicates
-	     * only how much text a user can enter. If the value of this property is
-	     * <code>0</code>, a user can enter an unlimited amount of text.
-	     *
-	     * @default 0
-	     */
-	    maxChars: number;
-	    /**
-	     * The maximum value of <code>scrollH</code>.
-	     */
-	    maxScrollH(): number;
-	    /**
-	     * The maximum value of <code>scrollV</code>.
-	     */
-	    maxScrollV(): number;
-	    /**
-	     * A Boolean value that indicates whether Flash Player automatically scrolls
-	     * multiline text fields when the user clicks a text field and rolls the
-	     * mouse wheel. By default, this value is <code>true</code>. This property is
-	     * useful if you want to prevent mouse wheel scrolling of text fields, or
-	     * implement your own text field scrolling.
-	     */
-	    mouseWheelEnabled: boolean;
-	    /**
-	     * Indicates whether field is a multiline text field. If the value is
-	     * <code>true</code>, the text field is multiline; if the value is
-	     * <code>false</code>, the text field is a single-line text field. In a field
-	     * of type <code>TextFieldType.INPUT</code>, the <code>multiline</code> value
-	     * determines whether the <code>Enter</code> key creates a new line(a value
-	     * of <code>false</code>, and the <code>Enter</code> key is ignored). If you
-	     * paste text into a <code>TextField</code> with a <code>multiline</code>
-	     * value of <code>false</code>, newlines are stripped out of the text.
-	     *
-	     * @default false
-	     */
-	    multiline: boolean;
-	    /**
-	     * Defines the number of text lines in a multiline text field. If
-	     * <code>wordWrap</code> property is set to <code>true</code>, the number of
-	     * lines increases when text wraps.
-	     */
-	    numLines: number;
-	    /**
-	     * Indicates the set of characters that a user can enter into the text field.
-	     * If the value of the <code>restrict</code> property is <code>null</code>,
-	     * you can enter any character. If the value of the <code>restrict</code>
-	     * property is an empty string, you cannot enter any character. If the value
-	     * of the <code>restrict</code> property is a string of characters, you can
-	     * enter only characters in the string into the text field. The string is
-	     * scanned from left to right. You can specify a range by using the hyphen
-	     * (-) character. Only user interaction is restricted; a script can put any
-	     * text into the text field. <ph outputclass="flashonly">This property does
-	     * not synchronize with the Embed font options in the Property inspector.
-	     *
-	     * <p>If the string begins with a caret(^) character, all characters are
-	     * initially accepted and succeeding characters in the string are excluded
-	     * from the set of accepted characters. If the string does not begin with a
-	     * caret(^) character, no characters are initially accepted and succeeding
-	     * characters in the string are included in the set of accepted
-	     * characters.</p>
-	     *
-	     * <p>The following example allows only uppercase characters, spaces, and
-	     * numbers to be entered into a text field:</p>
-	     * <pre xml:space="preserve"> my_txt.restrict = "A-Z 0-9"; </pre>
-	     *
-	     * <p>The following example includes all characters, but excludes lowercase
-	     * letters:</p>
-	     * <pre xml:space="preserve"> my_txt.restrict = "^a-z"; </pre>
-	     *
-	     * <p>You can use a backslash to enter a ^ or - verbatim. The accepted
-	     * backslash sequences are \-, \^ or \\. The backslash must be an actual
-	     * character in the string, so when specified in ActionScript, a double
-	     * backslash must be used. For example, the following code includes only the
-	     * dash(-) and caret(^):</p>
-	     * <pre xml:space="preserve"> my_txt.restrict = "\\-\\^"; </pre>
-	     *
-	     * <p>The ^ can be used anywhere in the string to toggle between including
-	     * characters and excluding characters. The following code includes only
-	     * uppercase letters, but excludes the uppercase letter Q:</p>
-	     * <pre xml:space="preserve"> my_txt.restrict = "A-Z^Q"; </pre>
-	     *
-	     * <p>You can use the <code>\u</code> escape sequence to construct
-	     * <code>restrict</code> strings. The following code includes only the
-	     * characters from ASCII 32(space) to ASCII 126(tilde).</p>
-	     * <pre xml:space="preserve"> my_txt.restrict = "\u0020-\u007E"; </pre>
-	     *
-	     * @default null
-	     */
-	    restrict: string;
-	    /**
-	     * The current horizontal scrolling position. If the <code>scrollH</code>
-	     * property is 0, the text is not horizontally scrolled. This property value
-	     * is an integer that represents the horizontal position in pixels.
-	     *
-	     * <p>The units of horizontal scrolling are pixels, whereas the units of
-	     * vertical scrolling are lines. Horizontal scrolling is measured in pixels
-	     * because most fonts you typically use are proportionally spaced; that is,
-	     * the characters can have different widths. Flash Player performs vertical
-	     * scrolling by line because users usually want to see a complete line of
-	     * text rather than a partial line. Even if a line uses multiple fonts, the
-	     * height of the line adjusts to fit the largest font in use.</p>
-	     *
-	     * <p><b>Note: </b>The <code>scrollH</code> property is zero-based, not
-	     * 1-based like the <code>scrollV</code> vertical scrolling property.</p>
-	     */
-	    scrollH: number;
-	    /**
-	     * The vertical position of text in a text field. The <code>scrollV</code>
-	     * property is useful for directing users to a specific paragraph in a long
-	     * passage, or creating scrolling text fields.
-	     *
-	     * <p>The units of vertical scrolling are lines, whereas the units of
-	     * horizontal scrolling are pixels. If the first line displayed is the first
-	     * line in the text field, scrollV is set to 1(not 0). Horizontal scrolling
-	     * is measured in pixels because most fonts are proportionally spaced; that
-	     * is, the characters can have different widths. Flash performs vertical
-	     * scrolling by line because users usually want to see a complete line of
-	     * text rather than a partial line. Even if there are multiple fonts on a
-	     * line, the height of the line adjusts to fit the largest font in use.</p>
-	     */
-	    scrollV: number;
-	    /**
-	     * A Boolean value that indicates whether the text field is selectable. The
-	     * value <code>true</code> indicates that the text is selectable. The
-	     * <code>selectable</code> property controls whether a text field is
-	     * selectable, not whether a text field is editable. A dynamic text field can
-	     * be selectable even if it is not editable. If a dynamic text field is not
-	     * selectable, the user cannot select its text.
-	     *
-	     * <p>If <code>selectable</code> is set to <code>false</code>, the text in
-	     * the text field does not respond to selection commands from the mouse or
-	     * keyboard, and the text cannot be copied with the Copy command. If
-	     * <code>selectable</code> is set to <code>true</code>, the text in the text
-	     * field can be selected with the mouse or keyboard, and the text can be
-	     * copied with the Copy command. You can select text this way even if the
-	     * text field is a dynamic text field instead of an input text field. </p>
-	     *
-	     * @default true
-	     */
-	    selectable: boolean;
-	    /**
-	     * The zero-based character index value of the first character in the current
-	     * selection. For example, the first character is 0, the second character is
-	     * 1, and so on. If no text is selected, this property is the value of
-	     * <code>caretIndex</code>.
-	     */
-	    selectionBeginIndex: number;
-	    /**
-	     * The zero-based character index value of the last character in the current
-	     * selection. For example, the first character is 0, the second character is
-	     * 1, and so on. If no text is selected, this property is the value of
-	     * <code>caretIndex</code>.
-	     */
-	    selectionEndIndex: number;
-	    /**
-	     * The sharpness of the glyph edges in this text field. This property applies
-	     * only if the <code>flash.text.AntiAliasType</code> property of the text
-	     * field is set to <code>flash.text.AntiAliasType.ADVANCED</code>. The range
-	     * for <code>sharpness</code> is a number from -400 to 400. If you attempt to
-	     * set <code>sharpness</code> to a value outside that range, Flash sets the
-	     * property to the nearest value in the range(either -400 or 400).
-	     *
-	     * @default 0
-	     */
-	    sharpness: number;
-	    /**
-	     * Attaches a style sheet to the text field. For information on creating
-	     * style sheets, see the StyleSheet class and the <i>ActionScript 3.0
-	     * Developer's Guide</i>.
-	     *
-	     * <p>You can change the style sheet associated with a text field at any
-	     * time. If you change the style sheet in use, the text field is redrawn with
-	     * the new style sheet. You can set the style sheet to <code>null</code> or
-	     * <code>undefined</code> to remove the style sheet. If the style sheet in
-	     * use is removed, the text field is redrawn without a style sheet. </p>
-	     *
-	     * <p><b>Note:</b> If the style sheet is removed, the contents of both
-	     * <code>TextField.text</code> and <code> TextField.htmlText</code> change to
-	     * incorporate the formatting previously applied by the style sheet. To
-	     * preserve the original <code>TextField.htmlText</code> contents without the
-	     * formatting, save the value in a variable before removing the style
-	     * sheet.</p>
-	     */
-	    styleSheet: StyleSheet;
-	    /**
-	     * A string that is the current text in the text field. Lines are separated
-	     * by the carriage return character(<code>'\r'</code>, ASCII 13). This
-	     * property contains unformatted text in the text field, without HTML tags.
-	     *
-	     * <p>To get the text in HTML form, use the <code>htmlText</code>
-	     * property.</p>
-	     */
-	    text: string;
-	    textFormat: TextFormat;
-	    /**
-	     * The geometry used by the mesh that provides it with its shape.
-	     */
-	    graphics: Graphics;
-	    /**
-	     * The color of the text in a text field, in hexadecimal format. The
-	     * hexadecimal color system uses six digits to represent color values. Each
-	     * digit has 16 possible values or characters. The characters range from 0-9
-	     * and then A-F. For example, black is <code>0x000000</code>; white is
-	     * <code>0xFFFFFF</code>.
-	     *
-	     * @default 0(0x000000)
-	     */
-	    _textColor: number;
-	    textColor: number;
-	    /**
-	     * The interaction mode property, Default value is
-	     * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
-	     * that the text can be scrolled but not selected. One can switch to the
-	     * selectable mode through the in-built context menu on the text field. On
-	     * Desktop, the normal mode implies that the text is in scrollable as well as
-	     * selection mode.
-	     */
-	    textInteractionMode: TextInteractionMode;
-	    /**
-	     * The width of the text in pixels.
-	     */
-	    textWidth: number;
-	    /**
-	     * The width of the text in pixels.
-	     */
-	    textHeight: number;
-	    /**
-	     * The thickness of the glyph edges in this text field. This property applies
-	     * only when <code>AntiAliasType</code> is set to
-	     * <code>AntiAliasType.ADVANCED</code>.
-	     *
-	     * <p>The range for <code>thickness</code> is a number from -200 to 200. If
-	     * you attempt to set <code>thickness</code> to a value outside that range,
-	     * the property is set to the nearest value in the range(either -200 or
-	     * 200).</p>
-	     *
-	     * @default 0
-	     */
-	    thickness: number;
-	    /**
-	     * The type of the text field. Either one of the following TextFieldType
-	     * constants: <code>TextFieldType.DYNAMIC</code>, which specifies a dynamic
-	     * text field, which a user cannot edit, or <code>TextFieldType.INPUT</code>,
-	     * which specifies an input text field, which a user can edit.
-	     *
-	     * @default dynamic
-	     * @throws ArgumentError The <code>type</code> specified is not a member of
-	     *                       flash.text.TextFieldType.
-	     */
-	    type: TextFieldType;
-	    /**
-	     * Specifies whether to copy and paste the text formatting along with the
-	     * text. When set to <code>true</code>, Flash Player copies and pastes
-	     * formatting(such as alignment, bold, and italics) when you copy and paste
-	     * between text fields. Both the origin and destination text fields for the
-	     * copy and paste procedure must have <code>useRichTextClipboard</code> set
-	     * to <code>true</code>. The default value is <code>false</code>.
-	     */
-	    useRichTextClipboard: boolean;
-	    /**
-	     * A Boolean value that indicates whether the text field has word wrap. If
-	     * the value of <code>wordWrap</code> is <code>true</code>, the text field
-	     * has word wrap; if the value is <code>false</code>, the text field does not
-	     * have word wrap. The default value is <code>false</code>.
-	     */
-	    wordWrap: boolean;
-	    /**
-	     * Creates a new TextField instance. After you create the TextField instance,
-	     * call the <code>addChild()</code> or <code>addChildAt()</code> method of
-	     * the parent DisplayObjectContainer object to add the TextField instance to
-	     * the display list.
-	     *
-	     * <p>The default size for a text field is 100 x 100 pixels.</p>
-	     */
-	    constructor();
-	    /**
-	     * @inheritDoc
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    disposeValues(): void;
-	    /**
-	     * Reconstructs the Graphics for this Text-field.
-	     */
-	    reConstruct(): void;
-	    /**
-	     * Appends the string specified by the <code>newText</code> parameter to the
-	     * end of the text of the text field. This method is more efficient than an
-	     * addition assignment(<code>+=</code>) on a <code>text</code> property
-	     * (such as <code>someTextField.text += moreText</code>), particularly for a
-	     * text field that contains a significant amount of content.
-	     *
-	     * @param newText The string to append to the existing text.
-	     */
-	    appendText(newText: string): void;
-	    /**
-	     * *tells the Textfield that a paragraph is defined completly.
-	     * e.g. the textfield will start a new line for future added text.
-	     */
-	    closeParagraph(): void;
-	    /**
-	     * Returns a rectangle that is the bounding box of the character.
-	     *
-	     * @param charIndex The zero-based index value for the character(for
-	     *                  example, the first position is 0, the second position is
-	     *                  1, and so on).
-	     * @return A rectangle with <code>x</code> and <code>y</code> minimum and
-	     *         maximum values defining the bounding box of the character.
-	     */
-	    getCharBoundaries(charIndex: number): Rectangle;
-	    /**
-	     * Returns the zero-based index value of the character at the point specified
-	     * by the <code>x</code> and <code>y</code> parameters.
-	     *
-	     * @param x The <i>x</i> coordinate of the character.
-	     * @param y The <i>y</i> coordinate of the character.
-	     * @return The zero-based index value of the character(for example, the
-	     *         first position is 0, the second position is 1, and so on). Returns
-	     *         -1 if the point is not over any character.
-	     */
-	    getCharIndexAtPoint(x: number, y: number): number;
-	    /**
-	     * Given a character index, returns the index of the first character in the
-	     * same paragraph.
-	     *
-	     * @param charIndex The zero-based index value of the character(for example,
-	     *                  the first character is 0, the second character is 1, and
-	     *                  so on).
-	     * @return The zero-based index value of the first character in the same
-	     *         paragraph.
-	     * @throws RangeError The character index specified is out of range.
-	     */
-	    getFirstCharInParagraph(charIndex: number): number;
-	    /**
-	     * Returns a DisplayObject reference for the given <code>id</code>, for an
-	     * image or SWF file that has been added to an HTML-formatted text field by
-	     * using an <code><img></code> tag. The <code><img></code> tag is in the
-	     * following format:
-	     *
-	     * <p><pre xml:space="preserve"><code> <img src = 'filename.jpg' id =
-	     * 'instanceName' ></code></pre></p>
-	     *
-	     * @param id The <code>id</code> to match(in the <code>id</code> attribute
-	     *           of the <code><img></code> tag).
-	     * @return The display object corresponding to the image or SWF file with the
-	     *         matching <code>id</code> attribute in the <code><img></code> tag
-	     *         of the text field. For media loaded from an external source, this
-	     *         object is a Loader object, and, once loaded, the media object is a
-	     *         child of that Loader object. For media embedded in the SWF file,
-	     *         it is the loaded object. If no <code><img></code> tag with the
-	     *         matching <code>id</code> exists, the method returns
-	     *         <code>null</code>.
-	     */
-	    getImageReference(id: string): DisplayObject;
-	    /**
-	     * Returns the zero-based index value of the line at the point specified by
-	     * the <code>x</code> and <code>y</code> parameters.
-	     *
-	     * @param x The <i>x</i> coordinate of the line.
-	     * @param y The <i>y</i> coordinate of the line.
-	     * @return The zero-based index value of the line(for example, the first
-	     *         line is 0, the second line is 1, and so on). Returns -1 if the
-	     *         point is not over any line.
-	     */
-	    getLineIndexAtPoint(x: number, y: number): number;
-	    /**
-	     * Returns the zero-based index value of the line containing the character
-	     * specified by the <code>charIndex</code> parameter.
-	     *
-	     * @param charIndex The zero-based index value of the character(for example,
-	     *                  the first character is 0, the second character is 1, and
-	     *                  so on).
-	     * @return The zero-based index value of the line.
-	     * @throws RangeError The character index specified is out of range.
-	     */
-	    getLineIndexOfChar(charIndex: number): number;
-	    /**
-	     * Returns the number of characters in a specific text line.
-	     *
-	     * @param lineIndex The line number for which you want the length.
-	     * @return The number of characters in the line.
-	     * @throws RangeError The line number specified is out of range.
-	     */
-	    getLineLength(lineIndex: number): number;
-	    /**
-	     * Returns metrics information about a given text line.
-	     *
-	     * @param lineIndex The line number for which you want metrics information.
-	     * @return A TextLineMetrics object.
-	     * @throws RangeError The line number specified is out of range.
-	     */
-	    getLineMetrics(lineIndex: number): TextLineMetrics;
-	    /**
-	     * Returns the character index of the first character in the line that the
-	     * <code>lineIndex</code> parameter specifies.
-	     *
-	     * @param lineIndex The zero-based index value of the line(for example, the
-	     *                  first line is 0, the second line is 1, and so on).
-	     * @return The zero-based index value of the first character in the line.
-	     * @throws RangeError The line number specified is out of range.
-	     */
-	    getLineOffset(lineIndex: number): number;
-	    /**
-	     * Returns the text of the line specified by the <code>lineIndex</code>
-	     * parameter.
-	     *
-	     * @param lineIndex The zero-based index value of the line(for example, the
-	     *                  first line is 0, the second line is 1, and so on).
-	     * @return The text string contained in the specified line.
-	     * @throws RangeError The line number specified is out of range.
-	     */
-	    getLineText(lineIndex: number): string;
-	    /**
-	     * Given a character index, returns the length of the paragraph containing
-	     * the given character. The length is relative to the first character in the
-	     * paragraph(as returned by <code>getFirstCharInParagraph()</code>), not to
-	     * the character index passed in.
-	     *
-	     * @param charIndex The zero-based index value of the character(for example,
-	     *                  the first character is 0, the second character is 1, and
-	     *                  so on).
-	     * @return Returns the number of characters in the paragraph.
-	     * @throws RangeError The character index specified is out of range.
-	     */
-	    getParagraphLength(charIndex: number): number;
-	    /**
-	     * Returns a TextFormat object that contains formatting information for the
-	     * range of text that the <code>beginIndex</code> and <code>endIndex</code>
-	     * parameters specify. Only properties that are common to the entire text
-	     * specified are set in the resulting TextFormat object. Any property that is
-	     * <i>mixed</i>, meaning that it has different values at different points in
-	     * the text, has a value of <code>null</code>.
-	     *
-	     * <p>If you do not specify values for these parameters, this method is
-	     * applied to all the text in the text field. </p>
-	     *
-	     * <p>The following table describes three possible usages:</p>
-	     *
-	     * @return The TextFormat object that represents the formatting properties
-	     *         for the specified text.
-	     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
-	     *                    specified is out of range.
-	     */
-	    getTextFormat(beginIndex?: number, endIndex?: number): TextFormat;
-	    /**
-	     * Replaces the current selection with the contents of the <code>value</code>
-	     * parameter. The text is inserted at the position of the current selection,
-	     * using the current default character format and default paragraph format.
-	     * The text is not treated as HTML.
-	     *
-	     * <p>You can use the <code>replaceSelectedText()</code> method to insert and
-	     * delete text without disrupting the character and paragraph formatting of
-	     * the rest of the text.</p>
-	     *
-	     * <p><b>Note:</b> This method does not work if a style sheet is applied to
-	     * the text field.</p>
-	     *
-	     * @param value The string to replace the currently selected text.
-	     * @throws Error This method cannot be used on a text field with a style
-	     *               sheet.
-	     */
-	    replaceSelectedText(value: string): void;
-	    /**
-	     * Replaces the range of characters that the <code>beginIndex</code> and
-	     * <code>endIndex</code> parameters specify with the contents of the
-	     * <code>newText</code> parameter. As designed, the text from
-	     * <code>beginIndex</code> to <code>endIndex-1</code> is replaced.
-	     *
-	     * <p><b>Note:</b> This method does not work if a style sheet is applied to
-	     * the text field.</p>
-	     *
-	     * @param beginIndex The zero-based index value for the start position of the
-	     *                   replacement range.
-	     * @param endIndex   The zero-based index position of the first character
-	     *                   after the desired text span.
-	     * @param newText    The text to use to replace the specified range of
-	     *                   characters.
-	     * @throws Error This method cannot be used on a text field with a style
-	     *               sheet.
-	     */
-	    replaceText(beginIndex: number, endIndex: number, newText: string): void;
-	    /**
-	     * Sets as selected the text designated by the index values of the first and
-	     * last characters, which are specified with the <code>beginIndex</code> and
-	     * <code>endIndex</code> parameters. If the two parameter values are the
-	     * same, this method sets the insertion point, as if you set the
-	     * <code>caretIndex</code> property.
-	     *
-	     * @param beginIndex The zero-based index value of the first character in the
-	     *                   selection(for example, the first character is 0, the
-	     *                   second character is 1, and so on).
-	     * @param endIndex   The zero-based index value of the last character in the
-	     *                   selection.
-	     */
-	    setSelection(beginIndex: number, endIndex: number): void;
-	    /**
-	     * Applies the text formatting that the <code>format</code> parameter
-	     * specifies to the specified text in a text field. The value of
-	     * <code>format</code> must be a TextFormat object that specifies the desired
-	     * text formatting changes. Only the non-null properties of
-	     * <code>format</code> are applied to the text field. Any property of
-	     * <code>format</code> that is set to <code>null</code> is not applied. By
-	     * default, all of the properties of a newly created TextFormat object are
-	     * set to <code>null</code>.
-	     *
-	     * <p><b>Note:</b> This method does not work if a style sheet is applied to
-	     * the text field.</p>
-	     *
-	     * <p>The <code>setTextFormat()</code> method changes the text formatting
-	     * applied to a range of characters or to the entire body of text in a text
-	     * field. To apply the properties of format to all text in the text field, do
-	     * not specify values for <code>beginIndex</code> and <code>endIndex</code>.
-	     * To apply the properties of the format to a range of text, specify values
-	     * for the <code>beginIndex</code> and the <code>endIndex</code> parameters.
-	     * You can use the <code>length</code> property to determine the index
-	     * values.</p>
-	     *
-	     * <p>The two types of formatting information in a TextFormat object are
-	     * character level formatting and paragraph level formatting. Each character
-	     * in a text field can have its own character formatting settings, such as
-	     * font name, font size, bold, and italic.</p>
-	     *
-	     * <p>For paragraphs, the first character of the paragraph is examined for
-	     * the paragraph formatting settings for the entire paragraph. Examples of
-	     * paragraph formatting settings are left margin, right margin, and
-	     * indentation.</p>
-	     *
-	     * <p>Any text inserted manually by the user, or replaced by the
-	     * <code>replaceSelectedText()</code> method, receives the default text field
-	     * formatting for new text, and not the formatting specified for the text
-	     * insertion point. To set the default formatting for new text, use
-	     * <code>defaultTextFormat</code>.</p>
-	     *
-	     * @param format A TextFormat object that contains character and paragraph
-	     *               formatting information.
-	     * @throws Error      This method cannot be used on a text field with a style
-	     *                    sheet.
-	     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
-	     *                    specified is out of range.
-	     */
-	    setTextFormat(format: TextFormat, beginIndex?: number, endIndex?: number): void;
-	    /**
-	     * Returns true if an embedded font is available with the specified
-	     * <code>fontName</code> and <code>fontStyle</code> where
-	     * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
-	     * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
-	     * SWF file. Normal embedded fonts are only used with TextField objects. CFF
-	     * embedded fonts are only used with the flash.text.engine classes. The two
-	     * types are distinguished by the <code>fontType</code> property of the
-	     * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
-	     * function.
-	     *
-	     * <p>TextField cannot use a font of type <code>EMBEDDED_CFF</code>. If
-	     * <code>embedFonts</code> is set to <code>true</code> and the only font
-	     * available at run time with the specified name and style is of type
-	     * <code>EMBEDDED_CFF</code>, Flash Player fails to render the text, as if no
-	     * embedded font were available with the specified name and style.</p>
-	     *
-	     * <p>If both <code>EMBEDDED</code> and <code>EMBEDDED_CFF</code> fonts are
-	     * available with the same name and style, the <code>EMBEDDED</code> font is
-	     * selected and text renders with the <code>EMBEDDED</code> font.</p>
-	     *
-	     * @param fontName  The name of the embedded font to check.
-	     * @param fontStyle Specifies the font style to check. Use
-	     *                  <code>flash.text.FontStyle</code>
-	     * @return <code>true</code> if a compatible embedded font is available,
-	     *         otherwise <code>false</code>.
-	     * @throws ArgumentError The <code>fontStyle</code> specified is not a member
-	     *                       of <code>flash.text.FontStyle</code>.
-	     */
-	    static isFontCompatible(fontName: string, fontStyle: string): boolean;
-	    clone(): TextField;
-	    copyTo(newInstance: TextField): void;
-	}
-	export = TextField;
-	
-}
-
 declare module "awayjs-display/lib/errors/CastError" {
 	import ErrorBase = require("awayjs-core/lib/errors/ErrorBase");
 	class CastError extends ErrorBase {
@@ -6473,7 +6435,7 @@ declare module "awayjs-display/lib/errors/CastError" {
 
 declare module "awayjs-display/lib/events/CameraEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Camera = require("awayjs-display/lib/display/Camera");
 	/**
 	 * @class away.events.CameraEvent
 	 */
@@ -6494,7 +6456,7 @@ declare module "awayjs-display/lib/events/CameraEvent" {
 
 declare module "awayjs-display/lib/events/DisplayObjectEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	class DisplayObjectEvent extends EventBase {
 	    /**
 	     *
@@ -6615,9 +6577,9 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import View = require("awayjs-display/lib/containers/View");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
+	import View = require("awayjs-display/lib/View");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
 	 * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
@@ -6683,7 +6645,7 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	    /**
 	     * The renderable owner inside which the event took place.
 	     */
-	    renderableOwner: IRenderableOwner;
+	    renderable: IRenderable;
 	    /**
 	     * The material of the 3d element inside which the event took place.
 	     */
@@ -6758,45 +6720,16 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/RenderOwnerEvent" {
+declare module "awayjs-display/lib/events/RenderableEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	class RenderOwnerEvent extends EventBase {
-	    static INVALIDATE_TEXTURE: string;
-	    static INVALIDATE_ANIMATION: string;
-	    static INVALIDATE_PASSES: string;
-	    private _renderOwner;
-	    /**
-	     * Create a new GraphicsEvent
-	     * @param type The event type.
-	     * @param dataType An optional data type of the vertex data being updated.
-	     */
-	    constructor(type: string, renderOwner: IRenderOwner);
-	    /**
-	     * The renderobject owner of the renderable owner.
-	     */
-	    renderOwner: IRenderOwner;
-	    /**
-	     * Clones the event.
-	     *
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): RenderOwnerEvent;
-	}
-	export = RenderOwnerEvent;
-	
-}
-
-declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
-	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	/**
 	 * Dispatched to notify changes in a sub geometry object's state.
 	 *
-	 * @class away.events.RenderableOwnerEvent
+	 * @class away.events.RenderableEvent
 	 * @see away.core.base.Graphics
 	 */
-	class RenderableOwnerEvent extends EventBase {
+	class RenderableEvent extends EventBase {
 	    /**
 	     * Dispatched when a Renderable owners's render object owner has been updated.
 	     */
@@ -6805,25 +6738,25 @@ declare module "awayjs-display/lib/events/RenderableOwnerEvent" {
 	     *
 	     */
 	    static INVALIDATE_ELEMENTS: string;
-	    private _renderableOwner;
+	    private _renderable;
 	    /**
 	     * Create a new GraphicsEvent
 	     * @param type The event type.
 	     * @param dataType An optional data type of the vertex data being updated.
 	     */
-	    constructor(type: string, renderableOwner: IRenderableOwner);
+	    constructor(type: string, renderable: IRenderable);
 	    /**
 	     * The renderobject owner of the renderable owner.
 	     */
-	    renderableOwner: IRenderableOwner;
+	    renderable: IRenderable;
 	    /**
 	     * Clones the event.
 	     *
 	     * @return An exact duplicate of the current object.
 	     */
-	    clone(): RenderableOwnerEvent;
+	    clone(): RenderableEvent;
 	}
-	export = RenderableOwnerEvent;
+	export = RenderableEvent;
 	
 }
 
@@ -6879,13 +6812,42 @@ declare module "awayjs-display/lib/events/StyleEvent" {
 	
 }
 
+declare module "awayjs-display/lib/events/SurfaceEvent" {
+	import EventBase = require("awayjs-core/lib/events/EventBase");
+	import ISurface = require("awayjs-display/lib/base/ISurface");
+	class SurfaceEvent extends EventBase {
+	    static INVALIDATE_TEXTURE: string;
+	    static INVALIDATE_ANIMATION: string;
+	    static INVALIDATE_PASSES: string;
+	    private _surface;
+	    /**
+	     * Create a new GraphicsEvent
+	     * @param type The event type.
+	     * @param dataType An optional data type of the vertex data being updated.
+	     */
+	    constructor(type: string, surface: ISurface);
+	    /**
+	     * The surface of the renderable.
+	     */
+	    surface: ISurface;
+	    /**
+	     * Clones the event.
+	     *
+	     * @return An exact duplicate of the current object.
+	     */
+	    clone(): SurfaceEvent;
+	}
+	export = SurfaceEvent;
+	
+}
+
 declare module "awayjs-display/lib/events/TouchEvent" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
-	import View = require("awayjs-display/lib/containers/View");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
+	import View = require("awayjs-display/lib/View");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	class TouchEvent extends EventBase {
 	    _iAllowedToPropagate: boolean;
@@ -6929,7 +6891,7 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	    /**
 	     * The renderable owner inside which the event took place.
 	     */
-	    renderableOwner: IRenderableOwner;
+	    renderable: IRenderable;
 	    /**
 	     * The material of the 3d element inside which the event took place.
 	     */
@@ -7028,8 +6990,8 @@ declare module "awayjs-display/lib/events/TransformEvent" {
 
 declare module "awayjs-display/lib/factories/ITimelineSceneGraphFactory" {
 	import Timeline = require("awayjs-display/lib/base/Timeline");
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
-	import TextField = require("awayjs-display/lib/entities/TextField");
+	import MovieClip = require("awayjs-display/lib/display/MovieClip");
+	import TextField = require("awayjs-display/lib/display/TextField");
 	interface ITimelineSceneGraphFactory {
 	    createMovieClip(timelime: Timeline): MovieClip;
 	    createTextField(): TextField;
@@ -7144,17 +7106,16 @@ declare module "awayjs-display/lib/graphics/ElementsType" {
 }
 
 declare module "awayjs-display/lib/graphics/Graphic" {
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import Style = require("awayjs-display/lib/base/Style");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	import Graphics = require("awayjs-display/lib/graphics/Graphics");
 	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	/**
 	 * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Mesh object.
 	 *
@@ -7164,11 +7125,10 @@ declare module "awayjs-display/lib/graphics/Graphic" {
 	 *
 	 * @class away.base.Graphic
 	 */
-	class Graphic extends AssetBase implements IRenderableOwner {
+	class Graphic extends AssetBase implements IRenderable {
 	    static _available: Array<Graphic>;
 	    static assetType: string;
 	    _iIndex: number;
-	    private _uvTransform;
 	    private _style;
 	    private _material;
 	    private _onInvalidatePropertiesDelegate;
@@ -7210,22 +7170,17 @@ declare module "awayjs-display/lib/graphics/Graphic" {
 	     */
 	    style: Style;
 	    /**
-	     *
-	     */
-	    uvTransform: Matrix;
-	    /**
 	     * Creates a new Graphic object
 	     */
-	    constructor(index: number, parent: Graphics, elements: ElementsBase, material?: MaterialBase, style?: Style, uvTransform?: Matrix);
+	    constructor(index: number, parent: Graphics, elements: ElementsBase, material?: MaterialBase, style?: Style);
 	    /**
 	     *
 	     */
 	    dispose(): void;
 	    invalidateElements(): void;
-	    invalidateRenderOwner(): void;
+	    invalidateSurface(): void;
 	    _iGetExplicitMaterial(): MaterialBase;
 	    _iGetExplicitStyle(): Style;
-	    _iGetExplicitUVTransform(): Matrix;
 	    private _onInvalidateProperties(event);
 	    /**
 	     * //TODO
@@ -7246,7 +7201,6 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	import Box = require("awayjs-core/lib/geom/Box");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Matrix = require("awayjs-core/lib/geom/Matrix");
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
@@ -7254,7 +7208,7 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	import Style = require("awayjs-display/lib/base/Style");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import ParticleData = require("awayjs-display/lib/animators/data/ParticleData");
 	/**
@@ -7282,7 +7236,6 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	    private _material;
 	    private _graphics;
 	    private _animator;
-	    private _uvTransform;
 	    private _style;
 	    sourceEntity: IEntity;
 	    assetType: string;
@@ -7293,7 +7246,6 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	     * Defines the animator of the graphics object.  Default value is <code>null</code>.
 	     */
 	    animator: IAnimator;
-	    uvTransform: Matrix;
 	    /**
 	     *
 	     */
@@ -7311,7 +7263,7 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	     *
 	     * @param elements
 	     */
-	    addGraphic(elements: ElementsBase, material?: MaterialBase, style?: Style, uvTransform?: Matrix): void;
+	    addGraphic(elements: ElementsBase, material?: MaterialBase, style?: Style): void;
 	    removeGraphic(graphic: Graphic): void;
 	    getGraphicAt(index: number): Graphic;
 	    applyTransformation(transform: Matrix3D): void;
@@ -7335,7 +7287,7 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	    getBoxBounds(): Box;
 	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
 	    private _invalidateBounds();
-	    _iInvalidateRenderOwners(): void;
+	    _iInvalidateSurfaces(): void;
 	    invalidateElements(): void;
 	    _hitTestPointInternal(x: number, y: number): boolean;
 	    acceptTraverser(traverser: CollectorBase): void;
@@ -7602,7 +7554,7 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	import Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 	import BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
 	import BitmapImageCube = require("awayjs-core/lib/image/BitmapImageCube");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class DefaultMaterialManager {
@@ -7614,8 +7566,8 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	    private static _defaultColorMaterial;
 	    private static _defaultTexture;
 	    private static _defaultCubeTexture;
-	    static getDefaultMaterial(renderableOwner?: IRenderableOwner): MaterialBase;
-	    static getDefaultTexture(renderableOwner?: IRenderableOwner): TextureBase;
+	    static getDefaultMaterial(renderable?: IRenderable): MaterialBase;
+	    static getDefaultTexture(renderable?: IRenderable): TextureBase;
 	    static getDefaultImage2D(): BitmapImage2D;
 	    static getDefaultImageCube(): BitmapImageCube;
 	    static getDefaultSampler(): Sampler2D;
@@ -7633,8 +7585,8 @@ declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 }
 
 declare module "awayjs-display/lib/managers/FrameScriptManager" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import MovieClip = require("awayjs-display/lib/entities/MovieClip");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import MovieClip = require("awayjs-display/lib/display/MovieClip");
 	class FrameScriptManager {
 	    static frameScriptDebug: Object;
 	    private static _queued_dispose;
@@ -7658,7 +7610,7 @@ declare module "awayjs-display/lib/managers/FrameScriptManager" {
 }
 
 declare module "awayjs-display/lib/managers/MouseManager" {
-	import View = require("awayjs-display/lib/containers/View");
+	import View = require("awayjs-display/lib/View");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 	/**
 	 * MouseManager enforces a singleton pattern and is not intended to be instanced.
@@ -7714,7 +7666,7 @@ declare module "awayjs-display/lib/managers/MouseManager" {
 }
 
 declare module "awayjs-display/lib/managers/TouchManager" {
-	import View = require("awayjs-display/lib/containers/View");
+	import View = require("awayjs-display/lib/View");
 	class TouchManager {
 	    private static _instance;
 	    private _updateDirty;
@@ -7829,8 +7781,8 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IAnimationSet = require("awayjs-display/lib/animators/IAnimationSet");
-	import IRenderOwner = require("awayjs-display/lib/base/IRenderOwner");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import ISurface = require("awayjs-display/lib/base/ISurface");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	import Style = require("awayjs-display/lib/base/Style");
@@ -7845,7 +7797,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	 * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
 	 * shaders, or entire new material frameworks.
 	 */
-	class MaterialBase extends AssetBase implements IRenderOwner {
+	class MaterialBase extends AssetBase implements ISurface {
 	    private _textures;
 	    private _colorTransform;
 	    private _pUseColorTransform;
@@ -7980,28 +7932,28 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     */
 	    alphaThreshold: number;
 	    /**
-	     * Mark an IRenderableOwner as owner of this material.
+	     * Mark an IRenderable as owner of this material.
 	     * Assures we're not using the same material across renderables with different animations, since the
 	     * Programs depend on animation. This method needs to be called when a material is assigned.
 	     *
-	     * @param owner The IRenderableOwner that had this material assigned
+	     * @param owner The IRenderable that had this material assigned
 	     *
 	     * @internal
 	     */
-	    iAddOwner(owner: IRenderableOwner): void;
+	    iAddOwner(owner: IRenderable): void;
 	    /**
-	     * Removes an IRenderableOwner as owner.
+	     * Removes an IRenderable as owner.
 	     * @param owner
 	     *
 	     * @internal
 	     */
-	    iRemoveOwner(owner: IRenderableOwner): void;
+	    iRemoveOwner(owner: IRenderable): void;
 	    /**
-	     * A list of the IRenderableOwners that use this material
+	     * A list of the IRenderables that use this material
 	     *
 	     * @private
 	     */
-	    iOwners: Array<IRenderableOwner>;
+	    iOwners: Array<IRenderable>;
 	    getNumTextures(): number;
 	    getTextureAt(index: number): TextureBase;
 	    /**
@@ -8011,7 +7963,7 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	     */
 	    invalidatePasses(): void;
 	    private invalidateAnimation();
-	    invalidateRenderOwners(): void;
+	    invalidateSurfaces(): void;
 	    /**
 	     * Called when the light picker's configuration changed.
 	     */
@@ -8029,11 +7981,11 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 
 declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
+	import DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/display/LightProbe");
+	import PointLight = require("awayjs-display/lib/display/PointLight");
 	/**
 	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
 	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
@@ -8173,8 +8125,8 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import Camera = require("awayjs-display/lib/display/Camera");
 	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 	class CascadeShadowMapper extends DirectionalShadowMapper {
@@ -8206,8 +8158,8 @@ declare module "awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper" 
 }
 
 declare module "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper" {
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import Camera = require("awayjs-display/lib/display/Camera");
 	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
@@ -8230,9 +8182,9 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import FreeMatrixProjection = require("awayjs-core/lib/projections/FreeMatrixProjection");
-	import Scene = require("awayjs-display/lib/containers/Scene");
+	import Scene = require("awayjs-display/lib/display/Scene");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Camera = require("awayjs-display/lib/display/Camera");
 	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
 	import Single2DTexture = require("awayjs-display/lib/textures/Single2DTexture");
 	class DirectionalShadowMapper extends ShadowMapperBase {
@@ -8262,7 +8214,7 @@ declare module "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapp
 }
 
 declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper" {
-	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Camera = require("awayjs-display/lib/display/Camera");
 	import DirectionalShadowMapper = require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
 	class NearDirectionalShadowMapper extends DirectionalShadowMapper {
 	    private _coverageRatio;
@@ -8279,12 +8231,12 @@ declare module "awayjs-display/lib/materials/shadowmappers/NearDirectionalShadow
 
 declare module "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
 	import IRenderer = require("awayjs-display/lib/IRenderer");
 	import EntityCollector = require("awayjs-display/lib/traverse/EntityCollector");
 	import ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
-	import Camera = require("awayjs-display/lib/entities/Camera");
+	import Camera = require("awayjs-display/lib/display/Camera");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	class ShadowMapperBase extends AssetBase {
 	    _pCasterCollector: ShadowCasterCollector;
@@ -8368,7 +8320,7 @@ declare module "awayjs-display/lib/partition/DisplayObjectNode" {
 	import AbstractionBase = require("awayjs-core/lib/library/AbstractionBase");
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
 	import SceneGraphNode = require("awayjs-display/lib/partition/SceneGraphNode");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -8425,7 +8377,7 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	import AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
 	import DisplayObjectNode = require("awayjs-display/lib/partition/DisplayObjectNode");
@@ -8477,7 +8429,7 @@ declare module "awayjs-display/lib/partition/IContainerNode" {
 }
 
 declare module "awayjs-display/lib/partition/IDisplayObjectNode" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import INode = require("awayjs-display/lib/partition/INode");
 	/**
 	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -8495,7 +8447,7 @@ declare module "awayjs-display/lib/partition/IDisplayObjectNode" {
 }
 
 declare module "awayjs-display/lib/partition/IEntityNodeClass" {
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	/**
@@ -8563,7 +8515,7 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import INode = require("awayjs-display/lib/partition/INode");
 	import IContainerNode = require("awayjs-display/lib/partition/IContainerNode");
 	/**
@@ -8626,7 +8578,7 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 declare module "awayjs-display/lib/partition/PartitionBase" {
 	import IAbstractionPool = require("awayjs-core/lib/library/IAbstractionPool");
 	import IAssetClass = require("awayjs-core/lib/library/IAssetClass");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import IEntityNodeClass = require("awayjs-display/lib/partition/IEntityNodeClass");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
@@ -8737,7 +8689,7 @@ declare module "awayjs-display/lib/partition/SceneGraphNode" {
 }
 
 declare module "awayjs-display/lib/partition/SceneGraphPartition" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import IContainerNode = require("awayjs-display/lib/partition/IContainerNode");
@@ -8796,8 +8748,8 @@ declare module "awayjs-display/lib/partition/SkyboxNode" {
 
 declare module "awayjs-display/lib/pick/IPicker" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import View = require("awayjs-display/lib/containers/View");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import View = require("awayjs-display/lib/View");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 	/**
 	 * Provides an interface for picking objects that can pick 3d objects from a view or scene.
@@ -8836,7 +8788,7 @@ declare module "awayjs-display/lib/pick/IPicker" {
 
 declare module "awayjs-display/lib/pick/IPickingCollider" {
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import Billboard = require("awayjs-display/lib/entities/Billboard");
+	import Billboard = require("awayjs-display/lib/display/Billboard");
 	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 	import LineElements = require("awayjs-display/lib/graphics/LineElements");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -8885,7 +8837,7 @@ declare module "awayjs-display/lib/pick/IPickingCollider" {
 declare module "awayjs-display/lib/pick/JSPickingCollider" {
 	import LineElements = require("awayjs-display/lib/graphics/LineElements");
 	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
-	import Billboard = require("awayjs-display/lib/entities/Billboard");
+	import Billboard = require("awayjs-display/lib/display/Billboard");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -8942,8 +8894,8 @@ declare module "awayjs-display/lib/pick/JSPickingCollider" {
 declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	/**
 	 * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects
 	 *
@@ -9005,7 +8957,7 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	    /**
 	     * The material ownwer associated with a collision.
 	     */
-	    renderableOwner: IRenderableOwner;
+	    renderable: IRenderable;
 	    /**
 	     * Creates a new <code>PickingCollisionVO</code> object.
 	     *
@@ -9020,8 +8972,8 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 
 declare module "awayjs-display/lib/pick/RaycastPicker" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import Scene = require("awayjs-display/lib/containers/Scene");
-	import View = require("awayjs-display/lib/containers/View");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import View = require("awayjs-display/lib/View");
 	import IPicker = require("awayjs-display/lib/pick/IPicker");
 	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
 	/**
@@ -9074,7 +9026,7 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 }
 
 declare module "awayjs-display/lib/pool/RenderableListItem" {
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	/**
 	 * @class away.pool.RenderableListItem
 	 */
@@ -9082,7 +9034,7 @@ declare module "awayjs-display/lib/pool/RenderableListItem" {
 	    /**
 	     *
 	     */
-	    renderable: IRenderableOwner;
+	    renderable: IRenderable;
 	    /**
 	     *
 	     */
@@ -9117,7 +9069,7 @@ declare module "awayjs-display/lib/pool/RenderableListItemPool" {
 
 declare module "awayjs-display/lib/prefabs/PrefabBase" {
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	/**
 	 * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
 	 */
@@ -9462,7 +9414,7 @@ declare module "awayjs-display/lib/prefabs/PrimitivePolygonPrefab" {
 }
 
 declare module "awayjs-display/lib/prefabs/PrimitivePrefabBase" {
-	import DisplayObject = require("awayjs-display/lib/base/DisplayObject");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
@@ -10368,13 +10320,13 @@ declare module "awayjs-display/lib/textures/TextureBase" {
 
 declare module "awayjs-display/lib/traverse/CollectorBase" {
 	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import Scene = require("awayjs-display/lib/containers/Scene");
+	import Scene = require("awayjs-display/lib/display/Scene");
 	import RenderableListItem = require("awayjs-display/lib/pool/RenderableListItem");
 	import RenderableListItemPool = require("awayjs-display/lib/pool/RenderableListItemPool");
-	import Camera = require("awayjs-display/lib/entities/Camera");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import INode = require("awayjs-display/lib/partition/INode");
-	import IRenderableOwner = require("awayjs-display/lib/base/IRenderableOwner");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	/**
 	 * @class away.traverse.CollectorBase
 	 */
@@ -10419,7 +10371,7 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 	     *
 	     * @param entity
 	     */
-	    applyRenderable(renderable: IRenderableOwner): void;
+	    applyRenderable(renderable: IRenderable): void;
 	    /**
 	     *
 	     * @param entity
@@ -10441,13 +10393,13 @@ declare module "awayjs-display/lib/traverse/CollectorBase" {
 }
 
 declare module "awayjs-display/lib/traverse/EntityCollector" {
-	import LightBase = require("awayjs-display/lib/base/LightBase");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
 	import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-	import DirectionalLight = require("awayjs-display/lib/entities/DirectionalLight");
-	import IEntity = require("awayjs-display/lib/entities/IEntity");
-	import LightProbe = require("awayjs-display/lib/entities/LightProbe");
-	import PointLight = require("awayjs-display/lib/entities/PointLight");
-	import Skybox = require("awayjs-display/lib/entities/Skybox");
+	import DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import LightProbe = require("awayjs-display/lib/display/LightProbe");
+	import PointLight = require("awayjs-display/lib/display/PointLight");
+	import Skybox = require("awayjs-display/lib/display/Skybox");
 	/**
 	 * @class away.traverse.EntityCollector
 	 */
