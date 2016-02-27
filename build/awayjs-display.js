@@ -1,7 +1,7 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./display.ts":[function(require,module,exports){
 var Camera = require("awayjs-display/lib/display/Camera");
 var DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var Billboard = require("awayjs-display/lib/display/Billboard");
 var LineSegment = require("awayjs-display/lib/display/LineSegment");
 var TextField = require("awayjs-display/lib/display/TextField");
@@ -17,7 +17,7 @@ var PointLightNode = require("awayjs-display/lib/partition/PointLightNode");
 var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
 PartitionBase.registerAbstraction(CameraNode, Camera);
 PartitionBase.registerAbstraction(DirectionalLightNode, DirectionalLight);
-PartitionBase.registerAbstraction(EntityNode, Mesh);
+PartitionBase.registerAbstraction(EntityNode, Sprite);
 PartitionBase.registerAbstraction(EntityNode, Billboard);
 PartitionBase.registerAbstraction(EntityNode, LineSegment);
 PartitionBase.registerAbstraction(EntityNode, TextField);
@@ -35,7 +35,9 @@ var display = (function () {
 })();
 module.exports = display;
 
-},{"awayjs-display/lib/display/Billboard":"awayjs-display/lib/display/Billboard","awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","awayjs-display/lib/display/LightProbe":"awayjs-display/lib/display/LightProbe","awayjs-display/lib/display/LineSegment":"awayjs-display/lib/display/LineSegment","awayjs-display/lib/display/Mesh":"awayjs-display/lib/display/Mesh","awayjs-display/lib/display/PointLight":"awayjs-display/lib/display/PointLight","awayjs-display/lib/display/Skybox":"awayjs-display/lib/display/Skybox","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
+},{"awayjs-display/lib/display/Billboard":"awayjs-display/lib/display/Billboard","awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","awayjs-display/lib/display/LightProbe":"awayjs-display/lib/display/LightProbe","awayjs-display/lib/display/LineSegment":"awayjs-display/lib/display/LineSegment","awayjs-display/lib/display/PointLight":"awayjs-display/lib/display/PointLight","awayjs-display/lib/display/Skybox":"awayjs-display/lib/display/Skybox","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
+
+},{}],"awayjs-display/lib/ITraverser":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/View":[function(require,module,exports){
 var getTimer = require("awayjs-core/lib/utils/getTimer");
@@ -156,10 +158,6 @@ var View = (function () {
             this._pRenderer = value;
             this._pRenderer.addEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
             this._pRenderer.addEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
-            //reset entity collector
-            this._pEntityCollector = this._pRenderer._iCreateEntityCollector();
-            if (this._pCamera)
-                this._pEntityCollector.camera = this._pCamera;
             //reset back buffer
             this._pRenderer._iBackgroundR = ((this._backgroundColor >> 16) & 0xff) / 0xff;
             this._pRenderer._iBackgroundG = ((this._backgroundColor >> 8) & 0xff) / 0xff;
@@ -248,8 +246,6 @@ var View = (function () {
             if (this._pCamera)
                 this._pCamera.removeEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
             this._pCamera = value;
-            if (this._pEntityCollector)
-                this._pEntityCollector.camera = this._pCamera;
             if (this._pScene)
                 this._pScene.partition._iRegisterEntity(this._pCamera);
             this._pCamera.addEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
@@ -440,12 +436,8 @@ var View = (function () {
             this._mouseManager.fireMouseEvents(this.forceMouseMove);
         }
         //_touch3DManager.updateCollider();
-        //clear entity collector ready for collection
-        this._pEntityCollector.clear();
-        // collect stuff to render
-        this._pScene.traversePartitions(this._pEntityCollector);
-        //render the contents of the entity collector
-        this._pRenderer.render(this._pEntityCollector);
+        //render the contents of the scene
+        this._pRenderer.render(this._pCamera, this._pScene);
     };
     /**
      *
@@ -469,18 +461,7 @@ var View = (function () {
         this._mouseManager = null;
         //this._touch3DManager = null;
         this._pRenderer = null;
-        this._pEntityCollector = null;
     };
-    Object.defineProperty(View.prototype, "iEntityCollector", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pEntityCollector;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      *
      * @param e
@@ -1718,7 +1699,7 @@ var BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase")
 var PrimitiveCubePrefab = require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
 /**
  * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
- * This is useful for most meshes.
+ * This is useful for most sprites.
  */
 var AxisAlignedBoundingBox = (function (_super) {
     __extends(AxisAlignedBoundingBox, _super);
@@ -2860,7 +2841,7 @@ var Billboard = (function (_super) {
     }
     Object.defineProperty(Billboard.prototype, "animator", {
         /**
-         * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
+         * Defines the animator of the sprite. Act on the sprite's geometry. Defaults to null
          */
         get: function () {
             return this._animator;
@@ -3241,7 +3222,7 @@ var Camera = (function (_super) {
     };
     Camera.prototype._applyRenderer = function (renderer) {
         // Since this getter is invoked every iteration of the render loop, and
-        // the prefab construct could affect the sub-meshes, the prefab is
+        // the prefab construct could affect the sub-sprites, the prefab is
         // validated here to give it a chance to rebuild.
         if (this._iSourcePrefab)
             this._iSourcePrefab._iValidate();
@@ -3323,11 +3304,11 @@ var DirectionalLight = (function (_super) {
         return new DirectionalShadowMapper();
     };
     //override
-    DirectionalLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
+    DirectionalLight.prototype.iGetObjectProjectionMatrix = function (entity, cameraTransform, target) {
         if (target === void 0) { target = null; }
         var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
         var m = new Matrix3D();
-        m.copyFrom(entity.getRenderSceneTransform(camera));
+        m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
         m.append(this.inverseSceneTransform);
         if (!this._projAABBPoints)
             this._projAABBPoints = [];
@@ -5592,9 +5573,9 @@ var DisplayObject = (function (_super) {
     /**
      *
      */
-    DisplayObject.prototype.getRenderSceneTransform = function (camera) {
+    DisplayObject.prototype.getRenderSceneTransform = function (cameraTransform) {
         if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
-            var comps = camera.sceneTransform.decompose();
+            var comps = cameraTransform.decompose();
             var scale = comps[3];
             comps[0].copyFrom(this.scenePosition);
             scale.x = this.scaleX;
@@ -6046,7 +6027,7 @@ var LightBase = (function (_super) {
         this._iAmbientG = ((this._ambientColor >> 8) & 0xff) / 0xff * this._ambient;
         this._iAmbientB = (this._ambientColor & 0xff) / 0xff * this._ambient;
     };
-    LightBase.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
+    LightBase.prototype.iGetObjectProjectionMatrix = function (entity, cameraTransform, target) {
         if (target === void 0) { target = null; }
         throw new AbstractMethodError();
     };
@@ -6107,7 +6088,7 @@ var LightProbe = (function (_super) {
         configurable: true
     });
     //@override
-    LightProbe.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
+    LightProbe.prototype.iGetObjectProjectionMatrix = function (entity, cameraTransform, target) {
         if (target === void 0) { target = null; }
         throw new ErrorBase("Object projection matrices are not supported for LightProbe objects!");
     };
@@ -6878,247 +6859,7 @@ var LoaderContainer = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = LoaderContainer;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer"}],"awayjs-display/lib/display/Mesh":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Point = require("awayjs-core/lib/geom/Point");
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var Graphics = require("awayjs-display/lib/graphics/Graphics");
-var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
-var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-/**
- * Mesh is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
- * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
- * of the graphics to be assigned different materials.
- */
-var Mesh = (function (_super) {
-    __extends(Mesh, _super);
-    /**
-     * Create a new Mesh object.
-     *
-     * @param material    [optional]        The material with which to render the Mesh.
-     */
-    function Mesh(material) {
-        var _this = this;
-        if (material === void 0) { material = null; }
-        _super.call(this);
-        this._castsShadows = true;
-        this._shareAnimationGraphics = true;
-        //temp point used in hit testing
-        this._tempPoint = new Point();
-        this._pIsEntity = true;
-        this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
-        this._graphics = new Graphics(this); //unique graphics object for each Mesh
-        this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
-        this.material = material;
-    }
-    Object.defineProperty(Mesh.prototype, "assetType", {
-        /**
-         *
-         */
-        get: function () {
-            return Mesh.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "castsShadows", {
-        /**
-         * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
-         */
-        get: function () {
-            return this._castsShadows;
-        },
-        set: function (value) {
-            this._castsShadows = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "graphics", {
-        /**
-         * The graphics used by the mesh that provides it with its shape.
-         */
-        get: function () {
-            if (this._iSourcePrefab)
-                this._iSourcePrefab._iValidate();
-            return this._graphics;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "animator", {
-        /**
-         * Defines the animator of the graphics object.  Default value is <code>null</code>.
-         */
-        get: function () {
-            return this._graphics.animator;
-        },
-        set: function (value) {
-            if (this._graphics.animator)
-                this._graphics.animator.removeOwner(this);
-            this._graphics.animator = value;
-            if (this._graphics.animator)
-                this._graphics.animator.addOwner(this);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "material", {
-        /**
-         * The material with which to render the Mesh.
-         */
-        get: function () {
-            return this._graphics.material;
-        },
-        set: function (value) {
-            this._graphics.material = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "shareAnimationGraphics", {
-        /**
-         * Indicates whether or not the mesh share the same animation graphics.
-         */
-        get: function () {
-            return this._shareAnimationGraphics;
-        },
-        set: function (value) {
-            this._shareAnimationGraphics = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Mesh.prototype, "style", {
-        /**
-         *
-         */
-        get: function () {
-            return this._graphics.style;
-        },
-        set: function (value) {
-            this._graphics.style = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     */
-    Mesh.prototype.bakeTransformations = function () {
-        this._graphics.applyTransformation(this.transform.matrix3D);
-        this.transform.clearMatrix3D();
-    };
-    /**
-     * @inheritDoc
-     */
-    Mesh.prototype.dispose = function () {
-        this.disposeValues();
-        Mesh._meshes.push(this);
-    };
-    /**
-     * @inheritDoc
-     */
-    Mesh.prototype.disposeValues = function () {
-        _super.prototype.disposeValues.call(this);
-        this._graphics.dispose();
-    };
-    /**
-     * Clones this Mesh instance along with all it's children, while re-using the same
-     * material, graphics and animation set. The returned result will be a copy of this mesh,
-     * containing copies of all of it's children.
-     *
-     * Properties that are re-used (i.e. not cloned) by the new copy include name,
-     * graphics, and material. Properties that are cloned or created anew for the copy
-     * include subMeshes, children of the mesh, and the animator.
-     *
-     * If you want to copy just the mesh, reusing it's graphics and material while not
-     * cloning it's children, the simplest way is to create a new mesh manually:
-     *
-     * <code>
-     * var clone : Mesh = new Mesh(original.graphics, original.material);
-     * </code>
-     */
-    Mesh.prototype.clone = function () {
-        var newInstance = (Mesh._meshes.length) ? Mesh._meshes.pop() : new Mesh();
-        this.copyTo(newInstance);
-        return newInstance;
-    };
-    Mesh.prototype.copyTo = function (mesh) {
-        _super.prototype.copyTo.call(this, mesh);
-        mesh.castsShadows = this._castsShadows;
-        mesh.shareAnimationGraphics = this._shareAnimationGraphics;
-        this._graphics.copyTo(mesh.graphics);
-    };
-    /**
-     * //TODO
-     *
-     * @protected
-     */
-    Mesh.prototype._pUpdateBoxBounds = function () {
-        _super.prototype._pUpdateBoxBounds.call(this);
-        this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
-    };
-    Mesh.prototype._pUpdateSphereBounds = function () {
-        _super.prototype._pUpdateSphereBounds.call(this);
-        var box = this.getBox();
-        if (!this._center)
-            this._center = new Vector3D();
-        this._center.x = box.x + box.width / 2;
-        this._center.y = box.y + box.height / 2;
-        this._center.z = box.z + box.depth / 2;
-        this._pSphereBounds = this._graphics.getSphereBounds(this._center, this._pSphereBounds);
-    };
-    /**
-     * //TODO
-     *
-     * @private
-     */
-    Mesh.prototype.onGraphicsBoundsInvalid = function (event) {
-        this._pInvalidateBounds();
-    };
-    /**
-     *
-     * @param renderer
-     *
-     * @internal
-     */
-    Mesh.prototype._acceptTraverser = function (traverser) {
-        this.graphics.acceptTraverser(traverser);
-    };
-    Mesh.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
-        if (this._graphics.count) {
-            this._tempPoint.setTo(x, y);
-            var local = this.globalToLocal(this._tempPoint, this._tempPoint);
-            var box;
-            //early out for box test
-            if (!(box = this.getBox()).contains(local.x, local.y, 0))
-                return false;
-            //early out for non-shape tests
-            if (!shapeFlag)
-                return true;
-            //ok do the graphics thing
-            if (this._graphics._hitTestPointInternal(local.x, local.y))
-                return true;
-        }
-        return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
-    };
-    Mesh.prototype.clear = function () {
-        _super.prototype.clear.call(this);
-        this._graphics.clear();
-    };
-    Mesh._meshes = new Array();
-    Mesh.assetType = "[asset Mesh]";
-    return Mesh;
-})(DisplayObjectContainer);
-module.exports = Mesh;
-
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/MovieClip":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer"}],"awayjs-display/lib/display/MovieClip":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7522,15 +7263,15 @@ var PointLight = (function (_super) {
         _super.prototype._pUpdateSphereBounds.call(this);
         this._pSphereBounds.radius = this._pFallOff;
     };
-    PointLight.prototype.iGetObjectProjectionMatrix = function (entity, camera, target) {
+    PointLight.prototype.iGetObjectProjectionMatrix = function (entity, cameraTransform, target) {
         if (target === void 0) { target = null; }
         var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
         var m = new Matrix3D();
         // todo: do not use lookAt on Light
-        m.copyFrom(entity.getRenderSceneTransform(camera));
+        m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
         m.append(this._pParent.inverseSceneTransform);
         this.lookAt(m.position);
-        m.copyFrom(entity.getRenderSceneTransform(camera));
+        m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
         m.append(this.inverseSceneTransform);
         var box = entity.getBox();
         var v1 = m.deltaTransformVector(new Vector3D(box.left, box.bottom, box.front));
@@ -7583,8 +7324,6 @@ var Scene = (function (_super) {
     Scene.prototype.traversePartitions = function (traverser) {
         var i = 0;
         var len = this._partitions.length;
-        traverser.scene = this;
-        this._iCollectionMark++;
         while (i < len)
             this._partitions[i++].traverse(traverser);
     };
@@ -7926,7 +7665,247 @@ var Skybox = (function (_super) {
 })(DisplayObject);
 module.exports = Skybox;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-display/lib/textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture"}],"awayjs-display/lib/display/Sprite":[function(require,module,exports){
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Point = require("awayjs-core/lib/geom/Point");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
+var Graphics = require("awayjs-display/lib/graphics/Graphics");
+var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
+var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+/**
+ * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
+ * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
+ * of the graphics to be assigned different materials.
+ */
+var Sprite = (function (_super) {
+    __extends(Sprite, _super);
+    /**
+     * Create a new Sprite object.
+     *
+     * @param material    [optional]        The material with which to render the Sprite.
+     */
+    function Sprite(material) {
+        var _this = this;
+        if (material === void 0) { material = null; }
+        _super.call(this);
+        this._castsShadows = true;
+        this._shareAnimationGraphics = true;
+        //temp point used in hit testing
+        this._tempPoint = new Point();
+        this._pIsEntity = true;
+        this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
+        this._graphics = new Graphics(this); //unique graphics object for each Sprite
+        this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
+        this.material = material;
+    }
+    Object.defineProperty(Sprite.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return Sprite.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Sprite.prototype, "castsShadows", {
+        /**
+         * Indicates whether or not the Sprite can cast shadows. Default value is <code>true</code>.
+         */
+        get: function () {
+            return this._castsShadows;
+        },
+        set: function (value) {
+            this._castsShadows = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Sprite.prototype, "graphics", {
+        /**
+         * The graphics used by the sprite that provides it with its shape.
+         */
+        get: function () {
+            if (this._iSourcePrefab)
+                this._iSourcePrefab._iValidate();
+            return this._graphics;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Sprite.prototype, "animator", {
+        /**
+         * Defines the animator of the graphics object.  Default value is <code>null</code>.
+         */
+        get: function () {
+            return this._graphics.animator;
+        },
+        set: function (value) {
+            if (this._graphics.animator)
+                this._graphics.animator.removeOwner(this);
+            this._graphics.animator = value;
+            if (this._graphics.animator)
+                this._graphics.animator.addOwner(this);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Sprite.prototype, "material", {
+        /**
+         * The material with which to render the Sprite.
+         */
+        get: function () {
+            return this._graphics.material;
+        },
+        set: function (value) {
+            this._graphics.material = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Sprite.prototype, "shareAnimationGraphics", {
+        /**
+         * Indicates whether or not the sprite share the same animation graphics.
+         */
+        get: function () {
+            return this._shareAnimationGraphics;
+        },
+        set: function (value) {
+            this._shareAnimationGraphics = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Sprite.prototype, "style", {
+        /**
+         *
+         */
+        get: function () {
+            return this._graphics.style;
+        },
+        set: function (value) {
+            this._graphics.style = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    Sprite.prototype.bakeTransformations = function () {
+        this._graphics.applyTransformation(this.transform.matrix3D);
+        this.transform.clearMatrix3D();
+    };
+    /**
+     * @inheritDoc
+     */
+    Sprite.prototype.dispose = function () {
+        this.disposeValues();
+        Sprite._sprites.push(this);
+    };
+    /**
+     * @inheritDoc
+     */
+    Sprite.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
+        this._graphics.dispose();
+    };
+    /**
+     * Clones this Sprite instance along with all it's children, while re-using the same
+     * material, graphics and animation set. The returned result will be a copy of this sprite,
+     * containing copies of all of it's children.
+     *
+     * Properties that are re-used (i.e. not cloned) by the new copy include name,
+     * graphics, and material. Properties that are cloned or created anew for the copy
+     * include subSpritees, children of the sprite, and the animator.
+     *
+     * If you want to copy just the sprite, reusing it's graphics and material while not
+     * cloning it's children, the simplest way is to create a new sprite manually:
+     *
+     * <code>
+     * var clone : Sprite = new Sprite(original.graphics, original.material);
+     * </code>
+     */
+    Sprite.prototype.clone = function () {
+        var newInstance = (Sprite._sprites.length) ? Sprite._sprites.pop() : new Sprite();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    Sprite.prototype.copyTo = function (sprite) {
+        _super.prototype.copyTo.call(this, sprite);
+        sprite.castsShadows = this._castsShadows;
+        sprite.shareAnimationGraphics = this._shareAnimationGraphics;
+        this._graphics.copyTo(sprite.graphics);
+    };
+    /**
+     * //TODO
+     *
+     * @protected
+     */
+    Sprite.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
+    };
+    Sprite.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        var box = this.getBox();
+        if (!this._center)
+            this._center = new Vector3D();
+        this._center.x = box.x + box.width / 2;
+        this._center.y = box.y + box.height / 2;
+        this._center.z = box.z + box.depth / 2;
+        this._pSphereBounds = this._graphics.getSphereBounds(this._center, this._pSphereBounds);
+    };
+    /**
+     * //TODO
+     *
+     * @private
+     */
+    Sprite.prototype.onGraphicsBoundsInvalid = function (event) {
+        this._pInvalidateBounds();
+    };
+    /**
+     *
+     * @param renderer
+     *
+     * @internal
+     */
+    Sprite.prototype._acceptTraverser = function (traverser) {
+        this.graphics.acceptTraverser(traverser);
+    };
+    Sprite.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
+        if (this._graphics.count) {
+            this._tempPoint.setTo(x, y);
+            var local = this.globalToLocal(this._tempPoint, this._tempPoint);
+            var box;
+            //early out for box test
+            if (!(box = this.getBox()).contains(local.x, local.y, 0))
+                return false;
+            //early out for non-shape tests
+            if (!shapeFlag)
+                return true;
+            //ok do the graphics thing
+            if (this._graphics._hitTestPointInternal(local.x, local.y))
+                return true;
+        }
+        return _super.prototype._hitTestPointInternal.call(this, x, y, shapeFlag, masksFlag);
+    };
+    Sprite.prototype.clear = function () {
+        _super.prototype.clear.call(this);
+        this._graphics.clear();
+    };
+    Sprite._sprites = new Array();
+    Sprite.assetType = "[asset Sprite]";
+    return Sprite;
+})(DisplayObjectContainer);
+module.exports = Sprite;
+
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7940,7 +7919,7 @@ var Matrix = require("awayjs-core/lib/geom/Matrix");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var Graphics = require("awayjs-display/lib/graphics/Graphics");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
@@ -8180,7 +8159,7 @@ var TextField = (function (_super) {
     });
     Object.defineProperty(TextField.prototype, "graphics", {
         /**
-         * The geometry used by the mesh that provides it with its shape.
+         * The geometry used by the sprite that provides it with its shape.
          */
         get: function () {
             if (this._textGraphicsDirty)
@@ -8769,10 +8748,10 @@ var TextField = (function (_super) {
     TextField._textFields = new Array();
     TextField.assetType = "[asset TextField]";
     return TextField;
-})(Mesh);
+})(Sprite);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/display/Mesh":"awayjs-display/lib/display/Mesh","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 /**
  * The CapsStyle class is an enumeration of constant values that specify the
  * caps style to use in drawing lines. The constants are provided for use as
@@ -10577,7 +10556,7 @@ var Graphics = (function () {
             final_vert_list[final_vert_cnt++] = 1.0;
             final_vert_list[final_vert_cnt++] = 1.0;
         }
-        // todo: handle material / submesh settings, and check if a material / submesh already exists for this settings
+        // todo: handle material / subsprite settings, and check if a material / subsprite already exists for this settings
         var attributesView = new AttributesView(Float32Array, 7);
         attributesView.set(final_vert_list);
         var attributesBuffer = attributesView.buffer;
@@ -12032,13 +12011,13 @@ var ElementsUtils = require("awayjs-display/lib/utils/ElementsUtils");
  *
  * Graphics is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
  * normals, uvs, etc. It also contains a reference to an animation class, which defines how the geometry moves.
- * A Graphics object is assigned to a Mesh, a scene graph occurence of the geometry, which in turn assigns
+ * A Graphics object is assigned to a Sprite, a scene graph occurence of the geometry, which in turn assigns
  * the SubGeometries to its respective TriangleGraphic objects.
  *
  *
  *
  * @see away.core.base.SubGraphics
- * @see away.entities.Mesh
+ * @see away.entities.Sprite
  *
  * @class Graphics
  */
@@ -12307,11 +12286,11 @@ var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var RenderableEvent = require("awayjs-display/lib/events/RenderableEvent");
 var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 /**
- * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Mesh object.
+ * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Sprite object.
  *
  *
  * @see away.base.ElementsBase
- * @see away.entities.Mesh
+ * @see away.entities.Sprite
  *
  * @class away.base.Graphic
  */
@@ -12393,7 +12372,7 @@ var Graphic = (function (_super) {
         //			return this.sourceEntity.shaderPickingDetails;
         //		}
         /**
-         * The material used to render the current TriangleGraphic. If set to null, its parent Mesh's material will be used instead.
+         * The material used to render the current TriangleGraphic. If set to null, its parent Sprite's material will be used instead.
          */
         get: function () {
             return this._material || this.parent.material;
@@ -12410,7 +12389,7 @@ var Graphic = (function (_super) {
     });
     Object.defineProperty(Graphic.prototype, "style", {
         /**
-         * The style used to render the current TriangleGraphic. If set to null, its parent Mesh's style will be used instead.
+         * The style used to render the current TriangleGraphic. If set to null, its parent Sprite's style will be used instead.
          */
         get: function () {
             return this._style || this.parent.style;
@@ -12758,8 +12737,8 @@ var TriangleElements = (function (_super) {
     Object.defineProperty(TriangleElements.prototype, "useCondensedIndices", {
         /**
          * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
-         * by condensing the number of joint index values required per mesh. Only applicable to
-         * skeleton animations that utilise more than one mesh object. Defaults to false.
+         * by condensing the number of joint index values required per sprite. Only applicable to
+         * skeleton animations that utilise more than one sprite object. Defaults to false.
          */
         get: function () {
             return this._useCondensedIndices;
@@ -14116,7 +14095,7 @@ var MaterialBase = (function (_super) {
     });
     Object.defineProperty(MaterialBase.prototype, "style", {
         /**
-         * The style used to render the current TriangleGraphic. If set to null, its parent Mesh's style will be used instead.
+         * The style used to render the current TriangleGraphic. If set to null, its parent Sprite's style will be used instead.
          */
         get: function () {
             return this._style;
@@ -14856,14 +14835,11 @@ var CascadeShadowMapper = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    CascadeShadowMapper.prototype.pDrawDepthMap = function (target, scene, renderer) {
+    CascadeShadowMapper.prototype.pDrawDepthMap = function (scene, target, renderer) {
         if (this._pScissorRectsInvalid)
             this.updateScissorRects();
-        this._pCasterCollector.cullPlanes = this._pCullPlanes;
-        this._pCasterCollector.camera = this._pOverallDepthCamera;
-        this._pCasterCollector.clear();
-        scene.traversePartitions(this._pCasterCollector);
-        renderer._iRenderCascades(this._pCasterCollector, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
+        renderer.cullPlanes = this._pCullPlanes;
+        renderer._iRenderCascades(this._pOverallDepthCamera, scene, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
     };
     CascadeShadowMapper.prototype.updateScissorRects = function () {
         var half = this._pDepthMapSize * .5;
@@ -14873,15 +14849,15 @@ var CascadeShadowMapper = (function (_super) {
         this._pScissorRects[3] = new Rectangle(half, half, half, half);
         this._pScissorRectsInvalid = false;
     };
-    CascadeShadowMapper.prototype.pUpdateDepthProjection = function (viewCamera) {
+    CascadeShadowMapper.prototype.pUpdateDepthProjection = function (camera) {
         var matrix;
-        var projection = viewCamera.projection;
+        var projection = camera.projection;
         var projectionNear = projection.near;
         var projectionRange = projection.far - projectionNear;
-        this.pUpdateProjectionFromFrustumCorners(viewCamera, viewCamera.projection.frustumCorners, this._pMatrix);
+        this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
         this._pMatrix.appendScale(.96, .96, 1);
         this._pOverallDepthProjection.matrix = this._pMatrix;
-        this.pUpdateCullPlanes(viewCamera);
+        this.pUpdateCullPlanes(camera);
         for (var i = 0; i < this._numCascades; ++i) {
             matrix = this._depthLenses[i].matrix;
             this._nearPlaneDistances[i] = projectionNear + this._splitRatios[i] * projectionRange;
@@ -15014,7 +14990,7 @@ var CubeMapShadowMapper = (function (_super) {
         return new SingleCubeTexture(new ImageCube(this._pDepthMapSize));
     };
     //@override
-    CubeMapShadowMapper.prototype.pUpdateDepthProjection = function (viewCamera) {
+    CubeMapShadowMapper.prototype.pUpdateDepthProjection = function (camera) {
         var light = (this._pLight);
         var maxDistance = light._pFallOff;
         var pos = this._pLight.scenePosition;
@@ -15025,15 +15001,10 @@ var CubeMapShadowMapper = (function (_super) {
         }
     };
     //@override
-    CubeMapShadowMapper.prototype.pDrawDepthMap = function (target, scene, renderer) {
-        for (var i = 0; i < 6; ++i) {
-            if (this._needsRender[i]) {
-                this._pCasterCollector.camera = this._depthCameras[i];
-                this._pCasterCollector.clear();
-                scene.traversePartitions(this._pCasterCollector);
-                renderer._iRender(this._pCasterCollector, target.imageCube, null, i);
-            }
-        }
+    CubeMapShadowMapper.prototype.pDrawDepthMap = function (scene, target, renderer) {
+        for (var i = 0; i < 6; ++i)
+            if (this._needsRender[i])
+                renderer._iRender(this._depthCameras[i], scene, target.imageCube, null, i);
     };
     return CubeMapShadowMapper;
 })(ShadowMapperBase);
@@ -15117,17 +15088,14 @@ var DirectionalShadowMapper = (function (_super) {
         return new Single2DTexture(new Image2D(this._pDepthMapSize, this._pDepthMapSize));
     };
     //@override
-    DirectionalShadowMapper.prototype.pDrawDepthMap = function (target, scene, renderer) {
-        this._pCasterCollector.camera = this._pOverallDepthCamera;
-        this._pCasterCollector.cullPlanes = this._pCullPlanes;
-        this._pCasterCollector.clear();
-        scene.traversePartitions(this._pCasterCollector);
-        renderer._iRender(this._pCasterCollector, target.image2D);
+    DirectionalShadowMapper.prototype.pDrawDepthMap = function (scene, target, renderer) {
+        renderer.cullPlanes = this._pCullPlanes;
+        renderer._iRender(this._pOverallDepthCamera, scene, target.image2D);
     };
     //@protected
-    DirectionalShadowMapper.prototype.pUpdateCullPlanes = function (viewCamera) {
+    DirectionalShadowMapper.prototype.pUpdateCullPlanes = function (camera) {
         var lightFrustumPlanes = this._pOverallDepthCamera.frustumPlanes;
-        var viewFrustumPlanes = viewCamera.frustumPlanes;
+        var viewFrustumPlanes = camera.frustumPlanes;
         this._pCullPlanes.length = 4;
         this._pCullPlanes[0] = lightFrustumPlanes[0];
         this._pCullPlanes[1] = lightFrustumPlanes[1];
@@ -15146,12 +15114,12 @@ var DirectionalShadowMapper = (function (_super) {
         }
     };
     //@override
-    DirectionalShadowMapper.prototype.pUpdateDepthProjection = function (viewCamera) {
-        this.pUpdateProjectionFromFrustumCorners(viewCamera, viewCamera.projection.frustumCorners, this._pMatrix);
+    DirectionalShadowMapper.prototype.pUpdateDepthProjection = function (camera) {
+        this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
         this._pOverallDepthProjection.matrix = this._pMatrix;
-        this.pUpdateCullPlanes(viewCamera);
+        this.pUpdateCullPlanes(camera);
     };
-    DirectionalShadowMapper.prototype.pUpdateProjectionFromFrustumCorners = function (viewCamera, corners, matrix) {
+    DirectionalShadowMapper.prototype.pUpdateProjectionFromFrustumCorners = function (camera, corners, matrix) {
         var raw = Matrix3DUtils.RAW_DATA_CONTAINER;
         var dir;
         var x, y, z;
@@ -15161,14 +15129,14 @@ var DirectionalShadowMapper = (function (_super) {
         var light = this._pLight;
         dir = light.sceneDirection;
         this._pOverallDepthCamera.transform.matrix3D = this._pLight.sceneTransform;
-        x = Math.floor((viewCamera.x - dir.x * this._pLightOffset) / this._pSnap) * this._pSnap;
-        y = Math.floor((viewCamera.y - dir.y * this._pLightOffset) / this._pSnap) * this._pSnap;
-        z = Math.floor((viewCamera.z - dir.z * this._pLightOffset) / this._pSnap) * this._pSnap;
+        x = Math.floor((camera.x - dir.x * this._pLightOffset) / this._pSnap) * this._pSnap;
+        y = Math.floor((camera.y - dir.y * this._pLightOffset) / this._pSnap) * this._pSnap;
+        z = Math.floor((camera.z - dir.z * this._pLightOffset) / this._pSnap) * this._pSnap;
         this._pOverallDepthCamera.x = x;
         this._pOverallDepthCamera.y = y;
         this._pOverallDepthCamera.z = z;
         this._pMatrix.copyFrom(this._pOverallDepthCamera.inverseSceneTransform);
-        this._pMatrix.prepend(viewCamera.sceneTransform);
+        this._pMatrix.prepend(camera.sceneTransform);
         this._pMatrix.transformVectors(corners, this._pLocalFrustum);
         minX = maxX = this._pLocalFrustum[0];
         minY = maxY = this._pLocalFrustum[1];
@@ -15253,14 +15221,14 @@ var NearDirectionalShadowMapper = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    NearDirectionalShadowMapper.prototype.pUpdateDepthProjection = function (viewCamera) {
-        var corners = viewCamera.projection.frustumCorners;
+    NearDirectionalShadowMapper.prototype.pUpdateDepthProjection = function (camera) {
+        var corners = camera.projection.frustumCorners;
         for (var i = 0; i < 12; ++i) {
             var v = corners[i];
             this._pLocalFrustum[i] = v;
             this._pLocalFrustum[i + 12] = v + (corners[i + 12] - v) * this._coverageRatio;
         }
-        this.pUpdateProjectionFromFrustumCorners(viewCamera, this._pLocalFrustum, this._pMatrix);
+        this.pUpdateProjectionFromFrustumCorners(camera, this._pLocalFrustum, this._pMatrix);
         this._pOverallDepthProjection.matrix = this._pMatrix;
     };
     return NearDirectionalShadowMapper;
@@ -15276,18 +15244,13 @@ var __extends = this.__extends || function (d, b) {
 };
 var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
-var ShadowCasterCollector = require("awayjs-display/lib/traverse/ShadowCasterCollector");
 var ShadowMapperBase = (function (_super) {
     __extends(ShadowMapperBase, _super);
     function ShadowMapperBase() {
-        _super.call(this);
+        _super.apply(this, arguments);
         this._pDepthMapSize = 2048;
         this._autoUpdateShadows = true;
-        this._pCasterCollector = this.pCreateCasterCollector();
     }
-    ShadowMapperBase.prototype.pCreateCasterCollector = function () {
-        return new ShadowCasterCollector();
-    };
     Object.defineProperty(ShadowMapperBase.prototype, "autoUpdateShadows", {
         get: function () {
             return this._autoUpdateShadows;
@@ -15338,7 +15301,6 @@ var ShadowMapperBase = (function (_super) {
         configurable: true
     });
     ShadowMapperBase.prototype.dispose = function () {
-        this._pCasterCollector = null;
         if (this._depthMap && !this._explicitDepthMap)
             this._depthMap.dispose();
         this._depthMap = null;
@@ -15346,17 +15308,17 @@ var ShadowMapperBase = (function (_super) {
     ShadowMapperBase.prototype.pCreateDepthTexture = function () {
         throw new AbstractMethodError();
     };
-    ShadowMapperBase.prototype.iRenderDepthMap = function (entityCollector, renderer) {
+    ShadowMapperBase.prototype.iRenderDepthMap = function (camera, scene, renderer) {
         this._iShadowsInvalid = false;
-        this.pUpdateDepthProjection(entityCollector.camera);
+        this.pUpdateDepthProjection(camera);
         if (!this._depthMap)
             this._depthMap = this.pCreateDepthTexture();
-        this.pDrawDepthMap(this._depthMap, entityCollector.scene, renderer);
+        this.pDrawDepthMap(scene, this._depthMap, renderer);
     };
-    ShadowMapperBase.prototype.pUpdateDepthProjection = function (viewCamera) {
+    ShadowMapperBase.prototype.pUpdateDepthProjection = function (camera) {
         throw new AbstractMethodError();
     };
-    ShadowMapperBase.prototype.pDrawDepthMap = function (target, scene, renderer) {
+    ShadowMapperBase.prototype.pDrawDepthMap = function (scene, target, renderer) {
         throw new AbstractMethodError();
     };
     ShadowMapperBase.prototype._pSetDepthMapSize = function (value) {
@@ -15373,7 +15335,7 @@ var ShadowMapperBase = (function (_super) {
 })(AssetBase);
 module.exports = ShadowMapperBase;
 
-},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/traverse/ShadowCasterCollector":"awayjs-display/lib/traverse/ShadowCasterCollector"}],"awayjs-display/lib/partition/BasicPartition":[function(require,module,exports){
+},{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/partition/BasicPartition":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15415,7 +15377,7 @@ var CameraNode = (function (_super) {
      * @inheritDoc
      */
     CameraNode.prototype.acceptTraverser = function (traverser) {
-        // todo: dead end for now, if it has a debug mesh, then sure accept that
+        // todo: dead end for now, if it has a debug sprite, then sure accept that
     };
     return CameraNode;
 })(EntityNode);
@@ -15617,7 +15579,7 @@ var EntityNode = (function (_super) {
     EntityNode.prototype.acceptTraverser = function (traverser) {
         if (traverser.enterNode(this)) {
             this._displayObject._acceptTraverser(traverser);
-            if (this._displayObject.debugVisible && traverser.isEntityCollector)
+            if (this._displayObject.debugVisible && traverser.isDebugEnabled)
                 this.bounds.boundsPrimitive._acceptTraverser(traverser);
         }
     };
@@ -15926,8 +15888,6 @@ var SceneGraphNode = (function (_super) {
         this._pChildNodes = new Array();
         this._childDepths = new Array();
         this._childMasks = new Array();
-        this._numChildMasks = 0;
-        this._pNumChildNodes = 0;
     }
     /**
      *
@@ -15937,13 +15897,13 @@ var SceneGraphNode = (function (_super) {
         //containers nodes are for ordering only, no need to check enterNode or debugVisible
         if (this.numEntities == 0)
             return;
+        var i;
+        for (i = this._pChildNodes.length - 1; i >= 0; i--)
+            this._pChildNodes[i].acceptTraverser(traverser);
+        for (i = this._childMasks.length - 1; i >= 0; i--)
+            this._childMasks[i].acceptTraverser(traverser);
         if (this._pEntityNode)
             this._pEntityNode.acceptTraverser(traverser);
-        var i;
-        for (i = 0; i < this._numChildMasks; i++)
-            this._childMasks[i].acceptTraverser(traverser);
-        for (i = 0; i < this._pNumChildNodes; i++)
-            this._pChildNodes[i].acceptTraverser(traverser);
     };
     /**
      *
@@ -15957,7 +15917,6 @@ var SceneGraphNode = (function (_super) {
         }
         else if (node._displayObject.maskMode) {
             this._childMasks.push(node);
-            this._numChildMasks = this._childMasks.length;
         }
         else {
             var depth = node._displayObject._depthID;
@@ -15975,7 +15934,6 @@ var SceneGraphNode = (function (_super) {
                 this._pChildNodes.push(node);
                 this._childDepths.push(depth);
             }
-            this._pNumChildNodes = this._childDepths.length;
         }
         var numEntities = node.isSceneGraphNode ? node.numEntities : 1;
         node = this;
@@ -15994,13 +15952,11 @@ var SceneGraphNode = (function (_super) {
         }
         else if (node._displayObject.maskMode) {
             this._childMasks.splice(this._childMasks.indexOf(node), 1);
-            this._numChildMasks = this._childMasks.length;
         }
         else {
             var index = this._pChildNodes.indexOf(node);
             this._pChildNodes.splice(index, 1);
             this._childDepths.splice(index, 1);
-            this._pNumChildNodes = this._childDepths.length;
         }
         var numEntities = node.numEntities;
         node = this;
@@ -16305,7 +16261,7 @@ var JSPickingCollider = (function () {
                         pickingCollisionVO.uv = new Point(u * uv0.x + v * uv1.x + w * uv2.x, u * uv0.y + v * uv1.y + w * uv2.y);
                     }
                     pickingCollisionVO.index = index;
-                    //						pickingCollisionVO.elementsIndex = this.pGetMeshGraphicIndex(renderable);
+                    //						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
                     // if not looking for best hit, first found will do...
                     if (!this._findClosestCollision)
                         return true;
@@ -16445,7 +16401,7 @@ var JSPickingCollider = (function () {
     //			pickingCollisionVO.localNormal = new Vector3D(0, 0, 1);
     //			pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
     //			pickingCollisionVO.index = index;
-    //			//						pickingCollisionVO.elementsIndex = this.pGetMeshGraphicIndex(renderable);
+    //			//						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
     //
     //			// if not looking for best hit, first found will do...
     //			if (!this._findClosestCollision)
@@ -16502,7 +16458,6 @@ module.exports = PickingCollisionVO;
 
 },{}],"awayjs-display/lib/pick/RaycastPicker":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var RaycastCollector = require("awayjs-display/lib/traverse/RaycastCollector");
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
  * Performs an initial coarse boundary calculation to return a subset of entities whose bounding volumes intersect with the specified ray,
@@ -16521,10 +16476,9 @@ var RaycastPicker = (function () {
         if (findClosestCollision === void 0) { findClosestCollision = false; }
         this._ignoredRenderables = [];
         this._onlyMouseEnabled = true;
-        this._numRenderables = 0;
-        this._raycastCollector = new RaycastCollector();
-        this._findClosestCollision = findClosestCollision;
         this._renderables = new Array();
+        this.isDebugEnabled = false;
+        this._findClosestCollision = findClosestCollision;
     }
     Object.defineProperty(RaycastPicker.prototype, "onlyMouseEnabled", {
         /**
@@ -16539,6 +16493,14 @@ var RaycastPicker = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+     *
+     * @param node The Partition3DNode object to frustum-test.
+     */
+    RaycastPicker.prototype.enterNode = function (node) {
+        return node.isIntersectingRay(this._rayPosition, this._rayDirection);
+    };
     /**
      * @inheritDoc
      */
@@ -16555,25 +16517,17 @@ var RaycastPicker = (function () {
      * @inheritDoc
      */
     RaycastPicker.prototype.getSceneCollision = function (rayPosition, rayDirection, scene) {
-        //clear collector
-        this._raycastCollector.clear();
-        //setup ray vectors
-        this._raycastCollector.rayPosition = rayPosition;
-        this._raycastCollector.rayDirection = rayDirection;
+        this._rayPosition = rayPosition;
+        this._rayDirection = rayDirection;
         // collect entities to test
-        scene.traversePartitions(this._raycastCollector);
-        this._numRenderables = 0;
-        var node = this._raycastCollector.renderableHead;
-        var renderable;
-        while (node) {
-            if (!this.isIgnored(renderable = node.renderable))
-                this._renderables[this._numRenderables++] = renderable;
-            node = node.next;
-        }
+        scene.traversePartitions(this);
         //early out if no collisions detected
-        if (!this._numRenderables)
+        if (!this._renderables.length)
             return null;
-        return this.getPickingCollisionVO(this._raycastCollector);
+        var collisionVO = this.getPickingCollisionVO();
+        //discard renderables
+        this._renderables.length = 0;
+        return collisionVO;
     };
     //		public getEntityCollision(position:Vector3D, direction:Vector3D, entities:Array<IEntity>):PickingCollisionVO
     //		{
@@ -16606,9 +16560,7 @@ var RaycastPicker = (function () {
     RaycastPicker.prototype.sortOnNearT = function (renderable1, renderable2) {
         return renderable1._iPickingCollisionVO.rayEntryDistance > renderable2._iPickingCollisionVO.rayEntryDistance ? 1 : -1;
     };
-    RaycastPicker.prototype.getPickingCollisionVO = function (collector) {
-        // trim before sorting
-        this._renderables.length = this._numRenderables;
+    RaycastPicker.prototype.getPickingCollisionVO = function () {
         // Sort entities from closest to furthest.
         this._renderables = this._renderables.sort(this.sortOnNearT); // TODO - test sort filter in JS
         // ---------------------------------------------------------------------
@@ -16619,8 +16571,8 @@ var RaycastPicker = (function () {
         var bestCollisionVO;
         var pickingCollisionVO;
         var renderable;
-        var i;
-        for (i = 0; i < this._numRenderables; ++i) {
+        var len = this._renderables.length;
+        for (var i = 0; i < len; i++) {
             renderable = this._renderables[i];
             pickingCollisionVO = renderable._iPickingCollisionVO;
             if (renderable.pickingCollider) {
@@ -16645,8 +16597,6 @@ var RaycastPicker = (function () {
                 }
             }
         }
-        //discard entities
-        this._renderables.length = 0;
         return bestCollisionVO;
     };
     RaycastPicker.prototype.getMasksCollision = function (masks) {
@@ -16685,68 +16635,47 @@ var RaycastPicker = (function () {
     RaycastPicker.prototype.dispose = function () {
         //TODO
     };
+    /**
+     *
+     * @param entity
+     */
+    RaycastPicker.prototype.applyDirectionalLight = function (entity) {
+        //don't do anything here
+    };
+    /**
+     *
+     * @param entity
+     */
+    RaycastPicker.prototype.applyRenderable = function (renderable) {
+        if (!this.isIgnored(renderable))
+            this._renderables.push(renderable);
+    };
+    /**
+     *
+     * @param entity
+     */
+    RaycastPicker.prototype.applyLightProbe = function (entity) {
+        //don't do anything here
+    };
+    /**
+     *
+     * @param entity
+     */
+    RaycastPicker.prototype.applyPointLight = function (entity) {
+        //don't do anything here
+    };
+    /**
+     *
+     * @param entity
+     */
+    RaycastPicker.prototype.applySkybox = function (entity) {
+        //don't do anything here
+    };
     return RaycastPicker;
 })();
 module.exports = RaycastPicker;
 
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/traverse/RaycastCollector":"awayjs-display/lib/traverse/RaycastCollector"}],"awayjs-display/lib/pool/RenderableListItemPool":[function(require,module,exports){
-var RenderableListItem = require("awayjs-display/lib/pool/RenderableListItem");
-/**
- * @class away.pool.RenderableListItemPool
- */
-var RenderableListItemPool = (function () {
-    function RenderableListItemPool() {
-        this._pool = new Array();
-        this._index = 0;
-        this._poolSize = 0;
-    }
-    /**
-     *
-     */
-    RenderableListItemPool.prototype.getItem = function () {
-        var item;
-        if (this._index == this._poolSize) {
-            item = new RenderableListItem();
-            this._pool[this._index++] = item;
-            ++this._poolSize;
-        }
-        else {
-            item = this._pool[this._index++];
-        }
-        return item;
-    };
-    /**
-     *
-     */
-    RenderableListItemPool.prototype.freeAll = function () {
-        var item;
-        var len = this._pool.length;
-        for (var i = 0; i < len; i++) {
-            item = this._pool[i];
-            item.renderable = null;
-            item.next = null;
-        }
-        this._index = 0;
-    };
-    RenderableListItemPool.prototype.dispose = function () {
-        this._pool.length = 0;
-    };
-    return RenderableListItemPool;
-})();
-module.exports = RenderableListItemPool;
-
-},{"awayjs-display/lib/pool/RenderableListItem":"awayjs-display/lib/pool/RenderableListItem"}],"awayjs-display/lib/pool/RenderableListItem":[function(require,module,exports){
-/**
- * @class away.pool.RenderableListItem
- */
-var RenderableListItem = (function () {
-    function RenderableListItem() {
-    }
-    return RenderableListItem;
-})();
-module.exports = RenderableListItem;
-
-},{}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16804,7 +16733,7 @@ var __extends = this.__extends || function (d, b) {
 var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 var PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 /**
- * A Capsule primitive mesh.
+ * A Capsule primitive sprite.
  */
 var PrimitiveCapsulePrefab = (function (_super) {
     __extends(PrimitiveCapsulePrefab, _super);
@@ -17069,7 +16998,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 /**
- * A UV Cone primitive mesh.
+ * A UV Cone primitive sprite.
  */
 var PrimitiveConePrefab = (function (_super) {
     __extends(PrimitiveConePrefab, _super);
@@ -17655,7 +17584,7 @@ var __extends = this.__extends || function (d, b) {
 var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 var PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 /**
- * A Cylinder primitive mesh.
+ * A Cylinder primitive sprite.
  */
 var PrimitiveCylinderPrefab = (function (_super) {
     __extends(PrimitiveCylinderPrefab, _super);
@@ -18232,7 +18161,7 @@ var __extends = this.__extends || function (d, b) {
 var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 var PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 /**
- * A Plane primitive mesh.
+ * A Plane primitive sprite.
  */
 var PrimitivePlanePrefab = (function (_super) {
     __extends(PrimitivePlanePrefab, _super);
@@ -18535,7 +18464,7 @@ var __extends = this.__extends || function (d, b) {
 };
 var PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 /**
- * A UV RegularPolygon primitive mesh.
+ * A UV RegularPolygon primitive sprite.
  */
 var PrimitivePolygonPrefab = (function (_super) {
     __extends(PrimitivePolygonPrefab, _super);
@@ -18609,7 +18538,7 @@ var AbstractMethodError = require("awayjs-core/lib/errors/AbstractMethodError");
 var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var LineElements = require("awayjs-display/lib/graphics/LineElements");
-var Mesh = require("awayjs-display/lib/display/Mesh");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
 /**
  * PrimitivePrefabBase is an abstract base class for polytope prefabs, which are simple pre-built geometric shapes
@@ -18752,17 +18681,17 @@ var PrimitivePrefabBase = (function (_super) {
             this.updateUVs();
     };
     PrimitivePrefabBase.prototype._pCreateObject = function () {
-        var mesh = new Mesh(this._material);
-        mesh.graphics.addGraphic(this._elements);
-        mesh._iSourcePrefab = this;
-        return mesh;
+        var sprite = new Sprite(this._material);
+        sprite.graphics.addGraphic(this._elements);
+        sprite._iSourcePrefab = this;
+        return sprite;
     };
     PrimitivePrefabBase.assetType = "[asset PrimitivePrefab]";
     return PrimitivePrefabBase;
 })(PrefabBase);
 module.exports = PrimitivePrefabBase;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/display/Mesh":"awayjs-display/lib/display/Mesh","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/graphics/LineElements":"awayjs-display/lib/graphics/LineElements","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","awayjs-display/lib/graphics/LineElements":"awayjs-display/lib/graphics/LineElements","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -18772,7 +18701,7 @@ var __extends = this.__extends || function (d, b) {
 var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 var PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 /**
- * A UV Sphere primitive mesh.
+ * A UV Sphere primitive sprite.
  */
 var PrimitiveSpherePrefab = (function (_super) {
     __extends(PrimitiveSpherePrefab, _super);
@@ -19066,7 +18995,7 @@ var __extends = this.__extends || function (d, b) {
 var ElementsType = require("awayjs-display/lib/graphics/ElementsType");
 var PrimitivePrefabBase = require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 /**
- * A UV Cylinder primitive mesh.
+ * A UV Cylinder primitive sprite.
  */
 var PrimitiveTorusPrefab = (function (_super) {
     __extends(PrimitiveTorusPrefab, _super);
@@ -19354,11 +19283,11 @@ var __extends = this.__extends || function (d, b) {
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var FontTable = require("awayjs-display/lib/text/TesselatedFontTable");
 /**
- * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Mesh object.
+ * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
  *
  * @see away.base.TriangleElements
- * @see away.entities.Mesh
+ * @see away.entities.Sprite
  *
  * @class away.base.GraphicBase
  */
@@ -19518,11 +19447,11 @@ var __extends = this.__extends || function (d, b) {
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var TesselatedFontChar = require("awayjs-display/lib/text/TesselatedFontChar");
 /**
- * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Mesh object.
+ * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
  *
  * @see away.base.TriangleElements
- * @see away.entities.Mesh
+ * @see away.entities.Sprite
  *
  * @class away.base.GraphicBase
  */
@@ -20106,335 +20035,7 @@ var TextureBase = (function (_super) {
 })(AssetBase);
 module.exports = TextureBase;
 
-},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/traverse/CollectorBase":[function(require,module,exports){
-var RenderableListItemPool = require("awayjs-display/lib/pool/RenderableListItemPool");
-/**
- * @class away.traverse.CollectorBase
- */
-var CollectorBase = (function () {
-    function CollectorBase() {
-        this._numCullPlanes = 0;
-        this._pRenderableListItemPool = new RenderableListItemPool();
-    }
-    Object.defineProperty(CollectorBase.prototype, "camera", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pCamera;
-        },
-        set: function (value) {
-            this._pCamera = value;
-            this._cullPlanes = this._pCamera.frustumPlanes;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CollectorBase.prototype, "cullPlanes", {
-        /**
-         *
-         */
-        get: function () {
-            return this._customCullPlanes;
-        },
-        set: function (value) {
-            this._customCullPlanes = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CollectorBase.prototype, "renderableHead", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pRenderableHead;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     */
-    CollectorBase.prototype.clear = function () {
-        this._cullPlanes = this._customCullPlanes ? this._customCullPlanes : (this._pCamera ? this._pCamera.frustumPlanes : null);
-        this._numCullPlanes = this._cullPlanes ? this._cullPlanes.length : 0;
-        this._pRenderableHead = null;
-        this._pRenderableListItemPool.freeAll();
-    };
-    /**
-     *
-     * @param node
-     * @returns {boolean}
-     */
-    CollectorBase.prototype.enterNode = function (node) {
-        var enter = this.scene._iCollectionMark != node._iCollectionMark && node.isInFrustum(this._cullPlanes, this._numCullPlanes);
-        node._iCollectionMark = this.scene._iCollectionMark;
-        return enter;
-    };
-    /**
-     *
-     * @param entity
-     */
-    CollectorBase.prototype.applyDirectionalLight = function (entity) {
-        //don't do anything here
-    };
-    /**
-     *
-     * @param entity
-     */
-    CollectorBase.prototype.applyRenderable = function (renderable) {
-        var item = this._pRenderableListItemPool.getItem();
-        item.renderable = renderable;
-        item.next = this._pRenderableHead;
-        this._pRenderableHead = item;
-    };
-    /**
-     *
-     * @param entity
-     */
-    CollectorBase.prototype.applyLightProbe = function (entity) {
-        //don't do anything here
-    };
-    /**
-     *
-     * @param entity
-     */
-    CollectorBase.prototype.applyPointLight = function (entity) {
-        //don't do anything here
-    };
-    /**
-     *
-     * @param entity
-     */
-    CollectorBase.prototype.applySkybox = function (entity) {
-        //don't do anything here
-    };
-    return CollectorBase;
-})();
-module.exports = CollectorBase;
-
-},{"awayjs-display/lib/pool/RenderableListItemPool":"awayjs-display/lib/pool/RenderableListItemPool"}],"awayjs-display/lib/traverse/EntityCollector":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-/**
- * @class away.traverse.EntityCollector
- */
-var EntityCollector = (function (_super) {
-    __extends(EntityCollector, _super);
-    function EntityCollector() {
-        _super.call(this);
-        this._pNumLights = 0;
-        this._numDirectionalLights = 0;
-        this._numPointLights = 0;
-        this._numLightProbes = 0;
-        this._pLights = new Array();
-        this._directionalLights = new Array();
-        this._pointLights = new Array();
-        this._lightProbes = new Array();
-        this.isEntityCollector = true;
-    }
-    Object.defineProperty(EntityCollector.prototype, "directionalLights", {
-        /**
-         *
-         */
-        get: function () {
-            return this._directionalLights;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EntityCollector.prototype, "lightProbes", {
-        /**
-         *
-         */
-        get: function () {
-            return this._lightProbes;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EntityCollector.prototype, "lights", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pLights;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EntityCollector.prototype, "pointLights", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pointLights;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(EntityCollector.prototype, "skyBox", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pSkybox;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     * @param entity
-     */
-    EntityCollector.prototype.applyDirectionalLight = function (entity) {
-        this._directionalLights[this._numDirectionalLights++] = entity;
-    };
-    /**
-     *
-     * @param entity
-     */
-    EntityCollector.prototype.applyLightProbe = function (entity) {
-        this._lightProbes[this._numLightProbes++] = entity;
-    };
-    /**
-     *
-     * @param entity
-     */
-    EntityCollector.prototype.applyPointLight = function (entity) {
-        this._pointLights[this._numPointLights++] = entity;
-    };
-    /**
-     *
-     * @param entity
-     */
-    EntityCollector.prototype.applySkybox = function (entity) {
-        this._pSkybox = entity;
-    };
-    /**
-     *
-     */
-    EntityCollector.prototype.clear = function () {
-        _super.prototype.clear.call(this);
-        this._pSkybox = null;
-        if (this._pNumLights > 0)
-            this._pLights.length = this._pNumLights = 0;
-        if (this._numDirectionalLights > 0)
-            this._directionalLights.length = this._numDirectionalLights = 0;
-        if (this._numPointLights > 0)
-            this._pointLights.length = this._numPointLights = 0;
-        if (this._numLightProbes > 0)
-            this._lightProbes.length = this._numLightProbes = 0;
-    };
-    return EntityCollector;
-})(CollectorBase);
-module.exports = EntityCollector;
-
-},{"awayjs-display/lib/traverse/CollectorBase":"awayjs-display/lib/traverse/CollectorBase"}],"awayjs-display/lib/traverse/RaycastCollector":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var Vector3D = require("awayjs-core/lib/geom/Vector3D");
-var CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-/**
- * The RaycastCollector class is a traverser for scene partitions that collects all scene graph entities that are
- * considered intersecting with the defined ray.
- *
- * @see away.partition.Partition
- * @see away.entities.IEntity
- *
- * @class away.traverse.RaycastCollector
- */
-var RaycastCollector = (function (_super) {
-    __extends(RaycastCollector, _super);
-    /**
-     * Creates a new RaycastCollector object.
-     */
-    function RaycastCollector() {
-        _super.call(this);
-        this._rayPosition = new Vector3D();
-        this._rayDirection = new Vector3D();
-        this._iCollectionMark = 0;
-    }
-    Object.defineProperty(RaycastCollector.prototype, "rayPosition", {
-        /**
-         * Provides the starting position of the ray.
-         */
-        get: function () {
-            return this._rayPosition;
-        },
-        set: function (value) {
-            this._rayPosition = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RaycastCollector.prototype, "rayDirection", {
-        /**
-         * Provides the direction vector of the ray.
-         */
-        get: function () {
-            return this._rayDirection;
-        },
-        set: function (value) {
-            this._rayDirection = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
-     *
-     * @param node The Partition3DNode object to frustum-test.
-     */
-    RaycastCollector.prototype.enterNode = function (node) {
-        return node.isIntersectingRay(this._rayPosition, this._rayDirection);
-    };
-    return RaycastCollector;
-})(CollectorBase);
-module.exports = RaycastCollector;
-
-},{"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/traverse/CollectorBase":"awayjs-display/lib/traverse/CollectorBase"}],"awayjs-display/lib/traverse/ShadowCasterCollector":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
-/**
- * @class away.traverse.ShadowCasterCollector
- */
-var ShadowCasterCollector = (function (_super) {
-    __extends(ShadowCasterCollector, _super);
-    function ShadowCasterCollector() {
-        _super.call(this);
-    }
-    /**
-     *
-     */
-    ShadowCasterCollector.prototype.enterNode = function (node) {
-        var enter = this.scene._iCollectionMark != node._iCollectionMark && node.isCastingShadow();
-        if (!enter) {
-            node._iCollectionMark = this.scene._iCollectionMark;
-            return false;
-        }
-        return _super.prototype.enterNode.call(this, node);
-    };
-    return ShadowCasterCollector;
-})(CollectorBase);
-module.exports = ShadowCasterCollector;
-
-},{"awayjs-display/lib/traverse/CollectorBase":"awayjs-display/lib/traverse/CollectorBase"}],"awayjs-display/lib/utils/Cast":[function(require,module,exports){
+},{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/utils/Cast":[function(require,module,exports){
 var Image2D = require("awayjs-core/lib/image/Image2D");
 var ByteArray = require("awayjs-core/lib/utils/ByteArray");
 var CastError = require("awayjs-display/lib/errors/CastError");
