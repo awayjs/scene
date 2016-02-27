@@ -31,14 +31,14 @@ interface IAnimator extends IAsset
 	 *
 	 * @private
 	 */
-	addOwner(mesh:IEntity);
+	addOwner(sprite:IEntity);
 
 	/**
-	 * Used by the mesh object from which the animator is removed, unregisters the owner for internal use.
+	 * Used by the sprite object from which the animator is removed, unregisters the owner for internal use.
 	 *
 	 * @private
 	 */
-	removeOwner(mesh:IEntity);
+	removeOwner(sprite:IEntity);
 }
 
 export = IAnimator;

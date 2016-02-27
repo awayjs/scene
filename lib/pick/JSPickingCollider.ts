@@ -190,7 +190,7 @@ class JSPickingCollider implements IPickingCollider
 						pickingCollisionVO.uv = new Point(u*uv0.x + v*uv1.x + w*uv2.x, u*uv0.y + v*uv1.y + w*uv2.y);
 					}
 					pickingCollisionVO.index = index;
-//						pickingCollisionVO.elementsIndex = this.pGetMeshGraphicIndex(renderable);
+//						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
 
 					// if not looking for best hit, first found will do...
 					if (!this._findClosestCollision)
@@ -334,7 +334,7 @@ class JSPickingCollider implements IPickingCollider
 	//			pickingCollisionVO.localNormal = new Vector3D(0, 0, 1);
 	//			pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
 	//			pickingCollisionVO.index = index;
-	//			//						pickingCollisionVO.elementsIndex = this.pGetMeshGraphicIndex(renderable);
+	//			//						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
 	//
 	//			// if not looking for best hit, first found will do...
 	//			if (!this._findClosestCollision)

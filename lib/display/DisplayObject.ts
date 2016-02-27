@@ -31,7 +31,7 @@ import IEntity						= require("awayjs-display/lib/display/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import TransformEvent				= require("awayjs-display/lib/events/TransformEvent");
 import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -1957,10 +1957,10 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public getRenderSceneTransform(camera:Camera):Matrix3D
+	public getRenderSceneTransform(cameraTransform:Matrix3D):Matrix3D
 	{
 		if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
-			var comps:Array<Vector3D> = camera.sceneTransform.decompose();
+			var comps:Array<Vector3D> = cameraTransform.decompose();
 			var scale:Vector3D = comps[3];
 			comps[0].copyFrom(this.scenePosition);
 			scale.x = this.scaleX;
@@ -2211,7 +2211,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
 	}
 
-	public _acceptTraverser(collector:CollectorBase)
+	public _acceptTraverser(collector:ITraverser)
 	{
 		//nothing to do here
 	}

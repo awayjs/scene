@@ -8,7 +8,7 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
- * A Plane primitive mesh.
+ * A Plane primitive sprite.
  */
 class PrimitivePlanePrefab extends PrimitivePrefabBase
 {

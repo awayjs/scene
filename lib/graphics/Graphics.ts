@@ -18,7 +18,7 @@ import StyleEvent				= require("awayjs-display/lib/events/StyleEvent");
 import IEntity					= require("awayjs-display/lib/display/IEntity");
 import IPickingCollider			= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO		= require("awayjs-display/lib/pick/PickingCollisionVO");
-import CollectorBase			= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser			= require("awayjs-display/lib/ITraverser");
 import ElementsUtils			= require("awayjs-display/lib/utils/ElementsUtils");
 import ParticleData				= require("awayjs-display/lib/animators/data/ParticleData");
 
@@ -26,13 +26,13 @@ import ParticleData				= require("awayjs-display/lib/animators/data/ParticleData
  *
  * Graphics is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
  * normals, uvs, etc. It also contains a reference to an animation class, which defines how the geometry moves.
- * A Graphics object is assigned to a Mesh, a scene graph occurence of the geometry, which in turn assigns
+ * A Graphics object is assigned to a Sprite, a scene graph occurence of the geometry, which in turn assigns
  * the SubGeometries to its respective TriangleGraphic objects.
  *
  *
  *
  * @see away.core.base.SubGraphics
- * @see away.entities.Mesh
+ * @see away.entities.Sprite
  *
  * @class Graphics
  */
@@ -343,7 +343,7 @@ class Graphics extends AssetBase
 		return false;
 	}
 
-	public acceptTraverser(traverser:CollectorBase)
+	public acceptTraverser(traverser:ITraverser)
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; i++)

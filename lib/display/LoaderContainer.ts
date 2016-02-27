@@ -79,7 +79,7 @@ class LoaderContainer extends DisplayObjectContainer
 {
 	/**
 	 * Dispatched when any asset finishes parsing. Also see specific events for each
-	 * individual asset type (meshes, materials et c.)
+	 * individual asset type (sprites, materials et c.)
 	 *
 	 * @eventType AssetEvent
 	 */

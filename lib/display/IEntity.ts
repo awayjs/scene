@@ -17,7 +17,7 @@ import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
-import CollectorBase = require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser = require("awayjs-display/lib/ITraverser");
 
 interface IEntity extends IAsset
 {
@@ -151,14 +151,14 @@ interface IEntity extends IAsset
 	 * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
 	 * return the scene transform.
 	 */
-	getRenderSceneTransform(camera:Camera):Matrix3D;
+	getRenderSceneTransform(cameraTransform:Matrix3D):Matrix3D;
 
 	/**
 	 *
 	 * @param renderer
 	 * @private
 	 */
-	_acceptTraverser(collector:CollectorBase);
+	_acceptTraverser(collector:ITraverser);
 }
 
 export = IEntity;

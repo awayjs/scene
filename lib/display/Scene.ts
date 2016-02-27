@@ -1,8 +1,8 @@
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
 import BasicPartition				= require("awayjs-display/lib/partition/BasicPartition");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 class Scene extends DisplayObjectContainer
 {
@@ -21,14 +21,10 @@ class Scene extends DisplayObjectContainer
 		this._pScene = this;
 	}
 
-	public traversePartitions(traverser:CollectorBase)
+	public traversePartitions(traverser:ITraverser)
 	{
 		var i:number = 0;
 		var len:number = this._partitions.length;
-
-		traverser.scene = this;
-
-		this._iCollectionMark++;
 
 		while (i < len)
 			this._partitions[i++].traverse(traverser);

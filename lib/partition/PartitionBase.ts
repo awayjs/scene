@@ -1,11 +1,11 @@
 import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
 import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
 
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
 import IEntityNodeClass				= require("awayjs-display/lib/partition/IEntityNodeClass");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 
@@ -41,7 +41,7 @@ class PartitionBase implements IAbstractionPool
 		this._abstractionPool[displayObject.id] = null;
 	}
 
-	public traverse(traverser:CollectorBase)
+	public traverse(traverser:ITraverser)
 	{
 		if (this._updatesMade)
 			this.updateEntities();

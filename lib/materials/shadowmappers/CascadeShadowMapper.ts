@@ -114,17 +114,13 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		this.dispatchEvent(new AssetEvent(AssetEvent.INVALIDATE, this));
 	}
 
-	public pDrawDepthMap(target:Single2DTexture, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer)
 	{
 		if (this._pScissorRectsInvalid)
 			this.updateScissorRects();
 
-		this._pCasterCollector.cullPlanes = this._pCullPlanes;
-		this._pCasterCollector.camera = this._pOverallDepthCamera;
-		this._pCasterCollector.clear();
-		scene.traversePartitions(this._pCasterCollector);
-
-		renderer._iRenderCascades(this._pCasterCollector, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
+		renderer.cullPlanes = this._pCullPlanes;
+		renderer._iRenderCascades(this._pOverallDepthCamera, scene, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
 	}
 
 	private updateScissorRects()
@@ -139,17 +135,17 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		this._pScissorRectsInvalid = false;
 	}
 
-	public pUpdateDepthProjection(viewCamera:Camera)
+	public pUpdateDepthProjection(camera:Camera)
 	{
 		var matrix:Matrix3D;
-		var projection:IProjection = viewCamera.projection;
+		var projection:IProjection = camera.projection;
 		var projectionNear:number = projection.near;
 		var projectionRange:number = projection.far - projectionNear;
 
-		this.pUpdateProjectionFromFrustumCorners(viewCamera, viewCamera.projection.frustumCorners, this._pMatrix);
+		this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
 		this._pMatrix.appendScale(.96, .96, 1);
 		this._pOverallDepthProjection.matrix = this._pMatrix;
-		this.pUpdateCullPlanes(viewCamera);
+		this.pUpdateCullPlanes(camera);
 
 		for (var i:number /*int*/ = 0; i < this._numCascades; ++i) {
 			matrix = this._depthLenses[i].matrix;

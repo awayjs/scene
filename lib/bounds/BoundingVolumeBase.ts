@@ -5,12 +5,12 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
 import IEntity						= require("awayjs-display/lib/display/IEntity");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 
 class BoundingVolumeBase
 {
 	public _pEntity:IEntity;
-	public _pBoundsPrimitive:Mesh;
+	public _pBoundsPrimitive:Sprite;
 	public _pInvalidated:boolean = true;
 
 	constructor(entity)
@@ -73,7 +73,7 @@ class BoundingVolumeBase
 		this._pInvalidated = true;
 	}
 
-	public _pCreateBoundsPrimitive():Mesh
+	public _pCreateBoundsPrimitive():Sprite
 	{
 		throw new AbstractMethodError();
 	}

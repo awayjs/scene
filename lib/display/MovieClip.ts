@@ -3,7 +3,7 @@ import ColorTransform               = require("awayjs-core/lib/geom/ColorTransfo
 
 import DisplayObjectContainer       = require("awayjs-display/lib/display/DisplayObjectContainer");
 import DisplayObject                = require("awayjs-display/lib/display/DisplayObject");
-import Mesh                         = require("awayjs-display/lib/display/Mesh");
+import Sprite                         = require("awayjs-display/lib/display/Sprite");
 import Billboard                    = require("awayjs-display/lib/display/Billboard");
 import TextField                    = require("awayjs-display/lib/display/TextField");
 import MouseEvent                   = require("awayjs-display/lib/events/MouseEvent");

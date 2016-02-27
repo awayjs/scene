@@ -2,7 +2,7 @@ import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool")
 
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
@@ -22,7 +22,7 @@ class SceneGraphPartition extends PartitionBase
 		this._sceneGraphNodePool = new SceneGraphNodePool();
 	}
 
-	public traverse(traverser:CollectorBase)
+	public traverse(traverser:ITraverser)
 	{
 		super.traverse(traverser);
 	}

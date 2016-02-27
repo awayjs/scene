@@ -63,8 +63,8 @@ class TriangleElements extends ElementsBase
 
 	/**
 	 * Offers the option of enabling GPU accelerated animation on skeletons larger than 32 joints
-	 * by condensing the number of joint index values required per mesh. Only applicable to
-	 * skeleton animations that utilise more than one mesh object. Defaults to false.
+	 * by condensing the number of joint index values required per sprite. Only applicable to
+	 * skeleton animations that utilise more than one sprite object. Defaults to false.
 	 */
 	public get useCondensedIndices():boolean
 	{

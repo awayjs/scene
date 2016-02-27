@@ -3,7 +3,7 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import LightBase					= require("awayjs-display/lib/display/LightBase");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
 import LightProbe					= require("awayjs-display/lib/display/LightProbe");
 import PointLight					= require("awayjs-display/lib/display/PointLight");

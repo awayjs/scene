@@ -5,7 +5,7 @@ import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import Point						= require("awayjs-core/lib/geom/Point");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
@@ -18,18 +18,17 @@ import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 /**
- * Mesh is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
+ * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
  * of the graphics to be assigned different materials.
  */
-class Mesh extends DisplayObjectContainer implements IEntity
+class Sprite extends DisplayObjectContainer implements IEntity
 {
-	private static _meshes:Array<Mesh> = new Array<Mesh>();
+	private static _sprites:Array<Sprite> = new Array<Sprite>();
 
-	public static assetType:string = "[asset Mesh]";
+	public static assetType:string = "[asset Sprite]";
 
 	private _center:Vector3D;
 	public _graphics:Graphics;
@@ -46,11 +45,11 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 */
 	public get assetType():string
 	{
-		return Mesh.assetType;
+		return Sprite.assetType;
 	}
 
 	/**
-	 * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
+	 * Indicates whether or not the Sprite can cast shadows. Default value is <code>true</code>.
 	 */
 	public get castsShadows():boolean
 	{
@@ -63,7 +62,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * The graphics used by the mesh that provides it with its shape.
+	 * The graphics used by the sprite that provides it with its shape.
 	 */
 	public get graphics():Graphics
 	{
@@ -94,7 +93,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * The material with which to render the Mesh.
+	 * The material with which to render the Sprite.
 	 */
 	public get material():MaterialBase
 	{
@@ -107,7 +106,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * Indicates whether or not the mesh share the same animation graphics.
+	 * Indicates whether or not the sprite share the same animation graphics.
 	 */
 	public get shareAnimationGraphics():boolean
 	{
@@ -133,9 +132,9 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * Create a new Mesh object.
+	 * Create a new Sprite object.
 	 *
-	 * @param material    [optional]        The material with which to render the Mesh.
+	 * @param material    [optional]        The material with which to render the Sprite.
 	 */
 	constructor(material:MaterialBase = null)
 	{
@@ -145,7 +144,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 
 		this._onGraphicsBoundsInvalidDelegate = (event:GraphicsEvent) => this.onGraphicsBoundsInvalid(event);
 
-		this._graphics = new Graphics(this); //unique graphics object for each Mesh
+		this._graphics = new Graphics(this); //unique graphics object for each Sprite
 		this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
 
 		this.material = material;
@@ -167,7 +166,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	{
 		this.disposeValues();
 
-		Mesh._meshes.push(this);
+		Sprite._sprites.push(this);
 	}
 
 	/**
@@ -181,38 +180,38 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * Clones this Mesh instance along with all it's children, while re-using the same
-	 * material, graphics and animation set. The returned result will be a copy of this mesh,
+	 * Clones this Sprite instance along with all it's children, while re-using the same
+	 * material, graphics and animation set. The returned result will be a copy of this sprite,
 	 * containing copies of all of it's children.
 	 *
 	 * Properties that are re-used (i.e. not cloned) by the new copy include name,
 	 * graphics, and material. Properties that are cloned or created anew for the copy
-	 * include subMeshes, children of the mesh, and the animator.
+	 * include subSpritees, children of the sprite, and the animator.
 	 *
-	 * If you want to copy just the mesh, reusing it's graphics and material while not
-	 * cloning it's children, the simplest way is to create a new mesh manually:
+	 * If you want to copy just the sprite, reusing it's graphics and material while not
+	 * cloning it's children, the simplest way is to create a new sprite manually:
 	 *
 	 * <code>
-	 * var clone : Mesh = new Mesh(original.graphics, original.material);
+	 * var clone : Sprite = new Sprite(original.graphics, original.material);
 	 * </code>
 	 */
-	public clone():Mesh
+	public clone():Sprite
 	{
-		var newInstance:Mesh = (Mesh._meshes.length)? Mesh._meshes.pop() : new Mesh();
+		var newInstance:Sprite = (Sprite._sprites.length)? Sprite._sprites.pop() : new Sprite();
 
 		this.copyTo(newInstance);
 
 		return newInstance;
 	}
 
-	public copyTo(mesh:Mesh)
+	public copyTo(sprite:Sprite)
 	{
-		super.copyTo(mesh);
+		super.copyTo(sprite);
 
-		mesh.castsShadows = this._castsShadows;
-		mesh.shareAnimationGraphics = this._shareAnimationGraphics;
+		sprite.castsShadows = this._castsShadows;
+		sprite.shareAnimationGraphics = this._shareAnimationGraphics;
 
-		this._graphics.copyTo(mesh.graphics);
+		this._graphics.copyTo(sprite.graphics);
     }
 
 	/**
@@ -260,7 +259,7 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:CollectorBase)
+	public _acceptTraverser(traverser:ITraverser)
 	{
 		this.graphics.acceptTraverser(traverser);
 	}
@@ -296,4 +295,4 @@ class Mesh extends DisplayObjectContainer implements IEntity
 	}
 }
 
-export = Mesh;
+export = Sprite;

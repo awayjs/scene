@@ -12,7 +12,7 @@ import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeB
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import NullBounds					= require("awayjs-display/lib/bounds/NullBounds");
 import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import INode						= require("awayjs-display/lib/partition/INode");
@@ -119,7 +119,7 @@ class DisplayObjectNode extends AbstractionBase implements INode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:CollectorBase)
+	public acceptTraverser(traverser:ITraverser)
 	{
 		// do nothing here
 	}

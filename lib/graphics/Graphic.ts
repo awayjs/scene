@@ -7,7 +7,7 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import Camera						= require("awayjs-display/lib/display/Camera");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import Style						= require("awayjs-display/lib/base/Style");
@@ -20,11 +20,11 @@ import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO"
 import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 
 /**
- * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Mesh object.
+ * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Sprite object.
  *
  *
  * @see away.base.ElementsBase
- * @see away.entities.Mesh
+ * @see away.entities.Sprite
  *
  * @class away.base.Graphic
  */
@@ -106,7 +106,7 @@ class Graphic extends AssetBase implements IRenderable
 //		}
 
 	/**
-	 * The material used to render the current TriangleGraphic. If set to null, its parent Mesh's material will be used instead.
+	 * The material used to render the current TriangleGraphic. If set to null, its parent Sprite's material will be used instead.
 	 */
 	public get material():MaterialBase
 	{
@@ -125,7 +125,7 @@ class Graphic extends AssetBase implements IRenderable
 	}
 
 	/**
-	 * The style used to render the current TriangleGraphic. If set to null, its parent Mesh's style will be used instead.
+	 * The style used to render the current TriangleGraphic. If set to null, its parent Sprite's style will be used instead.
 	 */
 	public get style():Style
 	{

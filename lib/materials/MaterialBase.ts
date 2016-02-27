@@ -245,7 +245,7 @@ class MaterialBase extends AssetBase implements ISurface
 
 
 	/**
-	 * The style used to render the current TriangleGraphic. If set to null, its parent Mesh's style will be used instead.
+	 * The style used to render the current TriangleGraphic. If set to null, its parent Sprite's style will be used instead.
 	 */
 	public get style():Style
 	{

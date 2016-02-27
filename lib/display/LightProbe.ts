@@ -40,7 +40,7 @@ class LightProbe extends LightBase implements IEntity
 	}
 
 	//@override
-	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
+	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
 		throw new ErrorBase("Object projection matrices are not supported for LightProbe objects!");
 	}

@@ -147,7 +147,7 @@ class LightBase extends DisplayObjectContainer
 		this._iAmbientB = (this._ambientColor & 0xff)/0xff*this._ambient;
 	}
 
-	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
+	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
 		throw new AbstractMethodError();
 	}

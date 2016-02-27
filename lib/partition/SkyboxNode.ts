@@ -1,7 +1,7 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
@@ -13,7 +13,7 @@ class SkyboxNode extends EntityNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:CollectorBase)
+	public acceptTraverser(traverser:ITraverser)
 	{
 		if (traverser.enterNode(this))
 			traverser.applySkybox(this._displayObject);

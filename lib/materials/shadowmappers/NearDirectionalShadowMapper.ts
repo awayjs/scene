@@ -29,9 +29,9 @@ class NearDirectionalShadowMapper extends DirectionalShadowMapper
 		this._coverageRatio = value;
 	}
 
-	public pUpdateDepthProjection(viewCamera:Camera)
+	public pUpdateDepthProjection(camera:Camera)
 	{
-		var corners:Array<number> = viewCamera.projection.frustumCorners;
+		var corners:Array<number> = camera.projection.frustumCorners;
 
 		for (var i:number /*int*/ = 0; i < 12; ++i) {
 			var v:number = corners[i];
@@ -39,7 +39,7 @@ class NearDirectionalShadowMapper extends DirectionalShadowMapper
 			this._pLocalFrustum[i + 12] = v + (corners[i + 12] - v)*this._coverageRatio;
 		}
 
-		this.pUpdateProjectionFromFrustumCorners(viewCamera, this._pLocalFrustum, this._pMatrix);
+		this.pUpdateProjectionFromFrustumCorners(camera, this._pLocalFrustum, this._pMatrix);
 		this._pOverallDepthProjection.matrix = this._pMatrix;
 	}
 }

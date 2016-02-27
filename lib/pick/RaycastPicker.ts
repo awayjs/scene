@@ -1,16 +1,15 @@
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import Scene						= require("awayjs-display/lib/display/Scene");
 import View							= require("awayjs-display/lib/View");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
-import RenderableListItem			= require("awayjs-display/lib/pool/RenderableListItem");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
-import RaycastCollector				= require("awayjs-display/lib/traverse/RaycastCollector");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import IRenderable					= require("awayjs-display/lib/base/IRenderable");
+import INode						= require("awayjs-display/lib/partition/INode");
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -19,19 +18,21 @@ import IRenderable					= require("awayjs-display/lib/base/IRenderable");
  *
  * @class away.pick.RaycastPicker
  */
-class RaycastPicker implements IPicker
+class RaycastPicker implements IPicker, ITraverser
 {
+	private _rayPosition:Vector3D;
+	private _rayDirection:Vector3D;
 	private _x:number;
 	private _y:number;
 	private _view:View;
 	private _findClosestCollision:boolean;
-	private _raycastCollector:RaycastCollector;
 	private _ignoredRenderables = [];
 	private _onlyMouseEnabled:boolean = true;
 
-	private _renderables:Array<IRenderable>;
-	private _numRenderables:number = 0;
+	private _renderables:Array<IRenderable> = new Array<IRenderable>();
 	private _hasCollisions:boolean;
+
+	public isDebugEnabled:boolean = false;
 
 	/**
 	 * @inheritDoc
@@ -54,10 +55,17 @@ class RaycastPicker implements IPicker
 	 */
 	constructor(findClosestCollision:boolean = false)
 	{
-		this._raycastCollector = new RaycastCollector();
-
 		this._findClosestCollision = findClosestCollision;
-		this._renderables = new Array<IRenderable>();
+	}
+
+	/**
+	 * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
+	 *
+	 * @param node The Partition3DNode object to frustum-test.
+	 */
+	public enterNode(node:INode):boolean
+	{
+		return node.isIntersectingRay(this._rayPosition, this._rayDirection);
 	}
 
 	/**
@@ -81,32 +89,22 @@ class RaycastPicker implements IPicker
 	 */
 	public getSceneCollision(rayPosition:Vector3D, rayDirection:Vector3D, scene:Scene):PickingCollisionVO
 	{
-		//clear collector
-		this._raycastCollector.clear();
-
-		//setup ray vectors
-		this._raycastCollector.rayPosition = rayPosition;
-		this._raycastCollector.rayDirection = rayDirection;
+		this._rayPosition = rayPosition;
+		this._rayDirection = rayDirection;
 
 		// collect entities to test
-		scene.traversePartitions(this._raycastCollector);
-
-		this._numRenderables = 0;
-		var node:RenderableListItem = this._raycastCollector.renderableHead;
-		var renderable:IRenderable;
-
-		while (node) {
-			if (!this.isIgnored(renderable = node.renderable))
-				this._renderables[this._numRenderables++] = renderable;
-
-			node = node.next;
-		}
+		scene.traversePartitions(this);
 
 		//early out if no collisions detected
-		if (!this._numRenderables)
+		if (!this._renderables.length)
 			return null;
 
-		return this.getPickingCollisionVO(this._raycastCollector);
+		var collisionVO:PickingCollisionVO = this.getPickingCollisionVO();
+
+		//discard renderables
+		this._renderables.length = 0;
+
+		return collisionVO;
 	}
 
 //		public getEntityCollision(position:Vector3D, direction:Vector3D, entities:Array<IEntity>):PickingCollisionVO
@@ -149,11 +147,8 @@ class RaycastPicker implements IPicker
 		return renderable1._iPickingCollisionVO.rayEntryDistance > renderable2._iPickingCollisionVO.rayEntryDistance? 1 : -1;
 	}
 
-	private getPickingCollisionVO(collector:CollectorBase):PickingCollisionVO
+	private getPickingCollisionVO():PickingCollisionVO
 	{
-		// trim before sorting
-		this._renderables.length = this._numRenderables;
-
 		// Sort entities from closest to furthest.
 		this._renderables = this._renderables.sort(this.sortOnNearT); // TODO - test sort filter in JS
 
@@ -166,9 +161,9 @@ class RaycastPicker implements IPicker
 		var bestCollisionVO:PickingCollisionVO;
 		var pickingCollisionVO:PickingCollisionVO;
 		var renderable:IRenderable;
-		var i:number;
+		var len:number = this._renderables.length;
 
-		for (i = 0; i < this._numRenderables; ++i) {
+		for (var i:number = 0; i < len; i++) {
 			renderable = this._renderables[i];
 			pickingCollisionVO = renderable._iPickingCollisionVO;
 			if (renderable.pickingCollider) {
@@ -192,9 +187,6 @@ class RaycastPicker implements IPicker
 				}
 			}
 		}
-
-		//discard entities
-		this._renderables.length = 0;
 
 		return bestCollisionVO;
 	}
@@ -243,6 +235,52 @@ class RaycastPicker implements IPicker
 	public dispose()
 	{
 		//TODO
+	}
+
+	/**
+	 *
+	 * @param entity
+	 */
+	public applyDirectionalLight(entity:IEntity)
+	{
+		//don't do anything here
+	}
+
+	/**
+	 *
+	 * @param entity
+	 */
+	public applyRenderable(renderable:IRenderable)
+	{
+		if (!this.isIgnored(renderable))
+			this._renderables.push(renderable);
+	}
+
+	/**
+	 *
+	 * @param entity
+	 */
+	public applyLightProbe(entity:IEntity)
+	{
+		//don't do anything here
+	}
+
+	/**
+	 *
+	 * @param entity
+	 */
+	public applyPointLight(entity:IEntity)
+	{
+		//don't do anything here
+	}
+
+	/**
+	 *
+	 * @param entity
+	 */
+	public applySkybox(entity:IEntity)
+	{
+		//don't do anything here
 	}
 }
 

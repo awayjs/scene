@@ -82,12 +82,12 @@ class DirectionalLight extends LightBase implements IEntity
 	}
 
 	//override
-	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
+	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
 		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var m:Matrix3D = new Matrix3D();
 
-		m.copyFrom(entity.getRenderSceneTransform(camera));
+		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
 		m.append(this.inverseSceneTransform);
 
 		if (!this._projAABBPoints)

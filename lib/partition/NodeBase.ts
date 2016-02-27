@@ -3,7 +3,7 @@ import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
 
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import INode						= require("awayjs-display/lib/partition/INode");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
@@ -73,7 +73,7 @@ class NodeBase implements IContainerNode
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:CollectorBase)
+	public acceptTraverser(traverser:ITraverser)
 	{
 		if (this.numEntities == 0)
 			return;

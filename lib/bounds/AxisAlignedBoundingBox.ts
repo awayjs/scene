@@ -7,13 +7,13 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import ElementsType					= require("awayjs-display/lib/graphics/ElementsType");
 import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
 
 
 /**
  * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
- * This is useful for most meshes.
+ * This is useful for most sprites.
  */
 class AxisAlignedBoundingBox extends BoundingVolumeBase
 {
@@ -150,11 +150,11 @@ class AxisAlignedBoundingBox extends BoundingVolumeBase
 		this._z = this._centerZ - this._halfExtentsZ;
 	}
 
-	public _pCreateBoundsPrimitive():Mesh
+	public _pCreateBoundsPrimitive():Sprite
 	{
 		this._prefab = new PrimitiveCubePrefab(null, ElementsType.LINE);
 
-		return <Mesh> this._prefab.getNewObject();
+		return <Sprite> this._prefab.getNewObject();
 	}
 }
 

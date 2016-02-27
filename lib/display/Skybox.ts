@@ -6,7 +6,6 @@ import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
 import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
 import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");

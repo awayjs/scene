@@ -8,7 +8,7 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
- * A Capsule primitive mesh.
+ * A Capsule primitive sprite.
  */
 class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 {

@@ -6,7 +6,7 @@ import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
 import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
 import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
 import LineElements				= require("awayjs-display/lib/graphics/LineElements");
-import Mesh						= require("awayjs-display/lib/display/Mesh");
+import Sprite					= require("awayjs-display/lib/display/Sprite");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
 
@@ -59,7 +59,7 @@ class PrimitivePrefabBase extends PrefabBase
 
 		var len:number = this._pObjects.length;
 		for (var i:number = 0; i < len; i++)
-			(<Mesh> this._pObjects[i]).material = this._material;
+			(<Sprite> this._pObjects[i]).material = this._material;
 	}
 
 	public get scaleU():number
@@ -183,11 +183,11 @@ class PrimitivePrefabBase extends PrefabBase
 
 	public _pCreateObject():DisplayObject
 	{
-		var mesh:Mesh = new Mesh(this._material);
-		mesh.graphics.addGraphic(this._elements);
-		mesh._iSourcePrefab = this;
+		var sprite:Sprite = new Sprite(this._material);
+		sprite.graphics.addGraphic(this._elements);
+		sprite._iSourcePrefab = this;
 
-		return mesh;
+		return sprite;
 	}
 
 

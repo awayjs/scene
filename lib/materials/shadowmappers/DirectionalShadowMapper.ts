@@ -90,20 +90,17 @@ class DirectionalShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(target:Single2DTexture, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer)
 	{
-		this._pCasterCollector.camera = this._pOverallDepthCamera;
-		this._pCasterCollector.cullPlanes = this._pCullPlanes;
-		this._pCasterCollector.clear();
-		scene.traversePartitions(this._pCasterCollector);
-		renderer._iRender(this._pCasterCollector, target.image2D);
+		renderer.cullPlanes = this._pCullPlanes;
+		renderer._iRender(this._pOverallDepthCamera, scene, target.image2D);
 	}
 
 	//@protected
-	public pUpdateCullPlanes(viewCamera:Camera)
+	public pUpdateCullPlanes(camera:Camera)
 	{
 		var lightFrustumPlanes:Array<Plane3D> = this._pOverallDepthCamera.frustumPlanes;
-		var viewFrustumPlanes:Array<Plane3D> = viewCamera.frustumPlanes;
+		var viewFrustumPlanes:Array<Plane3D> = camera.frustumPlanes;
 		this._pCullPlanes.length = 4;
 
 		this._pCullPlanes[0] = lightFrustumPlanes[0];
@@ -125,14 +122,14 @@ class DirectionalShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pUpdateDepthProjection(viewCamera:Camera)
+	public pUpdateDepthProjection(camera:Camera)
 	{
-		this.pUpdateProjectionFromFrustumCorners(viewCamera, viewCamera.projection.frustumCorners, this._pMatrix);
+		this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
 		this._pOverallDepthProjection.matrix = this._pMatrix;
-		this.pUpdateCullPlanes(viewCamera);
+		this.pUpdateCullPlanes(camera);
 	}
 
-	public pUpdateProjectionFromFrustumCorners(viewCamera:Camera, corners:Array<number>, matrix:Matrix3D)
+	public pUpdateProjectionFromFrustumCorners(camera:Camera, corners:Array<number>, matrix:Matrix3D)
 	{
 		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var dir:Vector3D;
@@ -144,15 +141,15 @@ class DirectionalShadowMapper extends ShadowMapperBase
 		var light:DirectionalLight = <DirectionalLight> this._pLight;
 		dir = light.sceneDirection;
 		this._pOverallDepthCamera.transform.matrix3D = this._pLight.sceneTransform;
-		x = Math.floor((viewCamera.x - dir.x*this._pLightOffset)/this._pSnap)*this._pSnap;
-		y = Math.floor((viewCamera.y - dir.y*this._pLightOffset)/this._pSnap)*this._pSnap;
-		z = Math.floor((viewCamera.z - dir.z*this._pLightOffset)/this._pSnap)*this._pSnap;
+		x = Math.floor((camera.x - dir.x*this._pLightOffset)/this._pSnap)*this._pSnap;
+		y = Math.floor((camera.y - dir.y*this._pLightOffset)/this._pSnap)*this._pSnap;
+		z = Math.floor((camera.z - dir.z*this._pLightOffset)/this._pSnap)*this._pSnap;
 		this._pOverallDepthCamera.x = x;
 		this._pOverallDepthCamera.y = y;
 		this._pOverallDepthCamera.z = z;
 
 		this._pMatrix.copyFrom(this._pOverallDepthCamera.inverseSceneTransform);
-		this._pMatrix.prepend(viewCamera.sceneTransform);
+		this._pMatrix.prepend(camera.sceneTransform);
 		this._pMatrix.transformVectors(corners, this._pLocalFrustum);
 
 		minX = maxX = this._pLocalFrustum[0];

@@ -4,7 +4,7 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitiveCylinderPrefab	= require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
 
 /**
- * A UV RegularPolygon primitive mesh.
+ * A UV RegularPolygon primitive sprite.
  */
 class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab
 {

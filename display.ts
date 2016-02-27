@@ -1,6 +1,6 @@
 import Camera						= require("awayjs-display/lib/display/Camera");
 import DirectionalLight				= require("awayjs-display/lib/display/DirectionalLight");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import Billboard					= require("awayjs-display/lib/display/Billboard");
 import LineSegment					= require("awayjs-display/lib/display/LineSegment");
 import TextField					= require("awayjs-display/lib/display/TextField");
@@ -17,7 +17,7 @@ import SkyboxNode					= require("awayjs-display/lib/partition/SkyboxNode");
 
 PartitionBase.registerAbstraction(CameraNode, Camera);
 PartitionBase.registerAbstraction(DirectionalLightNode, DirectionalLight);
-PartitionBase.registerAbstraction(EntityNode, Mesh);
+PartitionBase.registerAbstraction(EntityNode, Sprite);
 PartitionBase.registerAbstraction(EntityNode, Billboard);
 PartitionBase.registerAbstraction(EntityNode, LineSegment);
 PartitionBase.registerAbstraction(EntityNode, TextField);

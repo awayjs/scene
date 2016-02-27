@@ -11,7 +11,6 @@ import Scene						= require("awayjs-display/lib/display/Scene");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import RaycastPicker				= require("awayjs-display/lib/pick/RaycastPicker");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import Camera						= require("awayjs-display/lib/display/Camera");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
@@ -32,13 +31,12 @@ class View
 	 * Background
 	 *                  - this is currently not being included in our tests and is currently disabled
 	 *
-	 **************************************************************************************************************************
+	 ******************clear********************************************************************************************************
 	 */
 
 	// Protected
 	public _pScene:Scene;
 	public _pCamera:Camera;
-	public _pEntityCollector:CollectorBase;
 	public _pRenderer:IRenderer;
 
 	// Private
@@ -177,12 +175,6 @@ class View
 		this._pRenderer.addEventListener(RendererEvent.VIEWPORT_UPDATED, this._onViewportUpdatedDelegate);
 		this._pRenderer.addEventListener(RendererEvent.SCISSOR_UPDATED, this._onScissorUpdatedDelegate);
 
-		//reset entity collector
-		this._pEntityCollector = this._pRenderer._iCreateEntityCollector();
-
-		if (this._pCamera)
-			this._pEntityCollector.camera = this._pCamera;
-
 		//reset back buffer
 		this._pRenderer._iBackgroundR = ((this._backgroundColor >> 16) & 0xff)/0xff;
 		this._pRenderer._iBackgroundG = ((this._backgroundColor >> 8) & 0xff)/0xff;
@@ -279,9 +271,6 @@ class View
 			this._pCamera.removeEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
 
 		this._pCamera = value;
-
-		if (this._pEntityCollector)
-			this._pEntityCollector.camera = this._pCamera;
 
 		if (this._pScene)
 			this._pScene.partition._iRegisterEntity(this._pCamera);
@@ -485,14 +474,8 @@ class View
 		}
 		//_touch3DManager.updateCollider();
 
-		//clear entity collector ready for collection
-		this._pEntityCollector.clear();
-
-		// collect stuff to render
-		this._pScene.traversePartitions(this._pEntityCollector);
-
-		//render the contents of the entity collector
-		this._pRenderer.render(this._pEntityCollector);
+		//render the contents of the scene
+		this._pRenderer.render(this._pCamera, this._pScene);
 	}
 
 	/**
@@ -526,17 +509,7 @@ class View
 		//this._touch3DManager = null;
 
 		this._pRenderer = null;
-		this._pEntityCollector = null;
 	}
-
-	/**
-	 *
-	 */
-	public get iEntityCollector():CollectorBase
-	{
-		return this._pEntityCollector;
-	}
-
 
 	/**
 	 *

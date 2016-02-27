@@ -4,14 +4,14 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
 import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 /**
  * @class away.partition.EntityNode
  */
@@ -83,12 +83,12 @@ class EntityNode extends DisplayObjectNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:CollectorBase)
+	public acceptTraverser(traverser:ITraverser)
 	{
 		if (traverser.enterNode(this)) {
 			this._displayObject._acceptTraverser(traverser);
 
-			if (this._displayObject.debugVisible && traverser.isEntityCollector)
+			if (this._displayObject.debugVisible && traverser.isDebugEnabled)
 				this.bounds.boundsPrimitive._acceptTraverser(traverser);
 		}
 	}

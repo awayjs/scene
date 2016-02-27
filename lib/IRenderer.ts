@@ -1,11 +1,11 @@
-import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import IEventDispatcher				= require("awayjs-core/lib/events/IEventDispatcher");
+import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
+import ImageBase					= require("awayjs-core/lib/image/ImageBase");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import Camera						= require("awayjs-display/lib/display/Camera");
-import Skybox						= require("awayjs-display/lib/display/Skybox");
+import Scene						= require("awayjs-display/lib/display/Scene");
 
 /**
  * IRenderer is an interface for classes that are used in the rendering pipeline to render the
@@ -13,8 +13,9 @@ import Skybox						= require("awayjs-display/lib/display/Skybox");
  *
  * @class away.render.IRenderer
  */
-interface IRenderer extends IEventDispatcher
+interface IRenderer extends ITraverser, IEventDispatcher
 {
+	cullPlanes:Array<Plane3D>
 
 	/**
 	 *
@@ -60,7 +61,7 @@ interface IRenderer extends IEventDispatcher
 	 *
 	 * @param entityCollector
 	 */
-	render(entityCollector:CollectorBase);
+	render(camera:Camera, scene:Scene);
 
 	/**
 	 * @internal
@@ -82,16 +83,9 @@ interface IRenderer extends IEventDispatcher
 	 */
 	_iBackgroundAlpha:number;
 
-	/**
-	 * @internal
-	 */
-	_iCreateEntityCollector():CollectorBase;
+	_iRender(camera:Camera, scene:Scene, target?:ImageBase, scissorRect?:Rectangle, surfaceSelector?:number);
 
-	_iRender(entityCollector:CollectorBase, target?:ImageBase, scissorRect?:Rectangle, surfaceSelector?:number);
-
-	_iRenderCascades(entityCollector:CollectorBase, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>);
-
-	_iApplyRenderable(renderable:IRenderable);
+	_iRenderCascades(camera:Camera, scene:Scene, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>);
 }
 
 export = IRenderer;

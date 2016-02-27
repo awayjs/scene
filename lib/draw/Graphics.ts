@@ -19,7 +19,7 @@ import MovieClip				= require("awayjs-display/lib/display/MovieClip");
 import Point					= require("awayjs-core/lib/geom/Point")
 import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
 import AttributesView			= require("awayjs-core/lib/attributes/AttributesView");
-import Mesh						= require("awayjs-display/lib/display/Mesh");
+import Sprite					= require("awayjs-display/lib/display/Sprite");
 import Float3Attributes			= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes			= require("awayjs-core/lib/attributes/Float2Attributes");
 
@@ -48,14 +48,14 @@ class Graphics
 
 	public static _tess_obj:any;
 
-	public _target:Mesh;
+	public _target:Sprite;
 
 	private _active_fill_path:GraphicsPath;
 	private _active_stroke_path:GraphicsPath;
 
 	private _current_position:Point=new Point();
 
-	constructor(target:Mesh){
+	constructor(target:Sprite){
 		this._target=target;
 		this._queued_fill_pathes=[];
 		this._queued_stroke_pathes=[];
@@ -1590,7 +1590,7 @@ class Graphics
 
 		}
 
-		// todo: handle material / submesh settings, and check if a material / submesh already exists for this settings
+		// todo: handle material / subsprite settings, and check if a material / subsprite already exists for this settings
 
 		var attributesView:AttributesView = new AttributesView(Float32Array, 7);
 		attributesView.set(final_vert_list);

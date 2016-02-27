@@ -255,7 +255,7 @@ class Camera extends DisplayObjectContainer implements IEntity
 	public _applyRenderer(renderer:IRenderer)
 	{
 		// Since this getter is invoked every iteration of the render loop, and
-		// the prefab construct could affect the sub-meshes, the prefab is
+		// the prefab construct could affect the sub-sprites, the prefab is
 		// validated here to give it a chance to rebuild.
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();

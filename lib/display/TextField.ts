@@ -8,7 +8,6 @@ import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
@@ -18,7 +17,7 @@ import TextFieldType				= require("awayjs-display/lib/text/TextFieldType");
 import TextFormat					= require("awayjs-display/lib/text/TextFormat");
 import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
-import Mesh							= require("awayjs-display/lib/display/Mesh");
+import Sprite						= require("awayjs-display/lib/display/Sprite");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
@@ -107,7 +106,7 @@ import Style 						= require("awayjs-display/lib/base/Style");
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-class TextField extends Mesh
+class TextField extends Sprite
 {
 	private static _textFields:Array<TextField> = new Array<TextField>();
 
@@ -647,7 +646,7 @@ class TextField extends Mesh
 
 
 	/**
-	 * The geometry used by the mesh that provides it with its shape.
+	 * The geometry used by the sprite that provides it with its shape.
 	 */
 	public get graphics():Graphics
 	{

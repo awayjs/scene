@@ -89,17 +89,17 @@ class PointLight extends LightBase implements IEntity
 		this._pSphereBounds.radius = this._pFallOff;
 	}
 
-	public iGetObjectProjectionMatrix(entity:IEntity, camera:Camera, target:Matrix3D = null):Matrix3D
+	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
 		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var m:Matrix3D = new Matrix3D();
 
 		// todo: do not use lookAt on Light
-		m.copyFrom(entity.getRenderSceneTransform(camera));
+		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
 		m.append(this._pParent.inverseSceneTransform);
 		this.lookAt(m.position);
 
-		m.copyFrom(entity.getRenderSceneTransform(camera));
+		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
 		m.append(this.inverseSceneTransform);
 
 		var box:Box = entity.getBox();

@@ -4,34 +4,17 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 import Scene						= require("awayjs-display/lib/display/Scene");
 import LightBase					= require("awayjs-display/lib/display/LightBase");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
-import EntityCollector				= require("awayjs-display/lib/traverse/EntityCollector");
-import ShadowCasterCollector		= require("awayjs-display/lib/traverse/ShadowCasterCollector");
 import Camera						= require("awayjs-display/lib/display/Camera");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 
 class ShadowMapperBase extends AssetBase
 {
-
-	public _pCasterCollector:ShadowCasterCollector;
-
 	public _depthMap:TextureBase;
 	public _pDepthMapSize:number = 2048;
 	public _pLight:LightBase;
 	public _explicitDepthMap:boolean;
 	private _autoUpdateShadows:boolean = true;
 	public _iShadowsInvalid:boolean;
-
-	constructor()
-	{
-		super();
-
-		this._pCasterCollector = this.pCreateCasterCollector();
-	}
-
-	public pCreateCasterCollector()
-	{
-		return new ShadowCasterCollector();
-	}
 
 	public get autoUpdateShadows():boolean
 	{
@@ -89,8 +72,6 @@ class ShadowMapperBase extends AssetBase
 
 	public dispose()
 	{
-		this._pCasterCollector = null;
-
 		if (this._depthMap && !this._explicitDepthMap)
 			this._depthMap.dispose();
 
@@ -102,24 +83,24 @@ class ShadowMapperBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public iRenderDepthMap(entityCollector:EntityCollector, renderer:IRenderer)
+	public iRenderDepthMap(camera:Camera, scene:Scene, renderer:IRenderer)
 	{
 		this._iShadowsInvalid = false;
 
-		this.pUpdateDepthProjection(entityCollector.camera);
+		this.pUpdateDepthProjection(camera);
 
 		if (!this._depthMap)
 			this._depthMap = this.pCreateDepthTexture();
 
-		this.pDrawDepthMap(this._depthMap, entityCollector.scene, renderer);
+		this.pDrawDepthMap(scene, this._depthMap, renderer);
 	}
 
-	public pUpdateDepthProjection(viewCamera:Camera)
+	public pUpdateDepthProjection(camera:Camera)
 	{
 		throw new AbstractMethodError();
 	}
 
-	public pDrawDepthMap(target:TextureBase, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:TextureBase, renderer:IRenderer)
 	{
 		throw new AbstractMethodError();
 	}

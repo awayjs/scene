@@ -8,7 +8,7 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
 
 /**
- * A UV Sphere primitive mesh.
+ * A UV Sphere primitive sprite.
  */
 class PrimitiveSpherePrefab extends PrimitivePrefabBase
 {

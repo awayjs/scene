@@ -61,7 +61,7 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pUpdateDepthProjection(viewCamera:Camera)
+	public pUpdateDepthProjection(camera:Camera)
 	{
 		var light:PointLight = <PointLight>(this._pLight);
 		var maxDistance:number = light._pFallOff;
@@ -76,16 +76,11 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(target:SingleCubeTexture, scene:Scene, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:SingleCubeTexture, renderer:IRenderer)
 	{
-		for (var i:number = 0; i < 6; ++i) {
-			if (this._needsRender[i]) {
-				this._pCasterCollector.camera = this._depthCameras[i];
-				this._pCasterCollector.clear();
-				scene.traversePartitions(this._pCasterCollector);
-				renderer._iRender(this._pCasterCollector, target.imageCube, null, i)
-			}
-		}
+		for (var i:number = 0; i < 6; ++i)
+			if (this._needsRender[i])
+				renderer._iRender(this._depthCameras[i], scene, target.imageCube, null, i)
 	}
 }
 

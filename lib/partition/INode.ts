@@ -1,8 +1,8 @@
 import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
 
 /**
@@ -23,7 +23,7 @@ interface INode
 
 	isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean
 
-	acceptTraverser(traverser:CollectorBase);
+	acceptTraverser(traverser:ITraverser);
 
 	isCastingShadow():boolean;
 }

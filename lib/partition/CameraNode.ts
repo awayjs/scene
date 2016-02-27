@@ -1,5 +1,5 @@
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 
 /**
  * @class away.partition.CameraNode
@@ -9,9 +9,9 @@ class CameraNode extends EntityNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:CollectorBase)
+	public acceptTraverser(traverser:ITraverser)
 	{
-		// todo: dead end for now, if it has a debug mesh, then sure accept that
+		// todo: dead end for now, if it has a debug sprite, then sure accept that
 	}
 }
 

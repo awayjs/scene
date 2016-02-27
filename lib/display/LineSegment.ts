@@ -4,18 +4,17 @@ import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
+import RenderableEvent				= require("awayjs-display/lib/events/RenderableEvent");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
-import CollectorBase				= require("awayjs-display/lib/traverse/CollectorBase");
 
 /**
  * A Line Segment primitive.
@@ -235,7 +234,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 		return false; //TODO: detect line collisions
 	}
 
-	public _acceptTraverser(traverser:CollectorBase)
+	public _acceptTraverser(traverser:ITraverser)
 	{
 		traverser.applyRenderable(this);
 	}
