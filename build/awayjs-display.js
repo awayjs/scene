@@ -8,6 +8,8 @@ var TextField = require("awayjs-display/lib/display/TextField");
 var PointLight = require("awayjs-display/lib/display/PointLight");
 var LightProbe = require("awayjs-display/lib/display/LightProbe");
 var Skybox = require("awayjs-display/lib/display/Skybox");
+var Shape = require("awayjs-display/lib/display/Shape");
+var MovieClip = require("awayjs-display/lib/display/MovieClip");
 var CameraNode = require("awayjs-display/lib/partition/CameraNode");
 var DirectionalLightNode = require("awayjs-display/lib/partition/DirectionalLightNode");
 var EntityNode = require("awayjs-display/lib/partition/EntityNode");
@@ -18,6 +20,8 @@ var SkyboxNode = require("awayjs-display/lib/partition/SkyboxNode");
 PartitionBase.registerAbstraction(CameraNode, Camera);
 PartitionBase.registerAbstraction(DirectionalLightNode, DirectionalLight);
 PartitionBase.registerAbstraction(EntityNode, Sprite);
+PartitionBase.registerAbstraction(EntityNode, Shape);
+PartitionBase.registerAbstraction(EntityNode, MovieClip);
 PartitionBase.registerAbstraction(EntityNode, Billboard);
 PartitionBase.registerAbstraction(EntityNode, LineSegment);
 PartitionBase.registerAbstraction(EntityNode, TextField);
@@ -35,7 +39,7 @@ var display = (function () {
 })();
 module.exports = display;
 
-},{"awayjs-display/lib/display/Billboard":"awayjs-display/lib/display/Billboard","awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","awayjs-display/lib/display/LightProbe":"awayjs-display/lib/display/LightProbe","awayjs-display/lib/display/LineSegment":"awayjs-display/lib/display/LineSegment","awayjs-display/lib/display/PointLight":"awayjs-display/lib/display/PointLight","awayjs-display/lib/display/Skybox":"awayjs-display/lib/display/Skybox","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
+},{"awayjs-display/lib/display/Billboard":"awayjs-display/lib/display/Billboard","awayjs-display/lib/display/Camera":"awayjs-display/lib/display/Camera","awayjs-display/lib/display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","awayjs-display/lib/display/LightProbe":"awayjs-display/lib/display/LightProbe","awayjs-display/lib/display/LineSegment":"awayjs-display/lib/display/LineSegment","awayjs-display/lib/display/MovieClip":"awayjs-display/lib/display/MovieClip","awayjs-display/lib/display/PointLight":"awayjs-display/lib/display/PointLight","awayjs-display/lib/display/Shape":"awayjs-display/lib/display/Shape","awayjs-display/lib/display/Skybox":"awayjs-display/lib/display/Skybox","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/partition/CameraNode":"awayjs-display/lib/partition/CameraNode","awayjs-display/lib/partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode","awayjs-display/lib/partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","awayjs-display/lib/partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","awayjs-display/lib/partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","awayjs-display/lib/partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/ITraverser":[function(require,module,exports){
 
@@ -3957,43 +3961,6 @@ var DisplayObjectContainer = (function (_super) {
                 this._nextHighestDepth = this._children[i]._depthID;
         this._nextHighestDepth += 1;
     };
-    /**
-     * Evaluates the display object to see if it overlaps or intersects with the
-     * point specified by the <code>x</code> and <code>y</code> parameters. The
-     * <code>x</code> and <code>y</code> parameters specify a point in the
-     * coordinate space of the Scene, not the display object container that
-     * contains the display object(unless that display object container is the
-     * Scene).
-     *
-     * @param x         The <i>x</i> coordinate to test against this object.
-     * @param y         The <i>y</i> coordinate to test against this object.
-     * @param shapeFlag Whether to check against the actual pixels of the object
-     *                 (<code>true</code>) or the bounding box
-     *                 (<code>false</code>).
-     * @return <code>true</code> if the display object overlaps or intersects
-     *         with the specified point; <code>false</code> otherwise.
-     */
-    DisplayObjectContainer.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
-        if (shapeFlag === void 0) { shapeFlag = false; }
-        if (masksFlag === void 0) { masksFlag = false; }
-        if (!this._pImplicitVisibility)
-            return;
-        if (this._pImplicitMaskId != -1 && !masksFlag)
-            return;
-        if (this._explicitMasks) {
-            var numMasks = this._explicitMasks.length;
-            var maskHit = false;
-            for (var i = 0; i < numMasks; i++) {
-                if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
-                    maskHit = true;
-                    break;
-                }
-            }
-            if (!maskHit)
-                return false;
-        }
-        return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
-    };
     DisplayObjectContainer.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
         var numChildren = this._children.length;
         for (var i = 0; i < numChildren; i++)
@@ -5134,6 +5101,7 @@ var DisplayObject = (function (_super) {
         newInstance.mouseEnabled = this._explicitMouseEnabled;
         newInstance.extra = this.extra;
         newInstance.maskMode = this._maskMode;
+        newInstance.castsShadows = this.castsShadows;
         if (this._explicitMasks)
             newInstance.masks = this._explicitMasks;
         if (this._adapter)
@@ -5416,10 +5384,26 @@ var DisplayObject = (function (_super) {
      * @return <code>true</code> if the display object overlaps or intersects
      *         with the specified point; <code>false</code> otherwise.
      */
-    DisplayObject.prototype.hitTestPoint = function (x, y, shapeFlag, maskFlag) {
+    DisplayObject.prototype.hitTestPoint = function (x, y, shapeFlag, masksFlag) {
         if (shapeFlag === void 0) { shapeFlag = false; }
-        if (maskFlag === void 0) { maskFlag = false; }
-        return false;
+        if (masksFlag === void 0) { masksFlag = false; }
+        if (!this._pImplicitVisibility)
+            return;
+        if (this._pImplicitMaskId != -1 && !masksFlag)
+            return;
+        if (this._explicitMasks) {
+            var numMasks = this._explicitMasks.length;
+            var maskHit = false;
+            for (var i = 0; i < numMasks; i++) {
+                if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
+                    maskHit = true;
+                    break;
+                }
+            }
+            if (!maskHit)
+                return false;
+        }
+        return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
     };
     DisplayObject.prototype.isMask = function () {
         return this._explicitMaskId == -1;
@@ -5873,6 +5857,9 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.invalidatePartitionBounds = function () {
         this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this));
     };
+    DisplayObject.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
+        return false;
+    };
     return DisplayObject;
 })(AssetBase);
 module.exports = DisplayObject;
@@ -5910,16 +5897,16 @@ var LightBase = (function (_super) {
         this._iDiffuseR = 1;
         this._iDiffuseG = 1;
         this._iDiffuseB = 1;
-        this._castsShadows = false;
+        this._shadowsEnabled = false;
     }
-    Object.defineProperty(LightBase.prototype, "castsShadows", {
+    Object.defineProperty(LightBase.prototype, "shadowsEnabled", {
         get: function () {
-            return this._castsShadows;
+            return this._shadowsEnabled;
         },
         set: function (value) {
-            if (this._castsShadows == value)
+            if (this._shadowsEnabled == value)
                 return;
-            this._castsShadows = value;
+            this._shadowsEnabled = value;
             if (value) {
                 if (this._shadowMapper == null)
                     this._shadowMapper = this.pCreateShadowMapper();
@@ -6850,7 +6837,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
-var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+var Sprite = require("awayjs-display/lib/display/Sprite");
 var TextField = require("awayjs-display/lib/display/TextField");
 var MouseEvent = require("awayjs-display/lib/events/MouseEvent");
 var Timeline = require("awayjs-display/lib/base/Timeline");
@@ -7168,10 +7155,10 @@ var MovieClip = (function (_super) {
     MovieClip._movieClips = new Array();
     MovieClip.assetType = "[asset MovieClip]";
     return MovieClip;
-})(DisplayObjectContainer);
+})(Sprite);
 module.exports = MovieClip;
 
-},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-display/lib/base/Timeline":"awayjs-display/lib/base/Timeline","awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/display/PointLight":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-display/lib/base/Timeline":"awayjs-display/lib/base/Timeline","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/display/TextField":"awayjs-display/lib/display/TextField","awayjs-display/lib/events/MouseEvent":"awayjs-display/lib/events/MouseEvent","awayjs-display/lib/managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager"}],"awayjs-display/lib/display/PointLight":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7339,55 +7326,220 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var Point = require("awayjs-core/lib/geom/Point");
+var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+var Graphics = require("awayjs-display/lib/graphics/Graphics");
+var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
 /**
  * This class is used to create lightweight shapes using the ActionScript
  * drawing application program interface(API). The Shape class includes a
  * <code>graphics</code> property, which lets you access methods from the
  * Graphics class.
  *
- * <p>The Sprite class also includes a <code>graphics</code>property, and it
+ * <p>The Shape class also includes a <code>graphics</code>property, and it
  * includes other features not available to the Shape class. For example, a
- * Sprite object is a display object container, whereas a Shape object is not
+ * Shape object is a display object container, whereas a Shape object is not
  * (and cannot contain child display objects). For this reason, Shape objects
- * consume less memory than Sprite objects that contain the same graphics.
- * However, a Sprite object supports user input events, while a Shape object
+ * consume less memory than Shape objects that contain the same graphics.
+ * However, a Shape object supports user input events, while a Shape object
  * does not.</p>
  */
 var Shape = (function (_super) {
     __extends(Shape, _super);
     /**
-     * Creates a new Shape object.
+     * Create a new Shape object.
+     *
+     * @param material    [optional]        The material with which to render the Shape.
      */
-    function Shape() {
+    function Shape(material) {
+        var _this = this;
+        if (material === void 0) { material = null; }
         _super.call(this);
+        //temp point used in hit testing
+        this._tempPoint = new Point();
+        this._pIsEntity = true;
+        this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
+        this._graphics = new Graphics(); //unique graphics object for each Shape
+        this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
+        this.material = material;
     }
+    Object.defineProperty(Shape.prototype, "assetType", {
+        /**
+         *
+         */
+        get: function () {
+            return Shape.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Shape.prototype, "graphics", {
         /**
-         * Specifies the Graphics object belonging to this Shape object, where vector
+         * Specifies the Graphics object belonging to this Shape object, where
          * drawing commands can occur.
          */
         get: function () {
+            if (this._iSourcePrefab)
+                this._iSourcePrefab._iValidate();
             return this._graphics;
         },
         enumerable: true,
         configurable: true
     });
-    Shape.prototype.clone = function () {
-        var clone = new Shape();
-        clone.pivot = this.pivot;
-        clone.transform.matrix3D = this.transform.matrix3D;
-        clone.name = name;
-        clone.maskMode = this.maskMode;
-        clone.masks = this.masks ? this.masks.concat() : null;
-        clone._graphics = this._graphics;
-        return clone;
+    Object.defineProperty(Shape.prototype, "animator", {
+        /**
+         * Defines the animator of the graphics object.  Default value is <code>null</code>.
+         */
+        get: function () {
+            return this._graphics.animator;
+        },
+        set: function (value) {
+            if (this._graphics.animator)
+                this._graphics.animator.removeOwner(this);
+            this._graphics.animator = value;
+            if (this._graphics.animator)
+                this._graphics.animator.addOwner(this);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Shape.prototype, "material", {
+        /**
+         * The material with which to render the Shape.
+         */
+        get: function () {
+            return this._graphics.material;
+        },
+        set: function (value) {
+            this._graphics.material = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Shape.prototype, "style", {
+        /**
+         *
+         */
+        get: function () {
+            return this._graphics.style;
+        },
+        set: function (value) {
+            this._graphics.style = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    Shape.prototype.bakeTransformations = function () {
+        this._graphics.applyTransformation(this.transform.matrix3D);
+        this.transform.clearMatrix3D();
     };
+    /**
+     * @inheritDoc
+     */
+    Shape.prototype.dispose = function () {
+        this.disposeValues();
+        Shape._shapes.push(this);
+    };
+    /**
+     * @inheritDoc
+     */
+    Shape.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
+        this._graphics.dispose();
+    };
+    /**
+     * Clones this Shape instance along with all it's children, while re-using the same
+     * material, graphics and animation set. The returned result will be a copy of this shape,
+     * containing copies of all of it's children.
+     *
+     * Properties that are re-used (i.e. not cloned) by the new copy include name,
+     * graphics, and material. Properties that are cloned or created anew for the copy
+     * include subShapees, children of the shape, and the animator.
+     *
+     * If you want to copy just the shape, reusing it's graphics and material while not
+     * cloning it's children, the simplest way is to create a new shape manually:
+     *
+     * <code>
+     * var clone : Shape = new Shape(original.graphics, original.material);
+     * </code>
+     */
+    Shape.prototype.clone = function () {
+        var newInstance = (Shape._shapes.length) ? Shape._shapes.pop() : new Shape();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    Shape.prototype.copyTo = function (shape) {
+        _super.prototype.copyTo.call(this, shape);
+        this._graphics.copyTo(shape.graphics);
+    };
+    /**
+     * //TODO
+     *
+     * @protected
+     */
+    Shape.prototype._pUpdateBoxBounds = function () {
+        _super.prototype._pUpdateBoxBounds.call(this);
+        this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
+    };
+    Shape.prototype._pUpdateSphereBounds = function () {
+        _super.prototype._pUpdateSphereBounds.call(this);
+        var box = this.getBox();
+        if (!this._center)
+            this._center = new Vector3D();
+        this._center.x = box.x + box.width / 2;
+        this._center.y = box.y + box.height / 2;
+        this._center.z = box.z + box.depth / 2;
+        this._pSphereBounds = this._graphics.getSphereBounds(this._center, this._pSphereBounds);
+    };
+    /**
+     * //TODO
+     *
+     * @private
+     */
+    Shape.prototype.onGraphicsBoundsInvalid = function (event) {
+        this._pInvalidateBounds();
+    };
+    /**
+     *
+     * @param renderer
+     *
+     * @internal
+     */
+    Shape.prototype._acceptTraverser = function (traverser) {
+        this.graphics.acceptTraverser(traverser);
+    };
+    Shape.prototype._hitTestPointInternal = function (x, y, shapeFlag, masksFlag) {
+        if (this._graphics.count) {
+            this._tempPoint.setTo(x, y);
+            var local = this.globalToLocal(this._tempPoint, this._tempPoint);
+            var box;
+            //early out for box test
+            if (!(box = this.getBox()).contains(local.x, local.y, 0))
+                return false;
+            //early out for non-shape tests
+            if (!shapeFlag)
+                return true;
+            //ok do the graphics thing
+            if (this._graphics._hitTestPointInternal(local.x, local.y))
+                return true;
+        }
+        return false;
+    };
+    Shape.prototype.clear = function () {
+        _super.prototype.clear.call(this);
+        this._graphics.clear();
+    };
+    Shape._shapes = new Array();
+    Shape.assetType = "[asset Shape]";
     return Shape;
 })(DisplayObject);
 module.exports = Shape;
 
-},{"awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject"}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7597,13 +7749,6 @@ var Skybox = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Skybox.prototype, "castsShadows", {
-        get: function () {
-            return false; //TODO
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
      *
@@ -7676,8 +7821,6 @@ var Sprite = (function (_super) {
         var _this = this;
         if (material === void 0) { material = null; }
         _super.call(this);
-        this._castsShadows = true;
-        this._shareAnimationGraphics = true;
         //temp point used in hit testing
         this._tempPoint = new Point();
         this._pIsEntity = true;
@@ -7696,22 +7839,10 @@ var Sprite = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Sprite.prototype, "castsShadows", {
-        /**
-         * Indicates whether or not the Sprite can cast shadows. Default value is <code>true</code>.
-         */
-        get: function () {
-            return this._castsShadows;
-        },
-        set: function (value) {
-            this._castsShadows = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Sprite.prototype, "graphics", {
         /**
-         * The graphics used by the sprite that provides it with its shape.
+         * Specifies the Graphics object belonging to this Sprite object, where
+         * drawing commands can occur.
          */
         get: function () {
             if (this._iSourcePrefab)
@@ -7747,19 +7878,6 @@ var Sprite = (function (_super) {
         },
         set: function (value) {
             this._graphics.material = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Sprite.prototype, "shareAnimationGraphics", {
-        /**
-         * Indicates whether or not the sprite share the same animation graphics.
-         */
-        get: function () {
-            return this._shareAnimationGraphics;
-        },
-        set: function (value) {
-            this._shareAnimationGraphics = value;
         },
         enumerable: true,
         configurable: true
@@ -7821,8 +7939,6 @@ var Sprite = (function (_super) {
     };
     Sprite.prototype.copyTo = function (sprite) {
         _super.prototype.copyTo.call(this, sprite);
-        sprite.castsShadows = this._castsShadows;
-        sprite.shareAnimationGraphics = this._shareAnimationGraphics;
         this._graphics.copyTo(sprite.graphics);
     };
     /**
@@ -15990,7 +16106,7 @@ var SceneGraphPartition = (function (_super) {
      * @returns {away.partition.NodeBase}
      */
     SceneGraphPartition.prototype.findParentForNode = function (node) {
-        if (node._displayObject.partition == this || node._displayObject._iIsRoot) {
+        if (node.isSceneGraphNode && (node._displayObject.partition == this || node._displayObject._iIsRoot)) {
             this._rootNode = node;
             return null;
         }

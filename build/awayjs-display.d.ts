@@ -2641,7 +2641,7 @@ declare module "awayjs-display/lib/display/DisplayObject" {
 	     * @return <code>true</code> if the display object overlaps or intersects
 	     *         with the specified point; <code>false</code> otherwise.
 	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, maskFlag?: boolean): boolean;
+	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
 	    isMask(): boolean;
 	    /**
 	     * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
@@ -2790,6 +2790,7 @@ declare module "awayjs-display/lib/display/DisplayObject" {
 	    _updateMaskMode(): void;
 	    clear(): void;
 	    invalidatePartitionBounds(): void;
+	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	}
 	export = DisplayObject;
 	
@@ -3157,23 +3158,6 @@ declare module "awayjs-display/lib/display/DisplayObjectContainer" {
 	    removeChildAtInternal(index: number): DisplayObject;
 	    getDepthIndexInternal(depth: number): number;
 	    private _updateNextHighestDepth();
-	    /**
-	     * Evaluates the display object to see if it overlaps or intersects with the
-	     * point specified by the <code>x</code> and <code>y</code> parameters. The
-	     * <code>x</code> and <code>y</code> parameters specify a point in the
-	     * coordinate space of the Scene, not the display object container that
-	     * contains the display object(unless that display object container is the
-	     * Scene).
-	     *
-	     * @param x         The <i>x</i> coordinate to test against this object.
-	     * @param y         The <i>y</i> coordinate to test against this object.
-	     * @param shapeFlag Whether to check against the actual pixels of the object
-	     *                 (<code>true</code>) or the bounding box
-	     *                 (<code>false</code>).
-	     * @return <code>true</code> if the display object overlaps or intersects
-	     *         with the specified point; <code>false</code> otherwise.
-	     */
-	    hitTestPoint(x: number, y: number, shapeFlag?: boolean, masksFlag?: boolean): boolean;
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	    _updateMaskMode(): void;
 	}
@@ -3336,10 +3320,10 @@ declare module "awayjs-display/lib/display/LightBase" {
 	    _iDiffuseR: number;
 	    _iDiffuseG: number;
 	    _iDiffuseB: number;
-	    private _castsShadows;
+	    private _shadowsEnabled;
 	    private _shadowMapper;
 	    constructor();
-	    castsShadows: boolean;
+	    shadowsEnabled: boolean;
 	    pCreateShadowMapper(): ShadowMapperBase;
 	    specular: number;
 	    diffuse: number;
@@ -3947,11 +3931,11 @@ declare module "awayjs-display/lib/display/LoaderContainer" {
 }
 
 declare module "awayjs-display/lib/display/MovieClip" {
-	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
 	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import Sprite = require("awayjs-display/lib/display/Sprite");
 	import IMovieClipAdapter = require("awayjs-display/lib/adapters/IMovieClipAdapter");
 	import Timeline = require("awayjs-display/lib/base/Timeline");
-	class MovieClip extends DisplayObjectContainer {
+	class MovieClip extends Sprite {
 	    private static _skipAdvance;
 	    private static _movieClips;
 	    static assetType: string;
@@ -4073,34 +4057,112 @@ declare module "awayjs-display/lib/display/Scene" {
 }
 
 declare module "awayjs-display/lib/display/Shape" {
+	import ITraverser = require("awayjs-display/lib/ITraverser");
+	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
-	import Graphics = require("awayjs-display/lib/draw/Graphics");
+	import Graphics = require("awayjs-display/lib/graphics/Graphics");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import Style = require("awayjs-display/lib/base/Style");
 	/**
 	 * This class is used to create lightweight shapes using the ActionScript
 	 * drawing application program interface(API). The Shape class includes a
 	 * <code>graphics</code> property, which lets you access methods from the
 	 * Graphics class.
 	 *
-	 * <p>The Sprite class also includes a <code>graphics</code>property, and it
+	 * <p>The Shape class also includes a <code>graphics</code>property, and it
 	 * includes other features not available to the Shape class. For example, a
-	 * Sprite object is a display object container, whereas a Shape object is not
+	 * Shape object is a display object container, whereas a Shape object is not
 	 * (and cannot contain child display objects). For this reason, Shape objects
-	 * consume less memory than Sprite objects that contain the same graphics.
-	 * However, a Sprite object supports user input events, while a Shape object
+	 * consume less memory than Shape objects that contain the same graphics.
+	 * However, a Shape object supports user input events, while a Shape object
 	 * does not.</p>
 	 */
 	class Shape extends DisplayObject {
+	    private static _shapes;
+	    static assetType: string;
+	    private _center;
 	    private _graphics;
+	    private _onGraphicsBoundsInvalidDelegate;
+	    private _tempPoint;
 	    /**
-	     * Specifies the Graphics object belonging to this Shape object, where vector
+	     *
+	     */
+	    assetType: string;
+	    /**
+	     * Specifies the Graphics object belonging to this Shape object, where
 	     * drawing commands can occur.
 	     */
 	    graphics: Graphics;
 	    /**
-	     * Creates a new Shape object.
+	     * Defines the animator of the graphics object.  Default value is <code>null</code>.
 	     */
-	    constructor();
-	    clone(): DisplayObject;
+	    animator: IAnimator;
+	    /**
+	     * The material with which to render the Shape.
+	     */
+	    material: MaterialBase;
+	    /**
+	     *
+	     */
+	    style: Style;
+	    /**
+	     * Create a new Shape object.
+	     *
+	     * @param material    [optional]        The material with which to render the Shape.
+	     */
+	    constructor(material?: MaterialBase);
+	    /**
+	     *
+	     */
+	    bakeTransformations(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    disposeValues(): void;
+	    /**
+	     * Clones this Shape instance along with all it's children, while re-using the same
+	     * material, graphics and animation set. The returned result will be a copy of this shape,
+	     * containing copies of all of it's children.
+	     *
+	     * Properties that are re-used (i.e. not cloned) by the new copy include name,
+	     * graphics, and material. Properties that are cloned or created anew for the copy
+	     * include subShapees, children of the shape, and the animator.
+	     *
+	     * If you want to copy just the shape, reusing it's graphics and material while not
+	     * cloning it's children, the simplest way is to create a new shape manually:
+	     *
+	     * <code>
+	     * var clone : Shape = new Shape(original.graphics, original.material);
+	     * </code>
+	     */
+	    clone(): Shape;
+	    copyTo(shape: Shape): void;
+	    /**
+	     * //TODO
+	     *
+	     * @protected
+	     */
+	    _pUpdateBoxBounds(): void;
+	    _pUpdateSphereBounds(): void;
+	    /**
+	     * //TODO
+	     *
+	     * @private
+	     */
+	    private onGraphicsBoundsInvalid(event);
+	    /**
+	     *
+	     * @param renderer
+	     *
+	     * @internal
+	     */
+	    _acceptTraverser(traverser: ITraverser): void;
+	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
+	    clear(): void;
 	}
 	export = Shape;
 	
@@ -4200,7 +4262,6 @@ declare module "awayjs-display/lib/display/Skybox" {
 	     */
 	    constructor(image?: ImageCube);
 	    assetType: string;
-	    castsShadows: boolean;
 	    /**
 	     * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	     *
@@ -4230,9 +4291,7 @@ declare module "awayjs-display/lib/display/Sprite" {
 	import ITraverser = require("awayjs-display/lib/ITraverser");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import Graphics = require("awayjs-display/lib/graphics/Graphics");
-	import GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
 	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import Style = require("awayjs-display/lib/base/Style");
 	/**
@@ -4240,25 +4299,20 @@ declare module "awayjs-display/lib/display/Sprite" {
 	 * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
 	 * of the graphics to be assigned different materials.
 	 */
-	class Sprite extends DisplayObjectContainer implements IEntity {
+	class Sprite extends DisplayObjectContainer {
 	    private static _sprites;
 	    static assetType: string;
 	    private _center;
 	    _graphics: Graphics;
-	    private _castsShadows;
-	    private _shareAnimationGraphics;
-	    _onGraphicsBoundsInvalidDelegate: (event: GraphicsEvent) => void;
+	    private _onGraphicsBoundsInvalidDelegate;
 	    private _tempPoint;
 	    /**
 	     *
 	     */
 	    assetType: string;
 	    /**
-	     * Indicates whether or not the Sprite can cast shadows. Default value is <code>true</code>.
-	     */
-	    castsShadows: boolean;
-	    /**
-	     * The graphics used by the sprite that provides it with its shape.
+	     * Specifies the Graphics object belonging to this Sprite object, where
+	     * drawing commands can occur.
 	     */
 	    graphics: Graphics;
 	    /**
@@ -4269,10 +4323,6 @@ declare module "awayjs-display/lib/display/Sprite" {
 	     * The material with which to render the Sprite.
 	     */
 	    material: MaterialBase;
-	    /**
-	     * Indicates whether or not the sprite share the same animation graphics.
-	     */
-	    shareAnimationGraphics: boolean;
 	    /**
 	     *
 	     */
