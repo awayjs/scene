@@ -13,14 +13,16 @@ import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 import ISurface						= require("awayjs-display/lib/base/ISurface");
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
-import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
-import SurfaceEvent				= require("awayjs-display/lib/events/SurfaceEvent");
+import RenderableEvent				= require("awayjs-display/lib/events/RenderableEvent");
+import SurfaceEvent					= require("awayjs-display/lib/events/SurfaceEvent");
 import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
@@ -296,7 +298,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 	 *
 	 * @internal
 	 */
-	public _iTestCollision(shortestCollisionDistance:number):boolean
+	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
 	{
 		return false;
 	}

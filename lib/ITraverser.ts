@@ -11,8 +11,6 @@ import Scene						= require("awayjs-display/lib/display/Scene");
  */
 interface ITraverser
 {
-	isDebugEnabled:boolean;
-
 	/**
 	 *
 	 * @param node
@@ -25,6 +23,12 @@ interface ITraverser
 	 * @param entity
 	 */
 	applyDirectionalLight(entity:IEntity);
+
+	/**
+	 *
+	 * @param entity
+	 */
+	applyEntity(entity:IEntity);
 
 	/**
 	 *

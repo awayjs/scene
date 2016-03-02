@@ -25,7 +25,7 @@ import IBitmapDrawable				= require("awayjs-display/lib/base/IBitmapDrawable");
 import Transform					= require("awayjs-display/lib/base/Transform");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import Camera						= require("awayjs-display/lib/display/Camera");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
@@ -226,14 +226,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _pivot:Vector3D;
 	private _pivotScale:Vector3D;
 	private _orientationMatrix:Matrix3D = new Matrix3D();
-
+	private _pickingCollider:IPickingCollider;
+	private _pickingCollision:PickingCollision;
 	private _shaderPickingDetails:boolean;
 
-	public _pPickingCollisionVO:PickingCollisionVO;
-
 	public _boundsType:string;
-
-	public _pPickingCollider:IPickingCollider;
 
 	public _iSourcePrefab:PrefabBase;
 
@@ -796,18 +793,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 	}
 
+
 	/**
 	 *
 	 */
-	public get pickingCollider():IPickingCollider
-	{
-		return this._pPickingCollider;
-	}
-
-	public set pickingCollider(value:IPickingCollider)
-	{
-		this._pPickingCollider = value;
-	}
+	public pickingCollider:IPickingCollider;
 
 	/**
 	 * Defines the local point around which the object rotates.
@@ -2014,12 +2004,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public get _iPickingCollisionVO():PickingCollisionVO
+	public get _iPickingCollision():PickingCollision
 	{
-		if (!this._pPickingCollisionVO)
-			this._pPickingCollisionVO = new PickingCollisionVO(this);
+		if (!this._pickingCollision)
+			this._pickingCollision = new PickingCollision(this);
 
-		return this._pPickingCollisionVO;
+		return this._pickingCollision;
 	}
 
 	/**
@@ -2308,8 +2298,8 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._pImplicitMouseEnabled = (this._pParent)? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
 
 		// If there is a parent and this child does not have a picking collider, use its parent's picking collider.
-		if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
-			this._pPickingCollider =  this._pParent._pPickingCollider;
+		if (this._pImplicitMouseEnabled && this._pParent && !this.pickingCollider)
+			this.pickingCollider =  this._pParent.pickingCollider;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
 	}
@@ -2386,11 +2376,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		super.clear();
 
 		var i:number;
-
-		if (this._pPickingCollisionVO) {
-			this._pPickingCollisionVO.dispose();
-			this._pPickingCollisionVO = null;
-		}
 
 		this._pImplicitColorTransform = null;
 		this._pImplicitMasks = null;

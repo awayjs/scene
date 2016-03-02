@@ -9,7 +9,7 @@ import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
 import Scene						= require("awayjs-display/lib/display/Scene");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import RaycastPicker				= require("awayjs-display/lib/pick/RaycastPicker");
 import Camera						= require("awayjs-display/lib/display/Camera");
 import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
@@ -467,7 +467,7 @@ class View
 		// update picking
 		if (!this._shareContext) {
 			if (this.forceMouseMove && this._htmlElement == this._mouseManager._iActiveDiv && !this._mouseManager._iUpdateDirty)
-				this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+				this._mouseManager._iCollision = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
 
 			this._mouseManager.fireMouseEvents(this.forceMouseMove);
 			//_touch3DManager.fireTouchEvents();
@@ -600,12 +600,12 @@ class View
 	{
 		if (!this._shareContext) {
 			if (this._htmlElement == this._mouseManager._iActiveDiv)
-				this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+				this._mouseManager._iCollision = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
 		} else {
-			var collidingObject:PickingCollisionVO = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+			var collidingObject:PickingCollision = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
 
-			if (this.layeredView || this._mouseManager._iCollidingObject == null || collidingObject.rayEntryDistance < this._mouseManager._iCollidingObject.rayEntryDistance)
-				this._mouseManager._iCollidingObject = collidingObject;
+			if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
+				this._mouseManager._iCollision = collidingObject;
 		}
 	}
 }

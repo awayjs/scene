@@ -72,7 +72,6 @@ class Sprite extends DisplayObjectContainer implements IEntity
 		return this._graphics;
 	}
 
-
 	/**
 	 * Defines the animator of the graphics object.  Default value is <code>null</code>.
 	 */
@@ -144,7 +143,7 @@ class Sprite extends DisplayObjectContainer implements IEntity
 
 		this._onGraphicsBoundsInvalidDelegate = (event:GraphicsEvent) => this.onGraphicsBoundsInvalid(event);
 
-		this._graphics = new Graphics(this); //unique graphics object for each Sprite
+		this._graphics = new Graphics(); //unique graphics object for each Sprite
 		this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
 
 		this.material = material;

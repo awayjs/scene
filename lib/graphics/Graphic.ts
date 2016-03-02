@@ -16,7 +16,7 @@ import IRenderable 			= require("awayjs-display/lib/base/IRenderable");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 
 /**
@@ -63,40 +63,6 @@ class Graphic extends AssetBase implements IRenderable
 	{
 		return this.parent.animator;
 	}
-
-
-	/**
-	 *
-	 */
-	public get pickingCollider():IPickingCollider
-	{
-		return this.parent.sourceEntity.pickingCollider;
-	}
-
-	/**
-	 * @internal
-	 */
-	public get _iPickingCollisionVO():PickingCollisionVO
-	{
-		return this.parent.sourceEntity._iPickingCollisionVO;
-	}
-
-	/**
-	 * @internal
-	 */
-	public _iIsMouseEnabled():boolean
-	{
-		return this.parent.sourceEntity._iIsMouseEnabled();
-	}
-
-	/**
-	 * @internal
-	 */
-	public _iAssignedMasks():Array<Array<DisplayObject>>
-	{
-		return this.parent.sourceEntity._iAssignedMasks();
-	}
-
 
 	//TODO test shader picking
 //		public get shaderPickingDetails():boolean
@@ -212,9 +178,9 @@ class Graphic extends AssetBase implements IRenderable
 	 *
 	 * @internal
 	 */
-	public _iTestCollision(shortestCollisionDistance:number):boolean
+	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
 	{
-		return this.elements._iTestCollision(this.pickingCollider, this.material, this._iPickingCollisionVO, shortestCollisionDistance)
+		return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision)
 	}
 
 }

@@ -6,10 +6,11 @@ import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import Scene						= require("awayjs-display/lib/display/Scene");
 import View							= require("awayjs-display/lib/View");
 import IPicker						= require("awayjs-display/lib/pick/IPicker");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import IRenderable					= require("awayjs-display/lib/base/IRenderable");
 import INode						= require("awayjs-display/lib/partition/INode");
+import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -26,26 +27,18 @@ class RaycastPicker implements IPicker, ITraverser
 	private _y:number;
 	private _view:View;
 	private _findClosestCollision:boolean;
-	private _ignoredRenderables = [];
-	private _onlyMouseEnabled:boolean = true;
+	private _bestCollision:PickingCollision;
+	private _testCollision:PickingCollision;
+	private _testCollider:IPickingCollider;
+	private _ignoredEntities:Array<IEntity>;
 
-	private _renderables:Array<IRenderable> = new Array<IRenderable>();
+	private _entities:Array<IEntity> = new Array<IEntity>();
 	private _hasCollisions:boolean;
-
-	public isDebugEnabled:boolean = false;
 
 	/**
 	 * @inheritDoc
 	 */
-	public get onlyMouseEnabled():boolean
-	{
-		return this._onlyMouseEnabled;
-	}
-
-	public set onlyMouseEnabled(value:boolean)
-	{
-		this._onlyMouseEnabled = value;
-	}
+	public onlyMouseEnabled:boolean = true;
 
 	/**
 	 * Creates a new <code>RaycastPicker</code> object.
@@ -71,7 +64,7 @@ class RaycastPicker implements IPicker, ITraverser
 	/**
 	 * @inheritDoc
 	 */
-	public getViewCollision(x:number, y:number, view:View):PickingCollisionVO
+	public getViewCollision(x:number, y:number, view:View):PickingCollision
 	{
 		this._x = x;
 		this._y = y;
@@ -87,7 +80,7 @@ class RaycastPicker implements IPicker, ITraverser
 	/**
 	 * @inheritDoc
 	 */
-	public getSceneCollision(rayPosition:Vector3D, rayDirection:Vector3D, scene:Scene):PickingCollisionVO
+	public getSceneCollision(rayPosition:Vector3D, rayDirection:Vector3D, scene:Scene):PickingCollision
 	{
 		this._rayPosition = rayPosition;
 		this._rayDirection = rayDirection;
@@ -96,18 +89,18 @@ class RaycastPicker implements IPicker, ITraverser
 		scene.traversePartitions(this);
 
 		//early out if no collisions detected
-		if (!this._renderables.length)
+		if (!this._entities.length)
 			return null;
 
-		var collisionVO:PickingCollisionVO = this.getPickingCollisionVO();
+		var collision:PickingCollision = this.getPickingCollision();
 
-		//discard renderables
-		this._renderables.length = 0;
+		//discard entities
+		this._entities.length = 0;
 
-		return collisionVO;
+		return collision;
 	}
 
-//		public getEntityCollision(position:Vector3D, direction:Vector3D, entities:Array<IEntity>):PickingCollisionVO
+//		public getEntityCollision(position:Vector3D, direction:Vector3D, entities:Array<IEntity>):PickingCollision
 //		{
 //			this._numRenderables = 0;
 //
@@ -121,112 +114,84 @@ class RaycastPicker implements IPicker, ITraverser
 //					this._renderables[this._numRenderables++] = renderable;
 //			}
 //
-//			return this.getPickingCollisionVO(this._raycastCollector);
+//			return this.getPickingCollision(this._raycastCollector);
 //		}
 
-	public setIgnoreList(renderables)
+	public setIgnoreList(entities:Array<IEntity>)
 	{
-		this._ignoredRenderables = renderables;
+		this._ignoredEntities = entities;
 	}
-
-	private isIgnored(renderable:IRenderable):boolean
+	
+	private isIgnored(entity:IEntity):boolean
 	{
-		if (this._onlyMouseEnabled && !renderable._iIsMouseEnabled())
+		if (this.onlyMouseEnabled && !entity._iIsMouseEnabled())
 			return true;
 
-		var len:number = this._ignoredRenderables.length;
-		for (var i:number = 0; i < len; i++)
-			if (this._ignoredRenderables[i] == renderable)
-				return true;
-
+		if (this._ignoredEntities) {
+			var len:number = this._ignoredEntities.length;
+			for (var i:number = 0; i < len; i++)
+				if (this._ignoredEntities[i] == entity)
+					return true;
+		}
+		
 		return false;
 	}
 
-	private sortOnNearT(renderable1:IRenderable, renderable2:IRenderable):number
+	private sortOnNearT(entity1:IEntity, entity2:IEntity):number
 	{
-		return renderable1._iPickingCollisionVO.rayEntryDistance > renderable2._iPickingCollisionVO.rayEntryDistance? 1 : -1;
+		return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : -1;
 	}
 
-	private getPickingCollisionVO():PickingCollisionVO
+	private getPickingCollision():PickingCollision
 	{
-		// Sort entities from closest to furthest.
-		this._renderables = this._renderables.sort(this.sortOnNearT); // TODO - test sort filter in JS
+		// Sort entities from closest to furthest to reduce tests.
+		this._entities = this._entities.sort(this.sortOnNearT); // TODO - test sort filter in JS
 
 		// ---------------------------------------------------------------------
 		// Evaluate triangle collisions when needed.
 		// Replaces collision data provided by bounds collider with more precise data.
 		// ---------------------------------------------------------------------
 
-		var shortestCollisionDistance:number = Number.MAX_VALUE;
-		var bestCollisionVO:PickingCollisionVO;
-		var pickingCollisionVO:PickingCollisionVO;
-		var renderable:IRenderable;
-		var len:number = this._renderables.length;
-
+		this._bestCollision = null;
+		
+		var entity:IEntity;
+		var len:number = this._entities.length;
 		for (var i:number = 0; i < len; i++) {
-			renderable = this._renderables[i];
-			pickingCollisionVO = renderable._iPickingCollisionVO;
-			if (renderable.pickingCollider) {
-				// If a collision exists, update the collision data and stop all checks.
-				if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && renderable._iTestCollision(shortestCollisionDistance)) {
-					shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
-					bestCollisionVO = pickingCollisionVO;
-					if (!this._findClosestCollision) {
-						this.updateLocalPosition(pickingCollisionVO);
-						return pickingCollisionVO;
-					}
-				}
-			} else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) { // A bounds collision with no triangle collider stops all checks.
-				// Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
-				// to enable the detection of a corresponsding triangle collision.
-				// Therefore, bounds collisions with a ray origin inside its bounds can be ignored
-				// if it has been established that there is NO triangle collider to test
-				if (!pickingCollisionVO.rayOriginIsInsideBounds && this.getMasksCollision(renderable._iAssignedMasks()) ) {
-					this.updateLocalPosition(pickingCollisionVO);
-					return pickingCollisionVO;
-				}
-			}
-		}
-
-		return bestCollisionVO;
-	}
-
-	private getMasksCollision(masks:Array<Array<DisplayObject>>)
-	{
-		//horrible hack for 2d masks
-		if (masks != null) {
-			var position:Vector3D = this._view.unproject(this._x, this._y, 1000);
-			var numLayers:number = masks.length;
-			var children:Array<DisplayObject>;
-			var numChildren:number;
-			var layerHit:boolean;
-			for (var i:number = 0; i < numLayers; i++) {
-				children = masks[i];
-				numChildren = children.length;
-				layerHit = false;
-				for (var j:number = 0; j < numChildren; j++) {
-					if (children[j].hitTestPoint(position.x, position.y, true, true)) {
-						layerHit = true;
+			entity = this._entities[i];
+			this._testCollision = entity._iPickingCollision;
+			if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
+				this._testCollider = entity.pickingCollider;
+				if (this._testCollider) {
+					this._testCollision.rayEntryDistance = Number.MAX_VALUE;
+					entity._acceptTraverser(this);
+					// If a collision exists, update the collision data and stop all checks.
+					if (this._bestCollision && !this._findClosestCollision)
 						break;
-					}
+				} else if (!this._testCollision.rayOriginIsInsideBounds) {
+					// A bounds collision with no picking collider stops all checks.
+					// Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
+					// to enable the detection of a corresponsding triangle collision.
+					// Therefore, bounds collisions with a ray origin inside its bounds can be ignored
+					// if it has been established that there is NO triangle collider to test
+					this._bestCollision = this._testCollision;
+					break;
 				}
-
-				if (!layerHit)
-					return false;
 			}
 		}
 
-		return true;
+		if (this._bestCollision)
+			this.updatePosition(this._bestCollision);
+
+		return this._bestCollision;
 	}
 
-
-	private updateLocalPosition(pickingCollisionVO:PickingCollisionVO)
+	private updatePosition(pickingCollision:PickingCollision)
 	{
-		var collisionPos:Vector3D = ( pickingCollisionVO.localPosition == null )? (pickingCollisionVO.localPosition = new Vector3D()) : pickingCollisionVO.localPosition;
+		var collisionPos:Vector3D = pickingCollision.position || (pickingCollision.position = new Vector3D());
 
-		var rayDir:Vector3D = pickingCollisionVO.localRayDirection;
-		var rayPos:Vector3D = pickingCollisionVO.localRayPosition;
-		var t:number = pickingCollisionVO.rayEntryDistance;
+		var rayDir:Vector3D = pickingCollision.rayDirection;
+		var rayPos:Vector3D = pickingCollision.rayPosition;
+		var t:number = pickingCollision.rayEntryDistance;
 		collisionPos.x = rayPos.x + t*rayDir.x;
 		collisionPos.y = rayPos.y + t*rayDir.y;
 		collisionPos.z = rayPos.z + t*rayDir.z;
@@ -241,9 +206,10 @@ class RaycastPicker implements IPicker, ITraverser
 	 *
 	 * @param entity
 	 */
-	public applyDirectionalLight(entity:IEntity)
+	public applyEntity(entity:IEntity)
 	{
-		//don't do anything here
+		if (!this.isIgnored(entity))
+			this._entities.push(entity);
 	}
 
 	/**
@@ -252,8 +218,17 @@ class RaycastPicker implements IPicker, ITraverser
 	 */
 	public applyRenderable(renderable:IRenderable)
 	{
-		if (!this.isIgnored(renderable))
-			this._renderables.push(renderable);
+		if (renderable._iTestCollision(this._testCollision, this._testCollider))
+			this._bestCollision = this._testCollision;
+	}
+	
+	/**
+	 *
+	 * @param entity
+	 */
+	public applyDirectionalLight(entity:IEntity)
+	{
+		//don't do anything here
 	}
 
 	/**

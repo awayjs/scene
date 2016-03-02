@@ -11,7 +11,7 @@ import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 
 /**
  * @class LineElements
@@ -287,9 +287,9 @@ class LineElements extends ElementsBase
 		return clone;
 	}
 
-	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision):boolean
 	{
-		return pickingCollider.testLineCollision(this, material, pickingCollisionVO, shortestCollisionDistance);
+		return pickingCollider.testLineCollision(this, material, pickingCollision);
 	}
 }
 

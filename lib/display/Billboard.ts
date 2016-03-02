@@ -18,6 +18,8 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -202,9 +204,9 @@ class Billboard extends DisplayObject implements IEntity, IRenderable
 	 *
 	 * @internal
 	 */
-	public _iTestCollision(shortestCollisionDistance:number):boolean
+	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
 	{
-		return this._pPickingCollider.testBillboardCollision(this, this.material, this._pPickingCollisionVO, shortestCollisionDistance);
+		return pickingCollider.testBillboardCollision(this, this.material, pickingCollision);
 	}
 
 	/**

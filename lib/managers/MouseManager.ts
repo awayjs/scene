@@ -3,7 +3,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
 import View							= require("awayjs-display/lib/View");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import AwayMouseEvent				= require("awayjs-display/lib/events/MouseEvent");
 import FrameScriptManager			= require("awayjs-display/lib/managers/FrameScriptManager");
 
@@ -19,10 +19,10 @@ class MouseManager
 
 	public _iActiveDiv:HTMLDivElement;
 	public _iUpdateDirty:boolean;
-	public _iCollidingObject:PickingCollisionVO;
+	public _iCollision:PickingCollision;
 	
 	private _nullVector:Vector3D = new Vector3D();
-	private _previousCollidingObject:PickingCollisionVO;
+	private _previousCollidingObject:PickingCollision;
 	private _queuedEvents:Array<AwayMouseEvent> = new Array<AwayMouseEvent>();
 
 	private _mouseMoveEvent:MouseEvent;
@@ -71,16 +71,16 @@ class MouseManager
 	public fireMouseEvents(forceMouseMove:boolean)
 	{
 		 // If colliding object has changed, queue over/out events.
-		if (this._iCollidingObject != this._previousCollidingObject) {
+		if (this._iCollision != this._previousCollidingObject) {
 			if (this._previousCollidingObject)
 				this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
 
-			if (this._iCollidingObject)
+			if (this._iCollision)
 				this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
 		}
 
 		 // Fire mouse move events here if forceMouseMove is on.
-		 if (forceMouseMove && this._iCollidingObject)
+		 if (forceMouseMove && this._iCollision)
 			this.queueDispatch( this._mouseMove, this._mouseMoveEvent);
 
 		var event:AwayMouseEvent;
@@ -90,7 +90,7 @@ class MouseManager
 		var len:number = this._queuedEvents.length;
 		for (var i:number = 0; i < len; ++i) {
 			event = this._queuedEvents[i];
-			dispatcher = event.object;
+			dispatcher = <DisplayObject> event.entity;
 
 			// bubble event up the heirarchy until the top level parent is reached
 			while (dispatcher) {
@@ -108,7 +108,7 @@ class MouseManager
 
 		this._queuedEvents.length = 0;
 
-		this._previousCollidingObject = this._iCollidingObject;
+		this._previousCollidingObject = this._iCollision;
 
 		this._iUpdateDirty = false;
 	}
@@ -170,7 +170,7 @@ class MouseManager
 	// Private.
 	// ---------------------------------------------------------------------
 
-	private queueDispatch(event:AwayMouseEvent, sourceEvent, collider:PickingCollisionVO = null)
+	private queueDispatch(event:AwayMouseEvent, sourceEvent, collision:PickingCollision = null)
 	{
 		// 2D properties.
 		if (sourceEvent) {
@@ -181,30 +181,29 @@ class MouseManager
 			event.screenY = (sourceEvent.clientY != null)? sourceEvent.clientY : sourceEvent.changedTouches[0].clientY;
 		}
 
-		if (collider == null)
-			collider = this._iCollidingObject;
+		if (collision == null)
+			collision = this._iCollision;
 
 		// 3D properties.
-		if (collider) {
+		if (collision) {
 			// Object.
-			event.object = collider.displayObject;
-			event.renderable = collider.renderable;
+			event.entity = collision.entity;
+			event.renderable = collision.renderable;
 			// UV.
-			event.uv = collider.uv;
+			event.uv = collision.uv;
 			// Position.
-			event.localPosition = collider.localPosition? collider.localPosition.clone() : null;
+			event.position = collision.position? collision.position.clone() : null;
 			// Normal.
-			event.localNormal = collider.localNormal? collider.localNormal.clone() : null;
+			event.normal = collision.normal? collision.normal.clone() : null;
 			// Face index.
-			event.index = collider.index;
+			event.elementIndex = collision.elementIndex;
 		} else {
 			// Set all to null.
 			event.uv = null;
-			event.object = null;
-			event.localPosition = this._nullVector;
-			event.localNormal = this._nullVector;
-			event.index = 0;
-			event.elementsIndex = 0;
+			event.entity = null;
+			event.position = this._nullVector;
+			event.normal = this._nullVector;
+			event.elementIndex = 0;
 		}
 
 		// Store event to be dispatched later.
@@ -221,7 +220,7 @@ class MouseManager
 
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
 	}
 
@@ -231,7 +230,7 @@ class MouseManager
 
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch(this._mouseOut, event);
 	}
 
@@ -241,7 +240,7 @@ class MouseManager
 
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch( this._mouseOver, event);
 	}
 
@@ -249,7 +248,7 @@ class MouseManager
 	{
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch(this._mouseClick, event);
 	}
 
@@ -257,7 +256,7 @@ class MouseManager
 	{
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
@@ -269,7 +268,7 @@ class MouseManager
 
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch(this._mouseDown, event);
 	}
 
@@ -279,7 +278,7 @@ class MouseManager
 
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch(this._mouseUp , event);
 	}
 
@@ -287,7 +286,7 @@ class MouseManager
 	{
 		this.updateColliders(event);
 
-		if (this._iCollidingObject)
+		if (this._iCollision)
 			this.queueDispatch(this._mouseWheel, event);
 	}
 
@@ -325,7 +324,7 @@ class MouseManager
 
 				view.updateCollider();
 
-				if (view.layeredView && this._iCollidingObject)
+				if (view.layeredView && this._iCollision)
 					break;
 			}
 		}

@@ -12,7 +12,7 @@ import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeB
 import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
 import NullBounds					= require("awayjs-display/lib/bounds/NullBounds");
 import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
-import ITraverser				= require("awayjs-display/lib/ITraverser");
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
 import INode						= require("awayjs-display/lib/partition/INode");
@@ -31,7 +31,6 @@ class DisplayObjectNode extends AbstractionBase implements INode
 	private _onInvalidatePartitionBoundsDelegate:(event:DisplayObjectEvent) => void;
 	
 	public _displayObject:DisplayObject;
-	private _debugEntity:IEntity;
 	private _boundsDirty:boolean = true;
 	private _bounds:BoundingVolumeBase;
 
@@ -41,8 +40,16 @@ class DisplayObjectNode extends AbstractionBase implements INode
 
 	public isContainerNode:boolean = false;
 
-	public boundsType:string;
+	private _boundsType:string;
 
+	public get debugVisible():boolean
+	{
+		return this._displayObject.debugVisible;
+	}
+
+	/**
+	 * @internal
+	 */
 	public get bounds():BoundingVolumeBase
 	{
 		if (this._boundsDirty)
@@ -60,7 +67,7 @@ class DisplayObjectNode extends AbstractionBase implements INode
 		this._displayObject = displayObject;
 		this._displayObject.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
 
-		this.boundsType = this._displayObject.boundsType;
+		this._boundsType = this._displayObject.boundsType;
 	}
 
 	/**
@@ -83,15 +90,14 @@ class DisplayObjectNode extends AbstractionBase implements INode
 			this._bounds.dispose();
 
 		this._bounds = null;
-		this._debugEntity = null;
 	}
 
 	public onInvalidate(event:AssetEvent)
 	{
 		super.onInvalidate(event);
 
-		if (this.boundsType != this._displayObject.boundsType) {
-			this.boundsType = this._displayObject.boundsType;
+		if (this._boundsType != this._displayObject.boundsType) {
+			this._boundsType = this._displayObject.boundsType;
 			this._boundsDirty = true;
 		}
 	}
@@ -134,11 +140,11 @@ class DisplayObjectNode extends AbstractionBase implements INode
 		if (this._bounds)
 			this._bounds.dispose();
 
-		if (this.boundsType == BoundsType.AXIS_ALIGNED_BOX)
+		if (this._boundsType == BoundsType.AXIS_ALIGNED_BOX)
 			this._bounds = new AxisAlignedBoundingBox(this._displayObject);
-		else if (this.boundsType == BoundsType.SPHERE)
+		else if (this._boundsType == BoundsType.SPHERE)
 			this._bounds = new BoundingSphere(this._displayObject);
-		else if (this.boundsType == BoundsType.NULL)
+		else if (this._boundsType == BoundsType.NULL)
 			this._bounds = new NullBounds();
 
 		this._boundsDirty = false;

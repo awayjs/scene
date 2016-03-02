@@ -4,10 +4,10 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
-import ITraverser				= require("awayjs-display/lib/ITraverser");
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 import IEntity						= require("awayjs-display/lib/display/IEntity");
 import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import IRenderable					= require("awayjs-display/lib/base/IRenderable");
@@ -20,6 +20,7 @@ class EntityNode extends DisplayObjectNode
 	public numEntities:number = 1;
 
 	private _partition:PartitionBase;
+	private _maskPosition:Vector3D = new Vector3D();
 
 
 	constructor(displayObject:DisplayObject, partition:PartitionBase)
@@ -55,27 +56,27 @@ class EntityNode extends DisplayObjectNode
 	/**
 	 * @inheritDoc
 	 */
-	public isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean
+	public isIntersectingRay(globalRayPosition:Vector3D, globalRayDirection:Vector3D):boolean
 	{
-		if (!this._displayObject._iIsVisible())
+		if (!this._displayObject._iIsVisible() || !this.isIntersectingMasks(globalRayPosition, globalRayDirection, this._displayObject._iAssignedMasks()))
 			return false;
 
-		var pickingCollisionVO:PickingCollisionVO = this._displayObject._iPickingCollisionVO;
-		pickingCollisionVO.localRayPosition = this._displayObject.inverseSceneTransform.transformVector(rayPosition);
-		pickingCollisionVO.localRayDirection = this._displayObject.inverseSceneTransform.deltaTransformVector(rayDirection);
+		var pickingCollision:PickingCollision = this._displayObject._iPickingCollision;
+		pickingCollision.rayPosition = this._displayObject.inverseSceneTransform.transformVector(globalRayPosition);
+		pickingCollision.rayDirection = this._displayObject.inverseSceneTransform.deltaTransformVector(globalRayDirection);
 
-		if (!pickingCollisionVO.localNormal)
-			pickingCollisionVO.localNormal = new Vector3D();
+		if (!pickingCollision.normal)
+			pickingCollision.normal = new Vector3D();
 
-		var rayEntryDistance:number = this.bounds.rayIntersection(pickingCollisionVO.localRayPosition, pickingCollisionVO.localRayDirection, pickingCollisionVO.localNormal);
+		var rayEntryDistance:number = this.bounds.rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
 
 		if (rayEntryDistance < 0)
 			return false;
 
-		pickingCollisionVO.rayEntryDistance = rayEntryDistance;
-		pickingCollisionVO.rayPosition = rayPosition;
-		pickingCollisionVO.rayDirection = rayDirection;
-		pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
+		pickingCollision.rayEntryDistance = rayEntryDistance;
+		pickingCollision.globalRayPosition = globalRayPosition;
+		pickingCollision.globalRayDirection = globalRayDirection;
+		pickingCollision.rayOriginIsInsideBounds = rayEntryDistance == 0;
 
 		return true;
 	}
@@ -85,12 +86,8 @@ class EntityNode extends DisplayObjectNode
 	 */
 	public acceptTraverser(traverser:ITraverser)
 	{
-		if (traverser.enterNode(this)) {
-			this._displayObject._acceptTraverser(traverser);
-
-			if (this._displayObject.debugVisible && traverser.isDebugEnabled)
-				this.bounds.boundsPrimitive._acceptTraverser(traverser);
-		}
+		if (traverser.enterNode(this))
+			traverser.applyEntity(this._displayObject);
 	}
 
 	public _onInvalidatePartitionBounds(event:DisplayObjectEvent)
@@ -98,6 +95,35 @@ class EntityNode extends DisplayObjectNode
 		this.bounds.invalidate();
 
 		this._partition.iMarkForUpdate(this);
+	}
+
+	private isIntersectingMasks(globalRayPosition:Vector3D, globalRayDirection:Vector3D, masks:Array<Array<DisplayObject>>)
+	{
+		//horrible hack for 2d masks
+		if (masks != null) {
+			this._maskPosition.x = globalRayPosition.x + globalRayDirection.x*1000;
+			this._maskPosition.y = globalRayPosition.y + globalRayDirection.y*1000;
+			var numLayers:number = masks.length;
+			var children:Array<DisplayObject>;
+			var numChildren:number;
+			var layerHit:boolean;
+			for (var i:number = 0; i < numLayers; i++) {
+				children = masks[i];
+				numChildren = children.length;
+				layerHit = false;
+				for (var j:number = 0; j < numChildren; j++) {
+					if (children[j].hitTestPoint(this._maskPosition.x, this._maskPosition.y, true, true)) {
+						layerHit = true;
+						break;
+					}
+				}
+
+				if (!layerHit)
+					return false;
+			}
+		}
+
+		return true;
 	}
 }
 

@@ -15,10 +15,9 @@ import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
 import IAnimator 				= require("awayjs-display/lib/animators/IAnimator");
 import ElementsEvent			= require("awayjs-display/lib/events/ElementsEvent");
 import StyleEvent				= require("awayjs-display/lib/events/StyleEvent");
-import IEntity					= require("awayjs-display/lib/display/IEntity");
 import IPickingCollider			= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO		= require("awayjs-display/lib/pick/PickingCollisionVO");
-import ITraverser			= require("awayjs-display/lib/ITraverser");
+import PickingCollision			= require("awayjs-display/lib/pick/PickingCollision");
+import ITraverser				= require("awayjs-display/lib/ITraverser");
 import ElementsUtils			= require("awayjs-display/lib/utils/ElementsUtils");
 import ParticleData				= require("awayjs-display/lib/animators/data/ParticleData");
 
@@ -52,8 +51,6 @@ class Graphics extends AssetBase
 	private _graphics:Array<Graphic> = new Array<Graphic>();
 	private _animator:IAnimator;
 	private _style:Style;
-
-	public sourceEntity:IEntity;
 
 	public get assetType():string
 	{
@@ -155,14 +152,12 @@ class Graphics extends AssetBase
 	/**
 	 * Creates a new Graphics object.
 	 */
-	constructor(sourceEntity:IEntity)
+	constructor()
 	{
 		super();
 
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 		this._onInvalidateVerticesDelegate = (event:ElementsEvent) => this._onInvalidateVertices(event);
-
-		this.sourceEntity = sourceEntity;
 	}
 
 	/**

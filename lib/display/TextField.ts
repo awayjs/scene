@@ -810,7 +810,7 @@ class TextField extends Sprite
 			return;
 
 		this._graphics.dispose();
-		this._graphics = new Graphics(this);
+		this._graphics = new Graphics();
 
 		if(this._text == "")
 			return;

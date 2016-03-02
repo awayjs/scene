@@ -3,7 +3,7 @@ import Point							= require("awayjs-core/lib/geom/Point");
 import LineElements						= require("awayjs-display/lib/graphics/LineElements");
 import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
 import Billboard						= require("awayjs-display/lib/display/Billboard");
-import PickingCollisionVO				= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision					= require("awayjs-display/lib/pick/PickingCollision");
 import IPickingCollider					= require("awayjs-display/lib/pick/IPickingCollider");
 import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
 import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
@@ -36,18 +36,17 @@ class JSPickingCollider implements IPickingCollider
 	 * Tests a <code>Billboard</code> object for a collision with the picking ray.
 	 *
 	 * @param billboard The billboard instance to be tested.
-	 * @param pickingCollisionVO The collision object used to store the collision results
-	 * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	 * @param pickingCollision The collision object used to store the collision results
 	 * @param findClosest
 	 */
-	public testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number)
+	public testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollision:PickingCollision)
 	{
-		pickingCollisionVO.renderable = null;
+		pickingCollision.renderable = null;
 
-		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollisionVO, shortestCollisionDistance)) {
-		//	shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollision, shortestCollisionDistance)) {
+		//	shortestCollisionDistance = pickingCollision.rayEntryDistance;
 		//
-		//	pickingCollisionVO.renderable = billboard;
+		//	pickingCollision.renderable = billboard;
 		//
 		//	return true;
 		//}
@@ -60,14 +59,13 @@ class JSPickingCollider implements IPickingCollider
 	 *
 	 * @param triangleElements
 	 * @param material
-	 * @param pickingCollisionVO
-	 * @param shortestCollisionDistance
+	 * @param pickingCollision
 	 * @returns {boolean}
 	 */
-	public testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	public testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollision:PickingCollision):boolean
 	{
-		var rayPosition:Vector3D = pickingCollisionVO.localRayPosition;
-		var rayDirection:Vector3D = pickingCollisionVO.localRayDirection;
+		var rayPosition:Vector3D = pickingCollision.rayPosition;
+		var rayDirection:Vector3D = pickingCollision.rayDirection;
 		var t:number;
 		var i0:number, i1:number, i2:number;
 		var rx:number, ry:number, rz:number;
@@ -171,12 +169,11 @@ class JSPickingCollider implements IPickingCollider
 				if (w < 0)
 					continue;
 				u = 1 - v - w;
-				if (!( u < 0 ) && t > 0 && t < shortestCollisionDistance) { // all tests passed
-					shortestCollisionDistance = t;
+				if (!( u < 0 ) && t > 0 && t < pickingCollision.rayEntryDistance) { // all tests passed
 					collisionTriangleIndex = index/3;
-					pickingCollisionVO.rayEntryDistance = t;
-					pickingCollisionVO.localPosition = new Vector3D(cx, cy, cz);
-					pickingCollisionVO.localNormal = new Vector3D(nx, ny, nz);
+					pickingCollision.rayEntryDistance = t;
+					pickingCollision.position = new Vector3D(cx, cy, cz);
+					pickingCollision.normal = new Vector3D(nx, ny, nz);
 					if (triangleElements.uvs) { //uv calculations
 						var uvs:ArrayBufferView = triangleElements.uvs.get(triangleElements.numVertices);
 						var uvDim:number = triangleElements.uvs.dimensions;
@@ -187,10 +184,9 @@ class JSPickingCollider implements IPickingCollider
 						var uv1:Vector3D = new Vector3D(uvs[uIndex], uvs[uIndex + 1]);
 						uIndex = indices[index + 2]*uvDim;
 						var uv2:Vector3D = new Vector3D(uvs[uIndex], uvs[uIndex + 1]);
-						pickingCollisionVO.uv = new Point(u*uv0.x + v*uv1.x + w*uv2.x, u*uv0.y + v*uv1.y + w*uv2.y);
+						pickingCollision.uv = new Point(u*uv0.x + v*uv1.x + w*uv2.x, u*uv0.y + v*uv1.y + w*uv2.y);
 					}
-					pickingCollisionVO.index = index;
-//						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
+					pickingCollision.elementIndex = collisionTriangleIndex;
 
 					// if not looking for best hit, first found will do...
 					if (!this._findClosestCollision)
@@ -211,14 +207,13 @@ class JSPickingCollider implements IPickingCollider
 	// *
 	// * @param triangleElements
 	// * @param material
-	// * @param pickingCollisionVO
-	// * @param shortestCollisionDistance
+	// * @param pickingCollision
 	// * @returns {boolean}
 	// */
-	//public testCurveCollision(curveElements:CurveElements, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	//public testCurveCollision(curveElements:CurveElements, material:MaterialBase, pickingCollision:PickingCollision, shortestCollisionDistance:number):boolean
 	//{
-	//	var rayPosition:Vector3D = pickingCollisionVO.localRayPosition;
-	//	var rayDirection:Vector3D = pickingCollisionVO.localRayDirection;
+	//	var rayPosition:Vector3D = pickingCollision.localRayPosition;
+	//	var rayDirection:Vector3D = pickingCollision.localRayDirection;
 	//
 	//	//project ray onto x/y plane to generate useful test points from mouse coordinates
 	//	//this will only work while all points lie on the x/y plane
@@ -329,12 +324,12 @@ class JSPickingCollider implements IPickingCollider
 	//		if (distance < shortestCollisionDistance) {
 	//			shortestCollisionDistance = distance;
 	//			collisionCurveIndex = index/3;
-	//			pickingCollisionVO.rayEntryDistance = distance;
-	//			pickingCollisionVO.localPosition = p;
-	//			pickingCollisionVO.localNormal = new Vector3D(0, 0, 1);
-	//			pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
-	//			pickingCollisionVO.index = index;
-	//			//						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
+	//			pickingCollision.rayEntryDistance = distance;
+	//			pickingCollision.localPosition = p;
+	//			pickingCollision.localNormal = new Vector3D(0, 0, 1);
+	//			pickingCollision.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
+	//			pickingCollision.index = index;
+	//			//						pickingCollision.elementIndex = this.pGetSpriteGraphicIndex(renderable);
 	//
 	//			// if not looking for best hit, first found will do...
 	//			if (!this._findClosestCollision)
@@ -353,11 +348,10 @@ class JSPickingCollider implements IPickingCollider
 	 *
 	 * @param triangleElements
 	 * @param material
-	 * @param pickingCollisionVO
-	 * @param shortestCollisionDistance
+	 * @param pickingCollision
 	 * @returns {boolean}
 	 */
-	public testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	public testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollision:PickingCollision):boolean
 	{
 		return false;
 	}

@@ -2,7 +2,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import View							= require("awayjs-display/lib/View");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import AwayTouchEvent				= require("awayjs-display/lib/events/TouchEvent");
 
 class TouchManager
@@ -13,9 +13,9 @@ class TouchManager
 	private _nullVector:Vector3D = new Vector3D();
 	private _numTouchPoints:number;
 	private _touchPoint:TouchPoint;
-	private _iCollidingObject:PickingCollisionVO;
-	private _previousCollidingObject:PickingCollisionVO;
-	public static _iCollidingObjectFromTouchId:Object;
+	private _iCollision:PickingCollision;
+	private _previousCollidingObject:PickingCollision;
+	public static _iCollisionFromTouchId:Object;
 	public static _previousCollidingObjectFromTouchId:Object;
 	private _queuedEvents:Array<AwayTouchEvent> = new Array<AwayTouchEvent>();
 	
@@ -38,7 +38,7 @@ class TouchManager
 	{
 		this._touchPoints = new Array<TouchPoint>();
 		this._touchPointFromId = new Object();
-		TouchManager._iCollidingObjectFromTouchId = new Object();
+		TouchManager._iCollisionFromTouchId = new Object();
 		TouchManager._previousCollidingObjectFromTouchId = new Object();
 
 		this.onTouchBeginDelegate = (event:TouchEvent) => this.onTouchBegin(event);
@@ -63,8 +63,8 @@ class TouchManager
 		//if (forceTouchMove || this._updateDirty) { // If forceTouchMove is off, and no 2D Touch events dirty the update, don't update either.
 		//	for (var i:number; i < this._numTouchPoints; ++i) {
 		//		this._touchPoint = this._touchPoints[ i ];
-		//		this._iCollidingObject = this._touchPicker.getViewCollision(this._touchPoint.x, this._touchPoint.y, this._view);
-		//		TouchManager._iCollidingObjectFromTouchId[ this._touchPoint.id ] = this._iCollidingObject;
+		//		this._iCollision = this._touchPicker.getViewCollision(this._touchPoint.x, this._touchPoint.y, this._view);
+		//		TouchManager._iCollisionFromTouchId[ this._touchPoint.id ] = this._iCollision;
 		//	}
 		//}
 	}
@@ -75,17 +75,17 @@ class TouchManager
 		for (i = 0; i < this._numTouchPoints; ++i) {
 			this._touchPoint = this._touchPoints[i];
 			// If colliding object has changed, queue over/out events.
-			this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ this._touchPoint.id ];
+			this._iCollision = TouchManager._iCollisionFromTouchId[ this._touchPoint.id ];
 			this._previousCollidingObject = TouchManager._previousCollidingObjectFromTouchId[ this._touchPoint.id ];
-			if (this._iCollidingObject != this._previousCollidingObject) {
+			if (this._iCollision != this._previousCollidingObject) {
 				if (this._previousCollidingObject)
 					this.queueDispatch(this._touchOut, this._touchMoveEvent, this._previousCollidingObject, this._touchPoint);
-				if (this._iCollidingObject)
-					this.queueDispatch(this._touchOver, this._touchMoveEvent, this._iCollidingObject, this._touchPoint);
+				if (this._iCollision)
+					this.queueDispatch(this._touchOver, this._touchMoveEvent, this._iCollision, this._touchPoint);
 			}
 			// Fire Touch move events here if forceTouchMove is on.
-			if (forceTouchMove && this._iCollidingObject)
-				this.queueDispatch(this._touchMove, this._touchMoveEvent, this._iCollidingObject, this._touchPoint);
+			if (forceTouchMove && this._iCollision)
+				this.queueDispatch(this._touchMove, this._touchMoveEvent, this._iCollision, this._touchPoint);
 		}
 
 		var event:AwayTouchEvent;
@@ -96,7 +96,7 @@ class TouchManager
 		for (i = 0; i < len; ++i) {
 			// Only dispatch from first implicitly enabled object ( one that is not a child of a TouchChildren = false hierarchy ).
 			event = this._queuedEvents[i];
-			dispatcher = event.object;
+			dispatcher = <DisplayObject> event.entity;
 			
 			while (dispatcher && !dispatcher._iIsMouseEnabled())
 				dispatcher = dispatcher.parent;
@@ -110,7 +110,7 @@ class TouchManager
 		
 		for (i = 0; i < this._numTouchPoints; ++i) {
 			this._touchPoint = this._touchPoints[ i ];
-			TouchManager._previousCollidingObjectFromTouchId[ this._touchPoint.id ] = TouchManager._iCollidingObjectFromTouchId[ this._touchPoint.id ];
+			TouchManager._previousCollidingObjectFromTouchId[ this._touchPoint.id ] = TouchManager._iCollisionFromTouchId[ this._touchPoint.id ];
 		}
 	}
 	
@@ -132,7 +132,7 @@ class TouchManager
 	// Private.
 	// ---------------------------------------------------------------------
 	
-	private queueDispatch(event:AwayTouchEvent, sourceEvent:TouchEvent, collider:PickingCollisionVO, touch:TouchPoint)
+	private queueDispatch(event:AwayTouchEvent, sourceEvent:TouchEvent, collider:PickingCollision, touch:TouchPoint)
 	{
 		// 2D properties.
 		event.ctrlKey = sourceEvent.ctrlKey;
@@ -145,27 +145,24 @@ class TouchManager
 		// 3D properties.
 		if (collider) {
 			// Object.
-			event.object = collider.displayObject;
+			event.entity = collider.entity;
 			event.renderable = collider.renderable;
 			// UV.
 			event.uv = collider.uv;
 			// Position.
-			event.localPosition = collider.localPosition? collider.localPosition.clone() : null;
+			event.position = collider.position? collider.position.clone() : null;
 			// Normal.
-			event.localNormal = collider.localNormal? collider.localNormal.clone() : null;
-			// Face index.
-			event.index = collider.index;
+			event.normal = collider.normal? collider.normal.clone() : null;
 			// ElementsIndex.
-			event.elementsIndex = collider.index;
+			event.elementIndex = collider.elementIndex;
 			
 		} else {
 			// Set all to null.
 			event.uv = null;
-			event.object = null;
-			event.localPosition = this._nullVector;
-			event.localNormal = this._nullVector;
-			event.index = 0;
-			event.elementsIndex = 0;
+			event.entity = null;
+			event.position = this._nullVector;
+			event.normal = this._nullVector;
+			event.elementIndex = 0;
 		}
 		
 		// Store event to be dispatched later.
@@ -189,9 +186,9 @@ class TouchManager
 
 		//this.updateCollider(event); // ensures collision check is done with correct mouse coordinates on mobile
 
-		this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ touch.id ];
-		if (this._iCollidingObject)
-			this.queueDispatch(this._touchBegin, event, this._iCollidingObject, touch);
+		this._iCollision = TouchManager._iCollisionFromTouchId[ touch.id ];
+		if (this._iCollision)
+			this.queueDispatch(this._touchBegin, event, this._iCollision, touch);
 
 		this._updateDirty = true;
 	}
@@ -206,10 +203,10 @@ class TouchManager
 		////touch.x = event.stageX;
 		////touch.y = event.stageY;
 		//
-		//this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ touch.id ];
+		//this._iCollision = TouchManager._iCollisionFromTouchId[ touch.id ];
 		//
-		//if (this._iCollidingObject)
-		//	this.queueDispatch(this._touchMove, this._touchMoveEvent = event, this._iCollidingObject, touch);
+		//if (this._iCollision)
+		//	this.queueDispatch(this._touchMove, this._touchMoveEvent = event, this._iCollision, touch);
 		//
 		//this._updateDirty = true;
 	}
@@ -221,9 +218,9 @@ class TouchManager
 		//
 		//if (!touch) return;
 		//
-		//this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ touch.id ];
-		//if (this._iCollidingObject)
-		//	this.queueDispatch(this._touchEnd, event, this._iCollidingObject, touch);
+		//this._iCollision = TouchManager._iCollisionFromTouchId[ touch.id ];
+		//if (this._iCollision)
+		//	this.queueDispatch(this._touchEnd, event, this._iCollision, touch);
 		//
 		//this._touchPointFromId[ touch.id ] = null;
 		//this._numTouchPoints--;

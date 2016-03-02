@@ -2,7 +2,7 @@ import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
 import Scene						= require("awayjs-display/lib/display/Scene");
 import View							= require("awayjs-display/lib/View");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 
 /**
  * Provides an interface for picking objects that can pick 3d objects from a view or scene.
@@ -18,7 +18,7 @@ interface IPicker
 	 * @param y The y coordinate of the picking ray in screen-space.
 	 * @param view The view on which the picking object acts.
 	 */
-	getViewCollision(x:number, y:number, view:View):PickingCollisionVO;
+	getViewCollision(x:number, y:number, view:View):PickingCollision;
 
 	/**
 	 * Gets the collision object from the scene position and direction of the picking ray.
@@ -27,7 +27,7 @@ interface IPicker
 	 * @param direction The direction of the picking ray in scene-space.
 	 * @param scene The scene on which the picking object acts.
 	 */
-	getSceneCollision(position:Vector3D, direction:Vector3D, scene:Scene):PickingCollisionVO;
+	getSceneCollision(position:Vector3D, direction:Vector3D, scene:Scene):PickingCollision;
 
 	/**
 	 * Determines whether the picker takes account of the mouseEnabled properties of entities. Defaults to true.

@@ -2,7 +2,7 @@ import Point					= require("awayjs-core/lib/geom/Point");
 import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
 import EventBase				= require("awayjs-core/lib/events/EventBase");
 
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
+import IEntity					= require("awayjs-display/lib/display/IEntity");
 import IRenderable				= require("awayjs-display/lib/base/IRenderable");
 import View						= require("awayjs-display/lib/View");
 import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
@@ -56,7 +56,7 @@ class TouchEvent extends EventBase
 	/**
 	 * The 3d object inside which the event took place.
 	 */
-	public object:DisplayObject;
+	public entity:IEntity;
 	
 	/**
 	 * The renderable owner inside which the event took place.
@@ -74,24 +74,19 @@ class TouchEvent extends EventBase
 	public uv:Point;
 	
 	/**
-	 * The index of the face where the event took place.
-	 */
-	public index:number;
-	
-	/**
 	 * The index of the elements where the event took place.
 	 */
-	public elementsIndex:number;
+	public elementIndex:number;
 	
 	/**
 	 * The position in object space where the event took place
 	 */
-	public localPosition:Vector3D;
+	public position:Vector3D;
 	
 	/**
 	 * The normal in object space where the event took place
 	 */
-	public localNormal:Vector3D;
+	public normal:Vector3D;
 	
 	/**
 	 * Indicates whether the Control key is active (true) or inactive (false).
@@ -170,14 +165,13 @@ class TouchEvent extends EventBase
 		result.screenY = this.screenY;
 		
 		result.view = this.view;
-		result.object = this.object;
+		result.entity = this.entity;
 		result.renderable = this.renderable;
 		result.material = this.material;
 		result.uv = this.uv;
-		result.localPosition = this.localPosition;
-		result.localNormal = this.localNormal;
-		result.index = this.index;
-		result.elementsIndex = this.elementsIndex;
+		result.position = this.position;
+		result.normal = this.normal;
+		result.elementIndex = this.elementIndex;
 		
 		result.ctrlKey = this.ctrlKey;
 		result.shiftKey = this.shiftKey;
@@ -192,7 +186,7 @@ class TouchEvent extends EventBase
 	 */
 	public get scenePosition():Vector3D
 	{
-		return this.object.sceneTransform.transformVector(this.localPosition);
+		return this.entity.sceneTransform.transformVector(this.position);
 	}
 	
 	/**
@@ -200,7 +194,7 @@ class TouchEvent extends EventBase
 	 */
 	public get sceneNormal():Vector3D
 	{
-		var sceneNormal:Vector3D = this.object.sceneTransform.deltaTransformVector(this.localNormal);
+		var sceneNormal:Vector3D = this.entity.sceneTransform.deltaTransformVector(this.normal);
 		sceneNormal.normalize();
 
 		return sceneNormal;

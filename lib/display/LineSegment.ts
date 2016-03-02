@@ -15,6 +15,8 @@ import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import Style						= require("awayjs-display/lib/base/Style");
 import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 
 /**
  * A Line Segment primitive.
@@ -229,7 +231,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 	 *
 	 * @internal
 	 */
-	public _iTestCollision(shortestCollisionDistance:number):boolean
+	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
 	{
 		return false; //TODO: detect line collisions
 	}

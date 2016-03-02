@@ -15,9 +15,9 @@ import Camera						= require("awayjs-display/lib/display/Camera");
 import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
 import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import IRenderer					= require("awayjs-display/lib/IRenderer");
-import ITraverser = require("awayjs-display/lib/ITraverser");
+import ITraverser					= require("awayjs-display/lib/ITraverser");
 
 interface IEntity extends IAsset
 {
@@ -114,7 +114,7 @@ interface IEntity extends IAsset
 	/**
 	 * @internal
 	 */
-	_iPickingCollisionVO:PickingCollisionVO;
+	_iPickingCollision:PickingCollision;
 
 	/**
 	 * @internal

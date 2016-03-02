@@ -12,7 +12,7 @@ import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
 import ElementsEvent				= require("awayjs-display/lib/events/ElementsEvent");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 
 /**
@@ -267,7 +267,7 @@ class ElementsBase extends AssetBase
 		this._invalidateVertices[attributesView.id] = null;
 	}
 
-	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision):boolean
 	{
 		throw new AbstractMethodError();
 	}

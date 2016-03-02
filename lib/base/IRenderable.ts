@@ -4,8 +4,7 @@ import IAsset						= require("awayjs-core/lib/library/IAsset");
 import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import Style						= require("awayjs-display/lib/base/Style");
 import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollisionVO			= require("awayjs-display/lib/pick/PickingCollisionVO");
-import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
 
 /**
  * IRenderable provides an interface for objects that can use materials.
@@ -26,27 +25,6 @@ interface IRenderable extends IAsset
 
 	invalidateSurface();
 
-
-	/**
-	 *
-	 */
-	pickingCollider:IPickingCollider;
-
-	/**
-	 * @internal
-	 */
-	_iPickingCollisionVO:PickingCollisionVO;
-
-	/**
-	 * @internal
-	 */
-	_iIsMouseEnabled():boolean;
-
-	/**
-	 * @internal
-	 */
-	_iAssignedMasks():Array<Array<DisplayObject>>;
-
 	/**
 	 * //TODO
 	 *
@@ -56,7 +34,7 @@ interface IRenderable extends IAsset
 	 *
 	 * @internal
 	 */
-	_iTestCollision(shortestCollisionDistance:number):boolean;
+	_iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean;
 }
 
 export = IRenderable;
