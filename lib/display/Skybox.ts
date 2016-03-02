@@ -241,11 +241,6 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 		return Skybox.assetType;
 	}
 
-	public get castsShadows():boolean
-	{
-		return false; //TODO
-	}
-
 	/**
 	 * Marks the shader programs for all passes as invalid, so they will be recompiled before the next use.
 	 *

@@ -673,47 +673,6 @@ class DisplayObjectContainer extends DisplayObject
 		this._nextHighestDepth += 1;
 	}
 
-	/**
-	 * Evaluates the display object to see if it overlaps or intersects with the
-	 * point specified by the <code>x</code> and <code>y</code> parameters. The
-	 * <code>x</code> and <code>y</code> parameters specify a point in the
-	 * coordinate space of the Scene, not the display object container that
-	 * contains the display object(unless that display object container is the
-	 * Scene).
-	 *
-	 * @param x         The <i>x</i> coordinate to test against this object.
-	 * @param y         The <i>y</i> coordinate to test against this object.
-	 * @param shapeFlag Whether to check against the actual pixels of the object
-	 *                 (<code>true</code>) or the bounding box
-	 *                 (<code>false</code>).
-	 * @return <code>true</code> if the display object overlaps or intersects
-	 *         with the specified point; <code>false</code> otherwise.
-	 */
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag:boolean = false):boolean
-	{
-		if(!this._pImplicitVisibility)
-			return;
-
-		if(this._pImplicitMaskId != -1 && !masksFlag)
-			return;
-
-		if (this._explicitMasks) {
-			var numMasks:number = this._explicitMasks.length;
-			var maskHit:boolean = false;
-			for (var i:number = 0; i < numMasks; i++) {
-				if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
-					maskHit = true;
-					break;
-				}
-			}
-
-			if (!maskHit)
-				return false;
-		}
-
-		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag)
-	}
-
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
 		var numChildren:number = this._children.length;

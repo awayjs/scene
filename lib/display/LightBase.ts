@@ -30,7 +30,7 @@ class LightBase extends DisplayObjectContainer
 	public _iDiffuseG:number = 1;
 	public _iDiffuseB:number = 1;
 
-	private _castsShadows:boolean = false;
+	private _shadowsEnabled:boolean = false;
 
 	private _shadowMapper:ShadowMapperBase;
 
@@ -39,17 +39,17 @@ class LightBase extends DisplayObjectContainer
 		super();
 	}
 
-	public get castsShadows():boolean
+	public get shadowsEnabled():boolean
 	{
-		return this._castsShadows;
+		return this._shadowsEnabled;
 	}
 
-	public set castsShadows(value:boolean)
+	public set shadowsEnabled(value:boolean)
 	{
-		if (this._castsShadows == value)
+		if (this._shadowsEnabled == value)
 			return;
 
-		this._castsShadows = value;
+		this._shadowsEnabled = value;
 
 		if (value) {
 			if (this._shadowMapper == null)

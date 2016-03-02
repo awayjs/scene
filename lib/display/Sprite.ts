@@ -1,7 +1,4 @@
-﻿import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
-import Box							= require("awayjs-core/lib/geom/Box");
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
+﻿import Box							= require("awayjs-core/lib/geom/Box");
 import Point						= require("awayjs-core/lib/geom/Point");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
@@ -12,7 +9,6 @@ import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import GraphicsEvent				= require("awayjs-display/lib/events/GraphicsEvent");
 import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
 import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
@@ -24,18 +20,15 @@ import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
  * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
  * of the graphics to be assigned different materials.
  */
-class Sprite extends DisplayObjectContainer implements IEntity
+class Sprite extends DisplayObjectContainer
 {
 	private static _sprites:Array<Sprite> = new Array<Sprite>();
 
 	public static assetType:string = "[asset Sprite]";
 
 	private _center:Vector3D;
-	public _graphics:Graphics;
-	private _castsShadows:boolean = true;
-	private _shareAnimationGraphics:boolean = true;
-
-	public _onGraphicsBoundsInvalidDelegate:(event:GraphicsEvent) => void;
+	public _graphics:Graphics; //TODO
+	private _onGraphicsBoundsInvalidDelegate:(event:GraphicsEvent) => void;
 
 	//temp point used in hit testing
 	private _tempPoint:Point = new Point();
@@ -49,20 +42,8 @@ class Sprite extends DisplayObjectContainer implements IEntity
 	}
 
 	/**
-	 * Indicates whether or not the Sprite can cast shadows. Default value is <code>true</code>.
-	 */
-	public get castsShadows():boolean
-	{
-		return this._castsShadows;
-	}
-
-	public set castsShadows(value:boolean)
-	{
-		this._castsShadows = value;
-	}
-
-	/**
-	 * The graphics used by the sprite that provides it with its shape.
+	 * Specifies the Graphics object belonging to this Sprite object, where
+	 * drawing commands can occur.
 	 */
 	public get graphics():Graphics
 	{
@@ -102,19 +83,6 @@ class Sprite extends DisplayObjectContainer implements IEntity
 	public set material(value:MaterialBase)
 	{
 		this._graphics.material = value;
-	}
-
-	/**
-	 * Indicates whether or not the sprite share the same animation graphics.
-	 */
-	public get shareAnimationGraphics():boolean
-	{
-		return this._shareAnimationGraphics;
-	}
-
-	public set shareAnimationGraphics(value:boolean)
-	{
-		this._shareAnimationGraphics = value;
 	}
 
 	/**
@@ -206,9 +174,6 @@ class Sprite extends DisplayObjectContainer implements IEntity
 	public copyTo(sprite:Sprite)
 	{
 		super.copyTo(sprite);
-
-		sprite.castsShadows = this._castsShadows;
-		sprite.shareAnimationGraphics = this._shareAnimationGraphics;
 
 		this._graphics.copyTo(sprite.graphics);
     }

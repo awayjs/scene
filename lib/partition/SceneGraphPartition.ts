@@ -35,7 +35,7 @@ class SceneGraphPartition extends PartitionBase
 	 */
 	public findParentForNode(node:DisplayObjectNode):IContainerNode
 	{
-		if (node._displayObject.partition == this || node._displayObject._iIsRoot) {
+		if (node.isSceneGraphNode && (node._displayObject.partition == this || node._displayObject._iIsRoot)) {
 			this._rootNode = <SceneGraphNode> node;
 			return null;
 		}

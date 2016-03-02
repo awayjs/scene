@@ -1447,6 +1447,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		newInstance.mouseEnabled = this._explicitMouseEnabled;
 		newInstance.extra = this.extra;
 		newInstance.maskMode = this._maskMode;
+		newInstance.castsShadows = this.castsShadows;
 
 		if (this._explicitMasks)
 			newInstance.masks = this._explicitMasks;
@@ -1772,9 +1773,29 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 * @return <code>true</code> if the display object overlaps or intersects
 	 *         with the specified point; <code>false</code> otherwise.
 	 */
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, maskFlag = false):boolean
+	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag = false):boolean
 	{
-		return false;
+		if(!this._pImplicitVisibility)
+			return;
+
+		if(this._pImplicitMaskId != -1 && !masksFlag)
+			return;
+
+		if (this._explicitMasks) {
+			var numMasks:number = this._explicitMasks.length;
+			var maskHit:boolean = false;
+			for (var i:number = 0; i < numMasks; i++) {
+				if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
+					maskHit = true;
+					break;
+				}
+			}
+
+			if (!maskHit)
+				return false;
+		}
+
+		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
 
 	public isMask():boolean
@@ -2384,6 +2405,11 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public invalidatePartitionBounds()
 	{
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this));
+	}
+
+	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
+	{
+		return false;
 	}
 }
 
