@@ -96,7 +96,6 @@ declare module "awayjs-display/lib/ITraverser" {
 	 * @class away.render.ITraverser
 	 */
 	interface ITraverser {
-	    isDebugEnabled: boolean;
 	    /**
 	     *
 	     * @param node
@@ -108,6 +107,11 @@ declare module "awayjs-display/lib/ITraverser" {
 	     * @param entity
 	     */
 	    applyDirectionalLight(entity: IEntity): any;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyEntity(entity: IEntity): any;
 	    /**
 	     *
 	     * @param entity
@@ -513,8 +517,7 @@ declare module "awayjs-display/lib/base/IRenderable" {
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
 	import Style = require("awayjs-display/lib/base/Style");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * IRenderable provides an interface for objects that can use materials.
 	 *
@@ -531,22 +534,6 @@ declare module "awayjs-display/lib/base/IRenderable" {
 	    style: Style;
 	    invalidateSurface(): any;
 	    /**
-	     *
-	     */
-	    pickingCollider: IPickingCollider;
-	    /**
-	     * @internal
-	     */
-	    _iPickingCollisionVO: PickingCollisionVO;
-	    /**
-	     * @internal
-	     */
-	    _iIsMouseEnabled(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedMasks(): Array<Array<DisplayObject>>;
-	    /**
 	     * //TODO
 	     *
 	     * @param shortestCollisionDistance
@@ -555,7 +542,7 @@ declare module "awayjs-display/lib/base/IRenderable" {
 	     *
 	     * @internal
 	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollision: PickingCollision, pickingCollider: IPickingCollider): boolean;
 	}
 	export = IRenderable;
 	
@@ -1458,6 +1445,8 @@ declare module "awayjs-display/lib/display/Billboard" {
 	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import Style = require("awayjs-display/lib/base/Style");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * The Billboard class represents display objects that represent bitmap images.
 	 * These can be images that you load with the <code>flash.Assets</code> or
@@ -1544,7 +1533,7 @@ declare module "awayjs-display/lib/display/Billboard" {
 	     *
 	     * @internal
 	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollision: PickingCollision, pickingCollider: IPickingCollider): boolean;
 	    /**
 	     * @private
 	     */
@@ -1670,7 +1659,7 @@ declare module "awayjs-display/lib/display/DisplayObject" {
 	import Transform = require("awayjs-display/lib/base/Transform");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import PrefabBase = require("awayjs-display/lib/prefabs/PrefabBase");
 	import ITraverser = require("awayjs-display/lib/ITraverser");
@@ -1858,10 +1847,10 @@ declare module "awayjs-display/lib/display/DisplayObject" {
 	    private _pivot;
 	    private _pivotScale;
 	    private _orientationMatrix;
+	    private _pickingCollider;
+	    private _pickingCollision;
 	    private _shaderPickingDetails;
-	    _pPickingCollisionVO: PickingCollisionVO;
 	    _boundsType: string;
-	    _pPickingCollider: IPickingCollider;
 	    _iSourcePrefab: PrefabBase;
 	    private _inheritColorTransform;
 	    private _maskMode;
@@ -2739,7 +2728,7 @@ declare module "awayjs-display/lib/display/DisplayObject" {
 	    /**
 	     * @internal
 	     */
-	    _iPickingCollisionVO: PickingCollisionVO;
+	    _iPickingCollision: PickingCollision;
 	    /**
 	     * @internal
 	     */
@@ -3206,7 +3195,7 @@ declare module "awayjs-display/lib/display/IEntity" {
 	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
 	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	import ITraverser = require("awayjs-display/lib/ITraverser");
 	interface IEntity extends IAsset {
 	    parent: DisplayObjectContainer;
@@ -3282,7 +3271,7 @@ declare module "awayjs-display/lib/display/IEntity" {
 	    /**
 	     * @internal
 	     */
-	    _iPickingCollisionVO: PickingCollisionVO;
+	    _iPickingCollision: PickingCollision;
 	    /**
 	     * @internal
 	     */
@@ -3396,6 +3385,8 @@ declare module "awayjs-display/lib/display/LineSegment" {
 	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import Style = require("awayjs-display/lib/base/Style");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * A Line Segment primitive.
 	 */
@@ -3465,7 +3456,7 @@ declare module "awayjs-display/lib/display/LineSegment" {
 	     *
 	     * @internal
 	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollision: PickingCollision, pickingCollider: IPickingCollider): boolean;
 	    _acceptTraverser(traverser: ITraverser): void;
 	}
 	export = LineSegment;
@@ -4127,6 +4118,8 @@ declare module "awayjs-display/lib/display/Skybox" {
 	import SingleCubeTexture = require("awayjs-display/lib/textures/SingleCubeTexture");
 	import TextureBase = require("awayjs-display/lib/textures/TextureBase");
 	import Style = require("awayjs-display/lib/base/Style");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
 	 * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
@@ -4227,7 +4220,7 @@ declare module "awayjs-display/lib/display/Skybox" {
 	     *
 	     * @internal
 	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollision: PickingCollision, pickingCollider: IPickingCollider): boolean;
 	}
 	export = Skybox;
 	
@@ -6610,7 +6603,7 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	import View = require("awayjs-display/lib/View");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -6672,9 +6665,9 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	     */
 	    view: View;
 	    /**
-	     * The 3d object inside which the event took place.
+	     * The entity inside which the event took place.
 	     */
-	    object: DisplayObject;
+	    entity: IEntity;
 	    /**
 	     * The renderable owner inside which the event took place.
 	     */
@@ -6688,21 +6681,17 @@ declare module "awayjs-display/lib/events/MouseEvent" {
 	     */
 	    uv: Point;
 	    /**
-	     * The index of the face where the event took place.
-	     */
-	    index: number;
-	    /**
 	     * The index of the elements where the event took place.
 	     */
-	    elementsIndex: number;
+	    elementIndex: number;
 	    /**
 	     * The position in object space where the event took place
 	     */
-	    localPosition: Vector3D;
+	    position: Vector3D;
 	    /**
 	     * The normal in object space where the event took place
 	     */
-	    localNormal: Vector3D;
+	    normal: Vector3D;
 	    /**
 	     * Indicates whether the Control key is active (true) or inactive (false).
 	     */
@@ -6878,7 +6867,7 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import EventBase = require("awayjs-core/lib/events/EventBase");
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	import View = require("awayjs-display/lib/View");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -6920,7 +6909,7 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	    /**
 	     * The 3d object inside which the event took place.
 	     */
-	    object: DisplayObject;
+	    entity: IEntity;
 	    /**
 	     * The renderable owner inside which the event took place.
 	     */
@@ -6934,21 +6923,17 @@ declare module "awayjs-display/lib/events/TouchEvent" {
 	     */
 	    uv: Point;
 	    /**
-	     * The index of the face where the event took place.
-	     */
-	    index: number;
-	    /**
 	     * The index of the elements where the event took place.
 	     */
-	    elementsIndex: number;
+	    elementIndex: number;
 	    /**
 	     * The position in object space where the event took place
 	     */
-	    localPosition: Vector3D;
+	    position: Vector3D;
 	    /**
 	     * The normal in object space where the event took place
 	     */
-	    localNormal: Vector3D;
+	    normal: Vector3D;
 	    /**
 	     * Indicates whether the Control key is active (true) or inactive (false).
 	     */
@@ -7043,7 +7028,7 @@ declare module "awayjs-display/lib/graphics/ElementsBase" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import AssetBase = require("awayjs-core/lib/library/AssetBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
 	 * @class away.base.TriangleElements
@@ -7117,7 +7102,7 @@ declare module "awayjs-display/lib/graphics/ElementsBase" {
 	    private clearIndices();
 	    invalidateVertices(attributesView: AttributesView): void;
 	    clearVertices(attributesView: AttributesView): void;
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	}
 	export = ElementsBase;
 	
@@ -7147,8 +7132,7 @@ declare module "awayjs-display/lib/graphics/Graphic" {
 	import Graphics = require("awayjs-display/lib/graphics/Graphics");
 	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Sprite object.
 	 *
@@ -7179,22 +7163,6 @@ declare module "awayjs-display/lib/graphics/Graphic" {
 	     */
 	    animator: IAnimator;
 	    /**
-	     *
-	     */
-	    pickingCollider: IPickingCollider;
-	    /**
-	     * @internal
-	     */
-	    _iPickingCollisionVO: PickingCollisionVO;
-	    /**
-	     * @internal
-	     */
-	    _iIsMouseEnabled(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedMasks(): Array<Array<DisplayObject>>;
-	    /**
 	     * The material used to render the current TriangleGraphic. If set to null, its parent Sprite's material will be used instead.
 	     */
 	    material: MaterialBase;
@@ -7224,7 +7192,7 @@ declare module "awayjs-display/lib/graphics/Graphic" {
 	     *
 	     * @internal
 	     */
-	    _iTestCollision(shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollision: PickingCollision, pickingCollider: IPickingCollider): boolean;
 	}
 	export = Graphic;
 	
@@ -7241,7 +7209,6 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	import Style = require("awayjs-display/lib/base/Style");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import IAnimator = require("awayjs-display/lib/animators/IAnimator");
-	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import ITraverser = require("awayjs-display/lib/ITraverser");
 	import ParticleData = require("awayjs-display/lib/animators/data/ParticleData");
 	/**
@@ -7270,7 +7237,6 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	    private _graphics;
 	    private _animator;
 	    private _style;
-	    sourceEntity: IEntity;
 	    assetType: string;
 	    particles: Array<ParticleData>;
 	    numParticles: number;
@@ -7290,7 +7256,7 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	    /**
 	     * Creates a new Graphics object.
 	     */
-	    constructor(sourceEntity: IEntity);
+	    constructor();
 	    /**
 	     * Adds a GraphicBase wrapping a Elements.
 	     *
@@ -7342,7 +7308,7 @@ declare module "awayjs-display/lib/graphics/LineElements" {
 	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * @class LineElements
 	 */
@@ -7407,7 +7373,7 @@ declare module "awayjs-display/lib/graphics/LineElements" {
 	     * @return An exact duplicate of the current object.
 	     */
 	    clone(): LineElements;
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	}
 	export = LineElements;
 	
@@ -7425,7 +7391,7 @@ declare module "awayjs-display/lib/graphics/TriangleElements" {
 	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * @class away.base.TriangleElements
 	 */
@@ -7577,7 +7543,7 @@ declare module "awayjs-display/lib/graphics/TriangleElements" {
 	     * Updates the normals for each face.
 	     */
 	    private updateFaceNormals();
-	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    _iTestCollision(pickingCollider: IPickingCollider, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	}
 	export = TriangleElements;
 	
@@ -7644,7 +7610,7 @@ declare module "awayjs-display/lib/managers/FrameScriptManager" {
 
 declare module "awayjs-display/lib/managers/MouseManager" {
 	import View = require("awayjs-display/lib/View");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * MouseManager enforces a singleton pattern and is not intended to be instanced.
 	 * it provides a manager class for detecting mouse hits on scene objects and sending out mouse events.
@@ -7654,7 +7620,7 @@ declare module "awayjs-display/lib/managers/MouseManager" {
 	    private _viewLookup;
 	    _iActiveDiv: HTMLDivElement;
 	    _iUpdateDirty: boolean;
-	    _iCollidingObject: PickingCollisionVO;
+	    _iCollision: PickingCollision;
 	    private _nullVector;
 	    private _previousCollidingObject;
 	    private _queuedEvents;
@@ -7683,7 +7649,7 @@ declare module "awayjs-display/lib/managers/MouseManager" {
 	    fireMouseEvents(forceMouseMove: boolean): void;
 	    registerView(view: View): void;
 	    unregisterView(view: View): void;
-	    private queueDispatch(event, sourceEvent, collider?);
+	    private queueDispatch(event, sourceEvent, collision?);
 	    private onMouseMove(event);
 	    private onMouseOut(event);
 	    private onMouseOver(event);
@@ -7706,9 +7672,9 @@ declare module "awayjs-display/lib/managers/TouchManager" {
 	    private _nullVector;
 	    private _numTouchPoints;
 	    private _touchPoint;
-	    private _iCollidingObject;
+	    private _iCollision;
 	    private _previousCollidingObject;
-	    static _iCollidingObjectFromTouchId: Object;
+	    static _iCollisionFromTouchId: Object;
 	    static _previousCollidingObjectFromTouchId: Object;
 	    private _queuedEvents;
 	    private _touchPoints;
@@ -8363,13 +8329,16 @@ declare module "awayjs-display/lib/partition/DisplayObjectNode" {
 	    _iUpdateQueueNext: DisplayObjectNode;
 	    private _onInvalidatePartitionBoundsDelegate;
 	    _displayObject: DisplayObject;
-	    private _debugEntity;
 	    private _boundsDirty;
 	    private _bounds;
 	    _iCollectionMark: number;
 	    parent: SceneGraphNode;
 	    isContainerNode: boolean;
-	    boundsType: string;
+	    private _boundsType;
+	    debugVisible: boolean;
+	    /**
+	     * @internal
+	     */
 	    bounds: BoundingVolumeBase;
 	    constructor(displayObject: DisplayObject, pool: IAbstractionPool);
 	    /**
@@ -8416,6 +8385,7 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	class EntityNode extends DisplayObjectNode {
 	    numEntities: number;
 	    private _partition;
+	    private _maskPosition;
 	    constructor(displayObject: DisplayObject, partition: PartitionBase);
 	    onClear(event: AssetEvent): void;
 	    /**
@@ -8428,12 +8398,13 @@ declare module "awayjs-display/lib/partition/EntityNode" {
 	    /**
 	     * @inheritDoc
 	     */
-	    isIntersectingRay(rayPosition: Vector3D, rayDirection: Vector3D): boolean;
+	    isIntersectingRay(globalRayPosition: Vector3D, globalRayDirection: Vector3D): boolean;
 	    /**
 	     * @inheritDoc
 	     */
 	    acceptTraverser(traverser: ITraverser): void;
 	    _onInvalidatePartitionBounds(event: DisplayObjectEvent): void;
+	    private isIntersectingMasks(globalRayPosition, globalRayDirection, masks);
 	}
 	export = EntityNode;
 	
@@ -8499,6 +8470,7 @@ declare module "awayjs-display/lib/partition/INode" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import ITraverser = require("awayjs-display/lib/ITraverser");
 	import IContainerNode = require("awayjs-display/lib/partition/IContainerNode");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
 	/**
 	 * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
 	 * create node objects in the partition pipeline that represent the contents of a Entity
@@ -8506,6 +8478,8 @@ declare module "awayjs-display/lib/partition/INode" {
 	 * @class away.pool.IDisplayObjectNode
 	 */
 	interface INode {
+	    debugVisible: boolean;
+	    bounds: BoundingVolumeBase;
 	    numEntities: number;
 	    parent: IContainerNode;
 	    _iCollectionMark: number;
@@ -8546,16 +8520,23 @@ declare module "awayjs-display/lib/partition/NodeBase" {
 	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import INode = require("awayjs-display/lib/partition/INode");
 	import IContainerNode = require("awayjs-display/lib/partition/IContainerNode");
+	import BoundingVolumeBase = require("awayjs-display/lib/bounds/BoundingVolumeBase");
 	/**
 	 * @class away.partition.NodeBase
 	 */
 	class NodeBase implements IContainerNode {
+	    private _bounds;
 	    _pChildNodes: Array<INode>;
 	    _pNumChildNodes: number;
 	    _pDebugEntity: IEntity;
 	    _iCollectionMark: number;
 	    numEntities: number;
 	    parent: IContainerNode;
+	    debugVisible: boolean;
+	    /**
+	     * @internal
+	     */
+	    bounds: BoundingVolumeBase;
 	    /**
 	     *
 	     */
@@ -8776,7 +8757,7 @@ declare module "awayjs-display/lib/pick/IPicker" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import Scene = require("awayjs-display/lib/display/Scene");
 	import View = require("awayjs-display/lib/View");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	/**
 	 * Provides an interface for picking objects that can pick 3d objects from a view or scene.
 	 *
@@ -8790,7 +8771,7 @@ declare module "awayjs-display/lib/pick/IPicker" {
 	     * @param y The y coordinate of the picking ray in screen-space.
 	     * @param view The view on which the picking object acts.
 	     */
-	    getViewCollision(x: number, y: number, view: View): PickingCollisionVO;
+	    getViewCollision(x: number, y: number, view: View): PickingCollision;
 	    /**
 	     * Gets the collision object from the scene position and direction of the picking ray.
 	     *
@@ -8798,7 +8779,7 @@ declare module "awayjs-display/lib/pick/IPicker" {
 	     * @param direction The direction of the picking ray in scene-space.
 	     * @param scene The scene on which the picking object acts.
 	     */
-	    getSceneCollision(position: Vector3D, direction: Vector3D, scene: Scene): PickingCollisionVO;
+	    getSceneCollision(position: Vector3D, direction: Vector3D, scene: Scene): PickingCollision;
 	    /**
 	     * Determines whether the picker takes account of the mouseEnabled properties of entities. Defaults to true.
 	     */
@@ -8813,7 +8794,7 @@ declare module "awayjs-display/lib/pick/IPicker" {
 }
 
 declare module "awayjs-display/lib/pick/IPickingCollider" {
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	import Billboard = require("awayjs-display/lib/display/Billboard");
 	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 	import LineElements = require("awayjs-display/lib/graphics/LineElements");
@@ -8833,28 +8814,28 @@ declare module "awayjs-display/lib/pick/IPickingCollider" {
 	     *
 	     * @param billboard
 	     * @param material
-	     * @param pickingCollisionVO
+	     * @param pickingCollision
 	     * @param shortestCollisionDistance
 	     */
-	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	    /**
 	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
 	     *
 	     * @param triangleElements
 	     * @param material
-	     * @param pickingCollisionVO
+	     * @param pickingCollision
 	     * @param shortestCollisionDistance
 	     */
-	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	    /**
 	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
 	     *
 	     * @param lineElements
 	     * @param material
-	     * @param pickingCollisionVO
+	     * @param pickingCollision
 	     * @param shortestCollisionDistance
 	     */
-	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	}
 	export = IPickingCollider;
 	
@@ -8864,7 +8845,7 @@ declare module "awayjs-display/lib/pick/JSPickingCollider" {
 	import LineElements = require("awayjs-display/lib/graphics/LineElements");
 	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 	import Billboard = require("awayjs-display/lib/display/Billboard");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
 	/**
@@ -8887,93 +8868,89 @@ declare module "awayjs-display/lib/pick/JSPickingCollider" {
 	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
 	     *
 	     * @param billboard The billboard instance to be tested.
-	     * @param pickingCollisionVO The collision object used to store the collision results
-	     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+	     * @param pickingCollision The collision object used to store the collision results
 	     * @param findClosest
 	     */
-	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	    /**
 	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
 	     *
 	     * @param triangleElements
 	     * @param material
-	     * @param pickingCollisionVO
-	     * @param shortestCollisionDistance
+	     * @param pickingCollision
 	     * @returns {boolean}
 	     */
-	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	    /**
 	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
 	     *
 	     * @param triangleElements
 	     * @param material
-	     * @param pickingCollisionVO
-	     * @param shortestCollisionDistance
+	     * @param pickingCollision
 	     * @returns {boolean}
 	     */
-	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollisionVO: PickingCollisionVO, shortestCollisionDistance: number): boolean;
+	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
 	}
 	export = JSPickingCollider;
 	
 }
 
-declare module "awayjs-display/lib/pick/PickingCollisionVO" {
+declare module "awayjs-display/lib/pick/PickingCollision" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	/**
 	 * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects
 	 *
-	 * @see away.base.DisplayObject#pickingCollisionVO
+	 * @see away.base.DisplayObject#pickingCollision
 	 * @see away.core.pick.IPickingCollider
 	 *
-	 * @class away.pick.PickingCollisionVO
+	 * @class away.pick.PickingCollision
 	 */
-	class PickingCollisionVO {
+	class PickingCollision {
 	    /**
-	     * The display object to which this collision object belongs.
+	     * The entity to which this collision object belongs.
 	     */
-	    displayObject: DisplayObject;
+	    entity: IEntity;
 	    /**
-	     * The local position of the collision on the entity's surface.
+	     * The renderable associated with a collision.
 	     */
-	    localPosition: Vector3D;
+	    renderable: IRenderable;
+	    /**
+	     * The local position of the collision on the renderable's surface.
+	     */
+	    position: Vector3D;
 	    /**
 	     * The local normal vector at the position of the collision.
 	     */
-	    localNormal: Vector3D;
+	    normal: Vector3D;
 	    /**
 	     * The uv coordinate at the position of the collision.
 	     */
 	    uv: Point;
 	    /**
-	     * The index of the face where the event took pl ace.
+	     * The index of the element where the collision took place.
 	     */
-	    index: number;
-	    /**
-	     * The index of the elements where the event took place.
-	     */
+	    elementIndex: number;
 	    /**
 	     * The starting position of the colliding ray in local coordinates.
 	     */
-	    localRayPosition: Vector3D;
+	    rayPosition: Vector3D;
 	    /**
 	     * The direction of the colliding ray in local coordinates.
 	     */
-	    localRayDirection: Vector3D;
+	    rayDirection: Vector3D;
 	    /**
 	     * The starting position of the colliding ray in scene coordinates.
 	     */
-	    rayPosition: Vector3D;
+	    globalRayPosition: Vector3D;
 	    /**
 	     * The direction of the colliding ray in scene coordinates.
 	     */
-	    rayDirection: Vector3D;
+	    globalRayDirection: Vector3D;
 	    /**
 	     * Determines if the ray position is contained within the entity bounds.
-	     *
-	     * @see away3d.entities.Entity#bounds
 	     */
 	    rayOriginIsInsideBounds: boolean;
 	    /**
@@ -8981,18 +8958,13 @@ declare module "awayjs-display/lib/pick/PickingCollisionVO" {
 	     */
 	    rayEntryDistance: number;
 	    /**
-	     * The material ownwer associated with a collision.
-	     */
-	    renderable: IRenderable;
-	    /**
-	     * Creates a new <code>PickingCollisionVO</code> object.
+	     * Creates a new <code>PickingCollision</code> object.
 	     *
 	     * @param entity The entity to which this collision object belongs.
 	     */
-	    constructor(displayObject: DisplayObject);
-	    dispose(): void;
+	    constructor(entity: IEntity);
 	}
-	export = PickingCollisionVO;
+	export = PickingCollision;
 	
 }
 
@@ -9002,7 +8974,7 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	import Scene = require("awayjs-display/lib/display/Scene");
 	import View = require("awayjs-display/lib/View");
 	import IPicker = require("awayjs-display/lib/pick/IPicker");
-	import PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 	import IEntity = require("awayjs-display/lib/display/IEntity");
 	import IRenderable = require("awayjs-display/lib/base/IRenderable");
 	import INode = require("awayjs-display/lib/partition/INode");
@@ -9020,11 +8992,12 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	    private _y;
 	    private _view;
 	    private _findClosestCollision;
-	    private _ignoredRenderables;
-	    private _onlyMouseEnabled;
-	    private _renderables;
+	    private _bestCollision;
+	    private _testCollision;
+	    private _testCollider;
+	    private _ignoredEntities;
+	    private _entities;
 	    private _hasCollisions;
-	    isDebugEnabled: boolean;
 	    /**
 	     * @inheritDoc
 	     */
@@ -9045,28 +9018,32 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	    /**
 	     * @inheritDoc
 	     */
-	    getViewCollision(x: number, y: number, view: View): PickingCollisionVO;
+	    getViewCollision(x: number, y: number, view: View): PickingCollision;
 	    /**
 	     * @inheritDoc
 	     */
-	    getSceneCollision(rayPosition: Vector3D, rayDirection: Vector3D, scene: Scene): PickingCollisionVO;
-	    setIgnoreList(renderables: any): void;
-	    private isIgnored(renderable);
-	    private sortOnNearT(renderable1, renderable2);
-	    private getPickingCollisionVO();
-	    private getMasksCollision(masks);
-	    private updateLocalPosition(pickingCollisionVO);
+	    getSceneCollision(rayPosition: Vector3D, rayDirection: Vector3D, scene: Scene): PickingCollision;
+	    setIgnoreList(entities: Array<IEntity>): void;
+	    private isIgnored(entity);
+	    private sortOnNearT(entity1, entity2);
+	    private getPickingCollision();
+	    private updatePosition(pickingCollision);
 	    dispose(): void;
 	    /**
 	     *
 	     * @param entity
 	     */
-	    applyDirectionalLight(entity: IEntity): void;
+	    applyEntity(entity: IEntity): void;
 	    /**
 	     *
 	     * @param entity
 	     */
 	    applyRenderable(renderable: IRenderable): void;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyDirectionalLight(entity: IEntity): void;
 	    /**
 	     *
 	     * @param entity

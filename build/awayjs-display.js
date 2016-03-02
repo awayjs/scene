@@ -432,7 +432,7 @@ var View = (function () {
         // update picking
         if (!this._shareContext) {
             if (this.forceMouseMove && this._htmlElement == this._mouseManager._iActiveDiv && !this._mouseManager._iUpdateDirty)
-                this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+                this._mouseManager._iCollision = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
             this._mouseManager.fireMouseEvents(this.forceMouseMove);
         }
         //_touch3DManager.updateCollider();
@@ -518,12 +518,12 @@ var View = (function () {
     View.prototype.updateCollider = function () {
         if (!this._shareContext) {
             if (this._htmlElement == this._mouseManager._iActiveDiv)
-                this._mouseManager._iCollidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
+                this._mouseManager._iCollision = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
         }
         else {
             var collidingObject = this.mousePicker.getViewCollision(this._pMouseX, this._pMouseY, this);
-            if (this.layeredView || this._mouseManager._iCollidingObject == null || collidingObject.rayEntryDistance < this._mouseManager._iCollidingObject.rayEntryDistance)
-                this._mouseManager._iCollidingObject = collidingObject;
+            if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
+                this._mouseManager._iCollision = collidingObject;
         }
     };
     return View;
@@ -2952,8 +2952,8 @@ var Billboard = (function (_super) {
      *
      * @internal
      */
-    Billboard.prototype._iTestCollision = function (shortestCollisionDistance) {
-        return this._pPickingCollider.testBillboardCollision(this, this.material, this._pPickingCollisionVO, shortestCollisionDistance);
+    Billboard.prototype._iTestCollision = function (pickingCollision, pickingCollider) {
+        return pickingCollider.testBillboardCollision(this, this.material, pickingCollision);
     };
     /**
      * @private
@@ -4032,7 +4032,7 @@ var BoundsType = require("awayjs-display/lib/bounds/BoundsType");
 var AlignmentMode = require("awayjs-display/lib/base/AlignmentMode");
 var OrientationMode = require("awayjs-display/lib/base/OrientationMode");
 var Transform = require("awayjs-display/lib/base/Transform");
-var PickingCollisionVO = require("awayjs-display/lib/pick/PickingCollisionVO");
+var PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
 var DisplayObjectEvent = require("awayjs-display/lib/events/DisplayObjectEvent");
 var TransformEvent = require("awayjs-display/lib/events/TransformEvent");
 /**
@@ -4622,19 +4622,6 @@ var DisplayObject = (function (_super) {
             this._explicitPartition = value;
             this._iSetScene(this._pScene, this._pParent ? this._pParent._iAssignedPartition : null);
             this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DisplayObject.prototype, "pickingCollider", {
-        /**
-         *
-         */
-        get: function () {
-            return this._pPickingCollider;
-        },
-        set: function (value) {
-            this._pPickingCollider = value;
         },
         enumerable: true,
         configurable: true
@@ -5615,14 +5602,14 @@ var DisplayObject = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(DisplayObject.prototype, "_iPickingCollisionVO", {
+    Object.defineProperty(DisplayObject.prototype, "_iPickingCollision", {
         /**
          * @internal
          */
         get: function () {
-            if (!this._pPickingCollisionVO)
-                this._pPickingCollisionVO = new PickingCollisionVO(this);
-            return this._pPickingCollisionVO;
+            if (!this._pickingCollision)
+                this._pickingCollision = new PickingCollision(this);
+            return this._pickingCollision;
         },
         enumerable: true,
         configurable: true
@@ -5825,8 +5812,8 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype._updateMouseEnabled = function () {
         this._pImplicitMouseEnabled = (this._pParent) ? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
         // If there is a parent and this child does not have a picking collider, use its parent's picking collider.
-        if (this._pImplicitMouseEnabled && this._pParent && !this._pPickingCollider)
-            this._pPickingCollider = this._pParent._pPickingCollider;
+        if (this._pImplicitMouseEnabled && this._pParent && !this.pickingCollider)
+            this.pickingCollider = this._pParent.pickingCollider;
         this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
     };
     DisplayObject.prototype._updateVisible = function () {
@@ -5880,10 +5867,6 @@ var DisplayObject = (function (_super) {
     DisplayObject.prototype.clear = function () {
         _super.prototype.clear.call(this);
         var i;
-        if (this._pPickingCollisionVO) {
-            this._pPickingCollisionVO.dispose();
-            this._pPickingCollisionVO = null;
-        }
         this._pImplicitColorTransform = null;
         this._pImplicitMasks = null;
     };
@@ -5894,7 +5877,7 @@ var DisplayObject = (function (_super) {
 })(AssetBase);
 module.exports = DisplayObject;
 
-},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-display/lib/pick/PickingCollisionVO":"awayjs-display/lib/pick/PickingCollisionVO"}],"awayjs-display/lib/display/IEntity":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/OrientationMode":"awayjs-display/lib/base/OrientationMode","awayjs-display/lib/base/Transform":"awayjs-display/lib/base/Transform","awayjs-display/lib/bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","awayjs-display/lib/events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-display/lib/events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-display/lib/pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision"}],"awayjs-display/lib/display/IEntity":[function(require,module,exports){
 
 },{}],"awayjs-display/lib/display/LightBase":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
@@ -6286,7 +6269,7 @@ var LineSegment = (function (_super) {
      *
      * @internal
      */
-    LineSegment.prototype._iTestCollision = function (shortestCollisionDistance) {
+    LineSegment.prototype._iTestCollision = function (pickingCollision, pickingCollider) {
         return false; //TODO: detect line collisions
     };
     LineSegment.prototype._acceptTraverser = function (traverser) {
@@ -7657,7 +7640,7 @@ var Skybox = (function (_super) {
      *
      * @internal
      */
-    Skybox.prototype._iTestCollision = function (shortestCollisionDistance) {
+    Skybox.prototype._iTestCollision = function (pickingCollision, pickingCollider) {
         return false;
     };
     Skybox.assetType = "[asset Skybox]";
@@ -7699,7 +7682,7 @@ var Sprite = (function (_super) {
         this._tempPoint = new Point();
         this._pIsEntity = true;
         this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
-        this._graphics = new Graphics(this); //unique graphics object for each Sprite
+        this._graphics = new Graphics(); //unique graphics object for each Sprite
         this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
         this.material = material;
     }
@@ -8246,7 +8229,7 @@ var TextField = (function (_super) {
         if (this._textFormat == null)
             return;
         this._graphics.dispose();
-        this._graphics = new Graphics(this);
+        this._graphics = new Graphics();
         if (this._text == "")
             return;
         var vertices = new Array();
@@ -11330,14 +11313,13 @@ var MouseEvent = (function (_super) {
         result.screenX = this.screenX;
         result.screenY = this.screenY;
         result.view = this.view;
-        result.object = this.object;
+        result.entity = this.entity;
         result.renderable = this.renderable;
         result.material = this.material;
         result.uv = this.uv;
-        result.localPosition = this.localPosition;
-        result.localNormal = this.localNormal;
-        result.index = this.index;
-        result.elementsIndex = this.elementsIndex;
+        result.position = this.position;
+        result.normal = this.normal;
+        result.elementIndex = this.elementIndex;
         result.delta = this.delta;
         result.ctrlKey = this.ctrlKey;
         result.shiftKey = this.shiftKey;
@@ -11350,7 +11332,7 @@ var MouseEvent = (function (_super) {
          * The position in scene space where the event took place
          */
         get: function () {
-            return this.object.sceneTransform.transformVector(this.localPosition);
+            return this.entity.sceneTransform.transformVector(this.position);
         },
         enumerable: true,
         configurable: true
@@ -11360,7 +11342,7 @@ var MouseEvent = (function (_super) {
          * The normal in scene space where the event took place
          */
         get: function () {
-            var sceneNormal = this.object.sceneTransform.deltaTransformVector(this.localNormal);
+            var sceneNormal = this.entity.sceneTransform.deltaTransformVector(this.normal);
             sceneNormal.normalize();
             return sceneNormal;
         },
@@ -11669,14 +11651,13 @@ var TouchEvent = (function (_super) {
         result.screenX = this.screenX;
         result.screenY = this.screenY;
         result.view = this.view;
-        result.object = this.object;
+        result.entity = this.entity;
         result.renderable = this.renderable;
         result.material = this.material;
         result.uv = this.uv;
-        result.localPosition = this.localPosition;
-        result.localNormal = this.localNormal;
-        result.index = this.index;
-        result.elementsIndex = this.elementsIndex;
+        result.position = this.position;
+        result.normal = this.normal;
+        result.elementIndex = this.elementIndex;
         result.ctrlKey = this.ctrlKey;
         result.shiftKey = this.shiftKey;
         result._iParentEvent = this;
@@ -11687,7 +11668,7 @@ var TouchEvent = (function (_super) {
          * The position in scene space where the event took place
          */
         get: function () {
-            return this.object.sceneTransform.transformVector(this.localPosition);
+            return this.entity.sceneTransform.transformVector(this.position);
         },
         enumerable: true,
         configurable: true
@@ -11697,7 +11678,7 @@ var TouchEvent = (function (_super) {
          * The normal in scene space where the event took place
          */
         get: function () {
-            var sceneNormal = this.object.sceneTransform.deltaTransformVector(this.localNormal);
+            var sceneNormal = this.entity.sceneTransform.deltaTransformVector(this.normal);
             sceneNormal.normalize();
             return sceneNormal;
         },
@@ -11970,7 +11951,7 @@ var ElementsBase = (function (_super) {
         this._verticesDirty[attributesView.id] = null;
         this._invalidateVertices[attributesView.id] = null;
     };
-    ElementsBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollisionVO, shortestCollisionDistance) {
+    ElementsBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
         throw new AbstractMethodError();
     };
     return ElementsBase;
@@ -12026,7 +12007,7 @@ var Graphics = (function (_super) {
     /**
      * Creates a new Graphics object.
      */
-    function Graphics(sourceEntity) {
+    function Graphics() {
         var _this = this;
         _super.call(this);
         this._boxBoundsInvalid = true;
@@ -12034,7 +12015,6 @@ var Graphics = (function (_super) {
         this._graphics = new Array();
         this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
         this._onInvalidateVerticesDelegate = function (event) { return _this._onInvalidateVertices(event); };
-        this.sourceEntity = sourceEntity;
     }
     Object.defineProperty(Graphics.prototype, "assetType", {
         get: function () {
@@ -12332,38 +12312,6 @@ var Graphic = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Graphic.prototype, "pickingCollider", {
-        /**
-         *
-         */
-        get: function () {
-            return this.parent.sourceEntity.pickingCollider;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Graphic.prototype, "_iPickingCollisionVO", {
-        /**
-         * @internal
-         */
-        get: function () {
-            return this.parent.sourceEntity._iPickingCollisionVO;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * @internal
-     */
-    Graphic.prototype._iIsMouseEnabled = function () {
-        return this.parent.sourceEntity._iIsMouseEnabled();
-    };
-    /**
-     * @internal
-     */
-    Graphic.prototype._iAssignedMasks = function () {
-        return this.parent.sourceEntity._iAssignedMasks();
-    };
     Object.defineProperty(Graphic.prototype, "material", {
         //TODO test shader picking
         //		public get shaderPickingDetails():boolean
@@ -12440,8 +12388,8 @@ var Graphic = (function (_super) {
      *
      * @internal
      */
-    Graphic.prototype._iTestCollision = function (shortestCollisionDistance) {
-        return this.elements._iTestCollision(this.pickingCollider, this.material, this._iPickingCollisionVO, shortestCollisionDistance);
+    Graphic.prototype._iTestCollision = function (pickingCollision, pickingCollider) {
+        return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision);
     };
     Graphic._available = new Array();
     Graphic.assetType = "[asset Graphic]";
@@ -12684,8 +12632,8 @@ var LineElements = (function (_super) {
         clone.setColors(this._colors.clone());
         return clone;
     };
-    LineElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollisionVO, shortestCollisionDistance) {
-        return pickingCollider.testLineCollision(this, material, pickingCollisionVO, shortestCollisionDistance);
+    LineElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
+        return pickingCollider.testLineCollision(this, material, pickingCollision);
     };
     LineElements.assetType = "[asset LineElements]";
     return LineElements;
@@ -13175,8 +13123,8 @@ var TriangleElements = (function (_super) {
         this._faceNormals = ElementsUtils.generateFaceNormals(this.indices, this.positions, this._faceNormals, this.numElements);
         this._faceNormalsDirty = false;
     };
-    TriangleElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollisionVO, shortestCollisionDistance) {
-        return pickingCollider.testTriangleCollision(this, material, pickingCollisionVO, shortestCollisionDistance);
+    TriangleElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
+        return pickingCollider.testTriangleCollision(this, material, pickingCollision);
     };
     TriangleElements.assetType = "[asset TriangleElements]";
     return TriangleElements;
@@ -13416,14 +13364,14 @@ var MouseManager = (function () {
     };
     MouseManager.prototype.fireMouseEvents = function (forceMouseMove) {
         // If colliding object has changed, queue over/out events.
-        if (this._iCollidingObject != this._previousCollidingObject) {
+        if (this._iCollision != this._previousCollidingObject) {
             if (this._previousCollidingObject)
                 this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._previousCollidingObject);
-            if (this._iCollidingObject)
+            if (this._iCollision)
                 this.queueDispatch(this._mouseOver, this._mouseMoveEvent);
         }
         // Fire mouse move events here if forceMouseMove is on.
-        if (forceMouseMove && this._iCollidingObject)
+        if (forceMouseMove && this._iCollision)
             this.queueDispatch(this._mouseMove, this._mouseMoveEvent);
         var event;
         var dispatcher;
@@ -13431,7 +13379,7 @@ var MouseManager = (function () {
         var len = this._queuedEvents.length;
         for (var i = 0; i < len; ++i) {
             event = this._queuedEvents[i];
-            dispatcher = event.object;
+            dispatcher = event.entity;
             while (dispatcher) {
                 if (dispatcher._iIsMouseEnabled())
                     dispatcher.dispatchEvent(event);
@@ -13442,7 +13390,7 @@ var MouseManager = (function () {
             FrameScriptManager.execute_queue();
         }
         this._queuedEvents.length = 0;
-        this._previousCollidingObject = this._iCollidingObject;
+        this._previousCollidingObject = this._iCollision;
         this._iUpdateDirty = false;
     };
     //		public addViewLayer(view:View)
@@ -13495,8 +13443,8 @@ var MouseManager = (function () {
     // ---------------------------------------------------------------------
     // Private.
     // ---------------------------------------------------------------------
-    MouseManager.prototype.queueDispatch = function (event, sourceEvent, collider) {
-        if (collider === void 0) { collider = null; }
+    MouseManager.prototype.queueDispatch = function (event, sourceEvent, collision) {
+        if (collision === void 0) { collision = null; }
         // 2D properties.
         if (sourceEvent) {
             event.ctrlKey = sourceEvent.ctrlKey;
@@ -13505,30 +13453,29 @@ var MouseManager = (function () {
             event.screenX = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches[0].clientX;
             event.screenY = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches[0].clientY;
         }
-        if (collider == null)
-            collider = this._iCollidingObject;
+        if (collision == null)
+            collision = this._iCollision;
         // 3D properties.
-        if (collider) {
+        if (collision) {
             // Object.
-            event.object = collider.displayObject;
-            event.renderable = collider.renderable;
+            event.entity = collision.entity;
+            event.renderable = collision.renderable;
             // UV.
-            event.uv = collider.uv;
+            event.uv = collision.uv;
             // Position.
-            event.localPosition = collider.localPosition ? collider.localPosition.clone() : null;
+            event.position = collision.position ? collision.position.clone() : null;
             // Normal.
-            event.localNormal = collider.localNormal ? collider.localNormal.clone() : null;
+            event.normal = collision.normal ? collision.normal.clone() : null;
             // Face index.
-            event.index = collider.index;
+            event.elementIndex = collision.elementIndex;
         }
         else {
             // Set all to null.
             event.uv = null;
-            event.object = null;
-            event.localPosition = this._nullVector;
-            event.localNormal = this._nullVector;
-            event.index = 0;
-            event.elementsIndex = 0;
+            event.entity = null;
+            event.position = this._nullVector;
+            event.normal = this._nullVector;
+            event.elementIndex = 0;
         }
         // Store event to be dispatched later.
         this._queuedEvents.push(event);
@@ -13539,47 +13486,47 @@ var MouseManager = (function () {
     MouseManager.prototype.onMouseMove = function (event) {
         event.preventDefault();
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
     };
     MouseManager.prototype.onMouseOut = function (event) {
         this._iActiveDiv = null;
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseOut, event);
     };
     MouseManager.prototype.onMouseOver = function (event) {
         this._iActiveDiv = event.target;
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseOver, event);
     };
     MouseManager.prototype.onClick = function (event) {
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseClick, event);
     };
     MouseManager.prototype.onDoubleClick = function (event) {
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseDoubleClick, event);
     };
     MouseManager.prototype.onMouseDown = function (event) {
         event.preventDefault();
         this._iActiveDiv = event.target;
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseDown, event);
     };
     MouseManager.prototype.onMouseUp = function (event) {
         event.preventDefault();
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseUp, event);
     };
     MouseManager.prototype.onMouseWheel = function (event) {
         this.updateColliders(event);
-        if (this._iCollidingObject)
+        if (this._iCollision)
             this.queueDispatch(this._mouseWheel, event);
     };
     MouseManager.prototype.updateColliders = function (event) {
@@ -13610,7 +13557,7 @@ var MouseManager = (function () {
                 view._pMouseX = mouseX + bounds.left;
                 view._pMouseY = mouseY + bounds.top;
                 view.updateCollider();
-                if (view.layeredView && this._iCollidingObject)
+                if (view.layeredView && this._iCollision)
                     break;
             }
         }
@@ -13636,7 +13583,7 @@ var TouchManager = (function () {
         this._touchOver = new AwayTouchEvent(AwayTouchEvent.TOUCH_OVER);
         this._touchPoints = new Array();
         this._touchPointFromId = new Object();
-        TouchManager._iCollidingObjectFromTouchId = new Object();
+        TouchManager._iCollisionFromTouchId = new Object();
         TouchManager._previousCollidingObjectFromTouchId = new Object();
         this.onTouchBeginDelegate = function (event) { return _this.onTouchBegin(event); };
         this.onTouchMoveDelegate = function (event) { return _this.onTouchMove(event); };
@@ -13654,8 +13601,8 @@ var TouchManager = (function () {
         //if (forceTouchMove || this._updateDirty) { // If forceTouchMove is off, and no 2D Touch events dirty the update, don't update either.
         //	for (var i:number; i < this._numTouchPoints; ++i) {
         //		this._touchPoint = this._touchPoints[ i ];
-        //		this._iCollidingObject = this._touchPicker.getViewCollision(this._touchPoint.x, this._touchPoint.y, this._view);
-        //		TouchManager._iCollidingObjectFromTouchId[ this._touchPoint.id ] = this._iCollidingObject;
+        //		this._iCollision = this._touchPicker.getViewCollision(this._touchPoint.x, this._touchPoint.y, this._view);
+        //		TouchManager._iCollisionFromTouchId[ this._touchPoint.id ] = this._iCollision;
         //	}
         //}
     };
@@ -13664,17 +13611,17 @@ var TouchManager = (function () {
         for (i = 0; i < this._numTouchPoints; ++i) {
             this._touchPoint = this._touchPoints[i];
             // If colliding object has changed, queue over/out events.
-            this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[this._touchPoint.id];
+            this._iCollision = TouchManager._iCollisionFromTouchId[this._touchPoint.id];
             this._previousCollidingObject = TouchManager._previousCollidingObjectFromTouchId[this._touchPoint.id];
-            if (this._iCollidingObject != this._previousCollidingObject) {
+            if (this._iCollision != this._previousCollidingObject) {
                 if (this._previousCollidingObject)
                     this.queueDispatch(this._touchOut, this._touchMoveEvent, this._previousCollidingObject, this._touchPoint);
-                if (this._iCollidingObject)
-                    this.queueDispatch(this._touchOver, this._touchMoveEvent, this._iCollidingObject, this._touchPoint);
+                if (this._iCollision)
+                    this.queueDispatch(this._touchOver, this._touchMoveEvent, this._iCollision, this._touchPoint);
             }
             // Fire Touch move events here if forceTouchMove is on.
-            if (forceTouchMove && this._iCollidingObject)
-                this.queueDispatch(this._touchMove, this._touchMoveEvent, this._iCollidingObject, this._touchPoint);
+            if (forceTouchMove && this._iCollision)
+                this.queueDispatch(this._touchMove, this._touchMoveEvent, this._iCollision, this._touchPoint);
         }
         var event;
         var dispatcher;
@@ -13683,7 +13630,7 @@ var TouchManager = (function () {
         for (i = 0; i < len; ++i) {
             // Only dispatch from first implicitly enabled object ( one that is not a child of a TouchChildren = false hierarchy ).
             event = this._queuedEvents[i];
-            dispatcher = event.object;
+            dispatcher = event.entity;
             while (dispatcher && !dispatcher._iIsMouseEnabled())
                 dispatcher = dispatcher.parent;
             if (dispatcher)
@@ -13693,7 +13640,7 @@ var TouchManager = (function () {
         this._updateDirty = false;
         for (i = 0; i < this._numTouchPoints; ++i) {
             this._touchPoint = this._touchPoints[i];
-            TouchManager._previousCollidingObjectFromTouchId[this._touchPoint.id] = TouchManager._iCollidingObjectFromTouchId[this._touchPoint.id];
+            TouchManager._previousCollidingObjectFromTouchId[this._touchPoint.id] = TouchManager._iCollisionFromTouchId[this._touchPoint.id];
         }
     };
     TouchManager.prototype.registerView = function (view) {
@@ -13720,27 +13667,24 @@ var TouchManager = (function () {
         // 3D properties.
         if (collider) {
             // Object.
-            event.object = collider.displayObject;
+            event.entity = collider.entity;
             event.renderable = collider.renderable;
             // UV.
             event.uv = collider.uv;
             // Position.
-            event.localPosition = collider.localPosition ? collider.localPosition.clone() : null;
+            event.position = collider.position ? collider.position.clone() : null;
             // Normal.
-            event.localNormal = collider.localNormal ? collider.localNormal.clone() : null;
-            // Face index.
-            event.index = collider.index;
+            event.normal = collider.normal ? collider.normal.clone() : null;
             // ElementsIndex.
-            event.elementsIndex = collider.index;
+            event.elementIndex = collider.elementIndex;
         }
         else {
             // Set all to null.
             event.uv = null;
-            event.object = null;
-            event.localPosition = this._nullVector;
-            event.localNormal = this._nullVector;
-            event.index = 0;
-            event.elementsIndex = 0;
+            event.entity = null;
+            event.position = this._nullVector;
+            event.normal = this._nullVector;
+            event.elementIndex = 0;
         }
         // Store event to be dispatched later.
         this._queuedEvents.push(event);
@@ -13757,9 +13701,9 @@ var TouchManager = (function () {
         this._touchPoints.push(touch);
         this._touchPointFromId[touch.id] = touch;
         //this.updateCollider(event); // ensures collision check is done with correct mouse coordinates on mobile
-        this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[touch.id];
-        if (this._iCollidingObject)
-            this.queueDispatch(this._touchBegin, event, this._iCollidingObject, touch);
+        this._iCollision = TouchManager._iCollisionFromTouchId[touch.id];
+        if (this._iCollision)
+            this.queueDispatch(this._touchBegin, event, this._iCollision, touch);
         this._updateDirty = true;
     };
     TouchManager.prototype.onTouchMove = function (event) {
@@ -13770,10 +13714,10 @@ var TouchManager = (function () {
         ////touch.x = event.stageX;
         ////touch.y = event.stageY;
         //
-        //this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ touch.id ];
+        //this._iCollision = TouchManager._iCollisionFromTouchId[ touch.id ];
         //
-        //if (this._iCollidingObject)
-        //	this.queueDispatch(this._touchMove, this._touchMoveEvent = event, this._iCollidingObject, touch);
+        //if (this._iCollision)
+        //	this.queueDispatch(this._touchMove, this._touchMoveEvent = event, this._iCollision, touch);
         //
         //this._updateDirty = true;
     };
@@ -13782,9 +13726,9 @@ var TouchManager = (function () {
         //
         //if (!touch) return;
         //
-        //this._iCollidingObject = TouchManager._iCollidingObjectFromTouchId[ touch.id ];
-        //if (this._iCollidingObject)
-        //	this.queueDispatch(this._touchEnd, event, this._iCollidingObject, touch);
+        //this._iCollision = TouchManager._iCollisionFromTouchId[ touch.id ];
+        //if (this._iCollision)
+        //	this.queueDispatch(this._touchEnd, event, this._iCollision, touch);
         //
         //this._touchPointFromId[ touch.id ] = null;
         //this._numTouchPoints--;
@@ -15445,9 +15389,19 @@ var DisplayObjectNode = (function (_super) {
         this._onInvalidatePartitionBoundsDelegate = function (event) { return _this._onInvalidatePartitionBounds(event); };
         this._displayObject = displayObject;
         this._displayObject.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
-        this.boundsType = this._displayObject.boundsType;
+        this._boundsType = this._displayObject.boundsType;
     }
+    Object.defineProperty(DisplayObjectNode.prototype, "debugVisible", {
+        get: function () {
+            return this._displayObject.debugVisible;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DisplayObjectNode.prototype, "bounds", {
+        /**
+         * @internal
+         */
         get: function () {
             if (this._boundsDirty)
                 this._updateBounds();
@@ -15470,12 +15424,11 @@ var DisplayObjectNode = (function (_super) {
         if (this._bounds)
             this._bounds.dispose();
         this._bounds = null;
-        this._debugEntity = null;
     };
     DisplayObjectNode.prototype.onInvalidate = function (event) {
         _super.prototype.onInvalidate.call(this, event);
-        if (this.boundsType != this._displayObject.boundsType) {
-            this.boundsType = this._displayObject.boundsType;
+        if (this._boundsType != this._displayObject.boundsType) {
+            this._boundsType = this._displayObject.boundsType;
             this._boundsDirty = true;
         }
     };
@@ -15506,11 +15459,11 @@ var DisplayObjectNode = (function (_super) {
     DisplayObjectNode.prototype._updateBounds = function () {
         if (this._bounds)
             this._bounds.dispose();
-        if (this.boundsType == BoundsType.AXIS_ALIGNED_BOX)
+        if (this._boundsType == BoundsType.AXIS_ALIGNED_BOX)
             this._bounds = new AxisAlignedBoundingBox(this._displayObject);
-        else if (this.boundsType == BoundsType.SPHERE)
+        else if (this._boundsType == BoundsType.SPHERE)
             this._bounds = new BoundingSphere(this._displayObject);
-        else if (this.boundsType == BoundsType.NULL)
+        else if (this._boundsType == BoundsType.NULL)
             this._bounds = new NullBounds();
         this._boundsDirty = false;
     };
@@ -15535,6 +15488,7 @@ var EntityNode = (function (_super) {
     function EntityNode(displayObject, partition) {
         _super.call(this, displayObject, partition);
         this.numEntities = 1;
+        this._maskPosition = new Vector3D();
         this._partition = partition;
     }
     EntityNode.prototype.onClear = function (event) {
@@ -15556,36 +15510,58 @@ var EntityNode = (function (_super) {
     /**
      * @inheritDoc
      */
-    EntityNode.prototype.isIntersectingRay = function (rayPosition, rayDirection) {
-        if (!this._displayObject._iIsVisible())
+    EntityNode.prototype.isIntersectingRay = function (globalRayPosition, globalRayDirection) {
+        if (!this._displayObject._iIsVisible() || !this.isIntersectingMasks(globalRayPosition, globalRayDirection, this._displayObject._iAssignedMasks()))
             return false;
-        var pickingCollisionVO = this._displayObject._iPickingCollisionVO;
-        pickingCollisionVO.localRayPosition = this._displayObject.inverseSceneTransform.transformVector(rayPosition);
-        pickingCollisionVO.localRayDirection = this._displayObject.inverseSceneTransform.deltaTransformVector(rayDirection);
-        if (!pickingCollisionVO.localNormal)
-            pickingCollisionVO.localNormal = new Vector3D();
-        var rayEntryDistance = this.bounds.rayIntersection(pickingCollisionVO.localRayPosition, pickingCollisionVO.localRayDirection, pickingCollisionVO.localNormal);
+        var pickingCollision = this._displayObject._iPickingCollision;
+        pickingCollision.rayPosition = this._displayObject.inverseSceneTransform.transformVector(globalRayPosition);
+        pickingCollision.rayDirection = this._displayObject.inverseSceneTransform.deltaTransformVector(globalRayDirection);
+        if (!pickingCollision.normal)
+            pickingCollision.normal = new Vector3D();
+        var rayEntryDistance = this.bounds.rayIntersection(pickingCollision.rayPosition, pickingCollision.rayDirection, pickingCollision.normal);
         if (rayEntryDistance < 0)
             return false;
-        pickingCollisionVO.rayEntryDistance = rayEntryDistance;
-        pickingCollisionVO.rayPosition = rayPosition;
-        pickingCollisionVO.rayDirection = rayDirection;
-        pickingCollisionVO.rayOriginIsInsideBounds = rayEntryDistance == 0;
+        pickingCollision.rayEntryDistance = rayEntryDistance;
+        pickingCollision.globalRayPosition = globalRayPosition;
+        pickingCollision.globalRayDirection = globalRayDirection;
+        pickingCollision.rayOriginIsInsideBounds = rayEntryDistance == 0;
         return true;
     };
     /**
      * @inheritDoc
      */
     EntityNode.prototype.acceptTraverser = function (traverser) {
-        if (traverser.enterNode(this)) {
-            this._displayObject._acceptTraverser(traverser);
-            if (this._displayObject.debugVisible && traverser.isDebugEnabled)
-                this.bounds.boundsPrimitive._acceptTraverser(traverser);
-        }
+        if (traverser.enterNode(this))
+            traverser.applyEntity(this._displayObject);
     };
     EntityNode.prototype._onInvalidatePartitionBounds = function (event) {
         this.bounds.invalidate();
         this._partition.iMarkForUpdate(this);
+    };
+    EntityNode.prototype.isIntersectingMasks = function (globalRayPosition, globalRayDirection, masks) {
+        //horrible hack for 2d masks
+        if (masks != null) {
+            this._maskPosition.x = globalRayPosition.x + globalRayDirection.x * 1000;
+            this._maskPosition.y = globalRayPosition.y + globalRayDirection.y * 1000;
+            var numLayers = masks.length;
+            var children;
+            var numChildren;
+            var layerHit;
+            for (var i = 0; i < numLayers; i++) {
+                children = masks[i];
+                numChildren = children.length;
+                layerHit = false;
+                for (var j = 0; j < numChildren; j++) {
+                    if (children[j].hitTestPoint(this._maskPosition.x, this._maskPosition.y, true, true)) {
+                        layerHit = true;
+                        break;
+                    }
+                }
+                if (!layerHit)
+                    return false;
+            }
+        }
+        return true;
     };
     return EntityNode;
 })(DisplayObjectNode);
@@ -15634,6 +15610,7 @@ var LightProbeNode = (function (_super) {
 module.exports = LightProbeNode;
 
 },{"awayjs-display/lib/partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/NodeBase":[function(require,module,exports){
+var NullBounds = require("awayjs-display/lib/bounds/NullBounds");
 /**
  * @class away.partition.NodeBase
  */
@@ -15642,10 +15619,28 @@ var NodeBase = (function () {
      *
      */
     function NodeBase() {
+        this._bounds = new NullBounds();
         this._pChildNodes = new Array();
         this._pNumChildNodes = 0;
         this.numEntities = 0;
     }
+    Object.defineProperty(NodeBase.prototype, "debugVisible", {
+        get: function () {
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NodeBase.prototype, "bounds", {
+        /**
+         * @internal
+         */
+        get: function () {
+            return this._bounds; //TODO
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      *
      * @param planes
@@ -15722,7 +15717,7 @@ var NodeBase = (function () {
 })();
 module.exports = NodeBase;
 
-},{}],"awayjs-display/lib/partition/PartitionBase":[function(require,module,exports){
+},{"awayjs-display/lib/bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/partition/PartitionBase":[function(require,module,exports){
 /**
  * @class away.partition.Partition
  */
@@ -16119,16 +16114,15 @@ var JSPickingCollider = (function () {
      * Tests a <code>Billboard</code> object for a collision with the picking ray.
      *
      * @param billboard The billboard instance to be tested.
-     * @param pickingCollisionVO The collision object used to store the collision results
-     * @param shortestCollisionDistance The current value of the shortest distance to a detected collision along the ray.
+     * @param pickingCollision The collision object used to store the collision results
      * @param findClosest
      */
-    JSPickingCollider.prototype.testBillboardCollision = function (billboard, material, pickingCollisionVO, shortestCollisionDistance) {
-        pickingCollisionVO.renderable = null;
-        //if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollisionVO, shortestCollisionDistance)) {
-        //	shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
+    JSPickingCollider.prototype.testBillboardCollision = function (billboard, material, pickingCollision) {
+        pickingCollision.renderable = null;
+        //if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollision, shortestCollisionDistance)) {
+        //	shortestCollisionDistance = pickingCollision.rayEntryDistance;
         //
-        //	pickingCollisionVO.renderable = billboard;
+        //	pickingCollision.renderable = billboard;
         //
         //	return true;
         //}
@@ -16139,13 +16133,12 @@ var JSPickingCollider = (function () {
      *
      * @param triangleElements
      * @param material
-     * @param pickingCollisionVO
-     * @param shortestCollisionDistance
+     * @param pickingCollision
      * @returns {boolean}
      */
-    JSPickingCollider.prototype.testTriangleCollision = function (triangleElements, material, pickingCollisionVO, shortestCollisionDistance) {
-        var rayPosition = pickingCollisionVO.localRayPosition;
-        var rayDirection = pickingCollisionVO.localRayDirection;
+    JSPickingCollider.prototype.testTriangleCollision = function (triangleElements, material, pickingCollision) {
+        var rayPosition = pickingCollision.rayPosition;
+        var rayDirection = pickingCollision.rayDirection;
         var t;
         var i0, i1, i2;
         var rx, ry, rz;
@@ -16243,12 +16236,11 @@ var JSPickingCollider = (function () {
                 if (w < 0)
                     continue;
                 u = 1 - v - w;
-                if (!(u < 0) && t > 0 && t < shortestCollisionDistance) {
-                    shortestCollisionDistance = t;
+                if (!(u < 0) && t > 0 && t < pickingCollision.rayEntryDistance) {
                     collisionTriangleIndex = index / 3;
-                    pickingCollisionVO.rayEntryDistance = t;
-                    pickingCollisionVO.localPosition = new Vector3D(cx, cy, cz);
-                    pickingCollisionVO.localNormal = new Vector3D(nx, ny, nz);
+                    pickingCollision.rayEntryDistance = t;
+                    pickingCollision.position = new Vector3D(cx, cy, cz);
+                    pickingCollision.normal = new Vector3D(nx, ny, nz);
                     if (triangleElements.uvs) {
                         var uvs = triangleElements.uvs.get(triangleElements.numVertices);
                         var uvDim = triangleElements.uvs.dimensions;
@@ -16258,10 +16250,9 @@ var JSPickingCollider = (function () {
                         var uv1 = new Vector3D(uvs[uIndex], uvs[uIndex + 1]);
                         uIndex = indices[index + 2] * uvDim;
                         var uv2 = new Vector3D(uvs[uIndex], uvs[uIndex + 1]);
-                        pickingCollisionVO.uv = new Point(u * uv0.x + v * uv1.x + w * uv2.x, u * uv0.y + v * uv1.y + w * uv2.y);
+                        pickingCollision.uv = new Point(u * uv0.x + v * uv1.x + w * uv2.x, u * uv0.y + v * uv1.y + w * uv2.y);
                     }
-                    pickingCollisionVO.index = index;
-                    //						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
+                    pickingCollision.elementIndex = collisionTriangleIndex;
                     // if not looking for best hit, first found will do...
                     if (!this._findClosestCollision)
                         return true;
@@ -16278,14 +16269,13 @@ var JSPickingCollider = (function () {
     // *
     // * @param triangleElements
     // * @param material
-    // * @param pickingCollisionVO
-    // * @param shortestCollisionDistance
+    // * @param pickingCollision
     // * @returns {boolean}
     // */
-    //public testCurveCollision(curveElements:CurveElements, material:MaterialBase, pickingCollisionVO:PickingCollisionVO, shortestCollisionDistance:number):boolean
+    //public testCurveCollision(curveElements:CurveElements, material:MaterialBase, pickingCollision:PickingCollision, shortestCollisionDistance:number):boolean
     //{
-    //	var rayPosition:Vector3D = pickingCollisionVO.localRayPosition;
-    //	var rayDirection:Vector3D = pickingCollisionVO.localRayDirection;
+    //	var rayPosition:Vector3D = pickingCollision.localRayPosition;
+    //	var rayDirection:Vector3D = pickingCollision.localRayDirection;
     //
     //	//project ray onto x/y plane to generate useful test points from mouse coordinates
     //	//this will only work while all points lie on the x/y plane
@@ -16396,12 +16386,12 @@ var JSPickingCollider = (function () {
     //		if (distance < shortestCollisionDistance) {
     //			shortestCollisionDistance = distance;
     //			collisionCurveIndex = index/3;
-    //			pickingCollisionVO.rayEntryDistance = distance;
-    //			pickingCollisionVO.localPosition = p;
-    //			pickingCollisionVO.localNormal = new Vector3D(0, 0, 1);
-    //			pickingCollisionVO.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
-    //			pickingCollisionVO.index = index;
-    //			//						pickingCollisionVO.elementsIndex = this.pGetSpriteGraphicIndex(renderable);
+    //			pickingCollision.rayEntryDistance = distance;
+    //			pickingCollision.localPosition = p;
+    //			pickingCollision.localNormal = new Vector3D(0, 0, 1);
+    //			pickingCollision.uv = this._getCollisionUV(indices, uvs, index, v, w, u, uvDim);
+    //			pickingCollision.index = index;
+    //			//						pickingCollision.elementIndex = this.pGetSpriteGraphicIndex(renderable);
     //
     //			// if not looking for best hit, first found will do...
     //			if (!this._findClosestCollision)
@@ -16419,42 +16409,37 @@ var JSPickingCollider = (function () {
      *
      * @param triangleElements
      * @param material
-     * @param pickingCollisionVO
-     * @param shortestCollisionDistance
+     * @param pickingCollision
      * @returns {boolean}
      */
-    JSPickingCollider.prototype.testLineCollision = function (lineElements, material, pickingCollisionVO, shortestCollisionDistance) {
+    JSPickingCollider.prototype.testLineCollision = function (lineElements, material, pickingCollision) {
         return false;
     };
     return JSPickingCollider;
 })();
 module.exports = JSPickingCollider;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick/PickingCollisionVO":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick/PickingCollision":[function(require,module,exports){
 /**
  * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects
  *
- * @see away.base.DisplayObject#pickingCollisionVO
+ * @see away.base.DisplayObject#pickingCollision
  * @see away.core.pick.IPickingCollider
  *
- * @class away.pick.PickingCollisionVO
+ * @class away.pick.PickingCollision
  */
-var PickingCollisionVO = (function () {
+var PickingCollision = (function () {
     /**
-     * Creates a new <code>PickingCollisionVO</code> object.
+     * Creates a new <code>PickingCollision</code> object.
      *
      * @param entity The entity to which this collision object belongs.
      */
-    function PickingCollisionVO(displayObject) {
-        this.displayObject = displayObject;
+    function PickingCollision(entity) {
+        this.entity = entity;
     }
-    PickingCollisionVO.prototype.dispose = function () {
-        this.displayObject = null;
-        this.renderable = null;
-    };
-    return PickingCollisionVO;
+    return PickingCollision;
 })();
-module.exports = PickingCollisionVO;
+module.exports = PickingCollision;
 
 },{}],"awayjs-display/lib/pick/RaycastPicker":[function(require,module,exports){
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -16474,25 +16459,13 @@ var RaycastPicker = (function () {
      */
     function RaycastPicker(findClosestCollision) {
         if (findClosestCollision === void 0) { findClosestCollision = false; }
-        this._ignoredRenderables = [];
-        this._onlyMouseEnabled = true;
-        this._renderables = new Array();
-        this.isDebugEnabled = false;
-        this._findClosestCollision = findClosestCollision;
-    }
-    Object.defineProperty(RaycastPicker.prototype, "onlyMouseEnabled", {
+        this._entities = new Array();
         /**
          * @inheritDoc
          */
-        get: function () {
-            return this._onlyMouseEnabled;
-        },
-        set: function (value) {
-            this._onlyMouseEnabled = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
+        this.onlyMouseEnabled = true;
+        this._findClosestCollision = findClosestCollision;
+    }
     /**
      * Returns true if the current node is at least partly in the frustum. If so, the partition node knows to pass on the traverser to its children.
      *
@@ -16522,14 +16495,14 @@ var RaycastPicker = (function () {
         // collect entities to test
         scene.traversePartitions(this);
         //early out if no collisions detected
-        if (!this._renderables.length)
+        if (!this._entities.length)
             return null;
-        var collisionVO = this.getPickingCollisionVO();
-        //discard renderables
-        this._renderables.length = 0;
-        return collisionVO;
+        var collision = this.getPickingCollision();
+        //discard entities
+        this._entities.length = 0;
+        return collision;
     };
-    //		public getEntityCollision(position:Vector3D, direction:Vector3D, entities:Array<IEntity>):PickingCollisionVO
+    //		public getEntityCollision(position:Vector3D, direction:Vector3D, entities:Array<IEntity>):PickingCollision
     //		{
     //			this._numRenderables = 0;
     //
@@ -16543,91 +16516,67 @@ var RaycastPicker = (function () {
     //					this._renderables[this._numRenderables++] = renderable;
     //			}
     //
-    //			return this.getPickingCollisionVO(this._raycastCollector);
+    //			return this.getPickingCollision(this._raycastCollector);
     //		}
-    RaycastPicker.prototype.setIgnoreList = function (renderables) {
-        this._ignoredRenderables = renderables;
+    RaycastPicker.prototype.setIgnoreList = function (entities) {
+        this._ignoredEntities = entities;
     };
-    RaycastPicker.prototype.isIgnored = function (renderable) {
-        if (this._onlyMouseEnabled && !renderable._iIsMouseEnabled())
+    RaycastPicker.prototype.isIgnored = function (entity) {
+        if (this.onlyMouseEnabled && !entity._iIsMouseEnabled())
             return true;
-        var len = this._ignoredRenderables.length;
-        for (var i = 0; i < len; i++)
-            if (this._ignoredRenderables[i] == renderable)
-                return true;
+        if (this._ignoredEntities) {
+            var len = this._ignoredEntities.length;
+            for (var i = 0; i < len; i++)
+                if (this._ignoredEntities[i] == entity)
+                    return true;
+        }
         return false;
     };
-    RaycastPicker.prototype.sortOnNearT = function (renderable1, renderable2) {
-        return renderable1._iPickingCollisionVO.rayEntryDistance > renderable2._iPickingCollisionVO.rayEntryDistance ? 1 : -1;
+    RaycastPicker.prototype.sortOnNearT = function (entity1, entity2) {
+        return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance ? 1 : -1;
     };
-    RaycastPicker.prototype.getPickingCollisionVO = function () {
-        // Sort entities from closest to furthest.
-        this._renderables = this._renderables.sort(this.sortOnNearT); // TODO - test sort filter in JS
+    RaycastPicker.prototype.getPickingCollision = function () {
+        // Sort entities from closest to furthest to reduce tests.
+        this._entities = this._entities.sort(this.sortOnNearT); // TODO - test sort filter in JS
         // ---------------------------------------------------------------------
         // Evaluate triangle collisions when needed.
         // Replaces collision data provided by bounds collider with more precise data.
         // ---------------------------------------------------------------------
-        var shortestCollisionDistance = Number.MAX_VALUE;
-        var bestCollisionVO;
-        var pickingCollisionVO;
-        var renderable;
-        var len = this._renderables.length;
+        this._bestCollision = null;
+        var entity;
+        var len = this._entities.length;
         for (var i = 0; i < len; i++) {
-            renderable = this._renderables[i];
-            pickingCollisionVO = renderable._iPickingCollisionVO;
-            if (renderable.pickingCollider) {
-                // If a collision exists, update the collision data and stop all checks.
-                if ((bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) && renderable._iTestCollision(shortestCollisionDistance)) {
-                    shortestCollisionDistance = pickingCollisionVO.rayEntryDistance;
-                    bestCollisionVO = pickingCollisionVO;
-                    if (!this._findClosestCollision) {
-                        this.updateLocalPosition(pickingCollisionVO);
-                        return pickingCollisionVO;
-                    }
-                }
-            }
-            else if (bestCollisionVO == null || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance) {
-                // Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
-                // to enable the detection of a corresponsding triangle collision.
-                // Therefore, bounds collisions with a ray origin inside its bounds can be ignored
-                // if it has been established that there is NO triangle collider to test
-                if (!pickingCollisionVO.rayOriginIsInsideBounds && this.getMasksCollision(renderable._iAssignedMasks())) {
-                    this.updateLocalPosition(pickingCollisionVO);
-                    return pickingCollisionVO;
-                }
-            }
-        }
-        return bestCollisionVO;
-    };
-    RaycastPicker.prototype.getMasksCollision = function (masks) {
-        //horrible hack for 2d masks
-        if (masks != null) {
-            var position = this._view.unproject(this._x, this._y, 1000);
-            var numLayers = masks.length;
-            var children;
-            var numChildren;
-            var layerHit;
-            for (var i = 0; i < numLayers; i++) {
-                children = masks[i];
-                numChildren = children.length;
-                layerHit = false;
-                for (var j = 0; j < numChildren; j++) {
-                    if (children[j].hitTestPoint(position.x, position.y, true, true)) {
-                        layerHit = true;
+            entity = this._entities[i];
+            this._testCollision = entity._iPickingCollision;
+            if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
+                this._testCollider = entity.pickingCollider;
+                if (this._testCollider) {
+                    this._testCollision.rayEntryDistance = Number.MAX_VALUE;
+                    entity._acceptTraverser(this);
+                    // If a collision exists, update the collision data and stop all checks.
+                    if (this._bestCollision && !this._findClosestCollision)
                         break;
-                    }
                 }
-                if (!layerHit)
-                    return false;
+                else if (!this._testCollision.rayOriginIsInsideBounds) {
+                    // A bounds collision with no picking collider stops all checks.
+                    // Note: a bounds collision with a ray origin inside its bounds is ONLY ever used
+                    // to enable the detection of a corresponsding triangle collision.
+                    // Therefore, bounds collisions with a ray origin inside its bounds can be ignored
+                    // if it has been established that there is NO triangle collider to test
+                    this._bestCollision = this._testCollision;
+                    break;
+                }
             }
         }
-        return true;
+        if (this._bestCollision)
+            this.updatePosition(this._bestCollision);
+        return this._bestCollision;
     };
-    RaycastPicker.prototype.updateLocalPosition = function (pickingCollisionVO) {
-        var collisionPos = (pickingCollisionVO.localPosition == null) ? (pickingCollisionVO.localPosition = new Vector3D()) : pickingCollisionVO.localPosition;
-        var rayDir = pickingCollisionVO.localRayDirection;
-        var rayPos = pickingCollisionVO.localRayPosition;
-        var t = pickingCollisionVO.rayEntryDistance;
+    RaycastPicker.prototype.updatePosition = function (pickingCollision) {
+        var collisionPos = pickingCollision.position || (pickingCollision.position = new Vector3D());
+        var rayDir = pickingCollision.rayDirection;
+        var rayPos = pickingCollision.rayPosition;
+        var t = pickingCollision.rayEntryDistance;
         collisionPos.x = rayPos.x + t * rayDir.x;
         collisionPos.y = rayPos.y + t * rayDir.y;
         collisionPos.z = rayPos.z + t * rayDir.z;
@@ -16639,16 +16588,24 @@ var RaycastPicker = (function () {
      *
      * @param entity
      */
-    RaycastPicker.prototype.applyDirectionalLight = function (entity) {
-        //don't do anything here
+    RaycastPicker.prototype.applyEntity = function (entity) {
+        if (!this.isIgnored(entity))
+            this._entities.push(entity);
     };
     /**
      *
      * @param entity
      */
     RaycastPicker.prototype.applyRenderable = function (renderable) {
-        if (!this.isIgnored(renderable))
-            this._renderables.push(renderable);
+        if (renderable._iTestCollision(this._testCollision, this._testCollider))
+            this._bestCollision = this._testCollision;
+    };
+    /**
+     *
+     * @param entity
+     */
+    RaycastPicker.prototype.applyDirectionalLight = function (entity) {
+        //don't do anything here
     };
     /**
      *
