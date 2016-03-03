@@ -810,7 +810,7 @@ class TextField extends Sprite
 			return;
 
 		this._graphics.dispose();
-		this._graphics = new Graphics();
+		this._graphics = new Graphics(this);
 
 		if(this._text == "")
 			return;
@@ -818,22 +818,25 @@ class TextField extends Sprite
 		var vertices:Array<number> = new Array<number>();
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
-		var additional_margin_x:number= this._textFormat.font_table.offset_x;
-		var additional_margin_y:number= this._textFormat.font_table.offset_y;
-		var y_offset:number=additional_margin_y;
+		var y_offset:number=0;
 		var prev_char:TesselatedFontChar = null;
 		var j:number = 0;
 		var k:number = 0;
-		var whitespace_width=(this._textFormat.font_table.get_whitespace_width() * char_scale);
+		var whitespace_width=(this._textFormat.font_table.get_whitespace_width() * char_scale)+this._textFormat.letterSpacing;
 		var textlines:Array<string> = this.text.toString().split("\\n");
 		var final_lines_chars:Array<Array<TesselatedFontChar>> = [];
 		var final_lines_char_scale:Array<Array<number>> = [];
 		var final_lines_width:Array<number> = [];
+		var final_lines_justify_bool:Array<Boolean> = [];
+		var final_lines_justify:Array<number> = [];
+		var maxlineWidth:number=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
 		for (var tl = 0; tl < textlines.length; tl++) {
 
 			final_lines_chars.push([]);
 			final_lines_char_scale.push([]);
 			final_lines_width.push(0);
+			final_lines_justify.push(0);
+			final_lines_justify_bool.push(false);
 
 
 			var words:Array<string> = textlines[tl].split(" ");
@@ -864,7 +867,7 @@ class TextField extends Sprite
 									}
 								}
 							}
-							word_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+							word_width += ((2 + this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
 						}
 						else {
 							// if no char-geometry was found, we insert a "space"
@@ -880,51 +883,63 @@ class TextField extends Sprite
 					word_chars[c_cnt++] = this_char;
 				}
 
-				if ((final_lines_width[final_lines_width.length - 1] + word_width) <= this.textWidth) {
+				if (((final_lines_width[final_lines_width.length - 1] + word_width) <= maxlineWidth)||(final_lines_chars[final_lines_chars.length - 1].length==0)) {
 					// if line can hold this word without breaking the bounds, we can just add all chars
 					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
 						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
 						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
 					}
 					final_lines_width[final_lines_width.length - 1] += word_width;
+					// we check if we can also add a whitespace
 				}
 				else {
 					// word does not fit
 					// todo respect multiline and autowrapping properties.
 					// right now we just pretend everything has autowrapping and multiline
+					if(final_lines_chars[final_lines_chars.length - 1][final_lines_chars[final_lines_chars.length - 1].length-1]==null){
+						final_lines_chars[final_lines_chars.length - 1].pop();
+						final_lines_char_scale[final_lines_char_scale.length - 1].pop();
+						final_lines_width[final_lines_width.length - 1] -= whitespace_width;
+						final_lines_justify[final_lines_justify.length - 1]-=1;
+					}
+					final_lines_justify_bool[final_lines_justify_bool.length - 1]=true;
 					final_lines_chars.push([]);
 					final_lines_char_scale.push([]);
 					final_lines_width.push(0);
+					final_lines_justify.push(0);
+					final_lines_justify_bool.push(false);
 					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
 						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
 						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
 					}
 					final_lines_width[final_lines_width.length - 1] = word_width;
 				}
-
 				if (i < (words.length - 1)) {
-					if ((final_lines_width[final_lines_width.length - 1] + whitespace_width) <= this.textWidth) {
+					if ((final_lines_width[final_lines_width.length - 1]) <= maxlineWidth) {
 						final_lines_chars[final_lines_chars.length - 1].push(null);
 						final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
 						final_lines_width[final_lines_width.length - 1] += whitespace_width;
-					}
-					else {
-						final_lines_chars.push([null]);
-						final_lines_char_scale.push([char_scale]);
-						final_lines_width.push(whitespace_width);
+						final_lines_justify[final_lines_justify.length - 1]+=1;
+
 					}
 				}
 			}
 		}
-
+		y_offset=2+(this._textFormat.font_table.ascent-this._textFormat.font_table.get_font_em_size())*char_scale;
 		for (var i = 0; i < final_lines_chars.length; i++) {
 
-			var x_offset:number=additional_margin_x;
+			var x_offset:number= 2 + this._textFormat.leftMargin + this._textFormat.indent;
+			var justify_addion:number=0;
 			if(this._textFormat.align=="center"){
-				x_offset=(this._textWidth-final_lines_width[i])/2;
+				x_offset=2 + this._textFormat.leftMargin + this._textFormat.indent+(maxlineWidth-final_lines_width[i])/2;
+			}
+			else if(this._textFormat.align=="justify"){
+				if(final_lines_justify_bool[i]){
+					justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
+				}
 			}
 			else if(this._textFormat.align=="right"){
-				x_offset=(this._textWidth-final_lines_width[i])-additional_margin_x;
+				x_offset=(this._textWidth-final_lines_width[i])-(2 + this._textFormat.rightMargin);
 			}
 			//console.log("this._textFormat.align="+this._textFormat.align);
 			//console.log("this._width="+this._width);
@@ -958,18 +973,19 @@ class TextField extends Sprite
 					}
 					else {
 						// if no char-geometry was found, we insert a "space"
-						x_offset+=whitespace_width;
+						x_offset+=whitespace_width+justify_addion;
 					}
 				}
 				else{
-					x_offset+=whitespace_width;
+					x_offset+=whitespace_width+justify_addion;
 				}
 			}
 			// hack for multiline textfield in icycle.
-			y_offset+=(this._textFormat.size+this._textFormat.leading*1.6);
-			if(this._textFormat.leading>=11){
-				y_offset+=2.5;
-			}
+
+			y_offset+=(this._textFormat.font_table.ascent + this._textFormat.font_table.descent)*char_scale;
+			//y_offset+=(this._textFormat.font_table.get_font_em_size()-this._textFormat.font_table.descent)*char_scale;
+			y_offset+= this._textFormat.leading;
+
 
 		}
 
@@ -988,8 +1004,8 @@ class TextField extends Sprite
 		var sampler:Sampler2D = new Sampler2D();
 		this.style = new Style();
 		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
-		this.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 		this.material.animateUVs = true;
+		this.uvTransform = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
