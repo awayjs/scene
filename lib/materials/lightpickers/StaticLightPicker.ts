@@ -65,13 +65,13 @@ class StaticLightPicker extends LightPickerBase
 			light.addEventListener(LightEvent.CASTS_SHADOW_CHANGE, this._onCastShadowChangeDelegate);
 
 			if (light instanceof PointLight) {
-				if (light.castsShadows)
+				if (light.shadowsEnabled)
 					this._pCastingPointLights[numCastingPointLights++] = <PointLight> light;
 				else
 					this._pPointLights[numPointLights++] = <PointLight> light;
 
 			} else if (light instanceof DirectionalLight) {
-				if (light.castsShadows)
+				if (light.shadowsEnabled)
 					this._pCastingDirectionalLights[numCastingDirectionalLights++] = <DirectionalLight> light;
 				else
 					this._pDirectionalLights[numDirectionalLights++] = <DirectionalLight> light;
@@ -133,7 +133,7 @@ class StaticLightPicker extends LightPickerBase
 	{
 		var dl:DirectionalLight = <DirectionalLight> light;
 
-		if (light.castsShadows) {
+		if (light.shadowsEnabled) {
 			--this._pNumDirectionalLights;
 			++this._pNumCastingDirectionalLights;
 
@@ -157,7 +157,7 @@ class StaticLightPicker extends LightPickerBase
 	{
 		var pl:PointLight = <PointLight> light;
 
-		if (light.castsShadows) {
+		if (light.shadowsEnabled) {
 			--this._pNumPointLights;
 			++this._pNumCastingPointLights;
 			this._pPointLights.splice(this._pPointLights.indexOf(pl), 1);
