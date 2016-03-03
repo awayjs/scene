@@ -14723,13 +14723,13 @@ var StaticLightPicker = (function (_super) {
                 light = value[i];
                 light.addEventListener(LightEvent.CASTS_SHADOW_CHANGE, this._onCastShadowChangeDelegate);
                 if (light instanceof PointLight) {
-                    if (light.castsShadows)
+                    if (light.shadowsEnabled)
                         this._pCastingPointLights[numCastingPointLights++] = light;
                     else
                         this._pPointLights[numPointLights++] = light;
                 }
                 else if (light instanceof DirectionalLight) {
-                    if (light.castsShadows)
+                    if (light.shadowsEnabled)
                         this._pCastingDirectionalLights[numCastingDirectionalLights++] = light;
                     else
                         this._pDirectionalLights[numDirectionalLights++] = light;
@@ -14779,7 +14779,7 @@ var StaticLightPicker = (function (_super) {
      */
     StaticLightPicker.prototype.updateDirectionalCasting = function (light) {
         var dl = light;
-        if (light.castsShadows) {
+        if (light.shadowsEnabled) {
             --this._pNumDirectionalLights;
             ++this._pNumCastingDirectionalLights;
             this._pDirectionalLights.splice(this._pDirectionalLights.indexOf(dl), 1);
@@ -14797,7 +14797,7 @@ var StaticLightPicker = (function (_super) {
      */
     StaticLightPicker.prototype.updatePointCasting = function (light) {
         var pl = light;
-        if (light.castsShadows) {
+        if (light.shadowsEnabled) {
             --this._pNumPointLights;
             ++this._pNumCastingPointLights;
             this._pPointLights.splice(this._pPointLights.indexOf(pl), 1);
