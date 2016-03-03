@@ -19543,14 +19543,34 @@ var TesselatedFontTable = (function (_super) {
         _super.call(this);
         this._font_chars = new Array();
         this._font_chars_dic = new Object();
-        this._offset_x = 0;
-        this._offset_y = 0;
+        this._ascent = 0;
+        this._descent = 0;
     }
     /**
      *
      */
     TesselatedFontTable.prototype.dispose = function () {
     };
+    Object.defineProperty(TesselatedFontTable.prototype, "ascent", {
+        get: function () {
+            return this._ascent;
+        },
+        set: function (value) {
+            this._ascent = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TesselatedFontTable.prototype, "descent", {
+        get: function () {
+            return this._descent;
+        },
+        set: function (value) {
+            this._descent = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(TesselatedFontTable.prototype, "offset_x", {
         get: function () {
             return this._offset_x;
