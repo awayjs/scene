@@ -20924,9 +20924,11 @@ var ElementsUtils = (function () {
                 if (dot > 0)
                     break precheck;
                 if (curves) {
-                    var curvex = curves[id0 * curveDim + 1];
+                    var curvey0 = curves[id0 * curveDim + 2];
+                    var curvey1 = curves[id1 * curveDim + 2];
+                    var curvey2 = curves[id2 * curveDim + 2];
                     //check if not solid
-                    if (curvex != 2) {
+                    if (curvey0 || curvey1 || curvey2) {
                         var v0x = bx - ax;
                         var v0y = by - ay;
                         var v1x = cx - ax;
@@ -20942,11 +20944,11 @@ var ElementsUtils = (function () {
                         var vv = w;
                         var d = uu * uu - vv;
                         var az = curves[id0 * curveDim];
-                        if (d > 0 && az == -1) {
+                        if (d > 0 && az == -128) {
                             break precheck;
                             ;
                         }
-                        else if (d < 0 && az == 1) {
+                        else if (d < 0 && az == 127) {
                             break precheck;
                             ;
                         }
@@ -21035,9 +21037,11 @@ var ElementsUtils = (function () {
                 if (dot > 0)
                     continue;
                 if (curves) {
-                    var curvex = curves[id0 * curveDim + 1];
+                    var curvey0 = curves[id0 * curveDim + 2];
+                    var curvey1 = curves[id1 * curveDim + 2];
+                    var curvey2 = curves[id2 * curveDim + 2];
                     //check if not solid
-                    if (curvex != 2) {
+                    if (curvey0 || curvey1 || curvey2) {
                         var v0x = bx - ax;
                         var v0y = by - ay;
                         var v1x = cx - ax;
@@ -21053,9 +21057,9 @@ var ElementsUtils = (function () {
                         var vv = w;
                         var d = uu * uu - vv;
                         var az = curves[id0 * curveDim];
-                        if (d > 0 && az == -1)
+                        if (d > 0 && az == -128)
                             continue;
-                        else if (d < 0 && az == 1)
+                        else if (d < 0 && az == 127)
                             continue;
                     }
                 }
@@ -21102,9 +21106,11 @@ var ElementsUtils = (function () {
             if (dot > 0)
                 continue;
             if (curves) {
-                var curvex = curves[id0 * curveDim + 1];
+                var curvey0 = curves[id0 * curveDim + 2];
+                var curvey1 = curves[id1 * curveDim + 2];
+                var curvey2 = curves[id2 * curveDim + 2];
                 //check if not solid
-                if (curvex != 2) {
+                if (curvey0 || curvey1 || curvey2) {
                     var v0x = bx - ax;
                     var v0y = by - ay;
                     var v1x = cx - ax;
@@ -21120,10 +21126,10 @@ var ElementsUtils = (function () {
                     var vv = w;
                     var d = uu * uu - vv;
                     var az = curves[id0 * curveDim];
-                    if (d > 0 && az == -1) {
+                    if (d > 0 && az == -128) {
                         continue;
                     }
-                    else if (d < 0 && az == 1) {
+                    else if (d < 0 && az == 127) {
                         continue;
                     }
                 }
