@@ -27,6 +27,7 @@ import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObje
 
 import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 import Style 						= require("awayjs-display/lib/base/Style");
+import Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -646,7 +647,7 @@ class TextField extends Sprite
 
 
 	/**
-	 * The geometry used by the sprite that provides it with its shape.
+	 * The graphics used by the sprite that provides it with its shape.
 	 */
 	public get graphics():Graphics
 	{
@@ -810,12 +811,13 @@ class TextField extends Sprite
 			return;
 
 		this._graphics.dispose();
-		this._graphics = new Graphics(this);
+		this._graphics = new Graphics();
 
 		if(this._text == "")
 			return;
 
-		var vertices:Array<number> = new Array<number>();
+		var numVertices:number = 0;
+		var elements:TriangleElements;
 
 		var char_scale:number=this._textFormat.size/this._textFormat.font_table.get_font_em_size();
 		var y_offset:number=0;
@@ -855,8 +857,9 @@ class TextField extends Sprite
 						}
 					}
 					if (this_char != null) {
-						var this_subGeom:TriangleElements = this_char.elements;
-						if (this_subGeom != null) {
+						elements = this_char.elements;
+						if (elements != null) {
+							numVertices += elements.numVertices;
 							// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
 							var kerning_value:number = 0;
 							if (prev_char != null) {
@@ -870,12 +873,12 @@ class TextField extends Sprite
 							word_width += ((2 + this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
 						}
 						else {
-							// if no char-geometry was found, we insert a "space"
+							// if no char-elements was found, we insert a "space"
 							word_width += whitespace_width;
 						}
 					}
 					else {
-						// if no char-geometry was found, we insert a "space"
+						// if no char-elements was found, we insert a "space"
 						//x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
 						word_width += whitespace_width;
 					}
@@ -925,7 +928,11 @@ class TextField extends Sprite
 				}
 			}
 		}
+
 		y_offset=2+(this._textFormat.font_table.ascent-this._textFormat.font_table.get_font_em_size())*char_scale;
+
+		var vertices:Float32Array = new Float32Array(numVertices*3);
+
 		for (var i = 0; i < final_lines_chars.length; i++) {
 
 			var x_offset:number= 2 + this._textFormat.leftMargin + this._textFormat.indent;
@@ -947,16 +954,13 @@ class TextField extends Sprite
 				var this_char:TesselatedFontChar = final_lines_chars[i][t];
 				char_scale = final_lines_char_scale[i][t];
 				if (this_char != null) {
-					var elements:TriangleElements = this_char.elements;
+					elements = this_char.elements;
 					if (elements != null) {
-						var positions2:ArrayBufferView = elements.positions.get(elements.numVertices);
-						var curveData2:ArrayBufferView = elements.getCustomAtributes("curves").get(elements.numVertices);
+						var buffer:Float32Array = new Float32Array(elements.concatenatedBuffer.buffer);
 						for (var v:number = 0; v < elements.numVertices; v++) {
-							vertices[j++] = (positions2[v*2]*char_scale) + x_offset;
-							vertices[j++] = (positions2[v*2 + 1]*char_scale) + y_offset;
-							vertices[j++] = curveData2[v*3];
-							vertices[j++] = curveData2[v*3 + 1];
-							vertices[j++] = curveData2[v*3 + 2];
+							vertices[j++] = buffer[v*3]*char_scale + x_offset;
+							vertices[j++] = buffer[v*3 + 1]*char_scale + y_offset;
+							vertices[j++] = buffer[v*3 + 2];
 						}
 						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
 						var kerning_value:number = 0;
@@ -972,7 +976,7 @@ class TextField extends Sprite
 
 					}
 					else {
-						// if no char-geometry was found, we insert a "space"
+						// if no char-elements was found, we insert a "space"
 						x_offset+=whitespace_width+justify_addion;
 					}
 				}
@@ -990,13 +994,13 @@ class TextField extends Sprite
 		}
 
 
-		var attributesView:AttributesView = new AttributesView(Float32Array, 5);
+		var attributesView:AttributesView = new AttributesView(Float32Array, 3);
 		attributesView.set(vertices);
 		var vertexBuffer:AttributesBuffer = attributesView.buffer;
 		attributesView.dispose();
 		var curveElements:TriangleElements = new TriangleElements(vertexBuffer);
 		curveElements.setPositions(new Float2Attributes(vertexBuffer));
-		curveElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+		curveElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 
 		this._graphics.addGraphic(curveElements);
 
@@ -1004,8 +1008,8 @@ class TextField extends Sprite
 		var sampler:Sampler2D = new Sampler2D();
 		this.style = new Style();
 		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+		this.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 		this.material.animateUVs = true;
-		this.uvTransform = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
