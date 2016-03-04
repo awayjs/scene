@@ -810,8 +810,9 @@ class TextField extends Sprite
 		if(this._textFormat == null)
 			return;
 
-		this._graphics.dispose();
-		this._graphics = new Graphics();
+		this._graphics.clear_for_text();
+		//this._graphics.dispose();
+		//this._graphics = new Graphics();
 
 		if(this._text == "")
 			return;
@@ -893,11 +894,10 @@ class TextField extends Sprite
 						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
 					}
 					final_lines_width[final_lines_width.length - 1] += word_width;
-					// we check if we can also add a whitespace
 				}
 				else {
 					// word does not fit
-					// todo respect multiline and autowrapping properties.
+					// todo respect autowrapping properties.
 					// right now we just pretend everything has autowrapping and multiline
 					if(final_lines_chars[final_lines_chars.length - 1][final_lines_chars[final_lines_chars.length - 1].length-1]==null){
 						final_lines_chars[final_lines_chars.length - 1].pop();

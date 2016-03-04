@@ -244,6 +244,11 @@ class Graphics extends AssetBase
 		for (var i:number = this._graphics.length - 1; i>=0; i--)
 			this._graphics[i].clear();
 	}
+	public clear_for_text()
+	{
+		for (var i:number = this._graphics.length - 1; i>=0; i--)
+			this._graphics[i].clear_for_text();
+	}
 
 	/**
 	 * Clears all resources used by the Graphics object, including SubGeometries.
@@ -251,7 +256,6 @@ class Graphics extends AssetBase
 	public dispose()
 	{
 		this.material = null;
-
 		for (var i:number = this._graphics.length - 1; i>=0; i--)
 			this._graphics[i].dispose();
 
