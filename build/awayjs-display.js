@@ -8018,7 +8018,6 @@ var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Sprite = require("awayjs-display/lib/display/Sprite");
-var Graphics = require("awayjs-display/lib/graphics/Graphics");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var Style = require("awayjs-display/lib/base/Style");
@@ -8344,8 +8343,9 @@ var TextField = (function (_super) {
         this._textGraphicsDirty = false;
         if (this._textFormat == null)
             return;
-        this._graphics.dispose();
-        this._graphics = new Graphics();
+        this._graphics.clear_for_text();
+        //this._graphics.dispose();
+        //this._graphics = new Graphics();
         if (this._text == "")
             return;
         var numVertices = 0;
@@ -8422,7 +8422,7 @@ var TextField = (function (_super) {
                 }
                 else {
                     // word does not fit
-                    // todo respect multiline and autowrapping properties.
+                    // todo respect autowrapping properties.
                     // right now we just pretend everything has autowrapping and multiline
                     if (final_lines_chars[final_lines_chars.length - 1][final_lines_chars[final_lines_chars.length - 1].length - 1] == null) {
                         final_lines_chars[final_lines_chars.length - 1].pop();
@@ -8864,7 +8864,7 @@ var TextField = (function (_super) {
 })(Sprite);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 /**
  * The CapsStyle class is an enumeration of constant values that specify the
  * caps style to use in drawing lines. The constants are provided for use as
@@ -12297,6 +12297,10 @@ var Graphics = (function (_super) {
         for (var i = this._graphics.length - 1; i >= 0; i--)
             this._graphics[i].clear();
     };
+    Graphics.prototype.clear_for_text = function () {
+        for (var i = this._graphics.length - 1; i >= 0; i--)
+            this._graphics[i].clear_for_text();
+    };
     /**
      * Clears all resources used by the Graphics object, including SubGeometries.
      */
@@ -12493,6 +12497,10 @@ var Graphic = (function (_super) {
         this.parent.removeGraphic(this);
         this.parent = null;
         Graphic._available.push(this);
+    };
+    Graphic.prototype.clear_for_text = function () {
+        this.parent.removeGraphic(this);
+        this.parent = null;
     };
     Graphic.prototype.invalidateElements = function () {
         this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
