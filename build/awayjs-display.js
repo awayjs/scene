@@ -8012,7 +8012,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
-var Float3Attributes = require("awayjs-core/lib/attributes/Float3Attributes");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
 var Matrix = require("awayjs-core/lib/geom/Matrix");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -8023,6 +8022,7 @@ var Graphics = require("awayjs-display/lib/graphics/Graphics");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
 var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var Style = require("awayjs-display/lib/base/Style");
+var Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -8258,7 +8258,7 @@ var TextField = (function (_super) {
     });
     Object.defineProperty(TextField.prototype, "graphics", {
         /**
-         * The geometry used by the sprite that provides it with its shape.
+         * The graphics used by the sprite that provides it with its shape.
          */
         get: function () {
             if (this._textGraphicsDirty)
@@ -8348,23 +8348,27 @@ var TextField = (function (_super) {
         this._graphics = new Graphics();
         if (this._text == "")
             return;
-        var vertices = new Array();
+        var numVertices = 0;
+        var elements;
         var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-        var additional_margin_x = this._textFormat.font_table.offset_x;
-        var additional_margin_y = this._textFormat.font_table.offset_y;
-        var y_offset = additional_margin_y;
+        var y_offset = 0;
         var prev_char = null;
         var j = 0;
         var k = 0;
-        var whitespace_width = (this._textFormat.font_table.get_whitespace_width() * char_scale);
+        var whitespace_width = (this._textFormat.font_table.get_whitespace_width() * char_scale) + this._textFormat.letterSpacing;
         var textlines = this.text.toString().split("\\n");
         var final_lines_chars = [];
         var final_lines_char_scale = [];
         var final_lines_width = [];
+        var final_lines_justify_bool = [];
+        var final_lines_justify = [];
+        var maxlineWidth = this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
         for (var tl = 0; tl < textlines.length; tl++) {
             final_lines_chars.push([]);
             final_lines_char_scale.push([]);
             final_lines_width.push(0);
+            final_lines_justify.push(0);
+            final_lines_justify_bool.push(false);
             var words = textlines[tl].split(" ");
             for (var i = 0; i < words.length; i++) {
                 var word_width = 0;
@@ -8381,8 +8385,9 @@ var TextField = (function (_super) {
                         }
                     }
                     if (this_char != null) {
-                        var this_subGeom = this_char.elements;
-                        if (this_subGeom != null) {
+                        elements = this_char.elements;
+                        if (elements != null) {
+                            numVertices += elements.numVertices;
                             // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
                             var kerning_value = 0;
                             if (prev_char != null) {
@@ -8393,22 +8398,22 @@ var TextField = (function (_super) {
                                     }
                                 }
                             }
-                            word_width += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+                            word_width += ((2 + this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
                         }
                         else {
-                            // if no char-geometry was found, we insert a "space"
+                            // if no char-elements was found, we insert a "space"
                             word_width += whitespace_width;
                         }
                     }
                     else {
-                        // if no char-geometry was found, we insert a "space"
+                        // if no char-elements was found, we insert a "space"
                         //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
                         word_width += whitespace_width;
                     }
                     word_chars_scale[c_cnt] = char_scale;
                     word_chars[c_cnt++] = this_char;
                 }
-                if ((final_lines_width[final_lines_width.length - 1] + word_width) <= this.textWidth) {
+                if (((final_lines_width[final_lines_width.length - 1] + word_width) <= maxlineWidth) || (final_lines_chars[final_lines_chars.length - 1].length == 0)) {
                     for (var fw = 0; fw < word_chars_scale.length; fw++) {
                         final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
                         final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
@@ -8419,9 +8424,18 @@ var TextField = (function (_super) {
                     // word does not fit
                     // todo respect multiline and autowrapping properties.
                     // right now we just pretend everything has autowrapping and multiline
+                    if (final_lines_chars[final_lines_chars.length - 1][final_lines_chars[final_lines_chars.length - 1].length - 1] == null) {
+                        final_lines_chars[final_lines_chars.length - 1].pop();
+                        final_lines_char_scale[final_lines_char_scale.length - 1].pop();
+                        final_lines_width[final_lines_width.length - 1] -= whitespace_width;
+                        final_lines_justify[final_lines_justify.length - 1] -= 1;
+                    }
+                    final_lines_justify_bool[final_lines_justify_bool.length - 1] = true;
                     final_lines_chars.push([]);
                     final_lines_char_scale.push([]);
                     final_lines_width.push(0);
+                    final_lines_justify.push(0);
+                    final_lines_justify_bool.push(false);
                     for (var fw = 0; fw < word_chars_scale.length; fw++) {
                         final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
                         final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
@@ -8429,41 +8443,42 @@ var TextField = (function (_super) {
                     final_lines_width[final_lines_width.length - 1] = word_width;
                 }
                 if (i < (words.length - 1)) {
-                    if ((final_lines_width[final_lines_width.length - 1] + whitespace_width) <= this.textWidth) {
+                    if ((final_lines_width[final_lines_width.length - 1]) <= maxlineWidth) {
                         final_lines_chars[final_lines_chars.length - 1].push(null);
                         final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
                         final_lines_width[final_lines_width.length - 1] += whitespace_width;
-                    }
-                    else {
-                        final_lines_chars.push([null]);
-                        final_lines_char_scale.push([char_scale]);
-                        final_lines_width.push(whitespace_width);
+                        final_lines_justify[final_lines_justify.length - 1] += 1;
                     }
                 }
             }
         }
+        y_offset = 2 + (this._textFormat.font_table.ascent - this._textFormat.font_table.get_font_em_size()) * char_scale;
+        var vertices = new Float32Array(numVertices * 3);
         for (var i = 0; i < final_lines_chars.length; i++) {
-            var x_offset = additional_margin_x;
+            var x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent;
+            var justify_addion = 0;
             if (this._textFormat.align == "center") {
-                x_offset = (this._textWidth - final_lines_width[i]) / 2;
+                x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent + (maxlineWidth - final_lines_width[i]) / 2;
+            }
+            else if (this._textFormat.align == "justify") {
+                if (final_lines_justify_bool[i]) {
+                    justify_addion = ((maxlineWidth) - final_lines_width[i]) / final_lines_justify[i];
+                }
             }
             else if (this._textFormat.align == "right") {
-                x_offset = (this._textWidth - final_lines_width[i]) - additional_margin_x;
+                x_offset = (this._textWidth - final_lines_width[i]) - (2 + this._textFormat.rightMargin);
             }
             for (var t = 0; t < final_lines_chars[i].length; t++) {
                 var this_char = final_lines_chars[i][t];
                 char_scale = final_lines_char_scale[i][t];
                 if (this_char != null) {
-                    var elements = this_char.elements;
+                    elements = this_char.elements;
                     if (elements != null) {
-                        var positions2 = elements.positions.get(elements.numVertices);
-                        var curveData2 = elements.getCustomAtributes("curves").get(elements.numVertices);
+                        var buffer = new Float32Array(elements.concatenatedBuffer.buffer);
                         for (var v = 0; v < elements.numVertices; v++) {
-                            vertices[j++] = (positions2[v * 2] * char_scale) + x_offset;
-                            vertices[j++] = (positions2[v * 2 + 1] * char_scale) + y_offset;
-                            vertices[j++] = curveData2[v * 3];
-                            vertices[j++] = curveData2[v * 3 + 1];
-                            vertices[j++] = curveData2[v * 3 + 2];
+                            vertices[j++] = buffer[v * 3] * char_scale + x_offset;
+                            vertices[j++] = buffer[v * 3 + 1] * char_scale + y_offset;
+                            vertices[j++] = buffer[v * 3 + 2];
                         }
                         // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
                         var kerning_value = 0;
@@ -8478,27 +8493,26 @@ var TextField = (function (_super) {
                         x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
                     }
                     else {
-                        // if no char-geometry was found, we insert a "space"
-                        x_offset += whitespace_width;
+                        // if no char-elements was found, we insert a "space"
+                        x_offset += whitespace_width + justify_addion;
                     }
                 }
                 else {
-                    x_offset += whitespace_width;
+                    x_offset += whitespace_width + justify_addion;
                 }
             }
             // hack for multiline textfield in icycle.
-            y_offset += (this._textFormat.size + this._textFormat.leading * 1.6);
-            if (this._textFormat.leading >= 11) {
-                y_offset += 2.5;
-            }
+            y_offset += (this._textFormat.font_table.ascent + this._textFormat.font_table.descent) * char_scale;
+            //y_offset+=(this._textFormat.font_table.get_font_em_size()-this._textFormat.font_table.descent)*char_scale;
+            y_offset += this._textFormat.leading;
         }
-        var attributesView = new AttributesView(Float32Array, 5);
+        var attributesView = new AttributesView(Float32Array, 3);
         attributesView.set(vertices);
         var vertexBuffer = attributesView.buffer;
         attributesView.dispose();
         var curveElements = new TriangleElements(vertexBuffer);
         curveElements.setPositions(new Float2Attributes(vertexBuffer));
-        curveElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+        curveElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
         this._graphics.addGraphic(curveElements);
         this.material = this._textFormat.material;
         var sampler = new Sampler2D();
@@ -8850,7 +8864,7 @@ var TextField = (function (_super) {
 })(Sprite);
 module.exports = TextField;
 
-},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
+},{"awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-display/lib/base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","awayjs-display/lib/base/Style":"awayjs-display/lib/base/Style","awayjs-display/lib/display/Sprite":"awayjs-display/lib/display/Sprite","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-display/lib/graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","awayjs-display/lib/text/TextFieldType":"awayjs-display/lib/text/TextFieldType"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 /**
  * The CapsStyle class is an enumeration of constant values that specify the
  * caps style to use in drawing lines. The constants are provided for use as
