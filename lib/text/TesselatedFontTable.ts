@@ -110,9 +110,10 @@ class TesselatedFontTable extends AssetBase
 	/**
 	 *
 	 */
-	public setChar(name:string, elements:ElementsBase):void
+	public setChar(name:string, elements:ElementsBase, char_width:number):void
 	{
 		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(<TriangleElements> elements);
+		tesselated_font_char.char_width=char_width;
 		elements.name = name;
 		this._font_chars.push(tesselated_font_char);
 		this._font_chars_dic[name]=tesselated_font_char;

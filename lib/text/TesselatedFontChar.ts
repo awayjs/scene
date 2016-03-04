@@ -54,18 +54,6 @@ class TesselatedFontChar
 	constructor(elements:TriangleElements)
 	{
 		this.elements = elements;
-
-		this.char_width = 0;
-
-		if (this.elements != null) {
-			var positions2:ArrayBufferView = this.elements.positions.get(this.elements.numVertices);
-			var count:number = this.elements.positions.count;
-			var dim:number = this.elements.positions.dimensions;
-			for (var v:number = 0; v < count*dim; v+=dim) {
-				if(positions2[v] > this.char_width)
-					this.char_width = positions2[v];
-			}
-		}
 	}
 
 }
