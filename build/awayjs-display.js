@@ -19517,16 +19517,6 @@ var TesselatedFontChar = (function () {
          */
         this.kerningValues = new Array();
         this.elements = elements;
-        this.char_width = 0;
-        if (this.elements != null) {
-            var positions2 = this.elements.positions.get(this.elements.numVertices);
-            var count = this.elements.positions.count;
-            var dim = this.elements.positions.dimensions;
-            for (var v = 0; v < count * dim; v += dim) {
-                if (positions2[v] > this.char_width)
-                    this.char_width = positions2[v];
-            }
-        }
     }
     return TesselatedFontChar;
 })();
@@ -19637,8 +19627,9 @@ var TesselatedFontTable = (function (_super) {
     /**
      *
      */
-    TesselatedFontTable.prototype.setChar = function (name, elements) {
+    TesselatedFontTable.prototype.setChar = function (name, elements, char_width) {
         var tesselated_font_char = new TesselatedFontChar(elements);
+        tesselated_font_char.char_width = char_width;
         elements.name = name;
         this._font_chars.push(tesselated_font_char);
         this._font_chars_dic[name] = tesselated_font_char;

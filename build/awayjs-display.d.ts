@@ -2514,6 +2514,138 @@ declare module "awayjs-display/lib/display/DisplayObject" {
 	
 }
 
+declare module "awayjs-display/lib/display/IEntity" {
+	import Box = require("awayjs-core/lib/geom/Box");
+	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import Sphere = require("awayjs-core/lib/geom/Sphere");
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IAsset = require("awayjs-core/lib/library/IAsset");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import Transform = require("awayjs-display/lib/base/Transform");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
+	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
+	import ITraverser = require("awayjs-display/lib/ITraverser");
+	interface IEntity extends IAsset {
+	    parent: DisplayObjectContainer;
+	    x: number;
+	    y: number;
+	    z: number;
+	    rotationX: number;
+	    rotationY: number;
+	    rotationZ: number;
+	    scaleX: number;
+	    scaleY: number;
+	    scaleZ: number;
+	    _iMasksConfig(): Array<Array<number>>;
+	    _iAssignedMaskId(): number;
+	    _iAssignedColorTransform(): ColorTransform;
+	    /**
+	     *
+	     */
+	    debugVisible: boolean;
+	    /**
+	     *
+	     */
+	    boundsType: string;
+	    /**
+	     *
+	     */
+	    castsShadows: boolean;
+	    /**
+	     *
+	     */
+	    inverseSceneTransform: Matrix3D;
+	    /**
+	     *
+	     */
+	    pickingCollider: IPickingCollider;
+	    /**
+	     *
+	     */
+	    transform: Transform;
+	    /**
+	     *
+	     */
+	    scene: Scene;
+	    /**
+	     *
+	     */
+	    scenePosition: Vector3D;
+	    /**
+	     *
+	     */
+	    sceneTransform: Matrix3D;
+	    /**
+	     *
+	     */
+	    zOffset: number;
+	    /**
+	     *
+	     * @param targetCoordinateSpace
+	     */
+	    getBox(targetCoordinateSpace?: DisplayObject): Box;
+	    /**
+	     *
+	     * @param targetCoordinateSpace
+	     */
+	    getSphere(targetCoordinateSpace?: DisplayObject): Sphere;
+	    /**
+	     *
+	     *
+	     * @param target
+	     * @param upAxis
+	     */
+	    lookAt(target: Vector3D, upAxis?: Vector3D): any;
+	    /**
+	     * @internal
+	     */
+	    _iPickingCollision: PickingCollision;
+	    /**
+	     * @internal
+	     */
+	    _iController: ControllerBase;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedPartition: PartitionBase;
+	    /**
+	     * @internal
+	     */
+	    _iIsMouseEnabled(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iIsVisible(): boolean;
+	    /**
+	     * @internal
+	     */
+	    _iAssignedMasks(): Array<Array<DisplayObject>>;
+	    /**
+	     * @internal
+	     */
+	    _iInternalUpdate(): any;
+	    /**
+	     * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
+	     * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
+	     * return the scene transform.
+	     */
+	    getRenderSceneTransform(cameraTransform: Matrix3D): Matrix3D;
+	    /**
+	     *
+	     * @param renderer
+	     * @private
+	     */
+	    _acceptTraverser(collector: ITraverser): any;
+	}
+	export = IEntity;
+	
+}
+
 declare module "awayjs-display/lib/display/DisplayObjectContainer" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
@@ -2880,138 +3012,6 @@ declare module "awayjs-display/lib/display/DisplayObjectContainer" {
 	    _updateMaskMode(): void;
 	}
 	export = DisplayObjectContainer;
-	
-}
-
-declare module "awayjs-display/lib/display/IEntity" {
-	import Box = require("awayjs-core/lib/geom/Box");
-	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import Sphere = require("awayjs-core/lib/geom/Sphere");
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IAsset = require("awayjs-core/lib/library/IAsset");
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
-	import Transform = require("awayjs-display/lib/base/Transform");
-	import Scene = require("awayjs-display/lib/display/Scene");
-	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-	import ControllerBase = require("awayjs-display/lib/controllers/ControllerBase");
-	import PartitionBase = require("awayjs-display/lib/partition/PartitionBase");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
-	import ITraverser = require("awayjs-display/lib/ITraverser");
-	interface IEntity extends IAsset {
-	    parent: DisplayObjectContainer;
-	    x: number;
-	    y: number;
-	    z: number;
-	    rotationX: number;
-	    rotationY: number;
-	    rotationZ: number;
-	    scaleX: number;
-	    scaleY: number;
-	    scaleZ: number;
-	    _iMasksConfig(): Array<Array<number>>;
-	    _iAssignedMaskId(): number;
-	    _iAssignedColorTransform(): ColorTransform;
-	    /**
-	     *
-	     */
-	    debugVisible: boolean;
-	    /**
-	     *
-	     */
-	    boundsType: string;
-	    /**
-	     *
-	     */
-	    castsShadows: boolean;
-	    /**
-	     *
-	     */
-	    inverseSceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    pickingCollider: IPickingCollider;
-	    /**
-	     *
-	     */
-	    transform: Transform;
-	    /**
-	     *
-	     */
-	    scene: Scene;
-	    /**
-	     *
-	     */
-	    scenePosition: Vector3D;
-	    /**
-	     *
-	     */
-	    sceneTransform: Matrix3D;
-	    /**
-	     *
-	     */
-	    zOffset: number;
-	    /**
-	     *
-	     * @param targetCoordinateSpace
-	     */
-	    getBox(targetCoordinateSpace?: DisplayObject): Box;
-	    /**
-	     *
-	     * @param targetCoordinateSpace
-	     */
-	    getSphere(targetCoordinateSpace?: DisplayObject): Sphere;
-	    /**
-	     *
-	     *
-	     * @param target
-	     * @param upAxis
-	     */
-	    lookAt(target: Vector3D, upAxis?: Vector3D): any;
-	    /**
-	     * @internal
-	     */
-	    _iPickingCollision: PickingCollision;
-	    /**
-	     * @internal
-	     */
-	    _iController: ControllerBase;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedPartition: PartitionBase;
-	    /**
-	     * @internal
-	     */
-	    _iIsMouseEnabled(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iIsVisible(): boolean;
-	    /**
-	     * @internal
-	     */
-	    _iAssignedMasks(): Array<Array<DisplayObject>>;
-	    /**
-	     * @internal
-	     */
-	    _iInternalUpdate(): any;
-	    /**
-	     * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
-	     * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
-	     * return the scene transform.
-	     */
-	    getRenderSceneTransform(cameraTransform: Matrix3D): Matrix3D;
-	    /**
-	     *
-	     * @param renderer
-	     * @private
-	     */
-	    _acceptTraverser(collector: ITraverser): any;
-	}
-	export = IEntity;
 	
 }
 
@@ -9041,31 +9041,6 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab" {
 	
 }
 
-declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
-	/**
-	 * A UV Cone primitive sprite.
-	 */
-	class PrimitiveConePrefab extends PrimitiveCylinderPrefab {
-	    /**
-	     * The radius of the bottom end of the cone.
-	     */
-	    radius: number;
-	    /**
-	     * Creates a new Cone object.
-	     * @param radius The radius of the bottom end of the cone
-	     * @param height The height of the cone
-	     * @param segmentsW Defines the number of horizontal segments that make up the cone. Defaults to 16.
-	     * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
-	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
-	     */
-	    constructor(material?: MaterialBase, elementsType?: string, radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
-	}
-	export = PrimitiveConePrefab;
-	
-}
-
 declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
 	import ElementsBase = require("awayjs-display/lib/graphics/ElementsBase");
 	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
@@ -9135,6 +9110,31 @@ declare module "awayjs-display/lib/prefabs/PrimitiveCubePrefab" {
 	    _pBuildUVs(target: ElementsBase, elementsType: string): void;
 	}
 	export = PrimitiveCubePrefab;
+	
+}
+
+declare module "awayjs-display/lib/prefabs/PrimitiveConePrefab" {
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	import PrimitiveCylinderPrefab = require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
+	/**
+	 * A UV Cone primitive sprite.
+	 */
+	class PrimitiveConePrefab extends PrimitiveCylinderPrefab {
+	    /**
+	     * The radius of the bottom end of the cone.
+	     */
+	    radius: number;
+	    /**
+	     * Creates a new Cone object.
+	     * @param radius The radius of the bottom end of the cone
+	     * @param height The height of the cone
+	     * @param segmentsW Defines the number of horizontal segments that make up the cone. Defaults to 16.
+	     * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
+	     * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
+	     */
+	    constructor(material?: MaterialBase, elementsType?: string, radius?: number, height?: number, segmentsW?: number, segmentsH?: number, closed?: boolean, yUp?: boolean);
+	}
+	export = PrimitiveConePrefab;
 	
 }
 
@@ -9684,7 +9684,7 @@ declare module "awayjs-display/lib/text/TesselatedFontTable" {
 	    /**
 	     *
 	     */
-	    setChar(name: string, elements: ElementsBase): void;
+	    setChar(name: string, elements: ElementsBase, char_width: number): void;
 	}
 	export = TesselatedFontTable;
 	
