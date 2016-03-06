@@ -8013,15 +8013,15 @@ var __extends = this.__extends || function (d, b) {
 };
 var AttributesView = require("awayjs-core/lib/attributes/AttributesView");
 var Float2Attributes = require("awayjs-core/lib/attributes/Float2Attributes");
+var Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 var Matrix = require("awayjs-core/lib/geom/Matrix");
 var ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
+var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 var HierarchicalProperties = require("awayjs-display/lib/base/HierarchicalProperties");
+var Style = require("awayjs-display/lib/base/Style");
 var TextFieldType = require("awayjs-display/lib/text/TextFieldType");
 var Sprite = require("awayjs-display/lib/display/Sprite");
 var TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
-var Sampler2D = require("awayjs-core/lib/image/Sampler2D");
-var Style = require("awayjs-display/lib/base/Style");
-var Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -8322,6 +8322,11 @@ var TextField = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    TextField.prototype.clear = function () {
+        _super.prototype.clear.call(this);
+        if (this._textElements)
+            this._textElements.clear();
+    };
     /**
      * @inheritDoc
      */
@@ -8335,6 +8340,11 @@ var TextField = (function (_super) {
     TextField.prototype.disposeValues = function () {
         _super.prototype.disposeValues.call(this);
         this._textFormat = null;
+        this._textGraphic = null;
+        if (this._textElements) {
+            this._textElements.dispose();
+            this._textElements = null;
+        }
     };
     /**
      * Reconstructs the Graphics for this Text-field.
@@ -8343,9 +8353,13 @@ var TextField = (function (_super) {
         this._textGraphicsDirty = false;
         if (this._textFormat == null)
             return;
-        this._graphics.clear_for_text();
-        //this._graphics.dispose();
-        //this._graphics = new Graphics();
+        if (this._textGraphic) {
+            this._textGraphic.dispose();
+            this._textGraphic = null;
+            this._textElements.clear();
+            this._textElements.dispose();
+            this._textElements = null;
+        }
         if (this._text == "")
             return;
         var numVertices = 0;
@@ -8510,10 +8524,10 @@ var TextField = (function (_super) {
         attributesView.set(vertices);
         var vertexBuffer = attributesView.buffer;
         attributesView.dispose();
-        var curveElements = new TriangleElements(vertexBuffer);
-        curveElements.setPositions(new Float2Attributes(vertexBuffer));
-        curveElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
-        this._graphics.addGraphic(curveElements);
+        this._textElements = new TriangleElements(vertexBuffer);
+        this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+        this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+        this._textGraphic = this._graphics.addGraphic(this._textElements);
         this.material = this._textFormat.material;
         var sampler = new Sampler2D();
         this.style = new Style();
@@ -11933,7 +11947,7 @@ var ElementsBase = (function (_super) {
      *
      */
     ElementsBase.prototype.getCustomAtributesNames = function () {
-        return this._customAttributes[name];
+        return this._customAttributesNames;
     };
     /**
      *
@@ -12239,20 +12253,22 @@ var Graphics = (function (_super) {
     Graphics.prototype.addGraphic = function (elements, material, style) {
         if (material === void 0) { material = null; }
         if (style === void 0) { style = null; }
-        var newGraphic;
+        var graphic;
         if (Graphic._available.length) {
-            newGraphic = Graphic._available.pop();
-            newGraphic.parent = this;
-            newGraphic.elements = elements;
-            newGraphic.material = material;
-            newGraphic.style = style;
+            graphic = Graphic._available.pop();
+            graphic._iIndex = this._graphics.length;
+            graphic.parent = this;
+            graphic.elements = elements;
+            graphic.material = material;
+            graphic.style = style;
         }
         else {
-            newGraphic = new Graphic(this._graphics.length, this, elements, material, style);
+            graphic = new Graphic(this._graphics.length, this, elements, material, style);
         }
-        this._graphics.push(newGraphic);
+        this._graphics.push(graphic);
         elements.addEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
         this._invalidateBounds();
+        return graphic;
     };
     Graphics.prototype.removeGraphic = function (graphic) {
         this._graphics.splice(this._graphics.indexOf(graphic), 1);
@@ -12260,6 +12276,7 @@ var Graphics = (function (_super) {
         graphic.elements = null;
         graphic.material = null;
         graphic.style = null;
+        graphic.clear();
         this._invalidateBounds();
     };
     Graphics.prototype.getGraphicAt = function (index) {
@@ -12296,10 +12313,6 @@ var Graphics = (function (_super) {
     Graphics.prototype.clear = function () {
         for (var i = this._graphics.length - 1; i >= 0; i--)
             this._graphics[i].clear();
-    };
-    Graphics.prototype.clear_for_text = function () {
-        for (var i = this._graphics.length - 1; i >= 0; i--)
-            this._graphics[i].clear_for_text();
     };
     /**
      * Clears all resources used by the Graphics object, including SubGeometries.
@@ -12497,10 +12510,6 @@ var Graphic = (function (_super) {
         this.parent.removeGraphic(this);
         this.parent = null;
         Graphic._available.push(this);
-    };
-    Graphic.prototype.clear_for_text = function () {
-        this.parent.removeGraphic(this);
-        this.parent = null;
     };
     Graphic.prototype.invalidateElements = function () {
         this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
