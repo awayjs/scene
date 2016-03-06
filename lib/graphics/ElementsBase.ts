@@ -52,7 +52,7 @@ class ElementsBase extends AssetBase
 	 */
 	public getCustomAtributesNames():Array<string>
 	{
-		return this._customAttributes[name];
+		return this._customAttributesNames;
 	}
 
 	/**

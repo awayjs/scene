@@ -1,14 +1,16 @@
 import AttributesBuffer				= require("awayjs-core/lib/attributes/AttributesBuffer");
 import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
-import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
 import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
+import Byte4Attributes				= require("awayjs-core/lib/attributes/Byte4Attributes");
 import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
 import Matrix						= require("awayjs-core/lib/geom/Matrix");
 import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
 import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
 
 import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
+import Style 						= require("awayjs-display/lib/base/Style");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
 import GridFitType					= require("awayjs-display/lib/text/GridFitType");
@@ -19,15 +21,13 @@ import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionM
 import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
 import Sprite						= require("awayjs-display/lib/display/Sprite");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
+import Graphic						= require("awayjs-display/lib/graphics/Graphic");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
 import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
 import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
 import TextFormatAlign				= require("awayjs-display/lib/text/TextFormatAlign");
 import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
 
-import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
-import Style 						= require("awayjs-display/lib/base/Style");
-import Byte4Attributes = require("awayjs-core/lib/attributes/Byte4Attributes");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -139,6 +139,8 @@ class TextField extends Sprite
 	private _lineText:string;
 	private _paragraphLength:number;
 	private _textFormat:TextFormat;
+	private _textElements:TriangleElements;
+	private _textGraphic:Graphic;
 
 	/**
 	 * When set to <code>true</code> and the text field is not in focus, Flash
@@ -780,6 +782,14 @@ class TextField extends Sprite
 		this.type = TextFieldType.STATIC;
 	}
 
+	public clear()
+	{
+		super.clear();
+
+		if (this._textElements)
+			this._textElements.clear();
+	}
+
 	/**
 	 * @inheritDoc
 	 */
@@ -798,6 +808,12 @@ class TextField extends Sprite
 		super.disposeValues();
 
 		this._textFormat = null;
+		this._textGraphic = null;
+
+		if (this._textElements) {
+			this._textElements.dispose();
+			this._textElements = null;
+		}
 	}
 
 	/**
@@ -810,9 +826,16 @@ class TextField extends Sprite
 		if(this._textFormat == null)
 			return;
 
-		this._graphics.clear_for_text();
-		//this._graphics.dispose();
-		//this._graphics = new Graphics();
+
+		if (this._textGraphic) {
+			this._textGraphic.dispose();
+			this._textGraphic = null;
+
+			this._textElements.clear();
+			this._textElements.dispose();
+			this._textElements = null;
+		}
+
 
 		if(this._text == "")
 			return;
@@ -998,11 +1021,12 @@ class TextField extends Sprite
 		attributesView.set(vertices);
 		var vertexBuffer:AttributesBuffer = attributesView.buffer;
 		attributesView.dispose();
-		var curveElements:TriangleElements = new TriangleElements(vertexBuffer);
-		curveElements.setPositions(new Float2Attributes(vertexBuffer));
-		curveElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 
-		this._graphics.addGraphic(curveElements);
+		this._textElements = new TriangleElements(vertexBuffer);
+		this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+		this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+
+		this._textGraphic = this._graphics.addGraphic(this._textElements);
 
 		this.material = this._textFormat.material;
 		var sampler:Sampler2D = new Sampler2D();

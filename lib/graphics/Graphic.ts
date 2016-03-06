@@ -144,12 +144,6 @@ class Graphic extends AssetBase implements IRenderable
 		Graphic._available.push(this);
 	}
 
-	public clear_for_text()
-	{
-		this.parent.removeGraphic(this);
-		this.parent = null;
-	}
-
 	public invalidateElements()
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));

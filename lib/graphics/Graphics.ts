@@ -165,25 +165,28 @@ class Graphics extends AssetBase
 	 *
 	 * @param elements
 	 */
-	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null)
+	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null):Graphic
 	{
-		var newGraphic:Graphic;
+		var graphic:Graphic;
 
 		if (Graphic._available.length) {
-			newGraphic = Graphic._available.pop();
-			newGraphic.parent = this;
-			newGraphic.elements = elements;
-			newGraphic.material = material;
-			newGraphic.style = style;
+			graphic = Graphic._available.pop();
+			graphic._iIndex = this._graphics.length;
+			graphic.parent = this;
+			graphic.elements = elements;
+			graphic.material = material;
+			graphic.style = style;
 		} else {
-			newGraphic = new Graphic(this._graphics.length, this, elements, material, style);
+			graphic = new Graphic(this._graphics.length, this, elements, material, style);
 		}
 
-		this._graphics.push(newGraphic);
+		this._graphics.push(graphic);
 
 		elements.addEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
 
 		this._invalidateBounds();
+
+		return graphic;
 	}
 
 	public removeGraphic(graphic:Graphic)
@@ -195,6 +198,7 @@ class Graphics extends AssetBase
 		graphic.elements = null;
 		graphic.material = null;
 		graphic.style = null;
+		graphic.clear();
 
 		this._invalidateBounds();
 	}
@@ -243,11 +247,6 @@ class Graphics extends AssetBase
 	{
 		for (var i:number = this._graphics.length - 1; i>=0; i--)
 			this._graphics[i].clear();
-	}
-	public clear_for_text()
-	{
-		for (var i:number = this._graphics.length - 1; i>=0; i--)
-			this._graphics[i].clear_for_text();
 	}
 
 	/**
