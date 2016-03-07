@@ -227,6 +227,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 		this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
 		this._pIsEntity = true;
+
 		this._owners = new Array<IRenderable>(this);
 
 		this._style.image = image;

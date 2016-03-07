@@ -123,8 +123,6 @@ class DisplayObjectContainer extends DisplayObject
 	constructor()
 	{
 		super();
-
-		this._pIsContainer = true;
 	}
 
 	/**
@@ -193,7 +191,7 @@ class DisplayObjectContainer extends DisplayObject
 
 		child.iSetParent(this);
 
-		this._pInvalidateBounds();
+		this._invalidateChildren();
 
 		return child;
 	}
@@ -450,7 +448,7 @@ class DisplayObjectContainer extends DisplayObject
 
 		child.iSetParent(null);
 
-		this._pInvalidateBounds();
+		this._invalidateChildren();
 
 		return child;
 	}
@@ -689,6 +687,21 @@ class DisplayObjectContainer extends DisplayObject
 			this.mouseChildren = false;
 
 		super._updateMaskMode();
+	}
+
+	private _invalidateChildren()
+	{
+		if (this._pIsContainer != Boolean(this._children.length)) {
+			if (this._pImplicitPartition)
+				this._pImplicitPartition._iUnregisterEntity(this);
+
+			this._pIsContainer = Boolean(this._children.length);
+
+			if (this._pImplicitPartition)
+				this._pImplicitPartition._iRegisterEntity(this);
+		}
+
+		this._pInvalidateBounds();
 	}
 }
 

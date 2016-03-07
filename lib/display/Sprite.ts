@@ -1,4 +1,5 @@
-﻿import Box							= require("awayjs-core/lib/geom/Box");
+﻿import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
+import Box							= require("awayjs-core/lib/geom/Box");
 import Point						= require("awayjs-core/lib/geom/Point");
 import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
 
@@ -7,7 +8,6 @@ import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
 import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
 import Graphics						= require("awayjs-display/lib/graphics/Graphics");
 import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
-import GraphicsEvent				= require("awayjs-display/lib/events/GraphicsEvent");
 import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
 import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
 import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
@@ -28,7 +28,7 @@ class Sprite extends DisplayObjectContainer
 
 	private _center:Vector3D;
 	public _graphics:Graphics; //TODO
-	private _onGraphicsBoundsInvalidDelegate:(event:GraphicsEvent) => void;
+	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
 
 	//temp point used in hit testing
 	private _tempPoint:Point = new Point();
@@ -107,12 +107,10 @@ class Sprite extends DisplayObjectContainer
 	{
 		super();
 
-		this._pIsEntity = true;
-
-		this._onGraphicsBoundsInvalidDelegate = (event:GraphicsEvent) => this.onGraphicsBoundsInvalid(event);
+		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
 
 		this._graphics = new Graphics(); //unique graphics object for each Sprite
-		this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
+		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 
 		this.material = material;
 	}
@@ -212,8 +210,18 @@ class Sprite extends DisplayObjectContainer
 	 *
 	 * @private
 	 */
-	private onGraphicsBoundsInvalid(event:GraphicsEvent)
+	private _onGraphicsInvalidate(event:AssetEvent)
 	{
+		if (this._pIsEntity != Boolean(this._graphics.count)) {
+			if (this._pImplicitPartition)
+				this._pImplicitPartition._iUnregisterEntity(this);
+
+			this._pIsEntity = Boolean(this._graphics.count);
+
+			if (this._pImplicitPartition)
+				this._pImplicitPartition._iRegisterEntity(this);
+		}
+
 		this._pInvalidateBounds();
 	}
 

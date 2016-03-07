@@ -767,6 +767,15 @@ class TextField extends Sprite
 	 */
 	public wordWrap:boolean;
 
+
+	/**
+	 *
+	 */
+	public get isEntity()
+	{
+		return true; //TODO do this better
+	}
+
 	/**
 	 * Creates a new TextField instance. After you create the TextField instance,
 	 * call the <code>addChild()</code> or <code>addChildAt()</code> method of

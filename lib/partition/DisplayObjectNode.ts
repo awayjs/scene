@@ -38,8 +38,6 @@ class DisplayObjectNode extends AbstractionBase implements INode
 
 	public parent:SceneGraphNode;
 
-	public isContainerNode:boolean = false;
-
 	private _boundsType:string;
 
 	public get debugVisible():boolean

@@ -1,25 +1,25 @@
-import Point					= require("awayjs-core/lib/geom/Point");
-import Box						= require("awayjs-core/lib/geom/Box");
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import Sphere					= require("awayjs-core/lib/geom/Sphere");
-import Matrix					= require("awayjs-core/lib/geom/Matrix");
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import AssetBase				= require("awayjs-core/lib/library/AssetBase");
+import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
+import Point						= require("awayjs-core/lib/geom/Point");
+import Box							= require("awayjs-core/lib/geom/Box");
+import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Sphere						= require("awayjs-core/lib/geom/Sphere");
+import Matrix						= require("awayjs-core/lib/geom/Matrix");
+import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
+import AssetBase					= require("awayjs-core/lib/library/AssetBase");
 
-import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
-import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
-import Graphic					= require("awayjs-display/lib/graphics/Graphic");
-import GraphicsEvent			= require("awayjs-display/lib/events/GraphicsEvent");
-import Style					= require("awayjs-display/lib/base/Style");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
-import IAnimator 				= require("awayjs-display/lib/animators/IAnimator");
-import ElementsEvent			= require("awayjs-display/lib/events/ElementsEvent");
-import StyleEvent				= require("awayjs-display/lib/events/StyleEvent");
-import IPickingCollider			= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision			= require("awayjs-display/lib/pick/PickingCollision");
-import ITraverser				= require("awayjs-display/lib/ITraverser");
-import ElementsUtils			= require("awayjs-display/lib/utils/ElementsUtils");
-import ParticleData				= require("awayjs-display/lib/animators/data/ParticleData");
+import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
+import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
+import Graphic						= require("awayjs-display/lib/graphics/Graphic");
+import Style						= require("awayjs-display/lib/base/Style");
+import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import IAnimator 					= require("awayjs-display/lib/animators/IAnimator");
+import ElementsEvent				= require("awayjs-display/lib/events/ElementsEvent");
+import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
+import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
+import ITraverser					= require("awayjs-display/lib/ITraverser");
+import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
+import ParticleData					= require("awayjs-display/lib/animators/data/ParticleData");
 
 /**
  *
@@ -184,7 +184,7 @@ class Graphics extends AssetBase
 
 		elements.addEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
 
-		this._invalidateBounds();
+		this.invalidate();
 
 		return graphic;
 	}
@@ -200,7 +200,7 @@ class Graphics extends AssetBase
 		graphic.style = null;
 		graphic.clear();
 
-		this._invalidateBounds();
+		this.invalidate();
 	}
 
 	public getGraphicAt(index:number):Graphic
@@ -306,13 +306,12 @@ class Graphics extends AssetBase
 		return target;
 	}
 
-	private _invalidateBounds()
+	public invalidate()
 	{
+		super.invalidate();
+
 		this._boxBoundsInvalid = true;
 		this._sphereBoundsInvalid = true;
-
-		if (this.hasEventListener(GraphicsEvent.BOUNDS_INVALID))
-			this.dispatchEvent(new GraphicsEvent(GraphicsEvent.BOUNDS_INVALID));
 	}
 
 	public _iInvalidateSurfaces()
@@ -358,7 +357,7 @@ class Graphics extends AssetBase
 		if (event.attributesView != (<TriangleElements> event.target).positions)
 			return;
 
-		this._invalidateBounds();
+		this.invalidate();
 	}
 }
 

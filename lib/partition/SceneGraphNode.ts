@@ -16,8 +16,6 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 
 	public _iCollectionMark:number;// = 0;
 
-	public _pEntityNode:EntityNode;
-
 	/**
 	 *
 	 * @param traverser
@@ -34,9 +32,6 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 
 		for (i = this._childMasks.length - 1; i >= 0; i--)
 			this._childMasks[i].acceptTraverser(traverser);
-
-		if (this._pEntityNode)
-			this._pEntityNode.acceptTraverser(traverser);
 	}
 
 	/**
@@ -48,9 +43,7 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	{
 		node.parent = this;
 
-		if (!node.isSceneGraphNode) {
-			this._pEntityNode = <EntityNode> node;
-		} else if (node._displayObject.maskMode) {
+		if (node._displayObject.maskMode) {
 			this._childMasks.push(node);
 		} else {
 			var depth:number = node._displayObject._depthID;
@@ -87,9 +80,7 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	 */
 	public iRemoveNode(node:DisplayObjectNode)
 	{
-		if (!node.isSceneGraphNode) {
-			this._pEntityNode = null;
-		} else if (node._displayObject.maskMode) {
+		if (node._displayObject.maskMode) {
 			this._childMasks.splice(this._childMasks.indexOf(node), 1);
 		} else {
 			var index:number = this._pChildNodes.indexOf(node);
