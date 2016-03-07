@@ -3449,7 +3449,6 @@ var DisplayObjectContainer = (function (_super) {
         this._depth_childs = {};
         this._nextHighestDepth = 0;
         this._children = new Array();
-        this._pIsContainer = true;
     }
     Object.defineProperty(DisplayObjectContainer.prototype, "assetType", {
         /**
@@ -3563,7 +3562,7 @@ var DisplayObjectContainer = (function (_super) {
         this._children.push(child);
         child._depthID = depth;
         child.iSetParent(this);
-        this._pInvalidateBounds();
+        this._invalidateChildren();
         return child;
     };
     /**
@@ -3778,7 +3777,7 @@ var DisplayObjectContainer = (function (_super) {
     DisplayObjectContainer.prototype.removeChildAt = function (index /*int*/) {
         var child = this.removeChildAtInternal(index);
         child.iSetParent(null);
-        this._pInvalidateBounds();
+        this._invalidateChildren();
         return child;
     };
     /**
@@ -3972,6 +3971,16 @@ var DisplayObjectContainer = (function (_super) {
         if (this.maskMode)
             this.mouseChildren = false;
         _super.prototype._updateMaskMode.call(this);
+    };
+    DisplayObjectContainer.prototype._invalidateChildren = function () {
+        if (this._pIsContainer != Boolean(this._children.length)) {
+            if (this._pImplicitPartition)
+                this._pImplicitPartition._iUnregisterEntity(this);
+            this._pIsContainer = Boolean(this._children.length);
+            if (this._pImplicitPartition)
+                this._pImplicitPartition._iRegisterEntity(this);
+        }
+        this._pInvalidateBounds();
     };
     DisplayObjectContainer.assetType = "[asset DisplayObjectContainer]";
     return DisplayObjectContainer;
@@ -7326,11 +7335,11 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var Point = require("awayjs-core/lib/geom/Point");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 var Graphics = require("awayjs-display/lib/graphics/Graphics");
-var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
 /**
  * This class is used to create lightweight shapes using the ActionScript
  * drawing application program interface(API). The Shape class includes a
@@ -7358,10 +7367,9 @@ var Shape = (function (_super) {
         _super.call(this);
         //temp point used in hit testing
         this._tempPoint = new Point();
-        this._pIsEntity = true;
-        this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
-        this._graphics = new Graphics(); //unique graphics object for each Shape
-        this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
+        this._onGraphicsInvalidateDelegate = function (event) { return _this._onGraphicsInvalidate(event); };
+        this._graphics = new Graphics(); //unique graphics object for each Sprite
+        this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
         this.material = material;
     }
     Object.defineProperty(Shape.prototype, "assetType", {
@@ -7500,7 +7508,14 @@ var Shape = (function (_super) {
      *
      * @private
      */
-    Shape.prototype.onGraphicsBoundsInvalid = function (event) {
+    Shape.prototype._onGraphicsInvalidate = function (event) {
+        if (this._pIsEntity != Boolean(this._graphics.count)) {
+            if (this._pImplicitPartition)
+                this._pImplicitPartition._iUnregisterEntity(this);
+            this._pIsEntity = Boolean(this._graphics.count);
+            if (this._pImplicitPartition)
+                this._pImplicitPartition._iRegisterEntity(this);
+        }
         this._pInvalidateBounds();
     };
     /**
@@ -7539,7 +7554,7 @@ var Shape = (function (_super) {
 })(DisplayObject);
 module.exports = Shape;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7800,10 +7815,10 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var AssetEvent = require("awayjs-core/lib/events/AssetEvent");
 var Point = require("awayjs-core/lib/geom/Point");
 var Vector3D = require("awayjs-core/lib/geom/Vector3D");
 var Graphics = require("awayjs-display/lib/graphics/Graphics");
-var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
 var DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -7823,10 +7838,9 @@ var Sprite = (function (_super) {
         _super.call(this);
         //temp point used in hit testing
         this._tempPoint = new Point();
-        this._pIsEntity = true;
-        this._onGraphicsBoundsInvalidDelegate = function (event) { return _this.onGraphicsBoundsInvalid(event); };
+        this._onGraphicsInvalidateDelegate = function (event) { return _this._onGraphicsInvalidate(event); };
         this._graphics = new Graphics(); //unique graphics object for each Sprite
-        this._graphics.addEventListener(GraphicsEvent.BOUNDS_INVALID, this._onGraphicsBoundsInvalidDelegate);
+        this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
         this.material = material;
     }
     Object.defineProperty(Sprite.prototype, "assetType", {
@@ -7965,7 +7979,14 @@ var Sprite = (function (_super) {
      *
      * @private
      */
-    Sprite.prototype.onGraphicsBoundsInvalid = function (event) {
+    Sprite.prototype._onGraphicsInvalidate = function (event) {
+        if (this._pIsEntity != Boolean(this._graphics.count)) {
+            if (this._pImplicitPartition)
+                this._pImplicitPartition._iUnregisterEntity(this);
+            this._pIsEntity = Boolean(this._graphics.count);
+            if (this._pImplicitPartition)
+                this._pImplicitPartition._iRegisterEntity(this);
+        }
         this._pInvalidateBounds();
     };
     /**
@@ -8004,7 +8025,7 @@ var Sprite = (function (_super) {
 })(DisplayObjectContainer);
 module.exports = Sprite;
 
-},{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
+},{"awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-display/lib/display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-display/lib/graphics/Graphics":"awayjs-display/lib/graphics/Graphics"}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -8318,6 +8339,16 @@ var TextField = (function (_super) {
         },
         set: function (value) {
             this._textHeight = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextField.prototype, "isEntity", {
+        /**
+         *
+         */
+        get: function () {
+            return true; //TODO do this better
         },
         enumerable: true,
         configurable: true
@@ -11337,40 +11368,6 @@ var ElementsEvent = (function (_super) {
 })(EventBase);
 module.exports = ElementsEvent;
 
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/GraphicsEvent":[function(require,module,exports){
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var EventBase = require("awayjs-core/lib/events/EventBase");
-/**
-* Dispatched to notify changes in a geometry object's state.
-*
-* @class away.events.GraphicsEvent
-* @see away3d.core.base.Graphics
-*/
-var GraphicsEvent = (function (_super) {
-    __extends(GraphicsEvent, _super);
-    function GraphicsEvent() {
-        _super.apply(this, arguments);
-    }
-    /**
-     * Clones the event.
-     * @return An exact duplicate of the current object.
-     */
-    GraphicsEvent.prototype.clone = function () {
-        return new GraphicsEvent(this.type);
-    };
-    /**
-     *
-     */
-    GraphicsEvent.BOUNDS_INVALID = "boundsInvalid";
-    return GraphicsEvent;
-})(EventBase);
-module.exports = GraphicsEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/LightEvent":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -12128,7 +12125,6 @@ var __extends = this.__extends || function (d, b) {
 var Box = require("awayjs-core/lib/geom/Box");
 var AssetBase = require("awayjs-core/lib/library/AssetBase");
 var Graphic = require("awayjs-display/lib/graphics/Graphic");
-var GraphicsEvent = require("awayjs-display/lib/events/GraphicsEvent");
 var ElementsEvent = require("awayjs-display/lib/events/ElementsEvent");
 var StyleEvent = require("awayjs-display/lib/events/StyleEvent");
 var ElementsUtils = require("awayjs-display/lib/utils/ElementsUtils");
@@ -12267,7 +12263,7 @@ var Graphics = (function (_super) {
         }
         this._graphics.push(graphic);
         elements.addEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
-        this._invalidateBounds();
+        this.invalidate();
         return graphic;
     };
     Graphics.prototype.removeGraphic = function (graphic) {
@@ -12277,7 +12273,7 @@ var Graphics = (function (_super) {
         graphic.material = null;
         graphic.style = null;
         graphic.clear();
-        this._invalidateBounds();
+        this.invalidate();
     };
     Graphics.prototype.getGraphicAt = function (index) {
         return this._graphics[index];
@@ -12360,11 +12356,10 @@ var Graphics = (function (_super) {
             target = this._graphics[i].elements.getSphereBounds(center, target);
         return target;
     };
-    Graphics.prototype._invalidateBounds = function () {
+    Graphics.prototype.invalidate = function () {
+        _super.prototype.invalidate.call(this);
         this._boxBoundsInvalid = true;
         this._sphereBoundsInvalid = true;
-        if (this.hasEventListener(GraphicsEvent.BOUNDS_INVALID))
-            this.dispatchEvent(new GraphicsEvent(GraphicsEvent.BOUNDS_INVALID));
     };
     Graphics.prototype._iInvalidateSurfaces = function () {
         var len = this._graphics.length;
@@ -12395,14 +12390,14 @@ var Graphics = (function (_super) {
     Graphics.prototype._onInvalidateVertices = function (event) {
         if (event.attributesView != event.target.positions)
             return;
-        this._invalidateBounds();
+        this.invalidate();
     };
     Graphics.assetType = "[asset Graphics]";
     return Graphics;
 })(AssetBase);
 module.exports = Graphics;
 
-},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","awayjs-display/lib/events/GraphicsEvent":"awayjs-display/lib/events/GraphicsEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-display/lib/utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
+},{"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined,"awayjs-display/lib/events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","awayjs-display/lib/events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-display/lib/graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-display/lib/utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15532,7 +15527,6 @@ var DisplayObjectNode = (function (_super) {
         this.numEntities = 0;
         this.isSceneGraphNode = false;
         this._boundsDirty = true;
-        this.isContainerNode = false;
         this._onInvalidatePartitionBoundsDelegate = function (event) { return _this._onInvalidatePartitionBounds(event); };
         this._displayObject = displayObject;
         this._displayObject.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
@@ -16044,8 +16038,6 @@ var SceneGraphNode = (function (_super) {
             this._pChildNodes[i].acceptTraverser(traverser);
         for (i = this._childMasks.length - 1; i >= 0; i--)
             this._childMasks[i].acceptTraverser(traverser);
-        if (this._pEntityNode)
-            this._pEntityNode.acceptTraverser(traverser);
     };
     /**
      *
@@ -16054,10 +16046,7 @@ var SceneGraphNode = (function (_super) {
      */
     SceneGraphNode.prototype.iAddNode = function (node) {
         node.parent = this;
-        if (!node.isSceneGraphNode) {
-            this._pEntityNode = node;
-        }
-        else if (node._displayObject.maskMode) {
+        if (node._displayObject.maskMode) {
             this._childMasks.push(node);
         }
         else {
@@ -16089,10 +16078,7 @@ var SceneGraphNode = (function (_super) {
      * @internal
      */
     SceneGraphNode.prototype.iRemoveNode = function (node) {
-        if (!node.isSceneGraphNode) {
-            this._pEntityNode = null;
-        }
-        else if (node._displayObject.maskMode) {
+        if (node._displayObject.maskMode) {
             this._childMasks.splice(this._childMasks.indexOf(node), 1);
         }
         else {

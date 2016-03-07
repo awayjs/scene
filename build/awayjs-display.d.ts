@@ -3160,6 +3160,7 @@ declare module "awayjs-display/lib/display/DisplayObjectContainer" {
 	    private _updateNextHighestDepth();
 	    _hitTestPointInternal(x: number, y: number, shapeFlag: boolean, masksFlag: boolean): boolean;
 	    _updateMaskMode(): void;
+	    private _invalidateChildren();
 	}
 	export = DisplayObjectContainer;
 	
@@ -4082,7 +4083,7 @@ declare module "awayjs-display/lib/display/Shape" {
 	    static assetType: string;
 	    private _center;
 	    private _graphics;
-	    private _onGraphicsBoundsInvalidDelegate;
+	    private _onGraphicsInvalidateDelegate;
 	    private _tempPoint;
 	    /**
 	     *
@@ -4153,7 +4154,7 @@ declare module "awayjs-display/lib/display/Shape" {
 	     *
 	     * @private
 	     */
-	    private onGraphicsBoundsInvalid(event);
+	    private _onGraphicsInvalidate(event);
 	    /**
 	     *
 	     * @param renderer
@@ -4304,7 +4305,7 @@ declare module "awayjs-display/lib/display/Sprite" {
 	    static assetType: string;
 	    private _center;
 	    _graphics: Graphics;
-	    private _onGraphicsBoundsInvalidDelegate;
+	    private _onGraphicsInvalidateDelegate;
 	    private _tempPoint;
 	    /**
 	     *
@@ -4375,7 +4376,7 @@ declare module "awayjs-display/lib/display/Sprite" {
 	     *
 	     * @private
 	     */
-	    private onGraphicsBoundsInvalid(event);
+	    private _onGraphicsInvalidate(event);
 	    /**
 	     *
 	     * @param renderer
@@ -5000,6 +5001,10 @@ declare module "awayjs-display/lib/display/TextField" {
 	     * have word wrap. The default value is <code>false</code>.
 	     */
 	    wordWrap: boolean;
+	    /**
+	     *
+	     */
+	    isEntity: boolean;
 	    /**
 	     * Creates a new TextField instance. After you create the TextField instance,
 	     * call the <code>addChild()</code> or <code>addChildAt()</code> method of
@@ -6618,29 +6623,6 @@ declare module "awayjs-display/lib/events/ElementsEvent" {
 	
 }
 
-declare module "awayjs-display/lib/events/GraphicsEvent" {
-	import EventBase = require("awayjs-core/lib/events/EventBase");
-	/**
-	* Dispatched to notify changes in a geometry object's state.
-	*
-	* @class away.events.GraphicsEvent
-	* @see away3d.core.base.Graphics
-	*/
-	class GraphicsEvent extends EventBase {
-	    /**
-	     *
-	     */
-	    static BOUNDS_INVALID: string;
-	    /**
-	     * Clones the event.
-	     * @return An exact duplicate of the current object.
-	     */
-	    clone(): GraphicsEvent;
-	}
-	export = GraphicsEvent;
-	
-}
-
 declare module "awayjs-display/lib/events/LightEvent" {
 	import EventBase = require("awayjs-core/lib/events/EventBase");
 	class LightEvent extends EventBase {
@@ -7338,7 +7320,7 @@ declare module "awayjs-display/lib/graphics/Graphics" {
 	    scaleUV(scaleU?: number, scaleV?: number): void;
 	    getBoxBounds(): Box;
 	    getSphereBounds(center: Vector3D, target?: Sphere): Sphere;
-	    private _invalidateBounds();
+	    invalidate(): void;
 	    _iInvalidateSurfaces(): void;
 	    invalidateElements(): void;
 	    _hitTestPointInternal(x: number, y: number): boolean;
@@ -8386,7 +8368,6 @@ declare module "awayjs-display/lib/partition/DisplayObjectNode" {
 	    private _bounds;
 	    _iCollectionMark: number;
 	    parent: SceneGraphNode;
-	    isContainerNode: boolean;
 	    private _boundsType;
 	    debugVisible: boolean;
 	    /**
@@ -8714,7 +8695,6 @@ declare module "awayjs-display/lib/partition/PointLightNode" {
 declare module "awayjs-display/lib/partition/SceneGraphNode" {
 	import ITraverser = require("awayjs-display/lib/ITraverser");
 	import DisplayObjectNode = require("awayjs-display/lib/partition/DisplayObjectNode");
-	import EntityNode = require("awayjs-display/lib/partition/EntityNode");
 	import IContainerNode = require("awayjs-display/lib/partition/IContainerNode");
 	/**
 	 * Maintains scenegraph heirarchy when collecting nodes
@@ -8725,7 +8705,6 @@ declare module "awayjs-display/lib/partition/SceneGraphNode" {
 	    private _childDepths;
 	    private _childMasks;
 	    _iCollectionMark: number;
-	    _pEntityNode: EntityNode;
 	    /**
 	     *
 	     * @param traverser
