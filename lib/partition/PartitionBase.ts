@@ -46,7 +46,9 @@ class PartitionBase implements IAbstractionPool
 		if (this._updatesMade)
 			this.updateEntities();
 
-		this._rootNode.acceptTraverser(traverser);
+		if (this._rootNode) {
+			this._rootNode.acceptTraverser(traverser);
+		}
 	}
 
 	public iMarkForUpdate(node:DisplayObjectNode)
