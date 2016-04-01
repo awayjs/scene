@@ -15880,7 +15880,9 @@ var PartitionBase = (function () {
     PartitionBase.prototype.traverse = function (traverser) {
         if (this._updatesMade)
             this.updateEntities();
-        this._rootNode.acceptTraverser(traverser);
+        if (this._rootNode) {
+            this._rootNode.acceptTraverser(traverser);
+        }
     };
     PartitionBase.prototype.iMarkForUpdate = function (node) {
         var t = this._updateQueue;

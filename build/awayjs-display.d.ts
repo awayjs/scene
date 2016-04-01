@@ -9,288 +9,6 @@ declare module "awayjs-display/display" {
 	
 }
 
-declare module "awayjs-display/lib/IRenderer" {
-	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
-	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
-	import ImageBase = require("awayjs-core/lib/image/ImageBase");
-	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
-	import ITraverser = require("awayjs-display/lib/ITraverser");
-	import Camera = require("awayjs-display/lib/display/Camera");
-	import Scene = require("awayjs-display/lib/display/Scene");
-	/**
-	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.IRenderer
-	 */
-	interface IRenderer extends ITraverser, IEventDispatcher {
-	    cullPlanes: Array<Plane3D>;
-	    /**
-	     *
-	     */
-	    shareContext: boolean;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    viewPort: Rectangle;
-	    /**
-	     *
-	     */
-	    scissorRect: Rectangle;
-	    /**
-	     *
-	     */
-	    dispose(): any;
-	    /**
-	     *
-	     * @param entityCollector
-	     */
-	    render(camera: Camera, scene: Scene): any;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundR: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundG: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundB: number;
-	    /**
-	     * @internal
-	     */
-	    _iBackgroundAlpha: number;
-	    _iRender(camera: Camera, scene: Scene, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
-	    _iRenderCascades(camera: Camera, scene: Scene, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
-	}
-	export = IRenderer;
-	
-}
-
-declare module "awayjs-display/lib/ITraverser" {
-	import IEntity = require("awayjs-display/lib/display/IEntity");
-	import INode = require("awayjs-display/lib/partition/INode");
-	import IRenderable = require("awayjs-display/lib/base/IRenderable");
-	/**
-	 * ITraverser is an interface for classes that are used in the rendering pipeline to render the
-	 * contents of a partition
-	 *
-	 * @class away.render.ITraverser
-	 */
-	interface ITraverser {
-	    /**
-	     *
-	     * @param node
-	     * @returns {boolean}
-	     */
-	    enterNode(node: INode): boolean;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyDirectionalLight(entity: IEntity): any;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyEntity(entity: IEntity): any;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyRenderable(renderable: IRenderable): any;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyLightProbe(entity: IEntity): any;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applyPointLight(entity: IEntity): any;
-	    /**
-	     *
-	     * @param entity
-	     */
-	    applySkybox(entity: IEntity): any;
-	}
-	export = ITraverser;
-	
-}
-
-declare module "awayjs-display/lib/View" {
-	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
-	import IRenderer = require("awayjs-display/lib/IRenderer");
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
-	import TouchPoint = require("awayjs-display/lib/base/TouchPoint");
-	import Scene = require("awayjs-display/lib/display/Scene");
-	import IPicker = require("awayjs-display/lib/pick/IPicker");
-	import Camera = require("awayjs-display/lib/display/Camera");
-	class View {
-	    _pScene: Scene;
-	    _pCamera: Camera;
-	    _pRenderer: IRenderer;
-	    private _aspectRatio;
-	    private _width;
-	    private _height;
-	    private _time;
-	    private _deltaTime;
-	    private _backgroundColor;
-	    private _backgroundAlpha;
-	    private _viewportDirty;
-	    private _scissorDirty;
-	    private _onPartitionChangedDelegate;
-	    private _onProjectionChangedDelegate;
-	    private _onViewportUpdatedDelegate;
-	    private _onScissorUpdatedDelegate;
-	    private _mouseManager;
-	    private _mousePicker;
-	    private _htmlElement;
-	    private _shareContext;
-	    _pMouseX: number;
-	    _pMouseY: number;
-	    _pTouchPoints: Array<TouchPoint>;
-	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
-	    layeredView: boolean;
-	    mouseX: number;
-	    mouseY: number;
-	    touchPoints: Array<TouchPoint>;
-	    getLocalMouseX(displayObject: DisplayObject): number;
-	    getLocalMouseY(displayObject: DisplayObject): number;
-	    getLocalTouchPoints(displayObject: DisplayObject): Array<TouchPoint>;
-	    /**
-	     *
-	     */
-	    htmlElement: HTMLDivElement;
-	    /**
-	     *
-	     */
-	    renderer: IRenderer;
-	    /**
-	     *
-	     */
-	    shareContext: boolean;
-	    /**
-	     *
-	     */
-	    backgroundColor: number;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    /**
-	     *
-	     * @param value
-	     */
-	    backgroundAlpha: number;
-	    /**
-	     *
-	     * @returns {Camera3D}
-	     */
-	    /**
-	     * Set camera that's used to render the scene for this viewport
-	     */
-	    camera: Camera;
-	    /**
-	     *
-	     * @returns {away.containers.Scene3D}
-	     */
-	    /**
-	     * Set the scene that's used to render for this viewport
-	     */
-	    scene: Scene;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    deltaTime: number;
-	    /**
-	     *
-	     */
-	    width: number;
-	    /**
-	     *
-	     */
-	    height: number;
-	    /**
-	     *
-	     */
-	    mousePicker: IPicker;
-	    /**
-	     *
-	     */
-	    x: number;
-	    /**
-	     *
-	     */
-	    y: number;
-	    /**
-	     *
-	     */
-	    visible: boolean;
-	    /**
-	     *
-	     * @returns {number}
-	     */
-	    renderedFacesCount: number;
-	    /**
-	     * Renders the view.
-	     */
-	    render(): void;
-	    /**
-	     *
-	     */
-	    pUpdateTime(): void;
-	    /**
-	     *
-	     */
-	    dispose(): void;
-	    /**
-	     *
-	     * @param e
-	     */
-	    private _onPartitionChanged(event);
-	    /**
-	     *
-	     */
-	    private _onProjectionChanged(event);
-	    /**
-	     *
-	     */
-	    private _onViewportUpdated(event);
-	    /**
-	     *
-	     */
-	    private _onScissorUpdated(event);
-	    project(point3d: Vector3D): Vector3D;
-	    unproject(sX: number, sY: number, sZ: number): Vector3D;
-	    getRay(sX: number, sY: number, sZ: number): Vector3D;
-	    forceMouseMove: boolean;
-	    updateCollider(): void;
-	}
-	export = View;
-	
-}
-
 declare module "awayjs-display/lib/adapters/IDisplayObjectAdapter" {
 	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	interface IDisplayObjectAdapter {
@@ -314,6 +32,18 @@ declare module "awayjs-display/lib/adapters/IMovieClipAdapter" {
 	    unregisterScriptObject(child: DisplayObject): void;
 	}
 	export = IMovieClipAdapter;
+	
+}
+
+declare module "awayjs-display/lib/animators/data/ParticleData" {
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+	class ParticleData {
+	    particleIndex: number;
+	    numVertices: number;
+	    startVertexIndex: number;
+	    elements: TriangleElements;
+	}
+	export = ParticleData;
 	
 }
 
@@ -399,18 +129,6 @@ declare module "awayjs-display/lib/animators/IAnimator" {
 	    removeOwner(sprite: IEntity): any;
 	}
 	export = IAnimator;
-	
-}
-
-declare module "awayjs-display/lib/animators/data/ParticleData" {
-	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
-	class ParticleData {
-	    particleIndex: number;
-	    numVertices: number;
-	    startVertexIndex: number;
-	    elements: TriangleElements;
-	}
-	export = ParticleData;
 	
 }
 
@@ -1261,23 +979,6 @@ declare module "awayjs-display/lib/controllers/FirstPersonController" {
 	
 }
 
-declare module "awayjs-display/lib/controllers/FollowController" {
-	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
-	import HoverController = require("awayjs-display/lib/controllers/HoverController");
-	/**
-	 * Controller used to follow behind an object on the XZ plane, with an optional
-	 * elevation (tiltAngle).
-	 *
-	 * @see    away3d.containers.View3D
-	 */
-	class FollowController extends HoverController {
-	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
-	    update(interpolate?: boolean): void;
-	}
-	export = FollowController;
-	
-}
-
 declare module "awayjs-display/lib/controllers/HoverController" {
 	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
 	import LookAtController = require("awayjs-display/lib/controllers/LookAtController");
@@ -1373,6 +1074,23 @@ declare module "awayjs-display/lib/controllers/HoverController" {
 	    update(interpolate?: boolean): void;
 	}
 	export = HoverController;
+	
+}
+
+declare module "awayjs-display/lib/controllers/FollowController" {
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import HoverController = require("awayjs-display/lib/controllers/HoverController");
+	/**
+	 * Controller used to follow behind an object on the XZ plane, with an optional
+	 * elevation (tiltAngle).
+	 *
+	 * @see    away3d.containers.View3D
+	 */
+	class FollowController extends HoverController {
+	    constructor(targetObject?: DisplayObject, lookAtObject?: DisplayObject, tiltAngle?: number, distance?: number);
+	    update(interpolate?: boolean): void;
+	}
+	export = FollowController;
 	
 }
 
@@ -3166,6 +2884,49 @@ declare module "awayjs-display/lib/display/DisplayObjectContainer" {
 	
 }
 
+declare module "awayjs-display/lib/display/LightBase" {
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+	class LightBase extends DisplayObjectContainer {
+	    private _color;
+	    private _colorR;
+	    private _colorG;
+	    private _colorB;
+	    private _ambientColor;
+	    private _ambient;
+	    _iAmbientR: number;
+	    _iAmbientG: number;
+	    _iAmbientB: number;
+	    private _specular;
+	    _iSpecularR: number;
+	    _iSpecularG: number;
+	    _iSpecularB: number;
+	    private _diffuse;
+	    _iDiffuseR: number;
+	    _iDiffuseG: number;
+	    _iDiffuseB: number;
+	    private _shadowsEnabled;
+	    private _shadowMapper;
+	    constructor();
+	    shadowsEnabled: boolean;
+	    pCreateShadowMapper(): ShadowMapperBase;
+	    specular: number;
+	    diffuse: number;
+	    color: number;
+	    ambient: number;
+	    ambientColor: number;
+	    private updateAmbient();
+	    iGetObjectProjectionMatrix(entity: IEntity, cameraTransform: Matrix3D, target?: Matrix3D): Matrix3D;
+	    private updateSpecular();
+	    private updateDiffuse();
+	    shadowMapper: ShadowMapperBase;
+	}
+	export = LightBase;
+	
+}
+
 declare module "awayjs-display/lib/display/IEntity" {
 	import Box = require("awayjs-core/lib/geom/Box");
 	import ColorTransform = require("awayjs-core/lib/geom/ColorTransform");
@@ -3298,69 +3059,6 @@ declare module "awayjs-display/lib/display/IEntity" {
 	
 }
 
-declare module "awayjs-display/lib/display/LightBase" {
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import DisplayObjectContainer = require("awayjs-display/lib/display/DisplayObjectContainer");
-	import IEntity = require("awayjs-display/lib/display/IEntity");
-	import ShadowMapperBase = require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-	class LightBase extends DisplayObjectContainer {
-	    private _color;
-	    private _colorR;
-	    private _colorG;
-	    private _colorB;
-	    private _ambientColor;
-	    private _ambient;
-	    _iAmbientR: number;
-	    _iAmbientG: number;
-	    _iAmbientB: number;
-	    private _specular;
-	    _iSpecularR: number;
-	    _iSpecularG: number;
-	    _iSpecularB: number;
-	    private _diffuse;
-	    _iDiffuseR: number;
-	    _iDiffuseG: number;
-	    _iDiffuseB: number;
-	    private _shadowsEnabled;
-	    private _shadowMapper;
-	    constructor();
-	    shadowsEnabled: boolean;
-	    pCreateShadowMapper(): ShadowMapperBase;
-	    specular: number;
-	    diffuse: number;
-	    color: number;
-	    ambient: number;
-	    ambientColor: number;
-	    private updateAmbient();
-	    iGetObjectProjectionMatrix(entity: IEntity, cameraTransform: Matrix3D, target?: Matrix3D): Matrix3D;
-	    private updateSpecular();
-	    private updateDiffuse();
-	    shadowMapper: ShadowMapperBase;
-	}
-	export = LightBase;
-	
-}
-
-declare module "awayjs-display/lib/display/LightProbe" {
-	import ImageCube = require("awayjs-core/lib/image/ImageCube");
-	import SamplerCube = require("awayjs-core/lib/image/SamplerCube");
-	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
-	import LightBase = require("awayjs-display/lib/display/LightBase");
-	import IEntity = require("awayjs-display/lib/display/IEntity");
-	class LightProbe extends LightBase implements IEntity {
-	    static assetType: string;
-	    diffuseMap: ImageCube;
-	    diffuseSampler: SamplerCube;
-	    specularMap: ImageCube;
-	    specularSampler: SamplerCube;
-	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
-	    assetType: string;
-	    iGetObjectProjectionMatrix(entity: IEntity, cameraTransform: Matrix3D, target?: Matrix3D): Matrix3D;
-	}
-	export = LightProbe;
-	
-}
-
 declare module "awayjs-display/lib/display/LineSegment" {
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
 	import ITraverser = require("awayjs-display/lib/ITraverser");
@@ -3445,6 +3143,26 @@ declare module "awayjs-display/lib/display/LineSegment" {
 	    _acceptTraverser(traverser: ITraverser): void;
 	}
 	export = LineSegment;
+	
+}
+
+declare module "awayjs-display/lib/display/LightProbe" {
+	import ImageCube = require("awayjs-core/lib/image/ImageCube");
+	import SamplerCube = require("awayjs-core/lib/image/SamplerCube");
+	import Matrix3D = require("awayjs-core/lib/geom/Matrix3D");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	class LightProbe extends LightBase implements IEntity {
+	    static assetType: string;
+	    diffuseMap: ImageCube;
+	    diffuseSampler: SamplerCube;
+	    specularMap: ImageCube;
+	    specularSampler: SamplerCube;
+	    constructor(diffuseMap: ImageCube, specularMap?: ImageCube);
+	    assetType: string;
+	    iGetObjectProjectionMatrix(entity: IEntity, cameraTransform: Matrix3D, target?: Matrix3D): Matrix3D;
+	}
+	export = LightProbe;
 	
 }
 
@@ -7584,6 +7302,134 @@ declare module "awayjs-display/lib/graphics/TriangleElements" {
 	
 }
 
+declare module "awayjs-display/lib/IRenderer" {
+	import IEventDispatcher = require("awayjs-core/lib/events/IEventDispatcher");
+	import Plane3D = require("awayjs-core/lib/geom/Plane3D");
+	import ImageBase = require("awayjs-core/lib/image/ImageBase");
+	import Rectangle = require("awayjs-core/lib/geom/Rectangle");
+	import ITraverser = require("awayjs-display/lib/ITraverser");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	/**
+	 * IRenderer is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.IRenderer
+	 */
+	interface IRenderer extends ITraverser, IEventDispatcher {
+	    cullPlanes: Array<Plane3D>;
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    viewPort: Rectangle;
+	    /**
+	     *
+	     */
+	    scissorRect: Rectangle;
+	    /**
+	     *
+	     */
+	    dispose(): any;
+	    /**
+	     *
+	     * @param entityCollector
+	     */
+	    render(camera: Camera, scene: Scene): any;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundR: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundG: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundB: number;
+	    /**
+	     * @internal
+	     */
+	    _iBackgroundAlpha: number;
+	    _iRender(camera: Camera, scene: Scene, target?: ImageBase, scissorRect?: Rectangle, surfaceSelector?: number): any;
+	    _iRenderCascades(camera: Camera, scene: Scene, target: ImageBase, numCascades: number, scissorRects: Array<Rectangle>, cameras: Array<Camera>): any;
+	}
+	export = IRenderer;
+	
+}
+
+declare module "awayjs-display/lib/ITraverser" {
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import INode = require("awayjs-display/lib/partition/INode");
+	import IRenderable = require("awayjs-display/lib/base/IRenderable");
+	/**
+	 * ITraverser is an interface for classes that are used in the rendering pipeline to render the
+	 * contents of a partition
+	 *
+	 * @class away.render.ITraverser
+	 */
+	interface ITraverser {
+	    /**
+	     *
+	     * @param node
+	     * @returns {boolean}
+	     */
+	    enterNode(node: INode): boolean;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyDirectionalLight(entity: IEntity): any;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyEntity(entity: IEntity): any;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyRenderable(renderable: IRenderable): any;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyLightProbe(entity: IEntity): any;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applyPointLight(entity: IEntity): any;
+	    /**
+	     *
+	     * @param entity
+	     */
+	    applySkybox(entity: IEntity): any;
+	}
+	export = ITraverser;
+	
+}
+
 declare module "awayjs-display/lib/managers/DefaultMaterialManager" {
 	import Sampler2D = require("awayjs-core/lib/image/Sampler2D");
 	import BitmapImage2D = require("awayjs-core/lib/image/BitmapImage2D");
@@ -7774,6 +7620,148 @@ declare module "awayjs-display/lib/materials/BasicMaterial" {
 	    texture: TextureBase;
 	}
 	export = BasicMaterial;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
+	import AssetBase = require("awayjs-core/lib/library/AssetBase");
+	import IEntity = require("awayjs-display/lib/display/IEntity");
+	import LightBase = require("awayjs-display/lib/display/LightBase");
+	import DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
+	import LightProbe = require("awayjs-display/lib/display/LightProbe");
+	import PointLight = require("awayjs-display/lib/display/PointLight");
+	/**
+	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
+	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
+	 * extended to provide more application-specific dynamic selection of lights.
+	 *
+	 * @see StaticLightPicker
+	 */
+	class LightPickerBase extends AssetBase {
+	    static assetType: string;
+	    _pNumPointLights: number;
+	    _pNumDirectionalLights: number;
+	    _pNumCastingPointLights: number;
+	    _pNumCastingDirectionalLights: number;
+	    _pNumLightProbes: number;
+	    _pAllPickedLights: Array<LightBase>;
+	    _pPointLights: Array<PointLight>;
+	    _pCastingPointLights: Array<PointLight>;
+	    _pDirectionalLights: Array<DirectionalLight>;
+	    _pCastingDirectionalLights: Array<DirectionalLight>;
+	    _pLightProbes: Array<LightProbe>;
+	    _pLightProbeWeights: Array<number>;
+	    /**
+	     * Creates a new LightPickerBase object.
+	     */
+	    constructor();
+	    /**
+	     * Disposes resources used by the light picker.
+	     */
+	    dispose(): void;
+	    /**
+	     * @inheritDoc
+	     */
+	    assetType: string;
+	    /**
+	     * The maximum amount of directional lights that will be provided.
+	     */
+	    numDirectionalLights: number;
+	    /**
+	     * The maximum amount of point lights that will be provided.
+	     */
+	    numPointLights: number;
+	    /**
+	     * The maximum amount of directional lights that cast shadows.
+	     */
+	    numCastingDirectionalLights: number;
+	    /**
+	     * The amount of point lights that cast shadows.
+	     */
+	    numCastingPointLights: number;
+	    /**
+	     * The maximum amount of light probes that will be provided.
+	     */
+	    numLightProbes: number;
+	    /**
+	     * The collected point lights to be used for shading.
+	     */
+	    pointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights to be used for shading.
+	     */
+	    directionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected point lights that cast shadows to be used for shading.
+	     */
+	    castingPointLights: Array<PointLight>;
+	    /**
+	     * The collected directional lights that cast shadows to be used for shading.
+	     */
+	    castingDirectionalLights: Array<DirectionalLight>;
+	    /**
+	     * The collected light probes to be used for shading.
+	     */
+	    lightProbes: Array<LightProbe>;
+	    /**
+	     * The weights for each light probe, defining their influence on the object.
+	     */
+	    lightProbeWeights: Array<number>;
+	    /**
+	     * A collection of all the collected lights.
+	     */
+	    allPickedLights: Array<LightBase>;
+	    /**
+	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
+	     */
+	    collectLights(entity: IEntity): void;
+	    /**
+	     * Updates the weights for the light probes, based on the renderable's position relative to them.
+	     * @param renderable The renderble for which to calculate the light probes' influence.
+	     */
+	    private updateProbeWeights(entity);
+	}
+	export = LightPickerBase;
+	
+}
+
+declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
+	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
+	/**
+	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
+	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
+	 * occur.
+	 */
+	class StaticLightPicker extends LightPickerBase {
+	    private _lights;
+	    private _onCastShadowChangeDelegate;
+	    /**
+	     * Creates a new StaticLightPicker object.
+	     * @param lights The lights to be used for shading.
+	     */
+	    constructor(lights: any);
+	    /**
+	     * The lights used for shading.
+	     */
+	    lights: Array<any>;
+	    /**
+	     * Remove configuration change listeners on the lights.
+	     */
+	    private clearListeners();
+	    /**
+	     * Notifies the material of a configuration change.
+	     */
+	    private onCastShadowChange(event);
+	    /**
+	     * Called when a directional light's shadow casting configuration changes.
+	     */
+	    private updateDirectionalCasting(light);
+	    /**
+	     * Called when a point light's shadow casting configuration changes.
+	     */
+	    private updatePointCasting(light);
+	}
+	export = StaticLightPicker;
 	
 }
 
@@ -8010,148 +7998,6 @@ declare module "awayjs-display/lib/materials/MaterialBase" {
 	    private _onInvalidateProperties(event);
 	}
 	export = MaterialBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/LightPickerBase" {
-	import AssetBase = require("awayjs-core/lib/library/AssetBase");
-	import IEntity = require("awayjs-display/lib/display/IEntity");
-	import LightBase = require("awayjs-display/lib/display/LightBase");
-	import DirectionalLight = require("awayjs-display/lib/display/DirectionalLight");
-	import LightProbe = require("awayjs-display/lib/display/LightProbe");
-	import PointLight = require("awayjs-display/lib/display/PointLight");
-	/**
-	 * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
-	 * feeding materials with relevant lights. Usually, StaticLightPicker can be used, but LightPickerBase can be
-	 * extended to provide more application-specific dynamic selection of lights.
-	 *
-	 * @see StaticLightPicker
-	 */
-	class LightPickerBase extends AssetBase {
-	    static assetType: string;
-	    _pNumPointLights: number;
-	    _pNumDirectionalLights: number;
-	    _pNumCastingPointLights: number;
-	    _pNumCastingDirectionalLights: number;
-	    _pNumLightProbes: number;
-	    _pAllPickedLights: Array<LightBase>;
-	    _pPointLights: Array<PointLight>;
-	    _pCastingPointLights: Array<PointLight>;
-	    _pDirectionalLights: Array<DirectionalLight>;
-	    _pCastingDirectionalLights: Array<DirectionalLight>;
-	    _pLightProbes: Array<LightProbe>;
-	    _pLightProbeWeights: Array<number>;
-	    /**
-	     * Creates a new LightPickerBase object.
-	     */
-	    constructor();
-	    /**
-	     * Disposes resources used by the light picker.
-	     */
-	    dispose(): void;
-	    /**
-	     * @inheritDoc
-	     */
-	    assetType: string;
-	    /**
-	     * The maximum amount of directional lights that will be provided.
-	     */
-	    numDirectionalLights: number;
-	    /**
-	     * The maximum amount of point lights that will be provided.
-	     */
-	    numPointLights: number;
-	    /**
-	     * The maximum amount of directional lights that cast shadows.
-	     */
-	    numCastingDirectionalLights: number;
-	    /**
-	     * The amount of point lights that cast shadows.
-	     */
-	    numCastingPointLights: number;
-	    /**
-	     * The maximum amount of light probes that will be provided.
-	     */
-	    numLightProbes: number;
-	    /**
-	     * The collected point lights to be used for shading.
-	     */
-	    pointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights to be used for shading.
-	     */
-	    directionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected point lights that cast shadows to be used for shading.
-	     */
-	    castingPointLights: Array<PointLight>;
-	    /**
-	     * The collected directional lights that cast shadows to be used for shading.
-	     */
-	    castingDirectionalLights: Array<DirectionalLight>;
-	    /**
-	     * The collected light probes to be used for shading.
-	     */
-	    lightProbes: Array<LightProbe>;
-	    /**
-	     * The weights for each light probe, defining their influence on the object.
-	     */
-	    lightProbeWeights: Array<number>;
-	    /**
-	     * A collection of all the collected lights.
-	     */
-	    allPickedLights: Array<LightBase>;
-	    /**
-	     * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
-	     */
-	    collectLights(entity: IEntity): void;
-	    /**
-	     * Updates the weights for the light probes, based on the renderable's position relative to them.
-	     * @param renderable The renderble for which to calculate the light probes' influence.
-	     */
-	    private updateProbeWeights(entity);
-	}
-	export = LightPickerBase;
-	
-}
-
-declare module "awayjs-display/lib/materials/lightpickers/StaticLightPicker" {
-	import LightPickerBase = require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-	/**
-	 * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
-	 * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
-	 * occur.
-	 */
-	class StaticLightPicker extends LightPickerBase {
-	    private _lights;
-	    private _onCastShadowChangeDelegate;
-	    /**
-	     * Creates a new StaticLightPicker object.
-	     * @param lights The lights to be used for shading.
-	     */
-	    constructor(lights: any);
-	    /**
-	     * The lights used for shading.
-	     */
-	    lights: Array<any>;
-	    /**
-	     * Remove configuration change listeners on the lights.
-	     */
-	    private clearListeners();
-	    /**
-	     * Notifies the material of a configuration change.
-	     */
-	    private onCastShadowChange(event);
-	    /**
-	     * Called when a directional light's shadow casting configuration changes.
-	     */
-	    private updateDirectionalCasting(light);
-	    /**
-	     * Called when a point light's shadow casting configuration changes.
-	     */
-	    private updatePointCasting(light);
-	}
-	export = StaticLightPicker;
 	
 }
 
@@ -8825,108 +8671,6 @@ declare module "awayjs-display/lib/pick/IPicker" {
 	
 }
 
-declare module "awayjs-display/lib/pick/IPickingCollider" {
-	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
-	import Billboard = require("awayjs-display/lib/display/Billboard");
-	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
-	import LineElements = require("awayjs-display/lib/graphics/LineElements");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
-	 * Used with the <code>RaycastPicker</code> picking object.
-	 *
-	 * @see away.entities.Entity#pickingCollider
-	 * @see away.pick.RaycastPicker
-	 *
-	 * @interface away.pick.IPickingCollider
-	 */
-	interface IPickingCollider {
-	    /**
-	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
-	     *
-	     * @param billboard
-	     * @param material
-	     * @param pickingCollision
-	     * @param shortestCollisionDistance
-	     */
-	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollision: PickingCollision): boolean;
-	    /**
-	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
-	     *
-	     * @param triangleElements
-	     * @param material
-	     * @param pickingCollision
-	     * @param shortestCollisionDistance
-	     */
-	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
-	    /**
-	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
-	     *
-	     * @param lineElements
-	     * @param material
-	     * @param pickingCollision
-	     * @param shortestCollisionDistance
-	     */
-	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
-	}
-	export = IPickingCollider;
-	
-}
-
-declare module "awayjs-display/lib/pick/JSPickingCollider" {
-	import LineElements = require("awayjs-display/lib/graphics/LineElements");
-	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
-	import Billboard = require("awayjs-display/lib/display/Billboard");
-	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
-	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
-	/**
-	 * Pure JS picking collider for display objects. Used with the <code>RaycastPicker</code> picking object.
-	 *
-	 * @see away.base.DisplayObject#pickingCollider
-	 * @see away.pick.RaycastPicker
-	 *
-	 * @class away.pick.JSPickingCollider
-	 */
-	class JSPickingCollider implements IPickingCollider {
-	    private _findClosestCollision;
-	    /**
-	     * Creates a new <code>JSPickingCollider</code> object.
-	     *
-	     * @param findClosestCollision Determines whether the picking collider searches for the closest collision along the ray. Defaults to false.
-	     */
-	    constructor(findClosestCollision?: boolean);
-	    /**
-	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
-	     *
-	     * @param billboard The billboard instance to be tested.
-	     * @param pickingCollision The collision object used to store the collision results
-	     * @param findClosest
-	     */
-	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollision: PickingCollision): boolean;
-	    /**
-	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
-	     *
-	     * @param triangleElements
-	     * @param material
-	     * @param pickingCollision
-	     * @returns {boolean}
-	     */
-	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
-	    /**
-	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
-	     *
-	     * @param triangleElements
-	     * @param material
-	     * @param pickingCollision
-	     * @returns {boolean}
-	     */
-	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
-	}
-	export = JSPickingCollider;
-	
-}
-
 declare module "awayjs-display/lib/pick/PickingCollision" {
 	import Point = require("awayjs-core/lib/geom/Point");
 	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
@@ -8997,6 +8741,60 @@ declare module "awayjs-display/lib/pick/PickingCollision" {
 	    constructor(entity: IEntity);
 	}
 	export = PickingCollision;
+	
+}
+
+declare module "awayjs-display/lib/pick/JSPickingCollider" {
+	import LineElements = require("awayjs-display/lib/graphics/LineElements");
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+	import Billboard = require("awayjs-display/lib/display/Billboard");
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
+	import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * Pure JS picking collider for display objects. Used with the <code>RaycastPicker</code> picking object.
+	 *
+	 * @see away.base.DisplayObject#pickingCollider
+	 * @see away.pick.RaycastPicker
+	 *
+	 * @class away.pick.JSPickingCollider
+	 */
+	class JSPickingCollider implements IPickingCollider {
+	    private _findClosestCollision;
+	    /**
+	     * Creates a new <code>JSPickingCollider</code> object.
+	     *
+	     * @param findClosestCollision Determines whether the picking collider searches for the closest collision along the ray. Defaults to false.
+	     */
+	    constructor(findClosestCollision?: boolean);
+	    /**
+	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
+	     *
+	     * @param billboard The billboard instance to be tested.
+	     * @param pickingCollision The collision object used to store the collision results
+	     * @param findClosest
+	     */
+	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollision: PickingCollision): boolean;
+	    /**
+	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
+	     *
+	     * @param triangleElements
+	     * @param material
+	     * @param pickingCollision
+	     * @returns {boolean}
+	     */
+	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
+	    /**
+	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
+	     *
+	     * @param triangleElements
+	     * @param material
+	     * @param pickingCollision
+	     * @returns {boolean}
+	     */
+	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
+	}
+	export = JSPickingCollider;
 	
 }
 
@@ -9093,6 +8891,54 @@ declare module "awayjs-display/lib/pick/RaycastPicker" {
 	    applySkybox(entity: IEntity): void;
 	}
 	export = RaycastPicker;
+	
+}
+
+declare module "awayjs-display/lib/pick/IPickingCollider" {
+	import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
+	import Billboard = require("awayjs-display/lib/display/Billboard");
+	import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
+	import LineElements = require("awayjs-display/lib/graphics/LineElements");
+	import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+	/**
+	 * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
+	 * Used with the <code>RaycastPicker</code> picking object.
+	 *
+	 * @see away.entities.Entity#pickingCollider
+	 * @see away.pick.RaycastPicker
+	 *
+	 * @interface away.pick.IPickingCollider
+	 */
+	interface IPickingCollider {
+	    /**
+	     * Tests a <code>Billboard</code> object for a collision with the picking ray.
+	     *
+	     * @param billboard
+	     * @param material
+	     * @param pickingCollision
+	     * @param shortestCollisionDistance
+	     */
+	    testBillboardCollision(billboard: Billboard, material: MaterialBase, pickingCollision: PickingCollision): boolean;
+	    /**
+	     * Tests a <code>TriangleElements</code> object for a collision with the picking ray.
+	     *
+	     * @param triangleElements
+	     * @param material
+	     * @param pickingCollision
+	     * @param shortestCollisionDistance
+	     */
+	    testTriangleCollision(triangleElements: TriangleElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
+	    /**
+	     * Tests a <code>LineElements</code> object for a collision with the picking ray.
+	     *
+	     * @param lineElements
+	     * @param material
+	     * @param pickingCollision
+	     * @param shortestCollisionDistance
+	     */
+	    testLineCollision(lineElements: LineElements, material: MaterialBase, pickingCollision: PickingCollision): boolean;
+	}
+	export = IPickingCollider;
 	
 }
 
@@ -10410,6 +10256,160 @@ declare module "awayjs-display/lib/utils/ElementsUtils" {
 	    static getTriangleGraphicsSphereBounds(positionAttributes: AttributesView, center: Vector3D, output: Sphere, count: number, offset?: number): Sphere;
 	}
 	export = ElementsUtils;
+	
+}
+
+declare module "awayjs-display/lib/View" {
+	import Vector3D = require("awayjs-core/lib/geom/Vector3D");
+	import IRenderer = require("awayjs-display/lib/IRenderer");
+	import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+	import TouchPoint = require("awayjs-display/lib/base/TouchPoint");
+	import Scene = require("awayjs-display/lib/display/Scene");
+	import IPicker = require("awayjs-display/lib/pick/IPicker");
+	import Camera = require("awayjs-display/lib/display/Camera");
+	class View {
+	    _pScene: Scene;
+	    _pCamera: Camera;
+	    _pRenderer: IRenderer;
+	    private _aspectRatio;
+	    private _width;
+	    private _height;
+	    private _time;
+	    private _deltaTime;
+	    private _backgroundColor;
+	    private _backgroundAlpha;
+	    private _viewportDirty;
+	    private _scissorDirty;
+	    private _onPartitionChangedDelegate;
+	    private _onProjectionChangedDelegate;
+	    private _onViewportUpdatedDelegate;
+	    private _onScissorUpdatedDelegate;
+	    private _mouseManager;
+	    private _mousePicker;
+	    private _htmlElement;
+	    private _shareContext;
+	    _pMouseX: number;
+	    _pMouseY: number;
+	    _pTouchPoints: Array<TouchPoint>;
+	    constructor(renderer: IRenderer, scene?: Scene, camera?: Camera);
+	    layeredView: boolean;
+	    mouseX: number;
+	    mouseY: number;
+	    touchPoints: Array<TouchPoint>;
+	    getLocalMouseX(displayObject: DisplayObject): number;
+	    getLocalMouseY(displayObject: DisplayObject): number;
+	    getLocalTouchPoints(displayObject: DisplayObject): Array<TouchPoint>;
+	    /**
+	     *
+	     */
+	    htmlElement: HTMLDivElement;
+	    /**
+	     *
+	     */
+	    renderer: IRenderer;
+	    /**
+	     *
+	     */
+	    shareContext: boolean;
+	    /**
+	     *
+	     */
+	    backgroundColor: number;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    /**
+	     *
+	     * @param value
+	     */
+	    backgroundAlpha: number;
+	    /**
+	     *
+	     * @returns {Camera3D}
+	     */
+	    /**
+	     * Set camera that's used to render the scene for this viewport
+	     */
+	    camera: Camera;
+	    /**
+	     *
+	     * @returns {away.containers.Scene3D}
+	     */
+	    /**
+	     * Set the scene that's used to render for this viewport
+	     */
+	    scene: Scene;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    deltaTime: number;
+	    /**
+	     *
+	     */
+	    width: number;
+	    /**
+	     *
+	     */
+	    height: number;
+	    /**
+	     *
+	     */
+	    mousePicker: IPicker;
+	    /**
+	     *
+	     */
+	    x: number;
+	    /**
+	     *
+	     */
+	    y: number;
+	    /**
+	     *
+	     */
+	    visible: boolean;
+	    /**
+	     *
+	     * @returns {number}
+	     */
+	    renderedFacesCount: number;
+	    /**
+	     * Renders the view.
+	     */
+	    render(): void;
+	    /**
+	     *
+	     */
+	    pUpdateTime(): void;
+	    /**
+	     *
+	     */
+	    dispose(): void;
+	    /**
+	     *
+	     * @param e
+	     */
+	    private _onPartitionChanged(event);
+	    /**
+	     *
+	     */
+	    private _onProjectionChanged(event);
+	    /**
+	     *
+	     */
+	    private _onViewportUpdated(event);
+	    /**
+	     *
+	     */
+	    private _onScissorUpdated(event);
+	    project(point3d: Vector3D): Vector3D;
+	    unproject(sX: number, sY: number, sZ: number): Vector3D;
+	    getRay(sX: number, sY: number, sZ: number): Vector3D;
+	    forceMouseMove: boolean;
+	    updateCollider(): void;
+	}
+	export = View;
 	
 }
 
