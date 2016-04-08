@@ -1,32 +1,32 @@
-import AttributesBuffer				= require("awayjs-core/lib/attributes/AttributesBuffer");
-import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
-import Float2Attributes				= require("awayjs-core/lib/attributes/Float2Attributes");
-import Byte4Attributes				= require("awayjs-core/lib/attributes/Byte4Attributes");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
+import AttributesBuffer				from "awayjs-core/lib/attributes/AttributesBuffer";
+import AttributesView				from "awayjs-core/lib/attributes/AttributesView";
+import Float2Attributes				from "awayjs-core/lib/attributes/Float2Attributes";
+import Byte4Attributes				from "awayjs-core/lib/attributes/Byte4Attributes";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Matrix						from "awayjs-core/lib/geom/Matrix";
+import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
+import Rectangle					from "awayjs-core/lib/geom/Rectangle";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
 
-import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
-import Style 						= require("awayjs-display/lib/base/Style");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import AntiAliasType				= require("awayjs-display/lib/text/AntiAliasType");
-import GridFitType					= require("awayjs-display/lib/text/GridFitType");
-import TextFieldAutoSize			= require("awayjs-display/lib/text/TextFieldAutoSize");
-import TextFieldType				= require("awayjs-display/lib/text/TextFieldType");
-import TextFormat					= require("awayjs-display/lib/text/TextFormat");
-import TextInteractionMode			= require("awayjs-display/lib/text/TextInteractionMode");
-import TextLineMetrics				= require("awayjs-display/lib/text/TextLineMetrics");
-import Sprite						= require("awayjs-display/lib/display/Sprite");
-import Graphics						= require("awayjs-display/lib/graphics/Graphics");
-import Graphic						= require("awayjs-display/lib/graphics/Graphic");
-import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
-import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
-import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
-import TextFormatAlign				= require("awayjs-display/lib/text/TextFormatAlign");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
+import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
+import Style 						from "awayjs-display/lib/base/Style";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import AntiAliasType				from "awayjs-display/lib/text/AntiAliasType";
+import GridFitType					from "awayjs-display/lib/text/GridFitType";
+import TextFieldAutoSize			from "awayjs-display/lib/text/TextFieldAutoSize";
+import TextFieldType				from "awayjs-display/lib/text/TextFieldType";
+import TextFormat					from "awayjs-display/lib/text/TextFormat";
+import TextInteractionMode			from "awayjs-display/lib/text/TextInteractionMode";
+import TextLineMetrics				from "awayjs-display/lib/text/TextLineMetrics";
+import Sprite						from "awayjs-display/lib/display/Sprite";
+import Graphics						from "awayjs-display/lib/graphics/Graphics";
+import Graphic						from "awayjs-display/lib/graphics/Graphic";
+import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
+import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
+import TesselatedFontChar			from "awayjs-display/lib/text/TesselatedFontChar";
+import TextFormatAlign				from "awayjs-display/lib/text/TextFormatAlign";
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -1427,4 +1427,4 @@ class TextField extends Sprite
 	}
 }
 
-export = TextField;
+export default TextField;

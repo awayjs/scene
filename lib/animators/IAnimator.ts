@@ -1,8 +1,8 @@
-import IAsset					= require("awayjs-core/lib/library/IAsset");
+import IAsset					from "awayjs-core/lib/library/IAsset";
 
-import IAnimationSet			= require("awayjs-display/lib/animators/IAnimationSet");
-import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
-import IEntity					= require("awayjs-display/lib/display/IEntity");
+import IAnimationSet			from "awayjs-display/lib/animators/IAnimationSet";
+import ElementsBase				from "awayjs-display/lib/graphics/ElementsBase";
+import IEntity					from "awayjs-display/lib/display/IEntity";
 
 /**
  * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.
@@ -41,4 +41,4 @@ interface IAnimator extends IAsset
 	removeOwner(sprite:IEntity);
 }
 
-export = IAnimator;
+export default IAnimator;

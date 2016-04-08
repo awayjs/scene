@@ -1,7 +1,6 @@
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import INode						= require("awayjs-display/lib/partition/INode");
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import Scene						= require("awayjs-display/lib/display/Scene");
+import IEntity						from "./display/IEntity";
+import INode						from "./partition/INode";
+import IRenderable					from "./base/IRenderable";
 
 /**
  * ITraverser is an interface for classes that are used in the rendering pipeline to render the
@@ -55,4 +54,4 @@ interface ITraverser
 	applySkybox(entity:IEntity);
 }
 
-export = ITraverser;
+export default ITraverser;

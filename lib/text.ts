@@ -1,0 +1,11 @@
+export {default as AntiAliasType}					from "awayjs-display/lib/text/AntiAliasType";
+export {default as Font}							from "awayjs-display/lib/text/Font";
+export {default as GridFitType}						from "awayjs-display/lib/text/GridFitType";
+export {default as TesselatedFontChar}				from "awayjs-display/lib/text/TesselatedFontChar";
+export {default as TesselatedFontTable}				from "awayjs-display/lib/text/TesselatedFontTable";
+export {default as TextFieldAutoSize}				from "awayjs-display/lib/text/TextFieldAutoSize";
+export {default as TextFieldType}					from "awayjs-display/lib/text/TextFieldType";
+export {default as TextFormat}						from "awayjs-display/lib/text/TextFormat";
+export {default as TextFormatAlign}					from "awayjs-display/lib/text/TextFormatAlign";
+export {default as TextInteractionMode}				from "awayjs-display/lib/text/TextInteractionMode";
+export {default as TextLineMetrics}					from "awayjs-display/lib/text/TextLineMetrics";

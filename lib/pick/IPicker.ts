@@ -1,8 +1,8 @@
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import Scene						= require("awayjs-display/lib/display/Scene");
-import View							= require("awayjs-display/lib/View");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
+import Scene						from "awayjs-display/lib/display/Scene";
+import View							from "awayjs-display/lib/View";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
 
 /**
  * Provides an interface for picking objects that can pick 3d objects from a view or scene.
@@ -40,4 +40,4 @@ interface IPicker
 	dispose();
 }
 
-export = IPicker;
+export default IPicker;

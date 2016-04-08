@@ -1,13 +1,13 @@
-import Box							= require("awayjs-core/lib/geom/Box");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Box							from "awayjs-core/lib/geom/Box";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import LightBase					= require("awayjs-display/lib/display/LightBase");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import CubeMapShadowMapper			= require("awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper");
+import LightBase					from "awayjs-display/lib/display/LightBase";
+import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
+import Camera						from "awayjs-display/lib/display/Camera";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import CubeMapShadowMapper			from "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper";
 
 class PointLight extends LightBase implements IEntity
 {
@@ -131,4 +131,4 @@ class PointLight extends LightBase implements IEntity
 	}
 }
 
-export = PointLight;
+export default PointLight;

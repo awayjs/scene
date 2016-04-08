@@ -1,8 +1,8 @@
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
+import Vector3D					from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
-import ControllerBase			= require("awayjs-display/lib/controllers/ControllerBase");
-import DisplayObjectEvent		= require("awayjs-display/lib/events/DisplayObjectEvent");
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
+import ControllerBase			from "awayjs-display/lib/controllers/ControllerBase";
+import DisplayObjectEvent		from "awayjs-display/lib/events/DisplayObjectEvent";
 
 class LookAtController extends ControllerBase
 {
@@ -81,4 +81,4 @@ class LookAtController extends ControllerBase
 	}
 }
 
-export = LookAtController;
+export default LookAtController;

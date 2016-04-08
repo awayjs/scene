@@ -1,6 +1,6 @@
-import GraphicsPathWinding		= require("awayjs-display/lib/draw/GraphicsPathWinding");
-import GraphicsPathCommand		= require("awayjs-display/lib/draw/GraphicsPathCommand");
-import Point					= require("awayjs-core/lib/geom/Point");
+import GraphicsPathWinding		from "awayjs-display/lib/draw/GraphicsPathWinding";
+import GraphicsPathCommand		from "awayjs-display/lib/draw/GraphicsPathCommand";
+import Point					from "awayjs-core/lib/geom/Point";
 /**
 
  * Defines the values to use for specifying path-drawing commands.
@@ -212,4 +212,4 @@ class GraphicsPath
 
 }
 
-export = GraphicsPath;
+export default GraphicsPath;

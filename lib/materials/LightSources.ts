@@ -30,4 +30,4 @@ class LightSources
 	public static ALL:number = 0x03;
 }
 
-export = LightSources;
+export default LightSources;

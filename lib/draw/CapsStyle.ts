@@ -26,4 +26,4 @@ class CapsStyle
 	public static SQUARE:string = "square";
 }
 
-export = CapsStyle;
+export default CapsStyle;

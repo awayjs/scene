@@ -1,12 +1,11 @@
-import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
-import Point							= require("awayjs-core/lib/geom/Point");
-import LineElements						= require("awayjs-display/lib/graphics/LineElements");
-import TriangleElements					= require("awayjs-display/lib/graphics/TriangleElements");
-import Billboard						= require("awayjs-display/lib/display/Billboard");
-import PickingCollision					= require("awayjs-display/lib/pick/PickingCollision");
-import IPickingCollider					= require("awayjs-display/lib/pick/IPickingCollider");
-import MaterialBase						= require("awayjs-display/lib/materials/MaterialBase");
-import AttributesView = require("awayjs-core/lib/attributes/AttributesView");
+import Vector3D							from "awayjs-core/lib/geom/Vector3D";
+import Point							from "awayjs-core/lib/geom/Point";
+import LineElements						from "awayjs-display/lib/graphics/LineElements";
+import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
+import Billboard						from "awayjs-display/lib/display/Billboard";
+import PickingCollision					from "awayjs-display/lib/pick/PickingCollision";
+import IPickingCollider					from "awayjs-display/lib/pick/IPickingCollider";
+import MaterialBase						from "awayjs-display/lib/materials/MaterialBase";
 
 
 /**
@@ -357,4 +356,4 @@ class JSPickingCollider implements IPickingCollider
 	}
 }
 
-export = JSPickingCollider;
+export default JSPickingCollider;

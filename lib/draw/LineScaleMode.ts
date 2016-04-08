@@ -40,4 +40,4 @@ class LineScaleMode
 	public static VERTICAL:string = "vertical";
 }
 
-export = LineScaleMode;
+export default LineScaleMode;

@@ -1,12 +1,9 @@
-import HierarchicalProperties			= require("awayjs-display/lib/base/HierarchicalProperties");
-import DisplayObjectContainer			= require("awayjs-display/lib/display/DisplayObjectContainer");
-import MovieClip						= require("awayjs-display/lib/display/MovieClip");
-import ByteArray						= require("awayjs-core/lib/utils/ByteArray");
-import DisplayObject                    = require("awayjs-display/lib/display/DisplayObject");
-import ColorTransform					= require("awayjs-core/lib/geom/ColorTransform");
-import Matrix3D							= require("awayjs-core/lib/geom/Matrix3D");
-import Vector3D							= require("awayjs-core/lib/geom/Vector3D");
-import FrameScriptManager				= require("awayjs-display/lib/managers/FrameScriptManager");
+import HierarchicalProperties			from "awayjs-display/lib/base/HierarchicalProperties";
+import MovieClip						from "awayjs-display/lib/display/MovieClip";
+import DisplayObject                    from "awayjs-display/lib/display/DisplayObject";
+import ColorTransform					from "awayjs-core/lib/geom/ColorTransform";
+import Matrix3D							from "awayjs-core/lib/geom/Matrix3D";
+import FrameScriptManager				from "awayjs-display/lib/managers/FrameScriptManager";
 
 
 class Timeline
@@ -106,7 +103,7 @@ class Timeline
 
 	public get_framescript(keyframe_index:number):string
 	{
-		if(this._framescripts[keyframe_index]==null)
+		if(this._framescripts[keyframe_index] == null)
 			return "";
 
 		if (typeof this._framescripts[keyframe_index] == "string")
@@ -114,8 +111,6 @@ class Timeline
 		else{
 			throw new Error("Framescript is already translated to Function!!!");
 		}
-
-		return "";
 	}
 	public add_framescript(value:string, keyframe_index:number)
 	{
@@ -518,4 +513,4 @@ class Timeline
 	}
 }
 
-export = Timeline;
+export default Timeline;

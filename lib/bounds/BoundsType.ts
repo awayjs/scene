@@ -19,4 +19,4 @@ class BoundsType
 	public static NULL:string = "null";
 }
 
-export = BoundsType;
+export default BoundsType;

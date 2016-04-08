@@ -1,4 +1,4 @@
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
 class LightEvent extends EventBase
 {
@@ -16,4 +16,4 @@ class LightEvent extends EventBase
 	}
 }
 
-export = LightEvent;
+export default LightEvent;

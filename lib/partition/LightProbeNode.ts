@@ -1,5 +1,5 @@
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import ITraverser				= require("awayjs-display/lib/ITraverser");
+import EntityNode					from "awayjs-display/lib/partition/EntityNode";
+import ITraverser				from "awayjs-display/lib/ITraverser";
 
 /**
  * @class away.partition.LightProbeNode
@@ -25,4 +25,4 @@ class LightProbeNode extends EntityNode
 	}
 }
 
-export = LightProbeNode;
+export default LightProbeNode;

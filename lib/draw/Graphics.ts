@@ -1,32 +1,31 @@
-import BitmapImage2D			= require("awayjs-core/lib/image/BitmapImage2D");
-import Matrix					= require("awayjs-core/lib/geom/Matrix");
+import BitmapImage2D			from "awayjs-core/lib/image/BitmapImage2D";
+import Matrix					from "awayjs-core/lib/geom/Matrix";
 
-import CapsStyle				= require("awayjs-display/lib/draw/CapsStyle");
-import GradientType				= require("awayjs-display/lib/draw/GradientType");
-import GraphicsPathWinding		= require("awayjs-display/lib/draw/GraphicsPathWinding");
-import IGraphicsData			= require("awayjs-display/lib/draw/IGraphicsData");
-import InterpolationMethod		= require("awayjs-display/lib/draw/InterpolationMethod");
-import JointStyle				= require("awayjs-display/lib/draw/JointStyle");
-import LineScaleMode			= require("awayjs-display/lib/draw/LineScaleMode");
-import TriangleCulling			= require("awayjs-display/lib/draw/TriangleCulling");
-import SpreadMethod				= require("awayjs-display/lib/draw/SpreadMethod");
+import CapsStyle				from "awayjs-display/lib/draw/CapsStyle";
+import GradientType				from "awayjs-display/lib/draw/GradientType";
+import GraphicsPathWinding		from "awayjs-display/lib/draw/GraphicsPathWinding";
+import IGraphicsData			from "awayjs-display/lib/draw/IGraphicsData";
+import InterpolationMethod		from "awayjs-display/lib/draw/InterpolationMethod";
+import JointStyle				from "awayjs-display/lib/draw/JointStyle";
+import LineScaleMode			from "awayjs-display/lib/draw/LineScaleMode";
+import TriangleCulling			from "awayjs-display/lib/draw/TriangleCulling";
+import SpreadMethod				from "awayjs-display/lib/draw/SpreadMethod";
 
-import GraphicsPath				= require("awayjs-display/lib/draw/GraphicsPath");
-import GraphicsPathCommand		= require("awayjs-display/lib/draw/GraphicsPathCommand");
-import DefaultMaterialManager	= require("awayjs-display/lib/managers/DefaultMaterialManager");
-import MovieClip				= require("awayjs-display/lib/display/MovieClip");
+import GraphicsPath				from "awayjs-display/lib/draw/GraphicsPath";
+import GraphicsPathCommand		from "awayjs-display/lib/draw/GraphicsPathCommand";
+import DefaultMaterialManager	from "awayjs-display/lib/managers/DefaultMaterialManager";
 
-import Point					= require("awayjs-core/lib/geom/Point")
-import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
-import AttributesView			= require("awayjs-core/lib/attributes/AttributesView");
-import Sprite					= require("awayjs-display/lib/display/Sprite");
-import Float3Attributes			= require("awayjs-core/lib/attributes/Float3Attributes");
-import Float2Attributes			= require("awayjs-core/lib/attributes/Float2Attributes");
+import Point					from "awayjs-core/lib/geom/Point";
+import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
+import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
+import Sprite					from "awayjs-display/lib/display/Sprite";
+import Float3Attributes			from "awayjs-core/lib/attributes/Float3Attributes";
+import Float2Attributes			from "awayjs-core/lib/attributes/Float2Attributes";
 
 
-import PartialImplementationError		= require("awayjs-core/lib/errors/PartialImplementationError");
-import TriangleElements = require("awayjs-display/lib/graphics/TriangleElements");
-import MaterialBase = require("awayjs-display/lib/materials/MaterialBase");
+import PartialImplementationError		from "awayjs-core/lib/errors/PartialImplementationError";
+import TriangleElements from "awayjs-display/lib/graphics/TriangleElements";
+import MaterialBase from "awayjs-display/lib/materials/MaterialBase";
 /**
  * The Graphics class contains a set of methods that you can use to create a
  * vector shape. Display objects that support drawing include Sprite and Shape
@@ -1469,7 +1468,7 @@ class Graphics
 					for(t=0; t<finished_curves_types.length;t++){
 
 						 final_vert_list[final_vert_cnt++] = finished_curves[t*3].x;
-						 final_vert_list[final_vert_cnt++] = finished_curves[t*3].y;;
+						 final_vert_list[final_vert_cnt++] = finished_curves[t*3].y;
 						 final_vert_list[final_vert_cnt++] = finished_curves_types[t];
 						 final_vert_list[final_vert_cnt++] = 1.0;
 						 final_vert_list[final_vert_cnt++] = 1.0;
@@ -1638,34 +1637,34 @@ class Graphics
 		array_out.push(startx, starty, cx, cy,  endx, endy);
 		array2_out.push(startx2, starty2, cx2, cy2, endx2, endy2);
 		return;
-		var c1x = startx + (cx - startx) * 0.5;
-		var c1y = starty + (cy - starty) * 0.5;
-		var c2x = cx + (endx - cx) * 0.5;
-		var c2y = cy + (endy - cy) * 0.5;
-		var ax = c1x + (c2x - c1x) * 0.5;
-		var ay = c1y + (c2y - c1y) * 0.5;
-
-		var c1x2 = startx2 + (cx2 - startx2) * 0.5;
-		var c1y2 = starty2 + (cy2 - starty2) * 0.5;
-		var c2x2 = cx2 + (endx2 - cx2) * 0.5;
-		var c2y2 = cy2 + (endy2 - cy2) * 0.5;
-		var ax2 = c1x2 + (c2x2 - c1x2) * 0.5;
-		var ay2 = c1y2 + (c2y2 - c1y2) * 0.5;
-		if(this.pointInTri(startx2, starty2, c1x2, c1y2, ax2, ay2, c1x, c1y)){
-			this.subdivideCurve(startx, starty, c1x, c1y, ax, ay, startx2, starty2, c1x2, c1y2, ax2, ay2, array_out, array2_out);
-		}
-		else{
-			array_out.push(startx, starty, c1x, c1y, ax, ay);
-			array2_out.push(startx2, starty2, c1x2, c1y2, ax2, ay2);
-		}
-
-		if(this.pointInTri(ax2, ay2, c2x2, c2y2,  endx2, endy2, c2x, c2y)){
-			this.subdivideCurve(ax, ay, c2x, c2y, endx, endy, ax2, ay2, c2x2, c2y2, endx2, endy2, array_out, array2_out);
-		}
-		else{
-			array_out.push(ax, ay, c2x, c2y, endx, endy);
-			array2_out.push(ax2, ay2, c2x2, c2y2, endx2, endy2);
-		}
+		// var c1x = startx + (cx - startx) * 0.5;
+		// var c1y = starty + (cy - starty) * 0.5;
+		// var c2x = cx + (endx - cx) * 0.5;
+		// var c2y = cy + (endy - cy) * 0.5;
+		// var ax = c1x + (c2x - c1x) * 0.5;
+		// var ay = c1y + (c2y - c1y) * 0.5;
+		//
+		// var c1x2 = startx2 + (cx2 - startx2) * 0.5;
+		// var c1y2 = starty2 + (cy2 - starty2) * 0.5;
+		// var c2x2 = cx2 + (endx2 - cx2) * 0.5;
+		// var c2y2 = cy2 + (endy2 - cy2) * 0.5;
+		// var ax2 = c1x2 + (c2x2 - c1x2) * 0.5;
+		// var ay2 = c1y2 + (c2y2 - c1y2) * 0.5;
+		// if(this.pointInTri(startx2, starty2, c1x2, c1y2, ax2, ay2, c1x, c1y)){
+		// 	this.subdivideCurve(startx, starty, c1x, c1y, ax, ay, startx2, starty2, c1x2, c1y2, ax2, ay2, array_out, array2_out);
+		// }
+		// else{
+		// 	array_out.push(startx, starty, c1x, c1y, ax, ay);
+		// 	array2_out.push(startx2, starty2, c1x2, c1y2, ax2, ay2);
+		// }
+		//
+		// if(this.pointInTri(ax2, ay2, c2x2, c2y2,  endx2, endy2, c2x, c2y)){
+		// 	this.subdivideCurve(ax, ay, c2x, c2y, endx, endy, ax2, ay2, c2x2, c2y2, endx2, endy2, array_out, array2_out);
+		// }
+		// else{
+		// 	array_out.push(ax, ay, c2x, c2y, endx, endy);
+		// 	array2_out.push(ax2, ay2, c2x2, c2y2, endx2, endy2);
+		// }
 	}
 	public draw_fill(){
 		if(this._active_fill_path==null)return;
@@ -1716,7 +1715,7 @@ class Graphics
 						if (draw_direction > 0) {
 							if (curve_direction == 1) {
 								//convex
-								//console.log("convex");
+								//console.log("convex";
 								curve_attr_1 = 1;
 								contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_x;
 								contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_y;
@@ -1727,7 +1726,7 @@ class Graphics
 						else {
 							if (curve_direction == 2) {
 								//convex
-								//console.log("convex");
+								//console.log("convex";
 								curve_attr_1 = 1;
 								contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_x;
 								contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_y;
@@ -1875,4 +1874,4 @@ class Graphics
 	}
 }
 
-export = Graphics;
+export default Graphics;

@@ -1,23 +1,23 @@
-import Box							= require("awayjs-core/lib/geom/Box");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Sphere						= require("awayjs-core/lib/geom/Sphere");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import IAsset						= require("awayjs-core/lib/library/IAsset");
+import Box							from "awayjs-core/lib/geom/Box";
+import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Sphere						from "awayjs-core/lib/geom/Sphere";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import IAsset						from "awayjs-core/lib/library/IAsset";
 
-import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import Transform					= require("awayjs-display/lib/base/Transform");
-import Scene						= require("awayjs-display/lib/display/Scene");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import IRenderer					= require("awayjs-display/lib/IRenderer");
-import ITraverser					= require("awayjs-display/lib/ITraverser");
+import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import Transform					from "awayjs-display/lib/base/Transform";
+import Scene						from "awayjs-display/lib/display/Scene";
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import ControllerBase				from "awayjs-display/lib/controllers/ControllerBase";
+import Camera						from "awayjs-display/lib/display/Camera";
+import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import EntityNode					from "awayjs-display/lib/partition/EntityNode";
+import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import IRenderer					from "awayjs-display/lib/IRenderer";
+import ITraverser					from "awayjs-display/lib/ITraverser";
 
 interface IEntity extends IAsset
 {
@@ -161,4 +161,4 @@ interface IEntity extends IAsset
 	_acceptTraverser(collector:ITraverser);
 }
 
-export = IEntity;
+export default IEntity;

@@ -1,8 +1,8 @@
-import MathConsts				= require("awayjs-core/lib/geom/MathConsts");
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
+import MathConsts				from "awayjs-core/lib/geom/MathConsts";
+import Vector3D					from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
-import LookAtController			= require("awayjs-display/lib/controllers/LookAtController");
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
+import LookAtController			from "awayjs-display/lib/controllers/LookAtController";
 
 /**
  * Extended camera used to hover round a specified target object.
@@ -316,4 +316,4 @@ class HoverController extends LookAtController
 	}
 }
 
-export = HoverController;
+export default HoverController;

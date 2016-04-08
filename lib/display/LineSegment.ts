@@ -1,22 +1,17 @@
-﻿import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+﻿import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import RenderableEvent				= require("awayjs-display/lib/events/RenderableEvent");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-import Style						= require("awayjs-display/lib/base/Style");
-import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
-import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import IAnimator					from "awayjs-display/lib/animators/IAnimator";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import IRenderable					from "awayjs-display/lib/base/IRenderable";
+import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
+import RenderableEvent				from "awayjs-display/lib/events/RenderableEvent";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import Style						from "awayjs-display/lib/base/Style";
+import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
+import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
 
 /**
  * A Line Segment primitive.
@@ -242,4 +237,4 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 	}
 }
 
-export = LineSegment;
+export default LineSegment;

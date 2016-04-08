@@ -11,4 +11,4 @@ class ElementsType
 	public static LINE:string = "line";
 }
 
-export = ElementsType;
+export default ElementsType;

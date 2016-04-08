@@ -1,14 +1,14 @@
-import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
+import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
+import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
-import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
-import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
-import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
-import LineElements				= require("awayjs-display/lib/graphics/LineElements");
-import Sprite					= require("awayjs-display/lib/display/Sprite");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
-import PrefabBase				= require("awayjs-display/lib/prefabs/PrefabBase");
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
+import ElementsType				from "awayjs-display/lib/graphics/ElementsType";
+import ElementsBase				from "awayjs-display/lib/graphics/ElementsBase";
+import TriangleElements			from "awayjs-display/lib/graphics/TriangleElements";
+import LineElements				from "awayjs-display/lib/graphics/LineElements";
+import Sprite					from "awayjs-display/lib/display/Sprite";
+import MaterialBase				from "awayjs-display/lib/materials/MaterialBase";
+import PrefabBase				from "awayjs-display/lib/prefabs/PrefabBase";
 
 /**
  * PrimitivePrefabBase is an abstract base class for polytope prefabs, which are simple pre-built geometric shapes
@@ -200,4 +200,4 @@ class PrimitivePrefabBase extends PrefabBase
 //		}
 }
 
-export = PrimitivePrefabBase;
+export default PrimitivePrefabBase;

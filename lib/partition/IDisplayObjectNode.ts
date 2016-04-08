@@ -1,5 +1,5 @@
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import INode						= require("awayjs-display/lib/partition/INode");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import INode						from "awayjs-display/lib/partition/INode";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -16,4 +16,4 @@ interface IDisplayObjectNode extends INode
 	isSceneGraphNode:boolean;
 }
 
-export = IDisplayObjectNode;
+export default IDisplayObjectNode;

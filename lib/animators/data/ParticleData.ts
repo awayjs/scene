@@ -1,4 +1,4 @@
-import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
+import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
 
 class ParticleData
 {
@@ -8,4 +8,4 @@ class ParticleData
 	public elements:TriangleElements;
 }
 
-export = ParticleData
+export default ParticleData

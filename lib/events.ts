@@ -1,0 +1,12 @@
+export {default as CameraEvent}						from "awayjs-display/lib/events/CameraEvent";
+export {default as DisplayObjectEvent}				from "awayjs-display/lib/events/DisplayObjectEvent";
+export {default as ElementsEvent}					from "awayjs-display/lib/events/ElementsEvent";
+export {default as LightEvent}						from "awayjs-display/lib/events/LightEvent";
+export {default as MouseEvent}						from "awayjs-display/lib/events/MouseEvent";
+export {default as RenderableEvent}					from "awayjs-display/lib/events/RenderableEvent";
+export {default as RendererEvent}					from "awayjs-display/lib/events/RendererEvent";
+export {default as ResizeEvent}						from "awayjs-display/lib/events/ResizeEvent";
+export {default as StyleEvent}						from "awayjs-display/lib/events/StyleEvent";
+export {default as SurfaceEvent}					from "awayjs-display/lib/events/SurfaceEvent";
+export {default as TouchEvent}						from "awayjs-display/lib/events/TouchEvent";
+export {default as TransformEvent}					from "awayjs-display/lib/events/TransformEvent";

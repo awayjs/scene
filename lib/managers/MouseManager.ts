@@ -1,11 +1,11 @@
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
-import View							= require("awayjs-display/lib/View");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import AwayMouseEvent				= require("awayjs-display/lib/events/MouseEvent");
-import FrameScriptManager			= require("awayjs-display/lib/managers/FrameScriptManager");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import TouchPoint					from "awayjs-display/lib/base/TouchPoint";
+import View							from "awayjs-display/lib/View";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import AwayMouseEvent				from "awayjs-display/lib/events/MouseEvent";
+import FrameScriptManager			from "awayjs-display/lib/managers/FrameScriptManager";
 
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
@@ -333,4 +333,4 @@ class MouseManager
 	}
 }
 
-export = MouseManager;
+export default MouseManager;

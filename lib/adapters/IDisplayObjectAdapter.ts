@@ -1,5 +1,4 @@
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
 
 interface IDisplayObjectAdapter
 {
@@ -16,4 +15,4 @@ interface IDisplayObjectAdapter
 	dispose();
 }
 
-export = IDisplayObjectAdapter;
+export default IDisplayObjectAdapter;

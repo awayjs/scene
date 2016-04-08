@@ -25,4 +25,4 @@ class AntiAliasType
 	public static NORMAL:string = "normal";
 }
 
-export = AntiAliasType;
+export default AntiAliasType;

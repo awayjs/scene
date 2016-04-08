@@ -38,4 +38,4 @@ class TriangleCulling
 	public static POSITIVE:string = "positive";
 }
 
-export = TriangleCulling;
+export default TriangleCulling;

@@ -22,4 +22,4 @@ class TextFieldType
 	public static STATIC:string = "input";
 }
 
-export = TextFieldType;
+export default TextFieldType;

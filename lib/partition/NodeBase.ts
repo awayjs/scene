@@ -1,14 +1,14 @@
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import INode						= require("awayjs-display/lib/partition/INode");
-import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
-import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
-import NullBounds = require("awayjs-display/lib/bounds/NullBounds");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import INode						from "awayjs-display/lib/partition/INode";
+import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
+import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
+import NullBounds from "awayjs-display/lib/bounds/NullBounds";
 
 /**
  * @class away.partition.NodeBase
@@ -140,4 +140,4 @@ class NodeBase implements IContainerNode
 	}
 }
 
-export = NodeBase;
+export default NodeBase;

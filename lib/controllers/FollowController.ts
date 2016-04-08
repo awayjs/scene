@@ -1,5 +1,5 @@
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
-import HoverController			= require("awayjs-display/lib/controllers/HoverController");
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
+import HoverController			from "awayjs-display/lib/controllers/HoverController";
 
 /**
  * Controller used to follow behind an object on the XZ plane, with an optional
@@ -24,4 +24,4 @@ class FollowController extends HoverController
 	}
 }
 
-export = FollowController;
+export default FollowController;

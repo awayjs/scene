@@ -1,7 +1,7 @@
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
+import Vector3D					from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
-import LookAtController			= require("awayjs-display/lib/controllers/LookAtController");
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
+import LookAtController			from "awayjs-display/lib/controllers/LookAtController";
 
 /**
  * Uses spring physics to animate the target object towards a position that is
@@ -85,10 +85,11 @@ class SpringController extends LookAtController
 
 		this._velocity.incrementBy(this._acceleration);
 
-		this._pTargetObject.transform.position = this._pTargetObject.transform.position.add(this._velocity);
+		var position:Vector3D = this._pTargetObject.transform.position.add(this._velocity);
+		this._pTargetObject.transform.moveTo(position.x, position.y, position.z);
 
 		super.update();
 	}
 }
 
-export = SpringController;
+export default SpringController;

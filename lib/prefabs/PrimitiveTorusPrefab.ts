@@ -1,10 +1,10 @@
-import IAsset					= require("awayjs-core/lib/library/IAsset");
+import IAsset					from "awayjs-core/lib/library/IAsset";
 
-import ElementsType				= require("awayjs-display/lib/graphics/ElementsType");
-import ElementsBase				= require("awayjs-display/lib/graphics/ElementsBase");
-import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
-import PrimitivePrefabBase		= require("awayjs-display/lib/prefabs/PrimitivePrefabBase");
+import ElementsType				from "awayjs-display/lib/graphics/ElementsType";
+import ElementsBase				from "awayjs-display/lib/graphics/ElementsBase";
+import TriangleElements			from "awayjs-display/lib/graphics/TriangleElements";
+import MaterialBase				from "awayjs-display/lib/materials/MaterialBase";
+import PrimitivePrefabBase		from "awayjs-display/lib/prefabs/PrimitivePrefabBase";
 
 /**
  * A UV Cylinder primitive sprite.
@@ -295,4 +295,4 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	}
 }
 
-export = PrimitiveTorusPrefab;
+export default PrimitiveTorusPrefab;

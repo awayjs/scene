@@ -1,0 +1,10 @@
+export {default as PrefabBase}						from "awayjs-display/lib/prefabs/PrefabBase";
+export {default as PrimitiveCapsulePrefab}			from "awayjs-display/lib/prefabs/PrimitiveCapsulePrefab";
+export {default as PrimitiveConePrefab}				from "awayjs-display/lib/prefabs/PrimitiveConePrefab";
+export {default as PrimitiveCubePrefab}				from "awayjs-display/lib/prefabs/PrimitiveCubePrefab";
+export {default as PrimitiveCylinderPrefab}			from "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab";
+export {default as PrimitivePlanePrefab}			from "awayjs-display/lib/prefabs/PrimitivePlanePrefab";
+export {default as PrimitivePolygonPrefab}			from "awayjs-display/lib/prefabs/PrimitivePolygonPrefab";
+export {default as PrimitivePrefabBase}				from "awayjs-display/lib/prefabs/PrimitivePrefabBase";
+export {default as PrimitiveSpherePrefab}			from "awayjs-display/lib/prefabs/PrimitiveSpherePrefab";
+export {default as PrimitiveTorusPrefab}			from "awayjs-display/lib/prefabs/PrimitiveTorusPrefab";

@@ -12,4 +12,4 @@ interface IBitmapDrawable
 
 }
 
-export = IBitmapDrawable;
+export default IBitmapDrawable;

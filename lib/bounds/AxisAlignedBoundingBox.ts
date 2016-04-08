@@ -1,14 +1,14 @@
-import Box							= require("awayjs-core/lib/geom/Box");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import PlaneClassification			= require("awayjs-core/lib/geom/PlaneClassification");
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Box							from "awayjs-core/lib/geom/Box";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import PlaneClassification			from "awayjs-core/lib/geom/PlaneClassification";
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsType					= require("awayjs-display/lib/graphics/ElementsType");
-import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import Sprite						= require("awayjs-display/lib/display/Sprite");
-import PrimitiveCubePrefab			= require("awayjs-display/lib/prefabs/PrimitiveCubePrefab");
+import ElementsType					from "awayjs-display/lib/graphics/ElementsType";
+import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import Sprite						from "awayjs-display/lib/display/Sprite";
+import PrimitiveCubePrefab			from "awayjs-display/lib/prefabs/PrimitiveCubePrefab";
 
 
 /**
@@ -158,4 +158,4 @@ class AxisAlignedBoundingBox extends BoundingVolumeBase
 	}
 }
 
-export = AxisAlignedBoundingBox;
+export default AxisAlignedBoundingBox;

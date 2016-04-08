@@ -37,4 +37,4 @@ class InterpolationMethod
 	public static RGB:string = "rgb";
 }
 
-export = InterpolationMethod;
+export default InterpolationMethod;

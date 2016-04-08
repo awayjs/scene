@@ -1,8 +1,8 @@
-import AssetBase					= require("awayjs-core/lib/library/AssetBase");
+import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
-import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
-import TesselatedFontChar			= require("awayjs-display/lib/text/TesselatedFontChar");
+import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
+import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
+import TesselatedFontChar			from "awayjs-display/lib/text/TesselatedFontChar";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
@@ -121,4 +121,4 @@ class TesselatedFontTable extends AssetBase
 
 }
 
-export = TesselatedFontTable;
+export default TesselatedFontTable;

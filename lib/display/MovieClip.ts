@@ -1,14 +1,12 @@
-import AssetEvent                   = require("awayjs-core/lib/events/AssetEvent");
-import ColorTransform               = require("awayjs-core/lib/geom/ColorTransform");
+import AssetEvent                   from "awayjs-core/lib/events/AssetEvent";
 
-import DisplayObject                = require("awayjs-display/lib/display/DisplayObject");
-import Sprite                       = require("awayjs-display/lib/display/Sprite");
-import Billboard                    = require("awayjs-display/lib/display/Billboard");
-import TextField                    = require("awayjs-display/lib/display/TextField");
-import MouseEvent                   = require("awayjs-display/lib/events/MouseEvent");
-import IMovieClipAdapter	    	= require("awayjs-display/lib/adapters/IMovieClipAdapter");
-import Timeline                     = require("awayjs-display/lib/base/Timeline");
-import FrameScriptManager           = require("awayjs-display/lib/managers/FrameScriptManager");
+import DisplayObject                from "awayjs-display/lib/display/DisplayObject";
+import Sprite                       from "awayjs-display/lib/display/Sprite";
+import TextField                    from "awayjs-display/lib/display/TextField";
+import MouseEvent                   from "awayjs-display/lib/events/MouseEvent";
+import IMovieClipAdapter	    	from "awayjs-display/lib/adapters/IMovieClipAdapter";
+import Timeline                     from "awayjs-display/lib/base/Timeline";
+import FrameScriptManager           from "awayjs-display/lib/managers/FrameScriptManager";
 
 class MovieClip extends Sprite
 {
@@ -36,7 +34,7 @@ class MovieClip extends Sprite
 	private _skipAdvance : boolean;
 	private _isInit:boolean = true;
 
-	private _potentialInstances:Object = {};
+	private _potentialInstances:Array<DisplayObject> = [];
 	private _depth_sessionIDs:Object = {};
 	private _sessionID_childs:Object = {};
 
@@ -81,7 +79,7 @@ class MovieClip extends Sprite
 	{
 		super.disposeValues();
 
-		this._potentialInstances = {};
+		this._potentialInstances = [];
 		this._depth_sessionIDs = {};
 		this._sessionID_childs = {};
 	}
@@ -89,14 +87,13 @@ class MovieClip extends Sprite
 	public reset_textclones()
 	{
 		if(this.timeline) {
-			for (var key in this._potentialInstances) {
-				if (this._potentialInstances[key] != null) {
-					if (this._potentialInstances[key].isAsset(TextField)) {
-						(<TextField>this._potentialInstances[key]).text = (<TextField>this.timeline.getPotentialChildPrototype(key)).text;
-					}
-					else if (this._potentialInstances[key].isAsset(MovieClip)) {
-						(<MovieClip>this._potentialInstances[key]).reset_textclones();
-					}
+			var len:number = this._potentialInstances.length;
+			for (var i:number = 0; i< len; i++) {
+				if (this._potentialInstances[i] != null) {
+					if (this._potentialInstances[i].isAsset(TextField))
+						(<TextField>this._potentialInstances[i]).text = (<TextField>this.timeline.getPotentialChildPrototype(i)).text;
+					else if (this._potentialInstances[i].isAsset(MovieClip))
+						(<MovieClip>this._potentialInstances[i]).reset_textclones();
 				}
 			}
 		}
@@ -419,17 +416,18 @@ class MovieClip extends Sprite
 	public clear()
 	{
 		//clear out potential instances
-		for (var key in this._potentialInstances) {
-			var instance:DisplayObject = this._potentialInstances[key];
+		var len:number = this._potentialInstances.length;
+		for (var i:number = 0; i < len; i++) {
+			var instance:DisplayObject = this._potentialInstances[i];
 
 			//only dispose instances that are not used in script ie. do not have an instance name
-			if (instance.name == "") {
+			if (instance && instance.name == "") {
 				FrameScriptManager.add_child_to_dispose(instance);
-				delete this._potentialInstances[key];
+				delete this._potentialInstances[i];
 			}
 		}
 
 		super.clear();
 	}
 }
-export = MovieClip;
+export default MovieClip;

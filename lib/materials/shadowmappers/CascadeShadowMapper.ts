@@ -1,15 +1,15 @@
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
-import FreeMatrixProjection			= require("awayjs-core/lib/projections/FreeMatrixProjection");
-import IProjection					= require("awayjs-core/lib/projections/IProjection");
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
+import Rectangle					from "awayjs-core/lib/geom/Rectangle";
+import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import FreeMatrixProjection			from "awayjs-core/lib/projections/FreeMatrixProjection";
+import IProjection					from "awayjs-core/lib/projections/IProjection";
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
-import Scene						= require("awayjs-display/lib/display/Scene");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
-import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
+import IRenderer					from "awayjs-display/lib/IRenderer";
+import Scene						from "awayjs-display/lib/display/Scene";
+import Camera						from "awayjs-display/lib/display/Camera";
+import DirectionalShadowMapper		from "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper";
+import Single2DTexture				from "awayjs-display/lib/textures/Single2DTexture";
 
 class CascadeShadowMapper extends DirectionalShadowMapper
 {
@@ -242,4 +242,4 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 	}
 }
 
-export = CascadeShadowMapper;
+export default CascadeShadowMapper;

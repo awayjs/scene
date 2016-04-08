@@ -1,14 +1,13 @@
-import ImageCube					= require("awayjs-core/lib/image/ImageCube");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import PartialImplementationError	= require("awayjs-core/lib/errors/PartialImplementationError");
-import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
+import ImageCube					from "awayjs-core/lib/image/ImageCube";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
 
-import Scene						= require("awayjs-display/lib/display/Scene");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import PointLight					= require("awayjs-display/lib/display/PointLight");
-import ShadowMapperBase				= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
-import IRenderer					= require("awayjs-display/lib/IRenderer");
-import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
+import Scene						from "awayjs-display/lib/display/Scene";
+import Camera						from "awayjs-display/lib/display/Camera";
+import PointLight					from "awayjs-display/lib/display/PointLight";
+import ShadowMapperBase				from "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase";
+import IRenderer					from "awayjs-display/lib/IRenderer";
+import SingleCubeTexture			from "awayjs-display/lib/textures/SingleCubeTexture";
 
 class CubeMapShadowMapper extends ShadowMapperBase
 {
@@ -70,7 +69,7 @@ class CubeMapShadowMapper extends ShadowMapperBase
 		// todo: faces outside frustum which are pointing away from camera need not be rendered!
 		for (var i:number = 0; i < 6; ++i) {
 			this._projections[i].far = maxDistance;
-			this._depthCameras[i].transform.position = pos;
+			this._depthCameras[i].transform.moveTo(pos.x, pos.y, pos.z);
 			this._needsRender[i] = true;
 		}
 	}
@@ -84,4 +83,4 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 }
 
-export = CubeMapShadowMapper;
+export default CubeMapShadowMapper;

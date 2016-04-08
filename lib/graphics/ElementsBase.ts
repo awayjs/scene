@@ -1,19 +1,19 @@
-import AttributesBuffer				= require("awayjs-core/lib/attributes/AttributesBuffer");
-import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
-import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
-import Short3Attributes				= require("awayjs-core/lib/attributes/Short3Attributes");
-import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
-import Box							= require("awayjs-core/lib/geom/Box");
-import Sphere						= require("awayjs-core/lib/geom/Sphere");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import AssetBase					= require("awayjs-core/lib/library/AssetBase");
+import AttributesBuffer				from "awayjs-core/lib/attributes/AttributesBuffer";
+import AttributesView				from "awayjs-core/lib/attributes/AttributesView";
+import Float3Attributes				from "awayjs-core/lib/attributes/Float3Attributes";
+import Short3Attributes				from "awayjs-core/lib/attributes/Short3Attributes";
+import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
+import Box							from "awayjs-core/lib/geom/Box";
+import Sphere						from "awayjs-core/lib/geom/Sphere";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import Rectangle					from "awayjs-core/lib/geom/Rectangle";
+import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsEvent				= require("awayjs-display/lib/events/ElementsEvent");
-import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import ElementsEvent				from "awayjs-display/lib/events/ElementsEvent";
+import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
 
 /**
  * @class away.base.TriangleElements
@@ -273,4 +273,4 @@ class ElementsBase extends AssetBase
 	}
 }
 
-export = ElementsBase;
+export default ElementsBase;

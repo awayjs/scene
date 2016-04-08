@@ -1,14 +1,14 @@
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import PlaneClassification			= require("awayjs-core/lib/geom/PlaneClassification");
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import Sphere						= require("awayjs-core/lib/geom/Sphere");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import PlaneClassification			from "awayjs-core/lib/geom/PlaneClassification";
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import Sphere						from "awayjs-core/lib/geom/Sphere";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsType					= require("awayjs-display/lib/graphics/ElementsType");
-import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import Sprite						= require("awayjs-display/lib/display/Sprite");
-import PrimitiveSpherePrefab		= require("awayjs-display/lib/prefabs/PrimitiveSpherePrefab");
+import ElementsType					from "awayjs-display/lib/graphics/ElementsType";
+import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import Sprite						from "awayjs-display/lib/display/Sprite";
+import PrimitiveSpherePrefab		from "awayjs-display/lib/prefabs/PrimitiveSpherePrefab";
 
 class BoundingSphere extends BoundingVolumeBase
 {
@@ -122,4 +122,4 @@ class BoundingSphere extends BoundingVolumeBase
 	}
 }
 
-export = BoundingSphere;
+export default BoundingSphere;

@@ -1,16 +1,16 @@
-import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
-import BitmapImage2D				= require("awayjs-core/lib/image/BitmapImage2D");
-import BitmapImageCube				= require("awayjs-core/lib/image/BitmapImageCube");
+import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
+import BitmapImage2D				from "awayjs-core/lib/image/BitmapImage2D";
+import BitmapImageCube				from "awayjs-core/lib/image/BitmapImageCube";
 
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import LineElements					= require("awayjs-display/lib/graphics/LineElements");
-import Skybox						= require("awayjs-display/lib/display/Skybox");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import BasicMaterial				= require("awayjs-display/lib/materials/BasicMaterial");
-import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
-import SingleCubeTexture			= require("awayjs-display/lib/textures/SingleCubeTexture");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-import Graphic						= require("awayjs-display/lib/graphics/Graphic");
+import IRenderable					from "awayjs-display/lib/base/IRenderable";
+import LineElements					from "awayjs-display/lib/graphics/LineElements";
+import Skybox						from "awayjs-display/lib/display/Skybox";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import BasicMaterial				from "awayjs-display/lib/materials/BasicMaterial";
+import Single2DTexture				from "awayjs-display/lib/textures/Single2DTexture";
+import SingleCubeTexture			from "awayjs-display/lib/textures/SingleCubeTexture";
+import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import Graphic						from "awayjs-display/lib/graphics/Graphic";
 
 class DefaultMaterialManager
 {
@@ -156,4 +156,4 @@ class DefaultMaterialManager
 
 }
 
-export = DefaultMaterialManager;
+export default DefaultMaterialManager;

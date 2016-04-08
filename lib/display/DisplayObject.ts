@@ -1,37 +1,37 @@
-import BlendMode					= require("awayjs-core/lib/image/BlendMode");
-import Box							= require("awayjs-core/lib/geom/Box");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
-import Sphere						= require("awayjs-core/lib/geom/Sphere");
-import MathConsts					= require("awayjs-core/lib/geom/MathConsts");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
-import Point						= require("awayjs-core/lib/geom/Point");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import AssetBase					= require("awayjs-core/lib/library/AssetBase");
-import LoaderInfo					= require("awayjs-core/lib/library/LoaderInfo");
-import EventBase					= require("awayjs-core/lib/events/EventBase");
+import BlendMode					from "awayjs-core/lib/image/BlendMode";
+import Box							from "awayjs-core/lib/geom/Box";
+import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
+import Sphere						from "awayjs-core/lib/geom/Sphere";
+import MathConsts					from "awayjs-core/lib/geom/MathConsts";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
+import Point						from "awayjs-core/lib/geom/Point";
+import Rectangle					from "awayjs-core/lib/geom/Rectangle";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import LoaderInfo					from "awayjs-core/lib/library/LoaderInfo";
+import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
-import IDisplayObjectAdapter		= require("awayjs-display/lib/adapters/IDisplayObjectAdapter");
-import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import Scene						= require("awayjs-display/lib/display/Scene");
-import ControllerBase				= require("awayjs-display/lib/controllers/ControllerBase");
-import AlignmentMode				= require("awayjs-display/lib/base/AlignmentMode");
-import OrientationMode				= require("awayjs-display/lib/base/OrientationMode");
-import IBitmapDrawable				= require("awayjs-display/lib/base/IBitmapDrawable");
-import Transform					= require("awayjs-display/lib/base/Transform");
-import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
-import TransformEvent				= require("awayjs-display/lib/events/TransformEvent");
-import PrefabBase					= require("awayjs-display/lib/prefabs/PrefabBase");
-import ITraverser				= require("awayjs-display/lib/ITraverser");
+import IRenderer					from "awayjs-display/lib/IRenderer";
+import IDisplayObjectAdapter		from "awayjs-display/lib/adapters/IDisplayObjectAdapter";
+import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
+import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import Scene						from "awayjs-display/lib/display/Scene";
+import ControllerBase				from "awayjs-display/lib/controllers/ControllerBase";
+import AlignmentMode				from "awayjs-display/lib/base/AlignmentMode";
+import OrientationMode				from "awayjs-display/lib/base/OrientationMode";
+import IBitmapDrawable				from "awayjs-display/lib/base/IBitmapDrawable";
+import Transform					from "awayjs-display/lib/base/Transform";
+import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import Camera						from "awayjs-display/lib/display/Camera";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import DisplayObjectEvent			from "awayjs-display/lib/events/DisplayObjectEvent";
+import TransformEvent				from "awayjs-display/lib/events/TransformEvent";
+import PrefabBase					from "awayjs-display/lib/prefabs/PrefabBase";
+import ITraverser				from "awayjs-display/lib/ITraverser";
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -2413,4 +2413,4 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	}
 }
 
-export = DisplayObject;
+export default DisplayObject;

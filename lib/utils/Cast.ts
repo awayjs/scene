@@ -1,9 +1,8 @@
-import Image2D					= require("awayjs-core/lib/image/Image2D");
-import Sampler2D				= require("awayjs-core/lib/image/Sampler2D");
-import ByteArray				= require("awayjs-core/lib/utils/ByteArray");
+import Image2D					from "awayjs-core/lib/image/Image2D";
+import ByteArray				from "awayjs-core/lib/utils/ByteArray";
 
-import CastError				= require("awayjs-display/lib/errors/CastError");
-import Single2DTexture			= require("awayjs-display/lib/textures/Single2DTexture");
+import CastError				from "awayjs-display/lib/errors/CastError";
+import Single2DTexture			from "awayjs-display/lib/textures/Single2DTexture";
 
 /**
  * Helper class for casting assets to usable objects
@@ -310,4 +309,4 @@ class Cast
 	}
 }
 
-export = Cast;
+export default Cast;

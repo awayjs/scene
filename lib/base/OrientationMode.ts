@@ -16,4 +16,4 @@ class OrientationMode
 	public static CAMERA_POSITION:string = "cameraPosition";
 }
 
-export = OrientationMode;
+export default OrientationMode;

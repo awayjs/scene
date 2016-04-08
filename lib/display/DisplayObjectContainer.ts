@@ -1,13 +1,13 @@
-import Box							= require("awayjs-core/lib/geom/Box");
-import Point						= require("awayjs-core/lib/geom/Point");
-import ArgumentError				= require("awayjs-core/lib/errors/ArgumentError");
-import RangeError					= require("awayjs-core/lib/errors/RangeError");
-import Extensions					= require("awayjs-core/lib/utils/Extensions");
+import Box							from "awayjs-core/lib/geom/Box";
+import Point						from "awayjs-core/lib/geom/Point";
+import ArgumentError				from "awayjs-core/lib/errors/ArgumentError";
+import RangeError					from "awayjs-core/lib/errors/RangeError";
+import Extensions					from "awayjs-core/lib/utils/Extensions";
 
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
-import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import Scene						= require("awayjs-display/lib/display/Scene");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
+import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import Scene						from "awayjs-display/lib/display/Scene";
 
 /**
  * The DisplayObjectContainer class is the base class for all objects that can
@@ -705,4 +705,4 @@ class DisplayObjectContainer extends DisplayObject
 	}
 }
 
-export = DisplayObjectContainer;
+export default DisplayObjectContainer;

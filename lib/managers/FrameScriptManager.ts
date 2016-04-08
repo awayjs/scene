@@ -1,5 +1,5 @@
-import DisplayObject					= require("awayjs-display/lib/display/DisplayObject");
-import MovieClip					= require("awayjs-display/lib/display/MovieClip");
+import DisplayObject					from "awayjs-display/lib/display/DisplayObject";
+import MovieClip						from "awayjs-display/lib/display/MovieClip";
 
 class FrameScriptManager
 {
@@ -112,4 +112,4 @@ class FrameScriptManager
 		this._queued_dispose.length = 0;
 	}
 }
-export = FrameScriptManager;
+export default FrameScriptManager;

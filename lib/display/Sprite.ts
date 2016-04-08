@@ -1,19 +1,19 @@
-﻿import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
-import Box							= require("awayjs-core/lib/geom/Box");
-import Point						= require("awayjs-core/lib/geom/Point");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+﻿﻿import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import Box							from "awayjs-core/lib/geom/Box";
+import Point						from "awayjs-core/lib/geom/Point";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import Graphics						= require("awayjs-display/lib/graphics/Graphics");
-import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
-import Style						= require("awayjs-display/lib/base/Style");
-import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import IAnimator					from "awayjs-display/lib/animators/IAnimator";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import Graphics						from "awayjs-display/lib/graphics/Graphics";
+import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import ElementsUtils				from "awayjs-display/lib/utils/ElementsUtils";
+import Style						from "awayjs-display/lib/base/Style";
+import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -267,4 +267,4 @@ class Sprite extends DisplayObjectContainer
 	}
 }
 
-export = Sprite;
+export default Sprite;

@@ -1,4 +1,4 @@
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
 class ResizeEvent extends EventBase
 {
@@ -36,4 +36,4 @@ class ResizeEvent extends EventBase
 	}
 }
 
-export = ResizeEvent;
+export default ResizeEvent;

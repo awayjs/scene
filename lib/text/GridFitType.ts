@@ -33,4 +33,4 @@ class GridFitType
 	public static SUBPIXEL:string = "subpixel";
 }
 
-export = GridFitType;
+export default GridFitType;

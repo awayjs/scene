@@ -1,18 +1,16 @@
-import AttributesBuffer			= require("awayjs-core/lib/attributes/AttributesBuffer");
-import AttributesView			= require("awayjs-core/lib/attributes/AttributesView");
-import Short2Attributes			= require("awayjs-core/lib/attributes/Short2Attributes");
-import Short3Attributes			= require("awayjs-core/lib/attributes/Short3Attributes");
-import Float2Attributes			= require("awayjs-core/lib/attributes/Float2Attributes");
-import Float3Attributes			= require("awayjs-core/lib/attributes/Float3Attributes");
-import Float4Attributes			= require("awayjs-core/lib/attributes/Float4Attributes");
-import Byte4Attributes			= require("awayjs-core/lib/attributes/Byte4Attributes");
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import Box						= require("awayjs-core/lib/geom/Box");
-import Sphere					= require("awayjs-core/lib/geom/Sphere");
-import Extensions				= require("awayjs-core/lib/utils/Extensions");
+import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
+import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
+import Short2Attributes			from "awayjs-core/lib/attributes/Short2Attributes";
+import Short3Attributes			from "awayjs-core/lib/attributes/Short3Attributes";
+import Float3Attributes			from "awayjs-core/lib/attributes/Float3Attributes";
+import Float4Attributes			from "awayjs-core/lib/attributes/Float4Attributes";
+import Byte4Attributes			from "awayjs-core/lib/attributes/Byte4Attributes";
+import Matrix3D					from "awayjs-core/lib/geom/Matrix3D";
+import Vector3D					from "awayjs-core/lib/geom/Vector3D";
+import Box						from "awayjs-core/lib/geom/Box";
+import Sphere					from "awayjs-core/lib/geom/Sphere";
 
-import TriangleElements			= require("awayjs-display/lib/graphics/TriangleElements");
+import TriangleElements			from "awayjs-display/lib/graphics/TriangleElements";
 
 class ElementsUtils
 {
@@ -1032,4 +1030,4 @@ class ElementsUtils
 
 }
 
-export = ElementsUtils;
+export default ElementsUtils;

@@ -1,12 +1,12 @@
-import IAsset						= require("awayjs-core/lib/library/IAsset");
-import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
+import IAsset						from "awayjs-core/lib/library/IAsset";
+import ImageBase					from "awayjs-core/lib/image/ImageBase";
+import SamplerBase					from "awayjs-core/lib/image/SamplerBase";
 
-import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-import Style						= require("awayjs-display/lib/base/Style");
+import IAnimationSet				from "awayjs-display/lib/animators/IAnimationSet";
+import IRenderable					from "awayjs-display/lib/base/IRenderable";
+import LightPickerBase				from "awayjs-display/lib/materials/lightpickers/LightPickerBase";
+import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import Style						from "awayjs-display/lib/base/Style";
 
 /**
  * ISurface provides an interface for objects that define the properties of a renderable's surface.
@@ -40,4 +40,4 @@ interface ISurface extends IAsset
 	removeTexture(texture:TextureBase);
 }
 
-export = ISurface;
+export default ISurface;

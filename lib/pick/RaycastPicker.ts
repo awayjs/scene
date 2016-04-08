@@ -1,16 +1,16 @@
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import Scene						= require("awayjs-display/lib/display/Scene");
-import View							= require("awayjs-display/lib/View");
-import IPicker						= require("awayjs-display/lib/pick/IPicker");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import INode						= require("awayjs-display/lib/partition/INode");
-import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import Scene						from "awayjs-display/lib/display/Scene";
+import View							from "awayjs-display/lib/View";
+import IPicker						from "awayjs-display/lib/pick/IPicker";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import IRenderable					from "awayjs-display/lib/base/IRenderable";
+import INode						from "awayjs-display/lib/partition/INode";
+import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -259,4 +259,4 @@ class RaycastPicker implements IPicker, ITraverser
 	}
 }
 
-export = RaycastPicker;
+export default RaycastPicker;

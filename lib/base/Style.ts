@@ -1,10 +1,10 @@
-import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
+import ImageBase					from "awayjs-core/lib/image/ImageBase";
+import SamplerBase					from "awayjs-core/lib/image/SamplerBase";
+import Matrix						from "awayjs-core/lib/geom/Matrix";
 
-import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
-import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
+import EventDispatcher				from "awayjs-core/lib/events/EventDispatcher";
+import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
+import TextureBase					from "awayjs-display/lib/textures/TextureBase";
 
 /**
  *
@@ -141,4 +141,4 @@ class Style extends EventDispatcher
 	}
 }
 
-export = Style;
+export default Style;

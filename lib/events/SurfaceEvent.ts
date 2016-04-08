@@ -1,6 +1,6 @@
-import EventBase					= require("awayjs-core/lib/events/EventBase");
+import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import ISurface						= require("awayjs-display/lib/base/ISurface");
+import ISurface						from "awayjs-display/lib/base/ISurface";
 
 class SurfaceEvent extends EventBase
 {
@@ -44,4 +44,4 @@ class SurfaceEvent extends EventBase
 	}
 }
 
-export = SurfaceEvent;
+export default SurfaceEvent;

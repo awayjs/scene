@@ -1,11 +1,11 @@
-import Point					= require("awayjs-core/lib/geom/Point");
-import Vector3D					= require("awayjs-core/lib/geom/Vector3D");
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import Point					from "awayjs-core/lib/geom/Point";
+import Vector3D					from "awayjs-core/lib/geom/Vector3D";
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
-import IEntity					= require("awayjs-display/lib/display/IEntity");
-import IRenderable				= require("awayjs-display/lib/base/IRenderable");
-import View						= require("awayjs-display/lib/View");
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
+import IEntity					from "awayjs-display/lib/display/IEntity";
+import IRenderable				from "awayjs-display/lib/base/IRenderable";
+import View						from "awayjs-display/lib/View";
+import MaterialBase				from "awayjs-display/lib/materials/MaterialBase";
 
 class TouchEvent extends EventBase
 {
@@ -201,4 +201,4 @@ class TouchEvent extends EventBase
 	}
 }
 
-export = TouchEvent;
+export default TouchEvent;

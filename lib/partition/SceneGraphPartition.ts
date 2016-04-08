@@ -1,12 +1,12 @@
-import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
+import IAbstractionPool				from "awayjs-core/lib/library/IAbstractionPool";
 
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import ITraverser				= require("awayjs-display/lib/ITraverser");
-import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
-import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
-import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
-import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import ITraverser				from "awayjs-display/lib/ITraverser";
+import SceneGraphNode				from "awayjs-display/lib/partition/SceneGraphNode";
+import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
+import DisplayObjectNode			from "awayjs-display/lib/partition/DisplayObjectNode";
 
 /**
  * @class away.partition.Partition
@@ -69,7 +69,7 @@ class SceneGraphPartition extends PartitionBase
 	}
 }
 
-export = SceneGraphPartition;
+export default SceneGraphPartition;
 
 
 /**

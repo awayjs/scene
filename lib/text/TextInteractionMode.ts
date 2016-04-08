@@ -22,4 +22,4 @@ class TextInteractionMode
 	public static SELECTION:string = "selection";
 }
 
-export = TextInteractionMode;
+export default TextInteractionMode;

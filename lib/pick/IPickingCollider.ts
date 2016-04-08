@@ -1,10 +1,10 @@
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import Billboard					= require("awayjs-display/lib/display/Billboard");
-import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
-import LineElements					= require("awayjs-display/lib/graphics/LineElements");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import Billboard					from "awayjs-display/lib/display/Billboard";
+import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
+import LineElements					from "awayjs-display/lib/graphics/LineElements";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
 
 /**
  * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.
@@ -50,4 +50,4 @@ interface IPickingCollider
 
 }
 
-export = IPickingCollider;
+export default IPickingCollider;

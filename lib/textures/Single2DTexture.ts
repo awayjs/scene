@@ -1,11 +1,10 @@
-﻿import Sampler2D				= require("awayjs-core/lib/image/Sampler2D");
-import Image2D					= require("awayjs-core/lib/image/Image2D");
-import Rectangle				= require("awayjs-core/lib/geom/Rectangle");
-import ErrorBase				= require("awayjs-core/lib/errors/ErrorBase");
-import ImageUtils				= require("awayjs-core/lib/utils/ImageUtils");
+﻿﻿import Sampler2D				from "awayjs-core/lib/image/Sampler2D";
+import Image2D					from "awayjs-core/lib/image/Image2D";
+import ErrorBase				from "awayjs-core/lib/errors/ErrorBase";
+import ImageUtils				from "awayjs-core/lib/utils/ImageUtils";
 
-import MappingMode				= require("awayjs-display/lib/textures/MappingMode");
-import TextureBase				= require("awayjs-display/lib/textures/TextureBase");
+import MappingMode				from "awayjs-display/lib/textures/MappingMode";
+import TextureBase				from "awayjs-display/lib/textures/TextureBase";
 
 class Single2DTexture extends TextureBase
 {
@@ -86,4 +85,4 @@ class Single2DTexture extends TextureBase
 	}
 }
 
-export = Single2DTexture;
+export default Single2DTexture;

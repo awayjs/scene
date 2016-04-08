@@ -1,7 +1,7 @@
-import MathConsts				= require("awayjs-core/lib/geom/MathConsts");
+import MathConsts				from "awayjs-core/lib/geom/MathConsts";
 
-import ControllerBase			= require("awayjs-display/lib/controllers/ControllerBase");
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
+import ControllerBase			from "awayjs-display/lib/controllers/ControllerBase";
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
 
 /**
  * Extended camera used to hover round a specified target object.
@@ -255,4 +255,4 @@ class FirstPersonController extends ControllerBase
 
 }
 
-export = FirstPersonController;
+export default FirstPersonController;

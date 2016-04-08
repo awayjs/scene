@@ -1,0 +1,13 @@
+export {default as CapsStyle}						from "awayjs-display/lib/draw/CapsStyle";
+export {default as GradientType}					from "awayjs-display/lib/draw/GradientType";
+export {default as Graphics}						from "awayjs-display/lib/draw/Graphics";
+export {default as GraphicsPath}					from "awayjs-display/lib/draw/GraphicsPath";
+export {default as GraphicsPathCommand}				from "awayjs-display/lib/draw/GraphicsPathCommand";
+export {default as GraphicsPathWinding}				from "awayjs-display/lib/draw/GraphicsPathWinding";
+export {default as IGraphicsData}					from "awayjs-display/lib/draw/IGraphicsData";
+export {default as InterpolationMethod}				from "awayjs-display/lib/draw/InterpolationMethod";
+export {default as JointStyle}						from "awayjs-display/lib/draw/JointStyle";
+export {default as LineScaleMode}					from "awayjs-display/lib/draw/LineScaleMode";
+export {default as PixelSnapping}					from "awayjs-display/lib/draw/PixelSnapping";
+export {default as SpreadMethod}					from "awayjs-display/lib/draw/SpreadMethod";
+export {default as TriangleCulling}					from "awayjs-display/lib/draw/TriangleCulling";

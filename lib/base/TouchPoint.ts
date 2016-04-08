@@ -17,4 +17,4 @@ class TouchPoint
 	}
 }
 
-export = TouchPoint;
+export default TouchPoint;

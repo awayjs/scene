@@ -1,21 +1,21 @@
-import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
-import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
-import AbstractionBase				= require("awayjs-core/lib/library/AbstractionBase");
+import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import IAbstractionPool				from "awayjs-core/lib/library/IAbstractionPool";
+import AbstractionBase				from "awayjs-core/lib/library/AbstractionBase";
 
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import AxisAlignedBoundingBox		= require("awayjs-display/lib/bounds/AxisAlignedBoundingBox");
-import BoundingSphere				= require("awayjs-display/lib/bounds/BoundingSphere");
-import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import NullBounds					= require("awayjs-display/lib/bounds/NullBounds");
-import SceneGraphNode				= require("awayjs-display/lib/partition/SceneGraphNode");
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
-import INode						= require("awayjs-display/lib/partition/INode");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import AxisAlignedBoundingBox		from "awayjs-display/lib/bounds/AxisAlignedBoundingBox";
+import BoundingSphere				from "awayjs-display/lib/bounds/BoundingSphere";
+import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
+import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
+import NullBounds					from "awayjs-display/lib/bounds/NullBounds";
+import SceneGraphNode				from "awayjs-display/lib/partition/SceneGraphNode";
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import DisplayObjectEvent			from "awayjs-display/lib/events/DisplayObjectEvent";
+import INode						from "awayjs-display/lib/partition/INode";
 
 /**
  * @class away.partition.EntityNode
@@ -149,4 +149,4 @@ class DisplayObjectNode extends AbstractionBase implements INode
 	}
 }
 
-export = DisplayObjectNode;
+export default DisplayObjectNode;

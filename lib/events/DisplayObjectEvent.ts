@@ -1,6 +1,6 @@
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
 
 class DisplayObjectEvent extends EventBase
 {
@@ -52,4 +52,4 @@ class DisplayObjectEvent extends EventBase
 	}
 }
 
-export = DisplayObjectEvent;
+export default DisplayObjectEvent;

@@ -1,4 +1,4 @@
-import INode						= require("awayjs-display/lib/partition/INode");
+import INode						from "awayjs-display/lib/partition/INode";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -15,4 +15,4 @@ interface IContainerNode extends INode
 	iRemoveNode(node:INode);
 }
 
-export = IContainerNode;
+export default IContainerNode;

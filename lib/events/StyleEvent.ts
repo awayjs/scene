@@ -1,6 +1,6 @@
-import EventBase					= require("awayjs-core/lib/events/EventBase");
+import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import Style						= require("awayjs-display/lib/base/Style");
+import Style						from "awayjs-display/lib/base/Style";
 
 class StyleEvent extends EventBase
 {
@@ -33,4 +33,4 @@ class StyleEvent extends EventBase
 	}
 }
 
-export = StyleEvent;
+export default StyleEvent;

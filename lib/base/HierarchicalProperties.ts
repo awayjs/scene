@@ -39,4 +39,4 @@ class HierarchicalProperties
 	public static ALL:number = 63;
 }
 
-export = HierarchicalProperties;
+export default HierarchicalProperties;

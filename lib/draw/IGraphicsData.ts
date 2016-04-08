@@ -13,4 +13,4 @@ interface IGraphicsData
 
 }
 
-export = IGraphicsData;
+export default IGraphicsData;

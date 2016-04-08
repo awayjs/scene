@@ -1,11 +1,11 @@
-import IEventDispatcher				= require("awayjs-core/lib/events/IEventDispatcher");
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
+import IEventDispatcher				from "awayjs-core/lib/events/IEventDispatcher";
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import ImageBase					from "awayjs-core/lib/image/ImageBase";
+import Rectangle					from "awayjs-core/lib/geom/Rectangle";
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import Scene						= require("awayjs-display/lib/display/Scene");
+import ITraverser					from "./ITraverser";
+import Camera						from "./display/Camera";
+import Scene						from "./display/Scene";
 
 /**
  * IRenderer is an interface for classes that are used in the rendering pipeline to render the
@@ -88,4 +88,4 @@ interface IRenderer extends ITraverser, IEventDispatcher
 	_iRenderCascades(camera:Camera, scene:Scene, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>);
 }
 
-export = IRenderer;
+export default IRenderer;

@@ -1,7 +1,7 @@
-import ITraverser				= require("awayjs-display/lib/ITraverser");
-import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
+import ITraverser				from "awayjs-display/lib/ITraverser";
+import DisplayObjectNode			from "awayjs-display/lib/partition/DisplayObjectNode";
+import EntityNode					from "awayjs-display/lib/partition/EntityNode";
+import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
 
 /**
  * Maintains scenegraph heirarchy when collecting nodes
@@ -97,4 +97,4 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 		} while ((node = <DisplayObjectNode> node.parent) != null);
 	}
 }
-export = SceneGraphNode;
+export default SceneGraphNode;

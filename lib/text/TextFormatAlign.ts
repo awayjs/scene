@@ -29,4 +29,4 @@ class TextFormatAlign
 	public RIGHT:string = "right";
 }
 
-export = TextFormatAlign;
+export default TextFormatAlign;

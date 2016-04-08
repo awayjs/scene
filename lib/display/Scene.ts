@@ -1,8 +1,8 @@
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import BasicPartition				= require("awayjs-display/lib/partition/BasicPartition");
-import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import BasicPartition				from "awayjs-display/lib/partition/BasicPartition";
+import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
 
 class Scene extends DisplayObjectContainer
 {
@@ -55,4 +55,4 @@ class Scene extends DisplayObjectContainer
 	}
 }
 
-export = Scene;
+export default Scene;

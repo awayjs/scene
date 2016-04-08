@@ -51,4 +51,4 @@ class GraphicsPathCommand
 	public static CUBIC_CURVE:number = 6;
 }
 
-export = GraphicsPathCommand;
+export default GraphicsPathCommand;

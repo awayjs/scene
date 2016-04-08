@@ -24,4 +24,4 @@ class SpreadMethod
 	public static REPEAT:string = "repeat";
 }
 
-export = SpreadMethod;
+export default SpreadMethod;

@@ -1,11 +1,11 @@
-import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
-import AssetBase					= require("awayjs-core/lib/library/AssetBase");
+import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
+import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import Scene						= require("awayjs-display/lib/display/Scene");
-import LightBase					= require("awayjs-display/lib/display/LightBase");
-import IRenderer					= require("awayjs-display/lib/IRenderer");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
+import Scene						from "awayjs-display/lib/display/Scene";
+import LightBase					from "awayjs-display/lib/display/LightBase";
+import IRenderer					from "awayjs-display/lib/IRenderer";
+import Camera						from "awayjs-display/lib/display/Camera";
+import TextureBase					from "awayjs-display/lib/textures/TextureBase";
 
 class ShadowMapperBase extends AssetBase
 {
@@ -118,4 +118,4 @@ class ShadowMapperBase extends AssetBase
 	}
 }
 
-export = ShadowMapperBase;
+export default ShadowMapperBase;

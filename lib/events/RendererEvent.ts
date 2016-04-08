@@ -1,4 +1,4 @@
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
 class RendererEvent extends EventBase
 {
@@ -11,4 +11,4 @@ class RendererEvent extends EventBase
 	}
 }
 
-export = RendererEvent;
+export default RendererEvent;

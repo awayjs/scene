@@ -14,4 +14,4 @@ class GraphicsPathWinding
 	public static NON_ZERO:string = "nonZero";
 }
 
-export = GraphicsPathWinding;
+export default GraphicsPathWinding;

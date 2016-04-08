@@ -27,4 +27,4 @@ class JointStyle
 	public static ROUND:string = "round";
 }
 
-export = JointStyle;
+export default JointStyle;

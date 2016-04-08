@@ -1,21 +1,18 @@
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Point						= require("awayjs-core/lib/geom/Point");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import getTimer						= require("awayjs-core/lib/utils/getTimer");
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import getTimer						from "awayjs-core/lib/utils/getTimer";
 
-import IRenderer					= require("awayjs-display/lib/IRenderer");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import TouchPoint					= require("awayjs-display/lib/base/TouchPoint");
-import Scene						= require("awayjs-display/lib/display/Scene");
-import IPicker						= require("awayjs-display/lib/pick/IPicker");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import RaycastPicker				= require("awayjs-display/lib/pick/RaycastPicker");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
-import DisplayObjectEvent			= require("awayjs-display/lib/events/DisplayObjectEvent");
-import RendererEvent				= require("awayjs-display/lib/events/RendererEvent");
-import MouseManager					= require("awayjs-display/lib/managers/MouseManager");
+import IRenderer					from "./IRenderer";
+import DisplayObject				from "./display/DisplayObject";
+import TouchPoint					from "./base/TouchPoint";
+import Scene						from "./display/Scene";
+import IPicker						from "./pick/IPicker";
+import PickingCollision				from "./pick/PickingCollision";
+import RaycastPicker				from "./pick/RaycastPicker";
+import Camera						from "./display/Camera";
+import CameraEvent					from "./events/CameraEvent";
+import DisplayObjectEvent			from "./events/DisplayObjectEvent";
+import RendererEvent				from "./events/RendererEvent";
+import MouseManager					from "./managers/MouseManager";
 
 class View
 {
@@ -610,4 +607,4 @@ class View
 	}
 }
 
-export = View;
+export default View;

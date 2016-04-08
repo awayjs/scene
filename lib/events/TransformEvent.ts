@@ -1,6 +1,6 @@
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
-import Transform				= require("awayjs-display/lib/base/Transform");
+import Transform				from "awayjs-display/lib/base/Transform";
 
 class TransformEvent extends EventBase
 {
@@ -38,4 +38,4 @@ class TransformEvent extends EventBase
 	}
 }
 
-export = TransformEvent;
+export default TransformEvent;

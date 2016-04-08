@@ -1,11 +1,11 @@
-import Box							= require("awayjs-core/lib/geom/Box");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import Box							from "awayjs-core/lib/geom/Box";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import Sprite						= require("awayjs-display/lib/display/Sprite");
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import Sprite						from "awayjs-display/lib/display/Sprite";
 
 class BoundingVolumeBase
 {
@@ -79,4 +79,4 @@ class BoundingVolumeBase
 	}
 }
 
-export = BoundingVolumeBase;
+export default BoundingVolumeBase;

@@ -1,6 +1,6 @@
-import EventBase					= require("awayjs-core/lib/events/EventBase");
+import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import IRenderable						= require("awayjs-display/lib/base/IRenderable");
+import IRenderable						from "awayjs-display/lib/base/IRenderable";
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.
@@ -53,4 +53,4 @@ class RenderableEvent extends EventBase
 	}
 }
 
-export = RenderableEvent;
+export default RenderableEvent;

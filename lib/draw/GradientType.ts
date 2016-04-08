@@ -17,4 +17,4 @@ class GradientType
 	public static RADIAL:string = "radial";
 }
 
-export = GradientType;
+export default GradientType;

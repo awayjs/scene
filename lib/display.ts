@@ -1,0 +1,17 @@
+export {default as Billboard}						from "awayjs-display/lib/display/Billboard";
+export {default as Camera}							from "awayjs-display/lib/display/Camera";
+export {default as DirectionalLight}				from "awayjs-display/lib/display/DirectionalLight";
+export {default as DisplayObject}					from "awayjs-display/lib/display/DisplayObject";
+export {default as DisplayObjectContainer}			from "awayjs-display/lib/display/DisplayObjectContainer";
+export {default as IEntity}							from "awayjs-display/lib/display/IEntity";
+export {default as LightBase}						from "awayjs-display/lib/display/LightBase";
+export {default as LightProbe}						from "awayjs-display/lib/display/LightProbe";
+export {default as LineSegment}						from "awayjs-display/lib/display/LineSegment";
+export {default as LoaderContainer}					from "awayjs-display/lib/display/LoaderContainer";
+export {default as MovieClip}						from "awayjs-display/lib/display/MovieClip";
+export {default as PointLight}						from "awayjs-display/lib/display/PointLight";
+export {default as Scene}							from "awayjs-display/lib/display/Scene";
+export {default as Shape}							from "awayjs-display/lib/display/Shape";
+export {default as Skybox}							from "awayjs-display/lib/display/Skybox";
+export {default as Sprite}							from "awayjs-display/lib/display/Sprite";
+export {default as TextField}						from "awayjs-display/lib/display/TextField";

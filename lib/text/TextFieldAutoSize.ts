@@ -31,4 +31,4 @@ class TextFieldAutoSize
 	public static RIGHT:string = "right";
 }
 
-export = TextFieldAutoSize;
+export default TextFieldAutoSize;

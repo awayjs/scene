@@ -1,5 +1,5 @@
-import AttributesView			= require("awayjs-core/lib/attributes/AttributesView");
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.
@@ -63,4 +63,4 @@ class ElementsEvent extends EventBase
 	}
 }
 
-export = ElementsEvent;
+export default ElementsEvent;

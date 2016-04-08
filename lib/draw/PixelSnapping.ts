@@ -30,4 +30,4 @@ class PixelSnapping
 	public static NEVER:string = "never";
 }
 
-export = PixelSnapping;
+export default PixelSnapping;

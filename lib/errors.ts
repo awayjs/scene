@@ -1,0 +1,1 @@
+export {default as CastError}						from "awayjs-display/lib/errors/CastError";

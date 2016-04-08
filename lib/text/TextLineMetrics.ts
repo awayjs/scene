@@ -70,4 +70,4 @@ class TextLineMetrics
 	}
 }
 
-export = TextLineMetrics;
+export default TextLineMetrics;

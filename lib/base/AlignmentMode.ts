@@ -14,4 +14,4 @@ class AlignmentMode
 	public static PIVOT_POINT:string = "pivot";
 }
 
-export = AlignmentMode;
+export default AlignmentMode;

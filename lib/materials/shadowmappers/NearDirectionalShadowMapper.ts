@@ -1,5 +1,5 @@
-import Camera						= require("awayjs-display/lib/display/Camera");
-import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+import Camera						from "awayjs-display/lib/display/Camera";
+import DirectionalShadowMapper		from "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper";
 
 class NearDirectionalShadowMapper extends DirectionalShadowMapper
 {
@@ -44,4 +44,4 @@ class NearDirectionalShadowMapper extends DirectionalShadowMapper
 	}
 }
 
-export = NearDirectionalShadowMapper;
+export default NearDirectionalShadowMapper;

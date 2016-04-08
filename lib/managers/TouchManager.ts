@@ -1,9 +1,9 @@
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import View							= require("awayjs-display/lib/View");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
-import AwayTouchEvent				= require("awayjs-display/lib/events/TouchEvent");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import View							from "awayjs-display/lib/View";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import AwayTouchEvent				from "awayjs-display/lib/events/TouchEvent";
 
 class TouchManager
 {
@@ -231,7 +231,7 @@ class TouchManager
 }
 
 
-export = TouchManager;
+export default TouchManager;
 
 class TouchPoint
 {

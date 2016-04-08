@@ -1,6 +1,6 @@
-import TesselatedFontTable			= require("awayjs-display/lib/text/TesselatedFontTable");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import TriangleElements				= require("awayjs-display/lib/graphics/TriangleElements");
+import TesselatedFontTable			from "awayjs-display/lib/text/TesselatedFontTable";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -58,4 +58,4 @@ class TesselatedFontChar
 
 }
 
-export = TesselatedFontChar;
+export default TesselatedFontChar;

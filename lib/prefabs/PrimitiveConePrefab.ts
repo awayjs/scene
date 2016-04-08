@@ -1,7 +1,7 @@
-import IAsset					= require("awayjs-core/lib/library/IAsset");
+import IAsset					from "awayjs-core/lib/library/IAsset";
 
-import MaterialBase				= require("awayjs-display/lib/materials/MaterialBase");
-import PrimitiveCylinderPrefab	= require("awayjs-display/lib/prefabs/PrimitiveCylinderPrefab");
+import MaterialBase				from "awayjs-display/lib/materials/MaterialBase";
+import PrimitiveCylinderPrefab	from "awayjs-display/lib/prefabs/PrimitiveCylinderPrefab";
 
 /**
  * A UV Cone primitive sprite.
@@ -38,4 +38,4 @@ class PrimitiveConePrefab extends PrimitiveCylinderPrefab
 	}
 }
 
-export = PrimitiveConePrefab;
+export default PrimitiveConePrefab;

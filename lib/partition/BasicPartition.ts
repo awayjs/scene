@@ -1,7 +1,7 @@
-import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+import DisplayObject from "awayjs-display/lib/display/DisplayObject";
 
-import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
-import PartitionBase				= require("awayjs-display/lib/partition/PartitionBase");
+import NodeBase						from "awayjs-display/lib/partition/NodeBase";
+import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
 
 
 /**
@@ -17,4 +17,4 @@ class BasicPartition extends PartitionBase
 	}
 }
 
-export = BasicPartition;
+export default BasicPartition;

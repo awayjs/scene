@@ -1,13 +1,12 @@
-import IAbstractionPool				= require("awayjs-core/lib/library/IAbstractionPool");
-import IAssetClass					= require("awayjs-core/lib/library/IAssetClass");
+import IAbstractionPool				from "awayjs-core/lib/library/IAbstractionPool";
+import IAssetClass					from "awayjs-core/lib/library/IAssetClass";
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import EntityNode					= require("awayjs-display/lib/partition/EntityNode");
-import NodeBase						= require("awayjs-display/lib/partition/NodeBase");
-import IEntityNodeClass				= require("awayjs-display/lib/partition/IEntityNodeClass");
-import DisplayObjectNode			= require("awayjs-display/lib/partition/DisplayObjectNode");
-import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import EntityNode					from "awayjs-display/lib/partition/EntityNode";
+import IEntityNodeClass				from "awayjs-display/lib/partition/IEntityNodeClass";
+import DisplayObjectNode			from "awayjs-display/lib/partition/DisplayObjectNode";
+import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
 
 /**
  * @class away.partition.Partition
@@ -164,4 +163,4 @@ class PartitionBase implements IAbstractionPool
 	}
 }
 
-export = PartitionBase;
+export default PartitionBase;

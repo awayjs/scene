@@ -1,11 +1,11 @@
-import Matrix3D					= require("awayjs-core/lib/geom/Matrix3D");
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
+import Matrix3D					from "awayjs-core/lib/geom/Matrix3D";
+import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObjectContainer	= require("awayjs-display/lib/display/DisplayObjectContainer");
-import Camera					= require("awayjs-display/lib/display/Camera");
-import IEntity					= require("awayjs-display/lib/display/IEntity");
-import LightEvent				= require("awayjs-display/lib/events/LightEvent");
-import ShadowMapperBase			= require("awayjs-display/lib/materials/shadowmappers/ShadowMapperBase");
+import DisplayObjectContainer	from "awayjs-display/lib/display/DisplayObjectContainer";
+import Camera					from "awayjs-display/lib/display/Camera";
+import IEntity					from "awayjs-display/lib/display/IEntity";
+import LightEvent				from "awayjs-display/lib/events/LightEvent";
+import ShadowMapperBase			from "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase";
 
 class LightBase extends DisplayObjectContainer
 {
@@ -178,4 +178,4 @@ class LightBase extends DisplayObjectContainer
 	}
 }
 
-export = LightBase;
+export default LightBase;

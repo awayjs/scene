@@ -1,25 +1,22 @@
-import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
-import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
-import Image2D						= require("awayjs-core/lib/image/Image2D");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
+import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
+import Image2D						from "awayjs-core/lib/image/Image2D";
+import Rectangle					from "awayjs-core/lib/geom/Rectangle";
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import RenderableEvent				= require("awayjs-display/lib/events/RenderableEvent");
-import SurfaceEvent					= require("awayjs-display/lib/events/SurfaceEvent");
-import DefaultMaterialManager		= require("awayjs-display/lib/managers/DefaultMaterialManager");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-import Style						= require("awayjs-display/lib/base/Style");
-import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
-import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import IAnimator					from "awayjs-display/lib/animators/IAnimator";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import IRenderable					from "awayjs-display/lib/base/IRenderable";
+import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import RenderableEvent				from "awayjs-display/lib/events/RenderableEvent";
+import SurfaceEvent					from "awayjs-display/lib/events/SurfaceEvent";
+import DefaultMaterialManager		from "awayjs-display/lib/managers/DefaultMaterialManager";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import Style						from "awayjs-display/lib/base/Style";
+import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
+import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -264,4 +261,4 @@ class Billboard extends DisplayObject implements IEntity, IRenderable
 	}
 }
 
-export = Billboard;
+export default Billboard;

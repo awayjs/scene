@@ -1,9 +1,9 @@
-import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
-import AssetBase					= require("awayjs-core/lib/library/AssetBase");
-import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
+import ImageBase					from "awayjs-core/lib/image/ImageBase";
+import SamplerBase					from "awayjs-core/lib/image/SamplerBase";
+import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import ISurface						= require("awayjs-display/lib/base/ISurface");
+import ISurface						from "awayjs-display/lib/base/ISurface";
 /**
  *
  */
@@ -64,4 +64,4 @@ class TextureBase extends AssetBase
 	}
 }
 
-export = TextureBase;
+export default TextureBase;

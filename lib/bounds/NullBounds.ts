@@ -1,7 +1,7 @@
-import PlaneClassification			= require("awayjs-core/lib/geom/PlaneClassification");
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
+import PlaneClassification			from "awayjs-core/lib/geom/PlaneClassification";
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 
-import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
+import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
 
 
 class NullBounds extends BoundingVolumeBase
@@ -33,4 +33,4 @@ class NullBounds extends BoundingVolumeBase
 	}
 }
 
-export = NullBounds;
+export default NullBounds;

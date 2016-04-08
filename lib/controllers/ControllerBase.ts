@@ -1,6 +1,6 @@
-import AbstractMethodError		= require("awayjs-core/lib/errors/AbstractMethodError");
+import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObject			= require("awayjs-display/lib/display/DisplayObject");
+import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
 
 class ControllerBase
 {
@@ -74,4 +74,4 @@ class ControllerBase
 	}
 }
 
-export = ControllerBase;
+export default ControllerBase;

@@ -69,14 +69,14 @@ gulp.task('tests', function () {
 function browserifyShare(callback) {
     var b = browserify({
         debug: true,
-        entries: './display.ts',
+        entries: './index.ts',
         paths: ['../'],
         cache: {},
         packageCache: {},
-        fullPaths: true
+        fullPaths: false
     });
 
-    b.plugin('tsify', {target:'ES5', sourceRoot:'../', noExternalResolve: true, declarationFiles: './node_modules/awayjs-**/build/*.d.ts', declarationOutput: './build/awayjs-display.d.ts'});
+    b.plugin('tsify', {target:'ES5', sourceRoot:'../', noExternalResolve: true});
 
     glob('./node_modules/awayjs-**/lib/**/*.ts', {}, function (error, files) {
         files.forEach(function (file) {

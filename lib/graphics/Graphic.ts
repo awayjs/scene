@@ -1,23 +1,23 @@
-import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
-import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
-import AssetBase					= require("awayjs-core/lib/library/AssetBase");
+import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
+import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Matrix						from "awayjs-core/lib/geom/Matrix";
+import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
+import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import Sprite						= require("awayjs-display/lib/display/Sprite");
-import RenderableEvent			= require("awayjs-display/lib/events/RenderableEvent");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import Style						= require("awayjs-display/lib/base/Style");
-import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
-import IRenderable 			= require("awayjs-display/lib/base/IRenderable");
-import Graphics						= require("awayjs-display/lib/graphics/Graphics");
-import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
-import IPickingCollider = require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision = require("awayjs-display/lib/pick/PickingCollision");
-import DisplayObject = require("awayjs-display/lib/display/DisplayObject");
+import IAnimator					from "awayjs-display/lib/animators/IAnimator";
+import Camera						from "awayjs-display/lib/display/Camera";
+import Sprite						from "awayjs-display/lib/display/Sprite";
+import RenderableEvent			from "awayjs-display/lib/events/RenderableEvent";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import Style						from "awayjs-display/lib/base/Style";
+import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
+import IRenderable 			from "awayjs-display/lib/base/IRenderable";
+import Graphics						from "awayjs-display/lib/graphics/Graphics";
+import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
+import IPickingCollider from "awayjs-display/lib/pick/IPickingCollider";
+import PickingCollision from "awayjs-display/lib/pick/PickingCollision";
+import DisplayObject from "awayjs-display/lib/display/DisplayObject";
 
 /**
  * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Sprite object.
@@ -185,4 +185,4 @@ class Graphic extends AssetBase implements IRenderable
 
 }
 
-export = Graphic;
+export default Graphic;

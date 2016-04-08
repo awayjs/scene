@@ -1,16 +1,16 @@
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import ProjectionEvent				= require("awayjs-core/lib/events/ProjectionEvent");
-import IProjection					= require("awayjs-core/lib/projections/IProjection");
-import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import ProjectionEvent				from "awayjs-core/lib/events/ProjectionEvent";
+import IProjection					from "awayjs-core/lib/projections/IProjection";
+import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
 
-import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
-import IRenderer					= require("awayjs-display/lib/IRenderer");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import CameraEvent					= require("awayjs-display/lib/events/CameraEvent");
+import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
+import IRenderer					from "awayjs-display/lib/IRenderer";
+import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import CameraEvent					from "awayjs-display/lib/events/CameraEvent";
 
 
 class Camera extends DisplayObjectContainer implements IEntity
@@ -264,4 +264,4 @@ class Camera extends DisplayObjectContainer implements IEntity
 	}
 }
 
-export = Camera;
+export default Camera;

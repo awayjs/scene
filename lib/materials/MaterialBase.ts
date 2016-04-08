@@ -1,25 +1,18 @@
-import BlendMode					= require("awayjs-core/lib/image/BlendMode");
-import ImageBase					= require("awayjs-core/lib/image/ImageBase");
-import SamplerBase					= require("awayjs-core/lib/image/SamplerBase");
-import Sampler2D					= require("awayjs-core/lib/image/Sampler2D");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import AbstractMethodError			= require("awayjs-core/lib/errors/AbstractMethodError");
-import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
-import AssetBase					= require("awayjs-core/lib/library/AssetBase");
+import BlendMode					from "awayjs-core/lib/image/BlendMode";
+import ImageBase					from "awayjs-core/lib/image/ImageBase";
+import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
+import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import IAnimationSet				= require("awayjs-display/lib/animators/IAnimationSet");
-import IAnimator					= require("awayjs-display/lib/animators/IAnimator");
-import ISurface						= require("awayjs-display/lib/base/ISurface");
-import IRenderable					= require("awayjs-display/lib/base/IRenderable");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import SurfaceEvent				= require("awayjs-display/lib/events/SurfaceEvent");
-import LightPickerBase				= require("awayjs-display/lib/materials/lightpickers/LightPickerBase");
-import TextureBase					= require("awayjs-display/lib/textures/TextureBase");
-import Single2DTexture				= require("awayjs-display/lib/textures/Single2DTexture");
-import Style						= require("awayjs-display/lib/base/Style");
-import StyleEvent					= require("awayjs-display/lib/events/StyleEvent");
+import IAnimationSet				from "awayjs-display/lib/animators/IAnimationSet";
+import IAnimator					from "awayjs-display/lib/animators/IAnimator";
+import ISurface						from "awayjs-display/lib/base/ISurface";
+import IRenderable					from "awayjs-display/lib/base/IRenderable";
+import SurfaceEvent					from "awayjs-display/lib/events/SurfaceEvent";
+import LightPickerBase				from "awayjs-display/lib/materials/lightpickers/LightPickerBase";
+import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import Style						from "awayjs-display/lib/base/Style";
+import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
 
 /**
  * MaterialBase forms an abstract base class for any material.
@@ -616,4 +609,4 @@ class MaterialBase extends AssetBase implements ISurface
 	}
 }
 
-export = MaterialBase;
+export default MaterialBase;

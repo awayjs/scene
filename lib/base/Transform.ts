@@ -1,15 +1,15 @@
-import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
-import ColorTransform				= require("awayjs-core/lib/geom/ColorTransform");
-import Matrix						= require("awayjs-core/lib/geom/Matrix");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
-import Rectangle					= require("awayjs-core/lib/geom/Rectangle");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
-import PerspectiveProjection		= require("awayjs-core/lib/projections/PerspectiveProjection");
+import EventDispatcher				from "awayjs-core/lib/events/EventDispatcher";
+import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
+import Matrix						from "awayjs-core/lib/geom/Matrix";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
+import Rectangle					from "awayjs-core/lib/geom/Rectangle";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
 
 
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import TransformEvent				= require("awayjs-display/lib/events/TransformEvent");
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import TransformEvent				from "awayjs-display/lib/events/TransformEvent";
 
 /**
  * The Transform class provides access to color adjustment properties and two-
@@ -615,4 +615,4 @@ class Transform extends EventDispatcher
 	}
 }
 
-export = Transform;
+export default Transform;

@@ -1,17 +1,17 @@
-import AttributesBuffer				= require("awayjs-core/lib/attributes/AttributesBuffer");
-import AttributesView				= require("awayjs-core/lib/attributes/AttributesView");
-import Byte4Attributes				= require("awayjs-core/lib/attributes/Byte4Attributes");
-import Float3Attributes				= require("awayjs-core/lib/attributes/Float3Attributes");
-import Float1Attributes				= require("awayjs-core/lib/attributes/Float1Attributes");
-import Box							= require("awayjs-core/lib/geom/Box");
-import Sphere						= require("awayjs-core/lib/geom/Sphere");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import AttributesBuffer				from "awayjs-core/lib/attributes/AttributesBuffer";
+import AttributesView				from "awayjs-core/lib/attributes/AttributesView";
+import Byte4Attributes				from "awayjs-core/lib/attributes/Byte4Attributes";
+import Float3Attributes				from "awayjs-core/lib/attributes/Float3Attributes";
+import Float1Attributes				from "awayjs-core/lib/attributes/Float1Attributes";
+import Box							from "awayjs-core/lib/geom/Box";
+import Sphere						from "awayjs-core/lib/geom/Sphere";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsBase					= require("awayjs-display/lib/graphics/ElementsBase");
-import MaterialBase					= require("awayjs-display/lib/materials/MaterialBase");
-import ElementsUtils				= require("awayjs-display/lib/utils/ElementsUtils");
-import IPickingCollider				= require("awayjs-display/lib/pick/IPickingCollider");
-import PickingCollision				= require("awayjs-display/lib/pick/PickingCollision");
+import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
+import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import ElementsUtils				from "awayjs-display/lib/utils/ElementsUtils";
+import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
+import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
 
 /**
  * @class LineElements
@@ -293,4 +293,4 @@ class LineElements extends ElementsBase
 	}
 }
 
-export = LineElements;
+export default LineElements;

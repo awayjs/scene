@@ -1,13 +1,12 @@
-import Matrix3DUtils				= require("awayjs-core/lib/geom/Matrix3DUtils");
-import Matrix3D						= require("awayjs-core/lib/geom/Matrix3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
+import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import LightBase					= require("awayjs-display/lib/display/LightBase");
-import HierarchicalProperties		= require("awayjs-display/lib/base/HierarchicalProperties");
-import BoundsType					= require("awayjs-display/lib/bounds/BoundsType");
-import Camera						= require("awayjs-display/lib/display/Camera");
-import IEntity						= require("awayjs-display/lib/display/IEntity");
-import DirectionalShadowMapper		= require("awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper");
+import LightBase					from "awayjs-display/lib/display/LightBase";
+import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
+import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
+import IEntity						from "awayjs-display/lib/display/IEntity";
+import DirectionalShadowMapper		from "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper";
 
 class DirectionalLight extends LightBase implements IEntity
 {
@@ -190,4 +189,4 @@ class DirectionalLight extends LightBase implements IEntity
 	}
 }
 
-export = DirectionalLight;
+export default DirectionalLight;

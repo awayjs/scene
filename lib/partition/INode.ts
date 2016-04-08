@@ -1,10 +1,10 @@
-import Plane3D						= require("awayjs-core/lib/geom/Plane3D");
-import Vector3D						= require("awayjs-core/lib/geom/Vector3D");
+import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					= require("awayjs-display/lib/ITraverser");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
-import IContainerNode				= require("awayjs-display/lib/partition/IContainerNode");
-import BoundingVolumeBase			= require("awayjs-display/lib/bounds/BoundingVolumeBase");
+import ITraverser					from "awayjs-display/lib/ITraverser";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
+import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -33,4 +33,4 @@ interface INode
 	isCastingShadow():boolean;
 }
 
-export = INode;
+export default INode;

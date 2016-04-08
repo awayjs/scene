@@ -1,6 +1,6 @@
-import EventBase				= require("awayjs-core/lib/events/EventBase");
+import EventBase				from "awayjs-core/lib/events/EventBase";
 
-import Camera					= require("awayjs-display/lib/display/Camera");
+import Camera					from "awayjs-display/lib/display/Camera";
 
 /**
  * @class away.events.CameraEvent
@@ -33,4 +33,4 @@ class CameraEvent extends EventBase
 	}
 }
 
-export = CameraEvent;
+export default CameraEvent;

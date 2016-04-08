@@ -1,16 +1,16 @@
-import AssetLibraryBundle			= require("awayjs-core/lib/library/AssetLibraryBundle");
-import Loader						= require("awayjs-core/lib/library/Loader");
-import LoaderContext				= require("awayjs-core/lib/library/LoaderContext");
-import URLRequest					= require("awayjs-core/lib/net/URLRequest");
-import AssetEvent					= require("awayjs-core/lib/events/AssetEvent");
-import EventDispatcher				= require("awayjs-core/lib/events/EventDispatcher");
-import URLLoaderEvent				= require("awayjs-core/lib/events/URLLoaderEvent");
-import LoaderEvent					= require("awayjs-core/lib/events/LoaderEvent");
-import ParserEvent					= require("awayjs-core/lib/events/ParserEvent");
-import ParserBase					= require("awayjs-core/lib/parsers/ParserBase");
+import AssetLibraryBundle			from "awayjs-core/lib/library/AssetLibraryBundle";
+import Loader						from "awayjs-core/lib/library/Loader";
+import LoaderContext				from "awayjs-core/lib/library/LoaderContext";
+import URLRequest					from "awayjs-core/lib/net/URLRequest";
+import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import EventDispatcher				from "awayjs-core/lib/events/EventDispatcher";
+import URLLoaderEvent				from "awayjs-core/lib/events/URLLoaderEvent";
+import LoaderEvent					from "awayjs-core/lib/events/LoaderEvent";
+import ParserEvent					from "awayjs-core/lib/events/ParserEvent";
+import ParserBase					from "awayjs-core/lib/parsers/ParserBase";
 
-import DisplayObjectContainer		= require("awayjs-display/lib/display/DisplayObjectContainer");
-import DisplayObject				= require("awayjs-display/lib/display/DisplayObject");
+import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
 
 /**
  * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)
@@ -610,4 +610,4 @@ class LoaderContainer extends DisplayObjectContainer
 	}
 }
 
-export = LoaderContainer;
+export default LoaderContainer;
