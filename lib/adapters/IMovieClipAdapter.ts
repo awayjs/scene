@@ -1,5 +1,5 @@
-import IDisplayObjectAdapter		from "awayjs-display/lib/adapters/IDisplayObjectAdapter";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import IDisplayObjectAdapter		from "../adapters/IDisplayObjectAdapter";
+import DisplayObject				from "../display/DisplayObject";
 
 interface IMovieClipAdapter extends IDisplayObjectAdapter
 {

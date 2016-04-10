@@ -1,7 +1,7 @@
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import TesselatedFontTable			from "awayjs-display/lib/text/TesselatedFontTable";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import TesselatedFontTable			from "../text/TesselatedFontTable";
+import MaterialBase					from "../materials/MaterialBase";
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You

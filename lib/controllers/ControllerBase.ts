@@ -1,6 +1,6 @@
 import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
+import DisplayObject			from "../display/DisplayObject";
 
 class ControllerBase
 {

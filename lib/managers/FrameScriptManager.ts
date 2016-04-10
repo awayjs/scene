@@ -1,5 +1,5 @@
-import DisplayObject					from "awayjs-display/lib/display/DisplayObject";
-import MovieClip						from "awayjs-display/lib/display/MovieClip";
+import DisplayObject					from "../display/DisplayObject";
+import MovieClip						from "../display/MovieClip";
 
 class FrameScriptManager
 {

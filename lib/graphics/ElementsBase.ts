@@ -10,10 +10,10 @@ import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import Rectangle					from "awayjs-core/lib/geom/Rectangle";
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsEvent				from "awayjs-display/lib/events/ElementsEvent";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import ElementsEvent				from "../events/ElementsEvent";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
+import MaterialBase					from "../materials/MaterialBase";
 
 /**
  * @class away.base.TriangleElements

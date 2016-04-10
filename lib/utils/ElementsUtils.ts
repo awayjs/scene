@@ -10,7 +10,7 @@ import Vector3D					from "awayjs-core/lib/geom/Vector3D";
 import Box						from "awayjs-core/lib/geom/Box";
 import Sphere					from "awayjs-core/lib/geom/Sphere";
 
-import TriangleElements			from "awayjs-display/lib/graphics/TriangleElements";
+import TriangleElements			from "../graphics/TriangleElements";
 
 class ElementsUtils
 {

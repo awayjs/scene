@@ -2,12 +2,12 @@ import ImageCube					from "awayjs-core/lib/image/ImageCube";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
 
-import Scene						from "awayjs-display/lib/display/Scene";
-import Camera						from "awayjs-display/lib/display/Camera";
-import PointLight					from "awayjs-display/lib/display/PointLight";
-import ShadowMapperBase				from "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase";
-import IRenderer					from "awayjs-display/lib/IRenderer";
-import SingleCubeTexture			from "awayjs-display/lib/textures/SingleCubeTexture";
+import Scene						from "../../display/Scene";
+import Camera						from "../../display/Camera";
+import PointLight					from "../../display/PointLight";
+import ShadowMapperBase				from "../../materials/shadowmappers/ShadowMapperBase";
+import IRenderer					from "../../IRenderer";
+import SingleCubeTexture			from "../../textures/SingleCubeTexture";
 
 class CubeMapShadowMapper extends ShadowMapperBase
 {

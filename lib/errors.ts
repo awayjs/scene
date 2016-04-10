@@ -1,1 +1,1 @@
-export {default as CastError}						from "awayjs-display/lib/errors/CastError";
+export {default as CastError}						from "./errors/CastError";

@@ -1,17 +1,17 @@
 ﻿import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import IAnimator					from "awayjs-display/lib/animators/IAnimator";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import IRenderable					from "awayjs-display/lib/base/IRenderable";
-import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
-import RenderableEvent				from "awayjs-display/lib/events/RenderableEvent";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import Style						from "awayjs-display/lib/base/Style";
-import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import ITraverser					from "../ITraverser";
+import IAnimator					from "../animators/IAnimator";
+import DisplayObject				from "../display/DisplayObject";
+import IRenderable					from "../base/IRenderable";
+import BoundsType					from "../bounds/BoundsType";
+import RenderableEvent				from "../events/RenderableEvent";
+import IEntity						from "../display/IEntity";
+import MaterialBase					from "../materials/MaterialBase";
+import Style						from "../base/Style";
+import StyleEvent					from "../events/StyleEvent";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
 
 /**
  * A Line Segment primitive.

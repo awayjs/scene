@@ -1,10 +1,10 @@
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import Billboard					from "awayjs-display/lib/display/Billboard";
-import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
-import LineElements					from "awayjs-display/lib/graphics/LineElements";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
+import PickingCollision				from "../pick/PickingCollision";
+import Billboard					from "../display/Billboard";
+import TriangleElements				from "../graphics/TriangleElements";
+import LineElements					from "../graphics/LineElements";
+import MaterialBase					from "../materials/MaterialBase";
 
 /**
  * Provides an interface for picking colliders that can be assigned to individual entities in a scene for specific picking behaviour.

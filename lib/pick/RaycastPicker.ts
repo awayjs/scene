@@ -1,16 +1,16 @@
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
 
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import Scene						from "awayjs-display/lib/display/Scene";
-import View							from "awayjs-display/lib/View";
-import IPicker						from "awayjs-display/lib/pick/IPicker";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import IRenderable					from "awayjs-display/lib/base/IRenderable";
-import INode						from "awayjs-display/lib/partition/INode";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
+import ITraverser					from "../ITraverser";
+import DisplayObject				from "../display/DisplayObject";
+import Scene						from "../display/Scene";
+import View							from "../View";
+import IPicker						from "../pick/IPicker";
+import PickingCollision				from "../pick/PickingCollision";
+import IEntity						from "../display/IEntity";
+import IRenderable					from "../base/IRenderable";
+import INode						from "../partition/INode";
+import IPickingCollider				from "../pick/IPickingCollider";
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.

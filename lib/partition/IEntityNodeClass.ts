@@ -1,6 +1,6 @@
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import EntityNode					from "awayjs-display/lib/partition/EntityNode";
-import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import IEntity						from "../display/IEntity";
+import EntityNode					from "../partition/EntityNode";
+import PartitionBase				from "../partition/PartitionBase";
 
 /**
  * IEntityNodeClass is an interface for the constructable class definition EntityNode that is used to

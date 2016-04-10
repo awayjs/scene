@@ -1,6 +1,6 @@
-export {default as ElementsBase}					from "awayjs-display/lib/graphics/ElementsBase";
-export {default as ElementsType}					from "awayjs-display/lib/graphics/ElementsType";
-export {default as Graphic}							from "awayjs-display/lib/graphics/Graphic";
-export {default as Graphics}						from "awayjs-display/lib/graphics/Graphics";
-export {default as LineElements}					from "awayjs-display/lib/graphics/LineElements";
-export {default as TriangleElements}				from "awayjs-display/lib/graphics/TriangleElements";
+export {default as ElementsBase}					from "./graphics/ElementsBase";
+export {default as ElementsType}					from "./graphics/ElementsType";
+export {default as Graphic}							from "./graphics/Graphic";
+export {default as Graphics}						from "./graphics/Graphics";
+export {default as LineElements}					from "./graphics/LineElements";
+export {default as TriangleElements}				from "./graphics/TriangleElements";

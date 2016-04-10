@@ -1,8 +1,8 @@
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import Scene						from "awayjs-display/lib/display/Scene";
-import View							from "awayjs-display/lib/View";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import Scene						from "../display/Scene";
+import View							from "../View";
+import PickingCollision				from "../pick/PickingCollision";
 
 /**
  * Provides an interface for picking objects that can pick 3d objects from a view or scene.

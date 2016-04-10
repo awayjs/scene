@@ -5,19 +5,19 @@ import Sphere						from "awayjs-core/lib/geom/Sphere";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import IAsset						from "awayjs-core/lib/library/IAsset";
 
-import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import Transform					from "awayjs-display/lib/base/Transform";
-import Scene						from "awayjs-display/lib/display/Scene";
-import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
-import ControllerBase				from "awayjs-display/lib/controllers/ControllerBase";
-import Camera						from "awayjs-display/lib/display/Camera";
-import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
-import EntityNode					from "awayjs-display/lib/partition/EntityNode";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import IRenderer					from "awayjs-display/lib/IRenderer";
-import ITraverser					from "awayjs-display/lib/ITraverser";
+import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
+import DisplayObject				from "../display/DisplayObject";
+import Transform					from "../base/Transform";
+import Scene						from "../display/Scene";
+import DisplayObjectContainer		from "../display/DisplayObjectContainer";
+import ControllerBase				from "../controllers/ControllerBase";
+import Camera						from "../display/Camera";
+import PartitionBase				from "../partition/PartitionBase";
+import EntityNode					from "../partition/EntityNode";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
+import IRenderer					from "../IRenderer";
+import ITraverser					from "../ITraverser";
 
 interface IEntity extends IAsset
 {

@@ -1,6 +1,6 @@
 import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import Style						from "awayjs-display/lib/base/Style";
+import Style						from "../base/Style";
 
 class StyleEvent extends EventBase
 {

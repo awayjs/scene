@@ -6,23 +6,23 @@ import SamplerBase					from "awayjs-core/lib/image/SamplerBase";
 import Matrix						from "awayjs-core/lib/geom/Matrix";
 import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
 
-import IAnimationSet				from "awayjs-display/lib/animators/IAnimationSet";
-import IAnimator					from "awayjs-display/lib/animators/IAnimator";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import IRenderable					from "awayjs-display/lib/base/IRenderable";
-import ISurface						from "awayjs-display/lib/base/ISurface";
-import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import RenderableEvent				from "awayjs-display/lib/events/RenderableEvent";
-import SurfaceEvent					from "awayjs-display/lib/events/SurfaceEvent";
-import LightPickerBase				from "awayjs-display/lib/materials/lightpickers/LightPickerBase";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import SingleCubeTexture			from "awayjs-display/lib/textures/SingleCubeTexture";
-import TextureBase					from "awayjs-display/lib/textures/TextureBase";
-import Style						from "awayjs-display/lib/base/Style";
-import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import IAnimationSet				from "../animators/IAnimationSet";
+import IAnimator					from "../animators/IAnimator";
+import DisplayObject				from "../display/DisplayObject";
+import IRenderable					from "../base/IRenderable";
+import ISurface						from "../base/ISurface";
+import BoundsType					from "../bounds/BoundsType";
+import IEntity						from "../display/IEntity";
+import RenderableEvent				from "../events/RenderableEvent";
+import SurfaceEvent					from "../events/SurfaceEvent";
+import LightPickerBase				from "../materials/lightpickers/LightPickerBase";
+import MaterialBase					from "../materials/MaterialBase";
+import SingleCubeTexture			from "../textures/SingleCubeTexture";
+import TextureBase					from "../textures/TextureBase";
+import Style						from "../base/Style";
+import StyleEvent					from "../events/StyleEvent";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as

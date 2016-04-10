@@ -1,10 +1,10 @@
 import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
-import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
+import ITraverser					from "../ITraverser";
+import DisplayObject				from "../display/DisplayObject";
+import IContainerNode				from "../partition/IContainerNode";
+import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to

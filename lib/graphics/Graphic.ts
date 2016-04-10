@@ -5,19 +5,19 @@ import Matrix						from "awayjs-core/lib/geom/Matrix";
 import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import IAnimator					from "awayjs-display/lib/animators/IAnimator";
-import Camera						from "awayjs-display/lib/display/Camera";
-import Sprite						from "awayjs-display/lib/display/Sprite";
-import RenderableEvent			from "awayjs-display/lib/events/RenderableEvent";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import Style						from "awayjs-display/lib/base/Style";
-import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
-import IRenderable 			from "awayjs-display/lib/base/IRenderable";
-import Graphics						from "awayjs-display/lib/graphics/Graphics";
-import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
-import IPickingCollider from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision from "awayjs-display/lib/pick/PickingCollision";
-import DisplayObject from "awayjs-display/lib/display/DisplayObject";
+import IAnimator					from "../animators/IAnimator";
+import Camera						from "../display/Camera";
+import Sprite						from "../display/Sprite";
+import RenderableEvent			from "../events/RenderableEvent";
+import MaterialBase					from "../materials/MaterialBase";
+import Style						from "../base/Style";
+import StyleEvent					from "../events/StyleEvent";
+import IRenderable 			from "../base/IRenderable";
+import Graphics						from "../graphics/Graphics";
+import ElementsBase					from "../graphics/ElementsBase";
+import IPickingCollider from "../pick/IPickingCollider";
+import PickingCollision from "../pick/PickingCollision";
+import DisplayObject from "../display/DisplayObject";
 
 /**
  * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Sprite object.

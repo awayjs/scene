@@ -4,8 +4,8 @@ import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import Sprite						from "awayjs-display/lib/display/Sprite";
+import IEntity						from "../display/IEntity";
+import Sprite						from "../display/Sprite";
 
 class BoundingVolumeBase
 {

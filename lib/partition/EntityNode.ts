@@ -2,12 +2,12 @@ import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
 import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import DisplayObjectEvent			from "awayjs-display/lib/events/DisplayObjectEvent";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import DisplayObjectNode			from "awayjs-display/lib/partition/DisplayObjectNode";
-import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import DisplayObject				from "../display/DisplayObject";
+import ITraverser					from "../ITraverser";
+import DisplayObjectEvent			from "../events/DisplayObjectEvent";
+import PickingCollision				from "../pick/PickingCollision";
+import DisplayObjectNode			from "../partition/DisplayObjectNode";
+import PartitionBase				from "../partition/PartitionBase";
 
 /**
  * @class away.partition.EntityNode

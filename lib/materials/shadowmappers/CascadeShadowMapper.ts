@@ -5,11 +5,11 @@ import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
 import FreeMatrixProjection			from "awayjs-core/lib/projections/FreeMatrixProjection";
 import IProjection					from "awayjs-core/lib/projections/IProjection";
 
-import IRenderer					from "awayjs-display/lib/IRenderer";
-import Scene						from "awayjs-display/lib/display/Scene";
-import Camera						from "awayjs-display/lib/display/Camera";
-import DirectionalShadowMapper		from "awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper";
-import Single2DTexture				from "awayjs-display/lib/textures/Single2DTexture";
+import IRenderer					from "../../IRenderer";
+import Scene						from "../../display/Scene";
+import Camera						from "../../display/Camera";
+import DirectionalShadowMapper		from "../../materials/shadowmappers/DirectionalShadowMapper";
+import Single2DTexture				from "../../textures/Single2DTexture";
 
 class CascadeShadowMapper extends DirectionalShadowMapper
 {

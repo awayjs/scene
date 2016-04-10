@@ -1,10 +1,10 @@
 import Matrix						from "awayjs-core/lib/geom/Matrix";
 import IAsset						from "awayjs-core/lib/library/IAsset";
 
-import IAnimator					from "awayjs-display/lib/animators/IAnimator";
-import Style						from "awayjs-display/lib/base/Style";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import IAnimator					from "../animators/IAnimator";
+import Style						from "../base/Style";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
 
 /**
  * IRenderable provides an interface for objects that can use materials.

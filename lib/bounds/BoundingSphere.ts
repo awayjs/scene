@@ -4,11 +4,11 @@ import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 import Sphere						from "awayjs-core/lib/geom/Sphere";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsType					from "awayjs-display/lib/graphics/ElementsType";
-import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import Sprite						from "awayjs-display/lib/display/Sprite";
-import PrimitiveSpherePrefab		from "awayjs-display/lib/prefabs/PrimitiveSpherePrefab";
+import ElementsType					from "../graphics/ElementsType";
+import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
+import IEntity						from "../display/IEntity";
+import Sprite						from "../display/Sprite";
+import PrimitiveSpherePrefab		from "../prefabs/PrimitiveSpherePrefab";
 
 class BoundingSphere extends BoundingVolumeBase
 {

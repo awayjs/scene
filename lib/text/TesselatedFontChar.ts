@@ -1,6 +1,6 @@
-import TesselatedFontTable			from "awayjs-display/lib/text/TesselatedFontTable";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
+import TesselatedFontTable			from "../text/TesselatedFontTable";
+import MaterialBase					from "../materials/MaterialBase";
+import TriangleElements				from "../graphics/TriangleElements";
 
 /**
  * The TextFormat class represents character formatting information. Use the

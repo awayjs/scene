@@ -1,7 +1,7 @@
-import ITraverser				from "awayjs-display/lib/ITraverser";
-import DisplayObjectNode			from "awayjs-display/lib/partition/DisplayObjectNode";
-import EntityNode					from "awayjs-display/lib/partition/EntityNode";
-import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
+import ITraverser				from "../ITraverser";
+import DisplayObjectNode			from "../partition/DisplayObjectNode";
+import EntityNode					from "../partition/EntityNode";
+import IContainerNode				from "../partition/IContainerNode";
 
 /**
  * Maintains scenegraph heirarchy when collecting nodes

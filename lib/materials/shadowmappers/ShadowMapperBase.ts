@@ -1,11 +1,11 @@
 import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import Scene						from "awayjs-display/lib/display/Scene";
-import LightBase					from "awayjs-display/lib/display/LightBase";
-import IRenderer					from "awayjs-display/lib/IRenderer";
-import Camera						from "awayjs-display/lib/display/Camera";
-import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import Scene						from "../../display/Scene";
+import LightBase					from "../../display/LightBase";
+import IRenderer					from "../../IRenderer";
+import Camera						from "../../display/Camera";
+import TextureBase					from "../../textures/TextureBase";
 
 class ShadowMapperBase extends AssetBase
 {

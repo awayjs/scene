@@ -5,17 +5,17 @@ import AbstractionBase				from "awayjs-core/lib/library/AbstractionBase";
 import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import AxisAlignedBoundingBox		from "awayjs-display/lib/bounds/AxisAlignedBoundingBox";
-import BoundingSphere				from "awayjs-display/lib/bounds/BoundingSphere";
-import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
-import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
-import NullBounds					from "awayjs-display/lib/bounds/NullBounds";
-import SceneGraphNode				from "awayjs-display/lib/partition/SceneGraphNode";
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import DisplayObjectEvent			from "awayjs-display/lib/events/DisplayObjectEvent";
-import INode						from "awayjs-display/lib/partition/INode";
+import DisplayObject				from "../display/DisplayObject";
+import AxisAlignedBoundingBox		from "../bounds/AxisAlignedBoundingBox";
+import BoundingSphere				from "../bounds/BoundingSphere";
+import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
+import BoundsType					from "../bounds/BoundsType";
+import NullBounds					from "../bounds/NullBounds";
+import SceneGraphNode				from "../partition/SceneGraphNode";
+import ITraverser					from "../ITraverser";
+import IEntity						from "../display/IEntity";
+import DisplayObjectEvent			from "../events/DisplayObjectEvent";
+import INode						from "../partition/INode";
 
 /**
  * @class away.partition.EntityNode

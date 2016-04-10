@@ -1,6 +1,6 @@
 import EventBase				from "awayjs-core/lib/events/EventBase";
 
-import Transform				from "awayjs-display/lib/base/Transform";
+import Transform				from "../base/Transform";
 
 class TransformEvent extends EventBase
 {

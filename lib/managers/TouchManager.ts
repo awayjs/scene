@@ -1,9 +1,9 @@
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import View							from "awayjs-display/lib/View";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import AwayTouchEvent				from "awayjs-display/lib/events/TouchEvent";
+import DisplayObject				from "../display/DisplayObject";
+import View							from "../View";
+import PickingCollision				from "../pick/PickingCollision";
+import AwayTouchEvent				from "../events/TouchEvent";
 
 class TouchManager
 {

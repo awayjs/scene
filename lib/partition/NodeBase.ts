@@ -1,14 +1,14 @@
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import DisplayObject				from "../display/DisplayObject";
 import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import INode						from "awayjs-display/lib/partition/INode";
-import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
-import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
-import NullBounds from "awayjs-display/lib/bounds/NullBounds";
+import ITraverser					from "../ITraverser";
+import IEntity						from "../display/IEntity";
+import INode						from "../partition/INode";
+import IContainerNode				from "../partition/IContainerNode";
+import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
+import NullBounds from "../bounds/NullBounds";
 
 /**
  * @class away.partition.NodeBase

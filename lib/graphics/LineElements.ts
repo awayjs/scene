@@ -7,11 +7,11 @@ import Box							from "awayjs-core/lib/geom/Box";
 import Sphere						from "awayjs-core/lib/geom/Sphere";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import ElementsUtils				from "awayjs-display/lib/utils/ElementsUtils";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
+import ElementsBase					from "../graphics/ElementsBase";
+import MaterialBase					from "../materials/MaterialBase";
+import ElementsUtils				from "../utils/ElementsUtils";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
 
 /**
  * @class LineElements

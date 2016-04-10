@@ -1,7 +1,7 @@
-import DisplayObject from "awayjs-display/lib/display/DisplayObject";
+import DisplayObject from "../display/DisplayObject";
 
-import NodeBase						from "awayjs-display/lib/partition/NodeBase";
-import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import NodeBase						from "../partition/NodeBase";
+import PartitionBase				from "../partition/PartitionBase";
 
 
 /**

@@ -1,12 +1,12 @@
 import IAbstractionPool				from "awayjs-core/lib/library/IAbstractionPool";
 import IAssetClass					from "awayjs-core/lib/library/IAssetClass";
 
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import EntityNode					from "awayjs-display/lib/partition/EntityNode";
-import IEntityNodeClass				from "awayjs-display/lib/partition/IEntityNodeClass";
-import DisplayObjectNode			from "awayjs-display/lib/partition/DisplayObjectNode";
-import IContainerNode				from "awayjs-display/lib/partition/IContainerNode";
+import ITraverser					from "../ITraverser";
+import DisplayObject				from "../display/DisplayObject";
+import EntityNode					from "../partition/EntityNode";
+import IEntityNodeClass				from "../partition/IEntityNodeClass";
+import DisplayObjectNode			from "../partition/DisplayObjectNode";
+import IContainerNode				from "../partition/IContainerNode";
 
 /**
  * @class away.partition.Partition

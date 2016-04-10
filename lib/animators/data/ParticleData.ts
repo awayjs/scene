@@ -1,4 +1,4 @@
-import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
+import TriangleElements				from "../../graphics/TriangleElements";
 
 class ParticleData
 {

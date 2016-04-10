@@ -1,7 +1,7 @@
 import PlaneClassification			from "awayjs-core/lib/geom/PlaneClassification";
 import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 
-import BoundingVolumeBase			from "awayjs-display/lib/bounds/BoundingVolumeBase";
+import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
 
 
 class NullBounds extends BoundingVolumeBase

@@ -1,11 +1,11 @@
 import IAsset					from "awayjs-core/lib/library/IAsset";
 
-import ElementsType				from "awayjs-display/lib/graphics/ElementsType";
-import LineElements				from "awayjs-display/lib/graphics/LineElements";
-import ElementsBase				from "awayjs-display/lib/graphics/ElementsBase";
-import TriangleElements			from "awayjs-display/lib/graphics/TriangleElements";
-import MaterialBase				from "awayjs-display/lib/materials/MaterialBase";
-import PrimitivePrefabBase		from "awayjs-display/lib/prefabs/PrimitivePrefabBase";
+import ElementsType				from "../graphics/ElementsType";
+import LineElements				from "../graphics/LineElements";
+import ElementsBase				from "../graphics/ElementsBase";
+import TriangleElements			from "../graphics/TriangleElements";
+import MaterialBase				from "../materials/MaterialBase";
+import PrimitivePrefabBase		from "../prefabs/PrimitivePrefabBase";
 
 /**
  * A Capsule primitive sprite.

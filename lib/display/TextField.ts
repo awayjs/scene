@@ -9,24 +9,24 @@ import Rectangle					from "awayjs-core/lib/geom/Rectangle";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
 
-import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
-import Style 						from "awayjs-display/lib/base/Style";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import AntiAliasType				from "awayjs-display/lib/text/AntiAliasType";
-import GridFitType					from "awayjs-display/lib/text/GridFitType";
-import TextFieldAutoSize			from "awayjs-display/lib/text/TextFieldAutoSize";
-import TextFieldType				from "awayjs-display/lib/text/TextFieldType";
-import TextFormat					from "awayjs-display/lib/text/TextFormat";
-import TextInteractionMode			from "awayjs-display/lib/text/TextInteractionMode";
-import TextLineMetrics				from "awayjs-display/lib/text/TextLineMetrics";
-import Sprite						from "awayjs-display/lib/display/Sprite";
-import Graphics						from "awayjs-display/lib/graphics/Graphics";
-import Graphic						from "awayjs-display/lib/graphics/Graphic";
-import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
-import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
-import TesselatedFontChar			from "awayjs-display/lib/text/TesselatedFontChar";
-import TextFormatAlign				from "awayjs-display/lib/text/TextFormatAlign";
-import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
+import HierarchicalProperties		from "../base/HierarchicalProperties";
+import Style 						from "../base/Style";
+import DisplayObject				from "../display/DisplayObject";
+import AntiAliasType				from "../text/AntiAliasType";
+import GridFitType					from "../text/GridFitType";
+import TextFieldAutoSize			from "../text/TextFieldAutoSize";
+import TextFieldType				from "../text/TextFieldType";
+import TextFormat					from "../text/TextFormat";
+import TextInteractionMode			from "../text/TextInteractionMode";
+import TextLineMetrics				from "../text/TextLineMetrics";
+import Sprite						from "../display/Sprite";
+import Graphics						from "../graphics/Graphics";
+import Graphic						from "../graphics/Graphic";
+import ElementsBase					from "../graphics/ElementsBase";
+import TriangleElements				from "../graphics/TriangleElements";
+import TesselatedFontChar			from "../text/TesselatedFontChar";
+import TextFormatAlign				from "../text/TextFormatAlign";
+import DisplayObjectContainer		from "../display/DisplayObjectContainer";
 
 /**
  * The TextField class is used to create display objects for text display and

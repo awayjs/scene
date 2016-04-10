@@ -4,10 +4,10 @@ import ArgumentError				from "awayjs-core/lib/errors/ArgumentError";
 import RangeError					from "awayjs-core/lib/errors/RangeError";
 import Extensions					from "awayjs-core/lib/utils/Extensions";
 
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
-import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
-import Scene						from "awayjs-display/lib/display/Scene";
+import DisplayObject				from "../display/DisplayObject";
+import HierarchicalProperties		from "../base/HierarchicalProperties";
+import PartitionBase				from "../partition/PartitionBase";
+import Scene						from "../display/Scene";
 
 /**
  * The DisplayObjectContainer class is the base class for all objects that can

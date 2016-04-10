@@ -4,15 +4,15 @@ import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
 import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import IAnimationSet				from "awayjs-display/lib/animators/IAnimationSet";
-import IAnimator					from "awayjs-display/lib/animators/IAnimator";
-import ISurface						from "awayjs-display/lib/base/ISurface";
-import IRenderable					from "awayjs-display/lib/base/IRenderable";
-import SurfaceEvent					from "awayjs-display/lib/events/SurfaceEvent";
-import LightPickerBase				from "awayjs-display/lib/materials/lightpickers/LightPickerBase";
-import TextureBase					from "awayjs-display/lib/textures/TextureBase";
-import Style						from "awayjs-display/lib/base/Style";
-import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
+import IAnimationSet				from "../animators/IAnimationSet";
+import IAnimator					from "../animators/IAnimator";
+import ISurface						from "../base/ISurface";
+import IRenderable					from "../base/IRenderable";
+import SurfaceEvent					from "../events/SurfaceEvent";
+import LightPickerBase				from "../materials/lightpickers/LightPickerBase";
+import TextureBase					from "../textures/TextureBase";
+import Style						from "../base/Style";
+import StyleEvent					from "../events/StyleEvent";
 
 /**
  * MaterialBase forms an abstract base class for any material.

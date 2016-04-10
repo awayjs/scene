@@ -1,7 +1,7 @@
 import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 
-import EntityNode					from "awayjs-display/lib/partition/EntityNode";
-import ITraverser				from "awayjs-display/lib/ITraverser";
+import EntityNode					from "../partition/EntityNode";
+import ITraverser				from "../ITraverser";
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.

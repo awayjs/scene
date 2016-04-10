@@ -1,12 +1,12 @@
 import AssetEvent                   from "awayjs-core/lib/events/AssetEvent";
 
-import DisplayObject                from "awayjs-display/lib/display/DisplayObject";
-import Sprite                       from "awayjs-display/lib/display/Sprite";
-import TextField                    from "awayjs-display/lib/display/TextField";
-import MouseEvent                   from "awayjs-display/lib/events/MouseEvent";
-import IMovieClipAdapter	    	from "awayjs-display/lib/adapters/IMovieClipAdapter";
-import Timeline                     from "awayjs-display/lib/base/Timeline";
-import FrameScriptManager           from "awayjs-display/lib/managers/FrameScriptManager";
+import DisplayObject                from "../display/DisplayObject";
+import Sprite                       from "../display/Sprite";
+import TextField                    from "../display/TextField";
+import MouseEvent                   from "../events/MouseEvent";
+import IMovieClipAdapter	    	from "../adapters/IMovieClipAdapter";
+import Timeline                     from "../base/Timeline";
+import FrameScriptManager           from "../managers/FrameScriptManager";
 
 class MovieClip extends Sprite
 {

@@ -1,8 +1,8 @@
 import Image2D					from "awayjs-core/lib/image/Image2D";
 import ByteArray				from "awayjs-core/lib/utils/ByteArray";
 
-import CastError				from "awayjs-display/lib/errors/CastError";
-import Single2DTexture			from "awayjs-display/lib/textures/Single2DTexture";
+import CastError				from "../errors/CastError";
+import Single2DTexture			from "../textures/Single2DTexture";
 
 /**
  * Helper class for casting assets to usable objects

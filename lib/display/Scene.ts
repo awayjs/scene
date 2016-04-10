@@ -1,8 +1,8 @@
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
-import BasicPartition				from "awayjs-display/lib/partition/BasicPartition";
-import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
+import ITraverser					from "../ITraverser";
+import DisplayObject				from "../display/DisplayObject";
+import DisplayObjectContainer		from "../display/DisplayObjectContainer";
+import BasicPartition				from "../partition/BasicPartition";
+import PartitionBase				from "../partition/PartitionBase";
 
 class Scene extends DisplayObjectContainer
 {

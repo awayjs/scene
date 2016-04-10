@@ -1,8 +1,8 @@
 import Point						from "awayjs-core/lib/geom/Point";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import IRenderable					from "awayjs-display/lib/base/IRenderable";
+import IEntity						from "../display/IEntity";
+import IRenderable					from "../base/IRenderable";
 
 /**
  * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects

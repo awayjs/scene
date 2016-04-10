@@ -1,8 +1,8 @@
 import Vector3D					from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
-import ControllerBase			from "awayjs-display/lib/controllers/ControllerBase";
-import DisplayObjectEvent		from "awayjs-display/lib/events/DisplayObjectEvent";
+import DisplayObject			from "../display/DisplayObject";
+import ControllerBase			from "../controllers/ControllerBase";
+import DisplayObjectEvent		from "../events/DisplayObjectEvent";
 
 class LookAtController extends ControllerBase
 {

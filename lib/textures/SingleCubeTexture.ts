@@ -1,7 +1,7 @@
 import SamplerCube				from "awayjs-core/lib/image/SamplerCube";
 import ImageCube				from "awayjs-core/lib/image/ImageCube";
 
-import TextureBase				from "awayjs-display/lib/textures/TextureBase";
+import TextureBase				from "../textures/TextureBase";
 
 
 class SingleCubeTexture extends TextureBase

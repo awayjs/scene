@@ -1,6 +1,6 @@
 import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import ISurface						from "awayjs-display/lib/base/ISurface";
+import ISurface						from "../base/ISurface";
 
 class SurfaceEvent extends EventBase
 {

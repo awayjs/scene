@@ -3,8 +3,8 @@ import SamplerBase					from "awayjs-core/lib/image/SamplerBase";
 import Matrix						from "awayjs-core/lib/geom/Matrix";
 
 import EventDispatcher				from "awayjs-core/lib/events/EventDispatcher";
-import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
-import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import StyleEvent					from "../events/StyleEvent";
+import TextureBase					from "../textures/TextureBase";
 
 /**
  *

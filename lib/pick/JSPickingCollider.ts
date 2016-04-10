@@ -1,11 +1,11 @@
 import Vector3D							from "awayjs-core/lib/geom/Vector3D";
 import Point							from "awayjs-core/lib/geom/Point";
-import LineElements						from "awayjs-display/lib/graphics/LineElements";
-import TriangleElements					from "awayjs-display/lib/graphics/TriangleElements";
-import Billboard						from "awayjs-display/lib/display/Billboard";
-import PickingCollision					from "awayjs-display/lib/pick/PickingCollision";
-import IPickingCollider					from "awayjs-display/lib/pick/IPickingCollider";
-import MaterialBase						from "awayjs-display/lib/materials/MaterialBase";
+import LineElements						from "../graphics/LineElements";
+import TriangleElements					from "../graphics/TriangleElements";
+import Billboard						from "../display/Billboard";
+import PickingCollision					from "../pick/PickingCollision";
+import IPickingCollider					from "../pick/IPickingCollider";
+import MaterialBase						from "../materials/MaterialBase";
 
 
 /**

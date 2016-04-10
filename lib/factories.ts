@@ -1,1 +1,1 @@
-export {default as ITimelineSceneGraphFactory}		from "awayjs-display/lib/factories/ITimelineSceneGraphFactory";
+export {default as ITimelineSceneGraphFactory}		from "./factories/ITimelineSceneGraphFactory";

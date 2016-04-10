@@ -1,8 +1,8 @@
 import Image2D						from "awayjs-core/lib/image/Image2D";
 
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import Single2DTexture				from "awayjs-display/lib/textures/Single2DTexture";
-import TextureBase					from "awayjs-display/lib/textures/TextureBase";
+import MaterialBase					from "../materials/MaterialBase";
+import Single2DTexture				from "../textures/Single2DTexture";
+import TextureBase					from "../textures/TextureBase";
 
 /**
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,

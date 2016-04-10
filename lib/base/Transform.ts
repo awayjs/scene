@@ -8,8 +8,8 @@ import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
 
 
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
-import TransformEvent				from "awayjs-display/lib/events/TransformEvent";
+import DisplayObject				from "../display/DisplayObject";
+import TransformEvent				from "../events/TransformEvent";
 
 /**
  * The Transform class provides access to color adjustment properties and two-

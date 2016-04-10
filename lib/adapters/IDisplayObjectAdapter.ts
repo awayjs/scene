@@ -1,4 +1,4 @@
-import DisplayObject				from "awayjs-display/lib/display/DisplayObject";
+import DisplayObject				from "../display/DisplayObject";
 
 interface IDisplayObjectAdapter
 {

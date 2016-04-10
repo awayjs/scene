@@ -1,6 +1,6 @@
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import FontTable					from "awayjs-display/lib/text/TesselatedFontTable";
+import FontTable					from "../text/TesselatedFontTable";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.

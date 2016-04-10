@@ -12,26 +12,26 @@ import AssetBase					from "awayjs-core/lib/library/AssetBase";
 import LoaderInfo					from "awayjs-core/lib/library/LoaderInfo";
 import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import IRenderer					from "awayjs-display/lib/IRenderer";
-import IDisplayObjectAdapter		from "awayjs-display/lib/adapters/IDisplayObjectAdapter";
-import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
-import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
-import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
-import Scene						from "awayjs-display/lib/display/Scene";
-import ControllerBase				from "awayjs-display/lib/controllers/ControllerBase";
-import AlignmentMode				from "awayjs-display/lib/base/AlignmentMode";
-import OrientationMode				from "awayjs-display/lib/base/OrientationMode";
-import IBitmapDrawable				from "awayjs-display/lib/base/IBitmapDrawable";
-import Transform					from "awayjs-display/lib/base/Transform";
-import PartitionBase				from "awayjs-display/lib/partition/PartitionBase";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import Camera						from "awayjs-display/lib/display/Camera";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import DisplayObjectEvent			from "awayjs-display/lib/events/DisplayObjectEvent";
-import TransformEvent				from "awayjs-display/lib/events/TransformEvent";
-import PrefabBase					from "awayjs-display/lib/prefabs/PrefabBase";
-import ITraverser				from "awayjs-display/lib/ITraverser";
+import IRenderer					from "../IRenderer";
+import IDisplayObjectAdapter		from "../adapters/IDisplayObjectAdapter";
+import HierarchicalProperties		from "../base/HierarchicalProperties";
+import BoundsType					from "../bounds/BoundsType";
+import DisplayObjectContainer		from "../display/DisplayObjectContainer";
+import Scene						from "../display/Scene";
+import ControllerBase				from "../controllers/ControllerBase";
+import AlignmentMode				from "../base/AlignmentMode";
+import OrientationMode				from "../base/OrientationMode";
+import IBitmapDrawable				from "../base/IBitmapDrawable";
+import Transform					from "../base/Transform";
+import PartitionBase				from "../partition/PartitionBase";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
+import Camera						from "../display/Camera";
+import IEntity						from "../display/IEntity";
+import DisplayObjectEvent			from "../events/DisplayObjectEvent";
+import TransformEvent				from "../events/TransformEvent";
+import PrefabBase					from "../prefabs/PrefabBase";
+import ITraverser				from "../ITraverser";
 
 /**
  * The DisplayObject class is the base class for all objects that can be

@@ -1,6 +1,6 @@
 import IAsset					from "awayjs-core/lib/library/IAsset";
 
-import AnimationNodeBase		from "awayjs-display/lib/animators/nodes/AnimationNodeBase";
+import AnimationNodeBase		from "../animators/nodes/AnimationNodeBase";
 
 /**
  * Provides an interface for data set classes that hold animation data for use in animator classes.

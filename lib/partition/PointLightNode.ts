@@ -1,5 +1,5 @@
-import EntityNode					from "awayjs-display/lib/partition/EntityNode";
-import ITraverser				from "awayjs-display/lib/ITraverser";
+import EntityNode					from "../partition/EntityNode";
+import ITraverser				from "../ITraverser";
 
 /**
  * @class away.partition.PointLightNode

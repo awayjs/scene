@@ -1,6 +1,6 @@
 import EventBase					from "awayjs-core/lib/events/EventBase";
 
-import IRenderable						from "awayjs-display/lib/base/IRenderable";
+import IRenderable						from "../base/IRenderable";
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.

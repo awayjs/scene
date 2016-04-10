@@ -5,12 +5,12 @@ import Plane3D						from "awayjs-core/lib/geom/Plane3D";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import FreeMatrixProjection			from "awayjs-core/lib/projections/FreeMatrixProjection";
 
-import Scene						from "awayjs-display/lib/display/Scene";
-import IRenderer					from "awayjs-display/lib/IRenderer";
-import Camera						from "awayjs-display/lib/display/Camera";
-import DirectionalLight				from "awayjs-display/lib/display/DirectionalLight";
-import ShadowMapperBase				from "awayjs-display/lib/materials/shadowmappers/ShadowMapperBase";
-import Single2DTexture				from "awayjs-display/lib/textures/Single2DTexture";
+import Scene						from "../../display/Scene";
+import IRenderer					from "../../IRenderer";
+import Camera						from "../../display/Camera";
+import DirectionalLight				from "../../display/DirectionalLight";
+import ShadowMapperBase				from "../../materials/shadowmappers/ShadowMapperBase";
+import Single2DTexture				from "../../textures/Single2DTexture";
 
 class DirectionalShadowMapper extends ShadowMapperBase
 {

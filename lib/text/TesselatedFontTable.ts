@@ -1,8 +1,8 @@
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
-import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
-import TesselatedFontChar			from "awayjs-display/lib/text/TesselatedFontChar";
+import ElementsBase					from "../graphics/ElementsBase";
+import TriangleElements				from "../graphics/TriangleElements";
+import TesselatedFontChar			from "../text/TesselatedFontChar";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.

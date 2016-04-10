@@ -2,15 +2,15 @@ import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
 import BitmapImage2D				from "awayjs-core/lib/image/BitmapImage2D";
 import BitmapImageCube				from "awayjs-core/lib/image/BitmapImageCube";
 
-import IRenderable					from "awayjs-display/lib/base/IRenderable";
-import LineElements					from "awayjs-display/lib/graphics/LineElements";
-import Skybox						from "awayjs-display/lib/display/Skybox";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import BasicMaterial				from "awayjs-display/lib/materials/BasicMaterial";
-import Single2DTexture				from "awayjs-display/lib/textures/Single2DTexture";
-import SingleCubeTexture			from "awayjs-display/lib/textures/SingleCubeTexture";
-import TextureBase					from "awayjs-display/lib/textures/TextureBase";
-import Graphic						from "awayjs-display/lib/graphics/Graphic";
+import IRenderable					from "../base/IRenderable";
+import LineElements					from "../graphics/LineElements";
+import Skybox						from "../display/Skybox";
+import MaterialBase					from "../materials/MaterialBase";
+import BasicMaterial				from "../materials/BasicMaterial";
+import Single2DTexture				from "../textures/Single2DTexture";
+import SingleCubeTexture			from "../textures/SingleCubeTexture";
+import TextureBase					from "../textures/TextureBase";
+import Graphic						from "../graphics/Graphic";
 
 class DefaultMaterialManager
 {

@@ -3,11 +3,11 @@ import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
 import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
-import LightBase					from "awayjs-display/lib/display/LightBase";
-import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
-import Camera						from "awayjs-display/lib/display/Camera";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import CubeMapShadowMapper			from "awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper";
+import LightBase					from "../display/LightBase";
+import BoundsType					from "../bounds/BoundsType";
+import Camera						from "../display/Camera";
+import IEntity						from "../display/IEntity";
+import CubeMapShadowMapper			from "../materials/shadowmappers/CubeMapShadowMapper";
 
 class PointLight extends LightBase implements IEntity
 {

@@ -1,5 +1,5 @@
-import GraphicsPathWinding		from "awayjs-display/lib/draw/GraphicsPathWinding";
-import GraphicsPathCommand		from "awayjs-display/lib/draw/GraphicsPathCommand";
+import GraphicsPathWinding		from "../draw/GraphicsPathWinding";
+import GraphicsPathCommand		from "../draw/GraphicsPathCommand";
 import Point					from "awayjs-core/lib/geom/Point";
 /**
 

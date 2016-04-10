@@ -5,12 +5,12 @@ import ProjectionEvent				from "awayjs-core/lib/events/ProjectionEvent";
 import IProjection					from "awayjs-core/lib/projections/IProjection";
 import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
 
-import HierarchicalProperties		from "awayjs-display/lib/base/HierarchicalProperties";
-import IRenderer					from "awayjs-display/lib/IRenderer";
-import BoundsType					from "awayjs-display/lib/bounds/BoundsType";
-import DisplayObjectContainer		from "awayjs-display/lib/display/DisplayObjectContainer";
-import IEntity						from "awayjs-display/lib/display/IEntity";
-import CameraEvent					from "awayjs-display/lib/events/CameraEvent";
+import HierarchicalProperties		from "../base/HierarchicalProperties";
+import IRenderer					from "../IRenderer";
+import BoundsType					from "../bounds/BoundsType";
+import DisplayObjectContainer		from "../display/DisplayObjectContainer";
+import IEntity						from "../display/IEntity";
+import CameraEvent					from "../events/CameraEvent";
 
 
 class Camera extends DisplayObjectContainer implements IEntity

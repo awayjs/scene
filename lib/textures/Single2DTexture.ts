@@ -3,8 +3,8 @@ import Image2D					from "awayjs-core/lib/image/Image2D";
 import ErrorBase				from "awayjs-core/lib/errors/ErrorBase";
 import ImageUtils				from "awayjs-core/lib/utils/ImageUtils";
 
-import MappingMode				from "awayjs-display/lib/textures/MappingMode";
-import TextureBase				from "awayjs-display/lib/textures/TextureBase";
+import MappingMode				from "../textures/MappingMode";
+import TextureBase				from "../textures/TextureBase";
 
 class Single2DTexture extends TextureBase
 {

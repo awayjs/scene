@@ -1,14 +1,14 @@
 import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
 import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObject			from "awayjs-display/lib/display/DisplayObject";
-import ElementsType				from "awayjs-display/lib/graphics/ElementsType";
-import ElementsBase				from "awayjs-display/lib/graphics/ElementsBase";
-import TriangleElements			from "awayjs-display/lib/graphics/TriangleElements";
-import LineElements				from "awayjs-display/lib/graphics/LineElements";
-import Sprite					from "awayjs-display/lib/display/Sprite";
-import MaterialBase				from "awayjs-display/lib/materials/MaterialBase";
-import PrefabBase				from "awayjs-display/lib/prefabs/PrefabBase";
+import DisplayObject			from "../display/DisplayObject";
+import ElementsType				from "../graphics/ElementsType";
+import ElementsBase				from "../graphics/ElementsBase";
+import TriangleElements			from "../graphics/TriangleElements";
+import LineElements				from "../graphics/LineElements";
+import Sprite					from "../display/Sprite";
+import MaterialBase				from "../materials/MaterialBase";
+import PrefabBase				from "../prefabs/PrefabBase";
 
 /**
  * PrimitivePrefabBase is an abstract base class for polytope prefabs, which are simple pre-built geometric shapes

@@ -7,19 +7,19 @@ import Matrix						from "awayjs-core/lib/geom/Matrix";
 import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsBase					from "awayjs-display/lib/graphics/ElementsBase";
-import TriangleElements				from "awayjs-display/lib/graphics/TriangleElements";
-import Graphic						from "awayjs-display/lib/graphics/Graphic";
-import Style						from "awayjs-display/lib/base/Style";
-import MaterialBase					from "awayjs-display/lib/materials/MaterialBase";
-import IAnimator 					from "awayjs-display/lib/animators/IAnimator";
-import ElementsEvent				from "awayjs-display/lib/events/ElementsEvent";
-import StyleEvent					from "awayjs-display/lib/events/StyleEvent";
-import IPickingCollider				from "awayjs-display/lib/pick/IPickingCollider";
-import PickingCollision				from "awayjs-display/lib/pick/PickingCollision";
-import ITraverser					from "awayjs-display/lib/ITraverser";
-import ElementsUtils				from "awayjs-display/lib/utils/ElementsUtils";
-import ParticleData					from "awayjs-display/lib/animators/data/ParticleData";
+import ElementsBase					from "../graphics/ElementsBase";
+import TriangleElements				from "../graphics/TriangleElements";
+import Graphic						from "../graphics/Graphic";
+import Style						from "../base/Style";
+import MaterialBase					from "../materials/MaterialBase";
+import IAnimator 					from "../animators/IAnimator";
+import ElementsEvent				from "../events/ElementsEvent";
+import StyleEvent					from "../events/StyleEvent";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
+import ITraverser					from "../ITraverser";
+import ElementsUtils				from "../utils/ElementsUtils";
+import ParticleData					from "../animators/data/ParticleData";
 
 /**
  *
