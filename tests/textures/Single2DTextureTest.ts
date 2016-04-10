@@ -1,13 +1,13 @@
-import BitmapImage2D		= require("awayjs-core/lib/image/BitmapImage2D");
-import Rectangle			= require("awayjs-core/lib/geom/Rectangle");
-import URLLoader			= require("awayjs-core/lib/net/URLLoader");
-import URLLoaderDataFormat	= require("awayjs-core/lib/net/URLLoaderDataFormat");
-import URLRequest			= require("awayjs-core/lib/net/URLRequest");
-import LoaderEvent			= require("awayjs-core/lib/events/LoaderEvent");
-import ParserUtils			= require("awayjs-core/lib/parsers/ParserUtils");
-import Debug				= require("awayjs-core/lib/utils/Debug");
+import BitmapImage2D		from "awayjs-core/lib/image/BitmapImage2D";
+import Rectangle			from "awayjs-core/lib/geom/Rectangle";
+import URLLoader			from "awayjs-core/lib/net/URLLoader";
+import URLLoaderDataFormat	from "awayjs-core/lib/net/URLLoaderDataFormat";
+import URLRequest			from "awayjs-core/lib/net/URLRequest";
+import LoaderEvent			from "awayjs-core/lib/events/LoaderEvent";
+import ParserUtils			from "awayjs-core/lib/parsers/ParserUtils";
+import Debug				from "awayjs-core/lib/utils/Debug";
 
-import Single2DTexture		= require("awayjs-display/lib/textures/Single2DTexture");
+import Single2DTexture		from "awayjs-display/lib/textures/Single2DTexture";
 
 class Single2DTextureTest
 {

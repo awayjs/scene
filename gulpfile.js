@@ -51,14 +51,12 @@ gulp.task('watch', ['package-watch'], function(){
 gulp.task('tests', function () {
 
     var tsProject = typescript.createProject({
-        declarationFiles: true,
-        noExternalResolve: true,
         target: 'ES5',
         module: 'commonjs',
-        sourceRoot: './'
+        moduleResolution: 'classic'
     });
 
-    var tsResult = gulp.src(['./tests/**/*.ts', './node_modules/awayjs-**/build/*.d.ts', './build/awayjs-display.d.ts'])
+    var tsResult = gulp.src(['./tests/**/*.ts'])
         .pipe(sourcemaps.init())
         .pipe(typescript(tsProject));
 
