@@ -12,6 +12,7 @@ var watchify = require('watchify');
 var livereload = require('gulp-livereload');
 
 var typescript = require('gulp-typescript');
+var Builder = require('systemjs-builder');
 
 var shell = require('gulp-shell');
 var git = require('gulp-git');
@@ -193,4 +194,13 @@ gulp.task('compile', function() {
     return tsResult.js
         //.pipe(sourcemaps.write({sourceRoot: '../'}))
         .pipe(gulp.dest('./lib'));
+});
+
+gulp.task('bundle', function(callback) {
+    var builder = new Builder('./', './system.config.js');
+
+
+    builder.buildStatic('./index.ts', './dist/awayjs-display.js').then(function() {
+        callback();
+    })
 });
