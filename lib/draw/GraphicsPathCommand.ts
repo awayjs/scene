@@ -1,6 +1,6 @@
 /**
-* Defines the values to use for specifying path-drawing commands.
-* The values in this class are used by the Graphics.drawPath() method,
+ * Defines the values to use for specifying path-drawing commands.
+ * The values in this class are used by the Graphics.drawPath() method,
  *or stored in the commands vector of a GraphicsPath object.
  */
 class GraphicsPathCommand
@@ -30,7 +30,8 @@ class GraphicsPathCommand
 	 *  Specifies a drawing command that draws a curve from the current drawing position
 	 *  to the x- and y-coordinates specified in the data vector, using a control point.
 	 */
-	public static CURVE_TO_2:number = 13;
+	public static BUILD_JOINT:number 		= 13;
+	public static BUILD_ROUND_JOINT:number 	= 14;
 
 	/**
 	 * Specifies a "line to" drawing command,
@@ -50,5 +51,4 @@ class GraphicsPathCommand
 	 */
 	public static CUBIC_CURVE:number = 6;
 }
-
 export default GraphicsPathCommand;

@@ -1,6 +1,10 @@
 export {default as CapsStyle}						from "./draw/CapsStyle";
 export {default as GradientType}					from "./draw/GradientType";
-export {default as Graphics}						from "./draw/Graphics";
+export {default as GraphicsFactoryFills} 			from "./draw/GraphicsFactoryFills";
+export {default as GraphicsFactoryHelper} 			from "./draw/GraphicsFactoryHelper";
+export {default as GraphicsFactoryStrokes} 			from "./draw/GraphicsFactoryStrokes";
+export {default as GraphicsFillStyle} 			    from "./draw/GraphicsFillStyle";
+export {default as GraphicsStrokeStyle}			    from "./draw/GraphicsStrokeStyle";
 export {default as GraphicsPath}					from "./draw/GraphicsPath";
 export {default as GraphicsPathCommand}				from "./draw/GraphicsPathCommand";
 export {default as GraphicsPathWinding}				from "./draw/GraphicsPathWinding";

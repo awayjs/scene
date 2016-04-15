@@ -12,19 +12,19 @@ class JointStyle
 	 * Specifies beveled joints in the <code>joints</code> parameter of the
 	 * <code>flash.display.Graphics.lineStyle()</code> method.
 	 */
-	public static BEVEL:string = "bevel";
+	public static BEVEL:number = 2;
 
 	/**
 	 * Specifies mitered joints in the <code>joints</code> parameter of the
 	 * <code>flash.display.Graphics.lineStyle()</code> method.
 	 */
-	public static MITER:string = "miter";
+	public static MITER:number = 0;
 
 	/**
 	 * Specifies round joints in the <code>joints</code> parameter of the
 	 * <code>flash.display.Graphics.lineStyle()</code> method.
 	 */
-	public static ROUND:string = "round";
+	public static ROUND:number = 1;
 }
 
 export default JointStyle;

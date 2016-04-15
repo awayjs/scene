@@ -10,6 +10,7 @@
  */
 interface IGraphicsData
 {
+    data_type:string;
 
 }
 
