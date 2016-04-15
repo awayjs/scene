@@ -300,7 +300,7 @@ class Graphics extends AssetBase
 	{
 		for (var i:number = this._graphics.length - 1; i>=0; i--){
 			this._graphics[i].clear();
-			this._graphics[i].dispose();
+			//this._graphics[i].dispose();
 		}
 	}
 
