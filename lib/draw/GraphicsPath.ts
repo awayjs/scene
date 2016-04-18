@@ -1,5 +1,9 @@
 import GraphicsPathWinding		from "../draw/GraphicsPathWinding";
 import GraphicsPathCommand		from "../draw/GraphicsPathCommand";
+import IGraphicsData		    from "../draw/IGraphicsData";
+import GraphicsFillStyle		from "../draw/GraphicsFillStyle";
+import GraphicsStrokeStyle		from "../draw/GraphicsStrokeStyle";
+
 import Point					from "awayjs-core/lib/geom/Point";
 /**
 
@@ -7,8 +11,9 @@ import Point					from "awayjs-core/lib/geom/Point";
  * The values in this class are used by the Graphics.drawPath() method,
  *or stored in the commands vector of a GraphicsPath object.
  */
-class GraphicsPath
+class GraphicsPath implements IGraphicsData
 {
+    public static data_type:string = "[graphicsdata path]";
     /**
      * The Vector of drawing commands as integers representing the path.
      */
@@ -18,26 +23,25 @@ class GraphicsPath
      */
     private _data:Array<Array<number>>;
 
-    private _draw_directions:Array<number>;
-    private _contours_closed:Array<boolean>;
-
     /**
      * Specifies the winding rule using a value defined in the GraphicsPathWinding class.
      */
-    private _winding:string;
+    private _winding_rule:string;
+
+    /**
+     * The Vector of Numbers containing the parameters used with the drawing commands.
+     */
+    private _winding_directions:Array<number>;
 
     private _startPoint:Point;
-    private _tmp_point:Point;
     private _cur_point:Point;
-    private _direction:Point;
-    private _isFill:boolean;
+    private _style:IGraphicsData;
 
-    constructor(commands:Array<number> = null, data:Array<number> = null, winding:string = GraphicsPathWinding.EVEN_ODD)
+    constructor(commands:Array<number> = null, data:Array<number> = null, winding_rule:string = GraphicsPathWinding.EVEN_ODD)
     {
         this._data=[];
         this._commands=[];
-        this._draw_directions=[0];
-        this._contours_closed=[false];
+        this._style = null;
 
         if(commands!=null && data!=null){
             this._data[0]=data;
@@ -46,34 +50,44 @@ class GraphicsPath
         else{
             this._data[0]=[];
             this._commands[0]=[];
-
         }
-
-        this._direction=new Point(0, -1);
         this._startPoint=new Point();
         this._cur_point=new Point();
-        this._tmp_point=new Point();
-        this.isFill=false;
-        this._winding=winding;
+        this._winding_rule=winding_rule;
+        this._winding_directions=[];
     }
 
-    public get draw_directions():Array<number>
+    public get data_type():string
     {
-        return this._draw_directions;
-    }
-    public get contours_closed():Array<boolean>
-    {
-        return this._contours_closed;
+        return GraphicsPath.data_type;
     }
 
-    public get isFill():boolean
+    public get style():IGraphicsData
     {
-        return this._isFill;
+        return this._style;
     }
-    public set isFill(value:boolean)
+    public set style(value:IGraphicsData)
     {
-        this._isFill=value;
+        this._style = value;
     }
+
+    public fill():IGraphicsData
+    {
+        if (this._style==null)
+            return null;
+        if (this._style.data_type==GraphicsFillStyle.data_type)
+            return this._style;
+        return null;
+    }
+    public stroke():GraphicsStrokeStyle
+    {
+        if (this._style==null)
+            return null;
+        if (this._style.data_type==GraphicsStrokeStyle.data_type)
+            return <GraphicsStrokeStyle>this._style;
+        return null;
+    }
+
     public get commands():Array<Array<number>>
     {
         return this._commands;
@@ -93,45 +107,46 @@ class GraphicsPath
             this._data[this._data.length-1].push(this._cur_point.y);
         }
         this._commands[this._commands.length-1].push(GraphicsPathCommand.CURVE_TO);
+        /*
+         if(this.isFill){
+         this._tmp_point.x=anchorX-this._cur_point.x;
+         this._tmp_point.y=anchorY-this._cur_point.y;
+         this._tmp_point.normalize();
 
-        if(this.isFill){
-            this._tmp_point.x=anchorX-this._cur_point.x;
-            this._tmp_point.y=anchorY-this._cur_point.y;
-            this._tmp_point.normalize();
+         var testpoint:Point=new Point(this._tmp_point.x, this._tmp_point.y);
+         testpoint.normalize();
+         var degree_anchor:number=Math.acos(this._tmp_point.x * this._direction.x + this._tmp_point.y * this._direction.y) * 180 / Math.PI;
+         if(degree_anchor>180)degree_anchor-=360;
+         //var degree_anchor:number=Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
+         this._draw_directions[this._draw_directions.length-1]+=degree_anchor;
+         this._tmp_point.x=controlX-this._cur_point.x;
+         this._tmp_point.y=controlY-this._cur_point.y;
+         this._tmp_point.normalize();
+         //angle = atan2( a.x*b.y - a.y*b.x, a.x*b.x + a.y*b.y );
+         var degree_control:number=(Math.atan2(this._tmp_point.x* testpoint.y - this._tmp_point.y* testpoint.x, this._tmp_point.x* testpoint.x + this._tmp_point.y* testpoint.y));
+         if(degree_control>180)degree_control-=360;
+         //var degree_control:number=(Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI);
+         console.log("degree_control "+degree_control);
+         console.log("degree_anchor "+degree_anchor);
+         console.log("this._draw_directions[this._draw_directions.length-1] "+this._draw_directions[this._draw_directions.length-1]);
+         this._direction.x=testpoint.x;
+         this._direction.y=testpoint.y;
+         if((degree_control)<0)
+         this._data[this._data.length-1].push(1);
+         else
+         this._data[this._data.length-1].push(2);
 
-            var testpoint:Point=new Point(this._tmp_point.x, this._tmp_point.y);
-            testpoint.normalize();
-            var degree_anchor:number=Math.acos(this._tmp_point.x * this._direction.x + this._tmp_point.y * this._direction.y) * 180 / Math.PI;
-            if(degree_anchor>180)degree_anchor-=360;
-            //var degree_anchor:number=Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
-            this._draw_directions[this._draw_directions.length-1]+=degree_anchor;
-            this._tmp_point.x=controlX-this._cur_point.x;
-            this._tmp_point.y=controlY-this._cur_point.y;
-            this._tmp_point.normalize();
-            //angle = atan2( a.x*b.y - a.y*b.x, a.x*b.x + a.y*b.y );
-            var degree_control:number=(Math.atan2(this._tmp_point.x* testpoint.y - this._tmp_point.y* testpoint.x, this._tmp_point.x* testpoint.x + this._tmp_point.y* testpoint.y));
-            if(degree_control>180)degree_control-=360;
-            //var degree_control:number=(Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI);
-            console.log("degree_control "+degree_control);
-            console.log("degree_anchor "+degree_anchor);
-            console.log("this._draw_directions[this._draw_directions.length-1] "+this._draw_directions[this._draw_directions.length-1]);
-            this._direction.x=testpoint.x;
-            this._direction.y=testpoint.y;
-            if((degree_control)<0)
-                this._data[this._data.length-1].push(1);
-            else
-                this._data[this._data.length-1].push(2);
-
-        }
-        else{
-            this._data[this._data.length-1].push(1);
-        }
-        this._cur_point.x=anchorX;
-        this._cur_point.y=anchorY;
+         }
+         else{
+         this._data[this._data.length-1].push(1);
+         }
+         */
         this._data[this._data.length-1].push(controlX);
         this._data[this._data.length-1].push(controlY);
         this._data[this._data.length-1].push(anchorX);
         this._data[this._data.length-1].push(anchorY);
+        this._cur_point.x=anchorX;
+        this._cur_point.y=anchorY;
 
     }
 
@@ -146,27 +161,18 @@ class GraphicsPath
         this._commands[this._commands.length-1].push(GraphicsPathCommand.LINE_TO);
         this._data[this._data.length-1].push(x);
         this._data[this._data.length-1].push(y);
-        if(this.isFill) {
-            this._tmp_point.x = x - this._cur_point.x;
-            this._tmp_point.y = y - this._cur_point.y;
-            this._tmp_point.normalize();
-            this._direction.x=this._tmp_point.x;
-            this._direction.y=this._tmp_point.y;
-            var degree_anchor:number = Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
-            this._draw_directions[this._draw_directions.length-1]+=degree_anchor;
-        }
+
+
         this._cur_point.x=x;
         this._cur_point.y=y;
     }
 
     public moveTo(x:number, y:number)
     {
+        // whenever a moveTo command apears, we start a new contour
         if(this._commands[this._commands.length-1].length>0){
-            this.finalizeContour();
-            this._draw_directions.push(0);
-            this._contours_closed.push(false);
-            this._commands.push([]);
-            this._data.push([]);
+            this._commands.push([GraphicsPathCommand.MOVE_TO]);
+            this._data.push([x, y]);
         }
         this._startPoint.x = x;
         this._startPoint.y = y;
@@ -174,18 +180,6 @@ class GraphicsPath
         this._cur_point.y = y;
     }
 
-    public finalizeContour()
-    {
-        if((this._startPoint.x != this._cur_point.x) || (this._startPoint.y != this._cur_point.y)){
-            if(this.isFill) {
-                this.lineTo(this._startPoint.x, this._startPoint.y);
-            }
-        }
-        else{
-            this._contours_closed[this._contours_closed.length-1]=true;
-        }
-
-    }
     public wideLineTo(x:number, y:number)
     {
         // not used

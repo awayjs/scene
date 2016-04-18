@@ -11,19 +11,19 @@ class CapsStyle
 	 * Used to specify round caps in the <code>caps</code> parameter of the
 	 * <code>flash.display.Graphics.lineStyle()</code> method.
 	 */
-	public static ROUND:string = "round";
+	public static ROUND:number = 1;
 
 	/**
 	 * Used to specify no caps in the <code>caps</code> parameter of the
 	 * <code>flash.display.Graphics.lineStyle()</code> method.
 	 */
-	public static NONE:string = "none";
+	public static NONE:number = 0;
 
 	/**
 	 * Used to specify square caps in the <code>caps</code> parameter of the
 	 * <code>flash.display.Graphics.lineStyle()</code> method.
 	 */
-	public static SQUARE:string = "square";
+	public static SQUARE:number = 2;
 }
 
 export default CapsStyle;

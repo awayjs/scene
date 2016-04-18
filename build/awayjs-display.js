@@ -1,63 +1,7 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"awayjs-display/lib/IRenderer":[function(require,module,exports){
 "use strict";
-var adapters = require("./lib/adapters");
-exports.adapters = adapters;
-var animators = require("./lib/animators");
-exports.animators = animators;
-var base = require("./lib/base");
-exports.base = base;
-var bounds = require("./lib/bounds");
-exports.bounds = bounds;
-var controllers = require("./lib/controllers");
-exports.controllers = controllers;
-var display = require("./lib/display");
-exports.display = display;
-var draw = require("./lib/draw");
-exports.draw = draw;
-var errors = require("./lib/errors");
-exports.errors = errors;
-var events = require("./lib/events");
-exports.events = events;
-var factories = require("./lib/factories");
-exports.factories = factories;
-var graphics = require("./lib/graphics");
-exports.graphics = graphics;
-var managers = require("./lib/managers");
-exports.managers = managers;
-var materials = require("./lib/materials");
-exports.materials = materials;
-var partition = require("./lib/partition");
-exports.partition = partition;
-var pick = require("./lib/pick");
-exports.pick = pick;
-var prefabs = require("./lib/prefabs");
-exports.prefabs = prefabs;
-var text = require("./lib/text");
-exports.text = text;
-var textures = require("./lib/textures");
-exports.textures = textures;
-var utils = require("./lib/utils");
-exports.utils = utils;
-var View_1 = require("./lib/View");
-exports.View = View_1.default;
-partition.PartitionBase.registerAbstraction(partition.CameraNode, display.Camera);
-partition.PartitionBase.registerAbstraction(partition.DirectionalLightNode, display.DirectionalLight);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Sprite);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Shape);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.MovieClip);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Billboard);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.LineSegment);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextField);
-partition.PartitionBase.registerAbstraction(partition.LightProbeNode, display.LightProbe);
-partition.PartitionBase.registerAbstraction(partition.PointLightNode, display.PointLight);
-partition.PartitionBase.registerAbstraction(partition.SkyboxNode, display.Skybox);
-
-},{"./lib/View":"awayjs-display/lib/View","./lib/adapters":"awayjs-display/lib/adapters","./lib/animators":"awayjs-display/lib/animators","./lib/base":"awayjs-display/lib/base","./lib/bounds":"awayjs-display/lib/bounds","./lib/controllers":"awayjs-display/lib/controllers","./lib/display":"awayjs-display/lib/display","./lib/draw":"awayjs-display/lib/draw","./lib/errors":"awayjs-display/lib/errors","./lib/events":"awayjs-display/lib/events","./lib/factories":"awayjs-display/lib/factories","./lib/graphics":"awayjs-display/lib/graphics","./lib/managers":"awayjs-display/lib/managers","./lib/materials":"awayjs-display/lib/materials","./lib/partition":"awayjs-display/lib/partition","./lib/pick":"awayjs-display/lib/pick","./lib/prefabs":"awayjs-display/lib/prefabs","./lib/text":"awayjs-display/lib/text","./lib/textures":"awayjs-display/lib/textures","./lib/utils":"awayjs-display/lib/utils"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
-"use strict";
-
 },{}],"awayjs-display/lib/ITraverser":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/View":[function(require,module,exports){
 "use strict";
 var getTimer_1 = require("awayjs-core/lib/utils/getTimer");
@@ -550,22 +494,16 @@ var View = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = View;
-
 },{"./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./display/Camera":"awayjs-display/lib/display/Camera","./display/Scene":"awayjs-display/lib/display/Scene","./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker","awayjs-core/lib/utils/getTimer":undefined}],"awayjs-display/lib/adapters/IDisplayObjectAdapter":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/adapters/IMovieClipAdapter":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/adapters":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/IAnimationSet":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/IAnimator":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/data/ParticleData":[function(require,module,exports){
 "use strict";
 var ParticleData = (function () {
@@ -575,7 +513,6 @@ var ParticleData = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ParticleData;
-
 },{}],"awayjs-display/lib/animators/nodes/AnimationNodeBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -622,14 +559,12 @@ var AnimationNodeBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AnimationNodeBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/animators":[function(require,module,exports){
 "use strict";
 var ParticleData_1 = require("./animators/data/ParticleData");
 exports.ParticleData = ParticleData_1.default;
 var AnimationNodeBase_1 = require("./animators/nodes/AnimationNodeBase");
 exports.AnimationNodeBase = AnimationNodeBase_1.default;
-
 },{"./animators/data/ParticleData":"awayjs-display/lib/animators/data/ParticleData","./animators/nodes/AnimationNodeBase":"awayjs-display/lib/animators/nodes/AnimationNodeBase"}],"awayjs-display/lib/base/AlignmentMode":[function(require,module,exports){
 "use strict";
 /**
@@ -650,7 +585,6 @@ var AlignmentMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AlignmentMode;
-
 },{}],"awayjs-display/lib/base/HierarchicalProperties":[function(require,module,exports){
 "use strict";
 /**
@@ -691,16 +625,12 @@ var HierarchicalProperties = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = HierarchicalProperties;
-
 },{}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/IRenderable":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/ISurface":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/OrientationMode":[function(require,module,exports){
 "use strict";
 var OrientationMode = (function () {
@@ -722,7 +652,6 @@ var OrientationMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = OrientationMode;
-
 },{}],"awayjs-display/lib/base/Style":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -840,7 +769,6 @@ var Style = (function (_super) {
 }(EventDispatcher_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Style;
-
 },{"../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/events/EventDispatcher":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
 "use strict";
 var HierarchicalProperties_1 = require("../base/HierarchicalProperties");
@@ -1212,7 +1140,6 @@ var Timeline = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Timeline;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/ColorTransform":undefined}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
 "use strict";
 /**
@@ -1228,7 +1155,6 @@ var TouchPoint = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TouchPoint;
-
 },{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1744,7 +1670,6 @@ var Transform = (function (_super) {
 }(EventDispatcher_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Transform;
-
 },{"../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/base":[function(require,module,exports){
 "use strict";
 var AlignmentMode_1 = require("./base/AlignmentMode");
@@ -1761,7 +1686,6 @@ var TouchPoint_1 = require("./base/TouchPoint");
 exports.TouchPoint = TouchPoint_1.default;
 var Transform_1 = require("./base/Transform");
 exports.Transform = Transform_1.default;
-
 },{"./base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","./base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","./base/OrientationMode":"awayjs-display/lib/base/OrientationMode","./base/Style":"awayjs-display/lib/base/Style","./base/Timeline":"awayjs-display/lib/base/Timeline","./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./base/Transform":"awayjs-display/lib/base/Transform"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1886,7 +1810,6 @@ var AxisAlignedBoundingBox = (function (_super) {
 }(BoundingVolumeBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AxisAlignedBoundingBox;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1981,7 +1904,6 @@ var BoundingSphere = (function (_super) {
 }(BoundingVolumeBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BoundingSphere;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingVolumeBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -2035,7 +1957,6 @@ var BoundingVolumeBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BoundingVolumeBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/bounds/BoundsType":[function(require,module,exports){
 "use strict";
 /**
@@ -2060,7 +1981,6 @@ var BoundsType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BoundsType;
-
 },{}],"awayjs-display/lib/bounds/NullBounds":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2092,7 +2012,6 @@ var NullBounds = (function (_super) {
 }(BoundingVolumeBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = NullBounds;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds":[function(require,module,exports){
 "use strict";
 var AxisAlignedBoundingBox_1 = require("./bounds/AxisAlignedBoundingBox");
@@ -2105,7 +2024,6 @@ var BoundsType_1 = require("./bounds/BoundsType");
 exports.BoundsType = BoundsType_1.default;
 var NullBounds_1 = require("./bounds/NullBounds");
 exports.NullBounds = NullBounds_1.default;
-
 },{"./bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","./bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","./bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","./bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","./bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -2168,7 +2086,6 @@ var ControllerBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ControllerBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/controllers/FirstPersonController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2401,7 +2318,6 @@ var FirstPersonController = (function (_super) {
 }(ControllerBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FirstPersonController;
-
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","awayjs-core/lib/geom/MathConsts":undefined}],"awayjs-display/lib/controllers/FollowController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2436,7 +2352,6 @@ var FollowController = (function (_super) {
 }(HoverController_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FollowController;
-
 },{"../controllers/HoverController":"awayjs-display/lib/controllers/HoverController"}],"awayjs-display/lib/controllers/HoverController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2737,7 +2652,6 @@ var HoverController = (function (_super) {
 }(LookAtController_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = HoverController;
-
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/LookAtController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2813,7 +2727,6 @@ var LookAtController = (function (_super) {
 }(ControllerBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LookAtController;
-
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/SpringController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2879,7 +2792,6 @@ var SpringController = (function (_super) {
 }(LookAtController_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SpringController;
-
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers":[function(require,module,exports){
 "use strict";
 var ControllerBase_1 = require("./controllers/ControllerBase");
@@ -2894,7 +2806,6 @@ var LookAtController_1 = require("./controllers/LookAtController");
 exports.LookAtController = LookAtController_1.default;
 var SpringController_1 = require("./controllers/SpringController");
 exports.SpringController = SpringController_1.default;
-
 },{"./controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","./controllers/FirstPersonController":"awayjs-display/lib/controllers/FirstPersonController","./controllers/FollowController":"awayjs-display/lib/controllers/FollowController","./controllers/HoverController":"awayjs-display/lib/controllers/HoverController","./controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","./controllers/SpringController":"awayjs-display/lib/controllers/SpringController"}],"awayjs-display/lib/display/Billboard":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3119,7 +3030,6 @@ var Billboard = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Billboard;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/geom/Rectangle":undefined}],"awayjs-display/lib/display/Camera":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3353,7 +3263,6 @@ var Camera = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Camera;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined}],"awayjs-display/lib/display/DirectionalLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3516,7 +3425,6 @@ var DirectionalLight = (function (_super) {
 }(LightBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DirectionalLight;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/DisplayObjectContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -4105,7 +4013,6 @@ var DisplayObjectContainer = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DisplayObjectContainer;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/RangeError":undefined}],"awayjs-display/lib/display/DisplayObject":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -5992,10 +5899,8 @@ var DisplayObject = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DisplayObject;
-
 },{"../base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/OrientationMode":"awayjs-display/lib/base/OrientationMode","../base/Transform":"awayjs-display/lib/base/Transform","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","../pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/display/IEntity":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/display/LightBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6156,7 +6061,6 @@ var LightBase = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightBase;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/LightEvent":"awayjs-display/lib/events/LightEvent","awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/display/LightProbe":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6198,7 +6102,6 @@ var LightProbe = (function (_super) {
 }(LightBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightProbe;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/image/SamplerCube":undefined}],"awayjs-display/lib/display/LineSegment":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6399,7 +6302,6 @@ var LineSegment = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LineSegment;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/display/LoaderContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6962,7 +6864,6 @@ var LoaderContainer = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LoaderContainer;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined}],"awayjs-display/lib/display/MovieClip":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7293,7 +7194,6 @@ var MovieClip = (function (_super) {
 }(Sprite_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MovieClip;
-
 },{"../base/Timeline":"awayjs-display/lib/base/Timeline","../display/Sprite":"awayjs-display/lib/display/Sprite","../display/TextField":"awayjs-display/lib/display/TextField","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/display/PointLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7406,7 +7306,6 @@ var PointLight = (function (_super) {
 }(LightBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PointLight;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Scene":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7456,7 +7355,6 @@ var Scene = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Scene;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/display/Shape":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7683,7 +7581,6 @@ var Shape = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Shape;
-
 },{"../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7938,7 +7835,6 @@ var Skybox = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Skybox;
-
 },{"../base/Style":"awayjs-display/lib/base/Style","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined}],"awayjs-display/lib/display/Sprite":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -8156,7 +8052,6 @@ var Sprite = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Sprite;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -9044,7 +8939,6 @@ var TextField = (function (_super) {
 }(Sprite_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextField;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display":[function(require,module,exports){
 "use strict";
 var Billboard_1 = require("./display/Billboard");
@@ -9079,7 +8973,6 @@ var Sprite_1 = require("./display/Sprite");
 exports.Sprite = Sprite_1.default;
 var TextField_1 = require("./display/TextField");
 exports.TextField = TextField_1.default;
-
 },{"./display/Billboard":"awayjs-display/lib/display/Billboard","./display/Camera":"awayjs-display/lib/display/Camera","./display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","./display/DisplayObject":"awayjs-display/lib/display/DisplayObject","./display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","./display/LightBase":"awayjs-display/lib/display/LightBase","./display/LightProbe":"awayjs-display/lib/display/LightProbe","./display/LineSegment":"awayjs-display/lib/display/LineSegment","./display/LoaderContainer":"awayjs-display/lib/display/LoaderContainer","./display/MovieClip":"awayjs-display/lib/display/MovieClip","./display/PointLight":"awayjs-display/lib/display/PointLight","./display/Scene":"awayjs-display/lib/display/Scene","./display/Shape":"awayjs-display/lib/display/Shape","./display/Skybox":"awayjs-display/lib/display/Skybox","./display/Sprite":"awayjs-display/lib/display/Sprite","./display/TextField":"awayjs-display/lib/display/TextField"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 "use strict";
 /**
@@ -9096,22 +8989,21 @@ var CapsStyle = (function () {
      * Used to specify round caps in the <code>caps</code> parameter of the
      * <code>flash.display.Graphics.lineStyle()</code> method.
      */
-    CapsStyle.ROUND = "round";
+    CapsStyle.ROUND = 1;
     /**
      * Used to specify no caps in the <code>caps</code> parameter of the
      * <code>flash.display.Graphics.lineStyle()</code> method.
      */
-    CapsStyle.NONE = "none";
+    CapsStyle.NONE = 0;
     /**
      * Used to specify square caps in the <code>caps</code> parameter of the
      * <code>flash.display.Graphics.lineStyle()</code> method.
      */
-    CapsStyle.SQUARE = "square";
+    CapsStyle.SQUARE = 2;
     return CapsStyle;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CapsStyle;
-
 },{}],"awayjs-display/lib/draw/GradientType":[function(require,module,exports){
 "use strict";
 /**
@@ -9135,12 +9027,991 @@ var GradientType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GradientType;
+},{}],"awayjs-display/lib/draw/GraphicsFactoryFills":[function(require,module,exports){
+"use strict";
+var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
+var DefaultMaterialManager_1 = require("../managers/DefaultMaterialManager");
+var Point_1 = require("awayjs-core/lib/geom/Point");
+var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
+var Float3Attributes_1 = require("awayjs-core/lib/attributes/Float3Attributes");
+var Float2Attributes_1 = require("awayjs-core/lib/attributes/Float2Attributes");
+var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
+var GraphicsFactoryHelper_1 = require("../draw/GraphicsFactoryHelper");
+var TriangleElements_1 = require("../graphics/TriangleElements");
+/**
+ * The Graphics class contains a set of methods that you can use to create a
+ * vector shape. Display objects that support drawing include Sprite and Shape
+ * objects. Each of these classes includes a <code>graphics</code> property
+ * that is a Graphics object. The following are among those helper functions
+ * provided for ease of use: <code>drawRect()</code>,
+ * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
+ * <code>drawEllipse()</code>.
+ *
+ * <p>You cannot create a Graphics object directly from ActionScript code. If
+ * you call <code>new Graphics()</code>, an exception is thrown.</p>
+ *
+ * <p>The Graphics class is final; it cannot be subclassed.</p>
+ */
+var GraphicsFactoryFills = (function () {
+    function GraphicsFactoryFills() {
+    }
+    GraphicsFactoryFills.draw_pathes = function (targetGraphic) {
+        var len = targetGraphic.queued_fill_pathes.length;
+        var cp = 0;
+        for (cp = 0; cp < len; cp++) {
+            var one_path = targetGraphic.queued_fill_pathes[cp];
+            //one_path.finalizeContour();
+            var contour_commands = one_path.commands;
+            var contour_data = one_path.data;
+            var commands;
+            var data;
+            var i = 0;
+            var k = 0;
+            var vert_cnt = 0;
+            var data_cnt = 0;
+            var draw_direction = 0;
+            var contours_vertices = [[]];
+            var final_vert_list = [];
+            var final_vert_cnt = 0;
+            var lastPoint = new Point_1.default();
+            var last_dir_vec = new Point_1.default();
+            var end_point = new Point_1.default();
+            for (k = 0; k < contour_commands.length; k++) {
+                contours_vertices.push([]);
+                vert_cnt = 0;
+                data_cnt = 0;
+                commands = contour_commands[k];
+                data = contour_data[k];
+                draw_direction = 0;
+                var new_dir = 0;
+                var new_dir_1 = 0;
+                var new_dir_2 = 0;
+                var dir_delta = 0;
+                var last_direction = 0;
+                var tmp_dir_point = new Point_1.default();
+                if ((data[0] != data[data.length - 2]) || (data[1] != data[data.length - 1])) {
+                    data[data.length] == data[0];
+                    data[data.length] == data[1];
+                }
+                lastPoint.x = data[0];
+                lastPoint.y = data[1];
+                if (commands[1] == GraphicsPathCommand_1.default.LINE_TO) {
+                    last_dir_vec.x = data[2] - lastPoint.x;
+                    last_dir_vec.y = data[3] - lastPoint.y;
+                }
+                else if (commands[1] == GraphicsPathCommand_1.default.CURVE_TO) {
+                    last_dir_vec.x = data[4] - lastPoint.x;
+                    last_dir_vec.y = data[5] - lastPoint.y;
+                }
+                data_cnt = 2;
+                last_dir_vec.normalize();
+                last_direction = Math.atan2(last_dir_vec.y, last_dir_vec.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                for (i = 1; i < commands.length; i++) {
+                    end_point = new Point_1.default(data[data_cnt++], data[data_cnt++]);
+                    if (commands[i] == GraphicsPathCommand_1.default.MOVE_TO) {
+                        console.log("ERROR ! ONLY THE FIRST COMMAND FOR A CONTOUR IS ALLOWED TO BE A 'MOVE_TO' COMMAND");
+                    }
+                    else if (commands[i] == GraphicsPathCommand_1.default.CURVE_TO) {
+                        end_point = new Point_1.default(data[data_cnt++], data[data_cnt++]);
+                    }
+                    //get the directional vector and the direction for this segment
+                    tmp_dir_point.x = end_point.x - lastPoint.x;
+                    tmp_dir_point.y = end_point.y - lastPoint.y;
+                    tmp_dir_point.normalize();
+                    new_dir = Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                    // get the difference in angle to the last segment
+                    dir_delta = new_dir - last_direction;
+                    if (dir_delta > 180) {
+                        dir_delta -= 360;
+                    }
+                    if (dir_delta < -180) {
+                        dir_delta += 360;
+                    }
+                    draw_direction += dir_delta;
+                    last_direction = new_dir;
+                    lastPoint.x = end_point.x;
+                    lastPoint.y = end_point.y;
+                }
+                lastPoint.x = data[0];
+                lastPoint.y = data[1];
+                data_cnt = 2;
+                contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.x;
+                contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.y;
+                //console.log("Draw directions complete: "+draw_direction);
+                for (i = 1; i < commands.length; i++) {
+                    switch (commands[i]) {
+                        case GraphicsPathCommand_1.default.MOVE_TO:
+                            console.log("ERROR ! ONLY THE FIRST COMMAND FOR A CONTOUR IS ALLOWED TO BE A 'MOVE_TO' COMMAND");
+                            break;
+                        case GraphicsPathCommand_1.default.LINE_TO:
+                            lastPoint.x = data[data_cnt++];
+                            lastPoint.y = data[data_cnt++];
+                            contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.x;
+                            contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.y;
+                            break;
+                        case GraphicsPathCommand_1.default.CURVE_TO:
+                            var control_x = data[data_cnt++];
+                            var control_y = data[data_cnt++];
+                            var end_x = data[data_cnt++];
+                            var end_y = data[data_cnt++];
+                            tmp_dir_point.x = control_x - lastPoint.x;
+                            tmp_dir_point.y = control_y - lastPoint.y;
+                            tmp_dir_point.normalize();
+                            new_dir_1 = Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                            tmp_dir_point.x = end_x - lastPoint.x;
+                            tmp_dir_point.y = end_y - lastPoint.y;
+                            tmp_dir_point.normalize();
+                            new_dir_2 = Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                            // get the difference in angle to the last segment
+                            var curve_direction = new_dir_2 - new_dir_1;
+                            if (curve_direction > 180) {
+                                curve_direction -= 360;
+                            }
+                            if (curve_direction < -180) {
+                                curve_direction += 360;
+                            }
+                            if ((curve_direction == 0) && (curve_direction == 180) && (curve_direction == -180)) {
+                                lastPoint.x = end_x;
+                                lastPoint.y = end_y;
+                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.x;
+                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.y;
+                                break;
+                            }
+                            var curve_attr_1 = -1;
+                            if (draw_direction < 0) {
+                                if (curve_direction > 0) {
+                                    //convex
+                                    //console.log("convex");
+                                    curve_attr_1 = 1;
+                                    contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_x;
+                                    contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_y;
+                                }
+                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_x;
+                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_y;
+                            }
+                            else {
+                                if (curve_direction < 0) {
+                                    //convex
+                                    //console.log("convex");
+                                    curve_attr_1 = 1;
+                                    contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_x;
+                                    contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_y;
+                                }
+                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_x;
+                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_y;
+                            }
+                            if (GraphicsFactoryHelper_1.default.isClockWiseXY(end_x, end_y, control_x, control_y, lastPoint.x, lastPoint.y)) {
+                                final_vert_list[final_vert_cnt++] = end_x;
+                                final_vert_list[final_vert_cnt++] = end_y;
+                                final_vert_list[final_vert_cnt++] = curve_attr_1;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = control_x;
+                                final_vert_list[final_vert_cnt++] = control_y;
+                                final_vert_list[final_vert_cnt++] = curve_attr_1;
+                                final_vert_list[final_vert_cnt++] = 0.5;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = lastPoint.x;
+                                final_vert_list[final_vert_cnt++] = lastPoint.y;
+                                final_vert_list[final_vert_cnt++] = curve_attr_1;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                            }
+                            else {
+                                final_vert_list[final_vert_cnt++] = lastPoint.x;
+                                final_vert_list[final_vert_cnt++] = lastPoint.y;
+                                final_vert_list[final_vert_cnt++] = curve_attr_1;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = control_x;
+                                final_vert_list[final_vert_cnt++] = control_y;
+                                final_vert_list[final_vert_cnt++] = curve_attr_1;
+                                final_vert_list[final_vert_cnt++] = 0.5;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = end_x;
+                                final_vert_list[final_vert_cnt++] = end_y;
+                                final_vert_list[final_vert_cnt++] = curve_attr_1;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                                final_vert_list[final_vert_cnt++] = 1.0;
+                                final_vert_list[final_vert_cnt++] = 0.0;
+                            }
+                            lastPoint.x = end_x;
+                            lastPoint.y = end_y;
+                            break;
+                        case GraphicsPathCommand_1.default.CUBIC_CURVE:
+                            //todo
+                            break;
+                    }
+                }
+            }
+            var verts = [];
+            var all_verts = [];
+            var vertIndicess = [];
+            var elems = [];
+            for (k = 0; k < contours_vertices.length; k++) {
+                var vertices = contours_vertices[k];
+                //for (i = 0; i < vertices.length / 2; ++i)
+                //console.log("vert collected" + i + " = " + vertices[i * 2] + " / " + vertices[i * 2 + 1]);
+                var verticesF32 = new Float32Array(vertices);
+                //var verticesF32 = new Float32Array([0,0, 100,0, 100,100, 0,100]);
+                //console.log("in vertices", vertices);
+                //var tess = new TESS();
+                if (GraphicsFactoryHelper_1.default._tess_obj == null) {
+                    console.log("No libtess2 tesselator available.\nMake it available using Graphics._tess_obj=new TESS();");
+                    return;
+                }
+                GraphicsFactoryHelper_1.default._tess_obj.addContour(verticesF32, 2, 8, vertices.length / 2);
+            }
+            GraphicsFactoryHelper_1.default._tess_obj.tesselate(0 /*TESS.WINDING_ODD*/, 0 /*TESS.ELEMENT_POLYGONS*/, 3, 2, null);
+            //console.log("out vertices", Graphics._tess_obj.getVertices());
+            verts = GraphicsFactoryHelper_1.default._tess_obj.getVertices();
+            elems = GraphicsFactoryHelper_1.default._tess_obj.getElements();
+            //console.log("out elements", Graphics._tess_obj.getElements());
+            var numVerts = verts.length / 2;
+            var numElems = elems.length / 3;
+            for (i = 0; i < numVerts; ++i)
+                all_verts.push(new Point_1.default(verts[i * 2], verts[i * 2 + 1]));
+            for (i = 0; i < numElems; ++i) {
+                var p1 = elems[i * 3];
+                var p2 = elems[i * 3 + 1];
+                var p3 = elems[i * 3 + 2];
+                final_vert_list[final_vert_cnt++] = all_verts[p3].x;
+                final_vert_list[final_vert_cnt++] = all_verts[p3].y;
+                final_vert_list[final_vert_cnt++] = 1;
+                final_vert_list[final_vert_cnt++] = 2.0;
+                final_vert_list[final_vert_cnt++] = 0.0;
+                final_vert_list[final_vert_cnt++] = 1.0;
+                final_vert_list[final_vert_cnt++] = 0.0;
+                final_vert_list[final_vert_cnt++] = all_verts[p2].x;
+                final_vert_list[final_vert_cnt++] = all_verts[p2].y;
+                final_vert_list[final_vert_cnt++] = 1;
+                final_vert_list[final_vert_cnt++] = 2.0;
+                final_vert_list[final_vert_cnt++] = 0.0;
+                final_vert_list[final_vert_cnt++] = 1.0;
+                final_vert_list[final_vert_cnt++] = 0.0;
+                final_vert_list[final_vert_cnt++] = all_verts[p1].x;
+                final_vert_list[final_vert_cnt++] = all_verts[p1].y;
+                final_vert_list[final_vert_cnt++] = 1;
+                final_vert_list[final_vert_cnt++] = 2.0;
+                final_vert_list[final_vert_cnt++] = 0.0;
+                final_vert_list[final_vert_cnt++] = 1.0;
+                final_vert_list[final_vert_cnt++] = 0.0;
+            }
+            //for (i = 0; i < final_vert_list.length/7; ++i)
+            //	console.log("final verts "+i+" = "+final_vert_list[i*7]+" / "+final_vert_list[i*7+1]);
+            var attributesView = new AttributesView_1.default(Float32Array, 7);
+            attributesView.set(final_vert_list);
+            var attributesBuffer = attributesView.buffer;
+            attributesView.dispose();
+            var elements = new TriangleElements_1.default(attributesBuffer);
+            elements.setPositions(new Float2Attributes_1.default(attributesBuffer));
+            elements.setCustomAttributes("curves", new Float3Attributes_1.default(attributesBuffer));
+            elements.setUVs(new Float2Attributes_1.default(attributesBuffer));
+            var material = DefaultMaterialManager_1.default.getDefaultMaterial();
+            material.bothSides = true;
+            material.useColorTransform = true;
+            material.curves = true;
+            var thisGraphic = targetGraphic.addGraphic(elements, material);
+        }
+        targetGraphic.queued_fill_pathes.length = 0;
+    };
+    return GraphicsFactoryFills;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = GraphicsFactoryFills;
+},{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryHelper":[function(require,module,exports){
+"use strict";
+var CapsStyle_1 = require("../draw/CapsStyle");
+var Point_1 = require("awayjs-core/lib/geom/Point");
+var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
+/**
+ * The Graphics class contains a set of methods that you can use to create a
+ * vector shape. Display objects that support drawing include Sprite and Shape
+ * objects. Each of these classes includes a <code>graphics</code> property
+ * that is a Graphics object. The following are among those helper functions
+ * provided for ease of use: <code>drawRect()</code>,
+ * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
+ * <code>drawEllipse()</code>.
+ *
+ * <p>You cannot create a Graphics object directly from ActionScript code. If
+ * you call <code>new Graphics()</code>, an exception is thrown.</p>
+ *
+ * <p>The Graphics class is final; it cannot be subclassed.</p>
+ */
+var GraphicsFactoryHelper = (function () {
+    function GraphicsFactoryHelper() {
+    }
+    GraphicsFactoryHelper.isClockWiseXY = function (point1x, point1y, point2x, point2y, point3x, point3y) {
+        var num = (point1x - point2x) * (point3y - point2y) - (point1y - point2y) * (point3x - point2x);
+        if (num < 0)
+            return false;
+        return true;
+    };
+    GraphicsFactoryHelper.getSign = function (ax, ay, cx, cy, bx, by) {
+        return (ax - bx) * (cy - by) - (ay - by) * (cx - bx);
+    };
+    GraphicsFactoryHelper.pointInTri = function (ax, ay, bx, by, cx, cy, xx, xy) {
+        var b1 = GraphicsFactoryHelper.getSign(ax, ay, xx, xy, bx, by) > 0;
+        var b2 = GraphicsFactoryHelper.getSign(bx, by, xx, xy, cx, cy) > 0;
+        var b3 = GraphicsFactoryHelper.getSign(cx, cy, xx, xy, ax, ay) > 0;
+        return ((b1 == b2) && (b2 == b3));
+    };
+    GraphicsFactoryHelper.getControlXForCurveX = function (a, c, b) {
+        return c;
+    };
+    GraphicsFactoryHelper.getControlYForCurveY = function (a, c, b) {
+        return c;
+    };
+    GraphicsFactoryHelper.drawPoint = function (startX, startY, vertices) {
+        GraphicsFactoryHelper.addTriangle(startX - 2, startY - 2, startX + 2, startY - 2, startX + 2, startY + 2, 0, vertices);
+        GraphicsFactoryHelper.addTriangle(startX - 2, startY - 2, startX - 2, startY + 2, startX + 2, startY + 2, 0, vertices);
+    };
+    GraphicsFactoryHelper.addTriangle = function (startX, startY, controlX, controlY, endX, endY, tri_type, vertices) {
+        var final_vert_cnt = vertices.length;
+        if (tri_type == 0) {
+            vertices[final_vert_cnt++] = startX;
+            vertices[final_vert_cnt++] = startY;
+            vertices[final_vert_cnt++] = 1;
+            vertices[final_vert_cnt++] = 2.0;
+            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = controlX;
+            vertices[final_vert_cnt++] = controlY;
+            vertices[final_vert_cnt++] = 1;
+            vertices[final_vert_cnt++] = 2.0;
+            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = endX;
+            vertices[final_vert_cnt++] = endY;
+            vertices[final_vert_cnt++] = 1;
+            vertices[final_vert_cnt++] = 2.0;
+            vertices[final_vert_cnt++] = 0.0;
+        }
+        else {
+            vertices[final_vert_cnt++] = startX;
+            vertices[final_vert_cnt++] = startY;
+            vertices[final_vert_cnt++] = tri_type;
+            vertices[final_vert_cnt++] = 1.0;
+            vertices[final_vert_cnt++] = 1.0;
+            vertices[final_vert_cnt++] = controlX;
+            vertices[final_vert_cnt++] = controlY;
+            vertices[final_vert_cnt++] = tri_type;
+            vertices[final_vert_cnt++] = 0.5;
+            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = endX;
+            vertices[final_vert_cnt++] = endY;
+            vertices[final_vert_cnt++] = tri_type;
+            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = 0.0;
+        }
+    };
+    GraphicsFactoryHelper.createCap = function (startX, startY, start_le, start_ri, dir_vec, capstyle, cap_position, thickness, vertices) {
+        if (capstyle == CapsStyle_1.default.ROUND) {
+            //console.log("add round cap");
+            var tmp1_x = startX + (cap_position * (dir_vec.x * thickness));
+            var tmp1_y = startY + (cap_position * (dir_vec.y * thickness));
+            tmp1_x = tmp1_x * 2 - start_le.x / 2 - start_ri.x / 2;
+            tmp1_y = tmp1_y * 2 - start_le.y / 2 - start_ri.y / 2;
+            GraphicsFactoryHelper.addTriangle(start_le.x, start_le.y, tmp1_x, tmp1_y, start_ri.x, start_ri.y, -1, vertices);
+        }
+        else if (capstyle == CapsStyle_1.default.SQUARE) {
+            //console.log("add square cap");
+            var tmp1_x = start_le.x + (cap_position * (dir_vec.x * thickness));
+            var tmp1_y = start_le.y + (cap_position * (dir_vec.y * thickness));
+            var tmp2_x = start_ri.x + (cap_position * (dir_vec.x * thickness));
+            var tmp2_y = start_ri.y + (cap_position * (dir_vec.y * thickness));
+            GraphicsFactoryHelper.addTriangle(tmp2_x, tmp2_y, tmp1_x, tmp1_y, start_le.x, start_le.y, 0, vertices);
+            GraphicsFactoryHelper.addTriangle(tmp2_x, tmp2_y, start_le.x, start_le.y, start_ri.x, start_ri.y, 0, vertices);
+        }
+    };
+    GraphicsFactoryHelper.getLineFormularData = function (a, b) {
+        var tmp_x = b.x - a.x;
+        var tmp_y = b.y - a.y;
+        var return_point = new Point_1.default();
+        if ((tmp_x != 0) && (tmp_y != 0))
+            return_point.x = tmp_y / tmp_x;
+        return_point.y = -(return_point.x * a.x - a.y);
+        return return_point;
+    };
+    GraphicsFactoryHelper.getQuadricBezierPosition = function (t, start, control, end) {
+        var xt = 1 - t;
+        return xt * xt * start + 2 * xt * t * control + t * t * end;
+    };
+    GraphicsFactoryHelper.subdivideCurve = function (startx, starty, cx, cy, endx, endy, startx2, starty2, cx2, cy2, endx2, endy2, array_out, array2_out) {
+        var angle_1 = Math.atan2(cy - starty, cx - startx) * MathConsts_1.default.RADIANS_TO_DEGREES;
+        var angle_2 = Math.atan2(endy - cy, endx - cx) * MathConsts_1.default.RADIANS_TO_DEGREES;
+        var angle_delta = angle_2 - angle_1;
+        //console.log("angle_delta "+angle_delta);
+        if (angle_delta > 180) {
+            angle_delta -= 360;
+        }
+        if (angle_delta < -180) {
+            angle_delta += 360;
+        }
+        if (Math.abs(angle_delta) >= 150) {
+            array_out.push(startx, starty, cx, cy, endx, endy);
+            array2_out.push(startx2, starty2, cx2, cy2, endx2, endy2);
+            return;
+        }
+        var b1 = false;
+        var b2 = false;
+        if (angle_delta < 0) {
+            // curve is curved to right side. right side is convex
+            b1 = GraphicsFactoryHelper.getSign(startx, starty, cx2, cy2, endx, endy) > 0;
+            b2 = GraphicsFactoryHelper.getSign(startx, starty, cx, cy, endx, endy) > 0;
+            b1 = (((starty - endy) * (cx - startx) + (endx - startx) * (cy - starty)) * ((starty - endy) * (cx2 - startx) + (endx - startx) * (cy2 - starty))) < 0;
+        }
+        else {
+            // curve is curved to left side. left side is convex
+            b1 = GraphicsFactoryHelper.getSign(startx2, starty2, cx2, cy2, endx2, endy2) > 0;
+            b2 = GraphicsFactoryHelper.getSign(startx2, starty2, cx, cy, endx2, endy2) > 0;
+            b1 = (((starty2 - endy) * (cx - startx2) + (endx2 - startx2) * (cy - starty2)) * ((starty2 - endy2) * (cx2 - startx2) + (endx2 - startx2) * (cy2 - starty2))) < 0;
+        }
+        if (b1) {
+            array_out.push(startx, starty, cx, cy, endx, endy);
+            array2_out.push(startx2, starty2, cx2, cy2, endx2, endy2);
+            return;
+        }
+        // triangles overlap. we must subdivide:
+        var c1x = startx + (cx - startx) * 0.5; // new controlpoint 1.1
+        var c1y = starty + (cy - starty) * 0.5;
+        var c2x = cx + (endx - cx) * 0.5; // new controlpoint 1.2
+        var c2y = cy + (endy - cy) * 0.5;
+        var ax = c1x + (c2x - c1x) * 0.5; // new middlepoint 1
+        var ay = c1y + (c2y - c1y) * 0.5;
+        var c1x2 = startx2 + (cx2 - startx2) * 0.5; // new controlpoint 2.1
+        var c1y2 = starty2 + (cy2 - starty2) * 0.5;
+        var c2x2 = cx2 + (endx2 - cx2) * 0.5; // new controlpoint 2.2
+        var c2y2 = cy2 + (endy2 - cy2) * 0.5;
+        var ax2 = c1x2 + (c2x2 - c1x2) * 0.5; // new middlepoint 2
+        var ay2 = c1y2 + (c2y2 - c1y2) * 0.5;
+        GraphicsFactoryHelper.subdivideCurve(startx, starty, c1x, c1y, ax, ay, startx2, starty2, c1x2, c1y2, ax2, ay2, array_out, array2_out);
+        GraphicsFactoryHelper.subdivideCurve(ax, ay, c2x, c2y, endx, endy, ax2, ay2, c2x2, c2y2, endx2, endy2, array_out, array2_out);
+    };
+    return GraphicsFactoryHelper;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = GraphicsFactoryHelper;
+},{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryStrokes":[function(require,module,exports){
+"use strict";
+var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
+var JointStyle_1 = require("../draw/JointStyle");
+var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
+var DefaultMaterialManager_1 = require("../managers/DefaultMaterialManager");
+var Point_1 = require("awayjs-core/lib/geom/Point");
+var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
+var Float3Attributes_1 = require("awayjs-core/lib/attributes/Float3Attributes");
+var Float2Attributes_1 = require("awayjs-core/lib/attributes/Float2Attributes");
+var GraphicsFactoryHelper_1 = require("../draw/GraphicsFactoryHelper");
+var TriangleElements_1 = require("../graphics/TriangleElements");
+/**
+ * The Graphics class contains a set of methods that you can use to create a
+ * vector shape. Display objects that support drawing include Sprite and Shape
+ * objects. Each of these classes includes a <code>graphics</code> property
+ * that is a Graphics object. The following are among those helper functions
+ * provided for ease of use: <code>drawRect()</code>,
+ * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
+ * <code>drawEllipse()</code>.
+ *
+ * <p>You cannot create a Graphics object directly from ActionScript code. If
+ * you call <code>new Graphics()</code>, an exception is thrown.</p>
+ *
+ * <p>The Graphics class is final; it cannot be subclassed.</p>
+ */
+var GraphicsFactoryStrokes = (function () {
+    function GraphicsFactoryStrokes() {
+    }
+    GraphicsFactoryStrokes.draw_pathes = function (targetGraphic) {
+        var len = targetGraphic.queued_stroke_pathes.length;
+        var contour_commands;
+        var contour_data;
+        var strokeStyle;
+        var one_path;
+        var commands;
+        var data;
+        var i = 0;
+        var k = 0;
+        var vert_cnt = 0;
+        var data_cnt = 0;
+        var final_vert_list = [];
+        var final_vert_cnt = 0;
+        var lastPoint = new Point_1.default();
+        var start_point = new Point_1.default();
+        var end_point = new Point_1.default();
+        var start_left = new Point_1.default();
+        var start_right = new Point_1.default();
+        var ctr_left = new Point_1.default();
+        var ctr_right = new Point_1.default();
+        var ctr_left2 = new Point_1.default();
+        var ctr_right2 = new Point_1.default();
+        var end_left = new Point_1.default();
+        var end_right = new Point_1.default();
+        var tmp_point = new Point_1.default();
+        var tmp_point2 = new Point_1.default();
+        var tmp_point3 = new Point_1.default();
+        var closed = false;
+        var last_dir_vec = new Point_1.default();
+        var cp = 0;
+        for (cp = 0; cp < len; cp++) {
+            one_path = targetGraphic.queued_stroke_pathes[cp];
+            contour_commands = one_path.commands;
+            contour_data = one_path.data;
+            strokeStyle = one_path.stroke();
+            var tessVerts = [];
+            for (k = 0; k < contour_commands.length; k++) {
+                commands = contour_commands[k];
+                data = contour_data[k];
+                vert_cnt = 0;
+                data_cnt = 0;
+                var new_dir = 0;
+                var dir_delta = 0;
+                var last_direction = 0;
+                var tmp_dir_point = new Point_1.default();
+                closed = true;
+                if ((data[0] != data[data.length - 2]) || (data[1] != data[data.length - 1]))
+                    closed = false;
+                else {
+                    last_dir_vec.x = data[data.length - 2] - data[data.length - 4];
+                    last_dir_vec.y = data[data.length - 1] - data[data.length - 3];
+                    last_dir_vec.normalize();
+                    last_direction = Math.atan2(last_dir_vec.y, last_dir_vec.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                }
+                data_cnt = 0;
+                lastPoint.x = data[data_cnt++];
+                lastPoint.y = data[data_cnt++];
+                var new_cmds = [];
+                var new_pnts = [];
+                var new_cmds_cnt = 0;
+                var new_pnts_cnt = 0;
+                var prev_normal = new Point_1.default();
+                var le_point = new Point_1.default();
+                var curve_end_point = new Point_1.default();
+                var ri_point = new Point_1.default();
+                var ctr_point = new Point_1.default();
+                prev_normal.x = -1 * last_dir_vec.y;
+                prev_normal.y = last_dir_vec.x;
+                for (i = 1; i < commands.length; i++) {
+                    if (commands[i] == GraphicsPathCommand_1.default.MOVE_TO) {
+                        console.log("ERROR ! ONLY THE FIRST COMMAND FOR A CONTOUR IS ALLOWED TO BE A 'MOVE_TO' COMMAND");
+                        continue;
+                    }
+                    //console.log("");
+                    //console.log("segment "+i+"lastPoint x = "+lastPoint.x+" y = "+lastPoint.y)
+                    end_point = new Point_1.default(data[data_cnt++], data[data_cnt++]);
+                    //console.log("segment "+i+"end_point x = "+end_point.x+" y = "+end_point.y)
+                    if (commands[i] == GraphicsPathCommand_1.default.CURVE_TO) {
+                        curve_end_point = new Point_1.default(data[data_cnt++], data[data_cnt++]);
+                    }
+                    //get the directional vector and the direction for this segment
+                    tmp_dir_point.x = end_point.x - lastPoint.x;
+                    tmp_dir_point.y = end_point.y - lastPoint.y;
+                    tmp_dir_point.normalize();
+                    new_dir = Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                    // get the difference in angle to the last segment
+                    dir_delta = new_dir - last_direction;
+                    if (dir_delta > 180) {
+                        dir_delta -= 360;
+                    }
+                    if (dir_delta < -180) {
+                        dir_delta += 360;
+                    }
+                    last_direction = new_dir;
+                    //console.log("segment "+i+" direction: "+dir_delta);
+                    // rotate direction around 90 degree
+                    tmp_point.x = -1 * tmp_dir_point.y;
+                    tmp_point.y = tmp_dir_point.x;
+                    ri_point = new Point_1.default(lastPoint.x + (tmp_point.x * strokeStyle.half_thickness), lastPoint.y + (tmp_point.y * strokeStyle.half_thickness));
+                    le_point = new Point_1.default(lastPoint.x - (tmp_point.x * strokeStyle.half_thickness), lastPoint.y - (tmp_point.y * strokeStyle.half_thickness));
+                    var add_segment = false;
+                    // check if this is the first segment, and the path is not closed
+                    // in this case, we can just set the points to the contour points
+                    if ((i == 1) && (!closed)) {
+                        //console.log("segment "+i+"Path is not closed, we can just add the first segment")
+                        add_segment = true;
+                    }
+                    else {
+                        // we need to figure out if we need to add a joint or not
+                        if ((dir_delta == 0) || (dir_delta == 180)) {
+                            // check if this and the prev segment was a line. if yes, than they can be merged
+                            if ((i != 1) && (commands[i] == GraphicsPathCommand_1.default.LINE_TO) && (new_cmds[new_cmds.length - 1] == GraphicsPathCommand_1.default.LINE_TO)) {
+                                //console.log("straight line can be merged in prev straight line");
+                                add_segment = false;
+                            }
+                            else {
+                                add_segment = true;
+                            }
+                        }
+                        if (dir_delta == 180) {
+                            console.log("path goes straight back (180�). DO we need to handle this edge case different ? !");
+                        }
+                        else if (dir_delta != 0) {
+                            add_segment = true;
+                            var half_angle = (180 - (dir_delta));
+                            if (dir_delta < 0) {
+                                half_angle = (-180 - (dir_delta));
+                            }
+                            half_angle = half_angle * -0.5 * MathConsts_1.default.DEGREES_TO_RADIANS;
+                            var distance = strokeStyle.half_thickness / Math.sin(half_angle);
+                            tmp_point2.x = tmp_dir_point.x * Math.cos(half_angle) + tmp_dir_point.y * Math.sin(half_angle);
+                            tmp_point2.y = tmp_dir_point.y * Math.cos(half_angle) - tmp_dir_point.x * Math.sin(half_angle);
+                            tmp_point2.normalize();
+                            var merged_pnt_ri = new Point_1.default(lastPoint.x - (tmp_point2.x * distance), lastPoint.y - (tmp_point2.y * distance));
+                            var merged_pnt_le = new Point_1.default(lastPoint.x + (tmp_point2.x * distance), lastPoint.y + (tmp_point2.y * distance));
+                            if (dir_delta > 0) {
+                                ri_point = merged_pnt_ri;
+                                var contour_le = new Point_1.default(lastPoint.x - (tmp_point.x * strokeStyle.half_thickness), lastPoint.y - (tmp_point.y * strokeStyle.half_thickness));
+                                var contour_prev_le = new Point_1.default(lastPoint.x - (prev_normal.x * strokeStyle.half_thickness), lastPoint.y - (prev_normal.y * strokeStyle.half_thickness));
+                                le_point = contour_le;
+                            }
+                            else {
+                                le_point = merged_pnt_le;
+                                var contour_ri = new Point_1.default(lastPoint.x + (tmp_point.x * strokeStyle.half_thickness), lastPoint.y + (tmp_point.y * strokeStyle.half_thickness));
+                                var contour_prev_ri = new Point_1.default(lastPoint.x + (prev_normal.x * strokeStyle.half_thickness), lastPoint.y + (prev_normal.y * strokeStyle.half_thickness));
+                                ri_point = contour_ri;
+                            }
+                            var addJoints = true;
+                            if (strokeStyle.jointstyle == JointStyle_1.default.MITER) {
+                                var distance_miter = (Math.sqrt((distance * distance) - (strokeStyle.half_thickness * strokeStyle.half_thickness)) / strokeStyle.half_thickness);
+                                if (distance_miter <= strokeStyle.miter_limit) {
+                                    addJoints = false;
+                                    ri_point = merged_pnt_ri;
+                                    le_point = merged_pnt_le;
+                                }
+                                else {
+                                    if (dir_delta > 0) {
+                                        contour_le.x = contour_le.x - (tmp_dir_point.x * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                        contour_le.y = contour_le.y - (tmp_dir_point.y * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                        tmp_point3.x = prev_normal.y * -1;
+                                        tmp_point3.y = prev_normal.x;
+                                        contour_prev_le.x = contour_prev_le.x - (tmp_point3.x * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                        contour_prev_le.y = contour_prev_le.y - (tmp_point3.y * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                    }
+                                    else {
+                                        contour_ri.x = contour_ri.x - (tmp_dir_point.x * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                        contour_ri.y = contour_ri.y - (tmp_dir_point.y * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                        tmp_point3.x = prev_normal.y * -1;
+                                        tmp_point3.y = prev_normal.x;
+                                        contour_prev_ri.x = contour_prev_ri.x - (tmp_point3.x * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                        contour_prev_ri.y = contour_prev_ri.y - (tmp_point3.y * (strokeStyle.miter_limit * strokeStyle.half_thickness));
+                                    }
+                                }
+                            }
+                            if (addJoints) {
+                                new_cmds[new_cmds_cnt++] = (strokeStyle.jointstyle != JointStyle_1.default.ROUND) ? GraphicsPathCommand_1.default.BUILD_JOINT : GraphicsPathCommand_1.default.BUILD_ROUND_JOINT;
+                                if (dir_delta > 0) {
+                                    new_pnts[new_pnts_cnt++] = merged_pnt_ri;
+                                    new_pnts[new_pnts_cnt++] = contour_prev_le;
+                                    new_pnts[new_pnts_cnt++] = contour_le;
+                                }
+                                else {
+                                    new_pnts[new_pnts_cnt++] = contour_prev_ri;
+                                    new_pnts[new_pnts_cnt++] = merged_pnt_le;
+                                    new_pnts[new_pnts_cnt++] = contour_ri;
+                                }
+                                if (strokeStyle.jointstyle == JointStyle_1.default.ROUND) {
+                                    new_pnts[new_pnts_cnt++] = new Point_1.default(lastPoint.x - (tmp_point2.x * Math.abs(distance)), lastPoint.y - (tmp_point2.y * Math.abs(distance)));
+                                    if (dir_delta > 0) {
+                                        new_pnts[new_pnts_cnt++] = contour_prev_le;
+                                        new_pnts[new_pnts_cnt++] = contour_le;
+                                    }
+                                    else {
+                                        new_pnts[new_pnts_cnt++] = contour_prev_ri;
+                                        new_pnts[new_pnts_cnt++] = contour_ri;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    prev_normal.x = tmp_point.x;
+                    prev_normal.y = tmp_point.y;
+                    if (add_segment) {
+                        if (commands[i] == GraphicsPathCommand_1.default.LINE_TO) {
+                            new_cmds[new_cmds_cnt++] = GraphicsPathCommand_1.default.LINE_TO;
+                            new_pnts[new_pnts_cnt++] = ri_point;
+                            new_pnts[new_pnts_cnt++] = le_point;
+                        }
+                        else if (commands[i] == GraphicsPathCommand_1.default.CURVE_TO) {
+                            tmp_dir_point.x = curve_end_point.x - end_point.x;
+                            tmp_dir_point.y = curve_end_point.y - end_point.y;
+                            tmp_dir_point.normalize();
+                            new_dir = Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                            dir_delta = new_dir - last_direction;
+                            last_direction = new_dir;
+                            tmp_point.x = -1 * tmp_dir_point.y;
+                            tmp_point.y = tmp_dir_point.x;
+                            if ((dir_delta != 0) && (dir_delta != 180)) {
+                                new_cmds[new_cmds_cnt++] = GraphicsPathCommand_1.default.CURVE_TO;
+                                new_pnts[new_pnts_cnt++] = ri_point;
+                                new_pnts[new_pnts_cnt++] = le_point;
+                                new_pnts[new_pnts_cnt++] = new Point_1.default(lastPoint.x, lastPoint.y);
+                                new_pnts[new_pnts_cnt++] = new Point_1.default(end_point.x, end_point.y);
+                                new_pnts[new_pnts_cnt++] = curve_end_point;
+                            }
+                            else {
+                                new_cmds[new_cmds_cnt++] = GraphicsPathCommand_1.default.LINE_TO;
+                                new_pnts[new_pnts_cnt++] = ri_point;
+                                new_pnts[new_pnts_cnt++] = le_point;
+                            }
+                            prev_normal.x = tmp_point.x;
+                            prev_normal.y = tmp_point.y;
+                            lastPoint = curve_end_point;
+                        }
+                    }
+                    if (commands[i] == GraphicsPathCommand_1.default.LINE_TO) {
+                        lastPoint = end_point;
+                    }
+                    if (i == commands.length - 1) {
+                        if (!closed) {
+                            new_cmds[new_cmds_cnt++] = GraphicsPathCommand_1.default.NO_OP;
+                            new_pnts[new_pnts_cnt++] = new Point_1.default(lastPoint.x + (tmp_point.x * strokeStyle.half_thickness), lastPoint.y + (tmp_point.y * strokeStyle.half_thickness));
+                            new_pnts[new_pnts_cnt++] = new Point_1.default(lastPoint.x - (tmp_point.x * strokeStyle.half_thickness), lastPoint.y - (tmp_point.y * strokeStyle.half_thickness));
+                        }
+                        else {
+                            new_cmds[new_cmds_cnt++] = GraphicsPathCommand_1.default.NO_OP;
+                            new_pnts[new_pnts_cnt++] = new_pnts[0];
+                            new_pnts[new_pnts_cnt++] = new_pnts[1];
+                        }
+                    }
+                }
+                // first we draw all the curves:
+                new_cmds_cnt = 0;
+                new_pnts_cnt = 0;
+                for (i = 0; i < new_cmds.length; i++) {
+                    if (new_cmds[i] == GraphicsPathCommand_1.default.LINE_TO) {
+                        new_pnts_cnt += 2;
+                    }
+                    else if (new_cmds[i] == GraphicsPathCommand_1.default.CURVE_TO) {
+                        start_right = new_pnts[new_pnts_cnt++];
+                        start_left = new_pnts[new_pnts_cnt++];
+                        start_point = new_pnts[new_pnts_cnt++];
+                        ctr_point = new_pnts[new_pnts_cnt++];
+                        end_point = new_pnts[new_pnts_cnt++];
+                        end_right = new_pnts[new_pnts_cnt];
+                        end_left = new_pnts[new_pnts_cnt + 1];
+                        // get the directional vector for the first part of the curve
+                        tmp_dir_point.x = ctr_point.x - start_point.x;
+                        tmp_dir_point.y = ctr_point.y - start_point.y;
+                        tmp_point3.x = ctr_point.x - start_point.x;
+                        tmp_point3.y = ctr_point.y - start_point.y;
+                        var length1 = tmp_point3.length;
+                        tmp_dir_point.normalize();
+                        // get the directional vector for the second part of the curve
+                        tmp_point2.x = end_point.x - ctr_point.x;
+                        tmp_point2.y = end_point.y - ctr_point.y;
+                        var length2 = tmp_point2.length;
+                        tmp_point2.normalize();
+                        var length_calc = 0.5 - ((length2 - length1) / length1) * 0.5;
+                        if (length1 > length2) {
+                            length_calc = 0.5 + ((length1 - length2) / length2) * 0.5;
+                        }
+                        // get angle to positive x-axis for both dir-vectors, than get the difference between those
+                        var angle_1 = Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                        var angle_2 = Math.atan2(tmp_point2.y, tmp_point2.x) * MathConsts_1.default.RADIANS_TO_DEGREES;
+                        dir_delta = angle_2 - angle_1;
+                        if (dir_delta > 180) {
+                            dir_delta -= 360;
+                        }
+                        if (dir_delta < -180) {
+                            dir_delta += 360;
+                        }
+                        if (dir_delta == 0) {
+                            console.log("This is not a curve, we can just draw it like a straight line");
+                        }
+                        //console.log("segment : '"+i+"' direction:"+dir_delta);
+                        var dirNumber = 1;
+                        if (dir_delta < 0) {
+                            dirNumber = -1;
+                        }
+                        var half_angle = dir_delta * 0.5 * MathConsts_1.default.DEGREES_TO_RADIANS;
+                        var lengthpos = Math.abs(length1 * Math.sin(half_angle));
+                        var distance = strokeStyle.half_thickness / Math.sin(half_angle);
+                        tmp_point3.x = tmp_point2.x * Math.cos(half_angle) + tmp_point2.y * Math.sin(half_angle);
+                        tmp_point3.y = tmp_point2.y * Math.cos(half_angle) - tmp_point2.x * Math.sin(half_angle);
+                        tmp_point3.normalize();
+                        var merged_pnt_ri = new Point_1.default(ctr_point.x - (tmp_point3.x * distance), ctr_point.y - (tmp_point3.y * distance));
+                        var merged_pnt_le = new Point_1.default(ctr_point.x + (tmp_point3.x * distance), ctr_point.y + (tmp_point3.y * distance));
+                        var curve_x = GraphicsFactoryHelper_1.default.getQuadricBezierPosition(0.5, start_point.x, ctr_point.x, end_point.x);
+                        var curve_y = GraphicsFactoryHelper_1.default.getQuadricBezierPosition(0.5, start_point.y, ctr_point.y, end_point.y);
+                        var curve_2x = GraphicsFactoryHelper_1.default.getQuadricBezierPosition(0.501, start_point.x, ctr_point.x, end_point.x);
+                        var curve_2y = GraphicsFactoryHelper_1.default.getQuadricBezierPosition(0.501, start_point.y, ctr_point.y, end_point.y);
+                        tmp_point3.x = -1 * (curve_y - curve_2y);
+                        tmp_point3.y = curve_x - curve_2x;
+                        tmp_point3.normalize();
+                        //GraphicsFactoryHelper.drawPoint(curve_x,curve_y, final_vert_list);
+                        // move the point on the curve to use correct thickness
+                        ctr_right.x = curve_x + (dirNumber * tmp_point3.x * strokeStyle.half_thickness);
+                        ctr_right.y = curve_y + (dirNumber * tmp_point3.y * strokeStyle.half_thickness);
+                        ctr_left.x = curve_x - (dirNumber * tmp_point3.x * strokeStyle.half_thickness);
+                        ctr_left.y = curve_y - (dirNumber * tmp_point3.y * strokeStyle.half_thickness);
+                        //GraphicsFactoryHelper.drawPoint(ctr_right.x, ctr_right.y , final_vert_list);
+                        //GraphicsFactoryHelper.drawPoint(ctr_left.x, ctr_left.y , final_vert_list);
+                        // calculate the actual controlpoints
+                        ctr_right.x = ctr_right.x * 2 - start_right.x / 2 - end_right.x / 2;
+                        ctr_right.y = ctr_right.y * 2 - start_right.y / 2 - end_right.y / 2;
+                        ctr_left.x = ctr_left.x * 2 - start_left.x / 2 - end_left.x / 2;
+                        ctr_left.y = ctr_left.y * 2 - start_left.y / 2 - end_left.y / 2;
+                        //ctr_right=merged_pnt_ri;
+                        //ctr_left=merged_pnt_le;
+                        /*
+                        // controlpoints version2:
+                        tmp_dir_point.x = start_left.x-start_right.x;
+                        tmp_dir_point.y = start_left.y-start_right.y;
+                        tmp_point2.x = end_left.x-end_right.x;
+                        tmp_point2.y = end_left.y-end_right.y;
 
+                        ctr_right.x = ctr_point.x-(tmp_dir_point.x/2);
+                        ctr_right.y = ctr_point.y-(tmp_dir_point.y/2);
+                        var new_end_ri:Point = new Point(end_point.x+(tmp_dir_point.x/2), end_point.y+(tmp_dir_point.y/2));
+
+                        ctr_left.x = ctr_point.x+(tmp_dir_point.x/2);
+                        ctr_left.y = ctr_point.y+(tmp_dir_point.y/2);
+                        var new_end_le:Point = new Point(end_point.x-(tmp_dir_point.x/2), end_point.y-(tmp_dir_point.y/2));
+                        */
+                        /*
+                                                GraphicsFactoryHelper.drawPoint(start_right.x, start_right.y , final_vert_list);
+                                                GraphicsFactoryHelper.drawPoint(start_left.x, start_left.y , final_vert_list);
+                                                GraphicsFactoryHelper.drawPoint(ctr_right.x, ctr_right.y , final_vert_list);
+                                                GraphicsFactoryHelper.drawPoint(ctr_left.x, ctr_left.y , final_vert_list);
+                                                GraphicsFactoryHelper.drawPoint(end_right.x, end_right.y , final_vert_list);
+                                                GraphicsFactoryHelper.drawPoint(end_left.x, end_left.y , final_vert_list);
+                        */
+                        var subdivided = [];
+                        var subdivided2 = [];
+                        GraphicsFactoryHelper_1.default.subdivideCurve(start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y, start_left.x, start_left.y, ctr_left.x, ctr_left.y, end_left.x, end_left.y, subdivided, subdivided2);
+                        if (dir_delta > 0) {
+                            for (var sc = 0; sc < subdivided.length / 6; sc++) {
+                                // right curved
+                                // concave curves:
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 1, final_vert_list);
+                                // fills
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], 0, final_vert_list);
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], 0, final_vert_list);
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 0, final_vert_list);
+                                // convex curves:
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], -1, final_vert_list);
+                            }
+                        }
+                        else {
+                            for (var sc = 0; sc < subdivided.length / 6; sc++) {
+                                // left curved
+                                // convex curves:
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], -1, final_vert_list);
+                                // fills
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], 0, final_vert_list);
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], 0, final_vert_list);
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], 0, final_vert_list);
+                                // concave curves:
+                                GraphicsFactoryHelper_1.default.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], 1, final_vert_list);
+                            }
+                        }
+                    }
+                    else if (new_cmds[i] >= GraphicsPathCommand_1.default.BUILD_JOINT) {
+                        new_pnts_cnt += 3;
+                        //GraphicsFactoryHelper.addTriangle(start_right.x,  start_right.y,  start_left.x,  start_left.y,  end_right.x,  end_right.y, 0, final_vert_list);
+                        if (new_cmds[i] == GraphicsPathCommand_1.default.BUILD_ROUND_JOINT) {
+                            end_left = new_pnts[new_pnts_cnt++]; // concave curves:
+                            start_right = new_pnts[new_pnts_cnt++];
+                            start_left = new_pnts[new_pnts_cnt++];
+                            //console.log("add round tri");
+                            GraphicsFactoryHelper_1.default.addTriangle(start_right.x, start_right.y, end_left.x, end_left.y, start_left.x, start_left.y, -1, final_vert_list);
+                        }
+                    }
+                }
+                // now we draw all the normal triangles.
+                // we do it in 2 steps, to prevent curves cut anything out of underlying normal tris
+                new_cmds_cnt = 0;
+                new_pnts_cnt = 0;
+                for (i = 0; i < new_cmds.length; i++) {
+                    if (new_cmds[i] == GraphicsPathCommand_1.default.LINE_TO) {
+                        start_right = new_pnts[new_pnts_cnt++];
+                        start_left = new_pnts[new_pnts_cnt++];
+                        end_right = new_pnts[new_pnts_cnt];
+                        end_left = new_pnts[new_pnts_cnt + 1];
+                        GraphicsFactoryHelper_1.default.addTriangle(start_right.x, start_right.y, start_left.x, start_left.y, end_right.x, end_right.y, 0, final_vert_list);
+                        GraphicsFactoryHelper_1.default.addTriangle(start_left.x, start_left.y, end_left.x, end_left.y, end_right.x, end_right.y, 0, final_vert_list);
+                    }
+                    else if (new_cmds[i] == GraphicsPathCommand_1.default.CURVE_TO) {
+                        new_pnts_cnt += 5;
+                    }
+                    else if (new_cmds[i] >= GraphicsPathCommand_1.default.BUILD_JOINT) {
+                        end_right = new_pnts[new_pnts_cnt++];
+                        start_right = new_pnts[new_pnts_cnt++];
+                        start_left = new_pnts[new_pnts_cnt++];
+                        GraphicsFactoryHelper_1.default.addTriangle(start_right.x, start_right.y, start_left.x, start_left.y, end_right.x, end_right.y, 0, final_vert_list);
+                        if (new_cmds[i] == GraphicsPathCommand_1.default.BUILD_ROUND_JOINT) {
+                            new_pnts_cnt += 3;
+                        }
+                    }
+                }
+                if (!closed) {
+                    last_dir_vec.x = data[2] - data[0];
+                    last_dir_vec.y = data[3] - data[1];
+                    last_dir_vec.normalize();
+                    GraphicsFactoryHelper_1.default.createCap(data[0], data[1], new_pnts[0], new_pnts[1], last_dir_vec, strokeStyle.capstyle, -1, strokeStyle.half_thickness, final_vert_list);
+                    last_dir_vec.x = data[data.length - 2] - data[data.length - 4];
+                    last_dir_vec.y = data[data.length - 1] - data[data.length - 3];
+                    last_dir_vec.normalize();
+                    GraphicsFactoryHelper_1.default.createCap(data[data.length - 2], data[data.length - 1], new_pnts[new_pnts.length - 2], new_pnts[new_pnts.length - 1], last_dir_vec, strokeStyle.capstyle, 1, strokeStyle.half_thickness, final_vert_list);
+                }
+            }
+            //console.log("final_vert_cnt "+(final_vert_cnt/5));
+            // todo: handle material / submesh settings, and check if a material / submesh already exists for this settings
+            var attributesView = new AttributesView_1.default(Float32Array, 5);
+            attributesView.set(final_vert_list);
+            var attributesBuffer = attributesView.buffer;
+            attributesView.dispose();
+            var elements = new TriangleElements_1.default(attributesBuffer);
+            elements.setPositions(new Float2Attributes_1.default(attributesBuffer));
+            elements.setCustomAttributes("curves", new Float3Attributes_1.default(attributesBuffer));
+            //elements.setUVs(new Float2Attributes(attributesBuffer));
+            //curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
+            var material = DefaultMaterialManager_1.default.getDefaultMaterial();
+            material.bothSides = true;
+            material.useColorTransform = true;
+            material.curves = true;
+            targetGraphic.addGraphic(elements, material);
+        }
+        targetGraphic.queued_stroke_pathes.length = 0;
+    };
+    return GraphicsFactoryStrokes;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = GraphicsFactoryStrokes;
+},{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFillStyle":[function(require,module,exports){
+"use strict";
+var GraphicsFillStyle = (function () {
+    function GraphicsFillStyle(color, alpha) {
+        if (color === void 0) { color = 0xffffff; }
+        if (alpha === void 0) { alpha = 1; }
+        this._color = color;
+        this._alpha = alpha;
+    }
+    Object.defineProperty(GraphicsFillStyle.prototype, "data_type", {
+        get: function () {
+            return GraphicsFillStyle.data_type;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GraphicsFillStyle.data_type = "[graphicsdata FillStyle]";
+    return GraphicsFillStyle;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = GraphicsFillStyle;
 },{}],"awayjs-display/lib/draw/GraphicsPathCommand":[function(require,module,exports){
 "use strict";
 /**
-* Defines the values to use for specifying path-drawing commands.
-* The values in this class are used by the Graphics.drawPath() method,
+ * Defines the values to use for specifying path-drawing commands.
+ * The values in this class are used by the Graphics.drawPath() method,
  *or stored in the commands vector of a GraphicsPath object.
  */
 var GraphicsPathCommand = (function () {
@@ -9169,7 +10040,8 @@ var GraphicsPathCommand = (function () {
      *  Specifies a drawing command that draws a curve from the current drawing position
      *  to the x- and y-coordinates specified in the data vector, using a control point.
      */
-    GraphicsPathCommand.CURVE_TO_2 = 13;
+    GraphicsPathCommand.BUILD_JOINT = 13;
+    GraphicsPathCommand.BUILD_ROUND_JOINT = 14;
     /**
      * Specifies a "line to" drawing command,
      * but uses two sets of coordinates (four values) instead of one set.
@@ -9189,7 +10061,6 @@ var GraphicsPathCommand = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPathCommand;
-
 },{}],"awayjs-display/lib/draw/GraphicsPathWinding":[function(require,module,exports){
 "use strict";
 /**
@@ -9211,11 +10082,12 @@ var GraphicsPathWinding = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPathWinding;
-
 },{}],"awayjs-display/lib/draw/GraphicsPath":[function(require,module,exports){
 "use strict";
 var GraphicsPathWinding_1 = require("../draw/GraphicsPathWinding");
 var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
+var GraphicsFillStyle_1 = require("../draw/GraphicsFillStyle");
+var GraphicsStrokeStyle_1 = require("../draw/GraphicsStrokeStyle");
 var Point_1 = require("awayjs-core/lib/geom/Point");
 /**
 
@@ -9224,14 +10096,13 @@ var Point_1 = require("awayjs-core/lib/geom/Point");
  *or stored in the commands vector of a GraphicsPath object.
  */
 var GraphicsPath = (function () {
-    function GraphicsPath(commands, data, winding) {
+    function GraphicsPath(commands, data, winding_rule) {
         if (commands === void 0) { commands = null; }
         if (data === void 0) { data = null; }
-        if (winding === void 0) { winding = GraphicsPathWinding_1.default.EVEN_ODD; }
+        if (winding_rule === void 0) { winding_rule = GraphicsPathWinding_1.default.EVEN_ODD; }
         this._data = [];
         this._commands = [];
-        this._draw_directions = [0];
-        this._contours_closed = [false];
+        this._style = null;
         if (commands != null && data != null) {
             this._data[0] = data;
             this._commands[0] = commands;
@@ -9240,37 +10111,42 @@ var GraphicsPath = (function () {
             this._data[0] = [];
             this._commands[0] = [];
         }
-        this._direction = new Point_1.default(0, -1);
         this._startPoint = new Point_1.default();
         this._cur_point = new Point_1.default();
-        this._tmp_point = new Point_1.default();
-        this.isFill = false;
-        this._winding = winding;
+        this._winding_rule = winding_rule;
+        this._winding_directions = [];
     }
-    Object.defineProperty(GraphicsPath.prototype, "draw_directions", {
+    Object.defineProperty(GraphicsPath.prototype, "data_type", {
         get: function () {
-            return this._draw_directions;
+            return GraphicsPath.data_type;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(GraphicsPath.prototype, "contours_closed", {
+    Object.defineProperty(GraphicsPath.prototype, "style", {
         get: function () {
-            return this._contours_closed;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GraphicsPath.prototype, "isFill", {
-        get: function () {
-            return this._isFill;
+            return this._style;
         },
         set: function (value) {
-            this._isFill = value;
+            this._style = value;
         },
         enumerable: true,
         configurable: true
     });
+    GraphicsPath.prototype.fill = function () {
+        if (this._style == null)
+            return null;
+        if (this._style.data_type == GraphicsFillStyle_1.default.data_type)
+            return this._style;
+        return null;
+    };
+    GraphicsPath.prototype.stroke = function () {
+        if (this._style == null)
+            return null;
+        if (this._style.data_type == GraphicsStrokeStyle_1.default.data_type)
+            return this._style;
+        return null;
+    };
     Object.defineProperty(GraphicsPath.prototype, "commands", {
         get: function () {
             return this._commands;
@@ -9293,44 +10169,46 @@ var GraphicsPath = (function () {
             this._data[this._data.length - 1].push(this._cur_point.y);
         }
         this._commands[this._commands.length - 1].push(GraphicsPathCommand_1.default.CURVE_TO);
-        if (this.isFill) {
-            this._tmp_point.x = anchorX - this._cur_point.x;
-            this._tmp_point.y = anchorY - this._cur_point.y;
-            this._tmp_point.normalize();
-            var testpoint = new Point_1.default(this._tmp_point.x, this._tmp_point.y);
-            testpoint.normalize();
-            var degree_anchor = Math.acos(this._tmp_point.x * this._direction.x + this._tmp_point.y * this._direction.y) * 180 / Math.PI;
-            if (degree_anchor > 180)
-                degree_anchor -= 360;
-            //var degree_anchor:number=Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
-            this._draw_directions[this._draw_directions.length - 1] += degree_anchor;
-            this._tmp_point.x = controlX - this._cur_point.x;
-            this._tmp_point.y = controlY - this._cur_point.y;
-            this._tmp_point.normalize();
-            //angle = atan2( a.x*b.y - a.y*b.x, a.x*b.x + a.y*b.y );
-            var degree_control = (Math.atan2(this._tmp_point.x * testpoint.y - this._tmp_point.y * testpoint.x, this._tmp_point.x * testpoint.x + this._tmp_point.y * testpoint.y));
-            if (degree_control > 180)
-                degree_control -= 360;
-            //var degree_control:number=(Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI);
-            console.log("degree_control " + degree_control);
-            console.log("degree_anchor " + degree_anchor);
-            console.log("this._draw_directions[this._draw_directions.length-1] " + this._draw_directions[this._draw_directions.length - 1]);
-            this._direction.x = testpoint.x;
-            this._direction.y = testpoint.y;
-            if ((degree_control) < 0)
-                this._data[this._data.length - 1].push(1);
-            else
-                this._data[this._data.length - 1].push(2);
-        }
-        else {
-            this._data[this._data.length - 1].push(1);
-        }
-        this._cur_point.x = anchorX;
-        this._cur_point.y = anchorY;
+        /*
+         if(this.isFill){
+         this._tmp_point.x=anchorX-this._cur_point.x;
+         this._tmp_point.y=anchorY-this._cur_point.y;
+         this._tmp_point.normalize();
+
+         var testpoint:Point=new Point(this._tmp_point.x, this._tmp_point.y);
+         testpoint.normalize();
+         var degree_anchor:number=Math.acos(this._tmp_point.x * this._direction.x + this._tmp_point.y * this._direction.y) * 180 / Math.PI;
+         if(degree_anchor>180)degree_anchor-=360;
+         //var degree_anchor:number=Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
+         this._draw_directions[this._draw_directions.length-1]+=degree_anchor;
+         this._tmp_point.x=controlX-this._cur_point.x;
+         this._tmp_point.y=controlY-this._cur_point.y;
+         this._tmp_point.normalize();
+         //angle = atan2( a.x*b.y - a.y*b.x, a.x*b.x + a.y*b.y );
+         var degree_control:number=(Math.atan2(this._tmp_point.x* testpoint.y - this._tmp_point.y* testpoint.x, this._tmp_point.x* testpoint.x + this._tmp_point.y* testpoint.y));
+         if(degree_control>180)degree_control-=360;
+         //var degree_control:number=(Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI);
+         console.log("degree_control "+degree_control);
+         console.log("degree_anchor "+degree_anchor);
+         console.log("this._draw_directions[this._draw_directions.length-1] "+this._draw_directions[this._draw_directions.length-1]);
+         this._direction.x=testpoint.x;
+         this._direction.y=testpoint.y;
+         if((degree_control)<0)
+         this._data[this._data.length-1].push(1);
+         else
+         this._data[this._data.length-1].push(2);
+
+         }
+         else{
+         this._data[this._data.length-1].push(1);
+         }
+         */
         this._data[this._data.length - 1].push(controlX);
         this._data[this._data.length - 1].push(controlY);
         this._data[this._data.length - 1].push(anchorX);
         this._data[this._data.length - 1].push(anchorY);
+        this._cur_point.x = anchorX;
+        this._cur_point.y = anchorY;
     };
     GraphicsPath.prototype.lineTo = function (x, y) {
         if (this._commands[this._commands.length - 1].length == 0) {
@@ -9342,40 +10220,19 @@ var GraphicsPath = (function () {
         this._commands[this._commands.length - 1].push(GraphicsPathCommand_1.default.LINE_TO);
         this._data[this._data.length - 1].push(x);
         this._data[this._data.length - 1].push(y);
-        if (this.isFill) {
-            this._tmp_point.x = x - this._cur_point.x;
-            this._tmp_point.y = y - this._cur_point.y;
-            this._tmp_point.normalize();
-            this._direction.x = this._tmp_point.x;
-            this._direction.y = this._tmp_point.y;
-            var degree_anchor = Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
-            this._draw_directions[this._draw_directions.length - 1] += degree_anchor;
-        }
         this._cur_point.x = x;
         this._cur_point.y = y;
     };
     GraphicsPath.prototype.moveTo = function (x, y) {
+        // whenever a moveTo command apears, we start a new contour
         if (this._commands[this._commands.length - 1].length > 0) {
-            this.finalizeContour();
-            this._draw_directions.push(0);
-            this._contours_closed.push(false);
-            this._commands.push([]);
-            this._data.push([]);
+            this._commands.push([GraphicsPathCommand_1.default.MOVE_TO]);
+            this._data.push([x, y]);
         }
         this._startPoint.x = x;
         this._startPoint.y = y;
         this._cur_point.x = x;
         this._cur_point.y = y;
-    };
-    GraphicsPath.prototype.finalizeContour = function () {
-        if ((this._startPoint.x != this._cur_point.x) || (this._startPoint.y != this._cur_point.y)) {
-            if (this.isFill) {
-                this.lineTo(this._startPoint.x, this._startPoint.y);
-            }
-        }
-        else {
-            this._contours_closed[this._contours_closed.length - 1] = true;
-        }
     };
     GraphicsPath.prototype.wideLineTo = function (x, y) {
         // not used
@@ -9397,46 +10254,1637 @@ var GraphicsPath = (function () {
          this._data.push(y);
          */
     };
+    GraphicsPath.data_type = "[graphicsdata path]";
     return GraphicsPath;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPath;
-
-},{"../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/Graphics":[function(require,module,exports){
+},{"../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsStrokeStyle":[function(require,module,exports){
 "use strict";
-var GraphicsPath_1 = require("../draw/GraphicsPath");
-var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
-var DefaultMaterialManager_1 = require("../managers/DefaultMaterialManager");
-var Point_1 = require("awayjs-core/lib/geom/Point");
+var JointStyle_1 = require("../draw/JointStyle");
+var CapsStyle_1 = require("../draw/CapsStyle");
+var GraphicsStrokeStyle = (function () {
+    function GraphicsStrokeStyle(color, alpha, thickness, jointstyle, capstyle, miter_limit) {
+        if (color === void 0) { color = 0xffffff; }
+        if (alpha === void 0) { alpha = 1; }
+        if (thickness === void 0) { thickness = 10; }
+        if (jointstyle === void 0) { jointstyle = JointStyle_1.default.ROUND; }
+        if (capstyle === void 0) { capstyle = CapsStyle_1.default.SQUARE; }
+        if (miter_limit === void 0) { miter_limit = 10; }
+        this._color = color;
+        this._alpha = alpha;
+        this._thickness = thickness;
+        this._jointstyle = jointstyle;
+        this._capstyle = capstyle;
+        this._miter_limit = miter_limit;
+    }
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "data_type", {
+        get: function () {
+            return GraphicsStrokeStyle.data_type;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "color", {
+        get: function () {
+            return this._color;
+        },
+        set: function (value) {
+            this._color = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "alpha", {
+        get: function () {
+            return this._alpha;
+        },
+        set: function (value) {
+            this._alpha = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "half_thickness", {
+        get: function () {
+            return this._thickness / 2;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "thickness", {
+        get: function () {
+            return this._thickness;
+        },
+        set: function (value) {
+            this._thickness = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "jointstyle", {
+        get: function () {
+            return this._jointstyle;
+        },
+        set: function (value) {
+            this._jointstyle = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "miter_limit", {
+        get: function () {
+            return this._miter_limit;
+        },
+        set: function (value) {
+            this._miter_limit = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphicsStrokeStyle.prototype, "capstyle", {
+        get: function () {
+            return this._capstyle;
+        },
+        set: function (value) {
+            this._capstyle = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GraphicsStrokeStyle.data_type = "[graphicsdata StrokeStyle]";
+    return GraphicsStrokeStyle;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = GraphicsStrokeStyle;
+},{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle"}],"awayjs-display/lib/draw/IGraphicsData":[function(require,module,exports){
+"use strict";
+},{}],"awayjs-display/lib/draw/InterpolationMethod":[function(require,module,exports){
+"use strict";
+/**
+ * The InterpolationMethod class provides values for the
+ * <code>interpolationMethod</code> parameter in the
+ * <code>Graphics.beginGradientFill()</code> and
+ * <code>Graphics.lineGradientStyle()</code> methods. This parameter
+ * determines the RGB space to use when rendering the gradient.
+ */
+var InterpolationMethod = (function () {
+    function InterpolationMethod() {
+    }
+    /**
+     * Specifies that the RGB interpolation method should be used. This means
+     * that the gradient is rendered with exponential sRGB(standard RGB) space.
+     * The sRGB space is a W3C-endorsed standard that defines a non-linear
+     * conversion between red, green, and blue component values and the actual
+     * intensity of the visible component color.
+     *
+     * <p>For example, consider a simple linear gradient between two colors(with
+     * the <code>spreadMethod</code> parameter set to
+     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
+     * affect the appearance as follows: </p>
+     */
+    InterpolationMethod.LINEAR_RGB = "linearRGB";
+    /**
+     * Specifies that the RGB interpolation method should be used. This means
+     * that the gradient is rendered with exponential sRGB(standard RGB) space.
+     * The sRGB space is a W3C-endorsed standard that defines a non-linear
+     * conversion between red, green, and blue component values and the actual
+     * intensity of the visible component color.
+     *
+     * <p>For example, consider a simple linear gradient between two colors(with
+     * the <code>spreadMethod</code> parameter set to
+     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
+     * affect the appearance as follows: </p>
+     */
+    InterpolationMethod.RGB = "rgb";
+    return InterpolationMethod;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = InterpolationMethod;
+},{}],"awayjs-display/lib/draw/JointStyle":[function(require,module,exports){
+"use strict";
+/**
+ * The JointStyle class is an enumeration of constant values that specify the
+ * joint style to use in drawing lines. These constants are provided for use
+ * as values in the <code>joints</code> parameter of the
+ * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
+ * three types of joints: miter, round, and bevel, as the following example
+ * shows:
+ */
+var JointStyle = (function () {
+    function JointStyle() {
+    }
+    /**
+     * Specifies beveled joints in the <code>joints</code> parameter of the
+     * <code>flash.display.Graphics.lineStyle()</code> method.
+     */
+    JointStyle.BEVEL = 2;
+    /**
+     * Specifies mitered joints in the <code>joints</code> parameter of the
+     * <code>flash.display.Graphics.lineStyle()</code> method.
+     */
+    JointStyle.MITER = 0;
+    /**
+     * Specifies round joints in the <code>joints</code> parameter of the
+     * <code>flash.display.Graphics.lineStyle()</code> method.
+     */
+    JointStyle.ROUND = 1;
+    return JointStyle;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = JointStyle;
+},{}],"awayjs-display/lib/draw/LineScaleMode":[function(require,module,exports){
+"use strict";
+/**
+ * The LineScaleMode class provides values for the <code>scaleMode</code>
+ * parameter in the <code>Graphics.lineStyle()</code> method.
+ */
+var LineScaleMode = (function () {
+    function LineScaleMode() {
+    }
+    /**
+     * With this setting used as the <code>scaleMode</code> parameter of the
+     * <code>lineStyle()</code> method, the thickness of the line scales
+     * <i>only</i> vertically. For example, consider the following circles, drawn
+     * with a one-pixel line, and each with the <code>scaleMode</code> parameter
+     * set to <code>LineScaleMode.VERTICAL</code>. The circle on the left is
+     * scaled only vertically, and the circle on the right is scaled both
+     * vertically and horizontally.
+     */
+    LineScaleMode.HORIZONTAL = "horizontal";
+    /**
+     * With this setting used as the <code>scaleMode</code> parameter of the
+     * <code>lineStyle()</code> method, the thickness of the line never scales.
+     */
+    LineScaleMode.NONE = "none";
+    /**
+     * With this setting used as the <code>scaleMode</code> parameter of the
+     * <code>lineStyle()</code> method, the thickness of the line always scales
+     * when the object is scaled(the default).
+     */
+    LineScaleMode.NORMAL = "normal";
+    /**
+     * With this setting used as the <code>scaleMode</code> parameter of the
+     * <code>lineStyle()</code> method, the thickness of the line scales
+     * <i>only</i> horizontally. For example, consider the following circles,
+     * drawn with a one-pixel line, and each with the <code>scaleMode</code>
+     * parameter set to <code>LineScaleMode.HORIZONTAL</code>. The circle on the
+     * left is scaled only horizontally, and the circle on the right is scaled
+     * both vertically and horizontally.
+     */
+    LineScaleMode.VERTICAL = "vertical";
+    return LineScaleMode;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = LineScaleMode;
+},{}],"awayjs-display/lib/draw/PixelSnapping":[function(require,module,exports){
+"use strict";
+/**
+ * The PixelSnapping class is an enumeration of constant values for setting
+ * the pixel snapping options by using the <code>pixelSnapping</code> property
+ * of a Bitmap object.
+ */
+var PixelSnapping = (function () {
+    function PixelSnapping() {
+    }
+    /**
+     * A constant value used in the <code>pixelSnapping</code> property of a
+     * Bitmap object to specify that the bitmap image is always snapped to the
+     * nearest pixel, independent of any transformation.
+     */
+    PixelSnapping.ALWAYS = "always";
+    /**
+     * A constant value used in the <code>pixelSnapping</code> property of a
+     * Bitmap object to specify that the bitmap image is snapped to the nearest
+     * pixel if it is drawn with no rotation or skew and it is drawn at a scale
+     * factor of 99.9% to 100.1%. If these conditions are satisfied, the image is
+     * drawn at 100% scale, snapped to the nearest pixel. Internally, this
+     * setting allows the image to be drawn as fast as possible by using the
+     * vector renderer.
+     */
+    PixelSnapping.AUTO = "auto";
+    /**
+     * A constant value used in the <code>pixelSnapping</code> property of a
+     * Bitmap object to specify that no pixel snapping occurs.
+     */
+    PixelSnapping.NEVER = "never";
+    return PixelSnapping;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = PixelSnapping;
+},{}],"awayjs-display/lib/draw/SpreadMethod":[function(require,module,exports){
+"use strict";
+/**
+ * The SpreadMethod class provides values for the <code>spreadMethod</code>
+ * parameter in the <code>beginGradientFill()</code> and
+ * <code>lineGradientStyle()</code> methods of the Graphics class.
+ *
+ * <p>The following example shows the same gradient fill using various spread
+ * methods:</p>
+ */
+var SpreadMethod = (function () {
+    function SpreadMethod() {
+    }
+    /**
+     * Specifies that the gradient use the <i>pad</i> spread method.
+     */
+    SpreadMethod.PAD = "pad";
+    /**
+     * Specifies that the gradient use the <i>reflect</i> spread method.
+     */
+    SpreadMethod.REFLECT = "reflect";
+    /**
+     * Specifies that the gradient use the <i>repeat</i> spread method.
+     */
+    SpreadMethod.REPEAT = "repeat";
+    return SpreadMethod;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = SpreadMethod;
+},{}],"awayjs-display/lib/draw/TriangleCulling":[function(require,module,exports){
+"use strict";
+/**
+ * Defines codes for culling algorithms that determine which triangles not to
+ * render when drawing triangle paths.
+ *
+ * <p> The terms <code>POSITIVE</code> and <code>NEGATIVE</code> refer to the
+ * sign of a triangle's normal along the z-axis. The normal is a 3D vector
+ * that is perpendicular to the surface of the triangle. </p>
+ *
+ * <p> A triangle whose vertices 0, 1, and 2 are arranged in a clockwise order
+ * has a positive normal value. That is, its normal points in a positive
+ * z-axis direction, away from the current view point. When the
+ * <code>TriangleCulling.POSITIVE</code> algorithm is used, triangles with
+ * positive normals are not rendered. Another term for this is backface
+ * culling. </p>
+ *
+ * <p> A triangle whose vertices are arranged in a counter-clockwise order has
+ * a negative normal value. That is, its normal points in a negative z-axis
+ * direction, toward the current view point. When the
+ * <code>TriangleCulling.NEGATIVE</code> algorithm is used, triangles with
+ * negative normals will not be rendered. </p>
+ */
+var TriangleCulling = (function () {
+    function TriangleCulling() {
+    }
+    /**
+     * Specifies culling of all triangles facing toward the current view point.
+     */
+    TriangleCulling.NEGATIVE = "negative";
+    /**
+     * Specifies no culling. All triangles in the path are rendered.
+     */
+    TriangleCulling.NONE = "none";
+    /**
+     * Specifies culling of all triangles facing away from the current view
+     * point. This is also known as backface culling.
+     */
+    TriangleCulling.POSITIVE = "positive";
+    return TriangleCulling;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = TriangleCulling;
+},{}],"awayjs-display/lib/draw":[function(require,module,exports){
+"use strict";
+var CapsStyle_1 = require("./draw/CapsStyle");
+exports.CapsStyle = CapsStyle_1.default;
+var GradientType_1 = require("./draw/GradientType");
+exports.GradientType = GradientType_1.default;
+var GraphicsFactoryFills_1 = require("./draw/GraphicsFactoryFills");
+exports.GraphicsFactoryFills = GraphicsFactoryFills_1.default;
+var GraphicsFactoryHelper_1 = require("./draw/GraphicsFactoryHelper");
+exports.GraphicsFactoryHelper = GraphicsFactoryHelper_1.default;
+var GraphicsFactoryStrokes_1 = require("./draw/GraphicsFactoryStrokes");
+exports.GraphicsFactoryStrokes = GraphicsFactoryStrokes_1.default;
+var GraphicsFillStyle_1 = require("./draw/GraphicsFillStyle");
+exports.GraphicsFillStyle = GraphicsFillStyle_1.default;
+var GraphicsStrokeStyle_1 = require("./draw/GraphicsStrokeStyle");
+exports.GraphicsStrokeStyle = GraphicsStrokeStyle_1.default;
+var GraphicsPath_1 = require("./draw/GraphicsPath");
+exports.GraphicsPath = GraphicsPath_1.default;
+var GraphicsPathCommand_1 = require("./draw/GraphicsPathCommand");
+exports.GraphicsPathCommand = GraphicsPathCommand_1.default;
+var GraphicsPathWinding_1 = require("./draw/GraphicsPathWinding");
+exports.GraphicsPathWinding = GraphicsPathWinding_1.default;
+var InterpolationMethod_1 = require("./draw/InterpolationMethod");
+exports.InterpolationMethod = InterpolationMethod_1.default;
+var JointStyle_1 = require("./draw/JointStyle");
+exports.JointStyle = JointStyle_1.default;
+var LineScaleMode_1 = require("./draw/LineScaleMode");
+exports.LineScaleMode = LineScaleMode_1.default;
+var PixelSnapping_1 = require("./draw/PixelSnapping");
+exports.PixelSnapping = PixelSnapping_1.default;
+var SpreadMethod_1 = require("./draw/SpreadMethod");
+exports.SpreadMethod = SpreadMethod_1.default;
+var TriangleCulling_1 = require("./draw/TriangleCulling");
+exports.TriangleCulling = TriangleCulling_1.default;
+},{"./draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","./draw/GradientType":"awayjs-display/lib/draw/GradientType","./draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","./draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","./draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","./draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","./draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","./draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","./draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","./draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","./draw/InterpolationMethod":"awayjs-display/lib/draw/InterpolationMethod","./draw/JointStyle":"awayjs-display/lib/draw/JointStyle","./draw/LineScaleMode":"awayjs-display/lib/draw/LineScaleMode","./draw/PixelSnapping":"awayjs-display/lib/draw/PixelSnapping","./draw/SpreadMethod":"awayjs-display/lib/draw/SpreadMethod","./draw/TriangleCulling":"awayjs-display/lib/draw/TriangleCulling"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var ErrorBase_1 = require("awayjs-core/lib/errors/ErrorBase");
+var CastError = (function (_super) {
+    __extends(CastError, _super);
+    function CastError(message) {
+        _super.call(this, message);
+    }
+    return CastError;
+}(ErrorBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = CastError;
+},{"awayjs-core/lib/errors/ErrorBase":undefined}],"awayjs-display/lib/errors":[function(require,module,exports){
+"use strict";
+var CastError_1 = require("./errors/CastError");
+exports.CastError = CastError_1.default;
+},{"./errors/CastError":"awayjs-display/lib/errors/CastError"}],"awayjs-display/lib/events/CameraEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+/**
+ * @class away.events.CameraEvent
+ */
+var CameraEvent = (function (_super) {
+    __extends(CameraEvent, _super);
+    function CameraEvent(type, camera) {
+        _super.call(this, type);
+        this._camera = camera;
+    }
+    Object.defineProperty(CameraEvent.prototype, "camera", {
+        get: function () {
+            return this._camera;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     * @return An exact duplicate of the current object.
+     */
+    CameraEvent.prototype.clone = function () {
+        return new CameraEvent(this.type, this._camera);
+    };
+    CameraEvent.PROJECTION_CHANGED = "projectionChanged";
+    return CameraEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = CameraEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/DisplayObjectEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var DisplayObjectEvent = (function (_super) {
+    __extends(DisplayObjectEvent, _super);
+    function DisplayObjectEvent(type, object) {
+        _super.call(this, type);
+        this._object = object;
+    }
+    Object.defineProperty(DisplayObjectEvent.prototype, "object", {
+        get: function () {
+            return this._object;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     * @return An exact duplicate of the current object.
+     */
+    DisplayObjectEvent.prototype.clone = function () {
+        return new DisplayObjectEvent(this.type, this._object);
+    };
+    /**
+     *
+     */
+    DisplayObjectEvent.VISIBLITY_UPDATED = "visiblityUpdated";
+    /**
+     *
+     */
+    DisplayObjectEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
+    /**
+     *
+     */
+    DisplayObjectEvent.SCENE_CHANGED = "sceneChanged";
+    /**
+     *
+     */
+    DisplayObjectEvent.PARTITION_CHANGED = "partitionChanged";
+    /**
+     *
+     */
+    DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS = "invalidatePartitionBounds";
+    return DisplayObjectEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = DisplayObjectEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ElementsEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+/**
+ * Dispatched to notify changes in a sub geometry object's state.
+ *
+ * @class away.events.ElementsEvent
+ * @see away.core.base.Graphics
+ */
+var ElementsEvent = (function (_super) {
+    __extends(ElementsEvent, _super);
+    /**
+     * Create a new GraphicsEvent
+     * @param type The event type.
+     * @param attributesView An optional data type of the vertex data being updated.
+     */
+    function ElementsEvent(type, attributesView) {
+        _super.call(this, type);
+        this._attributesView = attributesView;
+    }
+    Object.defineProperty(ElementsEvent.prototype, "attributesView", {
+        /**
+         * The attributes view of the vertex data.
+         */
+        get: function () {
+            return this._attributesView;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     *
+     * @return An exact duplicate of the current object.
+     */
+    ElementsEvent.prototype.clone = function () {
+        return new ElementsEvent(this.type, this._attributesView);
+    };
+    /**
+     * Dispatched when a Elements's index data has been updated.
+     */
+    ElementsEvent.INVALIDATE_INDICES = "invalidateIndices";
+    /**
+     * Dispatched when a Elements's index data has been disposed.
+     */
+    ElementsEvent.CLEAR_INDICES = "clearIndices";
+    /**
+     * Dispatched when a Elements's vertex data has been updated.
+     */
+    ElementsEvent.INVALIDATE_VERTICES = "invalidateVertices";
+    /**
+     * Dispatched when a Elements's vertex data has been disposed.
+     */
+    ElementsEvent.CLEAR_VERTICES = "clearVertices";
+    return ElementsEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = ElementsEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/LightEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var LightEvent = (function (_super) {
+    __extends(LightEvent, _super);
+    function LightEvent(type) {
+        _super.call(this, type);
+    }
+    //@override
+    LightEvent.prototype.clone = function () {
+        return new LightEvent(this.type);
+    };
+    LightEvent.CASTS_SHADOW_CHANGE = "castsShadowChange";
+    return LightEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = LightEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/MouseEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+/**
+ * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
+ * TODO: we don't have screenZ data, tho this should be easy to implement
+ */
+var MouseEvent = (function (_super) {
+    __extends(MouseEvent, _super);
+    /**
+     * Create a new MouseEvent object.
+     * @param type The type of the MouseEvent.
+     */
+    function MouseEvent(type) {
+        _super.call(this, type);
+        // Private.
+        this._iAllowedToPropagate = true;
+    }
+    Object.defineProperty(MouseEvent.prototype, "bubbles", {
+        /**
+         * @inheritDoc
+         */
+        get: function () {
+            var doesBubble = this._iAllowedToPropagate;
+            this._iAllowedToPropagate = true;
+            // Don't bubble if propagation has been stopped.
+            return doesBubble;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @inheritDoc
+     */
+    MouseEvent.prototype.stopPropagation = function () {
+        this._iAllowedToPropagate = false;
+        if (this._iParentEvent)
+            this._iParentEvent.stopPropagation();
+    };
+    /**
+     * @inheritDoc
+     */
+    MouseEvent.prototype.stopImmediatePropagation = function () {
+        this._iAllowedToPropagate = false;
+        if (this._iParentEvent)
+            this._iParentEvent.stopImmediatePropagation();
+    };
+    /**
+     * Creates a copy of the MouseEvent object and sets the value of each property to match that of the original.
+     */
+    MouseEvent.prototype.clone = function () {
+        var result = new MouseEvent(this.type);
+        /* TODO: Debug / test - look into isDefaultPrevented
+         if (isDefaultPrevented())
+         result.preventDefault();
+         */
+        result.screenX = this.screenX;
+        result.screenY = this.screenY;
+        result.view = this.view;
+        result.entity = this.entity;
+        result.renderable = this.renderable;
+        result.material = this.material;
+        result.uv = this.uv;
+        result.position = this.position;
+        result.normal = this.normal;
+        result.elementIndex = this.elementIndex;
+        result.delta = this.delta;
+        result.ctrlKey = this.ctrlKey;
+        result.shiftKey = this.shiftKey;
+        result._iParentEvent = this;
+        result._iAllowedToPropagate = this._iAllowedToPropagate;
+        return result;
+    };
+    Object.defineProperty(MouseEvent.prototype, "scenePosition", {
+        /**
+         * The position in scene space where the event took place
+         */
+        get: function () {
+            return this.entity.sceneTransform.transformVector(this.position);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MouseEvent.prototype, "sceneNormal", {
+        /**
+         * The normal in scene space where the event took place
+         */
+        get: function () {
+            var sceneNormal = this.entity.sceneTransform.deltaTransformVector(this.normal);
+            sceneNormal.normalize();
+            return sceneNormal;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Defines the value of the type property of a mouseOver3d event object.
+     */
+    MouseEvent.MOUSE_OVER = "mouseOver3d";
+    /**
+     * Defines the value of the type property of a mouseOut3d event object.
+     */
+    MouseEvent.MOUSE_OUT = "mouseOut3d";
+    /**
+     * Defines the value of the type property of a mouseUp3d event object.
+     */
+    MouseEvent.MOUSE_UP = "mouseUp3d";
+    /**
+     * Defines the value of the type property of a mouseDown3d event object.
+     */
+    MouseEvent.MOUSE_DOWN = "mouseDown3d";
+    /**
+     * Defines the value of the type property of a mouseMove3d event object.
+     */
+    MouseEvent.MOUSE_MOVE = "mouseMove3d";
+    /**
+     * Defines the value of the type property of a rollOver3d event object.
+     */
+    //		public static ROLL_OVER : string = "rollOver3d";
+    /**
+     * Defines the value of the type property of a rollOut3d event object.
+     */
+    //		public static ROLL_OUT : string = "rollOut3d";
+    /**
+     * Defines the value of the type property of a click3d event object.
+     */
+    MouseEvent.CLICK = "click3d";
+    /**
+     * Defines the value of the type property of a doubleClick3d event object.
+     */
+    MouseEvent.DOUBLE_CLICK = "doubleClick3d";
+    /**
+     * Defines the value of the type property of a mouseWheel3d event object.
+     */
+    MouseEvent.MOUSE_WHEEL = "mouseWheel3d";
+    return MouseEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = MouseEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderableEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+/**
+ * Dispatched to notify changes in a sub geometry object's state.
+ *
+ * @class away.events.RenderableEvent
+ * @see away.core.base.Graphics
+ */
+var RenderableEvent = (function (_super) {
+    __extends(RenderableEvent, _super);
+    /**
+     * Create a new GraphicsEvent
+     * @param type The event type.
+     * @param dataType An optional data type of the vertex data being updated.
+     */
+    function RenderableEvent(type, renderable) {
+        _super.call(this, type);
+        this._renderable = renderable;
+    }
+    Object.defineProperty(RenderableEvent.prototype, "renderable", {
+        /**
+         * The renderobject owner of the renderable owner.
+         */
+        get: function () {
+            return this._renderable;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     *
+     * @return An exact duplicate of the current object.
+     */
+    RenderableEvent.prototype.clone = function () {
+        return new RenderableEvent(this.type, this._renderable);
+    };
+    /**
+     * Dispatched when a Renderable owners's render object owner has been updated.
+     */
+    RenderableEvent.INVALIDATE_RENDER_OWNER = "invalidateRenderable";
+    /**
+     *
+     */
+    RenderableEvent.INVALIDATE_ELEMENTS = "invalidateElements";
+    return RenderableEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = RenderableEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RendererEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var RendererEvent = (function (_super) {
+    __extends(RendererEvent, _super);
+    function RendererEvent(type) {
+        _super.call(this, type);
+    }
+    RendererEvent.VIEWPORT_UPDATED = "viewportUpdated";
+    RendererEvent.SCISSOR_UPDATED = "scissorUpdated";
+    return RendererEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = RendererEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ResizeEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var ResizeEvent = (function (_super) {
+    __extends(ResizeEvent, _super);
+    function ResizeEvent(type, oldHeight, oldWidth) {
+        if (oldHeight === void 0) { oldHeight = NaN; }
+        if (oldWidth === void 0) { oldWidth = NaN; }
+        _super.call(this, type);
+        this._oldHeight = oldHeight;
+        this._oldWidth = oldWidth;
+    }
+    Object.defineProperty(ResizeEvent.prototype, "oldHeight", {
+        get: function () {
+            return this._oldHeight;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ResizeEvent.prototype, "oldWidth", {
+        get: function () {
+            return this._oldWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     *
+     * @return An exact duplicate of the current object.
+     */
+    ResizeEvent.prototype.clone = function () {
+        return new ResizeEvent(this.type, this._oldHeight, this._oldWidth);
+    };
+    ResizeEvent.RESIZE = "resize";
+    return ResizeEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = ResizeEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/StyleEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var StyleEvent = (function (_super) {
+    __extends(StyleEvent, _super);
+    function StyleEvent(type, style) {
+        _super.call(this, type);
+        this._style = style;
+    }
+    Object.defineProperty(StyleEvent.prototype, "style", {
+        get: function () {
+            return this._style;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     * @return An exact duplicate of the current object.
+     */
+    StyleEvent.prototype.clone = function () {
+        return new StyleEvent(this.type, this._style);
+    };
+    /**
+     *
+     */
+    StyleEvent.INVALIDATE_PROPERTIES = "invalidateProperties";
+    return StyleEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = StyleEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/SurfaceEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var SurfaceEvent = (function (_super) {
+    __extends(SurfaceEvent, _super);
+    /**
+     * Create a new GraphicsEvent
+     * @param type The event type.
+     * @param dataType An optional data type of the vertex data being updated.
+     */
+    function SurfaceEvent(type, surface) {
+        _super.call(this, type);
+        this._surface = surface;
+    }
+    Object.defineProperty(SurfaceEvent.prototype, "surface", {
+        /**
+         * The surface of the renderable.
+         */
+        get: function () {
+            return this._surface;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     *
+     * @return An exact duplicate of the current object.
+     */
+    SurfaceEvent.prototype.clone = function () {
+        return new SurfaceEvent(this.type, this._surface);
+    };
+    SurfaceEvent.INVALIDATE_TEXTURE = "invalidateTexture";
+    SurfaceEvent.INVALIDATE_ANIMATION = "invalidateAnimation";
+    SurfaceEvent.INVALIDATE_PASSES = "invalidatePasses";
+    return SurfaceEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = SurfaceEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var TouchEvent = (function (_super) {
+    __extends(TouchEvent, _super);
+    /**
+     * Create a new TouchEvent object.
+     * @param type The type of the TouchEvent.
+     */
+    function TouchEvent(type) {
+        _super.call(this, type);
+        // Private.
+        this._iAllowedToPropagate = true;
+    }
+    Object.defineProperty(TouchEvent.prototype, "bubbles", {
+        /**
+         * @inheritDoc
+         */
+        get: function () {
+            var doesBubble = this._iAllowedToPropagate;
+            this._iAllowedToPropagate = true;
+            // Don't bubble if propagation has been stopped.
+            return doesBubble;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @inheritDoc
+     */
+    TouchEvent.prototype.stopPropagation = function () {
+        this._iAllowedToPropagate = false;
+        if (this._iParentEvent)
+            this._iParentEvent.stopPropagation();
+    };
+    /**
+     * @inheritDoc
+     */
+    TouchEvent.prototype.stopImmediatePropagation = function () {
+        this._iAllowedToPropagate = false;
+        if (this._iParentEvent)
+            this._iParentEvent.stopImmediatePropagation();
+    };
+    /**
+     * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
+     */
+    TouchEvent.prototype.clone = function () {
+        var result = new TouchEvent(this.type);
+        /* TODO: Debug / test - look into isDefaultPrevented
+         if (isDefaultPrevented())
+         result.preventDefault();
+         */
+        result.screenX = this.screenX;
+        result.screenY = this.screenY;
+        result.view = this.view;
+        result.entity = this.entity;
+        result.renderable = this.renderable;
+        result.material = this.material;
+        result.uv = this.uv;
+        result.position = this.position;
+        result.normal = this.normal;
+        result.elementIndex = this.elementIndex;
+        result.ctrlKey = this.ctrlKey;
+        result.shiftKey = this.shiftKey;
+        result._iParentEvent = this;
+        return result;
+    };
+    Object.defineProperty(TouchEvent.prototype, "scenePosition", {
+        /**
+         * The position in scene space where the event took place
+         */
+        get: function () {
+            return this.entity.sceneTransform.transformVector(this.position);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TouchEvent.prototype, "sceneNormal", {
+        /**
+         * The normal in scene space where the event took place
+         */
+        get: function () {
+            var sceneNormal = this.entity.sceneTransform.deltaTransformVector(this.normal);
+            sceneNormal.normalize();
+            return sceneNormal;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    TouchEvent.TOUCH_END = "touchEnd3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_BEGIN = "touchBegin3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_MOVE = "touchMove3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_OUT = "touchOut3d";
+    /**
+     *
+     */
+    TouchEvent.TOUCH_OVER = "touchOver3d";
+    return TouchEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = TouchEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TransformEvent":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var EventBase_1 = require("awayjs-core/lib/events/EventBase");
+var TransformEvent = (function (_super) {
+    __extends(TransformEvent, _super);
+    function TransformEvent(type, transform) {
+        _super.call(this, type);
+        this._transform = transform;
+    }
+    Object.defineProperty(TransformEvent.prototype, "transform", {
+        get: function () {
+            return this._transform;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Clones the event.
+     * @return An exact duplicate of the current object.
+     */
+    TransformEvent.prototype.clone = function () {
+        return new TransformEvent(this.type, this._transform);
+    };
+    /**
+     *
+     */
+    TransformEvent.INVALIDATE_MATRIX3D = "invalidateMatrix3D";
+    /**
+     *
+     */
+    TransformEvent.INVALIDATE_COLOR_TRANSFORM = "invalidateColorTransform";
+    return TransformEvent;
+}(EventBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = TransformEvent;
+},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events":[function(require,module,exports){
+"use strict";
+var CameraEvent_1 = require("./events/CameraEvent");
+exports.CameraEvent = CameraEvent_1.default;
+var DisplayObjectEvent_1 = require("./events/DisplayObjectEvent");
+exports.DisplayObjectEvent = DisplayObjectEvent_1.default;
+var ElementsEvent_1 = require("./events/ElementsEvent");
+exports.ElementsEvent = ElementsEvent_1.default;
+var LightEvent_1 = require("./events/LightEvent");
+exports.LightEvent = LightEvent_1.default;
+var MouseEvent_1 = require("./events/MouseEvent");
+exports.MouseEvent = MouseEvent_1.default;
+var RenderableEvent_1 = require("./events/RenderableEvent");
+exports.RenderableEvent = RenderableEvent_1.default;
+var RendererEvent_1 = require("./events/RendererEvent");
+exports.RendererEvent = RendererEvent_1.default;
+var ResizeEvent_1 = require("./events/ResizeEvent");
+exports.ResizeEvent = ResizeEvent_1.default;
+var StyleEvent_1 = require("./events/StyleEvent");
+exports.StyleEvent = StyleEvent_1.default;
+var SurfaceEvent_1 = require("./events/SurfaceEvent");
+exports.SurfaceEvent = SurfaceEvent_1.default;
+var TouchEvent_1 = require("./events/TouchEvent");
+exports.TouchEvent = TouchEvent_1.default;
+var TransformEvent_1 = require("./events/TransformEvent");
+exports.TransformEvent = TransformEvent_1.default;
+},{"./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","./events/LightEvent":"awayjs-display/lib/events/LightEvent","./events/MouseEvent":"awayjs-display/lib/events/MouseEvent","./events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./events/ResizeEvent":"awayjs-display/lib/events/ResizeEvent","./events/StyleEvent":"awayjs-display/lib/events/StyleEvent","./events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","./events/TouchEvent":"awayjs-display/lib/events/TouchEvent","./events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/factories/ITimelineSceneGraphFactory":[function(require,module,exports){
+"use strict";
+},{}],"awayjs-display/lib/factories":[function(require,module,exports){
+"use strict";
+},{}],"awayjs-display/lib/graphics/ElementsBase":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
 var Float3Attributes_1 = require("awayjs-core/lib/attributes/Float3Attributes");
-var Float2Attributes_1 = require("awayjs-core/lib/attributes/Float2Attributes");
-var PartialImplementationError_1 = require("awayjs-core/lib/errors/PartialImplementationError");
-var TriangleElements_1 = require("../graphics/TriangleElements");
+var Short3Attributes_1 = require("awayjs-core/lib/attributes/Short3Attributes");
+var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
+var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
+var ElementsEvent_1 = require("../events/ElementsEvent");
 /**
- * The Graphics class contains a set of methods that you can use to create a
- * vector shape. Display objects that support drawing include Sprite and Shape
- * objects. Each of these classes includes a <code>graphics</code> property
- * that is a Graphics object. The following are among those helper functions
- * provided for ease of use: <code>drawRect()</code>,
- * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
- * <code>drawEllipse()</code>.
- *
- * <p>You cannot create a Graphics object directly from ActionScript code. If
- * you call <code>new Graphics()</code>, an exception is thrown.</p>
- *
- * <p>The Graphics class is final; it cannot be subclassed.</p>
+ * @class away.base.TriangleElements
  */
-var Graphics = (function () {
-    function Graphics(target) {
+var ElementsBase = (function (_super) {
+    __extends(ElementsBase, _super);
+    /**
+     *
+     */
+    function ElementsBase(concatenatedBuffer) {
+        if (concatenatedBuffer === void 0) { concatenatedBuffer = null; }
+        _super.call(this);
+        this._customAttributesNames = new Array();
+        this._customAttributes = new Object();
+        this._numElements = 0;
+        this._verticesDirty = new Object();
+        this._invalidateVertices = new Object();
+        this._concatenatedBuffer = concatenatedBuffer;
+    }
+    Object.defineProperty(ElementsBase.prototype, "concatenatedBuffer", {
+        get: function () {
+            return this._concatenatedBuffer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ElementsBase.prototype, "indices", {
+        /**
+         * The raw index data that define the faces.
+         */
+        get: function () {
+            return this._indices;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     *
+     */
+    ElementsBase.prototype.getCustomAtributesNames = function () {
+        return this._customAttributesNames;
+    };
+    /**
+     *
+     */
+    ElementsBase.prototype.getCustomAtributes = function (name) {
+        return this._customAttributes[name];
+    };
+    Object.defineProperty(ElementsBase.prototype, "numElements", {
+        /**
+         * The total amount of triangles in the TriangleElements.
+         */
+        get: function () {
+            return this._numElements;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ElementsBase.prototype, "numVertices", {
+        get: function () {
+            throw new AbstractMethodError_1.default();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ElementsBase.prototype.copyTo = function (elements) {
+        if (this.indices)
+            elements.setIndices(this.indices.clone());
+        for (var name in this._customAttributes)
+            elements.setCustomAttributes(name, this.getCustomAtributes(name).clone());
+    };
+    /**
+     *
+     */
+    ElementsBase.prototype.dispose = function () {
+        _super.prototype.dispose.call(this);
+        if (this._indices) {
+            this._indices.dispose();
+            this._indices = null;
+        }
+        for (var name in this._customAttributes) {
+            this._customAttributes[name].dispose();
+            delete this._customAttributes;
+        }
+    };
+    ElementsBase.prototype.setIndices = function (values, offset) {
+        if (offset === void 0) { offset = 0; }
+        if (values instanceof Short3Attributes_1.default) {
+            if (this._indices)
+                this.clearIndices();
+            this._indices = values;
+        }
+        else if (values) {
+            if (!this._indices)
+                this._indices = new Short3Attributes_1.default();
+            this._indices.set(values, offset);
+        }
+        else if (this._indices) {
+            this._indices.dispose();
+            this._indices = null;
+            this.clearIndices();
+        }
+        if (this._indices) {
+            this._numElements = this._indices.count;
+            this.invalidateIndicies();
+        }
+        else {
+            this._numElements = 0;
+        }
+    };
+    ElementsBase.prototype.setCustomAttributes = function (name, values, offset) {
+        if (offset === void 0) { offset = 0; }
+        if (values == this._customAttributes[name])
+            return;
+        if (values instanceof AttributesView_1.default) {
+            this.clearVertices(this._customAttributes[name]);
+            this._customAttributes[name] = values;
+        }
+        else if (values) {
+            if (!this._customAttributes[name])
+                this._customAttributes[name] = new Float3Attributes_1.default(this._concatenatedBuffer); //default custom atrributes is Float3
+            this._customAttributes[name].set(values, offset);
+        }
+        else if (this._customAttributes[name]) {
+            this.clearVertices(this._customAttributes[name]);
+            this._customAttributesNames.splice(this._customAttributesNames.indexOf(name), 1);
+            delete this._customAttributes[name];
+            return;
+        }
+        this.invalidateVertices(this._customAttributes[name]);
+        this._verticesDirty[this._customAttributes[name].id] = false;
+        if (this._customAttributesNames.indexOf(name) == -1)
+            this._customAttributesNames.push(name);
+    };
+    /**
+     * Clones the current object
+     * @return An exact duplicate of the current object.
+     */
+    ElementsBase.prototype.clone = function () {
+        throw new AbstractMethodError_1.default();
+    };
+    ElementsBase.prototype.applyTransformation = function (transform) {
+    };
+    /**
+     * Scales the geometry.
+     * @param scale The amount by which to scale.
+     */
+    ElementsBase.prototype.scale = function (scale) {
+    };
+    ElementsBase.prototype.scaleUV = function (scaleU, scaleV) {
+        if (scaleU === void 0) { scaleU = 1; }
+        if (scaleV === void 0) { scaleV = 1; }
+    };
+    ElementsBase.prototype.getBoxBounds = function (target) {
+        if (target === void 0) { target = null; }
+        throw new AbstractMethodError_1.default();
+    };
+    ElementsBase.prototype.getSphereBounds = function (center, target) {
+        if (target === void 0) { target = null; }
+        throw new AbstractMethodError_1.default();
+    };
+    ElementsBase.prototype.hitTestPoint = function (x, y, z, box) {
+        throw new AbstractMethodError_1.default();
+    };
+    ElementsBase.prototype.invalidateIndicies = function () {
+        if (!this._invalidateIndices)
+            this._invalidateIndices = new ElementsEvent_1.default(ElementsEvent_1.default.INVALIDATE_INDICES, this._indices);
+        this.dispatchEvent(this._invalidateIndices);
+    };
+    ElementsBase.prototype.clearIndices = function () {
+        this.dispatchEvent(new ElementsEvent_1.default(ElementsEvent_1.default.CLEAR_INDICES, this._indices));
+    };
+    ElementsBase.prototype.invalidateVertices = function (attributesView) {
+        if (!attributesView || this._verticesDirty[attributesView.id])
+            return;
+        this._verticesDirty[attributesView.id] = true;
+        if (!this._invalidateVertices[attributesView.id])
+            this._invalidateVertices[attributesView.id] = new ElementsEvent_1.default(ElementsEvent_1.default.INVALIDATE_VERTICES, attributesView);
+        this.dispatchEvent(this._invalidateVertices[attributesView.id]);
+    };
+    ElementsBase.prototype.clearVertices = function (attributesView) {
+        if (!attributesView)
+            return;
+        attributesView.dispose();
+        this.dispatchEvent(new ElementsEvent_1.default(ElementsEvent_1.default.CLEAR_VERTICES, attributesView));
+        this._verticesDirty[attributesView.id] = null;
+        this._invalidateVertices[attributesView.id] = null;
+    };
+    ElementsBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
+        throw new AbstractMethodError_1.default();
+    };
+    return ElementsBase;
+}(AssetBase_1.default));
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = ElementsBase;
+},{"../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Short3Attributes":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/ElementsType":[function(require,module,exports){
+"use strict";
+var ElementsType = (function () {
+    function ElementsType() {
+    }
+    /**
+     *
+     */
+    ElementsType.TRIANGLE = "triangle";
+    /**
+     *
+     */
+    ElementsType.LINE = "line";
+    return ElementsType;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = ElementsType;
+},{}],"awayjs-display/lib/graphics/Graphics":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var Point_1 = require("awayjs-core/lib/geom/Point");
+var Box_1 = require("awayjs-core/lib/geom/Box");
+var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
+var Graphic_1 = require("../graphics/Graphic");
+var ElementsEvent_1 = require("../events/ElementsEvent");
+var StyleEvent_1 = require("../events/StyleEvent");
+var ElementsUtils_1 = require("../utils/ElementsUtils");
+var GraphicsPath_1 = require("../draw/GraphicsPath");
+var GraphicsFactoryFills_1 = require("../draw/GraphicsFactoryFills");
+var GraphicsFactoryStrokes_1 = require("../draw/GraphicsFactoryStrokes");
+var PartialImplementationError_1 = require("awayjs-core/lib/errors/PartialImplementationError");
+var JointStyle_1 = require("../draw/JointStyle");
+var CapsStyle_1 = require("../draw/CapsStyle");
+var GraphicsStrokeStyle_1 = require("../draw/GraphicsStrokeStyle");
+var GraphicsFillStyle_1 = require("../draw/GraphicsFillStyle");
+/**
+ *
+ * Graphics is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
+ * normals, uvs, etc. It also contains a reference to an animation class, which defines how the geometry moves.
+ * A Graphics object is assigned to a Sprite, a scene graph occurence of the geometry, which in turn assigns
+ * the SubGeometries to its respective TriangleGraphic objects.
+ *
+ *
+ *
+ * @see away.core.base.SubGraphics
+ * @see away.entities.Sprite
+ *
+ * @class Graphics
+ */
+var Graphics = (function (_super) {
+    __extends(Graphics, _super);
+    /**
+     * Creates a new Graphics object.
+     */
+    function Graphics() {
+        var _this = this;
+        _super.call(this);
+        this._boxBoundsInvalid = true;
+        this._sphereBoundsInvalid = true;
+        this._graphics = new Array();
         this._current_position = new Point_1.default();
-        this._target = target;
+        this._current_position = new Point_1.default();
         this._queued_fill_pathes = [];
         this._queued_stroke_pathes = [];
         this._active_fill_path = null;
         this._active_stroke_path = null;
-        this._current_position = new Point_1.default();
+        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
+        this._onInvalidateVerticesDelegate = function (event) { return _this._onInvalidateVertices(event); };
     }
+    Object.defineProperty(Graphics.prototype, "assetType", {
+        get: function () {
+            return Graphics.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Graphics.prototype, "count", {
+        get: function () {
+            return this._graphics.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Graphics.prototype, "animator", {
+        /**
+         * Defines the animator of the graphics object.  Default value is <code>null</code>.
+         */
+        get: function () {
+            return this._animator;
+        },
+        set: function (value) {
+            this._animator = value;
+            var len = this._graphics.length;
+            var graphic;
+            for (var i = 0; i < len; ++i) {
+                graphic = this._graphics[i];
+                // cause material to be unregistered and registered again to work with the new animation type (if possible)
+                if (graphic.material) {
+                    graphic.material.iRemoveOwner(graphic);
+                    graphic.material.iAddOwner(graphic);
+                }
+                //invalidate any existing graphic objects in case they need to pull new elements
+                graphic.invalidateElements();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Graphics.prototype, "style", {
+        /**
+         *
+         */
+        get: function () {
+            return this._style;
+        },
+        set: function (value) {
+            if (this._style == value)
+                return;
+            if (this._style)
+                this._style.removeEventListener(StyleEvent_1.default.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._style = value;
+            if (this._style)
+                this._style.addEventListener(StyleEvent_1.default.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+            this._iInvalidateSurfaces();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Graphics.prototype, "queued_stroke_pathes", {
+        get: function () {
+            return this._queued_stroke_pathes;
+        },
+        set: function (value) {
+            this._queued_stroke_pathes = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Graphics.prototype, "queued_fill_pathes", {
+        get: function () {
+            return this._queued_fill_pathes;
+        },
+        set: function (value) {
+            this._queued_fill_pathes = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Graphics.prototype, "material", {
+        /**
+         * The material with which to render the Graphics.
+         */
+        get: function () {
+            return this._material;
+        },
+        set: function (value) {
+            if (value == this._material)
+                return;
+            var i;
+            var len = this._graphics.length;
+            var graphic;
+            if (this._material)
+                for (i = 0; i < len; i++)
+                    if (!(graphic = this._graphics[i])._iGetExplicitMaterial())
+                        this._material.iRemoveOwner(graphic);
+            this._material = value;
+            if (this._material)
+                for (i = 0; i < len; i++)
+                    if (!(graphic = this._graphics[i])._iGetExplicitMaterial())
+                        this._material.iAddOwner(graphic);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Adds a GraphicBase wrapping a Elements.
+     *
+     * @param elements
+     */
+    Graphics.prototype.addGraphic = function (elements, material, style) {
+        if (material === void 0) { material = null; }
+        if (style === void 0) { style = null; }
+        var graphic;
+        if (Graphic_1.default._available.length) {
+            graphic = Graphic_1.default._available.pop();
+            graphic._iIndex = this._graphics.length;
+            graphic.parent = this;
+            graphic.elements = elements;
+            graphic.material = material;
+            graphic.style = style;
+        }
+        else {
+            graphic = new Graphic_1.default(this._graphics.length, this, elements, material, style);
+        }
+        this._graphics.push(graphic);
+        elements.addEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
+        this.invalidate();
+        return graphic;
+    };
+    Graphics.prototype.removeGraphic = function (graphic) {
+        this._graphics.splice(this._graphics.indexOf(graphic), 1);
+        graphic.elements.removeEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
+        graphic.elements = null;
+        graphic.material = null;
+        graphic.style = null;
+        graphic.clear();
+        this.invalidate();
+    };
+    Graphics.prototype.getGraphicAt = function (index) {
+        return this._graphics[index];
+    };
+    Graphics.prototype.applyTransformation = function (transform) {
+        var len = this._graphics.length;
+        for (var i = 0; i < len; ++i)
+            this._graphics[i].elements.applyTransformation(transform);
+    };
+    Graphics.prototype.copyTo = function (graphics) {
+        graphics.material = this._material;
+        graphics.style = this.style;
+        graphics.particles = this.particles;
+        graphics.numParticles = this.numParticles;
+        var graphic;
+        var len = this._graphics.length;
+        for (var i = 0; i < len; ++i) {
+            graphic = this._graphics[i];
+            graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle());
+        }
+        if (this._animator)
+            graphics.animator = this._animator.clone();
+    };
+    /**
+     * Scales the geometry.
+     * @param scale The amount by which to scale.
+     */
+    Graphics.prototype.scale = function (scale) {
+        var len = this._graphics.length;
+        for (var i = 0; i < len; ++i)
+            this._graphics[i].elements.scale(scale);
+    };
+    Graphics.prototype.clear = function () {
+        for (var i = this._graphics.length - 1; i >= 0; i--) {
+            this._graphics[i].clear();
+        }
+    };
+    /**
+     * Clears all resources used by the Graphics object, including SubGeometries.
+     */
+    Graphics.prototype.dispose = function () {
+        this.material = null;
+        for (var i = this._graphics.length - 1; i >= 0; i--)
+            this._graphics[i].dispose();
+        if (this._animator)
+            this._animator.dispose();
+    };
+    /**
+     * Scales the uv coordinates (tiling)
+     * @param scaleU The amount by which to scale on the u axis. Default is 1;
+     * @param scaleV The amount by which to scale on the v axis. Default is 1;
+     */
+    Graphics.prototype.scaleUV = function (scaleU, scaleV) {
+        if (scaleU === void 0) { scaleU = 1; }
+        if (scaleV === void 0) { scaleV = 1; }
+        var len = this._graphics.length;
+        for (var i = 0; i < len; ++i)
+            this._graphics[i].elements.scaleUV(scaleU, scaleV);
+    };
+    Graphics.prototype.getBoxBounds = function () {
+        if (this._boxBoundsInvalid) {
+            this._boxBoundsInvalid = false;
+            if (!this._boxBounds)
+                this._boxBounds = new Box_1.default();
+            if (this._graphics.length) {
+                this._boxBounds.setBoundIdentity();
+                var len = this._graphics.length;
+                for (var i = 0; i < len; i++)
+                    this._boxBounds = this._graphics[i].elements.getBoxBounds(this._boxBounds);
+            }
+            else {
+                this._boxBounds.setEmpty();
+            }
+        }
+        return this._boxBounds;
+    };
+    Graphics.prototype.getSphereBounds = function (center, target) {
+        if (target === void 0) { target = null; }
+        var len = this._graphics.length;
+        for (var i = 0; i < len; i++)
+            target = this._graphics[i].elements.getSphereBounds(center, target);
+        return target;
+    };
+    Graphics.prototype.invalidate = function () {
+        _super.prototype.invalidate.call(this);
+        this._boxBoundsInvalid = true;
+        this._sphereBoundsInvalid = true;
+    };
+    Graphics.prototype._iInvalidateSurfaces = function () {
+        var len = this._graphics.length;
+        for (var i = 0; i < len; ++i)
+            this._graphics[i].invalidateSurface();
+    };
+    Graphics.prototype.invalidateElements = function () {
+        var len = this._graphics.length;
+        for (var i = 0; i < len; ++i)
+            this._graphics[i].invalidateElements();
+    };
+    Graphics.prototype._hitTestPointInternal = function (x, y) {
+        //TODO: handle lines as well
+        var len = this._graphics.length;
+        for (var i = 0; i < len; i++)
+            if (ElementsUtils_1.default.hitTestTriangleElements(x, y, 0, this.getBoxBounds(), this._graphics[i].elements))
+                return true;
+        return false;
+    };
+    Graphics.prototype.acceptTraverser = function (traverser) {
+        var len = this._graphics.length;
+        for (var i = 0; i < len; i++)
+            traverser.applyRenderable(this._graphics[i]);
+    };
+    Graphics.prototype._onInvalidateProperties = function (event) {
+        this._iInvalidateSurfaces();
+    };
+    Graphics.prototype._onInvalidateVertices = function (event) {
+        if (event.attributesView != event.target.positions)
+            return;
+        this.invalidate();
+    };
+    Graphics.prototype.draw_fills = function () {
+        GraphicsFactoryFills_1.default.draw_pathes(this);
+    };
+    Graphics.prototype.draw_strokes = function () {
+        GraphicsFactoryStrokes_1.default.draw_pathes(this);
+    };
     /**
      * Fills a drawing area with a bitmap image. The bitmap can be repeated or
      * tiled to fill the area. The fill remains in effect until you call the
@@ -9478,10 +11926,11 @@ var Graphics = (function () {
         if (matrix === void 0) { matrix = null; }
         if (repeat === void 0) { repeat = true; }
         if (smooth === void 0) { smooth = false; }
-        this.draw_fill();
+        this.draw_fills();
         // start a new fill path
         this._active_fill_path = new GraphicsPath_1.default();
-        this._active_fill_path.isFill = true;
+        // todo: create bitmap fill style
+        this._active_fill_path.style = new GraphicsFillStyle_1.default(0xffffff, 1);
         if (this._current_position.x != 0 || this._current_position.y != 0)
             this._active_fill_path.moveTo(this._current_position.x, this._current_position.y);
         this._queued_fill_pathes.push(this._active_fill_path);
@@ -9502,13 +11951,18 @@ var Graphics = (function () {
      */
     Graphics.prototype.beginFill = function (color /*int*/, alpha) {
         if (alpha === void 0) { alpha = 1; }
-        this.draw_fill();
+        this.draw_fills();
         // start a new fill path
         this._active_fill_path = new GraphicsPath_1.default();
-        this._active_fill_path.isFill = true;
+        this._active_fill_path.style = new GraphicsFillStyle_1.default(color, alpha);
         if (this._current_position.x != 0 || this._current_position.y != 0)
             this._active_fill_path.moveTo(this._current_position.x, this._current_position.y);
         this._queued_fill_pathes.push(this._active_fill_path);
+    };
+    Graphics.prototype.clone = function () {
+        var newInstance = new Graphics();
+        this.copyTo(newInstance);
+        return newInstance;
     };
     /**
      * Specifies a gradient fill used by subsequent calls to other Graphics
@@ -9598,76 +12052,14 @@ var Graphics = (function () {
         if (spreadMethod === void 0) { spreadMethod = "pad"; }
         if (interpolationMethod === void 0) { interpolationMethod = "rgb"; }
         if (focalPointRatio === void 0) { focalPointRatio = 0; }
-        this.draw_fill();
+        this.draw_fills();
         // start a new fill path
         this._active_fill_path = new GraphicsPath_1.default();
-        this._active_fill_path.isFill = true;
+        // todo: create gradient fill style
+        this._active_fill_path.style = new GraphicsFillStyle_1.default(colors[0], alphas[0]);
         if (this._current_position.x != 0 || this._current_position.y != 0)
             this._active_fill_path.moveTo(this._current_position.x, this._current_position.y);
         this._queued_fill_pathes.push(this._active_fill_path);
-    };
-    /**
-     * Specifies a shader fill used by subsequent calls to other Graphics methods
-     * (such as <code>lineTo()</code> or <code>drawCircle()</code>) for the
-     * object. The fill remains in effect until you call the
-     * <code>beginFill()</code>, <code>beginBitmapFill()</code>,
-     * <code>beginGradientFill()</code>, or <code>beginShaderFill()</code>
-     * method. Calling the <code>clear()</code> method clears the fill.
-     *
-     * <p>The application renders the fill whenever three or more points are
-     * drawn, or when the <code>endFill()</code> method is called.</p>
-     *
-     * <p>Shader fills are not supported under GPU rendering; filled areas will
-     * be colored cyan.</p>
-     *
-     * @param shader The shader to use for the fill. This Shader instance is not
-     *               required to specify an image input. However, if an image
-     *               input is specified in the shader, the input must be provided
-     *               manually. To specify the input, set the <code>input</code>
-     *               property of the corresponding ShaderInput property of the
-     *               <code>Shader.data</code> property.
-     *
-     *               <p>When you pass a Shader instance as an argument the shader
-     *               is copied internally. The drawing fill operation uses that
-     *               internal copy, not a reference to the original shader. Any
-     *               changes made to the shader, such as changing a parameter
-     *               value, input, or bytecode, are not applied to the copied
-     *               shader that's used for the fill.</p>
-     * @param matrix A matrix object(of the flash.geom.Matrix class), which you
-     *               can use to define transformations on the shader. For
-     *               example, you can use the following matrix to rotate a shader
-     *               by 45 degrees(pi/4 radians):
-     *
-     *               <p>The coordinates received in the shader are based on the
-     *               matrix that is specified for the <code>matrix</code>
-     *               parameter. For a default(<code>null</code>) matrix, the
-     *               coordinates in the shader are local pixel coordinates which
-     *               can be used to sample an input.</p>
-     * @throws ArgumentError When the shader output type is not compatible with
-     *                       this operation(the shader must specify a
-     *                       <code>pixel3</code> or <code>pixel4</code> output).
-     * @throws ArgumentError When the shader specifies an image input that isn't
-     *                       provided.
-     * @throws ArgumentError When a ByteArray or Vector.<Number> instance is used
-     *                       as an input and the <code>width</code> and
-     *                       <code>height</code> properties aren't specified for
-     *                       the ShaderInput, or the specified values don't match
-     *                       the amount of data in the input object. See the
-     *                       <code>ShaderInput.input</code> property for more
-     *                       information.
-     */
-    //		public beginShaderFill(shader:Shader, matrix:Matrix = null)
-    //		{
-    //
-    //		}
-    /**
-     * Clears the graphics that were drawn to this Graphics object, and resets
-     * fill and line style settings.
-     *
-     */
-    Graphics.prototype.clear = function () {
-        // todo: do this the correct way
-        this._target.graphics.dispose();
     };
     /**
      * Copies all of drawing commands from the source Graphics object into the
@@ -9677,7 +12069,7 @@ var Graphics = (function () {
      *                       commands.
      */
     Graphics.prototype.copyFrom = function (sourceGraphics) {
-        sourceGraphics._target.graphics.copyTo(this._target.graphics);
+        sourceGraphics.copyTo(this);
     };
     /**
      * Draws a cubic Bezier curve from the current drawing position to the
@@ -9788,13 +12180,6 @@ var Graphics = (function () {
         }
         this._current_position.x = anchorX;
         this._current_position.y = anchorY;
-        /*
-        this.queued_command_types.push(Graphics.CMD_CURVE);
-        this.queued_command_data.push(controlX);
-        this.queued_command_data.push(controlY);
-        this.queued_command_data.push(anchorX);
-        this.queued_command_data.push(anchorY);
-        */
     };
     /**
      * Draws a circle. Set the line style, fill, or both before you call the
@@ -9812,6 +12197,7 @@ var Graphics = (function () {
      * @param radius The radius of the circle(in pixels).
      */
     Graphics.prototype.drawCircle = function (x, y, radius) {
+        // todo: directly create triangles instead of draw commands ?
         var radius2 = radius * 1.065;
         if (this._active_fill_path != null) {
             this._active_fill_path.moveTo(x - radius, y);
@@ -9877,7 +12263,7 @@ var Graphics = (function () {
      *
      */
     Graphics.prototype.drawGraphicsData = function (graphicsData) {
-        //this.draw_fill();
+        //this.draw_fills();
         /*
          for (var i:number=0; i<graphicsData.length; i++){
          //todo
@@ -9973,6 +12359,7 @@ var Graphics = (function () {
      *                      (<code>Number.NaN</code>).
      */
     Graphics.prototype.drawRect = function (x, y, width, height) {
+        //todo: directly create triangles instead of drawing commands ?
         if (this._active_fill_path != null) {
             this._active_fill_path.moveTo(x, y);
             this._active_fill_path.lineTo(x + width, y);
@@ -10016,6 +12403,7 @@ var Graphics = (function () {
      */
     Graphics.prototype.drawRoundRect = function (x, y, width, height, ellipseWidth, ellipseHeight) {
         if (ellipseHeight === void 0) { ellipseHeight = NaN; }
+        //todo: directly create triangles instead of drawing commands ?
         if (!ellipseHeight) {
             ellipseHeight = ellipseWidth;
         }
@@ -10083,7 +12471,7 @@ var Graphics = (function () {
      */
     Graphics.prototype.endFill = function () {
         this.draw_strokes();
-        this.draw_fill();
+        this.draw_fills();
         this._active_fill_path = null;
         this._active_stroke_path = null;
     };
@@ -10377,17 +12765,18 @@ var Graphics = (function () {
      *                     has a specific maximum angle for which the miter is
      *                     cut off. The following table lists some examples:</p>
      */
-    Graphics.prototype.lineStyle = function (thickness, color, alpha, pixelHinting, scaleMode, caps, joints, miterLimit) {
+    Graphics.prototype.lineStyle = function (thickness, color, alpha, pixelHinting, scaleMode, capstyle, jointstyle, miterLimit) {
         if (thickness === void 0) { thickness = 0; }
         if (color === void 0) { color = 0; }
         if (alpha === void 0) { alpha = 1; }
         if (pixelHinting === void 0) { pixelHinting = false; }
         if (scaleMode === void 0) { scaleMode = null; }
-        if (caps === void 0) { caps = null; }
-        if (joints === void 0) { joints = null; }
-        if (miterLimit === void 0) { miterLimit = 3; }
+        if (capstyle === void 0) { capstyle = CapsStyle_1.default.NONE; }
+        if (jointstyle === void 0) { jointstyle = JointStyle_1.default.MITER; }
+        if (miterLimit === void 0) { miterLimit = 100; }
         // start a new stroke path
         this._active_stroke_path = new GraphicsPath_1.default();
+        this._active_stroke_path.style = new GraphicsStrokeStyle_1.default(color, alpha, thickness, jointstyle, capstyle, miterLimit);
         if (this._current_position.x != 0 || this._current_position.y != 0)
             this._active_stroke_path.moveTo(this._current_position.x, this._current_position.y);
         this._queued_stroke_pathes.push(this._active_stroke_path);
@@ -10438,2249 +12827,12 @@ var Graphics = (function () {
         this._current_position.x = x;
         this._current_position.y = y;
     };
-    Graphics.prototype.draw_strokes = function () {
-        if (this._active_stroke_path == null)
-            return;
-        this._active_stroke_path.finalizeContour();
-        var contour_commands = this._active_stroke_path.commands;
-        var contour_data = this._active_stroke_path.data;
-        var contour_closed = this._active_stroke_path.contours_closed;
-        var commands;
-        var data;
-        var i = 0;
-        var k = 0;
-        var vert_cnt = 0;
-        var data_cnt = 0;
-        var draw_started = false;
-        var final_vert_list = [];
-        var final_vert_cnt = 0;
-        var lastPoint = new Point_1.default();
-        var start_point = new Point_1.default();
-        var end_point = new Point_1.default();
-        var start_left = new Point_1.default();
-        var start_right = new Point_1.default();
-        var ctr_left = new Point_1.default();
-        var ctr_right = new Point_1.default();
-        var ctr_left2 = new Point_1.default();
-        var ctr_right2 = new Point_1.default();
-        var end_left = new Point_1.default();
-        var end_right = new Point_1.default();
-        var tmp_point = new Point_1.default();
-        var tmp_point2 = new Point_1.default();
-        var first_point = new Point_1.default();
-        var first_point_set = false;
-        var closed = false;
-        var thickness = 3;
-        var tessVerts = [];
-        Graphics._tess_obj.newTess(1024 * 512);
-        for (k = 0; k < contour_commands.length; k++) {
-            var contour_points = [];
-            var contour_types = [];
-            commands = contour_commands[k];
-            data = contour_data[k];
-            closed = contour_closed[k];
-            vert_cnt = 0;
-            data_cnt = 0;
-            draw_started = false;
-            first_point_set = false;
-            for (i = 0; i < commands.length; i++) {
-                switch (commands[i]) {
-                    case GraphicsPathCommand_1.default.MOVE_TO:
-                        lastPoint.x = data[data_cnt++];
-                        lastPoint.y = data[data_cnt++];
-                        break;
-                    case GraphicsPathCommand_1.default.LINE_TO:
-                        contour_types.push(GraphicsPathCommand_1.default.LINE_TO);
-                        end_point.x = data[data_cnt++];
-                        end_point.y = data[data_cnt++];
-                        tmp_point.x = -1 * (end_point.y - lastPoint.y);
-                        tmp_point.y = end_point.x - lastPoint.x;
-                        tmp_point.normalize();
-                        // rotate point
-                        start_left.x = lastPoint.x + (tmp_point.x * thickness);
-                        start_left.y = lastPoint.y + (tmp_point.y * thickness);
-                        start_right.x = lastPoint.x - (tmp_point.x * thickness);
-                        start_right.y = lastPoint.y - (tmp_point.y * thickness);
-                        // rotate point
-                        end_left.x = end_point.x + (tmp_point.x * thickness);
-                        end_left.y = end_point.y + (tmp_point.y * thickness);
-                        end_right.x = end_point.x - (tmp_point.x * thickness);
-                        end_right.y = end_point.y - (tmp_point.y * thickness);
-                        lastPoint.x = end_point.x;
-                        lastPoint.y = end_point.y;
-                        contour_points.push(new Point_1.default(start_right.x, start_right.y));
-                        contour_points.push(new Point_1.default(start_left.x, start_left.y));
-                        contour_points.push(new Point_1.default(end_right.x, end_right.y));
-                        contour_points.push(new Point_1.default(end_left.x, end_left.y));
-                        break;
-                    case GraphicsPathCommand_1.default.CURVE_TO:
-                        contour_types.push(GraphicsPathCommand_1.default.CURVE_TO);
-                        contour_types.push(GraphicsPathCommand_1.default.CURVE_TO_2);
-                        var curve_direction = data[data_cnt++];
-                        var control_x = data[data_cnt++];
-                        var control_y = data[data_cnt++];
-                        var end_x = data[data_cnt++];
-                        var end_y = data[data_cnt++];
-                        tmp_point.x = -1 * (control_y - lastPoint.y);
-                        tmp_point.y = control_x - lastPoint.x;
-                        tmp_point.normalize();
-                        // rotate point
-                        start_left.x = lastPoint.x + (tmp_point.x * thickness);
-                        start_left.y = lastPoint.y + (tmp_point.y * thickness);
-                        start_right.x = lastPoint.x - (tmp_point.x * thickness);
-                        start_right.y = lastPoint.y - (tmp_point.y * thickness);
-                        // rotate point
-                        ctr_left.x = control_x + (tmp_point.x * thickness);
-                        ctr_left.y = control_y + (tmp_point.y * thickness);
-                        ctr_right.x = control_x - (tmp_point.x * thickness);
-                        ctr_right.y = control_y - (tmp_point.y * thickness);
-                        contour_points.push(new Point_1.default(start_right.x, start_right.y));
-                        contour_points.push(new Point_1.default(start_left.x, start_left.y));
-                        contour_points.push(new Point_1.default(ctr_right.x, ctr_right.y));
-                        contour_points.push(new Point_1.default(ctr_left.x, ctr_left.y));
-                        tmp_point.x = -1 * (end_y - control_y);
-                        tmp_point.y = end_x - control_x;
-                        tmp_point.normalize();
-                        ctr_left2.x = control_x + (tmp_point.x * thickness);
-                        ctr_left2.y = control_y + (tmp_point.y * thickness);
-                        ctr_right2.x = control_x - (tmp_point.x * thickness);
-                        ctr_right2.y = control_y - (tmp_point.y * thickness);
-                        end_left.x = end_x + (tmp_point.x * thickness);
-                        end_left.y = end_y + (tmp_point.y * thickness);
-                        end_right.x = end_x - (tmp_point.x * thickness);
-                        end_right.y = end_y - (tmp_point.y * thickness);
-                        contour_points.push(new Point_1.default(ctr_right2.x, ctr_right2.y));
-                        contour_points.push(new Point_1.default(ctr_left2.x, ctr_left2.y));
-                        contour_points.push(new Point_1.default(end_right.x, end_right.y));
-                        contour_points.push(new Point_1.default(end_left.x, end_left.y));
-                        lastPoint.x = end_x;
-                        lastPoint.y = end_y;
-                        break;
-                }
-            }
-            var con_length = contour_points.length / 4;
-            var next_start_right = new Point_1.default();
-            var next_start_left = new Point_1.default();
-            var next_end_right = new Point_1.default();
-            var next_end_left = new Point_1.default();
-            var prevLeft;
-            var prevRight;
-            for (i = 0; i < con_length; i++) {
-                start_right = contour_points[i * 4];
-                start_left = contour_points[i * 4 + 1];
-                end_right = contour_points[i * 4 + 2];
-                end_left = contour_points[i * 4 + 3];
-                var nextIdx = i + 1;
-                if (i >= con_length - 1) {
-                    // last segment
-                    if (closed) {
-                        nextIdx = 0;
-                    }
-                    else {
-                        nextIdx = -1;
-                    }
-                }
-                if (nextIdx >= 0) {
-                    next_start_right = contour_points[nextIdx * 4];
-                    next_start_left = contour_points[nextIdx * 4 + 1];
-                    next_end_right = contour_points[nextIdx * 4 + 2];
-                    next_end_left = contour_points[nextIdx * 4 + 3];
-                    var cur_vertical = false;
-                    var next_vertical = false;
-                    var cur_horizontal = false;
-                    var next_horizontal = false;
-                    tmp_point.x = end_right.x - start_right.x;
-                    tmp_point.y = end_right.y - start_right.y;
-                    var factor1 = 0;
-                    var offsetY1 = 0;
-                    if (tmp_point.x == 0)
-                        cur_vertical = true;
-                    else if (tmp_point.y == 0)
-                        cur_horizontal = true;
-                    else {
-                        factor1 = tmp_point.y / tmp_point.x;
-                        offsetY1 = -(factor1 * start_right.x - start_right.y);
-                    }
-                    tmp_point.x = next_end_right.x - next_start_right.x;
-                    tmp_point.y = next_end_right.y - next_start_right.y;
-                    var factor2 = 0;
-                    var offsetY2 = 0;
-                    if (tmp_point.x == 0)
-                        next_vertical = true;
-                    else if (tmp_point.y == 0)
-                        next_horizontal = true;
-                    else {
-                        factor2 = tmp_point.y / tmp_point.x;
-                        offsetY2 = -(factor2 * next_start_right.x - next_start_right.y);
-                    }
-                    tmp_point.x = end_left.x - start_left.x;
-                    tmp_point.y = end_left.y - start_left.y;
-                    var factor3 = 0;
-                    var offsetY3 = 0;
-                    if (tmp_point.x == 0)
-                        cur_vertical = true;
-                    else if (tmp_point.y == 0)
-                        cur_horizontal = true;
-                    else {
-                        factor3 = tmp_point.y / tmp_point.x;
-                        offsetY3 = -(factor3 * start_left.x - start_left.y);
-                    }
-                    tmp_point.x = next_end_left.x - next_start_left.x;
-                    tmp_point.y = next_end_left.y - next_start_left.y;
-                    var factor4 = 0;
-                    var offsetY4 = 0;
-                    if (tmp_point.x == 0)
-                        next_vertical = true;
-                    else if (tmp_point.y == 0)
-                        next_horizontal = true;
-                    else {
-                        factor4 = tmp_point.y / tmp_point.x;
-                        offsetY4 = -(factor4 * next_start_left.x - next_start_left.y);
-                    }
-                    if ((cur_vertical && cur_horizontal) || (next_horizontal && next_vertical))
-                        console.log("ERROR");
-                    if ((factor1 == factor2) || (factor3 == factor4)) {
-                        console.log("STRAIGHT LINE factor same");
-                        console.log("factor = " + factor1);
-                        console.log("factor = " + factor2);
-                        console.log("factor = " + factor3);
-                        console.log("factor = " + factor4);
-                    }
-                    //else
-                    if ((cur_horizontal && next_horizontal) || (cur_vertical && next_vertical))
-                        console.log("STRAIGHT LINE");
-                    else {
-                        if ((cur_vertical) && (next_horizontal)) {
-                            console.log("(cur_vertical)&&(next_horizontal)");
-                            next_start_right.x = end_right.x;
-                            end_right.y = next_start_right.y;
-                            next_start_left.x = end_left.x;
-                            end_left.y = next_start_left.y;
-                        }
-                        else if ((cur_vertical) && (!next_horizontal)) {
-                            console.log("(cur_vertical)&&(!next_horizontal)");
-                            next_start_right.x = end_right.x = start_right.x;
-                            next_start_right.y = end_right.y = factor2 * start_right.x + offsetY2;
-                            next_start_left.x = end_left.x = start_left.x;
-                            next_start_left.y = end_left.y = factor4 * start_left.x + offsetY4;
-                        }
-                        else if ((!cur_vertical) && (next_horizontal)) {
-                            console.log("(!cur_vertical)&&(next_horizontal)");
-                            next_start_right.y = end_right.y = next_start_right.y;
-                            next_start_right.x = end_right.x = (next_start_right.y - offsetY1) / factor1;
-                            next_start_left.y = end_left.y = next_start_left.y;
-                            next_start_left.x = end_left.x = (next_start_left.y - offsetY3) / factor3;
-                        }
-                        else if ((next_vertical) && (cur_horizontal)) {
-                            console.log("(next_vertical)&&(cur_horizontal)");
-                            end_right.x = next_start_right.x;
-                            next_start_right.y = end_right.y;
-                            end_left.x = next_start_left.x;
-                            next_start_left.y = end_left.y;
-                        }
-                        else if ((next_vertical) && (!cur_horizontal)) {
-                            console.log("(next_vertical)&&(!cur_horizontal)");
-                            next_start_right.x = end_right.x = next_start_right.x;
-                            next_start_right.y = end_right.y = factor1 * next_start_right.x + offsetY1;
-                            next_start_left.x = end_left.x = next_start_left.x;
-                            next_start_left.y = end_left.y = factor3 * next_start_left.x + offsetY3;
-                        }
-                        else if ((!next_vertical) && (cur_horizontal)) {
-                            console.log("(!next_vertical)&&(!cur_horizontal)");
-                            next_start_right.y = end_right.y;
-                            next_start_right.x = end_right.x = (end_right.y - offsetY2) / factor2;
-                            next_start_left.y = end_left.y;
-                            next_start_left.x = end_left.x = (end_left.y - offsetY4) / factor4;
-                        }
-                        else {
-                            console.log("else");
-                            console.log("factor1 - factor2 " + (factor1 - factor2));
-                            console.log("offsetY1 - offsetY2 " + (offsetY1 - offsetY2));
-                            console.log("factor3 - factor4 " + (factor3 - factor4));
-                            console.log("offsetY3 - offsetY4 " + (offsetY3 - offsetY4));
-                            next_start_right.x = end_right.x = -((offsetY1 - offsetY2) / (factor1 - factor2));
-                            next_start_right.y = end_right.y = factor1 * end_right.x + offsetY1;
-                            next_start_left.x = end_left.x = -((offsetY3 - offsetY4) / (factor3 - factor4));
-                            next_start_left.y = end_left.y = factor3 * end_left.x + offsetY3;
-                        }
-                    }
-                    next_start_right.x = end_right.x;
-                    next_start_right.y = end_right.y;
-                    next_start_left.x = end_left.x;
-                    next_start_left.y = end_left.y;
-                }
-            }
-            for (i = 0; i < con_length; i++) {
-                if (contour_types[i] == GraphicsPathCommand_1.default.CURVE_TO_2)
-                    continue;
-                start_right = contour_points[i * 4];
-                start_left = contour_points[i * 4 + 1];
-                if (contour_types[i] == GraphicsPathCommand_1.default.CURVE_TO) {
-                    i++;
-                    ctr_right = contour_points[i * 4];
-                    ctr_left = contour_points[i * 4 + 1];
-                    end_right = contour_points[i * 4 + 2];
-                    end_left = contour_points[i * 4 + 3];
-                    var finished_curves = [];
-                    var finished_curves_types = [];
-                    var test_concave_curves = [];
-                    var test_convex_curves = [];
-                    var curve_sign = this.getSign(start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y) > 0;
-                    var curve_sign2 = -1;
-                    var curve_sign3 = 1;
-                    tessVerts.length = 0;
-                    if (curve_sign) {
-                        var subdivided = [];
-                        var subdivided2 = [];
-                        this.subdivideCurve(start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y, start_left.x, start_left.y, ctr_left.x, ctr_left.y, end_left.x, end_left.y, subdivided, subdivided2);
-                        for (var sc = 0; sc < subdivided.length / 6; sc++) {
-                            finished_curves.push(new Point_1.default(subdivided[sc * 6], subdivided[sc * 6 + 1]));
-                            finished_curves.push(new Point_1.default(subdivided[sc * 6 + 2], subdivided[sc * 6 + 3]));
-                            finished_curves.push(new Point_1.default(subdivided[sc * 6 + 4], subdivided[sc * 6 + 5]));
-                            finished_curves_types.push(-1);
-                            tessVerts.push(subdivided[sc * 6], subdivided[sc * 6 + 1]);
-                            tessVerts.push(subdivided[sc * 6 + 4], subdivided[sc * 6 + 5]);
-                        }
-                        for (var sc = (subdivided2.length / 6) - 1; sc >= 0; sc--) {
-                            finished_curves.push(new Point_1.default(subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5]));
-                            finished_curves.push(new Point_1.default(subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3]));
-                            finished_curves.push(new Point_1.default(subdivided2[sc * 6], subdivided2[sc * 6 + 1]));
-                            finished_curves_types.push(1);
-                            tessVerts.push(subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5]);
-                            tessVerts.push(subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3]);
-                            tessVerts.push(subdivided2[sc * 6], subdivided2[sc * 6 + 1]);
-                        }
-                    }
-                    else {
-                        var subdivided = [];
-                        var subdivided2 = [];
-                        this.subdivideCurve(start_left.x, start_left.y, ctr_left.x, ctr_left.y, end_left.x, end_left.y, start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y, subdivided, subdivided2);
-                        for (var sc = 0; sc < subdivided.length / 6; sc++) {
-                            finished_curves.push(new Point_1.default(subdivided[sc * 6], subdivided[sc * 6 + 1]));
-                            finished_curves.push(new Point_1.default(subdivided[sc * 6 + 2], subdivided[sc * 6 + 3]));
-                            finished_curves.push(new Point_1.default(subdivided[sc * 6 + 4], subdivided[sc * 6 + 5]));
-                            finished_curves_types.push(-1);
-                            tessVerts.push(subdivided[sc * 6], subdivided[sc * 6 + 1]);
-                            tessVerts.push(subdivided[sc * 6 + 4], subdivided[sc * 6 + 5]);
-                        }
-                        for (var sc = (subdivided2.length / 6) - 1; sc >= 0; sc--) {
-                            finished_curves.push(new Point_1.default(subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5]));
-                            finished_curves.push(new Point_1.default(subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3]));
-                            finished_curves.push(new Point_1.default(subdivided2[sc * 6], subdivided2[sc * 6 + 1]));
-                            finished_curves_types.push(1);
-                            tessVerts.push(subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5]);
-                            tessVerts.push(subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3]);
-                            tessVerts.push(subdivided2[sc * 6], subdivided2[sc * 6 + 1]);
-                        }
-                    }
-                    if (tessVerts.length > 0) {
-                        var verticesF32 = new Float32Array(tessVerts);
-                        if (Graphics._tess_obj == null) {
-                            console.log("No libtess2 tesselator available.\nMake it available using Graphics._tess_obj=new TESS();");
-                            return;
-                        }
-                        Graphics._tess_obj.addContour(verticesF32, 2, 8, tessVerts.length / 2);
-                    }
-                    var t = 0;
-                    for (t = 0; t < finished_curves_types.length; t++) {
-                        final_vert_list[final_vert_cnt++] = finished_curves[t * 3].x;
-                        final_vert_list[final_vert_cnt++] = finished_curves[t * 3].y;
-                        final_vert_list[final_vert_cnt++] = finished_curves_types[t];
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                        final_vert_list[final_vert_cnt++] = finished_curves[t * 3 + 1].x;
-                        final_vert_list[final_vert_cnt++] = finished_curves[t * 3 + 1].y;
-                        final_vert_list[final_vert_cnt++] = finished_curves_types[t];
-                        final_vert_list[final_vert_cnt++] = 0.5;
-                        final_vert_list[final_vert_cnt++] = 0.0;
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                        final_vert_list[final_vert_cnt++] = finished_curves[t * 3 + 2].x;
-                        final_vert_list[final_vert_cnt++] = finished_curves[t * 3 + 2].y;
-                        final_vert_list[final_vert_cnt++] = finished_curves_types[t];
-                        final_vert_list[final_vert_cnt++] = 0.0;
-                        final_vert_list[final_vert_cnt++] = 0.0;
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                        final_vert_list[final_vert_cnt++] = 1.0;
-                    }
-                }
-                else {
-                    end_right = contour_points[i * 4 + 2];
-                    end_left = contour_points[i * 4 + 3];
-                    final_vert_list[final_vert_cnt++] = start_right.x;
-                    final_vert_list[final_vert_cnt++] = start_right.y;
-                    final_vert_list[final_vert_cnt++] = 1;
-                    final_vert_list[final_vert_cnt++] = 2.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = start_left.x;
-                    final_vert_list[final_vert_cnt++] = start_left.y;
-                    final_vert_list[final_vert_cnt++] = 1;
-                    final_vert_list[final_vert_cnt++] = 2.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = end_left.x;
-                    final_vert_list[final_vert_cnt++] = end_left.y;
-                    final_vert_list[final_vert_cnt++] = 1;
-                    final_vert_list[final_vert_cnt++] = 2.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = start_right.x;
-                    final_vert_list[final_vert_cnt++] = start_right.y;
-                    final_vert_list[final_vert_cnt++] = 1;
-                    final_vert_list[final_vert_cnt++] = 2.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = end_left.x;
-                    final_vert_list[final_vert_cnt++] = end_left.y;
-                    final_vert_list[final_vert_cnt++] = 1;
-                    final_vert_list[final_vert_cnt++] = 2.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = end_right.x;
-                    final_vert_list[final_vert_cnt++] = end_right.y;
-                    final_vert_list[final_vert_cnt++] = 1;
-                    final_vert_list[final_vert_cnt++] = 2.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                    final_vert_list[final_vert_cnt++] = 0.0;
-                }
-            }
-        }
-        /*
-         for (i = 0; i < final_vert_list.length/7; ++i)
-         console.log("final verts stroke "+i+" = "+final_vert_list[i*7]+" / "+final_vert_list[i*7+1]);
-         */
-        Graphics._tess_obj.tesselate(4 /*TESS.WINDING_ODD*/, 0 /*TESS.ELEMENT_POLYGONS*/, 3, 2, null);
-        var verts = [];
-        var all_verts = [];
-        var vertIndicess = [];
-        var elems = [];
-        verts = Graphics._tess_obj.getVertices();
-        elems = Graphics._tess_obj.getElements();
-        var numVerts = verts.length / 2;
-        var numElems = elems.length / 3;
-        for (i = 0; i < numVerts; ++i)
-            all_verts.push(new Point_1.default(verts[i * 2], verts[i * 2 + 1]));
-        for (i = 0; i < numElems; ++i) {
-            var p1 = elems[i * 3];
-            var p2 = elems[i * 3 + 1];
-            var p3 = elems[i * 3 + 2];
-            final_vert_list[final_vert_cnt++] = all_verts[p3].x;
-            final_vert_list[final_vert_cnt++] = all_verts[p3].y;
-            final_vert_list[final_vert_cnt++] = 1;
-            final_vert_list[final_vert_cnt++] = 2.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = all_verts[p2].x;
-            final_vert_list[final_vert_cnt++] = all_verts[p2].y;
-            final_vert_list[final_vert_cnt++] = 1;
-            final_vert_list[final_vert_cnt++] = 2.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = all_verts[p1].x;
-            final_vert_list[final_vert_cnt++] = all_verts[p1].y;
-            final_vert_list[final_vert_cnt++] = 1;
-            final_vert_list[final_vert_cnt++] = 2.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-        }
-        // todo: handle material / subsprite settings, and check if a material / subsprite already exists for this settings
-        var attributesView = new AttributesView_1.default(Float32Array, 7);
-        attributesView.set(final_vert_list);
-        var attributesBuffer = attributesView.buffer;
-        attributesView.dispose();
-        var elements = new TriangleElements_1.default(attributesBuffer);
-        elements.setPositions(new Float2Attributes_1.default(attributesBuffer));
-        elements.setCustomAttributes("curves", new Float3Attributes_1.default(attributesBuffer));
-        elements.setUVs(new Float2Attributes_1.default(attributesBuffer));
-        var material = DefaultMaterialManager_1.default.getDefaultMaterial();
-        material.bothSides = true;
-        material.useColorTransform = true;
-        material.curves = true;
-        this._target.graphics.addGraphic(elements, material);
-        this._active_stroke_path = null;
-    };
-    Graphics.prototype.isClockWiseXY = function (point1x, point1y, point2x, point2y, point3x, point3y) {
-        return ((point1x - point2x) * (point3y - point2y) - (point1y - point2y) * (point3x - point2x) < 0);
-    };
-    Graphics.prototype.getSign = function (ax, ay, cx, cy, bx, by) {
-        /*if(this.isClockWiseXY(ax, ay, bx, by, cx, cy)) {
-         return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
-         }*/
-        return (ax - bx) * (cy - by) - (ay - by) * (cx - bx);
-    };
-    Graphics.prototype.pointInTri = function (ax, ay, bx, by, cx, cy, xx, xy) {
-        var b1 = this.getSign(ax, ay, xx, xy, bx, by) > 0;
-        var b2 = this.getSign(bx, by, xx, xy, cx, cy) > 0;
-        var b3 = this.getSign(cx, cy, xx, xy, ax, ay) > 0;
-        return ((b1 == b2) && (b2 == b3));
-    };
-    Graphics.prototype.subdivideCurve = function (startx, starty, cx, cy, endx, endy, startx2, starty2, cx2, cy2, endx2, endy2, array_out, array2_out) {
-        /*
-         if(!this.pointInTri(startx2, starty2, cx2, cy2, endx2, endy2, cx, cy)){
-         }
-         */
-        array_out.push(startx, starty, cx, cy, endx, endy);
-        array2_out.push(startx2, starty2, cx2, cy2, endx2, endy2);
-        return;
-        // var c1x = startx + (cx - startx) * 0.5;
-        // var c1y = starty + (cy - starty) * 0.5;
-        // var c2x = cx + (endx - cx) * 0.5;
-        // var c2y = cy + (endy - cy) * 0.5;
-        // var ax = c1x + (c2x - c1x) * 0.5;
-        // var ay = c1y + (c2y - c1y) * 0.5;
-        //
-        // var c1x2 = startx2 + (cx2 - startx2) * 0.5;
-        // var c1y2 = starty2 + (cy2 - starty2) * 0.5;
-        // var c2x2 = cx2 + (endx2 - cx2) * 0.5;
-        // var c2y2 = cy2 + (endy2 - cy2) * 0.5;
-        // var ax2 = c1x2 + (c2x2 - c1x2) * 0.5;
-        // var ay2 = c1y2 + (c2y2 - c1y2) * 0.5;
-        // if(this.pointInTri(startx2, starty2, c1x2, c1y2, ax2, ay2, c1x, c1y)){
-        // 	this.subdivideCurve(startx, starty, c1x, c1y, ax, ay, startx2, starty2, c1x2, c1y2, ax2, ay2, array_out, array2_out);
-        // }
-        // else{
-        // 	array_out.push(startx, starty, c1x, c1y, ax, ay);
-        // 	array2_out.push(startx2, starty2, c1x2, c1y2, ax2, ay2);
-        // }
-        //
-        // if(this.pointInTri(ax2, ay2, c2x2, c2y2,  endx2, endy2, c2x, c2y)){
-        // 	this.subdivideCurve(ax, ay, c2x, c2y, endx, endy, ax2, ay2, c2x2, c2y2, endx2, endy2, array_out, array2_out);
-        // }
-        // else{
-        // 	array_out.push(ax, ay, c2x, c2y, endx, endy);
-        // 	array2_out.push(ax2, ay2, c2x2, c2y2, endx2, endy2);
-        // }
-    };
-    Graphics.prototype.draw_fill = function () {
-        if (this._active_fill_path == null)
-            return;
-        this._active_fill_path.finalizeContour();
-        var contour_commands = this._active_fill_path.commands;
-        var contour_data = this._active_fill_path.data;
-        var contour_draw_directions = this._active_fill_path.draw_directions;
-        var commands;
-        var data;
-        var i = 0;
-        var k = 0;
-        var vert_cnt = 0;
-        var data_cnt = 0;
-        var draw_direction = 0;
-        var contours_vertices = [[]];
-        var final_vert_list = [];
-        var final_vert_cnt = 0;
-        var lastPoint = new Point_1.default();
-        for (k = 0; k < contour_commands.length; k++) {
-            contours_vertices.push([]);
-            vert_cnt = 0;
-            data_cnt = 0;
-            commands = contour_commands[k];
-            data = contour_data[k];
-            draw_direction = contour_draw_directions[k];
-            for (i = 0; i < commands.length; i++) {
-                switch (commands[i]) {
-                    case GraphicsPathCommand_1.default.MOVE_TO:
-                        lastPoint.x = data[data_cnt++];
-                        lastPoint.y = data[data_cnt++];
-                        contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.x;
-                        contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.y;
-                        break;
-                    case GraphicsPathCommand_1.default.LINE_TO:
-                        lastPoint.x = data[data_cnt++];
-                        lastPoint.y = data[data_cnt++];
-                        contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.x;
-                        contours_vertices[contours_vertices.length - 1][vert_cnt++] = lastPoint.y;
-                        break;
-                    case GraphicsPathCommand_1.default.CURVE_TO:
-                        var curve_direction = data[data_cnt++];
-                        var control_x = data[data_cnt++];
-                        var control_y = data[data_cnt++];
-                        var end_x = data[data_cnt++];
-                        var end_y = data[data_cnt++];
-                        var curve_attr_1 = -1;
-                        if (draw_direction > 0) {
-                            if (curve_direction == 1) {
-                                //convex
-                                //console.log("convex";
-                                curve_attr_1 = 1;
-                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_x;
-                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_y;
-                            }
-                            contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_x;
-                            contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_y;
-                        }
-                        else {
-                            if (curve_direction == 2) {
-                                //convex
-                                //console.log("convex";
-                                curve_attr_1 = 1;
-                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_x;
-                                contours_vertices[contours_vertices.length - 1][vert_cnt++] = control_y;
-                            }
-                            contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_x;
-                            contours_vertices[contours_vertices.length - 1][vert_cnt++] = end_y;
-                        }
-                        if (!this.isClockWiseXY(end_x, end_y, control_x, control_y, lastPoint.x, lastPoint.y)) {
-                            final_vert_list[final_vert_cnt++] = end_x;
-                            final_vert_list[final_vert_cnt++] = end_y;
-                            final_vert_list[final_vert_cnt++] = curve_attr_1;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = control_x;
-                            final_vert_list[final_vert_cnt++] = control_y;
-                            final_vert_list[final_vert_cnt++] = curve_attr_1;
-                            final_vert_list[final_vert_cnt++] = 0.5;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = lastPoint.x;
-                            final_vert_list[final_vert_cnt++] = lastPoint.y;
-                            final_vert_list[final_vert_cnt++] = curve_attr_1;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                        }
-                        else {
-                            final_vert_list[final_vert_cnt++] = lastPoint.x;
-                            final_vert_list[final_vert_cnt++] = lastPoint.y;
-                            final_vert_list[final_vert_cnt++] = curve_attr_1;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = control_x;
-                            final_vert_list[final_vert_cnt++] = control_y;
-                            final_vert_list[final_vert_cnt++] = curve_attr_1;
-                            final_vert_list[final_vert_cnt++] = 0.5;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = end_x;
-                            final_vert_list[final_vert_cnt++] = end_y;
-                            final_vert_list[final_vert_cnt++] = curve_attr_1;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                            final_vert_list[final_vert_cnt++] = 1.0;
-                            final_vert_list[final_vert_cnt++] = 0.0;
-                        }
-                        lastPoint.x = end_x;
-                        lastPoint.y = end_y;
-                        break;
-                    case GraphicsPathCommand_1.default.CUBIC_CURVE:
-                        //todo
-                        break;
-                }
-            }
-        }
-        var verts = [];
-        var all_verts = [];
-        var vertIndicess = [];
-        var elems = [];
-        Graphics._tess_obj.newTess(1024 * 512);
-        for (k = 0; k < contours_vertices.length; k++) {
-            var vertices = contours_vertices[k];
-            /*
-             for (i = 0; i < vertices.length / 2; ++i)
-             console.log("vert collected" + i + " = " + vertices[i * 2] + " / " + vertices[i * 2 + 1]);
-             */
-            var verticesF32 = new Float32Array(vertices);
-            //var verticesF32 = new Float32Array([0,0, 100,0, 100,100, 0,100]);
-            //console.log("in vertices", vertices);
-            //var tess = new TESS();
-            if (Graphics._tess_obj == null) {
-                console.log("No libtess2 tesselator available.\nMake it available using Graphics._tess_obj=new TESS();");
-                return;
-            }
-            Graphics._tess_obj.addContour(verticesF32, 2, 8, vertices.length / 2);
-        }
-        Graphics._tess_obj.tesselate(0 /*TESS.WINDING_ODD*/, 0 /*TESS.ELEMENT_POLYGONS*/, 3, 2, null);
-        //console.log("out vertices", Graphics._tess_obj.getVertices());
-        verts = Graphics._tess_obj.getVertices();
-        elems = Graphics._tess_obj.getElements();
-        //console.log("out elements", Graphics._tess_obj.getElements());
-        var numVerts = verts.length / 2;
-        var numElems = elems.length / 3;
-        for (i = 0; i < numVerts; ++i)
-            all_verts.push(new Point_1.default(verts[i * 2], verts[i * 2 + 1]));
-        for (i = 0; i < numElems; ++i) {
-            var p1 = elems[i * 3];
-            var p2 = elems[i * 3 + 1];
-            var p3 = elems[i * 3 + 2];
-            final_vert_list[final_vert_cnt++] = all_verts[p3].x;
-            final_vert_list[final_vert_cnt++] = all_verts[p3].y;
-            final_vert_list[final_vert_cnt++] = 1;
-            final_vert_list[final_vert_cnt++] = 2.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = all_verts[p2].x;
-            final_vert_list[final_vert_cnt++] = all_verts[p2].y;
-            final_vert_list[final_vert_cnt++] = 1;
-            final_vert_list[final_vert_cnt++] = 2.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = all_verts[p1].x;
-            final_vert_list[final_vert_cnt++] = all_verts[p1].y;
-            final_vert_list[final_vert_cnt++] = 1;
-            final_vert_list[final_vert_cnt++] = 2.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-            final_vert_list[final_vert_cnt++] = 1.0;
-            final_vert_list[final_vert_cnt++] = 0.0;
-        }
-        //for (i = 0; i < final_vert_list.length/7; ++i)
-        //	console.log("final verts "+i+" = "+final_vert_list[i*7]+" / "+final_vert_list[i*7+1]);
-        var attributesView = new AttributesView_1.default(Float32Array, 7);
-        attributesView.set(final_vert_list);
-        var attributesBuffer = attributesView.buffer;
-        attributesView.dispose();
-        var elements = new TriangleElements_1.default(attributesBuffer);
-        elements.setPositions(new Float2Attributes_1.default(attributesBuffer));
-        elements.setCustomAttributes("curves", new Float3Attributes_1.default(attributesBuffer));
-        elements.setUVs(new Float2Attributes_1.default(attributesBuffer));
-        var material = DefaultMaterialManager_1.default.getDefaultMaterial();
-        material.bothSides = true;
-        material.useColorTransform = true;
-        material.curves = true;
-        this._target.graphics.addGraphic(elements, material);
-        this._active_fill_path = null;
-    };
-    return Graphics;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Graphics;
-
-},{"../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/IGraphicsData":[function(require,module,exports){
-"use strict";
-
-},{}],"awayjs-display/lib/draw/InterpolationMethod":[function(require,module,exports){
-"use strict";
-/**
- * The InterpolationMethod class provides values for the
- * <code>interpolationMethod</code> parameter in the
- * <code>Graphics.beginGradientFill()</code> and
- * <code>Graphics.lineGradientStyle()</code> methods. This parameter
- * determines the RGB space to use when rendering the gradient.
- */
-var InterpolationMethod = (function () {
-    function InterpolationMethod() {
-    }
-    /**
-     * Specifies that the RGB interpolation method should be used. This means
-     * that the gradient is rendered with exponential sRGB(standard RGB) space.
-     * The sRGB space is a W3C-endorsed standard that defines a non-linear
-     * conversion between red, green, and blue component values and the actual
-     * intensity of the visible component color.
-     *
-     * <p>For example, consider a simple linear gradient between two colors(with
-     * the <code>spreadMethod</code> parameter set to
-     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
-     * affect the appearance as follows: </p>
-     */
-    InterpolationMethod.LINEAR_RGB = "linearRGB";
-    /**
-     * Specifies that the RGB interpolation method should be used. This means
-     * that the gradient is rendered with exponential sRGB(standard RGB) space.
-     * The sRGB space is a W3C-endorsed standard that defines a non-linear
-     * conversion between red, green, and blue component values and the actual
-     * intensity of the visible component color.
-     *
-     * <p>For example, consider a simple linear gradient between two colors(with
-     * the <code>spreadMethod</code> parameter set to
-     * <code>SpreadMethod.REFLECT</code>). The different interpolation methods
-     * affect the appearance as follows: </p>
-     */
-    InterpolationMethod.RGB = "rgb";
-    return InterpolationMethod;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = InterpolationMethod;
-
-},{}],"awayjs-display/lib/draw/JointStyle":[function(require,module,exports){
-"use strict";
-/**
- * The JointStyle class is an enumeration of constant values that specify the
- * joint style to use in drawing lines. These constants are provided for use
- * as values in the <code>joints</code> parameter of the
- * <code>flash.display.Graphics.lineStyle()</code> method. The method supports
- * three types of joints: miter, round, and bevel, as the following example
- * shows:
- */
-var JointStyle = (function () {
-    function JointStyle() {
-    }
-    /**
-     * Specifies beveled joints in the <code>joints</code> parameter of the
-     * <code>flash.display.Graphics.lineStyle()</code> method.
-     */
-    JointStyle.BEVEL = "bevel";
-    /**
-     * Specifies mitered joints in the <code>joints</code> parameter of the
-     * <code>flash.display.Graphics.lineStyle()</code> method.
-     */
-    JointStyle.MITER = "miter";
-    /**
-     * Specifies round joints in the <code>joints</code> parameter of the
-     * <code>flash.display.Graphics.lineStyle()</code> method.
-     */
-    JointStyle.ROUND = "round";
-    return JointStyle;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = JointStyle;
-
-},{}],"awayjs-display/lib/draw/LineScaleMode":[function(require,module,exports){
-"use strict";
-/**
- * The LineScaleMode class provides values for the <code>scaleMode</code>
- * parameter in the <code>Graphics.lineStyle()</code> method.
- */
-var LineScaleMode = (function () {
-    function LineScaleMode() {
-    }
-    /**
-     * With this setting used as the <code>scaleMode</code> parameter of the
-     * <code>lineStyle()</code> method, the thickness of the line scales
-     * <i>only</i> vertically. For example, consider the following circles, drawn
-     * with a one-pixel line, and each with the <code>scaleMode</code> parameter
-     * set to <code>LineScaleMode.VERTICAL</code>. The circle on the left is
-     * scaled only vertically, and the circle on the right is scaled both
-     * vertically and horizontally.
-     */
-    LineScaleMode.HORIZONTAL = "horizontal";
-    /**
-     * With this setting used as the <code>scaleMode</code> parameter of the
-     * <code>lineStyle()</code> method, the thickness of the line never scales.
-     */
-    LineScaleMode.NONE = "none";
-    /**
-     * With this setting used as the <code>scaleMode</code> parameter of the
-     * <code>lineStyle()</code> method, the thickness of the line always scales
-     * when the object is scaled(the default).
-     */
-    LineScaleMode.NORMAL = "normal";
-    /**
-     * With this setting used as the <code>scaleMode</code> parameter of the
-     * <code>lineStyle()</code> method, the thickness of the line scales
-     * <i>only</i> horizontally. For example, consider the following circles,
-     * drawn with a one-pixel line, and each with the <code>scaleMode</code>
-     * parameter set to <code>LineScaleMode.HORIZONTAL</code>. The circle on the
-     * left is scaled only horizontally, and the circle on the right is scaled
-     * both vertically and horizontally.
-     */
-    LineScaleMode.VERTICAL = "vertical";
-    return LineScaleMode;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = LineScaleMode;
-
-},{}],"awayjs-display/lib/draw/PixelSnapping":[function(require,module,exports){
-"use strict";
-/**
- * The PixelSnapping class is an enumeration of constant values for setting
- * the pixel snapping options by using the <code>pixelSnapping</code> property
- * of a Bitmap object.
- */
-var PixelSnapping = (function () {
-    function PixelSnapping() {
-    }
-    /**
-     * A constant value used in the <code>pixelSnapping</code> property of a
-     * Bitmap object to specify that the bitmap image is always snapped to the
-     * nearest pixel, independent of any transformation.
-     */
-    PixelSnapping.ALWAYS = "always";
-    /**
-     * A constant value used in the <code>pixelSnapping</code> property of a
-     * Bitmap object to specify that the bitmap image is snapped to the nearest
-     * pixel if it is drawn with no rotation or skew and it is drawn at a scale
-     * factor of 99.9% to 100.1%. If these conditions are satisfied, the image is
-     * drawn at 100% scale, snapped to the nearest pixel. Internally, this
-     * setting allows the image to be drawn as fast as possible by using the
-     * vector renderer.
-     */
-    PixelSnapping.AUTO = "auto";
-    /**
-     * A constant value used in the <code>pixelSnapping</code> property of a
-     * Bitmap object to specify that no pixel snapping occurs.
-     */
-    PixelSnapping.NEVER = "never";
-    return PixelSnapping;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = PixelSnapping;
-
-},{}],"awayjs-display/lib/draw/SpreadMethod":[function(require,module,exports){
-"use strict";
-/**
- * The SpreadMethod class provides values for the <code>spreadMethod</code>
- * parameter in the <code>beginGradientFill()</code> and
- * <code>lineGradientStyle()</code> methods of the Graphics class.
- *
- * <p>The following example shows the same gradient fill using various spread
- * methods:</p>
- */
-var SpreadMethod = (function () {
-    function SpreadMethod() {
-    }
-    /**
-     * Specifies that the gradient use the <i>pad</i> spread method.
-     */
-    SpreadMethod.PAD = "pad";
-    /**
-     * Specifies that the gradient use the <i>reflect</i> spread method.
-     */
-    SpreadMethod.REFLECT = "reflect";
-    /**
-     * Specifies that the gradient use the <i>repeat</i> spread method.
-     */
-    SpreadMethod.REPEAT = "repeat";
-    return SpreadMethod;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = SpreadMethod;
-
-},{}],"awayjs-display/lib/draw/TriangleCulling":[function(require,module,exports){
-"use strict";
-/**
- * Defines codes for culling algorithms that determine which triangles not to
- * render when drawing triangle paths.
- *
- * <p> The terms <code>POSITIVE</code> and <code>NEGATIVE</code> refer to the
- * sign of a triangle's normal along the z-axis. The normal is a 3D vector
- * that is perpendicular to the surface of the triangle. </p>
- *
- * <p> A triangle whose vertices 0, 1, and 2 are arranged in a clockwise order
- * has a positive normal value. That is, its normal points in a positive
- * z-axis direction, away from the current view point. When the
- * <code>TriangleCulling.POSITIVE</code> algorithm is used, triangles with
- * positive normals are not rendered. Another term for this is backface
- * culling. </p>
- *
- * <p> A triangle whose vertices are arranged in a counter-clockwise order has
- * a negative normal value. That is, its normal points in a negative z-axis
- * direction, toward the current view point. When the
- * <code>TriangleCulling.NEGATIVE</code> algorithm is used, triangles with
- * negative normals will not be rendered. </p>
- */
-var TriangleCulling = (function () {
-    function TriangleCulling() {
-    }
-    /**
-     * Specifies culling of all triangles facing toward the current view point.
-     */
-    TriangleCulling.NEGATIVE = "negative";
-    /**
-     * Specifies no culling. All triangles in the path are rendered.
-     */
-    TriangleCulling.NONE = "none";
-    /**
-     * Specifies culling of all triangles facing away from the current view
-     * point. This is also known as backface culling.
-     */
-    TriangleCulling.POSITIVE = "positive";
-    return TriangleCulling;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = TriangleCulling;
-
-},{}],"awayjs-display/lib/draw":[function(require,module,exports){
-"use strict";
-var CapsStyle_1 = require("./draw/CapsStyle");
-exports.CapsStyle = CapsStyle_1.default;
-var GradientType_1 = require("./draw/GradientType");
-exports.GradientType = GradientType_1.default;
-var Graphics_1 = require("./draw/Graphics");
-exports.Graphics = Graphics_1.default;
-var GraphicsPath_1 = require("./draw/GraphicsPath");
-exports.GraphicsPath = GraphicsPath_1.default;
-var GraphicsPathCommand_1 = require("./draw/GraphicsPathCommand");
-exports.GraphicsPathCommand = GraphicsPathCommand_1.default;
-var GraphicsPathWinding_1 = require("./draw/GraphicsPathWinding");
-exports.GraphicsPathWinding = GraphicsPathWinding_1.default;
-var InterpolationMethod_1 = require("./draw/InterpolationMethod");
-exports.InterpolationMethod = InterpolationMethod_1.default;
-var JointStyle_1 = require("./draw/JointStyle");
-exports.JointStyle = JointStyle_1.default;
-var LineScaleMode_1 = require("./draw/LineScaleMode");
-exports.LineScaleMode = LineScaleMode_1.default;
-var PixelSnapping_1 = require("./draw/PixelSnapping");
-exports.PixelSnapping = PixelSnapping_1.default;
-var SpreadMethod_1 = require("./draw/SpreadMethod");
-exports.SpreadMethod = SpreadMethod_1.default;
-var TriangleCulling_1 = require("./draw/TriangleCulling");
-exports.TriangleCulling = TriangleCulling_1.default;
-
-},{"./draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","./draw/GradientType":"awayjs-display/lib/draw/GradientType","./draw/Graphics":"awayjs-display/lib/draw/Graphics","./draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","./draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","./draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","./draw/InterpolationMethod":"awayjs-display/lib/draw/InterpolationMethod","./draw/JointStyle":"awayjs-display/lib/draw/JointStyle","./draw/LineScaleMode":"awayjs-display/lib/draw/LineScaleMode","./draw/PixelSnapping":"awayjs-display/lib/draw/PixelSnapping","./draw/SpreadMethod":"awayjs-display/lib/draw/SpreadMethod","./draw/TriangleCulling":"awayjs-display/lib/draw/TriangleCulling"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var ErrorBase_1 = require("awayjs-core/lib/errors/ErrorBase");
-var CastError = (function (_super) {
-    __extends(CastError, _super);
-    function CastError(message) {
-        _super.call(this, message);
-    }
-    return CastError;
-}(ErrorBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = CastError;
-
-},{"awayjs-core/lib/errors/ErrorBase":undefined}],"awayjs-display/lib/errors":[function(require,module,exports){
-"use strict";
-var CastError_1 = require("./errors/CastError");
-exports.CastError = CastError_1.default;
-
-},{"./errors/CastError":"awayjs-display/lib/errors/CastError"}],"awayjs-display/lib/events/CameraEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-/**
- * @class away.events.CameraEvent
- */
-var CameraEvent = (function (_super) {
-    __extends(CameraEvent, _super);
-    function CameraEvent(type, camera) {
-        _super.call(this, type);
-        this._camera = camera;
-    }
-    Object.defineProperty(CameraEvent.prototype, "camera", {
-        get: function () {
-            return this._camera;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     * @return An exact duplicate of the current object.
-     */
-    CameraEvent.prototype.clone = function () {
-        return new CameraEvent(this.type, this._camera);
-    };
-    CameraEvent.PROJECTION_CHANGED = "projectionChanged";
-    return CameraEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = CameraEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/DisplayObjectEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var DisplayObjectEvent = (function (_super) {
-    __extends(DisplayObjectEvent, _super);
-    function DisplayObjectEvent(type, object) {
-        _super.call(this, type);
-        this._object = object;
-    }
-    Object.defineProperty(DisplayObjectEvent.prototype, "object", {
-        get: function () {
-            return this._object;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     * @return An exact duplicate of the current object.
-     */
-    DisplayObjectEvent.prototype.clone = function () {
-        return new DisplayObjectEvent(this.type, this._object);
-    };
-    /**
-     *
-     */
-    DisplayObjectEvent.VISIBLITY_UPDATED = "visiblityUpdated";
-    /**
-     *
-     */
-    DisplayObjectEvent.SCENETRANSFORM_CHANGED = "scenetransformChanged";
-    /**
-     *
-     */
-    DisplayObjectEvent.SCENE_CHANGED = "sceneChanged";
-    /**
-     *
-     */
-    DisplayObjectEvent.PARTITION_CHANGED = "partitionChanged";
-    /**
-     *
-     */
-    DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS = "invalidatePartitionBounds";
-    return DisplayObjectEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = DisplayObjectEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ElementsEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-/**
- * Dispatched to notify changes in a sub geometry object's state.
- *
- * @class away.events.ElementsEvent
- * @see away.core.base.Graphics
- */
-var ElementsEvent = (function (_super) {
-    __extends(ElementsEvent, _super);
-    /**
-     * Create a new GraphicsEvent
-     * @param type The event type.
-     * @param attributesView An optional data type of the vertex data being updated.
-     */
-    function ElementsEvent(type, attributesView) {
-        _super.call(this, type);
-        this._attributesView = attributesView;
-    }
-    Object.defineProperty(ElementsEvent.prototype, "attributesView", {
-        /**
-         * The attributes view of the vertex data.
-         */
-        get: function () {
-            return this._attributesView;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     *
-     * @return An exact duplicate of the current object.
-     */
-    ElementsEvent.prototype.clone = function () {
-        return new ElementsEvent(this.type, this._attributesView);
-    };
-    /**
-     * Dispatched when a Elements's index data has been updated.
-     */
-    ElementsEvent.INVALIDATE_INDICES = "invalidateIndices";
-    /**
-     * Dispatched when a Elements's index data has been disposed.
-     */
-    ElementsEvent.CLEAR_INDICES = "clearIndices";
-    /**
-     * Dispatched when a Elements's vertex data has been updated.
-     */
-    ElementsEvent.INVALIDATE_VERTICES = "invalidateVertices";
-    /**
-     * Dispatched when a Elements's vertex data has been disposed.
-     */
-    ElementsEvent.CLEAR_VERTICES = "clearVertices";
-    return ElementsEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = ElementsEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/LightEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var LightEvent = (function (_super) {
-    __extends(LightEvent, _super);
-    function LightEvent(type) {
-        _super.call(this, type);
-    }
-    //@override
-    LightEvent.prototype.clone = function () {
-        return new LightEvent(this.type);
-    };
-    LightEvent.CASTS_SHADOW_CHANGE = "castsShadowChange";
-    return LightEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = LightEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/MouseEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-/**
- * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
- * TODO: we don't have screenZ data, tho this should be easy to implement
- */
-var MouseEvent = (function (_super) {
-    __extends(MouseEvent, _super);
-    /**
-     * Create a new MouseEvent object.
-     * @param type The type of the MouseEvent.
-     */
-    function MouseEvent(type) {
-        _super.call(this, type);
-        // Private.
-        this._iAllowedToPropagate = true;
-    }
-    Object.defineProperty(MouseEvent.prototype, "bubbles", {
-        /**
-         * @inheritDoc
-         */
-        get: function () {
-            var doesBubble = this._iAllowedToPropagate;
-            this._iAllowedToPropagate = true;
-            // Don't bubble if propagation has been stopped.
-            return doesBubble;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * @inheritDoc
-     */
-    MouseEvent.prototype.stopPropagation = function () {
-        this._iAllowedToPropagate = false;
-        if (this._iParentEvent)
-            this._iParentEvent.stopPropagation();
-    };
-    /**
-     * @inheritDoc
-     */
-    MouseEvent.prototype.stopImmediatePropagation = function () {
-        this._iAllowedToPropagate = false;
-        if (this._iParentEvent)
-            this._iParentEvent.stopImmediatePropagation();
-    };
-    /**
-     * Creates a copy of the MouseEvent object and sets the value of each property to match that of the original.
-     */
-    MouseEvent.prototype.clone = function () {
-        var result = new MouseEvent(this.type);
-        /* TODO: Debug / test - look into isDefaultPrevented
-         if (isDefaultPrevented())
-         result.preventDefault();
-         */
-        result.screenX = this.screenX;
-        result.screenY = this.screenY;
-        result.view = this.view;
-        result.entity = this.entity;
-        result.renderable = this.renderable;
-        result.material = this.material;
-        result.uv = this.uv;
-        result.position = this.position;
-        result.normal = this.normal;
-        result.elementIndex = this.elementIndex;
-        result.delta = this.delta;
-        result.ctrlKey = this.ctrlKey;
-        result.shiftKey = this.shiftKey;
-        result._iParentEvent = this;
-        result._iAllowedToPropagate = this._iAllowedToPropagate;
-        return result;
-    };
-    Object.defineProperty(MouseEvent.prototype, "scenePosition", {
-        /**
-         * The position in scene space where the event took place
-         */
-        get: function () {
-            return this.entity.sceneTransform.transformVector(this.position);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MouseEvent.prototype, "sceneNormal", {
-        /**
-         * The normal in scene space where the event took place
-         */
-        get: function () {
-            var sceneNormal = this.entity.sceneTransform.deltaTransformVector(this.normal);
-            sceneNormal.normalize();
-            return sceneNormal;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Defines the value of the type property of a mouseOver3d event object.
-     */
-    MouseEvent.MOUSE_OVER = "mouseOver3d";
-    /**
-     * Defines the value of the type property of a mouseOut3d event object.
-     */
-    MouseEvent.MOUSE_OUT = "mouseOut3d";
-    /**
-     * Defines the value of the type property of a mouseUp3d event object.
-     */
-    MouseEvent.MOUSE_UP = "mouseUp3d";
-    /**
-     * Defines the value of the type property of a mouseDown3d event object.
-     */
-    MouseEvent.MOUSE_DOWN = "mouseDown3d";
-    /**
-     * Defines the value of the type property of a mouseMove3d event object.
-     */
-    MouseEvent.MOUSE_MOVE = "mouseMove3d";
-    /**
-     * Defines the value of the type property of a rollOver3d event object.
-     */
-    //		public static ROLL_OVER : string = "rollOver3d";
-    /**
-     * Defines the value of the type property of a rollOut3d event object.
-     */
-    //		public static ROLL_OUT : string = "rollOut3d";
-    /**
-     * Defines the value of the type property of a click3d event object.
-     */
-    MouseEvent.CLICK = "click3d";
-    /**
-     * Defines the value of the type property of a doubleClick3d event object.
-     */
-    MouseEvent.DOUBLE_CLICK = "doubleClick3d";
-    /**
-     * Defines the value of the type property of a mouseWheel3d event object.
-     */
-    MouseEvent.MOUSE_WHEEL = "mouseWheel3d";
-    return MouseEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = MouseEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderableEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-/**
- * Dispatched to notify changes in a sub geometry object's state.
- *
- * @class away.events.RenderableEvent
- * @see away.core.base.Graphics
- */
-var RenderableEvent = (function (_super) {
-    __extends(RenderableEvent, _super);
-    /**
-     * Create a new GraphicsEvent
-     * @param type The event type.
-     * @param dataType An optional data type of the vertex data being updated.
-     */
-    function RenderableEvent(type, renderable) {
-        _super.call(this, type);
-        this._renderable = renderable;
-    }
-    Object.defineProperty(RenderableEvent.prototype, "renderable", {
-        /**
-         * The renderobject owner of the renderable owner.
-         */
-        get: function () {
-            return this._renderable;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     *
-     * @return An exact duplicate of the current object.
-     */
-    RenderableEvent.prototype.clone = function () {
-        return new RenderableEvent(this.type, this._renderable);
-    };
-    /**
-     * Dispatched when a Renderable owners's render object owner has been updated.
-     */
-    RenderableEvent.INVALIDATE_RENDER_OWNER = "invalidateRenderable";
-    /**
-     *
-     */
-    RenderableEvent.INVALIDATE_ELEMENTS = "invalidateElements";
-    return RenderableEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RenderableEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RendererEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var RendererEvent = (function (_super) {
-    __extends(RendererEvent, _super);
-    function RendererEvent(type) {
-        _super.call(this, type);
-    }
-    RendererEvent.VIEWPORT_UPDATED = "viewportUpdated";
-    RendererEvent.SCISSOR_UPDATED = "scissorUpdated";
-    return RendererEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RendererEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ResizeEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var ResizeEvent = (function (_super) {
-    __extends(ResizeEvent, _super);
-    function ResizeEvent(type, oldHeight, oldWidth) {
-        if (oldHeight === void 0) { oldHeight = NaN; }
-        if (oldWidth === void 0) { oldWidth = NaN; }
-        _super.call(this, type);
-        this._oldHeight = oldHeight;
-        this._oldWidth = oldWidth;
-    }
-    Object.defineProperty(ResizeEvent.prototype, "oldHeight", {
-        get: function () {
-            return this._oldHeight;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ResizeEvent.prototype, "oldWidth", {
-        get: function () {
-            return this._oldWidth;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     *
-     * @return An exact duplicate of the current object.
-     */
-    ResizeEvent.prototype.clone = function () {
-        return new ResizeEvent(this.type, this._oldHeight, this._oldWidth);
-    };
-    ResizeEvent.RESIZE = "resize";
-    return ResizeEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = ResizeEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/StyleEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var StyleEvent = (function (_super) {
-    __extends(StyleEvent, _super);
-    function StyleEvent(type, style) {
-        _super.call(this, type);
-        this._style = style;
-    }
-    Object.defineProperty(StyleEvent.prototype, "style", {
-        get: function () {
-            return this._style;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     * @return An exact duplicate of the current object.
-     */
-    StyleEvent.prototype.clone = function () {
-        return new StyleEvent(this.type, this._style);
-    };
-    /**
-     *
-     */
-    StyleEvent.INVALIDATE_PROPERTIES = "invalidateProperties";
-    return StyleEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = StyleEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/SurfaceEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var SurfaceEvent = (function (_super) {
-    __extends(SurfaceEvent, _super);
-    /**
-     * Create a new GraphicsEvent
-     * @param type The event type.
-     * @param dataType An optional data type of the vertex data being updated.
-     */
-    function SurfaceEvent(type, surface) {
-        _super.call(this, type);
-        this._surface = surface;
-    }
-    Object.defineProperty(SurfaceEvent.prototype, "surface", {
-        /**
-         * The surface of the renderable.
-         */
-        get: function () {
-            return this._surface;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     *
-     * @return An exact duplicate of the current object.
-     */
-    SurfaceEvent.prototype.clone = function () {
-        return new SurfaceEvent(this.type, this._surface);
-    };
-    SurfaceEvent.INVALIDATE_TEXTURE = "invalidateTexture";
-    SurfaceEvent.INVALIDATE_ANIMATION = "invalidateAnimation";
-    SurfaceEvent.INVALIDATE_PASSES = "invalidatePasses";
-    return SurfaceEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = SurfaceEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var TouchEvent = (function (_super) {
-    __extends(TouchEvent, _super);
-    /**
-     * Create a new TouchEvent object.
-     * @param type The type of the TouchEvent.
-     */
-    function TouchEvent(type) {
-        _super.call(this, type);
-        // Private.
-        this._iAllowedToPropagate = true;
-    }
-    Object.defineProperty(TouchEvent.prototype, "bubbles", {
-        /**
-         * @inheritDoc
-         */
-        get: function () {
-            var doesBubble = this._iAllowedToPropagate;
-            this._iAllowedToPropagate = true;
-            // Don't bubble if propagation has been stopped.
-            return doesBubble;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * @inheritDoc
-     */
-    TouchEvent.prototype.stopPropagation = function () {
-        this._iAllowedToPropagate = false;
-        if (this._iParentEvent)
-            this._iParentEvent.stopPropagation();
-    };
-    /**
-     * @inheritDoc
-     */
-    TouchEvent.prototype.stopImmediatePropagation = function () {
-        this._iAllowedToPropagate = false;
-        if (this._iParentEvent)
-            this._iParentEvent.stopImmediatePropagation();
-    };
-    /**
-     * Creates a copy of the TouchEvent object and sets the value of each property to match that of the original.
-     */
-    TouchEvent.prototype.clone = function () {
-        var result = new TouchEvent(this.type);
-        /* TODO: Debug / test - look into isDefaultPrevented
-         if (isDefaultPrevented())
-         result.preventDefault();
-         */
-        result.screenX = this.screenX;
-        result.screenY = this.screenY;
-        result.view = this.view;
-        result.entity = this.entity;
-        result.renderable = this.renderable;
-        result.material = this.material;
-        result.uv = this.uv;
-        result.position = this.position;
-        result.normal = this.normal;
-        result.elementIndex = this.elementIndex;
-        result.ctrlKey = this.ctrlKey;
-        result.shiftKey = this.shiftKey;
-        result._iParentEvent = this;
-        return result;
-    };
-    Object.defineProperty(TouchEvent.prototype, "scenePosition", {
-        /**
-         * The position in scene space where the event took place
-         */
-        get: function () {
-            return this.entity.sceneTransform.transformVector(this.position);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TouchEvent.prototype, "sceneNormal", {
-        /**
-         * The normal in scene space where the event took place
-         */
-        get: function () {
-            var sceneNormal = this.entity.sceneTransform.deltaTransformVector(this.normal);
-            sceneNormal.normalize();
-            return sceneNormal;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     */
-    TouchEvent.TOUCH_END = "touchEnd3d";
-    /**
-     *
-     */
-    TouchEvent.TOUCH_BEGIN = "touchBegin3d";
-    /**
-     *
-     */
-    TouchEvent.TOUCH_MOVE = "touchMove3d";
-    /**
-     *
-     */
-    TouchEvent.TOUCH_OUT = "touchOut3d";
-    /**
-     *
-     */
-    TouchEvent.TOUCH_OVER = "touchOver3d";
-    return TouchEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = TouchEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TransformEvent":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var EventBase_1 = require("awayjs-core/lib/events/EventBase");
-var TransformEvent = (function (_super) {
-    __extends(TransformEvent, _super);
-    function TransformEvent(type, transform) {
-        _super.call(this, type);
-        this._transform = transform;
-    }
-    Object.defineProperty(TransformEvent.prototype, "transform", {
-        get: function () {
-            return this._transform;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Clones the event.
-     * @return An exact duplicate of the current object.
-     */
-    TransformEvent.prototype.clone = function () {
-        return new TransformEvent(this.type, this._transform);
-    };
-    /**
-     *
-     */
-    TransformEvent.INVALIDATE_MATRIX3D = "invalidateMatrix3D";
-    /**
-     *
-     */
-    TransformEvent.INVALIDATE_COLOR_TRANSFORM = "invalidateColorTransform";
-    return TransformEvent;
-}(EventBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = TransformEvent;
-
-},{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events":[function(require,module,exports){
-"use strict";
-var CameraEvent_1 = require("./events/CameraEvent");
-exports.CameraEvent = CameraEvent_1.default;
-var DisplayObjectEvent_1 = require("./events/DisplayObjectEvent");
-exports.DisplayObjectEvent = DisplayObjectEvent_1.default;
-var ElementsEvent_1 = require("./events/ElementsEvent");
-exports.ElementsEvent = ElementsEvent_1.default;
-var LightEvent_1 = require("./events/LightEvent");
-exports.LightEvent = LightEvent_1.default;
-var MouseEvent_1 = require("./events/MouseEvent");
-exports.MouseEvent = MouseEvent_1.default;
-var RenderableEvent_1 = require("./events/RenderableEvent");
-exports.RenderableEvent = RenderableEvent_1.default;
-var RendererEvent_1 = require("./events/RendererEvent");
-exports.RendererEvent = RendererEvent_1.default;
-var ResizeEvent_1 = require("./events/ResizeEvent");
-exports.ResizeEvent = ResizeEvent_1.default;
-var StyleEvent_1 = require("./events/StyleEvent");
-exports.StyleEvent = StyleEvent_1.default;
-var SurfaceEvent_1 = require("./events/SurfaceEvent");
-exports.SurfaceEvent = SurfaceEvent_1.default;
-var TouchEvent_1 = require("./events/TouchEvent");
-exports.TouchEvent = TouchEvent_1.default;
-var TransformEvent_1 = require("./events/TransformEvent");
-exports.TransformEvent = TransformEvent_1.default;
-
-},{"./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","./events/LightEvent":"awayjs-display/lib/events/LightEvent","./events/MouseEvent":"awayjs-display/lib/events/MouseEvent","./events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./events/ResizeEvent":"awayjs-display/lib/events/ResizeEvent","./events/StyleEvent":"awayjs-display/lib/events/StyleEvent","./events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","./events/TouchEvent":"awayjs-display/lib/events/TouchEvent","./events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/factories/ITimelineSceneGraphFactory":[function(require,module,exports){
-"use strict";
-
-},{}],"awayjs-display/lib/factories":[function(require,module,exports){
-"use strict";
-
-},{}],"awayjs-display/lib/graphics/ElementsBase":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
-var Float3Attributes_1 = require("awayjs-core/lib/attributes/Float3Attributes");
-var Short3Attributes_1 = require("awayjs-core/lib/attributes/Short3Attributes");
-var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
-var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
-var ElementsEvent_1 = require("../events/ElementsEvent");
-/**
- * @class away.base.TriangleElements
- */
-var ElementsBase = (function (_super) {
-    __extends(ElementsBase, _super);
-    /**
-     *
-     */
-    function ElementsBase(concatenatedBuffer) {
-        if (concatenatedBuffer === void 0) { concatenatedBuffer = null; }
-        _super.call(this);
-        this._customAttributesNames = new Array();
-        this._customAttributes = new Object();
-        this._numElements = 0;
-        this._verticesDirty = new Object();
-        this._invalidateVertices = new Object();
-        this._concatenatedBuffer = concatenatedBuffer;
-    }
-    Object.defineProperty(ElementsBase.prototype, "concatenatedBuffer", {
-        get: function () {
-            return this._concatenatedBuffer;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ElementsBase.prototype, "indices", {
-        /**
-         * The raw index data that define the faces.
-         */
-        get: function () {
-            return this._indices;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     *
-     */
-    ElementsBase.prototype.getCustomAtributesNames = function () {
-        return this._customAttributesNames;
-    };
-    /**
-     *
-     */
-    ElementsBase.prototype.getCustomAtributes = function (name) {
-        return this._customAttributes[name];
-    };
-    Object.defineProperty(ElementsBase.prototype, "numElements", {
-        /**
-         * The total amount of triangles in the TriangleElements.
-         */
-        get: function () {
-            return this._numElements;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ElementsBase.prototype, "numVertices", {
-        get: function () {
-            throw new AbstractMethodError_1.default();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ElementsBase.prototype.copyTo = function (elements) {
-        if (this.indices)
-            elements.setIndices(this.indices.clone());
-        for (var name in this._customAttributes)
-            elements.setCustomAttributes(name, this.getCustomAtributes(name).clone());
-    };
-    /**
-     *
-     */
-    ElementsBase.prototype.dispose = function () {
-        _super.prototype.dispose.call(this);
-        if (this._indices) {
-            this._indices.dispose();
-            this._indices = null;
-        }
-        for (var name in this._customAttributes) {
-            this._customAttributes[name].dispose();
-            delete this._customAttributes;
-        }
-    };
-    ElementsBase.prototype.setIndices = function (values, offset) {
-        if (offset === void 0) { offset = 0; }
-        if (values instanceof Short3Attributes_1.default) {
-            if (this._indices)
-                this.clearIndices();
-            this._indices = values;
-        }
-        else if (values) {
-            if (!this._indices)
-                this._indices = new Short3Attributes_1.default();
-            this._indices.set(values, offset);
-        }
-        else if (this._indices) {
-            this._indices.dispose();
-            this._indices = null;
-            this.clearIndices();
-        }
-        if (this._indices) {
-            this._numElements = this._indices.count;
-            this.invalidateIndicies();
-        }
-        else {
-            this._numElements = 0;
-        }
-    };
-    ElementsBase.prototype.setCustomAttributes = function (name, values, offset) {
-        if (offset === void 0) { offset = 0; }
-        if (values == this._customAttributes[name])
-            return;
-        if (values instanceof AttributesView_1.default) {
-            this.clearVertices(this._customAttributes[name]);
-            this._customAttributes[name] = values;
-        }
-        else if (values) {
-            if (!this._customAttributes[name])
-                this._customAttributes[name] = new Float3Attributes_1.default(this._concatenatedBuffer); //default custom atrributes is Float3
-            this._customAttributes[name].set(values, offset);
-        }
-        else if (this._customAttributes[name]) {
-            this.clearVertices(this._customAttributes[name]);
-            this._customAttributesNames.splice(this._customAttributesNames.indexOf(name), 1);
-            delete this._customAttributes[name];
-            return;
-        }
-        this.invalidateVertices(this._customAttributes[name]);
-        this._verticesDirty[this._customAttributes[name].id] = false;
-        if (this._customAttributesNames.indexOf(name) == -1)
-            this._customAttributesNames.push(name);
-    };
-    /**
-     * Clones the current object
-     * @return An exact duplicate of the current object.
-     */
-    ElementsBase.prototype.clone = function () {
-        throw new AbstractMethodError_1.default();
-    };
-    ElementsBase.prototype.applyTransformation = function (transform) {
-    };
-    /**
-     * Scales the geometry.
-     * @param scale The amount by which to scale.
-     */
-    ElementsBase.prototype.scale = function (scale) {
-    };
-    ElementsBase.prototype.scaleUV = function (scaleU, scaleV) {
-        if (scaleU === void 0) { scaleU = 1; }
-        if (scaleV === void 0) { scaleV = 1; }
-    };
-    ElementsBase.prototype.getBoxBounds = function (target) {
-        if (target === void 0) { target = null; }
-        throw new AbstractMethodError_1.default();
-    };
-    ElementsBase.prototype.getSphereBounds = function (center, target) {
-        if (target === void 0) { target = null; }
-        throw new AbstractMethodError_1.default();
-    };
-    ElementsBase.prototype.hitTestPoint = function (x, y, z, box) {
-        throw new AbstractMethodError_1.default();
-    };
-    ElementsBase.prototype.invalidateIndicies = function () {
-        if (!this._invalidateIndices)
-            this._invalidateIndices = new ElementsEvent_1.default(ElementsEvent_1.default.INVALIDATE_INDICES, this._indices);
-        this.dispatchEvent(this._invalidateIndices);
-    };
-    ElementsBase.prototype.clearIndices = function () {
-        this.dispatchEvent(new ElementsEvent_1.default(ElementsEvent_1.default.CLEAR_INDICES, this._indices));
-    };
-    ElementsBase.prototype.invalidateVertices = function (attributesView) {
-        if (!attributesView || this._verticesDirty[attributesView.id])
-            return;
-        this._verticesDirty[attributesView.id] = true;
-        if (!this._invalidateVertices[attributesView.id])
-            this._invalidateVertices[attributesView.id] = new ElementsEvent_1.default(ElementsEvent_1.default.INVALIDATE_VERTICES, attributesView);
-        this.dispatchEvent(this._invalidateVertices[attributesView.id]);
-    };
-    ElementsBase.prototype.clearVertices = function (attributesView) {
-        if (!attributesView)
-            return;
-        attributesView.dispose();
-        this.dispatchEvent(new ElementsEvent_1.default(ElementsEvent_1.default.CLEAR_VERTICES, attributesView));
-        this._verticesDirty[attributesView.id] = null;
-        this._invalidateVertices[attributesView.id] = null;
-    };
-    ElementsBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
-        throw new AbstractMethodError_1.default();
-    };
-    return ElementsBase;
-}(AssetBase_1.default));
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = ElementsBase;
-
-},{"../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Short3Attributes":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/ElementsType":[function(require,module,exports){
-"use strict";
-var ElementsType = (function () {
-    function ElementsType() {
-    }
-    /**
-     *
-     */
-    ElementsType.TRIANGLE = "triangle";
-    /**
-     *
-     */
-    ElementsType.LINE = "line";
-    return ElementsType;
-}());
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = ElementsType;
-
-},{}],"awayjs-display/lib/graphics/Graphics":[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var Box_1 = require("awayjs-core/lib/geom/Box");
-var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
-var Graphic_1 = require("../graphics/Graphic");
-var ElementsEvent_1 = require("../events/ElementsEvent");
-var StyleEvent_1 = require("../events/StyleEvent");
-var ElementsUtils_1 = require("../utils/ElementsUtils");
-/**
- *
- * Graphics is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
- * normals, uvs, etc. It also contains a reference to an animation class, which defines how the geometry moves.
- * A Graphics object is assigned to a Sprite, a scene graph occurence of the geometry, which in turn assigns
- * the SubGeometries to its respective TriangleGraphic objects.
- *
- *
- *
- * @see away.core.base.SubGraphics
- * @see away.entities.Sprite
- *
- * @class Graphics
- */
-var Graphics = (function (_super) {
-    __extends(Graphics, _super);
-    /**
-     * Creates a new Graphics object.
-     */
-    function Graphics() {
-        var _this = this;
-        _super.call(this);
-        this._boxBoundsInvalid = true;
-        this._sphereBoundsInvalid = true;
-        this._graphics = new Array();
-        this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
-        this._onInvalidateVerticesDelegate = function (event) { return _this._onInvalidateVertices(event); };
-    }
-    Object.defineProperty(Graphics.prototype, "assetType", {
-        get: function () {
-            return Graphics.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Graphics.prototype, "count", {
-        get: function () {
-            return this._graphics.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Graphics.prototype, "animator", {
-        /**
-         * Defines the animator of the graphics object.  Default value is <code>null</code>.
-         */
-        get: function () {
-            return this._animator;
-        },
-        set: function (value) {
-            this._animator = value;
-            var len = this._graphics.length;
-            var graphic;
-            for (var i = 0; i < len; ++i) {
-                graphic = this._graphics[i];
-                // cause material to be unregistered and registered again to work with the new animation type (if possible)
-                if (graphic.material) {
-                    graphic.material.iRemoveOwner(graphic);
-                    graphic.material.iAddOwner(graphic);
-                }
-                //invalidate any existing graphic objects in case they need to pull new elements
-                graphic.invalidateElements();
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Graphics.prototype, "style", {
-        /**
-         *
-         */
-        get: function () {
-            return this._style;
-        },
-        set: function (value) {
-            if (this._style == value)
-                return;
-            if (this._style)
-                this._style.removeEventListener(StyleEvent_1.default.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this._style = value;
-            if (this._style)
-                this._style.addEventListener(StyleEvent_1.default.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-            this._iInvalidateSurfaces();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Graphics.prototype, "material", {
-        /**
-         * The material with which to render the Graphics.
-         */
-        get: function () {
-            return this._material;
-        },
-        set: function (value) {
-            if (value == this._material)
-                return;
-            var i;
-            var len = this._graphics.length;
-            var graphic;
-            if (this._material)
-                for (i = 0; i < len; i++)
-                    if (!(graphic = this._graphics[i])._iGetExplicitMaterial())
-                        this._material.iRemoveOwner(graphic);
-            this._material = value;
-            if (this._material)
-                for (i = 0; i < len; i++)
-                    if (!(graphic = this._graphics[i])._iGetExplicitMaterial())
-                        this._material.iAddOwner(graphic);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Adds a GraphicBase wrapping a Elements.
-     *
-     * @param elements
-     */
-    Graphics.prototype.addGraphic = function (elements, material, style) {
-        if (material === void 0) { material = null; }
-        if (style === void 0) { style = null; }
-        var graphic;
-        if (Graphic_1.default._available.length) {
-            graphic = Graphic_1.default._available.pop();
-            graphic._iIndex = this._graphics.length;
-            graphic.parent = this;
-            graphic.elements = elements;
-            graphic.material = material;
-            graphic.style = style;
-        }
-        else {
-            graphic = new Graphic_1.default(this._graphics.length, this, elements, material, style);
-        }
-        this._graphics.push(graphic);
-        elements.addEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
-        this.invalidate();
-        return graphic;
-    };
-    Graphics.prototype.removeGraphic = function (graphic) {
-        this._graphics.splice(this._graphics.indexOf(graphic), 1);
-        graphic.elements.removeEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
-        graphic.elements = null;
-        graphic.material = null;
-        graphic.style = null;
-        graphic.clear();
-        this.invalidate();
-    };
-    Graphics.prototype.getGraphicAt = function (index) {
-        return this._graphics[index];
-    };
-    Graphics.prototype.applyTransformation = function (transform) {
-        var len = this._graphics.length;
-        for (var i = 0; i < len; ++i)
-            this._graphics[i].elements.applyTransformation(transform);
-    };
-    Graphics.prototype.copyTo = function (graphics) {
-        graphics.material = this._material;
-        graphics.style = this.style;
-        graphics.particles = this.particles;
-        graphics.numParticles = this.numParticles;
-        var graphic;
-        var len = this._graphics.length;
-        for (var i = 0; i < len; ++i) {
-            graphic = this._graphics[i];
-            graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle());
-        }
-        if (this._animator)
-            graphics.animator = this._animator.clone();
-    };
-    Graphics.prototype.clone = function () {
-        var newInstance = new Graphics();
-        this.copyTo(newInstance);
-        return newInstance;
-    };
-    /**
-     * Scales the geometry.
-     * @param scale The amount by which to scale.
-     */
-    Graphics.prototype.scale = function (scale) {
-        var len = this._graphics.length;
-        for (var i = 0; i < len; ++i)
-            this._graphics[i].elements.scale(scale);
-    };
-    Graphics.prototype.clear = function () {
-        for (var i = this._graphics.length - 1; i >= 0; i--)
-            this._graphics[i].clear();
-    };
-    /**
-     * Clears all resources used by the Graphics object, including SubGeometries.
-     */
-    Graphics.prototype.dispose = function () {
-        this.material = null;
-        for (var i = this._graphics.length - 1; i >= 0; i--)
-            this._graphics[i].dispose();
-        if (this._animator)
-            this._animator.dispose();
-    };
-    /**
-     * Scales the uv coordinates (tiling)
-     * @param scaleU The amount by which to scale on the u axis. Default is 1;
-     * @param scaleV The amount by which to scale on the v axis. Default is 1;
-     */
-    Graphics.prototype.scaleUV = function (scaleU, scaleV) {
-        if (scaleU === void 0) { scaleU = 1; }
-        if (scaleV === void 0) { scaleV = 1; }
-        var len = this._graphics.length;
-        for (var i = 0; i < len; ++i)
-            this._graphics[i].elements.scaleUV(scaleU, scaleV);
-    };
-    Graphics.prototype.getBoxBounds = function () {
-        if (this._boxBoundsInvalid) {
-            this._boxBoundsInvalid = false;
-            if (!this._boxBounds)
-                this._boxBounds = new Box_1.default();
-            if (this._graphics.length) {
-                this._boxBounds.setBoundIdentity();
-                var len = this._graphics.length;
-                for (var i = 0; i < len; i++)
-                    this._boxBounds = this._graphics[i].elements.getBoxBounds(this._boxBounds);
-            }
-            else {
-                this._boxBounds.setEmpty();
-            }
-        }
-        return this._boxBounds;
-    };
-    Graphics.prototype.getSphereBounds = function (center, target) {
-        if (target === void 0) { target = null; }
-        var len = this._graphics.length;
-        for (var i = 0; i < len; i++)
-            target = this._graphics[i].elements.getSphereBounds(center, target);
-        return target;
-    };
-    Graphics.prototype.invalidate = function () {
-        _super.prototype.invalidate.call(this);
-        this._boxBoundsInvalid = true;
-        this._sphereBoundsInvalid = true;
-    };
-    Graphics.prototype._iInvalidateSurfaces = function () {
-        var len = this._graphics.length;
-        for (var i = 0; i < len; ++i)
-            this._graphics[i].invalidateSurface();
-    };
-    Graphics.prototype.invalidateElements = function () {
-        var len = this._graphics.length;
-        for (var i = 0; i < len; ++i)
-            this._graphics[i].invalidateElements();
-    };
-    Graphics.prototype._hitTestPointInternal = function (x, y) {
-        //TODO: handle lines as well
-        var len = this._graphics.length;
-        for (var i = 0; i < len; i++)
-            if (ElementsUtils_1.default.hitTestTriangleElements(x, y, 0, this.getBoxBounds(), this._graphics[i].elements))
-                return true;
-        return false;
-    };
-    Graphics.prototype.acceptTraverser = function (traverser) {
-        var len = this._graphics.length;
-        for (var i = 0; i < len; i++)
-            traverser.applyRenderable(this._graphics[i]);
-    };
-    Graphics.prototype._onInvalidateProperties = function (event) {
-        this._iInvalidateSurfaces();
-    };
-    Graphics.prototype._onInvalidateVertices = function (event) {
-        if (event.attributesView != event.target.positions)
-            return;
-        this.invalidate();
-    };
     Graphics.assetType = "[asset Graphics]";
     return Graphics;
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Graphics;
-
-},{"../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
+},{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -12822,7 +12974,6 @@ var Graphic = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Graphic;
-
 },{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13066,7 +13217,6 @@ var LineElements = (function (_super) {
 }(ElementsBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LineElements;
-
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float1Attributes":undefined}],"awayjs-display/lib/graphics/TriangleElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13558,7 +13708,6 @@ var TriangleElements = (function (_super) {
 }(ElementsBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TriangleElements;
-
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined}],"awayjs-display/lib/graphics":[function(require,module,exports){
 "use strict";
 var ElementsBase_1 = require("./graphics/ElementsBase");
@@ -13573,7 +13722,6 @@ var LineElements_1 = require("./graphics/LineElements");
 exports.LineElements = LineElements_1.default;
 var TriangleElements_1 = require("./graphics/TriangleElements");
 exports.TriangleElements = TriangleElements_1.default;
-
 },{"./graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","./graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","./graphics/Graphic":"awayjs-display/lib/graphics/Graphic","./graphics/Graphics":"awayjs-display/lib/graphics/Graphics","./graphics/LineElements":"awayjs-display/lib/graphics/LineElements","./graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements"}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
 "use strict";
 var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
@@ -13681,7 +13829,6 @@ var DefaultMaterialManager = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DefaultMaterialManager;
-
 },{"../display/Skybox":"awayjs-display/lib/display/Skybox","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
 "use strict";
 var FrameScriptManager = (function () {
@@ -13768,7 +13915,6 @@ var FrameScriptManager = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FrameScriptManager;
-
 },{}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -14016,7 +14162,6 @@ var MouseManager = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MouseManager;
-
 },{"../base/TouchPoint":"awayjs-display/lib/base/TouchPoint","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -14196,7 +14341,6 @@ var TouchPoint = (function () {
     }
     return TouchPoint;
 }());
-
 },{"../events/TouchEvent":"awayjs-display/lib/events/TouchEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers":[function(require,module,exports){
 "use strict";
 var DefaultMaterialManager_1 = require("./managers/DefaultMaterialManager");
@@ -14207,7 +14351,6 @@ var MouseManager_1 = require("./managers/MouseManager");
 exports.MouseManager = MouseManager_1.default;
 var TouchManager_1 = require("./managers/TouchManager");
 exports.TouchManager = TouchManager_1.default;
-
 },{"./managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","./managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./managers/TouchManager":"awayjs-display/lib/managers/TouchManager"}],"awayjs-display/lib/materials/BasicMaterial":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14284,7 +14427,6 @@ var BasicMaterial = (function (_super) {
 }(MaterialBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BasicMaterial;
-
 },{"../materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
 "use strict";
 /**
@@ -14320,7 +14462,6 @@ var LightSources = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightSources;
-
 },{}],"awayjs-display/lib/materials/MaterialBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14812,7 +14953,6 @@ var MaterialBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MaterialBase;
-
 },{"../base/Style":"awayjs-display/lib/base/Style","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/ImageBase":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15017,7 +15157,6 @@ var LightPickerBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightPickerBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/StaticLightPicker":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15167,7 +15306,6 @@ var StaticLightPicker = (function (_super) {
 }(LightPickerBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = StaticLightPicker;
-
 },{"../../display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","../../display/LightProbe":"awayjs-display/lib/display/LightProbe","../../display/PointLight":"awayjs-display/lib/display/PointLight","../../events/LightEvent":"awayjs-display/lib/events/LightEvent","../../materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15357,7 +15495,6 @@ var CascadeShadowMapper = (function (_super) {
 }(DirectionalShadowMapper_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CascadeShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15426,7 +15563,6 @@ var CubeMapShadowMapper = (function (_super) {
 }(ShadowMapperBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CubeMapShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/ImageCube":undefined}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15606,7 +15742,6 @@ var DirectionalShadowMapper = (function (_super) {
 }(ShadowMapperBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DirectionalShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15653,7 +15788,6 @@ var NearDirectionalShadowMapper = (function (_super) {
 }(DirectionalShadowMapper_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = NearDirectionalShadowMapper;
-
 },{"../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15754,7 +15888,6 @@ var ShadowMapperBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ShadowMapperBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials":[function(require,module,exports){
 "use strict";
 var LightPickerBase_1 = require("./materials/lightpickers/LightPickerBase");
@@ -15777,7 +15910,6 @@ var LightSources_1 = require("./materials/LightSources");
 exports.LightSources = LightSources_1.default;
 var MaterialBase_1 = require("./materials/MaterialBase");
 exports.MaterialBase = MaterialBase_1.default;
-
 },{"./materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","./materials/LightSources":"awayjs-display/lib/materials/LightSources","./materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","./materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","./materials/lightpickers/StaticLightPicker":"awayjs-display/lib/materials/lightpickers/StaticLightPicker","./materials/shadowmappers/CascadeShadowMapper":"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper","./materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","./materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","./materials/shadowmappers/NearDirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper","./materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase"}],"awayjs-display/lib/partition/BasicPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15800,7 +15932,6 @@ var BasicPartition = (function (_super) {
 }(PartitionBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BasicPartition;
-
 },{"../partition/NodeBase":"awayjs-display/lib/partition/NodeBase","../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15827,7 +15958,6 @@ var CameraNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CameraNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DirectionalLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15862,7 +15992,6 @@ var DirectionalLightNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DirectionalLightNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DisplayObjectNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15972,7 +16101,6 @@ var DisplayObjectNode = (function (_super) {
 }(AbstractionBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DisplayObjectNode;
-
 },{"../bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","../bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/library/AbstractionBase":undefined}],"awayjs-display/lib/partition/EntityNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16069,19 +16197,14 @@ var EntityNode = (function (_super) {
 }(DisplayObjectNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = EntityNode;
-
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/partition/IContainerNode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/IDisplayObjectNode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/IEntityNodeClass":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/INode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16116,7 +16239,6 @@ var LightProbeNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightProbeNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/NodeBase":[function(require,module,exports){
 "use strict";
 var NullBounds_1 = require("../bounds/NullBounds");
@@ -16226,7 +16348,6 @@ var NodeBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = NodeBase;
-
 },{"../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/partition/PartitionBase":[function(require,module,exports){
 "use strict";
 /**
@@ -16343,7 +16464,6 @@ var PartitionBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PartitionBase;
-
 },{}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16378,7 +16498,6 @@ var PointLightNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PointLightNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SceneGraphNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16470,7 +16589,6 @@ var SceneGraphNode = (function (_super) {
 }(DisplayObjectNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SceneGraphNode;
-
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode"}],"awayjs-display/lib/partition/SceneGraphPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16552,7 +16670,6 @@ var SceneGraphNodePool = (function () {
     };
     return SceneGraphNodePool;
 }());
-
 },{"../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","../partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16594,7 +16711,6 @@ var SkyboxNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SkyboxNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition":[function(require,module,exports){
 "use strict";
 var BasicPartition_1 = require("./partition/BasicPartition");
@@ -16621,13 +16737,10 @@ var SceneGraphPartition_1 = require("./partition/SceneGraphPartition");
 exports.SceneGraphPartition = SceneGraphPartition_1.default;
 var SkyboxNode_1 = require("./partition/SkyboxNode");
 exports.SkyboxNode = SkyboxNode_1.default;
-
 },{"./partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition","./partition/CameraNode":"awayjs-display/lib/partition/CameraNode","./partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","./partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","./partition/EntityNode":"awayjs-display/lib/partition/EntityNode","./partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","./partition/NodeBase":"awayjs-display/lib/partition/NodeBase","./partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","./partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","./partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode","./partition/SceneGraphPartition":"awayjs-display/lib/partition/SceneGraphPartition","./partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/pick/IPicker":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/pick/IPickingCollider":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/pick/JSPickingCollider":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -16959,7 +17072,6 @@ var JSPickingCollider = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = JSPickingCollider;
-
 },{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick/PickingCollision":[function(require,module,exports){
 "use strict";
 /**
@@ -16983,7 +17095,6 @@ var PickingCollision = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PickingCollision;
-
 },{}],"awayjs-display/lib/pick/RaycastPicker":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -17176,7 +17287,6 @@ var RaycastPicker = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = RaycastPicker;
-
 },{"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick":[function(require,module,exports){
 "use strict";
 var JSPickingCollider_1 = require("./pick/JSPickingCollider");
@@ -17185,7 +17295,6 @@ var PickingCollision_1 = require("./pick/PickingCollision");
 exports.PickingCollision = PickingCollision_1.default;
 var RaycastPicker_1 = require("./pick/RaycastPicker");
 exports.RaycastPicker = RaycastPicker_1.default;
-
 },{"./pick/JSPickingCollider":"awayjs-display/lib/pick/JSPickingCollider","./pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17234,7 +17343,6 @@ var PrefabBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrefabBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17502,7 +17610,6 @@ var PrimitiveCapsulePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveCapsulePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveConePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17553,7 +17660,6 @@ var PrimitiveConePrefab = (function (_super) {
 }(PrimitiveCylinderPrefab_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveConePrefab;
-
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitiveCubePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18092,7 +18198,6 @@ var PrimitiveCubePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveCubePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18670,7 +18775,6 @@ var PrimitiveCylinderPrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveCylinderPrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePlanePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18975,7 +19079,6 @@ var PrimitivePlanePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitivePlanePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePolygonPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19047,7 +19150,6 @@ var PrimitivePolygonPrefab = (function (_super) {
 }(PrimitiveCylinderPrefab_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitivePolygonPrefab;
-
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitivePrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19213,7 +19315,6 @@ var PrimitivePrefabBase = (function (_super) {
 }(PrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitivePrefabBase;
-
 },{"../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19508,7 +19609,6 @@ var PrimitiveSpherePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveSpherePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19768,7 +19868,6 @@ var PrimitiveTorusPrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveTorusPrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs":[function(require,module,exports){
 "use strict";
 var PrefabBase_1 = require("./prefabs/PrefabBase");
@@ -19791,7 +19890,6 @@ var PrimitiveSpherePrefab_1 = require("./prefabs/PrimitiveSpherePrefab");
 exports.PrimitiveSpherePrefab = PrimitiveSpherePrefab_1.default;
 var PrimitiveTorusPrefab_1 = require("./prefabs/PrimitiveTorusPrefab");
 exports.PrimitiveTorusPrefab = PrimitiveTorusPrefab_1.default;
-
 },{"./prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","./prefabs/PrimitiveCapsulePrefab":"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab","./prefabs/PrimitiveConePrefab":"awayjs-display/lib/prefabs/PrimitiveConePrefab","./prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","./prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab","./prefabs/PrimitivePlanePrefab":"awayjs-display/lib/prefabs/PrimitivePlanePrefab","./prefabs/PrimitivePolygonPrefab":"awayjs-display/lib/prefabs/PrimitivePolygonPrefab","./prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase","./prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","./prefabs/PrimitiveTorusPrefab":"awayjs-display/lib/prefabs/PrimitiveTorusPrefab"}],"awayjs-display/lib/text/AntiAliasType":[function(require,module,exports){
 "use strict";
 /**
@@ -19823,7 +19921,6 @@ var AntiAliasType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AntiAliasType;
-
 },{}],"awayjs-display/lib/text/Font":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19898,7 +19995,6 @@ var Font = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Font;
-
 },{"../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
 "use strict";
 /**
@@ -19937,7 +20033,6 @@ var GridFitType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GridFitType;
-
 },{}],"awayjs-display/lib/text/TesselatedFontChar":[function(require,module,exports){
 "use strict";
 /**
@@ -19982,7 +20077,6 @@ var TesselatedFontChar = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TesselatedFontChar;
-
 },{}],"awayjs-display/lib/text/TesselatedFontTable":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20099,7 +20193,6 @@ var TesselatedFontTable = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TesselatedFontTable;
-
 },{"../text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 "use strict";
 /**
@@ -20135,7 +20228,6 @@ var TextFieldAutoSize = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFieldAutoSize;
-
 },{}],"awayjs-display/lib/text/TextFieldType":[function(require,module,exports){
 "use strict";
 /**
@@ -20163,7 +20255,6 @@ var TextFieldType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFieldType;
-
 },{}],"awayjs-display/lib/text/TextFormatAlign":[function(require,module,exports){
 "use strict";
 /**
@@ -20197,7 +20288,6 @@ var TextFormatAlign = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFormatAlign;
-
 },{}],"awayjs-display/lib/text/TextFormat":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20323,7 +20413,6 @@ var TextFormat = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFormat;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
 "use strict";
 /**
@@ -20352,7 +20441,6 @@ var TextInteractionMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextInteractionMode;
-
 },{}],"awayjs-display/lib/text/TextLineMetrics":[function(require,module,exports){
 "use strict";
 /**
@@ -20392,7 +20480,6 @@ var TextLineMetrics = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextLineMetrics;
-
 },{}],"awayjs-display/lib/text":[function(require,module,exports){
 "use strict";
 var AntiAliasType_1 = require("./text/AntiAliasType");
@@ -20417,7 +20504,6 @@ var TextInteractionMode_1 = require("./text/TextInteractionMode");
 exports.TextInteractionMode = TextInteractionMode_1.default;
 var TextLineMetrics_1 = require("./text/TextLineMetrics");
 exports.TextLineMetrics = TextLineMetrics_1.default;
-
 },{"./text/AntiAliasType":"awayjs-display/lib/text/AntiAliasType","./text/Font":"awayjs-display/lib/text/Font","./text/GridFitType":"awayjs-display/lib/text/GridFitType","./text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","./text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","./text/TextFieldAutoSize":"awayjs-display/lib/text/TextFieldAutoSize","./text/TextFieldType":"awayjs-display/lib/text/TextFieldType","./text/TextFormat":"awayjs-display/lib/text/TextFormat","./text/TextFormatAlign":"awayjs-display/lib/text/TextFormatAlign","./text/TextInteractionMode":"awayjs-display/lib/text/TextInteractionMode","./text/TextLineMetrics":"awayjs-display/lib/text/TextLineMetrics"}],"awayjs-display/lib/textures/MappingMode":[function(require,module,exports){
 "use strict";
 /**
@@ -20443,7 +20529,6 @@ var MappingMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MappingMode;
-
 },{}],"awayjs-display/lib/textures/Single2DTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20526,7 +20611,6 @@ var Single2DTexture = (function (_super) {
 }(TextureBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Single2DTexture;
-
 },{"../textures/MappingMode":"awayjs-display/lib/textures/MappingMode","../textures/TextureBase":"awayjs-display/lib/textures/TextureBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/utils/ImageUtils":undefined}],"awayjs-display/lib/textures/SingleCubeTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20591,7 +20675,6 @@ var SingleCubeTexture = (function (_super) {
 }(TextureBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SingleCubeTexture;
-
 },{"../textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/TextureBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20643,7 +20726,6 @@ var TextureBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextureBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/textures":[function(require,module,exports){
 "use strict";
 var MappingMode_1 = require("./textures/MappingMode");
@@ -20654,7 +20736,6 @@ var SingleCubeTexture_1 = require("./textures/SingleCubeTexture");
 exports.SingleCubeTexture = SingleCubeTexture_1.default;
 var TextureBase_1 = require("./textures/TextureBase");
 exports.TextureBase = TextureBase_1.default;
-
 },{"./textures/MappingMode":"awayjs-display/lib/textures/MappingMode","./textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","./textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","./textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/utils/Cast":[function(require,module,exports){
 "use strict";
 var Image2D_1 = require("awayjs-core/lib/image/Image2D");
@@ -20927,7 +21008,6 @@ var Cast = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Cast;
-
 },{"../errors/CastError":"awayjs-display/lib/errors/CastError","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/utils/ByteArray":undefined}],"awayjs-display/lib/utils/ElementsUtils":[function(require,module,exports){
 "use strict";
 var AttributesBuffer_1 = require("awayjs-core/lib/attributes/AttributesBuffer");
@@ -21746,13 +21826,64 @@ var ElementsUtils = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ElementsUtils;
-
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/utils":[function(require,module,exports){
 "use strict";
 var Cast_1 = require("./utils/Cast");
 exports.Cast = Cast_1.default;
 var ElementsUtils_1 = require("./utils/ElementsUtils");
 exports.ElementsUtils = ElementsUtils_1.default;
-
-},{"./utils/Cast":"awayjs-display/lib/utils/Cast","./utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}]},{},[1])
+},{"./utils/Cast":"awayjs-display/lib/utils/Cast","./utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}],1:[function(require,module,exports){
+"use strict";
+var adapters = require("./lib/adapters");
+exports.adapters = adapters;
+var animators = require("./lib/animators");
+exports.animators = animators;
+var base = require("./lib/base");
+exports.base = base;
+var bounds = require("./lib/bounds");
+exports.bounds = bounds;
+var controllers = require("./lib/controllers");
+exports.controllers = controllers;
+var display = require("./lib/display");
+exports.display = display;
+var draw = require("./lib/draw");
+exports.draw = draw;
+var errors = require("./lib/errors");
+exports.errors = errors;
+var events = require("./lib/events");
+exports.events = events;
+var factories = require("./lib/factories");
+exports.factories = factories;
+var graphics = require("./lib/graphics");
+exports.graphics = graphics;
+var managers = require("./lib/managers");
+exports.managers = managers;
+var materials = require("./lib/materials");
+exports.materials = materials;
+var partition = require("./lib/partition");
+exports.partition = partition;
+var pick = require("./lib/pick");
+exports.pick = pick;
+var prefabs = require("./lib/prefabs");
+exports.prefabs = prefabs;
+var text = require("./lib/text");
+exports.text = text;
+var textures = require("./lib/textures");
+exports.textures = textures;
+var utils = require("./lib/utils");
+exports.utils = utils;
+var View_1 = require("./lib/View");
+exports.View = View_1.default;
+partition.PartitionBase.registerAbstraction(partition.CameraNode, display.Camera);
+partition.PartitionBase.registerAbstraction(partition.DirectionalLightNode, display.DirectionalLight);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Sprite);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Shape);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.MovieClip);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Billboard);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.LineSegment);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextField);
+partition.PartitionBase.registerAbstraction(partition.LightProbeNode, display.LightProbe);
+partition.PartitionBase.registerAbstraction(partition.PointLightNode, display.PointLight);
+partition.PartitionBase.registerAbstraction(partition.SkyboxNode, display.Skybox);
+},{"./lib/View":"awayjs-display/lib/View","./lib/adapters":"awayjs-display/lib/adapters","./lib/animators":"awayjs-display/lib/animators","./lib/base":"awayjs-display/lib/base","./lib/bounds":"awayjs-display/lib/bounds","./lib/controllers":"awayjs-display/lib/controllers","./lib/display":"awayjs-display/lib/display","./lib/draw":"awayjs-display/lib/draw","./lib/errors":"awayjs-display/lib/errors","./lib/events":"awayjs-display/lib/events","./lib/factories":"awayjs-display/lib/factories","./lib/graphics":"awayjs-display/lib/graphics","./lib/managers":"awayjs-display/lib/managers","./lib/materials":"awayjs-display/lib/materials","./lib/partition":"awayjs-display/lib/partition","./lib/pick":"awayjs-display/lib/pick","./lib/prefabs":"awayjs-display/lib/prefabs","./lib/text":"awayjs-display/lib/text","./lib/textures":"awayjs-display/lib/textures","./lib/utils":"awayjs-display/lib/utils"}]},{},[1])
 //# sourceMappingURL=awayjs-display.js.map
