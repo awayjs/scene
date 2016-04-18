@@ -232,6 +232,14 @@ class Graphics extends AssetBase
 			graphics.animator = this._animator.clone();
 	}
 
+	public clone():Graphics
+	{
+		var newInstance:Graphics = new Graphics();
+		
+		this.copyTo(newInstance);
+		
+		return newInstance;
+	}
 	/**
 	 * Scales the geometry.
 	 * @param scale The amount by which to scale.

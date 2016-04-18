@@ -12574,6 +12574,11 @@ var Graphics = (function (_super) {
         if (this._animator)
             graphics.animator = this._animator.clone();
     };
+    Graphics.prototype.clone = function () {
+        var newInstance = new Graphics();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
     /**
      * Scales the geometry.
      * @param scale The amount by which to scale.
