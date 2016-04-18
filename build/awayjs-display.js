@@ -1,7 +1,63 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"awayjs-display/lib/IRenderer":[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
+var adapters = require("./lib/adapters");
+exports.adapters = adapters;
+var animators = require("./lib/animators");
+exports.animators = animators;
+var base = require("./lib/base");
+exports.base = base;
+var bounds = require("./lib/bounds");
+exports.bounds = bounds;
+var controllers = require("./lib/controllers");
+exports.controllers = controllers;
+var display = require("./lib/display");
+exports.display = display;
+var draw = require("./lib/draw");
+exports.draw = draw;
+var errors = require("./lib/errors");
+exports.errors = errors;
+var events = require("./lib/events");
+exports.events = events;
+var factories = require("./lib/factories");
+exports.factories = factories;
+var graphics = require("./lib/graphics");
+exports.graphics = graphics;
+var managers = require("./lib/managers");
+exports.managers = managers;
+var materials = require("./lib/materials");
+exports.materials = materials;
+var partition = require("./lib/partition");
+exports.partition = partition;
+var pick = require("./lib/pick");
+exports.pick = pick;
+var prefabs = require("./lib/prefabs");
+exports.prefabs = prefabs;
+var text = require("./lib/text");
+exports.text = text;
+var textures = require("./lib/textures");
+exports.textures = textures;
+var utils = require("./lib/utils");
+exports.utils = utils;
+var View_1 = require("./lib/View");
+exports.View = View_1.default;
+partition.PartitionBase.registerAbstraction(partition.CameraNode, display.Camera);
+partition.PartitionBase.registerAbstraction(partition.DirectionalLightNode, display.DirectionalLight);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Sprite);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Shape);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.MovieClip);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Billboard);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.LineSegment);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextField);
+partition.PartitionBase.registerAbstraction(partition.LightProbeNode, display.LightProbe);
+partition.PartitionBase.registerAbstraction(partition.PointLightNode, display.PointLight);
+partition.PartitionBase.registerAbstraction(partition.SkyboxNode, display.Skybox);
+
+},{"./lib/View":"awayjs-display/lib/View","./lib/adapters":"awayjs-display/lib/adapters","./lib/animators":"awayjs-display/lib/animators","./lib/base":"awayjs-display/lib/base","./lib/bounds":"awayjs-display/lib/bounds","./lib/controllers":"awayjs-display/lib/controllers","./lib/display":"awayjs-display/lib/display","./lib/draw":"awayjs-display/lib/draw","./lib/errors":"awayjs-display/lib/errors","./lib/events":"awayjs-display/lib/events","./lib/factories":"awayjs-display/lib/factories","./lib/graphics":"awayjs-display/lib/graphics","./lib/managers":"awayjs-display/lib/managers","./lib/materials":"awayjs-display/lib/materials","./lib/partition":"awayjs-display/lib/partition","./lib/pick":"awayjs-display/lib/pick","./lib/prefabs":"awayjs-display/lib/prefabs","./lib/text":"awayjs-display/lib/text","./lib/textures":"awayjs-display/lib/textures","./lib/utils":"awayjs-display/lib/utils"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
+"use strict";
+
 },{}],"awayjs-display/lib/ITraverser":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/View":[function(require,module,exports){
 "use strict";
 var getTimer_1 = require("awayjs-core/lib/utils/getTimer");
@@ -494,16 +550,22 @@ var View = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = View;
+
 },{"./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./display/Camera":"awayjs-display/lib/display/Camera","./display/Scene":"awayjs-display/lib/display/Scene","./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker","awayjs-core/lib/utils/getTimer":undefined}],"awayjs-display/lib/adapters/IDisplayObjectAdapter":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/adapters/IMovieClipAdapter":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/adapters":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/animators/IAnimationSet":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/animators/IAnimator":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/animators/data/ParticleData":[function(require,module,exports){
 "use strict";
 var ParticleData = (function () {
@@ -513,6 +575,7 @@ var ParticleData = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ParticleData;
+
 },{}],"awayjs-display/lib/animators/nodes/AnimationNodeBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -559,12 +622,14 @@ var AnimationNodeBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AnimationNodeBase;
+
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/animators":[function(require,module,exports){
 "use strict";
 var ParticleData_1 = require("./animators/data/ParticleData");
 exports.ParticleData = ParticleData_1.default;
 var AnimationNodeBase_1 = require("./animators/nodes/AnimationNodeBase");
 exports.AnimationNodeBase = AnimationNodeBase_1.default;
+
 },{"./animators/data/ParticleData":"awayjs-display/lib/animators/data/ParticleData","./animators/nodes/AnimationNodeBase":"awayjs-display/lib/animators/nodes/AnimationNodeBase"}],"awayjs-display/lib/base/AlignmentMode":[function(require,module,exports){
 "use strict";
 /**
@@ -585,6 +650,7 @@ var AlignmentMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AlignmentMode;
+
 },{}],"awayjs-display/lib/base/HierarchicalProperties":[function(require,module,exports){
 "use strict";
 /**
@@ -625,12 +691,16 @@ var HierarchicalProperties = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = HierarchicalProperties;
+
 },{}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/base/IRenderable":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/base/ISurface":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/base/OrientationMode":[function(require,module,exports){
 "use strict";
 var OrientationMode = (function () {
@@ -652,6 +722,7 @@ var OrientationMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = OrientationMode;
+
 },{}],"awayjs-display/lib/base/Style":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -769,6 +840,7 @@ var Style = (function (_super) {
 }(EventDispatcher_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Style;
+
 },{"../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/events/EventDispatcher":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
 "use strict";
 var HierarchicalProperties_1 = require("../base/HierarchicalProperties");
@@ -1140,6 +1212,7 @@ var Timeline = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Timeline;
+
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/ColorTransform":undefined}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
 "use strict";
 /**
@@ -1155,6 +1228,7 @@ var TouchPoint = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TouchPoint;
+
 },{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1670,6 +1744,7 @@ var Transform = (function (_super) {
 }(EventDispatcher_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Transform;
+
 },{"../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/base":[function(require,module,exports){
 "use strict";
 var AlignmentMode_1 = require("./base/AlignmentMode");
@@ -1686,6 +1761,7 @@ var TouchPoint_1 = require("./base/TouchPoint");
 exports.TouchPoint = TouchPoint_1.default;
 var Transform_1 = require("./base/Transform");
 exports.Transform = Transform_1.default;
+
 },{"./base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","./base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","./base/OrientationMode":"awayjs-display/lib/base/OrientationMode","./base/Style":"awayjs-display/lib/base/Style","./base/Timeline":"awayjs-display/lib/base/Timeline","./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./base/Transform":"awayjs-display/lib/base/Transform"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1810,6 +1886,7 @@ var AxisAlignedBoundingBox = (function (_super) {
 }(BoundingVolumeBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AxisAlignedBoundingBox;
+
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1904,6 +1981,7 @@ var BoundingSphere = (function (_super) {
 }(BoundingVolumeBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BoundingSphere;
+
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingVolumeBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -1957,6 +2035,7 @@ var BoundingVolumeBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BoundingVolumeBase;
+
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/bounds/BoundsType":[function(require,module,exports){
 "use strict";
 /**
@@ -1981,6 +2060,7 @@ var BoundsType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BoundsType;
+
 },{}],"awayjs-display/lib/bounds/NullBounds":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2012,6 +2092,7 @@ var NullBounds = (function (_super) {
 }(BoundingVolumeBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = NullBounds;
+
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds":[function(require,module,exports){
 "use strict";
 var AxisAlignedBoundingBox_1 = require("./bounds/AxisAlignedBoundingBox");
@@ -2024,6 +2105,7 @@ var BoundsType_1 = require("./bounds/BoundsType");
 exports.BoundsType = BoundsType_1.default;
 var NullBounds_1 = require("./bounds/NullBounds");
 exports.NullBounds = NullBounds_1.default;
+
 },{"./bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","./bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","./bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","./bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","./bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -2086,6 +2168,7 @@ var ControllerBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ControllerBase;
+
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/controllers/FirstPersonController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2318,6 +2401,7 @@ var FirstPersonController = (function (_super) {
 }(ControllerBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FirstPersonController;
+
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","awayjs-core/lib/geom/MathConsts":undefined}],"awayjs-display/lib/controllers/FollowController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2352,6 +2436,7 @@ var FollowController = (function (_super) {
 }(HoverController_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FollowController;
+
 },{"../controllers/HoverController":"awayjs-display/lib/controllers/HoverController"}],"awayjs-display/lib/controllers/HoverController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2652,6 +2737,7 @@ var HoverController = (function (_super) {
 }(LookAtController_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = HoverController;
+
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/LookAtController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2727,6 +2813,7 @@ var LookAtController = (function (_super) {
 }(ControllerBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LookAtController;
+
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/SpringController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2792,6 +2879,7 @@ var SpringController = (function (_super) {
 }(LookAtController_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SpringController;
+
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers":[function(require,module,exports){
 "use strict";
 var ControllerBase_1 = require("./controllers/ControllerBase");
@@ -2806,6 +2894,7 @@ var LookAtController_1 = require("./controllers/LookAtController");
 exports.LookAtController = LookAtController_1.default;
 var SpringController_1 = require("./controllers/SpringController");
 exports.SpringController = SpringController_1.default;
+
 },{"./controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","./controllers/FirstPersonController":"awayjs-display/lib/controllers/FirstPersonController","./controllers/FollowController":"awayjs-display/lib/controllers/FollowController","./controllers/HoverController":"awayjs-display/lib/controllers/HoverController","./controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","./controllers/SpringController":"awayjs-display/lib/controllers/SpringController"}],"awayjs-display/lib/display/Billboard":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3030,6 +3119,7 @@ var Billboard = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Billboard;
+
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/geom/Rectangle":undefined}],"awayjs-display/lib/display/Camera":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3263,6 +3353,7 @@ var Camera = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Camera;
+
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined}],"awayjs-display/lib/display/DirectionalLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3425,6 +3516,7 @@ var DirectionalLight = (function (_super) {
 }(LightBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DirectionalLight;
+
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/DisplayObjectContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -4013,6 +4105,7 @@ var DisplayObjectContainer = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DisplayObjectContainer;
+
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/RangeError":undefined}],"awayjs-display/lib/display/DisplayObject":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -5899,8 +5992,10 @@ var DisplayObject = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DisplayObject;
+
 },{"../base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/OrientationMode":"awayjs-display/lib/base/OrientationMode","../base/Transform":"awayjs-display/lib/base/Transform","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","../pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/display/IEntity":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/display/LightBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6061,6 +6156,7 @@ var LightBase = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightBase;
+
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/LightEvent":"awayjs-display/lib/events/LightEvent","awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/display/LightProbe":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6102,6 +6198,7 @@ var LightProbe = (function (_super) {
 }(LightBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightProbe;
+
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/image/SamplerCube":undefined}],"awayjs-display/lib/display/LineSegment":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6302,6 +6399,7 @@ var LineSegment = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LineSegment;
+
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/display/LoaderContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6864,6 +6962,7 @@ var LoaderContainer = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LoaderContainer;
+
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined}],"awayjs-display/lib/display/MovieClip":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7194,6 +7293,7 @@ var MovieClip = (function (_super) {
 }(Sprite_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MovieClip;
+
 },{"../base/Timeline":"awayjs-display/lib/base/Timeline","../display/Sprite":"awayjs-display/lib/display/Sprite","../display/TextField":"awayjs-display/lib/display/TextField","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/display/PointLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7306,6 +7406,7 @@ var PointLight = (function (_super) {
 }(LightBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PointLight;
+
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Scene":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7355,6 +7456,7 @@ var Scene = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Scene;
+
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/display/Shape":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7581,6 +7683,7 @@ var Shape = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Shape;
+
 },{"../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7835,6 +7938,7 @@ var Skybox = (function (_super) {
 }(DisplayObject_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Skybox;
+
 },{"../base/Style":"awayjs-display/lib/base/Style","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined}],"awayjs-display/lib/display/Sprite":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -8052,6 +8156,7 @@ var Sprite = (function (_super) {
 }(DisplayObjectContainer_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Sprite;
+
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -8939,6 +9044,7 @@ var TextField = (function (_super) {
 }(Sprite_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextField;
+
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display":[function(require,module,exports){
 "use strict";
 var Billboard_1 = require("./display/Billboard");
@@ -8973,6 +9079,7 @@ var Sprite_1 = require("./display/Sprite");
 exports.Sprite = Sprite_1.default;
 var TextField_1 = require("./display/TextField");
 exports.TextField = TextField_1.default;
+
 },{"./display/Billboard":"awayjs-display/lib/display/Billboard","./display/Camera":"awayjs-display/lib/display/Camera","./display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","./display/DisplayObject":"awayjs-display/lib/display/DisplayObject","./display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","./display/LightBase":"awayjs-display/lib/display/LightBase","./display/LightProbe":"awayjs-display/lib/display/LightProbe","./display/LineSegment":"awayjs-display/lib/display/LineSegment","./display/LoaderContainer":"awayjs-display/lib/display/LoaderContainer","./display/MovieClip":"awayjs-display/lib/display/MovieClip","./display/PointLight":"awayjs-display/lib/display/PointLight","./display/Scene":"awayjs-display/lib/display/Scene","./display/Shape":"awayjs-display/lib/display/Shape","./display/Skybox":"awayjs-display/lib/display/Skybox","./display/Sprite":"awayjs-display/lib/display/Sprite","./display/TextField":"awayjs-display/lib/display/TextField"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 "use strict";
 /**
@@ -9004,6 +9111,7 @@ var CapsStyle = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CapsStyle;
+
 },{}],"awayjs-display/lib/draw/GradientType":[function(require,module,exports){
 "use strict";
 /**
@@ -9027,6 +9135,7 @@ var GradientType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GradientType;
+
 },{}],"awayjs-display/lib/draw/GraphicsFactoryFills":[function(require,module,exports){
 "use strict";
 var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
@@ -9330,6 +9439,7 @@ var GraphicsFactoryFills = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsFactoryFills;
+
 },{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryHelper":[function(require,module,exports){
 "use strict";
 var CapsStyle_1 = require("../draw/CapsStyle");
@@ -9501,6 +9611,7 @@ var GraphicsFactoryHelper = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsFactoryHelper;
+
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryStrokes":[function(require,module,exports){
 "use strict";
 var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
@@ -9986,6 +10097,7 @@ var GraphicsFactoryStrokes = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsFactoryStrokes;
+
 },{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFillStyle":[function(require,module,exports){
 "use strict";
 var GraphicsFillStyle = (function () {
@@ -10007,6 +10119,7 @@ var GraphicsFillStyle = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsFillStyle;
+
 },{}],"awayjs-display/lib/draw/GraphicsPathCommand":[function(require,module,exports){
 "use strict";
 /**
@@ -10061,6 +10174,7 @@ var GraphicsPathCommand = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPathCommand;
+
 },{}],"awayjs-display/lib/draw/GraphicsPathWinding":[function(require,module,exports){
 "use strict";
 /**
@@ -10082,6 +10196,7 @@ var GraphicsPathWinding = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPathWinding;
+
 },{}],"awayjs-display/lib/draw/GraphicsPath":[function(require,module,exports){
 "use strict";
 var GraphicsPathWinding_1 = require("../draw/GraphicsPathWinding");
@@ -10259,6 +10374,7 @@ var GraphicsPath = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPath;
+
 },{"../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsStrokeStyle":[function(require,module,exports){
 "use strict";
 var JointStyle_1 = require("../draw/JointStyle");
@@ -10357,8 +10473,10 @@ var GraphicsStrokeStyle = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsStrokeStyle;
+
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle"}],"awayjs-display/lib/draw/IGraphicsData":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/draw/InterpolationMethod":[function(require,module,exports){
 "use strict";
 /**
@@ -10401,6 +10519,7 @@ var InterpolationMethod = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = InterpolationMethod;
+
 },{}],"awayjs-display/lib/draw/JointStyle":[function(require,module,exports){
 "use strict";
 /**
@@ -10433,6 +10552,7 @@ var JointStyle = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = JointStyle;
+
 },{}],"awayjs-display/lib/draw/LineScaleMode":[function(require,module,exports){
 "use strict";
 /**
@@ -10477,6 +10597,7 @@ var LineScaleMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LineScaleMode;
+
 },{}],"awayjs-display/lib/draw/PixelSnapping":[function(require,module,exports){
 "use strict";
 /**
@@ -10512,6 +10633,7 @@ var PixelSnapping = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PixelSnapping;
+
 },{}],"awayjs-display/lib/draw/SpreadMethod":[function(require,module,exports){
 "use strict";
 /**
@@ -10541,6 +10663,7 @@ var SpreadMethod = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SpreadMethod;
+
 },{}],"awayjs-display/lib/draw/TriangleCulling":[function(require,module,exports){
 "use strict";
 /**
@@ -10584,6 +10707,7 @@ var TriangleCulling = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TriangleCulling;
+
 },{}],"awayjs-display/lib/draw":[function(require,module,exports){
 "use strict";
 var CapsStyle_1 = require("./draw/CapsStyle");
@@ -10618,6 +10742,7 @@ var SpreadMethod_1 = require("./draw/SpreadMethod");
 exports.SpreadMethod = SpreadMethod_1.default;
 var TriangleCulling_1 = require("./draw/TriangleCulling");
 exports.TriangleCulling = TriangleCulling_1.default;
+
 },{"./draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","./draw/GradientType":"awayjs-display/lib/draw/GradientType","./draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","./draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","./draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","./draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","./draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","./draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","./draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","./draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","./draw/InterpolationMethod":"awayjs-display/lib/draw/InterpolationMethod","./draw/JointStyle":"awayjs-display/lib/draw/JointStyle","./draw/LineScaleMode":"awayjs-display/lib/draw/LineScaleMode","./draw/PixelSnapping":"awayjs-display/lib/draw/PixelSnapping","./draw/SpreadMethod":"awayjs-display/lib/draw/SpreadMethod","./draw/TriangleCulling":"awayjs-display/lib/draw/TriangleCulling"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10635,10 +10760,12 @@ var CastError = (function (_super) {
 }(ErrorBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CastError;
+
 },{"awayjs-core/lib/errors/ErrorBase":undefined}],"awayjs-display/lib/errors":[function(require,module,exports){
 "use strict";
 var CastError_1 = require("./errors/CastError");
 exports.CastError = CastError_1.default;
+
 },{"./errors/CastError":"awayjs-display/lib/errors/CastError"}],"awayjs-display/lib/events/CameraEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10675,6 +10802,7 @@ var CameraEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CameraEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/DisplayObjectEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10727,6 +10855,7 @@ var DisplayObjectEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DisplayObjectEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ElementsEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10790,6 +10919,7 @@ var ElementsEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ElementsEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/LightEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10812,6 +10942,7 @@ var LightEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/MouseEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10956,6 +11087,7 @@ var MouseEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MouseEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderableEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11011,6 +11143,7 @@ var RenderableEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = RenderableEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RendererEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11030,6 +11163,7 @@ var RendererEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = RendererEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ResizeEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11074,6 +11208,7 @@ var ResizeEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ResizeEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/StyleEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11110,6 +11245,7 @@ var StyleEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = StyleEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/SurfaceEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11154,6 +11290,7 @@ var SurfaceEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SurfaceEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11272,6 +11409,7 @@ var TouchEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TouchEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TransformEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11312,6 +11450,7 @@ var TransformEvent = (function (_super) {
 }(EventBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TransformEvent;
+
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events":[function(require,module,exports){
 "use strict";
 var CameraEvent_1 = require("./events/CameraEvent");
@@ -11338,10 +11477,13 @@ var TouchEvent_1 = require("./events/TouchEvent");
 exports.TouchEvent = TouchEvent_1.default;
 var TransformEvent_1 = require("./events/TransformEvent");
 exports.TransformEvent = TransformEvent_1.default;
+
 },{"./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","./events/LightEvent":"awayjs-display/lib/events/LightEvent","./events/MouseEvent":"awayjs-display/lib/events/MouseEvent","./events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./events/ResizeEvent":"awayjs-display/lib/events/ResizeEvent","./events/StyleEvent":"awayjs-display/lib/events/StyleEvent","./events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","./events/TouchEvent":"awayjs-display/lib/events/TouchEvent","./events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/factories/ITimelineSceneGraphFactory":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/factories":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/graphics/ElementsBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11549,6 +11691,7 @@ var ElementsBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ElementsBase;
+
 },{"../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Short3Attributes":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/ElementsType":[function(require,module,exports){
 "use strict";
 var ElementsType = (function () {
@@ -11566,6 +11709,7 @@ var ElementsType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ElementsType;
+
 },{}],"awayjs-display/lib/graphics/Graphics":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11783,6 +11927,11 @@ var Graphics = (function (_super) {
         if (this._animator)
             graphics.animator = this._animator.clone();
     };
+    Graphics.prototype.clone = function () {
+        var newInstance = new Graphics();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
     /**
      * Scales the geometry.
      * @param scale The amount by which to scale.
@@ -11958,11 +12107,6 @@ var Graphics = (function (_super) {
         if (this._current_position.x != 0 || this._current_position.y != 0)
             this._active_fill_path.moveTo(this._current_position.x, this._current_position.y);
         this._queued_fill_pathes.push(this._active_fill_path);
-    };
-    Graphics.prototype.clone = function () {
-        var newInstance = new Graphics();
-        this.copyTo(newInstance);
-        return newInstance;
     };
     /**
      * Specifies a gradient fill used by subsequent calls to other Graphics
@@ -12832,6 +12976,7 @@ var Graphics = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Graphics;
+
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12974,6 +13119,7 @@ var Graphic = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Graphic;
+
 },{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13217,6 +13363,7 @@ var LineElements = (function (_super) {
 }(ElementsBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LineElements;
+
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float1Attributes":undefined}],"awayjs-display/lib/graphics/TriangleElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13708,6 +13855,7 @@ var TriangleElements = (function (_super) {
 }(ElementsBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TriangleElements;
+
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined}],"awayjs-display/lib/graphics":[function(require,module,exports){
 "use strict";
 var ElementsBase_1 = require("./graphics/ElementsBase");
@@ -13722,6 +13870,7 @@ var LineElements_1 = require("./graphics/LineElements");
 exports.LineElements = LineElements_1.default;
 var TriangleElements_1 = require("./graphics/TriangleElements");
 exports.TriangleElements = TriangleElements_1.default;
+
 },{"./graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","./graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","./graphics/Graphic":"awayjs-display/lib/graphics/Graphic","./graphics/Graphics":"awayjs-display/lib/graphics/Graphics","./graphics/LineElements":"awayjs-display/lib/graphics/LineElements","./graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements"}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
 "use strict";
 var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
@@ -13829,6 +13978,7 @@ var DefaultMaterialManager = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DefaultMaterialManager;
+
 },{"../display/Skybox":"awayjs-display/lib/display/Skybox","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
 "use strict";
 var FrameScriptManager = (function () {
@@ -13915,6 +14065,7 @@ var FrameScriptManager = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FrameScriptManager;
+
 },{}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -14162,6 +14313,7 @@ var MouseManager = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MouseManager;
+
 },{"../base/TouchPoint":"awayjs-display/lib/base/TouchPoint","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -14341,6 +14493,7 @@ var TouchPoint = (function () {
     }
     return TouchPoint;
 }());
+
 },{"../events/TouchEvent":"awayjs-display/lib/events/TouchEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers":[function(require,module,exports){
 "use strict";
 var DefaultMaterialManager_1 = require("./managers/DefaultMaterialManager");
@@ -14351,6 +14504,7 @@ var MouseManager_1 = require("./managers/MouseManager");
 exports.MouseManager = MouseManager_1.default;
 var TouchManager_1 = require("./managers/TouchManager");
 exports.TouchManager = TouchManager_1.default;
+
 },{"./managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","./managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./managers/TouchManager":"awayjs-display/lib/managers/TouchManager"}],"awayjs-display/lib/materials/BasicMaterial":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14427,6 +14581,7 @@ var BasicMaterial = (function (_super) {
 }(MaterialBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BasicMaterial;
+
 },{"../materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
 "use strict";
 /**
@@ -14462,6 +14617,7 @@ var LightSources = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightSources;
+
 },{}],"awayjs-display/lib/materials/MaterialBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14953,6 +15109,7 @@ var MaterialBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MaterialBase;
+
 },{"../base/Style":"awayjs-display/lib/base/Style","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/ImageBase":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15157,6 +15314,7 @@ var LightPickerBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightPickerBase;
+
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/StaticLightPicker":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15306,6 +15464,7 @@ var StaticLightPicker = (function (_super) {
 }(LightPickerBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = StaticLightPicker;
+
 },{"../../display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","../../display/LightProbe":"awayjs-display/lib/display/LightProbe","../../display/PointLight":"awayjs-display/lib/display/PointLight","../../events/LightEvent":"awayjs-display/lib/events/LightEvent","../../materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15495,6 +15654,7 @@ var CascadeShadowMapper = (function (_super) {
 }(DirectionalShadowMapper_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CascadeShadowMapper;
+
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15563,6 +15723,7 @@ var CubeMapShadowMapper = (function (_super) {
 }(ShadowMapperBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CubeMapShadowMapper;
+
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/ImageCube":undefined}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15742,6 +15903,7 @@ var DirectionalShadowMapper = (function (_super) {
 }(ShadowMapperBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DirectionalShadowMapper;
+
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15788,6 +15950,7 @@ var NearDirectionalShadowMapper = (function (_super) {
 }(DirectionalShadowMapper_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = NearDirectionalShadowMapper;
+
 },{"../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15888,6 +16051,7 @@ var ShadowMapperBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ShadowMapperBase;
+
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials":[function(require,module,exports){
 "use strict";
 var LightPickerBase_1 = require("./materials/lightpickers/LightPickerBase");
@@ -15910,6 +16074,7 @@ var LightSources_1 = require("./materials/LightSources");
 exports.LightSources = LightSources_1.default;
 var MaterialBase_1 = require("./materials/MaterialBase");
 exports.MaterialBase = MaterialBase_1.default;
+
 },{"./materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","./materials/LightSources":"awayjs-display/lib/materials/LightSources","./materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","./materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","./materials/lightpickers/StaticLightPicker":"awayjs-display/lib/materials/lightpickers/StaticLightPicker","./materials/shadowmappers/CascadeShadowMapper":"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper","./materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","./materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","./materials/shadowmappers/NearDirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper","./materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase"}],"awayjs-display/lib/partition/BasicPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15932,6 +16097,7 @@ var BasicPartition = (function (_super) {
 }(PartitionBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BasicPartition;
+
 },{"../partition/NodeBase":"awayjs-display/lib/partition/NodeBase","../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15958,6 +16124,7 @@ var CameraNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = CameraNode;
+
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DirectionalLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15992,6 +16159,7 @@ var DirectionalLightNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DirectionalLightNode;
+
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DisplayObjectNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16101,6 +16269,7 @@ var DisplayObjectNode = (function (_super) {
 }(AbstractionBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DisplayObjectNode;
+
 },{"../bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","../bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/library/AbstractionBase":undefined}],"awayjs-display/lib/partition/EntityNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16197,14 +16366,19 @@ var EntityNode = (function (_super) {
 }(DisplayObjectNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = EntityNode;
+
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/partition/IContainerNode":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/partition/IDisplayObjectNode":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/partition/IEntityNodeClass":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/partition/INode":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16239,6 +16413,7 @@ var LightProbeNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LightProbeNode;
+
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/NodeBase":[function(require,module,exports){
 "use strict";
 var NullBounds_1 = require("../bounds/NullBounds");
@@ -16348,6 +16523,7 @@ var NodeBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = NodeBase;
+
 },{"../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/partition/PartitionBase":[function(require,module,exports){
 "use strict";
 /**
@@ -16464,6 +16640,7 @@ var PartitionBase = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PartitionBase;
+
 },{}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16498,6 +16675,7 @@ var PointLightNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PointLightNode;
+
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SceneGraphNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16589,6 +16767,7 @@ var SceneGraphNode = (function (_super) {
 }(DisplayObjectNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SceneGraphNode;
+
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode"}],"awayjs-display/lib/partition/SceneGraphPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16670,6 +16849,7 @@ var SceneGraphNodePool = (function () {
     };
     return SceneGraphNodePool;
 }());
+
 },{"../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","../partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16711,6 +16891,7 @@ var SkyboxNode = (function (_super) {
 }(EntityNode_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SkyboxNode;
+
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition":[function(require,module,exports){
 "use strict";
 var BasicPartition_1 = require("./partition/BasicPartition");
@@ -16737,10 +16918,13 @@ var SceneGraphPartition_1 = require("./partition/SceneGraphPartition");
 exports.SceneGraphPartition = SceneGraphPartition_1.default;
 var SkyboxNode_1 = require("./partition/SkyboxNode");
 exports.SkyboxNode = SkyboxNode_1.default;
+
 },{"./partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition","./partition/CameraNode":"awayjs-display/lib/partition/CameraNode","./partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","./partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","./partition/EntityNode":"awayjs-display/lib/partition/EntityNode","./partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","./partition/NodeBase":"awayjs-display/lib/partition/NodeBase","./partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","./partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","./partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode","./partition/SceneGraphPartition":"awayjs-display/lib/partition/SceneGraphPartition","./partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/pick/IPicker":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/pick/IPickingCollider":[function(require,module,exports){
 "use strict";
+
 },{}],"awayjs-display/lib/pick/JSPickingCollider":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -17072,6 +17256,7 @@ var JSPickingCollider = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = JSPickingCollider;
+
 },{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick/PickingCollision":[function(require,module,exports){
 "use strict";
 /**
@@ -17095,6 +17280,7 @@ var PickingCollision = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PickingCollision;
+
 },{}],"awayjs-display/lib/pick/RaycastPicker":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -17287,6 +17473,7 @@ var RaycastPicker = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = RaycastPicker;
+
 },{"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick":[function(require,module,exports){
 "use strict";
 var JSPickingCollider_1 = require("./pick/JSPickingCollider");
@@ -17295,6 +17482,7 @@ var PickingCollision_1 = require("./pick/PickingCollision");
 exports.PickingCollision = PickingCollision_1.default;
 var RaycastPicker_1 = require("./pick/RaycastPicker");
 exports.RaycastPicker = RaycastPicker_1.default;
+
 },{"./pick/JSPickingCollider":"awayjs-display/lib/pick/JSPickingCollider","./pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17343,6 +17531,7 @@ var PrefabBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrefabBase;
+
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17610,6 +17799,7 @@ var PrimitiveCapsulePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveCapsulePrefab;
+
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveConePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17660,6 +17850,7 @@ var PrimitiveConePrefab = (function (_super) {
 }(PrimitiveCylinderPrefab_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveConePrefab;
+
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitiveCubePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18198,6 +18389,7 @@ var PrimitiveCubePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveCubePrefab;
+
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18775,6 +18967,7 @@ var PrimitiveCylinderPrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveCylinderPrefab;
+
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePlanePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19079,6 +19272,7 @@ var PrimitivePlanePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitivePlanePrefab;
+
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePolygonPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19150,6 +19344,7 @@ var PrimitivePolygonPrefab = (function (_super) {
 }(PrimitiveCylinderPrefab_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitivePolygonPrefab;
+
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitivePrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19315,6 +19510,7 @@ var PrimitivePrefabBase = (function (_super) {
 }(PrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitivePrefabBase;
+
 },{"../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19609,6 +19805,7 @@ var PrimitiveSpherePrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveSpherePrefab;
+
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19868,6 +20065,7 @@ var PrimitiveTorusPrefab = (function (_super) {
 }(PrimitivePrefabBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PrimitiveTorusPrefab;
+
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs":[function(require,module,exports){
 "use strict";
 var PrefabBase_1 = require("./prefabs/PrefabBase");
@@ -19890,6 +20088,7 @@ var PrimitiveSpherePrefab_1 = require("./prefabs/PrimitiveSpherePrefab");
 exports.PrimitiveSpherePrefab = PrimitiveSpherePrefab_1.default;
 var PrimitiveTorusPrefab_1 = require("./prefabs/PrimitiveTorusPrefab");
 exports.PrimitiveTorusPrefab = PrimitiveTorusPrefab_1.default;
+
 },{"./prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","./prefabs/PrimitiveCapsulePrefab":"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab","./prefabs/PrimitiveConePrefab":"awayjs-display/lib/prefabs/PrimitiveConePrefab","./prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","./prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab","./prefabs/PrimitivePlanePrefab":"awayjs-display/lib/prefabs/PrimitivePlanePrefab","./prefabs/PrimitivePolygonPrefab":"awayjs-display/lib/prefabs/PrimitivePolygonPrefab","./prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase","./prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","./prefabs/PrimitiveTorusPrefab":"awayjs-display/lib/prefabs/PrimitiveTorusPrefab"}],"awayjs-display/lib/text/AntiAliasType":[function(require,module,exports){
 "use strict";
 /**
@@ -19921,6 +20120,7 @@ var AntiAliasType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AntiAliasType;
+
 },{}],"awayjs-display/lib/text/Font":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19995,6 +20195,7 @@ var Font = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Font;
+
 },{"../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
 "use strict";
 /**
@@ -20033,6 +20234,7 @@ var GridFitType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GridFitType;
+
 },{}],"awayjs-display/lib/text/TesselatedFontChar":[function(require,module,exports){
 "use strict";
 /**
@@ -20077,6 +20279,7 @@ var TesselatedFontChar = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TesselatedFontChar;
+
 },{}],"awayjs-display/lib/text/TesselatedFontTable":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20193,6 +20396,7 @@ var TesselatedFontTable = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TesselatedFontTable;
+
 },{"../text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 "use strict";
 /**
@@ -20228,6 +20432,7 @@ var TextFieldAutoSize = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFieldAutoSize;
+
 },{}],"awayjs-display/lib/text/TextFieldType":[function(require,module,exports){
 "use strict";
 /**
@@ -20255,6 +20460,7 @@ var TextFieldType = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFieldType;
+
 },{}],"awayjs-display/lib/text/TextFormatAlign":[function(require,module,exports){
 "use strict";
 /**
@@ -20288,6 +20494,7 @@ var TextFormatAlign = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFormatAlign;
+
 },{}],"awayjs-display/lib/text/TextFormat":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20413,6 +20620,7 @@ var TextFormat = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextFormat;
+
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
 "use strict";
 /**
@@ -20441,6 +20649,7 @@ var TextInteractionMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextInteractionMode;
+
 },{}],"awayjs-display/lib/text/TextLineMetrics":[function(require,module,exports){
 "use strict";
 /**
@@ -20480,6 +20689,7 @@ var TextLineMetrics = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextLineMetrics;
+
 },{}],"awayjs-display/lib/text":[function(require,module,exports){
 "use strict";
 var AntiAliasType_1 = require("./text/AntiAliasType");
@@ -20504,6 +20714,7 @@ var TextInteractionMode_1 = require("./text/TextInteractionMode");
 exports.TextInteractionMode = TextInteractionMode_1.default;
 var TextLineMetrics_1 = require("./text/TextLineMetrics");
 exports.TextLineMetrics = TextLineMetrics_1.default;
+
 },{"./text/AntiAliasType":"awayjs-display/lib/text/AntiAliasType","./text/Font":"awayjs-display/lib/text/Font","./text/GridFitType":"awayjs-display/lib/text/GridFitType","./text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","./text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","./text/TextFieldAutoSize":"awayjs-display/lib/text/TextFieldAutoSize","./text/TextFieldType":"awayjs-display/lib/text/TextFieldType","./text/TextFormat":"awayjs-display/lib/text/TextFormat","./text/TextFormatAlign":"awayjs-display/lib/text/TextFormatAlign","./text/TextInteractionMode":"awayjs-display/lib/text/TextInteractionMode","./text/TextLineMetrics":"awayjs-display/lib/text/TextLineMetrics"}],"awayjs-display/lib/textures/MappingMode":[function(require,module,exports){
 "use strict";
 /**
@@ -20529,6 +20740,7 @@ var MappingMode = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MappingMode;
+
 },{}],"awayjs-display/lib/textures/Single2DTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20611,6 +20823,7 @@ var Single2DTexture = (function (_super) {
 }(TextureBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Single2DTexture;
+
 },{"../textures/MappingMode":"awayjs-display/lib/textures/MappingMode","../textures/TextureBase":"awayjs-display/lib/textures/TextureBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/utils/ImageUtils":undefined}],"awayjs-display/lib/textures/SingleCubeTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20675,6 +20888,7 @@ var SingleCubeTexture = (function (_super) {
 }(TextureBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SingleCubeTexture;
+
 },{"../textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/TextureBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20726,6 +20940,7 @@ var TextureBase = (function (_super) {
 }(AssetBase_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TextureBase;
+
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/textures":[function(require,module,exports){
 "use strict";
 var MappingMode_1 = require("./textures/MappingMode");
@@ -20736,6 +20951,7 @@ var SingleCubeTexture_1 = require("./textures/SingleCubeTexture");
 exports.SingleCubeTexture = SingleCubeTexture_1.default;
 var TextureBase_1 = require("./textures/TextureBase");
 exports.TextureBase = TextureBase_1.default;
+
 },{"./textures/MappingMode":"awayjs-display/lib/textures/MappingMode","./textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","./textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","./textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/utils/Cast":[function(require,module,exports){
 "use strict";
 var Image2D_1 = require("awayjs-core/lib/image/Image2D");
@@ -21008,6 +21224,7 @@ var Cast = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Cast;
+
 },{"../errors/CastError":"awayjs-display/lib/errors/CastError","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/utils/ByteArray":undefined}],"awayjs-display/lib/utils/ElementsUtils":[function(require,module,exports){
 "use strict";
 var AttributesBuffer_1 = require("awayjs-core/lib/attributes/AttributesBuffer");
@@ -21826,64 +22043,13 @@ var ElementsUtils = (function () {
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ElementsUtils;
+
 },{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/utils":[function(require,module,exports){
 "use strict";
 var Cast_1 = require("./utils/Cast");
 exports.Cast = Cast_1.default;
 var ElementsUtils_1 = require("./utils/ElementsUtils");
 exports.ElementsUtils = ElementsUtils_1.default;
-},{"./utils/Cast":"awayjs-display/lib/utils/Cast","./utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}],1:[function(require,module,exports){
-"use strict";
-var adapters = require("./lib/adapters");
-exports.adapters = adapters;
-var animators = require("./lib/animators");
-exports.animators = animators;
-var base = require("./lib/base");
-exports.base = base;
-var bounds = require("./lib/bounds");
-exports.bounds = bounds;
-var controllers = require("./lib/controllers");
-exports.controllers = controllers;
-var display = require("./lib/display");
-exports.display = display;
-var draw = require("./lib/draw");
-exports.draw = draw;
-var errors = require("./lib/errors");
-exports.errors = errors;
-var events = require("./lib/events");
-exports.events = events;
-var factories = require("./lib/factories");
-exports.factories = factories;
-var graphics = require("./lib/graphics");
-exports.graphics = graphics;
-var managers = require("./lib/managers");
-exports.managers = managers;
-var materials = require("./lib/materials");
-exports.materials = materials;
-var partition = require("./lib/partition");
-exports.partition = partition;
-var pick = require("./lib/pick");
-exports.pick = pick;
-var prefabs = require("./lib/prefabs");
-exports.prefabs = prefabs;
-var text = require("./lib/text");
-exports.text = text;
-var textures = require("./lib/textures");
-exports.textures = textures;
-var utils = require("./lib/utils");
-exports.utils = utils;
-var View_1 = require("./lib/View");
-exports.View = View_1.default;
-partition.PartitionBase.registerAbstraction(partition.CameraNode, display.Camera);
-partition.PartitionBase.registerAbstraction(partition.DirectionalLightNode, display.DirectionalLight);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Sprite);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Shape);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.MovieClip);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Billboard);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.LineSegment);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextField);
-partition.PartitionBase.registerAbstraction(partition.LightProbeNode, display.LightProbe);
-partition.PartitionBase.registerAbstraction(partition.PointLightNode, display.PointLight);
-partition.PartitionBase.registerAbstraction(partition.SkyboxNode, display.Skybox);
-},{"./lib/View":"awayjs-display/lib/View","./lib/adapters":"awayjs-display/lib/adapters","./lib/animators":"awayjs-display/lib/animators","./lib/base":"awayjs-display/lib/base","./lib/bounds":"awayjs-display/lib/bounds","./lib/controllers":"awayjs-display/lib/controllers","./lib/display":"awayjs-display/lib/display","./lib/draw":"awayjs-display/lib/draw","./lib/errors":"awayjs-display/lib/errors","./lib/events":"awayjs-display/lib/events","./lib/factories":"awayjs-display/lib/factories","./lib/graphics":"awayjs-display/lib/graphics","./lib/managers":"awayjs-display/lib/managers","./lib/materials":"awayjs-display/lib/materials","./lib/partition":"awayjs-display/lib/partition","./lib/pick":"awayjs-display/lib/pick","./lib/prefabs":"awayjs-display/lib/prefabs","./lib/text":"awayjs-display/lib/text","./lib/textures":"awayjs-display/lib/textures","./lib/utils":"awayjs-display/lib/utils"}]},{},[1])
+
+},{"./utils/Cast":"awayjs-display/lib/utils/Cast","./utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}]},{},[1])
 //# sourceMappingURL=awayjs-display.js.map
