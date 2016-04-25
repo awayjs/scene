@@ -11511,6 +11511,7 @@ var ElementsBase = (function (_super) {
         this._customAttributesNames = new Array();
         this._customAttributes = new Object();
         this._numElements = 0;
+        this._numVertices = 0;
         this._verticesDirty = new Object();
         this._invalidateVertices = new Object();
         this._concatenatedBuffer = concatenatedBuffer;
@@ -11556,7 +11557,7 @@ var ElementsBase = (function (_super) {
     });
     Object.defineProperty(ElementsBase.prototype, "numVertices", {
         get: function () {
-            throw new AbstractMethodError_1.default();
+            return this._numVertices;
         },
         enumerable: true,
         configurable: true
@@ -11637,27 +11638,42 @@ var ElementsBase = (function (_super) {
     ElementsBase.prototype.clone = function () {
         throw new AbstractMethodError_1.default();
     };
-    ElementsBase.prototype.applyTransformation = function (transform) {
+    ElementsBase.prototype.applyTransformation = function (transform, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        throw new AbstractMethodError_1.default();
     };
     /**
      * Scales the geometry.
      * @param scale The amount by which to scale.
      */
-    ElementsBase.prototype.scale = function (scale) {
+    ElementsBase.prototype.scale = function (scale, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        throw new AbstractMethodError_1.default();
     };
-    ElementsBase.prototype.scaleUV = function (scaleU, scaleV) {
+    ElementsBase.prototype.scaleUV = function (scaleU, scaleV, count, offset) {
         if (scaleU === void 0) { scaleU = 1; }
         if (scaleV === void 0) { scaleV = 1; }
-    };
-    ElementsBase.prototype.getBoxBounds = function (target) {
-        if (target === void 0) { target = null; }
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
         throw new AbstractMethodError_1.default();
     };
-    ElementsBase.prototype.getSphereBounds = function (center, target) {
+    ElementsBase.prototype.getBoxBounds = function (target, count, offset) {
         if (target === void 0) { target = null; }
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
         throw new AbstractMethodError_1.default();
     };
-    ElementsBase.prototype.hitTestPoint = function (x, y, z, box) {
+    ElementsBase.prototype.getSphereBounds = function (center, target, count, offset) {
+        if (target === void 0) { target = null; }
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        throw new AbstractMethodError_1.default();
+    };
+    ElementsBase.prototype.hitTestPoint = function (x, y, z, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
         throw new AbstractMethodError_1.default();
     };
     ElementsBase.prototype.invalidateIndicies = function () {
@@ -11684,7 +11700,9 @@ var ElementsBase = (function (_super) {
         this._verticesDirty[attributesView.id] = null;
         this._invalidateVertices[attributesView.id] = null;
     };
-    ElementsBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
+    ElementsBase.prototype._iTestCollision = function (pickingCollider, material, pickingCollision, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
         throw new AbstractMethodError_1.default();
     };
     return ElementsBase;
@@ -11723,7 +11741,6 @@ var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
 var Graphic_1 = require("../graphics/Graphic");
 var ElementsEvent_1 = require("../events/ElementsEvent");
 var StyleEvent_1 = require("../events/StyleEvent");
-var ElementsUtils_1 = require("../utils/ElementsUtils");
 var GraphicsPath_1 = require("../draw/GraphicsPath");
 var GraphicsFactoryFills_1 = require("../draw/GraphicsFactoryFills");
 var GraphicsFactoryStrokes_1 = require("../draw/GraphicsFactoryStrokes");
@@ -11876,9 +11893,11 @@ var Graphics = (function (_super) {
      *
      * @param elements
      */
-    Graphics.prototype.addGraphic = function (elements, material, style) {
+    Graphics.prototype.addGraphic = function (elements, material, style, count, offset) {
         if (material === void 0) { material = null; }
         if (style === void 0) { style = null; }
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
         var graphic;
         if (Graphic_1.default._available.length) {
             graphic = Graphic_1.default._available.pop();
@@ -11887,18 +11906,20 @@ var Graphics = (function (_super) {
             graphic.elements = elements;
             graphic.material = material;
             graphic.style = style;
+            graphic.count = count;
+            graphic.offset = offset;
         }
         else {
-            graphic = new Graphic_1.default(this._graphics.length, this, elements, material, style);
+            graphic = new Graphic_1.default(this._graphics.length, this, elements, material, style, count, offset);
         }
         this._graphics.push(graphic);
-        elements.addEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
+        graphic.addEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
         this.invalidate();
         return graphic;
     };
     Graphics.prototype.removeGraphic = function (graphic) {
         this._graphics.splice(this._graphics.indexOf(graphic), 1);
-        graphic.elements.removeEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
+        graphic.removeEventListener(ElementsEvent_1.default.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
         graphic.elements = null;
         graphic.material = null;
         graphic.style = null;
@@ -11911,7 +11932,7 @@ var Graphics = (function (_super) {
     Graphics.prototype.applyTransformation = function (transform) {
         var len = this._graphics.length;
         for (var i = 0; i < len; ++i)
-            this._graphics[i].elements.applyTransformation(transform);
+            this._graphics[i].applyTransformation(transform);
     };
     Graphics.prototype.copyTo = function (graphics) {
         graphics.material = this._material;
@@ -11922,7 +11943,7 @@ var Graphics = (function (_super) {
         var len = this._graphics.length;
         for (var i = 0; i < len; ++i) {
             graphic = this._graphics[i];
-            graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle());
+            graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle(), graphic.count, graphic.offset);
         }
         if (this._animator)
             graphics.animator = this._animator.clone();
@@ -11939,7 +11960,7 @@ var Graphics = (function (_super) {
     Graphics.prototype.scale = function (scale) {
         var len = this._graphics.length;
         for (var i = 0; i < len; ++i)
-            this._graphics[i].elements.scale(scale);
+            this._graphics[i].scale(scale);
     };
     Graphics.prototype.clear = function () {
         for (var i = this._graphics.length - 1; i >= 0; i--) {
@@ -11966,7 +11987,7 @@ var Graphics = (function (_super) {
         if (scaleV === void 0) { scaleV = 1; }
         var len = this._graphics.length;
         for (var i = 0; i < len; ++i)
-            this._graphics[i].elements.scaleUV(scaleU, scaleV);
+            this._graphics[i].scaleUV(scaleU, scaleV);
     };
     Graphics.prototype.getBoxBounds = function () {
         if (this._boxBoundsInvalid) {
@@ -11977,7 +11998,7 @@ var Graphics = (function (_super) {
                 this._boxBounds.setBoundIdentity();
                 var len = this._graphics.length;
                 for (var i = 0; i < len; i++)
-                    this._boxBounds = this._graphics[i].elements.getBoxBounds(this._boxBounds);
+                    this._boxBounds = this._boxBounds.union(this._graphics[i].getBoxBounds(), this._boxBounds);
             }
             else {
                 this._boxBounds.setEmpty();
@@ -11989,7 +12010,7 @@ var Graphics = (function (_super) {
         if (target === void 0) { target = null; }
         var len = this._graphics.length;
         for (var i = 0; i < len; i++)
-            target = this._graphics[i].elements.getSphereBounds(center, target);
+            target = this._graphics[i].getSphereBounds(center, target);
         return target;
     };
     Graphics.prototype.invalidate = function () {
@@ -12011,7 +12032,7 @@ var Graphics = (function (_super) {
         //TODO: handle lines as well
         var len = this._graphics.length;
         for (var i = 0; i < len; i++)
-            if (ElementsUtils_1.default.hitTestTriangleElements(x, y, 0, this.getBoxBounds(), this._graphics[i].elements))
+            if (this._graphics[i].hitTestPoint(x, y, 0))
                 return true;
         return false;
     };
@@ -12977,13 +12998,14 @@ var Graphics = (function (_super) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Graphics;
 
-},{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
+},{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var Box_1 = require("awayjs-core/lib/geom/Box");
 var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
 var RenderableEvent_1 = require("../events/RenderableEvent");
 var StyleEvent_1 = require("../events/StyleEvent");
@@ -13001,18 +13023,25 @@ var Graphic = (function (_super) {
     /**
      * Creates a new Graphic object
      */
-    function Graphic(index, parent, elements, material, style) {
+    function Graphic(index, parent, elements, material, style, count, offset) {
         var _this = this;
         if (material === void 0) { material = null; }
         if (style === void 0) { style = null; }
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
         _super.call(this);
         this._iIndex = 0;
+        this._boxBoundsInvalid = true;
+        this._sphereBoundsInvalid = true;
         this._onInvalidatePropertiesDelegate = function (event) { return _this._onInvalidateProperties(event); };
+        this._onInvalidateVerticesDelegate = function (event) { return _this._onInvalidateVertices(event); };
         this._iIndex = index;
         this.parent = parent;
         this.elements = elements;
         this.material = material;
         this.style = style;
+        this.count = count;
+        this.offset = offset;
     }
     Object.defineProperty(Graphic.prototype, "assetType", {
         /**
@@ -13086,8 +13115,15 @@ var Graphic = (function (_super) {
         this.parent = null;
         Graphic._available.push(this);
     };
+    Graphic.prototype.invalidate = function () {
+        _super.prototype.invalidate.call(this);
+        this._boxBoundsInvalid = true;
+        this._sphereBoundsInvalid = true;
+    };
     Graphic.prototype.invalidateElements = function () {
         this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_ELEMENTS, this));
+        this._boxBoundsInvalid = true;
+        this._sphereBoundsInvalid = true;
     };
     Graphic.prototype.invalidateSurface = function () {
         this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_RENDER_OWNER, this));
@@ -13101,6 +13137,12 @@ var Graphic = (function (_super) {
     Graphic.prototype._onInvalidateProperties = function (event) {
         this.invalidateSurface();
     };
+    Graphic.prototype._onInvalidateVertices = function (event) {
+        if (event.attributesView != event.target.positions)
+            return;
+        this.invalidate();
+        this.dispatchEvent(event);
+    };
     /**
      * //TODO
      *
@@ -13111,7 +13153,34 @@ var Graphic = (function (_super) {
      * @internal
      */
     Graphic.prototype._iTestCollision = function (pickingCollision, pickingCollider) {
-        return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision);
+        return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision, this.count, this.offset);
+    };
+    Graphic.prototype.applyTransformation = function (transform) {
+        this.elements.applyTransformation(transform, this.count, this.offset);
+    };
+    Graphic.prototype.hitTestPoint = function (x, y, z) {
+        return this.elements.hitTestPoint(x, y, z, this.count, this.offset);
+    };
+    Graphic.prototype.scale = function (scale) {
+        this.elements.scale(scale, this.count, this.offset);
+    };
+    Graphic.prototype.scaleUV = function (scaleU, scaleV) {
+        if (scaleU === void 0) { scaleU = 1; }
+        if (scaleV === void 0) { scaleV = 1; }
+        this.elements.scaleUV(scaleU, scaleV, this.count, this.offset);
+    };
+    Graphic.prototype.getBoxBounds = function () {
+        if (this._boxBoundsInvalid) {
+            this._boxBoundsInvalid = false;
+            if (!this._boxBounds)
+                this._boxBounds = new Box_1.default();
+            this._boxBounds = this.elements.getBoxBounds(this._boxBounds, this.count, this.offset);
+        }
+        return this._boxBounds;
+    };
+    Graphic.prototype.getSphereBounds = function (center, target) {
+        if (target === void 0) { target = null; }
+        return this.elements.getSphereBounds(center, target, this.count, this.offset);
     };
     Graphic._available = new Array();
     Graphic.assetType = "[asset Graphic]";
@@ -13120,7 +13189,7 @@ var Graphic = (function (_super) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Graphic;
 
-},{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
+},{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -13143,7 +13212,6 @@ var LineElements = (function (_super) {
     function LineElements(concatenatedBuffer) {
         if (concatenatedBuffer === void 0) { concatenatedBuffer = null; }
         _super.call(this, concatenatedBuffer);
-        this._numVertices = 0;
         this._positions = new AttributesView_1.default(Float32Array, 6, concatenatedBuffer);
     }
     Object.defineProperty(LineElements.prototype, "assetType", {
@@ -13185,16 +13253,6 @@ var LineElements = (function (_super) {
             if (!this._colors)
                 this.setColors(this._colors);
             return this._colors;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LineElements.prototype, "numVertices", {
-        /**
-         * The total amount of vertices in the LineElements.
-         */
-        get: function () {
-            return this._numVertices;
         },
         enumerable: true,
         configurable: true
@@ -13355,8 +13413,10 @@ var LineElements = (function (_super) {
         clone.setColors(this._colors.clone());
         return clone;
     };
-    LineElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
-        return pickingCollider.testLineCollision(this, material, pickingCollision);
+    LineElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollision, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        return pickingCollider.testLineCollision(this, material, pickingCollision, count || this._numVertices, offset);
     };
     LineElements.assetType = "[asset LineElements]";
     return LineElements;
@@ -13383,7 +13443,6 @@ var TriangleElements = (function (_super) {
     __extends(TriangleElements, _super);
     function TriangleElements() {
         _super.apply(this, arguments);
-        this._numVertices = 0;
         this._faceNormalsDirty = true;
         this._faceTangentsDirty = true;
         this._autoDeriveNormals = true;
@@ -13395,13 +13454,6 @@ var TriangleElements = (function (_super) {
     Object.defineProperty(TriangleElements.prototype, "assetType", {
         get: function () {
             return TriangleElements.assetType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TriangleElements.prototype, "numVertices", {
-        get: function () {
-            return this._numVertices;
         },
         enumerable: true,
         configurable: true
@@ -13571,16 +13623,22 @@ var TriangleElements = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    TriangleElements.prototype.getBoxBounds = function (target) {
+    TriangleElements.prototype.getBoxBounds = function (target, count, offset) {
         if (target === void 0) { target = null; }
-        return ElementsUtils_1.default.getTriangleGraphicsBoxBounds(this.positions, target, this._numVertices);
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        return ElementsUtils_1.default.getTriangleGraphicsBoxBounds(this.positions, target, count || this._numVertices, offset);
     };
-    TriangleElements.prototype.getSphereBounds = function (center, target) {
+    TriangleElements.prototype.getSphereBounds = function (center, target, count, offset) {
         if (target === void 0) { target = null; }
-        return ElementsUtils_1.default.getTriangleGraphicsSphereBounds(this.positions, center, target, this._numVertices);
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        return ElementsUtils_1.default.getTriangleGraphicsSphereBounds(this.positions, center, target, count || this._numVertices, offset);
     };
-    TriangleElements.prototype.hitTestPoint = function (x, y, z) {
-        return true;
+    TriangleElements.prototype.hitTestPoint = function (x, y, z, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        return ElementsUtils_1.default.hitTestTriangleElements(x, y, 0, this, count || this._numVertices, offset);
     };
     TriangleElements.prototype.setPositions = function (values, offset) {
         if (offset === void 0) { offset = 0; }
@@ -13792,6 +13850,10 @@ var TriangleElements = (function (_super) {
         //temp disable auto derives
         elements.autoDeriveNormals = false;
         elements.autoDeriveTangents = false;
+        var autoDeriveNormals = this._autoDeriveNormals;
+        var autoDeriveTangents = this._autoDeriveTangents;
+        this._autoDeriveNormals = false;
+        this._autoDeriveTangents = false;
         elements.setPositions(this.positions.clone());
         if (this.normals)
             elements.setNormals(this.normals.clone());
@@ -13805,8 +13867,8 @@ var TriangleElements = (function (_super) {
         if (this.jointWeights)
             elements.setJointWeights(this.jointWeights.clone());
         //return auto derives to cloned values
-        elements.autoDeriveNormals = this._autoDeriveNormals;
-        elements.autoDeriveTangents = this._autoDeriveTangents;
+        elements.autoDeriveNormals = this._autoDeriveNormals = autoDeriveNormals;
+        elements.autoDeriveTangents = this._autoDeriveTangents = autoDeriveTangents;
     };
     /**
      * Clones the current object
@@ -13817,21 +13879,27 @@ var TriangleElements = (function (_super) {
         this.copyTo(clone);
         return clone;
     };
-    TriangleElements.prototype.scaleUV = function (scaleU, scaleV) {
+    TriangleElements.prototype.scaleUV = function (scaleU, scaleV, count, offset) {
         if (scaleU === void 0) { scaleU = 1; }
         if (scaleV === void 0) { scaleV = 1; }
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
         if (this.uvs)
-            ElementsUtils_1.default.scaleUVs(scaleU, scaleV, this.uvs, this._numVertices);
+            ElementsUtils_1.default.scaleUVs(scaleU, scaleV, this.uvs, count || this._numVertices, offset);
     };
     /**
      * Scales the geometry.
      * @param scale The amount by which to scale.
      */
-    TriangleElements.prototype.scale = function (scale) {
-        ElementsUtils_1.default.scale(scale, this.positions, this._numVertices);
+    TriangleElements.prototype.scale = function (scale, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        ElementsUtils_1.default.scale(scale, this.positions, count || this._numVertices, offset);
     };
-    TriangleElements.prototype.applyTransformation = function (transform) {
-        ElementsUtils_1.default.applyTransformation(transform, this.positions, this.normals, this.tangents, this._numVertices);
+    TriangleElements.prototype.applyTransformation = function (transform, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        ElementsUtils_1.default.applyTransformation(transform, this.positions, this.normals, this.tangents, count || this._numVertices, offset);
     };
     /**
      * Updates the tangents for each face.
@@ -13847,8 +13915,10 @@ var TriangleElements = (function (_super) {
         this._faceNormals = ElementsUtils_1.default.generateFaceNormals(this.indices, this.positions, this._faceNormals, this.numElements);
         this._faceNormalsDirty = false;
     };
-    TriangleElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollision) {
-        return pickingCollider.testTriangleCollision(this, material, pickingCollision);
+    TriangleElements.prototype._iTestCollision = function (pickingCollider, material, pickingCollision, count, offset) {
+        if (count === void 0) { count = 0; }
+        if (offset === void 0) { offset = 0; }
+        return pickingCollider.testTriangleCollision(this, material, pickingCollision, count || this._numVertices, offset);
     };
     TriangleElements.assetType = "[asset TriangleElements]";
     return TriangleElements;
@@ -16973,7 +17043,8 @@ var JSPickingCollider = (function () {
      * @param pickingCollision
      * @returns {boolean}
      */
-    JSPickingCollider.prototype.testTriangleCollision = function (triangleElements, material, pickingCollision) {
+    JSPickingCollider.prototype.testTriangleCollision = function (triangleElements, material, pickingCollision, count, offset) {
+        if (offset === void 0) { offset = 0; }
         var rayPosition = pickingCollision.rayPosition;
         var rayDirection = pickingCollision.rayDirection;
         var t;
@@ -16991,16 +17062,12 @@ var JSPickingCollider = (function () {
         var Q1Q2, Q1Q1, Q2Q2, RQ1, RQ2;
         var collisionTriangleIndex = -1;
         var bothSides = material.bothSides;
-        var positions = triangleElements.positions.get(triangleElements.numVertices);
+        var positions = triangleElements.positions.get(count, offset);
         var posDim = triangleElements.positions.dimensions;
         var indices;
-        var count;
         if (triangleElements.indices) {
             indices = triangleElements.indices.get(triangleElements.numElements);
             count = indices.length;
-        }
-        else {
-            count = triangleElements.numVertices;
         }
         for (var index = 0; index < count; index += 3) {
             // evaluate triangle indices
@@ -17249,7 +17316,8 @@ var JSPickingCollider = (function () {
      * @param pickingCollision
      * @returns {boolean}
      */
-    JSPickingCollider.prototype.testLineCollision = function (lineElements, material, pickingCollision) {
+    JSPickingCollider.prototype.testLineCollision = function (lineElements, material, pickingCollision, count, offset) {
+        if (offset === void 0) { offset = 0; }
         return false;
     };
     return JSPickingCollider;
@@ -21688,14 +21756,14 @@ var ElementsUtils = (function () {
         return vertexBuffer;
     };
     //TODO - generate this dyanamically based on num tris
-    ElementsUtils.hitTestTriangleElements = function (x, y, z, boundingBox, triangleElements) {
+    ElementsUtils.hitTestTriangleElements = function (x, y, z, triangleElements, count, offset) {
+        if (offset === void 0) { offset = 0; }
         var positionAttributes = triangleElements.positions;
         var curveAttributes = triangleElements.getCustomAtributes("curves");
-        var count = triangleElements.numVertices;
         var posDim = positionAttributes.dimensions;
         var curveDim = curveAttributes.dimensions;
-        var positions = positionAttributes.get(count);
-        var curves = curveAttributes ? curveAttributes.get(count) : null;
+        var positions = positionAttributes.get(count, offset);
+        var curves = curveAttributes ? curveAttributes.get(count, offset) : null;
         var id0;
         var id1;
         var id2;
@@ -21705,7 +21773,7 @@ var ElementsUtils = (function () {
         var by;
         var cx;
         var cy;
-        var index = triangleElements.lastCollisionIndex;
+        var index = triangleElements.lastCollisionIndex - offset;
         if (index != -1 && index < count) {
             precheck: {
                 id0 = index + 2;
@@ -21777,9 +21845,11 @@ var ElementsUtils = (function () {
             }
         }
         //hard coded min vertex count to bother using a grid for
-        if (count > 150) {
+        if (triangleElements.numVertices > 150) {
+            var boundingBox = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, triangleElements.numVertices);
+            var pos = positionAttributes.get(triangleElements.numVertices);
             var cells = triangleElements.cells;
-            var divisions = cells.length ? triangleElements.divisions : (triangleElements.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
+            var divisions = cells.length ? triangleElements.divisions : (triangleElements.divisions = Math.min(Math.ceil(Math.sqrt(triangleElements.numVertices)), 32));
             var conversionX = divisions / boundingBox.width;
             var conversionY = divisions / boundingBox.height;
             var minx = boundingBox.x;
@@ -21787,16 +21857,16 @@ var ElementsUtils = (function () {
             if (!cells.length) {
                 //now we have bounds start creating grid cells and filling
                 cells.length = divisions * divisions;
-                for (var k = 0; k < count; k += 3) {
+                for (var k = 0; k < triangleElements.numVertices; k += 3) {
                     id0 = k + 2;
                     id1 = k + 1;
                     id2 = k + 0;
-                    ax = positions[id0 * posDim];
-                    ay = positions[id0 * posDim + 1];
-                    bx = positions[id1 * posDim];
-                    by = positions[id1 * posDim + 1];
-                    cx = positions[id2 * posDim];
-                    cy = positions[id2 * posDim + 1];
+                    ax = pos[id0 * posDim];
+                    ay = pos[id0 * posDim + 1];
+                    bx = pos[id1 * posDim];
+                    by = pos[id1 * posDim + 1];
+                    cx = pos[id2 * posDim];
+                    cy = pos[id2 * posDim + 1];
                     //subtractions to push into positive space
                     var min_index_x = Math.floor((Math.min(ax, bx, cx) - minx) * conversionX);
                     var min_index_y = Math.floor((Math.min(ay, by, cy) - miny) * conversionY);
@@ -21821,11 +21891,11 @@ var ElementsUtils = (function () {
                 return false;
             var nodeCount = nodes.length;
             for (var k = 0; k < nodeCount; k += 3) {
-                id0 = nodes[k];
-                id1 = nodes[k + 1];
-                id2 = nodes[k + 2];
-                if (id2 == index)
+                id0 = nodes[k] - offset;
+                if (id0 < 0 || id0 >= count || id0 == index)
                     continue;
+                id1 = nodes[k + 1] - offset;
+                id2 = nodes[k + 2] - offset;
                 ax = positions[id0 * posDim];
                 ay = positions[id0 * posDim + 1];
                 bx = positions[id1 * posDim];
@@ -21882,7 +21952,7 @@ var ElementsUtils = (function () {
                             continue;
                     }
                 }
-                triangleElements.lastCollisionIndex = id2;
+                triangleElements.lastCollisionIndex = id0;
                 return true;
             }
             return false;
@@ -21963,8 +22033,6 @@ var ElementsUtils = (function () {
         if (offset === void 0) { offset = 0; }
         var positions = positionAttributes.get(count, offset);
         var posDim = positionAttributes.dimensions;
-        if (output == null)
-            output = new Box_1.default();
         var pos;
         var minX = 0, minY = 0, minZ = 0;
         var maxX = 0, maxY = 0, maxZ = 0;
@@ -21995,26 +22063,20 @@ var ElementsUtils = (function () {
                 }
             }
         }
-        if (output.x > minX)
-            output.x = minX;
-        if (output.y > minY)
-            output.y = minY;
-        if (output.z > minZ)
-            output.z = minZ;
-        if (output.right < maxX)
-            output.right = maxX;
-        if (output.bottom < maxY)
-            output.bottom = maxY;
-        if (output.back < maxZ)
-            output.back = maxZ;
+        if (output == null)
+            output = new Box_1.default();
+        output.x = minX;
+        output.y = minY;
+        output.z = minZ;
+        output.right = maxX;
+        output.bottom = maxY;
+        output.back = maxZ;
         return output;
     };
     ElementsUtils.getTriangleGraphicsSphereBounds = function (positionAttributes, center, output, count, offset) {
         if (offset === void 0) { offset = 0; }
         var positions = positionAttributes.get(count, offset);
         var posDim = positionAttributes.dimensions;
-        if (output == null)
-            output = new Sphere_1.default();
         var maxRadiusSquared = 0;
         var radiusSquared;
         var len = count * posDim;
@@ -22029,6 +22091,8 @@ var ElementsUtils = (function () {
             if (maxRadiusSquared < radiusSquared)
                 maxRadiusSquared = radiusSquared;
         }
+        if (output == null)
+            output = new Sphere_1.default();
         output.x = center.x;
         output.y = center.y;
         output.z = center.z;
