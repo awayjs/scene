@@ -581,17 +581,16 @@ class ElementsUtils
 
 	//TODO - generate this dyanamically based on num tris
 
-	public static hitTestTriangleElements(x:number, y:number, z:number, boundingBox:Box, triangleElements:TriangleElements):boolean
+	public static hitTestTriangleElements(x:number, y:number, z:number, triangleElements:TriangleElements, count:number, offset:number = 0):boolean
 	{
 		var positionAttributes:AttributesView = triangleElements.positions;
 		var curveAttributes:AttributesView = triangleElements.getCustomAtributes("curves");
-		var count:number = triangleElements.numVertices;
 
 		var posDim:number = positionAttributes.dimensions;
 		var curveDim:number = curveAttributes.dimensions;
 
-		var positions:ArrayBufferView = positionAttributes.get(count);
-		var curves:ArrayBufferView = curveAttributes? curveAttributes.get(count) : null;
+		var positions:ArrayBufferView = positionAttributes.get(count, offset);
+		var curves:ArrayBufferView = curveAttributes? curveAttributes.get(count, offset) : null;
 
 		var id0:number;
 		var id1:number;
@@ -604,7 +603,7 @@ class ElementsUtils
 		var cx:number;
 		var cy:number;
 
-		var index:number = triangleElements.lastCollisionIndex;
+		var index:number = triangleElements.lastCollisionIndex - offset;
 		if(index != -1 && index < count)
 		{
 			precheck:
@@ -698,9 +697,11 @@ class ElementsUtils
 
 
 		//hard coded min vertex count to bother using a grid for
-		if (count > 150) {
+		if (triangleElements.numVertices > 150) {
+			var boundingBox:Box = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, triangleElements.numVertices);
+			var pos:ArrayBufferView = positionAttributes.get(triangleElements.numVertices);
 			var cells:Array<Array<number>> = triangleElements.cells;
-			var divisions:number = cells.length? triangleElements.divisions : (triangleElements.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
+			var divisions:number = cells.length? triangleElements.divisions : (triangleElements.divisions = Math.min(Math.ceil(Math.sqrt(triangleElements.numVertices)), 32));
 			var conversionX:number = divisions/boundingBox.width;
 			var conversionY:number = divisions/boundingBox.height;
 			var minx:number = boundingBox.x;
@@ -711,17 +712,17 @@ class ElementsUtils
 				//now we have bounds start creating grid cells and filling
 				cells.length = divisions * divisions;
 
-				for(var k:number = 0; k < count; k+=3) {
+				for(var k:number = 0; k < triangleElements.numVertices; k+=3) {
 					id0 = k + 2;
 					id1 = k + 1;
 					id2 = k + 0;
 
-					ax = positions[id0 * posDim];
-					ay = positions[id0 * posDim + 1];
-					bx = positions[id1 * posDim];
-					by = positions[id1 * posDim + 1];
-					cx = positions[id2 * posDim];
-					cy = positions[id2 * posDim + 1];
+					ax = pos[id0 * posDim];
+					ay = pos[id0 * posDim + 1];
+					bx = pos[id1 * posDim];
+					by = pos[id1 * posDim + 1];
+					cx = pos[id2 * posDim];
+					cy = pos[id2 * posDim + 1];
 
 					//subtractions to push into positive space
 					var min_index_x:number = Math.floor((Math.min(ax, bx, cx) - minx)*conversionX);
@@ -756,12 +757,13 @@ class ElementsUtils
 
 			var nodeCount:number = nodes.length;
 			for (var k:number = 0; k < nodeCount; k += 3) {
-				id0 = nodes[k];
-				id1 = nodes[k + 1];
-				id2 = nodes[k + 2];
+				id0 = nodes[k] - offset;
 
-				if(id2 == index) continue;
+				if(id0 < 0 || id0 >= count || id0 == index) continue;
 
+				id1 = nodes[k + 1] - offset;
+				id2 = nodes[k + 2] - offset;
+				
 				ax = positions[id0 * posDim];
 				ay = positions[id0 * posDim + 1];
 				bx = positions[id1 * posDim];
@@ -834,7 +836,7 @@ class ElementsUtils
 							continue;
 					}
 				}
-				triangleElements.lastCollisionIndex = id2;
+				triangleElements.lastCollisionIndex = id0;
 				return true;
 			}
 			return false;
@@ -936,9 +938,6 @@ class ElementsUtils
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var posDim:number = positionAttributes.dimensions;
 
-		if (output == null)
-			output = new Box();
-
 		var pos:number;
 		var minX:number = 0, minY:number = 0, minZ:number = 0;
 		var maxX:number = 0, maxY:number = 0, maxZ:number = 0;
@@ -973,24 +972,16 @@ class ElementsUtils
 				}
 			}
 		}
-
-		if (output.x > minX)
-			output.x = minX;
-
-		if (output.y > minY)
-			output.y = minY;
-
-		if (output.z > minZ)
-			output.z = minZ;
-
-		if (output.right < maxX)
-			output.right = maxX;
-
-		if (output.bottom < maxY)
-			output.bottom = maxY;
-
-		if (output.back < maxZ)
-			output.back = maxZ;
+		
+		if (output == null)
+			output = new Box();
+		
+		output.x = minX;
+		output.y = minY;
+		output.z = minZ;
+		output.right = maxX;
+		output.bottom = maxY;
+		output.back = maxZ;
 
 		return output;
 	}
@@ -999,9 +990,6 @@ class ElementsUtils
 	{
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var posDim:number = positionAttributes.dimensions;
-
-		if (output == null)
-			output = new Sphere();
 
 		var maxRadiusSquared:number = 0;
 		var radiusSquared:number;
@@ -1020,6 +1008,9 @@ class ElementsUtils
 				maxRadiusSquared = radiusSquared;
 		}
 
+		if (output == null)
+			output = new Sphere();
+		
 		output.x = center.x;
 		output.y = center.y;
 		output.z = center.z;

@@ -11,6 +11,7 @@ import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 
 import ElementsBase					from "../graphics/ElementsBase";
+import Graphic						from "../graphics/Graphic";
 import MaterialBase					from "../materials/MaterialBase";
 import ElementsUtils				from "../utils/ElementsUtils";
 import IPickingCollider				from "../pick/IPickingCollider";
@@ -22,8 +23,7 @@ import PickingCollision				from "../pick/PickingCollision";
 class TriangleElements extends ElementsBase
 {
 	public static assetType:string = "[asset TriangleElements]";
-
-	private _numVertices:number = 0;
+	
 	private _faceNormalsDirty:boolean = true;
 	private _faceTangentsDirty:boolean = true;
 
@@ -53,12 +53,6 @@ class TriangleElements extends ElementsBase
 	public get assetType():string
 	{
 		return TriangleElements.assetType;
-	}
-
-
-	public get numVertices():number
-	{
-		return this._numVertices;
 	}
 
 	/**
@@ -219,19 +213,19 @@ class TriangleElements extends ElementsBase
 		return this._condensedIndexLookUp;
 	}
 
-	public getBoxBounds(target:Box = null):Box
+	public getBoxBounds(target:Box = null, count:number = 0, offset:number = 0):Box
 	{
-		return ElementsUtils.getTriangleGraphicsBoxBounds(this.positions, target, this._numVertices);
+		return ElementsUtils.getTriangleGraphicsBoxBounds(this.positions, target, count || this._numVertices, offset);
 	}
 
-	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
+	public getSphereBounds(center:Vector3D, target:Sphere = null, count:number = 0, offset:number = 0):Sphere
 	{
-		return ElementsUtils.getTriangleGraphicsSphereBounds(this.positions, center, target, this._numVertices);
+		return ElementsUtils.getTriangleGraphicsSphereBounds(this.positions, center, target, count || this._numVertices, offset);
 	}
 
-	public hitTestPoint(x:number, y:number, z:number):boolean
+	public hitTestPoint(x:number, y:number, z:number, count:number = 0, offset:number = 0):boolean
 	{
-		return true;
+		return ElementsUtils.hitTestTriangleElements(x, y, 0, this, count || this._numVertices, offset);
 	}
 
 	/**
@@ -531,6 +525,11 @@ class TriangleElements extends ElementsBase
 		elements.autoDeriveNormals = false;
 		elements.autoDeriveTangents = false;
 
+		var autoDeriveNormals:boolean = this._autoDeriveNormals;
+		var autoDeriveTangents:boolean = this._autoDeriveTangents;
+		this._autoDeriveNormals = false;
+		this._autoDeriveTangents = false;
+
 		elements.setPositions(this.positions.clone());
 
 		if (this.normals)
@@ -551,8 +550,8 @@ class TriangleElements extends ElementsBase
 			elements.setJointWeights(this.jointWeights.clone());
 
 		//return auto derives to cloned values
-		elements.autoDeriveNormals = this._autoDeriveNormals;
-		elements.autoDeriveTangents = this._autoDeriveTangents;
+		elements.autoDeriveNormals = this._autoDeriveNormals = autoDeriveNormals;
+		elements.autoDeriveTangents = this._autoDeriveTangents = autoDeriveTangents;
 	}
 
 	/**
@@ -568,24 +567,24 @@ class TriangleElements extends ElementsBase
 		return clone;
 	}
 
-	public scaleUV(scaleU:number = 1, scaleV:number = 1)
+	public scaleUV(scaleU:number = 1, scaleV:number = 1, count:number = 0, offset:number = 0)
 	{
 		if (this.uvs) // only scale if uvs exist
-			ElementsUtils.scaleUVs(scaleU, scaleV, this.uvs, this._numVertices);
+			ElementsUtils.scaleUVs(scaleU, scaleV, this.uvs, count || this._numVertices, offset);
 	}
 
 	/**
 	 * Scales the geometry.
 	 * @param scale The amount by which to scale.
 	 */
-	public scale(scale:number)
+	public scale(scale:number, count:number = 0, offset:number = 0)
 	{
-		ElementsUtils.scale(scale, this.positions, this._numVertices);
+		ElementsUtils.scale(scale, this.positions, count || this._numVertices, offset);
 	}
 
-	public applyTransformation(transform:Matrix3D)
+	public applyTransformation(transform:Matrix3D, count:number = 0, offset:number = 0)
 	{
-		ElementsUtils.applyTransformation(transform, this.positions, this.normals, this.tangents, this._numVertices);
+		ElementsUtils.applyTransformation(transform, this.positions, this.normals, this.tangents, count || this._numVertices, offset);
 	}
 
 	/**
@@ -608,9 +607,9 @@ class TriangleElements extends ElementsBase
 		this._faceNormalsDirty = false;
 	}
 
-	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision, count:number = 0, offset:number = 0):boolean
 	{
-		return pickingCollider.testTriangleCollision(this, material, pickingCollision);
+		return pickingCollider.testTriangleCollision(this, material, pickingCollision, count || this._numVertices, offset);
 	}
 }
 

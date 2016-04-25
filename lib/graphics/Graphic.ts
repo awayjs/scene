@@ -1,23 +1,21 @@
-import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import Box							from "awayjs-core/lib/geom/Box";
 import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Matrix						from "awayjs-core/lib/geom/Matrix";
-import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
+import Sphere						from "awayjs-core/lib/geom/Sphere";
+import Vector3D						from "awayjs-core/lib/geom/Vector3D";
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
 import IAnimator					from "../animators/IAnimator";
-import Camera						from "../display/Camera";
-import Sprite						from "../display/Sprite";
-import RenderableEvent			from "../events/RenderableEvent";
+import RenderableEvent				from "../events/RenderableEvent";
 import MaterialBase					from "../materials/MaterialBase";
 import Style						from "../base/Style";
 import StyleEvent					from "../events/StyleEvent";
-import IRenderable 			from "../base/IRenderable";
+import ElementsEvent				from "../events/ElementsEvent";
+import IRenderable 					from "../base/IRenderable";
 import Graphics						from "../graphics/Graphics";
 import ElementsBase					from "../graphics/ElementsBase";
-import IPickingCollider from "../pick/IPickingCollider";
-import PickingCollision from "../pick/PickingCollision";
-import DisplayObject from "../display/DisplayObject";
+import TriangleElements				from "../graphics/TriangleElements";
+import IPickingCollider				from "../pick/IPickingCollider";
+import PickingCollision				from "../pick/PickingCollision";
 
 /**
  * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Sprite object.
@@ -36,10 +34,19 @@ class Graphic extends AssetBase implements IRenderable
 
 	public _iIndex:number = 0;
 
+	private _boxBounds:Box;
+	private _boxBoundsInvalid:boolean = true;
+	private _sphereBounds:Sphere;
+	private _sphereBoundsInvalid = true;
 	private _style:Style;
 	private _material:MaterialBase;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
+	private _onInvalidateVerticesDelegate:(event:ElementsEvent) => void;
 
+	public count:number;
+
+	public offset:number;
+	
 	public parent:Graphics;
 
 	/**
@@ -118,17 +125,20 @@ class Graphic extends AssetBase implements IRenderable
 	/**
 	 * Creates a new Graphic object
 	 */
-	constructor(index:number, parent:Graphics, elements:ElementsBase, material:MaterialBase = null, style:Style = null)
+	constructor(index:number, parent:Graphics, elements:ElementsBase, material:MaterialBase = null, style:Style = null, count:number = 0, offset:number = 0)
 	{
 		super();
 
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
-
+		this._onInvalidateVerticesDelegate = (event:ElementsEvent) => this._onInvalidateVertices(event);
+		
 		this._iIndex = index;
 		this.parent = parent;
 		this.elements = elements;
 		this.material = material;
 		this.style = style;
+		this.count = count;
+		this.offset = offset;
 	}
 
 	/**
@@ -144,9 +154,20 @@ class Graphic extends AssetBase implements IRenderable
 		Graphic._available.push(this);
 	}
 
+	public invalidate()
+	{
+		super.invalidate();
+
+		this._boxBoundsInvalid = true;
+		this._sphereBoundsInvalid = true;
+	}
+	
 	public invalidateElements()
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
+
+		this._boxBoundsInvalid = true;
+		this._sphereBoundsInvalid = true;
 	}
 
 	public invalidateSurface()
@@ -169,6 +190,16 @@ class Graphic extends AssetBase implements IRenderable
 		this.invalidateSurface();
 	}
 
+	private _onInvalidateVertices(event:ElementsEvent)
+	{
+		if (event.attributesView != (<TriangleElements> event.target).positions)
+			return;
+		
+		this.invalidate();
+		
+		this.dispatchEvent(event);
+	}
+	
 	/**
 	 * //TODO
 	 *
@@ -180,9 +211,48 @@ class Graphic extends AssetBase implements IRenderable
 	 */
 	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
 	{
-		return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision)
+		return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision, this.count, this.offset)
 	}
 
+
+	public applyTransformation(transform:Matrix3D)
+	{
+		this.elements.applyTransformation(transform, this.count, this.offset);
+	}
+
+	public hitTestPoint(x:number, y:number, z:number)
+	{
+		return this.elements.hitTestPoint(x, y, z, this.count, this.offset);
+	}
+	
+	public scale(scale:number)
+	{
+		this.elements.scale(scale, this.count, this.offset);
+	}
+
+	public scaleUV(scaleU:number = 1, scaleV:number = 1)
+	{
+		this.elements.scaleUV(scaleU, scaleV, this.count, this.offset);
+	}
+
+	public getBoxBounds():Box
+	{
+		if (this._boxBoundsInvalid) {
+			this._boxBoundsInvalid = false;
+
+			if (!this._boxBounds)
+				this._boxBounds = new Box();
+			
+			this._boxBounds = this.elements.getBoxBounds(this._boxBounds, this.count, this.offset);
+		}
+
+		return this._boxBounds;
+	}
+
+	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
+	{
+		return this.elements.getSphereBounds(center, target, this.count, this.offset);
+	}
 }
 
 export default Graphic;

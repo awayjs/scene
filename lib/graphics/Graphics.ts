@@ -1,4 +1,3 @@
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
 import Point						from "awayjs-core/lib/geom/Point";
 import Box							from "awayjs-core/lib/geom/Box";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";
@@ -16,31 +15,28 @@ import MaterialBase					from "../materials/MaterialBase";
 import IAnimator 					from "../animators/IAnimator";
 import ElementsEvent				from "../events/ElementsEvent";
 import StyleEvent					from "../events/StyleEvent";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
 import ITraverser					from "../ITraverser";
-import ElementsUtils				from "../utils/ElementsUtils";
 import ParticleData					from "../animators/data/ParticleData";
 
 
 
 
-import GraphicsPath				from "../draw/GraphicsPath";
-import GraphicsPathCommand		from "../draw/GraphicsPathCommand";
+import GraphicsPath					from "../draw/GraphicsPath";
+import GraphicsPathCommand			from "../draw/GraphicsPathCommand";
 import GraphicsFactoryFills			from "../draw/GraphicsFactoryFills";
 import GraphicsFactoryStrokes		from "../draw/GraphicsFactoryStrokes";
 import PartialImplementationError	from "awayjs-core/lib/errors/PartialImplementationError";
-import InterpolationMethod		from "../draw/InterpolationMethod";
-import JointStyle				from "../draw/JointStyle";
-import LineScaleMode			from "../draw/LineScaleMode";
-import TriangleCulling			from "../draw/TriangleCulling";
-import SpreadMethod				from "../draw/SpreadMethod";
-import CapsStyle				from "../draw/CapsStyle";
-import GradientType				from "../draw/GradientType";
-import GraphicsPathWinding		from "../draw/GraphicsPathWinding";
-import IGraphicsData			from "../draw/IGraphicsData";
-import GraphicsStrokeStyle				from "../draw/GraphicsStrokeStyle";
-import GraphicsFillStyle				from "../draw/GraphicsFillStyle";
+import InterpolationMethod			from "../draw/InterpolationMethod";
+import JointStyle					from "../draw/JointStyle";
+import LineScaleMode				from "../draw/LineScaleMode";
+import TriangleCulling				from "../draw/TriangleCulling";
+import SpreadMethod					from "../draw/SpreadMethod";
+import CapsStyle					from "../draw/CapsStyle";
+import GradientType					from "../draw/GradientType";
+import GraphicsPathWinding			from "../draw/GraphicsPathWinding";
+import IGraphicsData				from "../draw/IGraphicsData";
+import GraphicsStrokeStyle			from "../draw/GraphicsStrokeStyle";
+import GraphicsFillStyle			from "../draw/GraphicsFillStyle";
 
 
 /**
@@ -218,7 +214,7 @@ class Graphics extends AssetBase
 	 *
 	 * @param elements
 	 */
-	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null):Graphic
+	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null, count:number = 0, offset:number = 0):Graphic
 	{
 		var graphic:Graphic;
 
@@ -229,13 +225,15 @@ class Graphics extends AssetBase
 			graphic.elements = elements;
 			graphic.material = material;
 			graphic.style = style;
+			graphic.count = count;
+			graphic.offset = offset;
 		} else {
-			graphic = new Graphic(this._graphics.length, this, elements, material, style);
+			graphic = new Graphic(this._graphics.length, this, elements, material, style, count, offset);
 		}
 
 		this._graphics.push(graphic);
 
-		elements.addEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
+		graphic.addEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
 
 		this.invalidate();
 
@@ -246,7 +244,7 @@ class Graphics extends AssetBase
 	{
 		this._graphics.splice(this._graphics.indexOf(graphic), 1);
 
-		graphic.elements.removeEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
+		graphic.removeEventListener(ElementsEvent.INVALIDATE_VERTICES, this._onInvalidateVerticesDelegate);
 
 		graphic.elements = null;
 		graphic.material = null;
@@ -265,7 +263,7 @@ class Graphics extends AssetBase
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i)
-			this._graphics[i].elements.applyTransformation(transform);
+			this._graphics[i].applyTransformation(transform);
 	}
 
 	public copyTo(graphics:Graphics)
@@ -278,7 +276,7 @@ class Graphics extends AssetBase
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i) {
 			graphic = this._graphics[i];
-			graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle());
+			graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle(), graphic.count, graphic.offset);
 		}
 
 		if (this._animator)
@@ -301,7 +299,7 @@ class Graphics extends AssetBase
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i)
-			this._graphics[i].elements.scale(scale);
+			this._graphics[i].scale(scale);
 	}
 
 	public clear()
@@ -335,7 +333,7 @@ class Graphics extends AssetBase
 		var len:number = this._graphics.length;
 
 		for (var i:number = 0; i < len; ++i)
-			this._graphics[i].elements.scaleUV(scaleU, scaleV);
+			this._graphics[i].scaleUV(scaleU, scaleV);
 	}
 
 	public getBoxBounds():Box
@@ -350,7 +348,7 @@ class Graphics extends AssetBase
 				this._boxBounds.setBoundIdentity();
 				var len:number = this._graphics.length;
 				for (var i:number = 0; i < len; i++)
-					this._boxBounds = this._graphics[i].elements.getBoxBounds(this._boxBounds);
+					this._boxBounds = this._boxBounds.union(this._graphics[i].getBoxBounds(), this._boxBounds);
 			} else {
 				this._boxBounds.setEmpty();
 			}
@@ -364,7 +362,7 @@ class Graphics extends AssetBase
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; i++)
-			target = this._graphics[i].elements.getSphereBounds(center, target);
+			target = this._graphics[i].getSphereBounds(center, target);
 
 		return target;
 	}
@@ -397,7 +395,7 @@ class Graphics extends AssetBase
 		//TODO: handle lines as well
 		var len:number = this._graphics.length;
 		for(var i:number = 0; i < len; i++)
-			if (ElementsUtils.hitTestTriangleElements(x, y, 0, this.getBoxBounds(), <TriangleElements> this._graphics[i].elements))
+			if (this._graphics[i].hitTestPoint(x, y, 0))
 				return true;
 
 		return false;

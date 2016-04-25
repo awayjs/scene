@@ -36,7 +36,7 @@ interface IPickingCollider
 	 * @param pickingCollision
 	 * @param shortestCollisionDistance
 	 */
-	testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset?:number):boolean
 
 	/**
 	 * Tests a <code>LineElements</code> object for a collision with the picking ray.
@@ -46,7 +46,7 @@ interface IPickingCollider
 	 * @param pickingCollision
 	 * @param shortestCollisionDistance
 	 */
-	testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset?:number):boolean
 
 }
 

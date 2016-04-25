@@ -61,7 +61,7 @@ class JSPickingCollider implements IPickingCollider
 	 * @param pickingCollision
 	 * @returns {boolean}
 	 */
-	public testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	public testTriangleCollision(triangleElements:TriangleElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset:number = 0):boolean
 	{
 		var rayPosition:Vector3D = pickingCollision.rayPosition;
 		var rayDirection:Vector3D = pickingCollision.rayDirection;
@@ -81,16 +81,13 @@ class JSPickingCollider implements IPickingCollider
 		var collisionTriangleIndex:number = -1;
 		var bothSides:boolean = material.bothSides;
 
-		var positions:ArrayBufferView = triangleElements.positions.get(triangleElements.numVertices);
+		var positions:ArrayBufferView = triangleElements.positions.get(count, offset);
 		var posDim:number = triangleElements.positions.dimensions;
 
 		var indices:Uint16Array;
-		var count:number;
 		if (triangleElements.indices) {
 			indices = triangleElements.indices.get(triangleElements.numElements);
 			count = indices.length;
-		} else {
-			count = triangleElements.numVertices;
 		}
 
 		for (var index:number = 0; index < count; index+=3) { // sweep all triangles
@@ -350,7 +347,7 @@ class JSPickingCollider implements IPickingCollider
 	 * @param pickingCollision
 	 * @returns {boolean}
 	 */
-	public testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	public testLineCollision(lineElements:LineElements, material:MaterialBase, pickingCollision:PickingCollision, count:number, offset:number = 0):boolean
 	{
 		return false;
 	}

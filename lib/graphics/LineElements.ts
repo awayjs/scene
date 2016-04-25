@@ -20,8 +20,6 @@ class LineElements extends ElementsBase
 {
 	public static assetType:string = "[asset LineElements]";
 
-	private _numVertices:number = 0;
-
 	private _positions:AttributesView;
 	private _thickness:Float1Attributes;
 	private _colors:Byte4Attributes;
@@ -60,14 +58,6 @@ class LineElements extends ElementsBase
 			this.setColors(this._colors);
 
 		return this._colors;
-	}
-
-	/**
-	 * The total amount of vertices in the LineElements.
-	 */
-	public get numVertices():number
-	{
-		return this._numVertices;
 	}
 
 	/**
@@ -287,9 +277,9 @@ class LineElements extends ElementsBase
 		return clone;
 	}
 
-	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision, count:number = 0, offset:number = 0):boolean
 	{
-		return pickingCollider.testLineCollision(this, material, pickingCollision);
+		return pickingCollider.testLineCollision(this, material, pickingCollision, count || this._numVertices, offset);
 	}
 }
 

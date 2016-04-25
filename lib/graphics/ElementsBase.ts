@@ -11,6 +11,7 @@ import Rectangle					from "awayjs-core/lib/geom/Rectangle";
 import AssetBase					from "awayjs-core/lib/library/AssetBase";
 
 import ElementsEvent				from "../events/ElementsEvent";
+import Graphic						from "../graphics/Graphic";
 import IPickingCollider				from "../pick/IPickingCollider";
 import PickingCollision				from "../pick/PickingCollision";
 import MaterialBase					from "../materials/MaterialBase";
@@ -25,7 +26,7 @@ class ElementsBase extends AssetBase
 	private _customAttributes:Object = new Object();
 	
 	private _numElements:number = 0;
-
+	public _numVertices:number = 0;
 	public _concatenatedBuffer:AttributesBuffer;
 
 	private _invalidateIndices:ElementsEvent;
@@ -73,7 +74,7 @@ class ElementsBase extends AssetBase
 
 	public get numVertices():number
 	{
-		throw new AbstractMethodError();
+		return this._numVertices;
 	}
 
 	/**
@@ -193,36 +194,36 @@ class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public applyTransformation(transform:Matrix3D)
+	public applyTransformation(transform:Matrix3D, count:number = 0, offset:number = 0)
 	{
-
+		throw new AbstractMethodError();
 	}
 
 	/**
 	 * Scales the geometry.
 	 * @param scale The amount by which to scale.
 	 */
-	public scale(scale:number)
-	{
-
-	}
-
-	public scaleUV(scaleU:number = 1, scaleV:number = 1)
-	{
-
-	}
-
-	public getBoxBounds(target:Box = null):Box
+	public scale(scale:number, count:number = 0, offset:number = 0)
 	{
 		throw new AbstractMethodError();
 	}
 
-	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
+	public scaleUV(scaleU:number = 1, scaleV:number = 1, count:number = 0, offset:number = 0)
 	{
 		throw new AbstractMethodError();
 	}
 
-	public hitTestPoint(x:number, y:number, z:number, box:Box):boolean
+	public getBoxBounds(target:Box = null, count:number = 0, offset:number = 0):Box
+	{
+		throw new AbstractMethodError();
+	}
+
+	public getSphereBounds(center:Vector3D, target:Sphere = null, count:number = 0, offset:number = 0):Sphere
+	{
+		throw new AbstractMethodError();
+	}
+
+	public hitTestPoint(x:number, y:number, z:number, count:number = 0, offset:number = 0):boolean
 	{
 		throw new AbstractMethodError();
 	}
@@ -267,7 +268,7 @@ class ElementsBase extends AssetBase
 		this._invalidateVertices[attributesView.id] = null;
 	}
 
-	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision):boolean
+	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision, count:number = 0, offset:number = 0):boolean
 	{
 		throw new AbstractMethodError();
 	}
