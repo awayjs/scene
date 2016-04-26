@@ -13189,7 +13189,28 @@ var Graphic = (function (_super) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Graphic;
 
-},{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
+},{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/HitTestCache":[function(require,module,exports){
+"use strict";
+/**
+ * @class away.base.HitTestCache
+ */
+var HitTestCache = (function () {
+    function HitTestCache() {
+        /**
+         *
+         */
+        this.cells = new Array();
+        /**
+         *
+         */
+        this.lastCollisionIndex = -1;
+    }
+    return HitTestCache;
+}());
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = HitTestCache;
+
+},{}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -13448,8 +13469,7 @@ var TriangleElements = (function (_super) {
         this._autoDeriveNormals = true;
         this._autoDeriveTangents = true;
         //used for hittesting geometry
-        this.cells = new Array();
-        this.lastCollisionIndex = -1;
+        this.hitTestCache = new Object();
     }
     Object.defineProperty(TriangleElements.prototype, "assetType", {
         get: function () {
@@ -21302,6 +21322,7 @@ var Byte4Attributes_1 = require("awayjs-core/lib/attributes/Byte4Attributes");
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
 var Box_1 = require("awayjs-core/lib/geom/Box");
 var Sphere_1 = require("awayjs-core/lib/geom/Sphere");
+var HitTestCache_1 = require("../graphics/HitTestCache");
 var ElementsUtils = (function () {
     function ElementsUtils() {
     }
@@ -21773,7 +21794,8 @@ var ElementsUtils = (function () {
         var by;
         var cx;
         var cy;
-        var index = triangleElements.lastCollisionIndex - offset;
+        var hitTestCache = triangleElements.hitTestCache[offset] || (triangleElements.hitTestCache[offset] = new HitTestCache_1.default());
+        var index = hitTestCache.lastCollisionIndex;
         if (index != -1 && index < count) {
             precheck: {
                 id0 = index + 2;
@@ -21845,11 +21867,10 @@ var ElementsUtils = (function () {
             }
         }
         //hard coded min vertex count to bother using a grid for
-        if (triangleElements.numVertices > 150) {
-            var boundingBox = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, triangleElements.numVertices);
-            var pos = positionAttributes.get(triangleElements.numVertices);
-            var cells = triangleElements.cells;
-            var divisions = cells.length ? triangleElements.divisions : (triangleElements.divisions = Math.min(Math.ceil(Math.sqrt(triangleElements.numVertices)), 32));
+        if (count > 150) {
+            var boundingBox = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, count, offset);
+            var cells = hitTestCache.cells;
+            var divisions = cells.length ? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
             var conversionX = divisions / boundingBox.width;
             var conversionY = divisions / boundingBox.height;
             var minx = boundingBox.x;
@@ -21857,16 +21878,16 @@ var ElementsUtils = (function () {
             if (!cells.length) {
                 //now we have bounds start creating grid cells and filling
                 cells.length = divisions * divisions;
-                for (var k = 0; k < triangleElements.numVertices; k += 3) {
+                for (var k = 0; k < count; k += 3) {
                     id0 = k + 2;
                     id1 = k + 1;
                     id2 = k + 0;
-                    ax = pos[id0 * posDim];
-                    ay = pos[id0 * posDim + 1];
-                    bx = pos[id1 * posDim];
-                    by = pos[id1 * posDim + 1];
-                    cx = pos[id2 * posDim];
-                    cy = pos[id2 * posDim + 1];
+                    ax = positions[id0 * posDim];
+                    ay = positions[id0 * posDim + 1];
+                    bx = positions[id1 * posDim];
+                    by = positions[id1 * posDim + 1];
+                    cx = positions[id2 * posDim];
+                    cy = positions[id2 * posDim + 1];
                     //subtractions to push into positive space
                     var min_index_x = Math.floor((Math.min(ax, bx, cx) - minx) * conversionX);
                     var min_index_y = Math.floor((Math.min(ay, by, cy) - miny) * conversionY);
@@ -21891,11 +21912,11 @@ var ElementsUtils = (function () {
                 return false;
             var nodeCount = nodes.length;
             for (var k = 0; k < nodeCount; k += 3) {
-                id0 = nodes[k] - offset;
-                if (id0 < 0 || id0 >= count || id0 == index)
+                id2 = nodes[k + 2];
+                if (id2 == index)
                     continue;
-                id1 = nodes[k + 1] - offset;
-                id2 = nodes[k + 2] - offset;
+                id1 = nodes[k + 1];
+                id0 = nodes[k];
                 ax = positions[id0 * posDim];
                 ay = positions[id0 * posDim + 1];
                 bx = positions[id1 * posDim];
@@ -21952,18 +21973,18 @@ var ElementsUtils = (function () {
                             continue;
                     }
                 }
-                triangleElements.lastCollisionIndex = id0;
+                hitTestCache.lastCollisionIndex = id2;
                 return true;
             }
             return false;
         }
         //brute force
         for (var k = 0; k < count; k += 3) {
-            id0 = k + 2;
-            id1 = k + 1;
             id2 = k + 0;
             if (id2 == index)
                 continue;
+            id1 = k + 1;
+            id0 = k + 2;
             ax = positions[id0 * posDim];
             ay = positions[id0 * posDim + 1];
             bx = positions[id1 * posDim];
@@ -22024,7 +22045,7 @@ var ElementsUtils = (function () {
                     }
                 }
             }
-            triangleElements.lastCollisionIndex = id2;
+            hitTestCache.lastCollisionIndex = id2;
             return true;
         }
         return false;
@@ -22108,7 +22129,7 @@ var ElementsUtils = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ElementsUtils;
 
-},{"awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/utils":[function(require,module,exports){
+},{"../graphics/HitTestCache":"awayjs-display/lib/graphics/HitTestCache","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/utils":[function(require,module,exports){
 "use strict";
 var Cast_1 = require("./utils/Cast");
 exports.Cast = Cast_1.default;
