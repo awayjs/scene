@@ -11,6 +11,7 @@ import Box						from "awayjs-core/lib/geom/Box";
 import Sphere					from "awayjs-core/lib/geom/Sphere";
 
 import TriangleElements			from "../graphics/TriangleElements";
+import HitTestCache			from "../graphics/HitTestCache";
 
 class ElementsUtils
 {
@@ -603,7 +604,9 @@ class ElementsUtils
 		var cx:number;
 		var cy:number;
 
-		var index:number = triangleElements.lastCollisionIndex - offset;
+		var hitTestCache:HitTestCache = triangleElements.hitTestCache[offset] || (triangleElements.hitTestCache[offset] = new HitTestCache());
+		var index:number = hitTestCache.lastCollisionIndex;
+		
 		if(index != -1 && index < count)
 		{
 			precheck:
@@ -697,11 +700,10 @@ class ElementsUtils
 
 
 		//hard coded min vertex count to bother using a grid for
-		if (triangleElements.numVertices > 150) {
-			var boundingBox:Box = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, triangleElements.numVertices);
-			var pos:ArrayBufferView = positionAttributes.get(triangleElements.numVertices);
-			var cells:Array<Array<number>> = triangleElements.cells;
-			var divisions:number = cells.length? triangleElements.divisions : (triangleElements.divisions = Math.min(Math.ceil(Math.sqrt(triangleElements.numVertices)), 32));
+		if (count > 150) {
+			var boundingBox:Box = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, count, offset);
+			var cells:Array<Array<number>> = hitTestCache.cells;
+			var divisions:number = cells.length? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
 			var conversionX:number = divisions/boundingBox.width;
 			var conversionY:number = divisions/boundingBox.height;
 			var minx:number = boundingBox.x;
@@ -712,17 +714,17 @@ class ElementsUtils
 				//now we have bounds start creating grid cells and filling
 				cells.length = divisions * divisions;
 
-				for(var k:number = 0; k < triangleElements.numVertices; k+=3) {
+				for(var k:number = 0; k < count; k+=3) {
 					id0 = k + 2;
 					id1 = k + 1;
 					id2 = k + 0;
 
-					ax = pos[id0 * posDim];
-					ay = pos[id0 * posDim + 1];
-					bx = pos[id1 * posDim];
-					by = pos[id1 * posDim + 1];
-					cx = pos[id2 * posDim];
-					cy = pos[id2 * posDim + 1];
+					ax = positions[id0 * posDim];
+					ay = positions[id0 * posDim + 1];
+					bx = positions[id1 * posDim];
+					by = positions[id1 * posDim + 1];
+					cx = positions[id2 * posDim];
+					cy = positions[id2 * posDim + 1];
 
 					//subtractions to push into positive space
 					var min_index_x:number = Math.floor((Math.min(ax, bx, cx) - minx)*conversionX);
@@ -757,12 +759,12 @@ class ElementsUtils
 
 			var nodeCount:number = nodes.length;
 			for (var k:number = 0; k < nodeCount; k += 3) {
-				id0 = nodes[k] - offset;
+				id2 = nodes[k + 2];
 
-				if(id0 < 0 || id0 >= count || id0 == index) continue;
+				if(id2 == index) continue;
 
-				id1 = nodes[k + 1] - offset;
-				id2 = nodes[k + 2] - offset;
+				id1 = nodes[k + 1];
+				id0 = nodes[k];
 				
 				ax = positions[id0 * posDim];
 				ay = positions[id0 * posDim + 1];
@@ -836,7 +838,7 @@ class ElementsUtils
 							continue;
 					}
 				}
-				triangleElements.lastCollisionIndex = id0;
+				hitTestCache.lastCollisionIndex = id2;
 				return true;
 			}
 			return false;
@@ -844,12 +846,13 @@ class ElementsUtils
 
 		//brute force
 		for(var k:number = 0; k < count; k += 3) {
-			id0 = k + 2;
-			id1 = k + 1;
 			id2 = k + 0;
 
 			if(id2 == index) continue;
-
+			
+			id1 = k + 1;
+			id0 = k + 2;
+			
 			ax = positions[id0 * posDim];
 			ay = positions[id0 * posDim + 1];
 			bx = positions[id1 * posDim];
@@ -927,7 +930,7 @@ class ElementsUtils
 					}
 				}
 			}
-			triangleElements.lastCollisionIndex = id2;
+			hitTestCache.lastCollisionIndex = id2;
 			return true;
 		}
 		return false;

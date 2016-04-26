@@ -46,9 +46,7 @@ class TriangleElements extends ElementsBase
 	private _faceTangents:Float3Attributes;
 
 	//used for hittesting geometry
-	public cells:Array<Array<number>> = new Array<Array<number>>();
-	public lastCollisionIndex:number = - 1;
-	public divisions:number;
+	public hitTestCache:Object = new Object();
 
 	public get assetType():string
 	{
