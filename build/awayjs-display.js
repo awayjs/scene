@@ -13043,6 +13043,22 @@ var Graphic = (function (_super) {
         this.count = count;
         this.offset = offset;
     }
+    Object.defineProperty(Graphic.prototype, "elements", {
+        /**
+         * The Elements object which provides the geometry data for this Graphic.
+         */
+        get: function () {
+            return this._elements;
+        },
+        set: function (value) {
+            if (this._elements == value)
+                return;
+            this._elements = value;
+            this.invalidateElements();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Graphic.prototype, "assetType", {
         /**
          *
@@ -13153,34 +13169,34 @@ var Graphic = (function (_super) {
      * @internal
      */
     Graphic.prototype._iTestCollision = function (pickingCollision, pickingCollider) {
-        return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision, this.count, this.offset);
+        return this._elements._iTestCollision(pickingCollider, this.material, pickingCollision, this.count, this.offset);
     };
     Graphic.prototype.applyTransformation = function (transform) {
-        this.elements.applyTransformation(transform, this.count, this.offset);
+        this._elements.applyTransformation(transform, this.count, this.offset);
     };
     Graphic.prototype.hitTestPoint = function (x, y, z) {
-        return this.elements.hitTestPoint(x, y, z, this.count, this.offset);
+        return this._elements.hitTestPoint(x, y, z, this.count, this.offset);
     };
     Graphic.prototype.scale = function (scale) {
-        this.elements.scale(scale, this.count, this.offset);
+        this._elements.scale(scale, this.count, this.offset);
     };
     Graphic.prototype.scaleUV = function (scaleU, scaleV) {
         if (scaleU === void 0) { scaleU = 1; }
         if (scaleV === void 0) { scaleV = 1; }
-        this.elements.scaleUV(scaleU, scaleV, this.count, this.offset);
+        this._elements.scaleUV(scaleU, scaleV, this.count, this.offset);
     };
     Graphic.prototype.getBoxBounds = function () {
         if (this._boxBoundsInvalid) {
             this._boxBoundsInvalid = false;
             if (!this._boxBounds)
                 this._boxBounds = new Box_1.default();
-            this._boxBounds = this.elements.getBoxBounds(this._boxBounds, this.count, this.offset);
+            this._boxBounds = this._elements.getBoxBounds(this._boxBounds, this.count, this.offset);
         }
         return this._boxBounds;
     };
     Graphic.prototype.getSphereBounds = function (center, target) {
         if (target === void 0) { target = null; }
-        return this.elements.getSphereBounds(center, target, this.count, this.offset);
+        return this._elements.getSphereBounds(center, target, this.count, this.offset);
     };
     Graphic._available = new Array();
     Graphic.assetType = "[asset Graphic]";
