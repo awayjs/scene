@@ -40,6 +40,7 @@ class Graphic extends AssetBase implements IRenderable
 	private _sphereBoundsInvalid = true;
 	private _style:Style;
 	private _material:MaterialBase;
+	private _elements:ElementsBase;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 	private _onInvalidateVerticesDelegate:(event:ElementsEvent) => void;
 
@@ -52,7 +53,20 @@ class Graphic extends AssetBase implements IRenderable
 	/**
 	 * The Elements object which provides the geometry data for this Graphic.
 	 */
-	public elements:ElementsBase;
+	public get  elements():ElementsBase
+	{
+		return this._elements;
+	}
+
+	public set elements(value:ElementsBase)
+	{
+		if (this._elements == value)
+			return;
+
+		this._elements = value;
+
+		this.invalidateElements();
+	}
 
 	/**
 	 *
@@ -211,28 +225,28 @@ class Graphic extends AssetBase implements IRenderable
 	 */
 	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
 	{
-		return this.elements._iTestCollision(pickingCollider, this.material, pickingCollision, this.count, this.offset)
+		return this._elements._iTestCollision(pickingCollider, this.material, pickingCollision, this.count, this.offset)
 	}
 
 
 	public applyTransformation(transform:Matrix3D)
 	{
-		this.elements.applyTransformation(transform, this.count, this.offset);
+		this._elements.applyTransformation(transform, this.count, this.offset);
 	}
 
 	public hitTestPoint(x:number, y:number, z:number)
 	{
-		return this.elements.hitTestPoint(x, y, z, this.count, this.offset);
+		return this._elements.hitTestPoint(x, y, z, this.count, this.offset);
 	}
 	
 	public scale(scale:number)
 	{
-		this.elements.scale(scale, this.count, this.offset);
+		this._elements.scale(scale, this.count, this.offset);
 	}
 
 	public scaleUV(scaleU:number = 1, scaleV:number = 1)
 	{
-		this.elements.scaleUV(scaleU, scaleV, this.count, this.offset);
+		this._elements.scaleUV(scaleU, scaleV, this.count, this.offset);
 	}
 
 	public getBoxBounds():Box
@@ -243,7 +257,7 @@ class Graphic extends AssetBase implements IRenderable
 			if (!this._boxBounds)
 				this._boxBounds = new Box();
 			
-			this._boxBounds = this.elements.getBoxBounds(this._boxBounds, this.count, this.offset);
+			this._boxBounds = this._elements.getBoxBounds(this._boxBounds, this.count, this.offset);
 		}
 
 		return this._boxBounds;
@@ -251,7 +265,7 @@ class Graphic extends AssetBase implements IRenderable
 
 	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
 	{
-		return this.elements.getSphereBounds(center, target, this.count, this.offset);
+		return this._elements.getSphereBounds(center, target, this.count, this.offset);
 	}
 }
 
