@@ -4027,7 +4027,7 @@ var DisplayObjectContainer = (function (_super) {
             this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
         }
         else {
-            this._pBoxBounds.setEmpty();
+            this._pBoxBounds.setBoundIdentity();
         }
     };
     /**
@@ -11671,7 +11671,7 @@ var ElementsBase = (function (_super) {
         if (offset === void 0) { offset = 0; }
         throw new AbstractMethodError_1.default();
     };
-    ElementsBase.prototype.hitTestPoint = function (x, y, z, count, offset) {
+    ElementsBase.prototype.hitTestPoint = function (x, y, z, box, count, offset) {
         if (count === void 0) { count = 0; }
         if (offset === void 0) { offset = 0; }
         throw new AbstractMethodError_1.default();
@@ -13175,7 +13175,11 @@ var Graphic = (function (_super) {
         this._elements.applyTransformation(transform, this.count, this.offset);
     };
     Graphic.prototype.hitTestPoint = function (x, y, z) {
-        return this._elements.hitTestPoint(x, y, z, this.count, this.offset);
+        var box;
+        //early out for box test
+        if (!(box = this.getBoxBounds()).contains(x, y, z))
+            return false;
+        return this._elements.hitTestPoint(x, y, z, box, this.count, this.offset);
     };
     Graphic.prototype.scale = function (scale) {
         this._elements.scale(scale, this.count, this.offset);
@@ -13188,9 +13192,7 @@ var Graphic = (function (_super) {
     Graphic.prototype.getBoxBounds = function () {
         if (this._boxBoundsInvalid) {
             this._boxBoundsInvalid = false;
-            if (!this._boxBounds)
-                this._boxBounds = new Box_1.default();
-            this._boxBounds = this._elements.getBoxBounds(this._boxBounds, this.count, this.offset);
+            this._boxBounds = this._elements.getBoxBounds(this._boxBounds || (this._boxBounds = new Box_1.default()), this.count, this.offset);
         }
         return this._boxBounds;
     };
@@ -13671,10 +13673,10 @@ var TriangleElements = (function (_super) {
         if (offset === void 0) { offset = 0; }
         return ElementsUtils_1.default.getTriangleGraphicsSphereBounds(this.positions, center, target, count || this._numVertices, offset);
     };
-    TriangleElements.prototype.hitTestPoint = function (x, y, z, count, offset) {
+    TriangleElements.prototype.hitTestPoint = function (x, y, z, box, count, offset) {
         if (count === void 0) { count = 0; }
         if (offset === void 0) { offset = 0; }
-        return ElementsUtils_1.default.hitTestTriangleElements(x, y, 0, this, count || this._numVertices, offset);
+        return ElementsUtils_1.default.hitTestTriangleElements(x, y, 0, box, this, count || this._numVertices, offset);
     };
     TriangleElements.prototype.setPositions = function (values, offset) {
         if (offset === void 0) { offset = 0; }
@@ -21793,7 +21795,7 @@ var ElementsUtils = (function () {
         return vertexBuffer;
     };
     //TODO - generate this dyanamically based on num tris
-    ElementsUtils.hitTestTriangleElements = function (x, y, z, triangleElements, count, offset) {
+    ElementsUtils.hitTestTriangleElements = function (x, y, z, box, triangleElements, count, offset) {
         if (offset === void 0) { offset = 0; }
         var positionAttributes = triangleElements.positions;
         var curveAttributes = triangleElements.getCustomAtributes("curves");
@@ -21884,13 +21886,12 @@ var ElementsUtils = (function () {
         }
         //hard coded min vertex count to bother using a grid for
         if (count > 150) {
-            var boundingBox = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, count, offset);
             var cells = hitTestCache.cells;
             var divisions = cells.length ? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
-            var conversionX = divisions / boundingBox.width;
-            var conversionY = divisions / boundingBox.height;
-            var minx = boundingBox.x;
-            var miny = boundingBox.y;
+            var conversionX = divisions / box.width;
+            var conversionY = divisions / box.height;
+            var minx = box.x;
+            var miny = box.y;
             if (!cells.length) {
                 //now we have bounds start creating grid cells and filling
                 cells.length = divisions * divisions;
