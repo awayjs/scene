@@ -598,7 +598,7 @@ class DisplayObjectContainer extends DisplayObject
 			this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
 			this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
 		} else {
-			this._pBoxBounds.setEmpty();
+			this._pBoxBounds.setBoundIdentity();
 		}
 	}
 

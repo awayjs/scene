@@ -221,9 +221,9 @@ class TriangleElements extends ElementsBase
 		return ElementsUtils.getTriangleGraphicsSphereBounds(this.positions, center, target, count || this._numVertices, offset);
 	}
 
-	public hitTestPoint(x:number, y:number, z:number, count:number = 0, offset:number = 0):boolean
+	public hitTestPoint(x:number, y:number, z:number, box:Box, count:number = 0, offset:number = 0):boolean
 	{
-		return ElementsUtils.hitTestTriangleElements(x, y, 0, this, count || this._numVertices, offset);
+		return ElementsUtils.hitTestTriangleElements(x, y, 0, box, this, count || this._numVertices, offset);
 	}
 
 	/**

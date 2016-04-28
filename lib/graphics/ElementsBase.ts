@@ -223,7 +223,7 @@ class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public hitTestPoint(x:number, y:number, z:number, count:number = 0, offset:number = 0):boolean
+	public hitTestPoint(x:number, y:number, z:number, box:Box, count:number = 0, offset:number = 0):boolean
 	{
 		throw new AbstractMethodError();
 	}

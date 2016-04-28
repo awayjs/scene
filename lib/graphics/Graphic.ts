@@ -236,7 +236,13 @@ class Graphic extends AssetBase implements IRenderable
 
 	public hitTestPoint(x:number, y:number, z:number)
 	{
-		return this._elements.hitTestPoint(x, y, z, this.count, this.offset);
+		var box:Box;
+
+		//early out for box test
+		if(!(box = this.getBoxBounds()).contains(x, y, z))
+			return false;
+
+		return this._elements.hitTestPoint(x, y, z, box, this.count, this.offset);
 	}
 	
 	public scale(scale:number)
@@ -254,10 +260,7 @@ class Graphic extends AssetBase implements IRenderable
 		if (this._boxBoundsInvalid) {
 			this._boxBoundsInvalid = false;
 
-			if (!this._boxBounds)
-				this._boxBounds = new Box();
-			
-			this._boxBounds = this._elements.getBoxBounds(this._boxBounds, this.count, this.offset);
+			this._boxBounds = this._elements.getBoxBounds(this._boxBounds || (this._boxBounds = new Box()), this.count, this.offset);
 		}
 
 		return this._boxBounds;

@@ -582,7 +582,7 @@ class ElementsUtils
 
 	//TODO - generate this dyanamically based on num tris
 
-	public static hitTestTriangleElements(x:number, y:number, z:number, triangleElements:TriangleElements, count:number, offset:number = 0):boolean
+	public static hitTestTriangleElements(x:number, y:number, z:number, box:Box, triangleElements:TriangleElements, count:number, offset:number = 0):boolean
 	{
 		var positionAttributes:AttributesView = triangleElements.positions;
 		var curveAttributes:AttributesView = triangleElements.getCustomAtributes("curves");
@@ -701,13 +701,12 @@ class ElementsUtils
 
 		//hard coded min vertex count to bother using a grid for
 		if (count > 150) {
-			var boundingBox:Box = ElementsUtils.getTriangleGraphicsBoxBounds(positionAttributes, null, count, offset);
 			var cells:Array<Array<number>> = hitTestCache.cells;
 			var divisions:number = cells.length? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(count)), 32));
-			var conversionX:number = divisions/boundingBox.width;
-			var conversionY:number = divisions/boundingBox.height;
-			var minx:number = boundingBox.x;
-			var miny:number = boundingBox.y;
+			var conversionX:number = divisions/box.width;
+			var conversionY:number = divisions/box.height;
+			var minx:number = box.x;
+			var miny:number = box.y;
 
 			if (!cells.length) { //build grid
 
