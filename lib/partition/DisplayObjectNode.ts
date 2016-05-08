@@ -119,6 +119,15 @@ class DisplayObjectNode extends AbstractionBase implements INode
 	{
 		return true;
 	}
+	
+	/**
+	 *
+	 * @returns {boolean}
+	 */
+	public isRenderable():boolean
+	{
+		return true;
+	}
 
 	/**
 	 * @inheritDoc

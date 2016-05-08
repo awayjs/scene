@@ -24,9 +24,11 @@ interface INode
 
 	_iCollectionMark:number;
 
-	isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
+	isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean;
+	
+	isRenderable():boolean;
 
-	isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean
+	isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean;
 
 	acceptTraverser(traverser:ITraverser);
 

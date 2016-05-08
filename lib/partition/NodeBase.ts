@@ -75,6 +75,15 @@ class NodeBase implements IContainerNode
 	 *
 	 * @returns {boolean}
 	 */
+	public isRenderable():boolean
+	{
+		return true;
+	}
+	
+	/**
+	 *
+	 * @returns {boolean}
+	 */
 	public isCastingShadow():boolean
 	{
 		return true;

@@ -79,6 +79,15 @@ class EntityNode extends DisplayObjectNode
 	}
 
 	/**
+	 *
+	 * @returns {boolean}
+	 */
+	public isRenderable():boolean
+	{
+		return this._displayObject._iAssignedColorTransform()._isRenderable();
+	}
+	
+	/**
 	 * @inheritDoc
 	 */
 	public acceptTraverser(traverser:ITraverser)
