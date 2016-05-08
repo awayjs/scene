@@ -16354,6 +16354,13 @@ var DisplayObjectNode = (function (_super) {
         return true;
     };
     /**
+     *
+     * @returns {boolean}
+     */
+    DisplayObjectNode.prototype.isRenderable = function () {
+        return true;
+    };
+    /**
      * @inheritDoc
      */
     DisplayObjectNode.prototype.acceptTraverser = function (traverser) {
@@ -16433,6 +16440,13 @@ var EntityNode = (function (_super) {
         pickingCollision.globalRayDirection = globalRayDirection;
         pickingCollision.rayOriginIsInsideBounds = rayEntryDistance == 0;
         return true;
+    };
+    /**
+     *
+     * @returns {boolean}
+     */
+    EntityNode.prototype.isRenderable = function () {
+        return this._displayObject._iAssignedColorTransform()._isRenderable();
     };
     /**
      * @inheritDoc
@@ -16572,6 +16586,13 @@ var NodeBase = (function () {
      * @returns {boolean}
      */
     NodeBase.prototype.isIntersectingRay = function (rayPosition, rayDirection) {
+        return true;
+    };
+    /**
+     *
+     * @returns {boolean}
+     */
+    NodeBase.prototype.isRenderable = function () {
         return true;
     };
     /**
