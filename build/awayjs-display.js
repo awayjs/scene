@@ -3104,10 +3104,13 @@ var Billboard = (function (_super) {
             this._billboardRect = new Rectangle_1.default(0, 0, 1, 1);
         }
         this._pInvalidateBounds();
+        this.invalidateElements();
+    };
+    Billboard.prototype.invalidateElements = function () {
         this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_ELEMENTS, this));
     };
     Billboard.prototype.invalidateSurface = function () {
-        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_RENDER_OWNER, this));
+        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_SURFACE, this));
     };
     Billboard.prototype._onInvalidateProperties = function (event) {
         if (event === void 0) { event = null; }
@@ -6270,7 +6273,7 @@ var LineSegment = (function (_super) {
             if (this._startPosition == value)
                 return;
             this._startPosition = value;
-            this.invalidateGraphics();
+            this.invalidateElements();
         },
         enumerable: true,
         configurable: true
@@ -6286,7 +6289,7 @@ var LineSegment = (function (_super) {
             if (this._endPosition == value)
                 return;
             this._endPosition = value;
-            this.invalidateGraphics();
+            this.invalidateElements();
         },
         enumerable: true,
         configurable: true
@@ -6319,7 +6322,7 @@ var LineSegment = (function (_super) {
             if (this._halfThickness == value)
                 return;
             this._halfThickness = value * 0.5;
-            this.invalidateGraphics();
+            this.invalidateElements();
         },
         enumerable: true,
         configurable: true
@@ -6370,11 +6373,11 @@ var LineSegment = (function (_super) {
     /**
      * @private
      */
-    LineSegment.prototype.invalidateGraphics = function () {
+    LineSegment.prototype.invalidateElements = function () {
         this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_ELEMENTS, this)); //TODO improve performance by only using one geometry for all line segments
     };
     LineSegment.prototype.invalidateSurface = function () {
-        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_RENDER_OWNER, this));
+        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_SURFACE, this));
     };
     LineSegment.prototype._onInvalidateProperties = function (event) {
         this.invalidateSurface();
@@ -7902,8 +7905,11 @@ var Skybox = (function (_super) {
     Skybox.prototype.invalidatePasses = function () {
         this.dispatchEvent(new SurfaceEvent_1.default(SurfaceEvent_1.default.INVALIDATE_PASSES, this));
     };
+    Skybox.prototype.invalidateElements = function () {
+        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_ELEMENTS, this));
+    };
     Skybox.prototype.invalidateSurface = function () {
-        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_RENDER_OWNER, this));
+        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_SURFACE, this));
     };
     Skybox.prototype.addTexture = function (texture) {
         this._textures.push(texture);
@@ -11134,7 +11140,7 @@ var RenderableEvent = (function (_super) {
     /**
      * Dispatched when a Renderable owners's render object owner has been updated.
      */
-    RenderableEvent.INVALIDATE_RENDER_OWNER = "invalidateRenderable";
+    RenderableEvent.INVALIDATE_SURFACE = "invalidateRenderable";
     /**
      *
      */
@@ -13142,7 +13148,7 @@ var Graphic = (function (_super) {
         this._sphereBoundsInvalid = true;
     };
     Graphic.prototype.invalidateSurface = function () {
-        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_RENDER_OWNER, this));
+        this.dispatchEvent(new RenderableEvent_1.default(RenderableEvent_1.default.INVALIDATE_SURFACE, this));
     };
     Graphic.prototype._iGetExplicitMaterial = function () {
         return this._material;
@@ -13886,12 +13892,10 @@ var TriangleElements = (function (_super) {
     TriangleElements.prototype.copyTo = function (elements) {
         _super.prototype.copyTo.call(this, elements);
         //temp disable auto derives
-        elements.autoDeriveNormals = false;
-        elements.autoDeriveTangents = false;
         var autoDeriveNormals = this._autoDeriveNormals;
         var autoDeriveTangents = this._autoDeriveTangents;
-        this._autoDeriveNormals = false;
-        this._autoDeriveTangents = false;
+        elements.autoDeriveNormals = this._autoDeriveNormals = false;
+        elements.autoDeriveTangents = this._autoDeriveTangents = false;
         elements.setPositions(this.positions.clone());
         if (this.normals)
             elements.setNormals(this.normals.clone());
