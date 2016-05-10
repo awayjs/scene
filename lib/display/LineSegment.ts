@@ -61,7 +61,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 
 		this._startPosition = value;
 
-		this.invalidateGraphics();
+		this.invalidateElements();
 	}
 
 	/**
@@ -79,7 +79,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 
 		this._endPosition = value;
 
-		this.invalidateGraphics();
+		this.invalidateElements();
 	}
 
 	/**
@@ -116,7 +116,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 
 		this._halfThickness = value*0.5;
 
-		this.invalidateGraphics();
+		this.invalidateElements();
 	}
 
 	/**
@@ -202,14 +202,14 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 	/**
 	 * @private
 	 */
-	private invalidateGraphics()
+	public invalidateElements()
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
 	}
 
 	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
 
 	private _onInvalidateProperties(event:StyleEvent)

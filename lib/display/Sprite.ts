@@ -1,4 +1,4 @@
-﻿﻿import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+﻿import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
 import Box							from "awayjs-core/lib/geom/Box";
 import Point						from "awayjs-core/lib/geom/Point";
 import Vector3D						from "awayjs-core/lib/geom/Vector3D";

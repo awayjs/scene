@@ -244,13 +244,18 @@ class Billboard extends DisplayObject implements IEntity, IRenderable
 
 		this._pInvalidateBounds();
 
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
+		this.invalidateElements();
 	}
 
 
+	public invalidateElements()
+	{
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
+	}
+	
 	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
 
 	private _onInvalidateProperties(event:StyleEvent = null)

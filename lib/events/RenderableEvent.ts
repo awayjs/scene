@@ -13,7 +13,7 @@ class RenderableEvent extends EventBase
 	/**
 	 * Dispatched when a Renderable owners's render object owner has been updated.
 	 */
-	public static INVALIDATE_RENDER_OWNER:string = "invalidateRenderable";
+	public static INVALIDATE_SURFACE:string = "invalidateRenderable";
 
 	/**
 	 *

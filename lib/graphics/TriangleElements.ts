@@ -520,13 +520,10 @@ class TriangleElements extends ElementsBase
 		super.copyTo(elements);
 
 		//temp disable auto derives
-		elements.autoDeriveNormals = false;
-		elements.autoDeriveTangents = false;
-
 		var autoDeriveNormals:boolean = this._autoDeriveNormals;
 		var autoDeriveTangents:boolean = this._autoDeriveTangents;
-		this._autoDeriveNormals = false;
-		this._autoDeriveTangents = false;
+		elements.autoDeriveNormals = this._autoDeriveNormals = false;
+		elements.autoDeriveTangents = this._autoDeriveTangents = false;
 
 		elements.setPositions(this.positions.clone());
 

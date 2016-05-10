@@ -186,7 +186,7 @@ class Graphic extends AssetBase implements IRenderable
 
 	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
 
 	public _iGetExplicitMaterial():MaterialBase

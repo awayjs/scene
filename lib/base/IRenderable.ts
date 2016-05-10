@@ -25,6 +25,8 @@ interface IRenderable extends IAsset
 
 	invalidateSurface();
 
+	invalidateElements();
+
 	/**
 	 * //TODO
 	 *

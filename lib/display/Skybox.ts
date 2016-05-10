@@ -1,10 +1,6 @@
 import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
 import BlendMode					from "awayjs-core/lib/image/BlendMode";
 import ImageCube					from "awayjs-core/lib/image/ImageCube";
-import ImageBase					from "awayjs-core/lib/image/ImageBase";
-import SamplerBase					from "awayjs-core/lib/image/SamplerBase";
-import Matrix						from "awayjs-core/lib/geom/Matrix";
-import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
 
 import IAnimationSet				from "../animators/IAnimationSet";
 import IAnimator					from "../animators/IAnimator";
@@ -16,7 +12,6 @@ import IEntity						from "../display/IEntity";
 import RenderableEvent				from "../events/RenderableEvent";
 import SurfaceEvent					from "../events/SurfaceEvent";
 import LightPickerBase				from "../materials/lightpickers/LightPickerBase";
-import MaterialBase					from "../materials/MaterialBase";
 import SingleCubeTexture			from "../textures/SingleCubeTexture";
 import TextureBase					from "../textures/TextureBase";
 import Style						from "../base/Style";
@@ -252,9 +247,14 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
 	}
 
+	public invalidateElements()
+	{
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
+	}
+	
 	public invalidateSurface()
 	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_RENDER_OWNER, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
 
 	public addTexture(texture:TextureBase)
