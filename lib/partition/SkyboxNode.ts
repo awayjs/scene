@@ -11,15 +11,6 @@ import ITraverser				from "../ITraverser";
 class SkyboxNode extends EntityNode
 {
 	/**
-	 * @inheritDoc
-	 */
-	public acceptTraverser(traverser:ITraverser)
-	{
-		if (traverser.enterNode(this))
-			traverser.applySkybox(this._displayObject);
-	}
-
-	/**
 	 *
 	 * @param planes
 	 * @param numPlanes
@@ -32,6 +23,15 @@ class SkyboxNode extends EntityNode
 
 		//a skybox is always in view unless its visibility is set to false
 		return true;
+	}
+
+	/**
+	 *
+	 * @returns {boolean}
+	 */
+	public isCastingShadow():boolean
+	{
+		return false; //skybox never casts shadows
 	}
 }
 

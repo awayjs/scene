@@ -2,6 +2,7 @@ import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
 import BlendMode					from "awayjs-core/lib/image/BlendMode";
 import ImageCube					from "awayjs-core/lib/image/ImageCube";
 
+import ITraverser					from "../ITraverser";
 import IAnimationSet				from "../animators/IAnimationSet";
 import IAnimator					from "../animators/IAnimator";
 import DisplayObject				from "../display/DisplayObject";
@@ -285,6 +286,10 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 		this.invalidatePasses();
 	}
 
+	public _acceptTraverser(traverser:ITraverser)
+	{
+		traverser.applyRenderable(this);
+	}
 
 	/**
 	 * //TODO
