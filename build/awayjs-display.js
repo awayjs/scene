@@ -7928,6 +7928,9 @@ var Skybox = (function (_super) {
     Skybox.prototype._onInvalidateProperties = function (event) {
         this.invalidatePasses();
     };
+    Skybox.prototype._acceptTraverser = function (traverser) {
+        traverser.applyRenderable(this);
+    };
     /**
      * //TODO
      *
@@ -17002,13 +17005,6 @@ var SkyboxNode = (function (_super) {
         _super.apply(this, arguments);
     }
     /**
-     * @inheritDoc
-     */
-    SkyboxNode.prototype.acceptTraverser = function (traverser) {
-        if (traverser.enterNode(this))
-            traverser.applySkybox(this._displayObject);
-    };
-    /**
      *
      * @param planes
      * @param numPlanes
@@ -17019,6 +17015,13 @@ var SkyboxNode = (function (_super) {
             return false;
         //a skybox is always in view unless its visibility is set to false
         return true;
+    };
+    /**
+     *
+     * @returns {boolean}
+     */
+    SkyboxNode.prototype.isCastingShadow = function () {
+        return false; //skybox never casts shadows
     };
     return SkyboxNode;
 }(EntityNode_1.default));
