@@ -5536,9 +5536,6 @@ var DisplayObject = (function (_super) {
         }
         return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
     };
-    DisplayObject.prototype.isMask = function () {
-        return this._explicitMaskId == -1;
-    };
     /**
      * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
      *
@@ -16330,6 +16327,13 @@ var DisplayObjectNode = (function (_super) {
     DisplayObjectNode.prototype.isCastingShadow = function () {
         return this._displayObject.castsShadows;
     };
+    /**
+     *
+     * @returns {boolean}
+     */
+    DisplayObjectNode.prototype.isMask = function () {
+        return this._displayObject.maskMode;
+    };
     DisplayObjectNode.prototype.onClear = function (event) {
         _super.prototype.onClear.call(this, event);
         this._displayObject.removeEventListener(DisplayObjectEvent_1.default.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
@@ -16609,6 +16613,13 @@ var NodeBase = (function () {
     NodeBase.prototype.isCastingShadow = function () {
         return true;
     };
+    /**
+     *
+     * @returns {boolean}
+     */
+    NodeBase.prototype.isMask = function () {
+        return false;
+    };
     NodeBase.prototype.dispose = function () {
         this.parent = null;
         this._pChildNodes = null;
@@ -16841,9 +16852,9 @@ var SceneGraphNode = (function (_super) {
         if (this.numEntities == 0)
             return;
         var i;
-        for (i = this._pChildNodes.length - 1; i >= 0; i--)
+        for (i = 0; i < this._pChildNodes.length; i++)
             this._pChildNodes[i].acceptTraverser(traverser);
-        for (i = this._childMasks.length - 1; i >= 0; i--)
+        for (i = 0; i < this._childMasks.length; i++)
             this._childMasks[i].acceptTraverser(traverser);
     };
     /**
@@ -17447,7 +17458,7 @@ var RaycastPicker = (function () {
      * @param node The Partition3DNode object to frustum-test.
      */
     RaycastPicker.prototype.enterNode = function (node) {
-        return node.isIntersectingRay(this._rayPosition, this._rayDirection);
+        return node.isIntersectingRay(this._rayPosition, this._rayDirection) && !node.isMask();
     };
     /**
      * @inheritDoc
@@ -17508,7 +17519,7 @@ var RaycastPicker = (function () {
         return false;
     };
     RaycastPicker.prototype.sortOnNearT = function (entity1, entity2) {
-        return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance ? 1 : -1;
+        return entity1._iPickingCollision.rayEntryDistance >= entity2._iPickingCollision.rayEntryDistance ? 1 : -1;
     };
     RaycastPicker.prototype.getPickingCollision = function () {
         // Sort entities from closest to furthest to reduce tests.
