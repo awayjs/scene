@@ -27,10 +27,10 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 			return;
 
 		var i:number;
-		for (i = this._pChildNodes.length - 1; i >= 0; i--)
+		for (i = 0; i < this._pChildNodes.length; i++)
 			this._pChildNodes[i].acceptTraverser(traverser);
 
-		for (i = this._childMasks.length - 1; i >= 0; i--)
+		for (i = 0; i < this._childMasks.length; i++)
 			this._childMasks[i].acceptTraverser(traverser);
 	}
 

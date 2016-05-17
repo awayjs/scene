@@ -28,6 +28,8 @@ interface INode
 	
 	isRenderable():boolean;
 
+	isMask():boolean;
+	
 	isIntersectingRay(rayPosition:Vector3D, rayDirection:Vector3D):boolean;
 
 	acceptTraverser(traverser:ITraverser);

@@ -1798,11 +1798,6 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
 
-	public isMask():boolean
-	{
-		return this._explicitMaskId == -1;
-	}
-
 	/**
 	 * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	 *

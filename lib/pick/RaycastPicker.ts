@@ -58,7 +58,7 @@ class RaycastPicker implements IPicker, ITraverser
 	 */
 	public enterNode(node:INode):boolean
 	{
-		return node.isIntersectingRay(this._rayPosition, this._rayDirection);
+		return node.isIntersectingRay(this._rayPosition, this._rayDirection) && !node.isMask();
 	}
 
 	/**
@@ -139,7 +139,7 @@ class RaycastPicker implements IPicker, ITraverser
 
 	private sortOnNearT(entity1:IEntity, entity2:IEntity):number
 	{
-		return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : -1;
+		return entity1._iPickingCollision.rayEntryDistance >= entity2._iPickingCollision.rayEntryDistance? 1 : -1;
 	}
 
 	private getPickingCollision():PickingCollision

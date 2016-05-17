@@ -77,6 +77,15 @@ class DisplayObjectNode extends AbstractionBase implements INode
 		return this._displayObject.castsShadows;
 	}
 
+	/**
+	 *
+	 * @returns {boolean}
+	 */
+	public isMask():boolean
+	{
+		return this._displayObject.maskMode;
+	}
+
 	public onClear(event:AssetEvent)
 	{
 		super.onClear(event);

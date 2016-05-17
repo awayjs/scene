@@ -89,6 +89,16 @@ class NodeBase implements IContainerNode
 		return true;
 	}
 
+
+	/**
+	 *
+	 * @returns {boolean}
+	 */
+	public isMask():boolean
+	{
+		return false;
+	}
+
 	public dispose()
 	{
 		this.parent = null;
