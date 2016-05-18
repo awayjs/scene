@@ -17519,7 +17519,7 @@ var RaycastPicker = (function () {
         return false;
     };
     RaycastPicker.prototype.sortOnNearT = function (entity1, entity2) {
-        return entity1._iPickingCollision.rayEntryDistance >= entity2._iPickingCollision.rayEntryDistance ? 1 : -1;
+        return entity2._iPickingCollision.rayEntryDistance - entity1._iPickingCollision.rayEntryDistance;
     };
     RaycastPicker.prototype.getPickingCollision = function () {
         // Sort entities from closest to furthest to reduce tests.
@@ -17531,7 +17531,7 @@ var RaycastPicker = (function () {
         this._bestCollision = null;
         var entity;
         var len = this._entities.length;
-        for (var i = 0; i < len; i++) {
+        for (var i = len - 1; i >= 0; i--) {
             entity = this._entities[i];
             this._testCollision = entity._iPickingCollision;
             if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
