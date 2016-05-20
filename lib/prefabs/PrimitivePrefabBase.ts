@@ -1,19 +1,19 @@
-import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
-import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
+import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AbstractMethodError}		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObject			from "../display/DisplayObject";
-import ElementsType				from "../graphics/ElementsType";
-import ElementsBase				from "../graphics/ElementsBase";
-import TriangleElements			from "../graphics/TriangleElements";
-import LineElements				from "../graphics/LineElements";
-import Sprite					from "../display/Sprite";
-import MaterialBase				from "../materials/MaterialBase";
-import PrefabBase				from "../prefabs/PrefabBase";
+import {DisplayObject}			from "../display/DisplayObject";
+import {ElementsType}				from "../graphics/ElementsType";
+import {ElementsBase}				from "../graphics/ElementsBase";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {LineElements}				from "../graphics/LineElements";
+import {Sprite}					from "../display/Sprite";
+import {MaterialBase}				from "../materials/MaterialBase";
+import {PrefabBase}				from "../prefabs/PrefabBase";
 
 /**
  * PrimitivePrefabBase is an abstract base class for polytope prefabs, which are simple pre-built geometric shapes
  */
-class PrimitivePrefabBase extends PrefabBase
+export class PrimitivePrefabBase extends PrefabBase
 {
 	public static assetType:string = "[asset PrimitivePrefab]";
 
@@ -120,7 +120,7 @@ class PrimitivePrefabBase extends PrefabBase
 	 * Builds the primitive's geometry when invalid. This method should not be called directly. The calling should
 	 * be triggered by the invalidateGraphics method (and in turn by updateGraphics).
 	 */
-	public _pBuildGraphics(target:ElementsBase, elementsType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string):void
 	{
 		throw new AbstractMethodError();
 	}
@@ -129,7 +129,7 @@ class PrimitivePrefabBase extends PrefabBase
 	 * Builds the primitive's uv coordinates when invalid. This method should not be called directly. The calling
 	 * should be triggered by the invalidateUVs method (and in turn by updateUVs).
 	 */
-	public _pBuildUVs(target:ElementsBase, elementsType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string):void
 	{
 		throw new AbstractMethodError();
 	}
@@ -137,7 +137,7 @@ class PrimitivePrefabBase extends PrefabBase
 	/**
 	 * Invalidates the primitive, causing it to be updated when requested.
 	 */
-	public _pInvalidatePrimitive()
+	public _pInvalidatePrimitive():void
 	{
 		this._primitiveDirty = true;
 	}
@@ -145,7 +145,7 @@ class PrimitivePrefabBase extends PrefabBase
 	/**
 	 * Invalidates the primitive's uv coordinates, causing them to be updated when requested.
 	 */
-	public _pInvalidateUVs()
+	public _pInvalidateUVs():void
 	{
 		this._uvDirty = true;
 	}
@@ -154,7 +154,7 @@ class PrimitivePrefabBase extends PrefabBase
 	/**
 	 * Updates the geometry when invalid.
 	 */
-	private updateGraphics()
+	private updateGraphics():void
 	{
 		this._pBuildGraphics(this._elements, this._elementsType);
 
@@ -164,14 +164,14 @@ class PrimitivePrefabBase extends PrefabBase
 	/**
 	 * Updates the uv coordinates when invalid.
 	 */
-	private updateUVs()
+	private updateUVs():void
 	{
 		this._pBuildUVs(this._elements, this._elementsType);
 
 		this._uvDirty = false;
 	}
 
-	public _iValidate()
+	public _iValidate():void
 	{
 		if (this._primitiveDirty)
 			this.updateGraphics();
@@ -199,5 +199,3 @@ class PrimitivePrefabBase extends PrefabBase
 //			return batch;
 //		}
 }
-
-export default PrimitivePrefabBase;

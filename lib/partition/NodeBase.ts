@@ -1,19 +1,19 @@
-import DisplayObject				from "../display/DisplayObject";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
+import {DisplayObject}				from "../display/DisplayObject";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import ITraverser					from "../ITraverser";
-import IEntity						from "../display/IEntity";
-import INode						from "../partition/INode";
-import IContainerNode				from "../partition/IContainerNode";
-import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
-import NullBounds from "../bounds/NullBounds";
+import {ITraverser}					from "../ITraverser";
+import {IEntity}						from "../display/IEntity";
+import {INode}						from "../partition/INode";
+import {IContainerNode}				from "../partition/IContainerNode";
+import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
+import {NullBounds}					from "../bounds/NullBounds";
 
 /**
  * @class away.partition.NodeBase
  */
-class NodeBase implements IContainerNode
+export class NodeBase implements IContainerNode
 {
 	private _bounds:BoundingVolumeBase = new NullBounds();
 	public _pChildNodes:Array<INode> = new Array<INode>();
@@ -99,7 +99,7 @@ class NodeBase implements IContainerNode
 		return false;
 	}
 
-	public dispose()
+	public dispose():void
 	{
 		this.parent = null;
 		this._pChildNodes = null;
@@ -109,7 +109,7 @@ class NodeBase implements IContainerNode
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:ITraverser)
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		if (this.numEntities == 0)
 			return;
@@ -125,7 +125,7 @@ class NodeBase implements IContainerNode
 	 * @param node
 	 * @internal
 	 */
-	public iAddNode(node:INode)
+	public iAddNode(node:INode):void
 	{
 		node.parent = this;
 		this.numEntities += node.numEntities;
@@ -144,7 +144,7 @@ class NodeBase implements IContainerNode
 	 * @param node
 	 * @internal
 	 */
-	public iRemoveNode(node:INode)
+	public iRemoveNode(node:INode):void
 	{
 		var index:number = this._pChildNodes.indexOf(node);
 		this._pChildNodes[index] = this._pChildNodes[--this._pNumChildNodes];
@@ -158,5 +158,3 @@ class NodeBase implements IContainerNode
 		} while ((node = node.parent) != null);
 	}
 }
-
-export default NodeBase;

@@ -1,14 +1,14 @@
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
 
-import EntityNode					from "../partition/EntityNode";
-import ITraverser				from "../ITraverser";
+import {EntityNode}					from "../partition/EntityNode";
+import {ITraverser}				from "../ITraverser";
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
  *
  * @class away.partition.SkyboxNode
  */
-class SkyboxNode extends EntityNode
+export class SkyboxNode extends EntityNode
 {
 	/**
 	 *
@@ -34,5 +34,3 @@ class SkyboxNode extends EntityNode
 		return false; //skybox never casts shadows
 	}
 }
-
-export default SkyboxNode;

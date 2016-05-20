@@ -5,7 +5,7 @@
  * <code>flash.display.Graphics.lineStyle()</code> method. You can specify the
  * following three types of caps:
  */
-class CapsStyle
+export class CapsStyle
 {
 	/**
 	 * Used to specify round caps in the <code>caps</code> parameter of the
@@ -25,5 +25,3 @@ class CapsStyle
 	 */
 	public static SQUARE:number = 2;
 }
-
-export default CapsStyle;

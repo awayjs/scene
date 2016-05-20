@@ -1,15 +1,15 @@
-import ImageCube					from "awayjs-core/lib/image/ImageCube";
-import SamplerCube					from "awayjs-core/lib/image/SamplerCube";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import ErrorBase					from "awayjs-core/lib/errors/ErrorBase";
+import {ImageCube}					from "awayjs-core/lib/image/ImageCube";
+import {SamplerCube}					from "awayjs-core/lib/image/SamplerCube";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {ErrorBase}					from "awayjs-core/lib/errors/ErrorBase";
 
-import LightBase					from "../display/LightBase";
-import BoundsType					from "../bounds/BoundsType";
-import Camera						from "../display/Camera";
-import IEntity						from "../display/IEntity";
+import {LightBase}					from "../display/LightBase";
+import {BoundsType}					from "../bounds/BoundsType";
+import {Camera}						from "../display/Camera";
+import {IEntity}						from "../display/IEntity";
 
-class LightProbe extends LightBase implements IEntity
+export class LightProbe extends LightBase implements IEntity
 {
 	public static assetType:string = "[light LightProbe]";
 
@@ -45,5 +45,3 @@ class LightProbe extends LightBase implements IEntity
 		throw new ErrorBase("Object projection matrices are not supported for LightProbe objects!");
 	}
 }
-
-export default LightProbe;

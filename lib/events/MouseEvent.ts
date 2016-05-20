@@ -1,17 +1,17 @@
-import Point					from "awayjs-core/lib/geom/Point";
-import Vector3D					from "awayjs-core/lib/geom/Vector3D";
-import EventBase				from "awayjs-core/lib/events/EventBase";
+import {Point}					from "awayjs-core/lib/geom/Point";
+import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
+import {EventBase}				from "awayjs-core/lib/events/EventBase";
 
-import IEntity					from "../display/IEntity";
-import IRenderable				from "../base/IRenderable";
-import View						from "../View";
-import MaterialBase				from "../materials/MaterialBase";
+import {IEntity}					from "../display/IEntity";
+import {IRenderable}				from "../base/IRenderable";
+import {View}						from "../View";
+import {MaterialBase}				from "../materials/MaterialBase";
 
 /**
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
  * TODO: we don't have screenZ data, tho this should be easy to implement
  */
-class MouseEvent extends EventBase
+export class MouseEvent extends EventBase
 {
 	// Private.
 	public _iAllowedToPropagate:boolean = true;
@@ -161,7 +161,7 @@ class MouseEvent extends EventBase
 	/**
 	 * @inheritDoc
 	 */
-	public stopPropagation()
+	public stopPropagation():void
 	{
 		this._iAllowedToPropagate = false;
 
@@ -172,7 +172,7 @@ class MouseEvent extends EventBase
 	/**
 	 * @inheritDoc
 	 */
-	public stopImmediatePropagation()
+	public stopImmediatePropagation():void
 	{
 		this._iAllowedToPropagate = false;
 
@@ -233,5 +233,3 @@ class MouseEvent extends EventBase
 		return sceneNormal;
 	}
 }
-
-export default MouseEvent;

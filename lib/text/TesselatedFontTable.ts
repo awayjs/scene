@@ -1,8 +1,8 @@
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsBase					from "../graphics/ElementsBase";
-import TriangleElements				from "../graphics/TriangleElements";
-import TesselatedFontChar			from "../text/TesselatedFontChar";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {TriangleElements}				from "../graphics/TriangleElements";
+import {TesselatedFontChar}			from "../text/TesselatedFontChar";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
@@ -13,7 +13,7 @@ import TesselatedFontChar			from "../text/TesselatedFontChar";
  *
  * @class away.base.GraphicBase
  */
-class TesselatedFontTable extends AssetBase
+export class TesselatedFontTable extends AssetBase
 {
 	private _font_chars:Array<TesselatedFontChar>;
 	public _font_chars_dic:Object;
@@ -46,7 +46,7 @@ class TesselatedFontTable extends AssetBase
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 
 	}
@@ -120,5 +120,3 @@ class TesselatedFontTable extends AssetBase
 	}
 
 }
-
-export default TesselatedFontTable;

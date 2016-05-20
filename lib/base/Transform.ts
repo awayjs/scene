@@ -1,15 +1,15 @@
-import EventDispatcher				from "awayjs-core/lib/events/EventDispatcher";
-import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
-import Matrix						from "awayjs-core/lib/geom/Matrix";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
-import Rectangle					from "awayjs-core/lib/geom/Rectangle";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
+import {EventDispatcher}				from "awayjs-core/lib/events/EventDispatcher";
+import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
+import {Matrix}						from "awayjs-core/lib/geom/Matrix";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
+import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {PerspectiveProjection}		from "awayjs-core/lib/projections/PerspectiveProjection";
 
 
-import DisplayObject				from "../display/DisplayObject";
-import TransformEvent				from "../events/TransformEvent";
+import {DisplayObject}				from "../display/DisplayObject";
+import {TransformEvent}				from "../events/TransformEvent";
 
 /**
  * The Transform class provides access to color adjustment properties and two-
@@ -65,7 +65,7 @@ import TransformEvent				from "../events/TransformEvent";
  * projection center changes. For more control over the perspective
  * transformation, create a perspective projection Matrix3D object.</p>
  */
-class Transform extends EventDispatcher
+export class Transform extends EventDispatcher
 {
 	private _concatenatedColorTransform:ColorTransform;
 	private _concatenatedMatrix:Matrix;
@@ -265,7 +265,7 @@ class Transform extends EventDispatcher
 	 * @param    ay        The angle in degrees of the rotation around the y axis.
 	 * @param    az        The angle in degrees of the rotation around the z axis.
 	 */
-	public rotateTo(ax:number, ay:number, az:number)
+	public rotateTo(ax:number, ay:number, az:number):void
 	{
 		if (this._componentsDirty)
 			this._updateComponents();
@@ -288,7 +288,7 @@ class Transform extends EventDispatcher
 		return this._scale;
 	}
 
-	public scaleTo(sx:number, sy:number, sz:number)
+	public scaleTo(sx:number, sy:number, sz:number):void
 	{
 		if (this._componentsDirty)
 			this._updateComponents();
@@ -311,7 +311,7 @@ class Transform extends EventDispatcher
 		return this._skew;
 	}
 
-	public skewTo(sx:number, sy:number, sz:number)
+	public skewTo(sx:number, sy:number, sz:number):void
 	{
 		if (this._componentsDirty)
 			this._updateComponents();
@@ -346,7 +346,7 @@ class Transform extends EventDispatcher
 		this._components[3] = this._scale;
 	}
 
-	public dispose()
+	public dispose():void
 	{
 		
 	}
@@ -380,7 +380,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    distance    The length of the movement
 	 */
-	public moveForward(distance:number)
+	public moveForward(distance:number):void
 	{
 		this.translateLocal(Vector3D.Z_AXIS, distance);
 	}
@@ -390,7 +390,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    distance    The length of the movement
 	 */
-	public moveBackward(distance:number)
+	public moveBackward(distance:number):void
 	{
 		this.translateLocal(Vector3D.Z_AXIS, -distance);
 	}
@@ -401,7 +401,7 @@ class Transform extends EventDispatcher
 	 * @param    distance    The length of the movement
 	 */
 
-	public moveLeft(distance:number)
+	public moveLeft(distance:number):void
 	{
 		this.translateLocal(Vector3D.X_AXIS, -distance);
 	}
@@ -411,7 +411,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    distance    The length of the movement
 	 */
-	public moveRight(distance:number)
+	public moveRight(distance:number):void
 	{
 		this.translateLocal(Vector3D.X_AXIS, distance);
 	}
@@ -421,7 +421,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    distance    The length of the movement
 	 */
-	public moveUp(distance:number)
+	public moveUp(distance:number):void
 	{
 		this.translateLocal(Vector3D.Y_AXIS, distance);
 	}
@@ -431,7 +431,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    distance    The length of the movement
 	 */
-	public moveDown(distance:number)
+	public moveDown(distance:number):void
 	{
 		this.translateLocal(Vector3D.Y_AXIS, -distance);
 	}
@@ -444,7 +444,7 @@ class Transform extends EventDispatcher
 	 * @param    dz        The amount of movement along the local z axis.
 	 */
 
-	public moveTo(dx:number, dy:number, dz:number)
+	public moveTo(dx:number, dy:number, dz:number):void
 	{
 		this._matrix3D.rawData[12] = dx;
 		this._matrix3D.rawData[13] = dy;
@@ -458,7 +458,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    angle        The amount of rotation in degrees
 	 */
-	public pitch(angle:number)
+	public pitch(angle:number):void
 	{
 		this.rotate(Vector3D.X_AXIS, angle);
 	}
@@ -468,7 +468,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    angle        The amount of rotation in degrees
 	 */
-	public roll(angle:number)
+	public roll(angle:number):void
 	{
 		this.rotate(Vector3D.Z_AXIS, angle);
 	}
@@ -478,7 +478,7 @@ class Transform extends EventDispatcher
 	 *
 	 * @param    angle        The amount of rotation in degrees
 	 */
-	public yaw(angle:number)
+	public yaw(angle:number):void
 	{
 		this.rotate(Vector3D.Y_AXIS, angle);
 	}
@@ -489,7 +489,7 @@ class Transform extends EventDispatcher
 	 * @param    axis        The vector defining the axis of rotation
 	 * @param    angle        The amount of rotation in degrees
 	 */
-	public rotate(axis:Vector3D, angle:number)
+	public rotate(axis:Vector3D, angle:number):void
 	{
 		this.matrix3D.prependRotation(angle, axis);
 
@@ -502,7 +502,7 @@ class Transform extends EventDispatcher
 	 * @param    axis        The vector defining the axis of movement
 	 * @param    distance    The length of the movement
 	 */
-	public translate(axis:Vector3D, distance:number)
+	public translate(axis:Vector3D, distance:number):void
 	{
 		var x:number = axis.x, y:number = axis.y, z:number = axis.z;
 		var len:number = distance/Math.sqrt(x*x + y*y + z*z);
@@ -518,7 +518,7 @@ class Transform extends EventDispatcher
 	 * @param    axis        The vector defining the axis of movement
 	 * @param    distance    The length of the movement
 	 */
-	public translateLocal(axis:Vector3D, distance:number)
+	public translateLocal(axis:Vector3D, distance:number):void
 	{
 		var x:number = axis.x, y:number = axis.y, z:number = axis.z;
 		var len:number = distance/Math.sqrt(x*x + y*y + z*z);
@@ -528,13 +528,13 @@ class Transform extends EventDispatcher
 		this.invalidatePosition();
 	}
 
-	public clearMatrix3D()
+	public clearMatrix3D():void
 	{
 		this._matrix3D.identity();
 		this.invalidateComponents();
 	}
 
-	public clearColorTransform()
+	public clearColorTransform():void
 	{
 		if (!this._colorTransform)
 			return;
@@ -555,7 +555,7 @@ class Transform extends EventDispatcher
 		this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
 	}
 
-	public invalidateComponents()
+	public invalidateComponents():void
 	{
 		this.invalidatePosition();
 		
@@ -565,14 +565,14 @@ class Transform extends EventDispatcher
 	/**
 	 *
 	 */
-	public invalidatePosition()
+	public invalidatePosition():void
 	{
 		this._matrix3D.invalidatePosition();
 
 		this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_MATRIX3D, this));
 	}
 
-	public invalidateColorTransform()
+	public invalidateColorTransform():void
 	{
 		this.dispatchEvent(new TransformEvent(TransformEvent.INVALIDATE_COLOR_TRANSFORM, this));
 	}
@@ -580,7 +580,7 @@ class Transform extends EventDispatcher
 	/**
 	 *
 	 */
-	private _updateMatrix3D()
+	private _updateMatrix3D():void
 	{
 		this._matrix3D.recompose(this._components);
 
@@ -588,7 +588,7 @@ class Transform extends EventDispatcher
 	}
 
 
-	private _updateComponents()
+	private _updateComponents():void
 	{
 		var elements:Array<Vector3D> = this._matrix3D.decompose();
 		var vec:Vector3D;
@@ -614,5 +614,3 @@ class Transform extends EventDispatcher
 		this._componentsDirty = false;
 	}
 }
-
-export default Transform;

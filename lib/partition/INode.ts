@@ -1,10 +1,10 @@
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					from "../ITraverser";
-import DisplayObject				from "../display/DisplayObject";
-import IContainerNode				from "../partition/IContainerNode";
-import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
+import {ITraverser}					from "../ITraverser";
+import {DisplayObject}				from "../display/DisplayObject";
+import {IContainerNode}				from "../partition/IContainerNode";
+import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -12,7 +12,7 @@ import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
  *
  * @class away.pool.IDisplayObjectNode
  */
-interface INode
+export interface INode
 {
 	debugVisible:boolean;
 
@@ -36,5 +36,3 @@ interface INode
 
 	isCastingShadow():boolean;
 }
-
-export default INode;

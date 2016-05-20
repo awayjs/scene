@@ -1,15 +1,15 @@
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import Scene						from "../display/Scene";
-import View							from "../View";
-import PickingCollision				from "../pick/PickingCollision";
+import {Scene}						from "../display/Scene";
+import {View}							from "../View";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * Provides an interface for picking objects that can pick 3d objects from a view or scene.
  *
  * @interface away.pick.IPicker
  */
-interface IPicker
+export interface IPicker
 {
 	/**
 	 * Gets the collision object from the screen coordinates of the picking ray.
@@ -39,5 +39,3 @@ interface IPicker
 	 */
 	dispose();
 }
-
-export default IPicker;

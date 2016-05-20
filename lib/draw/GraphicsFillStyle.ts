@@ -1,7 +1,7 @@
-import IGraphicsData		from "../draw/IGraphicsData";
+import {IGraphicsData}		from "../draw/IGraphicsData";
 
 
-class GraphicsFillStyle implements IGraphicsData
+export class GraphicsFillStyle implements IGraphicsData
 {
     public static data_type:string = "[graphicsdata FillStyle]";
     /**
@@ -21,5 +21,3 @@ class GraphicsFillStyle implements IGraphicsData
         return GraphicsFillStyle.data_type;
     }
 }
-
-export default GraphicsFillStyle;

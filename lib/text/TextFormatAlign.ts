@@ -2,7 +2,7 @@
  * The TextFormatAlign class provides values for text alignment in the
  * TextFormat class.
  */
-class TextFormatAlign
+export class TextFormatAlign
 {
 	/**
 	 * Constant; centers the text in the text field. Use the syntax
@@ -28,5 +28,3 @@ class TextFormatAlign
 	 */
 	public RIGHT:string = "right";
 }
-
-export default TextFormatAlign;

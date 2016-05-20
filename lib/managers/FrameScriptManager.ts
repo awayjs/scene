@@ -1,7 +1,7 @@
-import DisplayObject					from "../display/DisplayObject";
-import MovieClip						from "../display/MovieClip";
+import {DisplayObject}					from "../display/DisplayObject";
+import {MovieClip}						from "../display/MovieClip";
 
-class FrameScriptManager
+export class FrameScriptManager
 {
 	// FrameScript debugging:
 	// the first line of a FrameScript should be a comment that represents the functions unique name
@@ -44,7 +44,7 @@ class FrameScriptManager
 		}
 	}
 
-	public static add_child_to_dispose(child:DisplayObject)
+	public static add_child_to_dispose(child:DisplayObject):void
 	{
 		this._queued_dispose.push(child);
 	}
@@ -103,7 +103,7 @@ class FrameScriptManager
 		this._queued_scripts.length = 0;
 	}
 
-	public static execute_dispose()
+	public static execute_dispose():void
 	{
 		var len:number = this._queued_dispose.length;
 		for (var i:number = 0; i < len; i++)

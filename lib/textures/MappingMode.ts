@@ -2,7 +2,7 @@
 
 
  */
-class MappingMode
+export class MappingMode
 {
 	/**
 	 *
@@ -19,5 +19,3 @@ class MappingMode
 	 */
 	public static RADIAL_GRADIENT:string = "radialGradient";
 }
-
-export default MappingMode;

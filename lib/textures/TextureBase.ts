@@ -1,13 +1,13 @@
-import ImageBase					from "awayjs-core/lib/image/ImageBase";
-import SamplerBase					from "awayjs-core/lib/image/SamplerBase";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
-import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
+import {ImageBase}					from "awayjs-core/lib/image/ImageBase";
+import {SamplerBase}					from "awayjs-core/lib/image/SamplerBase";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import ISurface						from "../base/ISurface";
+import {ISurface}						from "../base/ISurface";
 /**
  *
  */
-class TextureBase extends AssetBase
+export class TextureBase extends AssetBase
 {
 	public _numImages:number = 0;
 	public _images:Array<ImageBase> = new Array<ImageBase>();
@@ -26,7 +26,7 @@ class TextureBase extends AssetBase
 		return this._numImages;
 	}
 
-	public setNumImages(value:number)
+	public setNumImages(value:number):void
 	{
 		if (this._numImages == value)
 			return;
@@ -44,7 +44,7 @@ class TextureBase extends AssetBase
 		return this._images[index];
 	}
 
-	public setImageAt(image:ImageBase, index:number)
+	public setImageAt(image:ImageBase, index:number):void
 	{
 		this._images[index] = image;
 
@@ -56,12 +56,10 @@ class TextureBase extends AssetBase
 		return this._samplers[index];
 	}
 
-	public setSamplerAt(sampler:SamplerBase, index:number)
+	public setSamplerAt(sampler:SamplerBase, index:number):void
 	{
 		this._samplers[index] = sampler;
 
 		this.invalidate();
 	}
 }
-
-export default TextureBase;

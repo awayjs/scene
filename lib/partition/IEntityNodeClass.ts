@@ -1,6 +1,6 @@
-import IEntity						from "../display/IEntity";
-import EntityNode					from "../partition/EntityNode";
-import PartitionBase				from "../partition/PartitionBase";
+import {IEntity}						from "../display/IEntity";
+import {EntityNode}					from "../partition/EntityNode";
+import {PartitionBase}				from "../partition/PartitionBase";
 
 /**
  * IEntityNodeClass is an interface for the constructable class definition EntityNode that is used to
@@ -8,12 +8,10 @@ import PartitionBase				from "../partition/PartitionBase";
  *
  * @class away.pool.IEntityNodeClass
  */
-interface IEntityNodeClass
+export interface IEntityNodeClass
 {
 	/**
 	 *
 	 */
 	new(entity:IEntity, pool:PartitionBase):EntityNode;
 }
-
-export default IEntityNodeClass;

@@ -1,11 +1,11 @@
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				from "../display/DisplayObject";
-import View							from "../View";
-import PickingCollision				from "../pick/PickingCollision";
-import AwayTouchEvent				from "../events/TouchEvent";
+import {DisplayObject}				from "../display/DisplayObject";
+import {View}							from "../View";
+import {PickingCollision}				from "../pick/PickingCollision";
+import {TouchEvent}				from "../events/TouchEvent";
 
-class TouchManager
+export class TouchManager
 {
 	private static _instance:TouchManager;
 
@@ -17,22 +17,22 @@ class TouchManager
 	private _previousCollidingObject:PickingCollision;
 	public static _iCollisionFromTouchId:Object;
 	public static _previousCollidingObjectFromTouchId:Object;
-	private _queuedEvents:Array<AwayTouchEvent> = new Array<AwayTouchEvent>();
+	private _queuedEvents:Array<TouchEvent> = new Array<TouchEvent>();
 	
 	private _touchPoints:Array<TouchPoint>;
 	private _touchPointFromId:Object;
 	
 	private _touchMoveEvent:TouchEvent;
 
-	private _touchOut:AwayTouchEvent = new AwayTouchEvent(AwayTouchEvent.TOUCH_OUT);
-	private _touchBegin:AwayTouchEvent = new AwayTouchEvent(AwayTouchEvent.TOUCH_BEGIN);
-	private _touchMove:AwayTouchEvent = new AwayTouchEvent(AwayTouchEvent.TOUCH_MOVE);
-	private _touchEnd:AwayTouchEvent = new AwayTouchEvent(AwayTouchEvent.TOUCH_END);
-	private _touchOver:AwayTouchEvent = new AwayTouchEvent(AwayTouchEvent.TOUCH_OVER);
+	private _touchOut:TouchEvent = new TouchEvent(TouchEvent.TOUCH_OUT);
+	private _touchBegin:TouchEvent = new TouchEvent(TouchEvent.TOUCH_BEGIN);
+	private _touchMove:TouchEvent = new TouchEvent(TouchEvent.TOUCH_MOVE);
+	private _touchEnd:TouchEvent = new TouchEvent(TouchEvent.TOUCH_END);
+	private _touchOver:TouchEvent = new TouchEvent(TouchEvent.TOUCH_OVER);
 
-	private onTouchBeginDelegate:(event:TouchEvent) => void;
-	private onTouchMoveDelegate:(event:TouchEvent) => void;
-	private onTouchEndDelegate:(event:TouchEvent) => void;
+	private onTouchBeginDelegate:(event) => void;
+	private onTouchMoveDelegate:(event) => void;
+	private onTouchEndDelegate:(event) => void;
 	
 	constructor()
 	{
@@ -41,9 +41,9 @@ class TouchManager
 		TouchManager._iCollisionFromTouchId = new Object();
 		TouchManager._previousCollidingObjectFromTouchId = new Object();
 
-		this.onTouchBeginDelegate = (event:TouchEvent) => this.onTouchBegin(event);
-		this.onTouchMoveDelegate = (event:TouchEvent) => this.onTouchMove(event);
-		this.onTouchEndDelegate = (event:TouchEvent) => this.onTouchEnd(event);
+		this.onTouchBeginDelegate = (event) => this.onTouchBegin(event);
+		this.onTouchMoveDelegate = (event) => this.onTouchMove(event);
+		this.onTouchEndDelegate = (event) => this.onTouchEnd(event);
 	}
 
 	public static getInstance():TouchManager
@@ -58,7 +58,7 @@ class TouchManager
 	// Interface.
 	// ---------------------------------------------------------------------
 	
-	public updateCollider(forceTouchMove:boolean)
+	public updateCollider(forceTouchMove:boolean):void
 	{
 		//if (forceTouchMove || this._updateDirty) { // If forceTouchMove is off, and no 2D Touch events dirty the update, don't update either.
 		//	for (var i:number; i < this._numTouchPoints; ++i) {
@@ -69,7 +69,7 @@ class TouchManager
 		//}
 	}
 	
-	public fireTouchEvents(forceTouchMove:boolean)
+	public fireTouchEvents(forceTouchMove:boolean):void
 	{
 		var i:number;
 		for (i = 0; i < this._numTouchPoints; ++i) {
@@ -88,7 +88,7 @@ class TouchManager
 				this.queueDispatch(this._touchMove, this._touchMoveEvent, this._iCollision, this._touchPoint);
 		}
 
-		var event:AwayTouchEvent;
+		var event:TouchEvent;
 		var dispatcher:DisplayObject;
 
 		// Dispatch all queued events.
@@ -114,14 +114,14 @@ class TouchManager
 		}
 	}
 	
-	public registerView(view:View)
+	public registerView(view:View):void
 	{
 		view.htmlElement.addEventListener("touchstart", this.onTouchBeginDelegate);
 		view.htmlElement.addEventListener("touchmove", this.onTouchMoveDelegate);
 		view.htmlElement.addEventListener("touchend", this.onTouchEndDelegate);
 	}
 	
-	public unregisterView(view:View)
+	public unregisterView(view:View):void
 	{
 		view.htmlElement.removeEventListener("touchstart", this.onTouchBeginDelegate);
 		view.htmlElement.removeEventListener("touchmove", this.onTouchMoveDelegate);
@@ -132,7 +132,7 @@ class TouchManager
 	// Private.
 	// ---------------------------------------------------------------------
 	
-	private queueDispatch(event:AwayTouchEvent, sourceEvent:TouchEvent, collider:PickingCollision, touch:TouchPoint)
+	private queueDispatch(event:TouchEvent, sourceEvent, collider:PickingCollision, touch:TouchPoint):void
 	{
 		// 2D properties.
 		event.ctrlKey = sourceEvent.ctrlKey;
@@ -173,7 +173,7 @@ class TouchManager
 	// Event handlers.
 	// ---------------------------------------------------------------------
 	
-	private onTouchBegin(event:TouchEvent)
+	private onTouchBegin(event):void
 	{
 		
 		var touch:TouchPoint = new TouchPoint();
@@ -193,7 +193,7 @@ class TouchManager
 		this._updateDirty = true;
 	}
 	
-	private onTouchMove(event:TouchEvent)
+	private onTouchMove(event):void
 	{
 		
 		//var touch:TouchPoint = this._touchPointFromId[ event.touchPointID ];
@@ -211,7 +211,7 @@ class TouchManager
 		//this._updateDirty = true;
 	}
 	
-	private onTouchEnd(event:TouchEvent)
+	private onTouchEnd(event):void
 	{
 		
 		//var touch:TouchPoint = this._touchPointFromId[ event.touchPointID ];
@@ -231,40 +231,11 @@ class TouchManager
 }
 
 
-export default TouchManager;
-
 class TouchPoint
 {
 	public id:number;
 	public x:number;
 	public y:number;
-}
-
-
-/**
- * Classes for Touch Interfaces
- */
-interface TouchEvent extends UIEvent {
-	touches: TouchList;
-	targetTouches: TouchList;
-	changedTouches: TouchList;
-	altKey: boolean;
-	metaKey: boolean;
-	ctrlKey: boolean;
-	shiftKey: boolean;
-	rotation: number;
-	scale: number;
-
-	// for iOS
-	initTouchEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, viewArg: Window, detailArg: number, screenXArg: number, screenYArg: number, clientXArg: number, clientYArg: number, ctrlKeyArg: boolean, altKeyArg: boolean, shiftKeyArg: boolean, metaKeyArg: boolean, touchesArg: TouchList, targetTouchesArg: TouchList, changedTouchesArg: TouchList, scale: number, rotation: number): void
-
-	// for Android
-	initTouchEvent(touchesArg: TouchList, targetTouchesArg: TouchList, changedTouchesArg: TouchList, typeArg: string, Aview: Window, screenXArg: number, screenYArg: number, clientXArg: number, clientYArg: number, ctrlKeyArg: boolean, altKeyArg: boolean, shiftKeyArg: boolean, metaKeyArg: boolean);
-}
-
-declare var TouchEvent: {
-	prototype: TouchEvent;
-	new (): TouchEvent;
 }
 
 interface TouchList {
@@ -285,33 +256,33 @@ interface Touch {
 }
 
 interface Window {
-	ontouchstart: (ev: TouchEvent) => any;
-	ontouchmove: (ev: TouchEvent) => any;
-	ontouchend: (ev: TouchEvent) => any;
-	ontouchcancel: (ev: TouchEvent) => any;
-	addEventListener(type: string, listener: (ev: TouchEvent) => any, useCapture?: boolean): void;
+	ontouchstart: (ev) => any;
+	ontouchmove: (ev) => any;
+	ontouchend: (ev) => any;
+	ontouchcancel: (ev) => any;
+	addEventListener(type: string, listener: (ev) => any, useCapture?: boolean): void;
 }
 
 interface Document {
-	ontouchstart: (ev: TouchEvent) => any;
-	ontouchmove: (ev: TouchEvent) => any;
-	ontouchend: (ev: TouchEvent) => any;
-	ontouchcancel: (ev: TouchEvent) => any;
-	addEventListener(type: string, listener: (ev: TouchEvent) => any, useCapture?: boolean): void;
+	ontouchstart: (ev) => any;
+	ontouchmove: (ev) => any;
+	ontouchend: (ev) => any;
+	ontouchcancel: (ev) => any;
+	addEventListener(type: string, listener: (ev) => any, useCapture?: boolean): void;
 }
 
 interface HTMLElement {
-	ontouchstart: (ev: TouchEvent) => any;
-	ontouchmove: (ev: TouchEvent) => any;
-	ontouchend: (ev: TouchEvent) => any;
-	ontouchcancel: (ev: TouchEvent) => any;
-	addEventListener(type: string, listener: (ev: TouchEvent) => any, useCapture?: boolean): void;
+	ontouchstart: (ev) => any;
+	ontouchmove: (ev) => any;
+	ontouchend: (ev) => any;
+	ontouchcancel: (ev) => any;
+	addEventListener(type: string, listener: (ev) => any, useCapture?: boolean): void;
 }
 
-declare var ontouchstart: (ev: TouchEvent) => any;
-declare var ontouchmove: (ev: TouchEvent) => any;
-declare var ontouchend: (ev: TouchEvent) => any;
-declare var ontouchcancel: (ev: TouchEvent) => any;
+declare var ontouchstart: (ev) => any;
+declare var ontouchmove: (ev) => any;
+declare var ontouchend: (ev) => any;
+declare var ontouchcancel: (ev) => any;
 
-declare function addEventListener(type: string, listener: (ev: TouchEvent) => any, useCapture?: boolean): void;
+declare function addEventListener(type: string, listener: (ev) => any, useCapture?: boolean): void;
 

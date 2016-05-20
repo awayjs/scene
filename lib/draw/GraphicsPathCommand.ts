@@ -3,7 +3,7 @@
  * The values in this class are used by the Graphics.drawPath() method,
  *or stored in the commands vector of a GraphicsPath object.
  */
-class GraphicsPathCommand
+export class GraphicsPathCommand
 {
 	/**
 	 * Represents the default "do nothing" command.

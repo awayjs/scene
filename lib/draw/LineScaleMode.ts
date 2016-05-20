@@ -2,7 +2,7 @@
  * The LineScaleMode class provides values for the <code>scaleMode</code>
  * parameter in the <code>Graphics.lineStyle()</code> method.
  */
-class LineScaleMode
+export class LineScaleMode
 {
 	/**
 	 * With this setting used as the <code>scaleMode</code> parameter of the
@@ -39,5 +39,3 @@ class LineScaleMode
 	 */
 	public static VERTICAL:string = "vertical";
 }
-
-export default LineScaleMode;

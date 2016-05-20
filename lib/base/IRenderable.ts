@@ -1,17 +1,17 @@
-import Matrix						from "awayjs-core/lib/geom/Matrix";
-import IAsset						from "awayjs-core/lib/library/IAsset";
+import {Matrix}						from "awayjs-core/lib/geom/Matrix";
+import {IAsset}						from "awayjs-core/lib/library/IAsset";
 
-import IAnimator					from "../animators/IAnimator";
-import Style						from "../base/Style";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
+import {IAnimator}					from "../animators/IAnimator";
+import {Style}						from "../base/Style";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * IRenderable provides an interface for objects that can use materials.
  *
  * @interface away.base.IRenderable
  */
-interface IRenderable extends IAsset
+export interface IRenderable extends IAsset
 {
 	/**
 	 * The animation used by the material owner to assemble the vertex code.
@@ -38,5 +38,3 @@ interface IRenderable extends IAsset
 	 */
 	_iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean;
 }
-
-export default IRenderable;

@@ -1,10 +1,10 @@
-import SamplerCube				from "awayjs-core/lib/image/SamplerCube";
-import ImageCube				from "awayjs-core/lib/image/ImageCube";
+import {SamplerCube}				from "awayjs-core/lib/image/SamplerCube";
+import {ImageCube}				from "awayjs-core/lib/image/ImageCube";
 
-import TextureBase				from "../textures/TextureBase";
+import {TextureBase}				from "../textures/TextureBase";
 
 
-class SingleCubeTexture extends TextureBase
+export class SingleCubeTexture extends TextureBase
 {
 	public static assetType:string = "[texture SingleCubeTexture]";
 
@@ -61,5 +61,3 @@ class SingleCubeTexture extends TextureBase
 		this.imageCube = imageCube;
 	}
 }
-
-export default SingleCubeTexture;

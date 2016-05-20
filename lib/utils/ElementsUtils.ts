@@ -1,19 +1,19 @@
-import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
-import Short2Attributes			from "awayjs-core/lib/attributes/Short2Attributes";
-import Short3Attributes			from "awayjs-core/lib/attributes/Short3Attributes";
-import Float3Attributes			from "awayjs-core/lib/attributes/Float3Attributes";
-import Float4Attributes			from "awayjs-core/lib/attributes/Float4Attributes";
-import Byte4Attributes			from "awayjs-core/lib/attributes/Byte4Attributes";
-import Matrix3D					from "awayjs-core/lib/geom/Matrix3D";
-import Vector3D					from "awayjs-core/lib/geom/Vector3D";
-import Box						from "awayjs-core/lib/geom/Box";
-import Sphere					from "awayjs-core/lib/geom/Sphere";
+import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
+import {Short2Attributes}			from "awayjs-core/lib/attributes/Short2Attributes";
+import {Short3Attributes}			from "awayjs-core/lib/attributes/Short3Attributes";
+import {Float3Attributes}			from "awayjs-core/lib/attributes/Float3Attributes";
+import {Float4Attributes}			from "awayjs-core/lib/attributes/Float4Attributes";
+import {Byte4Attributes}			from "awayjs-core/lib/attributes/Byte4Attributes";
+import {Matrix3D}					from "awayjs-core/lib/geom/Matrix3D";
+import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
+import {Box}						from "awayjs-core/lib/geom/Box";
+import {Sphere}					from "awayjs-core/lib/geom/Sphere";
 
-import TriangleElements			from "../graphics/TriangleElements";
-import HitTestCache			from "../graphics/HitTestCache";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {HitTestCache}			from "../graphics/HitTestCache";
 
-class ElementsUtils
+export class ElementsUtils
 {
 	private static tempFloat32x4:Float32Array = new Float32Array(4);
 
@@ -359,7 +359,7 @@ class ElementsUtils
 		return output;
 	}
 
-	public static scaleUVs(scaleU:number, scaleV:number, output:AttributesView, count:number, offset:number = 0)
+	public static scaleUVs(scaleU:number, scaleV:number, output:AttributesView, count:number, offset:number = 0):void
 	{
 		if (output.count < count + offset)
 			output.count = count + offset;
@@ -380,7 +380,7 @@ class ElementsUtils
 		output.set(uvs, offset);
 	}
 
-	public static scale(scale:number, output:AttributesView, count:number, offset:number = 0)
+	public static scale(scale:number, output:AttributesView, count:number, offset:number = 0):void
 	{
 		if (output.count < count + offset)
 			output.count = count + offset;
@@ -402,7 +402,7 @@ class ElementsUtils
 		output.set(positions, offset);
 	}
 
-	public static applyTransformation(transform:Matrix3D, positionAttributes:AttributesView, normalAttributes:Float3Attributes, tangentAttributes:Float3Attributes, count:number, offset:number = 0)
+	public static applyTransformation(transform:Matrix3D, positionAttributes:AttributesView, normalAttributes:Float3Attributes, tangentAttributes:Float3Attributes, count:number, offset:number = 0):void
 	{
 		//todo: make this compatible with 2-dimensional positions
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
@@ -1022,5 +1022,3 @@ class ElementsUtils
 	}
 
 }
-
-export default ElementsUtils;

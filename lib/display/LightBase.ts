@@ -1,13 +1,13 @@
-import Matrix3D					from "awayjs-core/lib/geom/Matrix3D";
-import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
+import {Matrix3D}					from "awayjs-core/lib/geom/Matrix3D";
+import {AbstractMethodError}		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObjectContainer	from "../display/DisplayObjectContainer";
-import Camera					from "../display/Camera";
-import IEntity					from "../display/IEntity";
-import LightEvent				from "../events/LightEvent";
-import ShadowMapperBase			from "../materials/shadowmappers/ShadowMapperBase";
+import {DisplayObjectContainer}	from "../display/DisplayObjectContainer";
+import {Camera}					from "../display/Camera";
+import {IEntity}					from "../display/IEntity";
+import {LightEvent}				from "../events/LightEvent";
+import {ShadowMapperBase}			from "../materials/shadowmappers/ShadowMapperBase";
 
-class LightBase extends DisplayObjectContainer
+export class LightBase extends DisplayObjectContainer
 {
 	private _color:number = 0xffffff;
 	private _colorR:number = 1;
@@ -140,7 +140,7 @@ class LightBase extends DisplayObjectContainer
 		this.updateAmbient();
 	}
 
-	private updateAmbient()
+	private updateAmbient():void
 	{
 		this._iAmbientR = ((this._ambientColor >> 16) & 0xff)/0xff*this._ambient;
 		this._iAmbientG = ((this._ambientColor >> 8) & 0xff)/0xff*this._ambient;
@@ -152,14 +152,14 @@ class LightBase extends DisplayObjectContainer
 		throw new AbstractMethodError();
 	}
 
-	private updateSpecular()
+	private updateSpecular():void
 	{
 		this._iSpecularR = this._colorR*this._specular;
 		this._iSpecularG = this._colorG*this._specular;
 		this._iSpecularB = this._colorB*this._specular;
 	}
 
-	private updateDiffuse()
+	private updateDiffuse():void
 	{
 		this._iDiffuseR = this._colorR*this._diffuse;
 		this._iDiffuseG = this._colorG*this._diffuse;
@@ -177,5 +177,3 @@ class LightBase extends DisplayObjectContainer
 		this._shadowMapper.light = this;
 	}
 }
-
-export default LightBase;

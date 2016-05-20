@@ -1,22 +1,22 @@
-import AttributesBuffer				from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView				from "awayjs-core/lib/attributes/AttributesView";
-import Byte4Attributes				from "awayjs-core/lib/attributes/Byte4Attributes";
-import Float3Attributes				from "awayjs-core/lib/attributes/Float3Attributes";
-import Float1Attributes				from "awayjs-core/lib/attributes/Float1Attributes";
-import Box							from "awayjs-core/lib/geom/Box";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {AttributesBuffer}				from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}				from "awayjs-core/lib/attributes/AttributesView";
+import {Byte4Attributes}				from "awayjs-core/lib/attributes/Byte4Attributes";
+import {Float3Attributes}				from "awayjs-core/lib/attributes/Float3Attributes";
+import {Float1Attributes}				from "awayjs-core/lib/attributes/Float1Attributes";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsBase					from "../graphics/ElementsBase";
-import MaterialBase					from "../materials/MaterialBase";
-import ElementsUtils				from "../utils/ElementsUtils";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {ElementsUtils}				from "../utils/ElementsUtils";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * @class LineElements
  */
-class LineElements extends ElementsBase
+export class LineElements extends ElementsBase
 {
 	public static assetType:string = "[asset LineElements]";
 
@@ -88,7 +88,7 @@ class LineElements extends ElementsBase
 	public setPositions(array:Array<number>, offset?:number);
 	public setPositions(arrayBufferView:ArrayBufferView, offset?:number);
 	public setPositions(attributesView:AttributesView, offset?:number);
-	public setPositions(values:any, offset:number = 0)
+	public setPositions(values:any, offset:number = 0):void
 	{
 		if (values instanceof AttributesView) {
 			this.clearVertices(this._positions);
@@ -148,7 +148,7 @@ class LineElements extends ElementsBase
 	public setThickness(array:Array<number>, offset?:number);
 	public setThickness(float32Array:Float32Array, offset?:number);
 	public setThickness(float1Attributes:Float1Attributes, offset?:number);
-	public setThickness(values:any, offset:number = 0)
+	public setThickness(values:any, offset:number = 0):void
 	{
 		if (values instanceof Float1Attributes) {
 			this._thickness = <Float1Attributes> values;
@@ -190,7 +190,7 @@ class LineElements extends ElementsBase
 	public setColors(float32Array:Float32Array, offset?:number);
 	public setColors(uint8Array:Uint8Array, offset?:number);
 	public setColors(byte4Attributes:Byte4Attributes, offset?:number);
-	public setColors(values:any, offset:number = 0)
+	public setColors(values:any, offset:number = 0):void
 	{
 		if (values) {
 			if (values == this._colors)
@@ -246,7 +246,7 @@ class LineElements extends ElementsBase
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 		super.dispose();
 
@@ -282,5 +282,3 @@ class LineElements extends ElementsBase
 		return pickingCollider.testLineCollision(this, material, pickingCollision, count || this._numVertices, offset);
 	}
 }
-
-export default LineElements;

@@ -1,22 +1,22 @@
-﻿import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+﻿import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					from "../ITraverser";
-import IAnimator					from "../animators/IAnimator";
-import DisplayObject				from "../display/DisplayObject";
-import IRenderable					from "../base/IRenderable";
-import BoundsType					from "../bounds/BoundsType";
-import RenderableEvent				from "../events/RenderableEvent";
-import IEntity						from "../display/IEntity";
-import MaterialBase					from "../materials/MaterialBase";
-import Style						from "../base/Style";
-import StyleEvent					from "../events/StyleEvent";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
+import {ITraverser}					from "../ITraverser";
+import {IAnimator}					from "../animators/IAnimator";
+import {DisplayObject}				from "../display/DisplayObject";
+import {IRenderable}					from "../base/IRenderable";
+import {BoundsType}					from "../bounds/BoundsType";
+import {RenderableEvent}				from "../events/RenderableEvent";
+import {IEntity}						from "../display/IEntity";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {Style}						from "../base/Style";
+import {StyleEvent}					from "../events/StyleEvent";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * A Line Segment primitive.
  */
-class LineSegment extends DisplayObject implements IEntity, IRenderable
+export class LineSegment extends DisplayObject implements IEntity, IRenderable
 {
 	private _style:Style;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
@@ -172,7 +172,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 	/**
 	 * @protected
 	 */
-	public _pUpdateBoxBounds()
+	public _pUpdateBoxBounds():void
 	{
 		super._pUpdateBoxBounds();
 
@@ -184,7 +184,7 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 		this._pBoxBounds.depth = Math.abs(this._startPosition.z - this._endPosition.z);
 	}
 
-	public _pUpdateSphereBounds()
+	public _pUpdateSphereBounds():void
 	{
 		super._pUpdateSphereBounds();
 
@@ -202,17 +202,17 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 	/**
 	 * @private
 	 */
-	public invalidateElements()
+	public invalidateElements():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
 	}
 
-	public invalidateSurface()
+	public invalidateSurface():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
 
-	private _onInvalidateProperties(event:StyleEvent)
+	private _onInvalidateProperties(event:StyleEvent):void
 	{
 		this.invalidateSurface();
 	}
@@ -231,10 +231,8 @@ class LineSegment extends DisplayObject implements IEntity, IRenderable
 		return false; //TODO: detect line collisions
 	}
 
-	public _acceptTraverser(traverser:ITraverser)
+	public _acceptTraverser(traverser:ITraverser):void
 	{
 		traverser.applyRenderable(this);
 	}
 }
-
-export default LineSegment;

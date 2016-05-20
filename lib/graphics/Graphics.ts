@@ -1,42 +1,42 @@
-import Point						from "awayjs-core/lib/geom/Point";
-import Box							from "awayjs-core/lib/geom/Box";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import BitmapImage2D			 	from "awayjs-core/lib/image/BitmapImage2D";
-import Matrix						from "awayjs-core/lib/geom/Matrix";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {Point}						from "awayjs-core/lib/geom/Point";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {BitmapImage2D}			 	from "awayjs-core/lib/image/BitmapImage2D";
+import {Matrix}						from "awayjs-core/lib/geom/Matrix";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsBase					from "../graphics/ElementsBase";
-import TriangleElements				from "../graphics/TriangleElements";
-import Graphic						from "../graphics/Graphic";
-import Style						from "../base/Style";
-import MaterialBase					from "../materials/MaterialBase";
-import IAnimator 					from "../animators/IAnimator";
-import ElementsEvent				from "../events/ElementsEvent";
-import StyleEvent					from "../events/StyleEvent";
-import ITraverser					from "../ITraverser";
-import ParticleData					from "../animators/data/ParticleData";
-
-
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {TriangleElements}				from "../graphics/TriangleElements";
+import {Graphic}						from "../graphics/Graphic";
+import {Style}						from "../base/Style";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {IAnimator}					from "../animators/IAnimator";
+import {ElementsEvent}				from "../events/ElementsEvent";
+import {StyleEvent}					from "../events/StyleEvent";
+import {ITraverser}					from "../ITraverser";
+import {ParticleData}					from "../animators/data/ParticleData";
 
 
-import GraphicsPath					from "../draw/GraphicsPath";
-import GraphicsPathCommand			from "../draw/GraphicsPathCommand";
-import GraphicsFactoryFills			from "../draw/GraphicsFactoryFills";
-import GraphicsFactoryStrokes		from "../draw/GraphicsFactoryStrokes";
-import PartialImplementationError	from "awayjs-core/lib/errors/PartialImplementationError";
-import InterpolationMethod			from "../draw/InterpolationMethod";
-import JointStyle					from "../draw/JointStyle";
-import LineScaleMode				from "../draw/LineScaleMode";
-import TriangleCulling				from "../draw/TriangleCulling";
-import SpreadMethod					from "../draw/SpreadMethod";
-import CapsStyle					from "../draw/CapsStyle";
-import GradientType					from "../draw/GradientType";
-import GraphicsPathWinding			from "../draw/GraphicsPathWinding";
-import IGraphicsData				from "../draw/IGraphicsData";
-import GraphicsStrokeStyle			from "../draw/GraphicsStrokeStyle";
-import GraphicsFillStyle			from "../draw/GraphicsFillStyle";
+
+
+import {GraphicsPath}					from "../draw/GraphicsPath";
+import {GraphicsPathCommand}			from "../draw/GraphicsPathCommand";
+import {GraphicsFactoryFills}			from "../draw/GraphicsFactoryFills";
+import {GraphicsFactoryStrokes}		from "../draw/GraphicsFactoryStrokes";
+import {PartialImplementationError}	from "awayjs-core/lib/errors/PartialImplementationError";
+import {InterpolationMethod}			from "../draw/InterpolationMethod";
+import {JointStyle}					from "../draw/JointStyle";
+import {LineScaleMode}				from "../draw/LineScaleMode";
+import {TriangleCulling}				from "../draw/TriangleCulling";
+import {SpreadMethod}					from "../draw/SpreadMethod";
+import {CapsStyle}					from "../draw/CapsStyle";
+import {GradientType}					from "../draw/GradientType";
+import {GraphicsPathWinding}			from "../draw/GraphicsPathWinding";
+import {IGraphicsData}				from "../draw/IGraphicsData";
+import {GraphicsStrokeStyle}			from "../draw/GraphicsStrokeStyle";
+import {GraphicsFillStyle}			from "../draw/GraphicsFillStyle";
 
 
 /**
@@ -53,7 +53,7 @@ import GraphicsFillStyle			from "../draw/GraphicsFillStyle";
  *
  * @class Graphics
  */
-class Graphics extends AssetBase
+export class Graphics extends AssetBase
 {
 	public static assetType:string = "[asset Graphics]";
 
@@ -240,7 +240,7 @@ class Graphics extends AssetBase
 		return graphic;
 	}
 
-	public removeGraphic(graphic:Graphic)
+	public removeGraphic(graphic:Graphic):void
 	{
 		this._graphics.splice(this._graphics.indexOf(graphic), 1);
 
@@ -259,14 +259,14 @@ class Graphics extends AssetBase
 		return this._graphics[index];
 	}
 
-	public applyTransformation(transform:Matrix3D)
+	public applyTransformation(transform:Matrix3D):void
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i)
 			this._graphics[i].applyTransformation(transform);
 	}
 
-	public copyTo(graphics:Graphics)
+	public copyTo(graphics:Graphics):void
 	{
 		graphics.material = this._material;
 		graphics.style = this.style;
@@ -295,14 +295,14 @@ class Graphics extends AssetBase
 	 * Scales the geometry.
 	 * @param scale The amount by which to scale.
 	 */
-	public scale(scale:number)
+	public scale(scale:number):void
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i)
 			this._graphics[i].scale(scale);
 	}
 
-	public clear()
+	public clear():void
 	{
 		for (var i:number = this._graphics.length - 1; i>=0; i--){
 			this._graphics[i].clear();
@@ -313,7 +313,7 @@ class Graphics extends AssetBase
 	/**
 	 * Clears all resources used by the Graphics object, including SubGeometries.
 	 */
-	public dispose()
+	public dispose():void
 	{
 		this.material = null;
 		for (var i:number = this._graphics.length - 1; i>=0; i--)
@@ -328,7 +328,7 @@ class Graphics extends AssetBase
 	 * @param scaleU The amount by which to scale on the u axis. Default is 1;
 	 * @param scaleV The amount by which to scale on the v axis. Default is 1;
 	 */
-	public scaleUV(scaleU:number = 1, scaleV:number = 1)
+	public scaleUV(scaleU:number = 1, scaleV:number = 1):void
 	{
 		var len:number = this._graphics.length;
 
@@ -367,7 +367,7 @@ class Graphics extends AssetBase
 		return target;
 	}
 
-	public invalidate()
+	public invalidate():void
 	{
 		super.invalidate();
 
@@ -375,7 +375,7 @@ class Graphics extends AssetBase
 		this._sphereBoundsInvalid = true;
 	}
 
-	public _iInvalidateSurfaces()
+	public _iInvalidateSurfaces():void
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i)
@@ -383,7 +383,7 @@ class Graphics extends AssetBase
 	}
 
 
-	public invalidateElements()
+	public invalidateElements():void
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i)
@@ -401,19 +401,19 @@ class Graphics extends AssetBase
 		return false;
 	}
 
-	public acceptTraverser(traverser:ITraverser)
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; i++)
 			traverser.applyRenderable(this._graphics[i]);
 	}
 
-	private _onInvalidateProperties(event:StyleEvent)
+	private _onInvalidateProperties(event:StyleEvent):void
 	{
 		this._iInvalidateSurfaces();
 	}
 
-	private _onInvalidateVertices(event:ElementsEvent)
+	private _onInvalidateVertices(event:ElementsEvent):void
 	{
 		if (event.attributesView != (<TriangleElements> event.target).positions)
 			return;
@@ -465,7 +465,7 @@ class Graphics extends AssetBase
 	 *               using a bilinear algorithm. Rendering by using the nearest
 	 *               neighbor algorithm is faster.
 	 */
-	public beginBitmapFill(bitmap:BitmapImage2D, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false)
+	public beginBitmapFill(bitmap:BitmapImage2D, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false):void
 	{
 		this.draw_fills();
 		// start a new fill path
@@ -491,7 +491,7 @@ class Graphics extends AssetBase
 	 * @param color The color of the fill(0xRRGGBB).
 	 * @param alpha The alpha value of the fill(0.0 to 1.0).
 	 */
-	public beginFill(color:number /*int*/, alpha:number = 1)
+	public beginFill(color:number /*int*/, alpha:number = 1):void
 	{
 		this.draw_fills();
 		// start a new fill path
@@ -586,7 +586,7 @@ class Graphics extends AssetBase
 	 *                            a <code>focalPointRatio</code> set to 0.75:
 	 * @throws ArgumentError If the <code>type</code> parameter is not valid.
 	 */
-	public beginGradientFill(type:GradientType, colors:Array<number /*int*/>, alphas:Array<number>, ratios:Array<number /*int*/>, matrix:Matrix = null, spreadMethod:string = "pad", interpolationMethod:string = "rgb", focalPointRatio:number = 0)
+	public beginGradientFill(type:GradientType, colors:Array<number /*int*/>, alphas:Array<number>, ratios:Array<number /*int*/>, matrix:Matrix = null, spreadMethod:string = "pad", interpolationMethod:string = "rgb", focalPointRatio:number = 0):void
 	{
 		this.draw_fills();
 		// start a new fill path
@@ -606,7 +606,7 @@ class Graphics extends AssetBase
 	 * @param sourceGraphics The Graphics object from which to copy the drawing
 	 *                       commands.
 	 */
-	public copyFrom(sourceGraphics:Graphics)
+	public copyFrom(sourceGraphics:Graphics):void
 	{
 		sourceGraphics.copyTo(this);
 	}
@@ -661,7 +661,7 @@ class Graphics extends AssetBase
 	 *                  relative to the registration point of the parent display
 	 *                  object.
 	 */
-	public cubicCurveTo(controlX1:number, controlY1:number, controlX2:number, controlY2:number, anchorX:number, anchorY:number)
+	public cubicCurveTo(controlX1:number, controlY1:number, controlX2:number, controlY2:number, anchorX:number, anchorY:number):void
 	{
 
 		throw new PartialImplementationError("cubicCurveTo");
@@ -715,7 +715,7 @@ class Graphics extends AssetBase
 	 *                 anchor point relative to the registration point of the
 	 *                 parent display object.
 	 */
-	public curveTo(controlX:number, controlY:number, anchorX:number, anchorY:number)
+	public curveTo(controlX:number, controlY:number, anchorX:number, anchorY:number):void
 	{
 
 		if(this._active_fill_path!=null){
@@ -743,7 +743,7 @@ class Graphics extends AssetBase
 	 *               pixels).
 	 * @param radius The radius of the circle(in pixels).
 	 */
-	public drawCircle(x:number, y:number, radius:number)
+	public drawCircle(x:number, y:number, radius:number):void
 	{
 		// todo: directly create triangles instead of draw commands ?
 		var radius2=radius*1.065;
@@ -782,7 +782,7 @@ class Graphics extends AssetBase
 	 * @param width  The width of the ellipse(in pixels).
 	 * @param height The height of the ellipse(in pixels).
 	 */
-	public drawEllipse(x:number, y:number, width:number, height:number)
+	public drawEllipse(x:number, y:number, width:number, height:number):void
 	{
 		width/=2;
 		height/=2;
@@ -816,7 +816,7 @@ class Graphics extends AssetBase
 	 * sub-paths are rendered during this operation. </p>
 	 *
 	 */
-	public drawGraphicsData(graphicsData:Array<IGraphicsData>)
+	public drawGraphicsData(graphicsData:Array<IGraphicsData>):void
 	{
 		//this.draw_fills();
 		/*
@@ -885,7 +885,7 @@ class Graphics extends AssetBase
 	 * @param winding Specifies the winding rule using a value defined in the
 	 *                GraphicsPathWinding class.
 	 */
-	public drawPath(commands:Array<number /*int*/>, data:Array<number>, winding:GraphicsPathWinding)
+	public drawPath(commands:Array<number /*int*/>, data:Array<number>, winding:GraphicsPathWinding):void
 	{
 		//todo
 		/*
@@ -918,7 +918,7 @@ class Graphics extends AssetBase
 	 *                       parameters are not a number
 	 *                      (<code>Number.NaN</code>).
 	 */
-	public drawRect(x:number, y:number, width:number, height:number)
+	public drawRect(x:number, y:number, width:number, height:number):void
 	{
 		//todo: directly create triangles instead of drawing commands ?
 		if(this._active_fill_path!=null){
@@ -963,7 +963,7 @@ class Graphics extends AssetBase
 	 *                       <code>ellipseHeight</code> parameters are not a
 	 *                       number(<code>Number.NaN</code>).
 	 */
-	public drawRoundRect(x:number, y:number, width:number, height:number, ellipseWidth:number, ellipseHeight:number = NaN)
+	public drawRoundRect(x:number, y:number, width:number, height:number, ellipseWidth:number, ellipseHeight:number = NaN):void
 	{
 		//todo: directly create triangles instead of drawing commands ?
 		if(!ellipseHeight){
@@ -1013,7 +1013,7 @@ class Graphics extends AssetBase
 	 *                parameter can be set to any value defined by the
 	 *                TriangleCulling class.
 	 */
-	public drawTriangles(vertices:Array<number>, indices:Array<number /*int*/> = null, uvtData:Array<number> = null, culling:TriangleCulling = null)
+	public drawTriangles(vertices:Array<number>, indices:Array<number /*int*/> = null, uvtData:Array<number> = null, culling:TriangleCulling = null):void
 	{
 		if(this._active_fill_path!=null){
 			//todo
@@ -1035,7 +1035,7 @@ class Graphics extends AssetBase
 	 * defined, the path is closed with a line and then filled.
 	 *
 	 */
-	public endFill()
+	public endFill():void
 	{
 		this.draw_strokes();
 		this.draw_fills();
@@ -1073,7 +1073,7 @@ class Graphics extends AssetBase
 	 * @param repeat Whether to repeat the bitmap in a tiled fashion.
 	 * @param smooth Whether smoothing should be applied to the bitmap.
 	 */
-	public lineBitmapStyle(bitmap:BitmapImage2D, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false)
+	public lineBitmapStyle(bitmap:BitmapImage2D, matrix:Matrix = null, repeat:boolean = true, smooth:boolean = false):void
 	{
 		// start a new stroke path
 		this._active_stroke_path=new GraphicsPath();
@@ -1153,7 +1153,7 @@ class Graphics extends AssetBase
 	 *                            image shows a gradient with a
 	 *                            <code>focalPointRatio</code> of -0.75:
 	 */
-	public lineGradientStyle(type:GradientType, colors:Array<number /*int*/>, alphas:Array<number>, ratios:Array<number>, matrix:Matrix = null, spreadMethod:SpreadMethod = null, interpolationMethod:InterpolationMethod = null, focalPointRatio:number = 0)
+	public lineGradientStyle(type:GradientType, colors:Array<number /*int*/>, alphas:Array<number>, ratios:Array<number>, matrix:Matrix = null, spreadMethod:SpreadMethod = null, interpolationMethod:InterpolationMethod = null, focalPointRatio:number = 0):void
 	{
 		// start a new stroke path
 		this._active_stroke_path=new GraphicsPath();
@@ -1334,7 +1334,7 @@ class Graphics extends AssetBase
 	 *                     has a specific maximum angle for which the miter is
 	 *                     cut off. The following table lists some examples:</p>
 	 */
-	public lineStyle(thickness:number = 0, color:number /*int*/ = 0, alpha:number = 1, pixelHinting:boolean = false, scaleMode:LineScaleMode = null, capstyle:number = CapsStyle.NONE, jointstyle:number = JointStyle.MITER, miterLimit:number = 100)
+	public lineStyle(thickness:number = 0, color:number /*int*/ = 0, alpha:number = 1, pixelHinting:boolean = false, scaleMode:LineScaleMode = null, capstyle:number = CapsStyle.NONE, jointstyle:number = JointStyle.MITER, miterLimit:number = 100):void
 	{
 		// start a new stroke path
 		this._active_stroke_path=new GraphicsPath();
@@ -1360,7 +1360,7 @@ class Graphics extends AssetBase
 	 * @param y A number that indicates the vertical position relative to the
 	 *          registration point of the parent display object(in pixels).
 	 */
-	public lineTo(x:number, y:number)
+	public lineTo(x:number, y:number):void
 	{
 		if(this._active_fill_path!=null){
 			this._active_fill_path.lineTo(x, y);
@@ -1383,7 +1383,7 @@ class Graphics extends AssetBase
 	 * @param y A number that indicates the vertical position relative to the
 	 *          registration point of the parent display object(in pixels).
 	 */
-	public moveTo(x:number, y:number)
+	public moveTo(x:number, y:number):void
 	{
 
 		if(this._active_fill_path!=null){
@@ -1396,5 +1396,3 @@ class Graphics extends AssetBase
 		this._current_position.y=y;
 	}
 }
-
-export default Graphics;

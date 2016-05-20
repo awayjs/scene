@@ -1,6 +1,6 @@
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import FontTable					from "../text/TesselatedFontTable";
+import {TesselatedFontTable}		from "../text/TesselatedFontTable";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
@@ -11,11 +11,11 @@ import FontTable					from "../text/TesselatedFontTable";
  *
  * @class away.base.GraphicBase
  */
-class Font extends AssetBase
+export class Font extends AssetBase
 {
 	public static assetType:string = "[asset Font]";
 
-	private _font_styles:Array<FontTable> = new Array<FontTable>();
+	private _font_styles:Array<TesselatedFontTable> = new Array<TesselatedFontTable>();
 
 	//TODO test shader picking
 //		public get shaderPickingDetails():boolean
@@ -32,7 +32,7 @@ class Font extends AssetBase
 		super();
 	}
 
-	public get font_styles():Array<FontTable>
+	public get font_styles():Array<TesselatedFontTable>
 	{
 		return this._font_styles;
 	}
@@ -46,14 +46,14 @@ class Font extends AssetBase
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 
 	}
 	/**
 	 *Get a font-table for a specific name, or create one if it does not exists.
 	 */
-	public get_font_table(style_name:string):FontTable
+	public get_font_table(style_name:string):TesselatedFontTable
 	{
 		var len:number = this._font_styles.length;
 
@@ -61,12 +61,10 @@ class Font extends AssetBase
 			if(this._font_styles[i].name==style_name)
 				return this._font_styles[i];
 		}
-		var font_style:FontTable = new FontTable();
+		var font_style:TesselatedFontTable = new TesselatedFontTable();
 		font_style.name=style_name;
 		this._font_styles.push(font_style);
 		return font_style;
 	}
 
 }
-
-export default Font;

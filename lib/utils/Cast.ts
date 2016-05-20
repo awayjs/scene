@@ -1,13 +1,13 @@
-import Image2D					from "awayjs-core/lib/image/Image2D";
-import ByteArray				from "awayjs-core/lib/utils/ByteArray";
+import {Image2D}					from "awayjs-core/lib/image/Image2D";
+import {ByteArray}				from "awayjs-core/lib/utils/ByteArray";
 
-import CastError				from "../errors/CastError";
-import Single2DTexture			from "../textures/Single2DTexture";
+import {CastError}				from "../errors/CastError";
+import {Single2DTexture}			from "../textures/Single2DTexture";
 
 /**
  * Helper class for casting assets to usable objects
  */
-class Cast
+export class Cast
 {
 	private static _colorNames:Object;
 	private static _hexChars:string = "0123456789abcdefABCDEF";
@@ -308,5 +308,3 @@ class Cast
 		throw new CastError("Can't cast to Single2DTexture: " + data);
 	}
 }
-
-export default Cast;

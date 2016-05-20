@@ -1,15 +1,15 @@
-import ImageCube					from "awayjs-core/lib/image/ImageCube";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
+import {ImageCube}					from "awayjs-core/lib/image/ImageCube";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {PerspectiveProjection}		from "awayjs-core/lib/projections/PerspectiveProjection";
 
-import Scene						from "../../display/Scene";
-import Camera						from "../../display/Camera";
-import PointLight					from "../../display/PointLight";
-import ShadowMapperBase				from "../../materials/shadowmappers/ShadowMapperBase";
-import IRenderer					from "../../IRenderer";
-import SingleCubeTexture			from "../../textures/SingleCubeTexture";
+import {Scene}						from "../../display/Scene";
+import {Camera}						from "../../display/Camera";
+import {PointLight}					from "../../display/PointLight";
+import {ShadowMapperBase}				from "../../materials/shadowmappers/ShadowMapperBase";
+import {IRenderer}					from "../../IRenderer";
+import {SingleCubeTexture}			from "../../textures/SingleCubeTexture";
 
-class CubeMapShadowMapper extends ShadowMapperBase
+export class CubeMapShadowMapper extends ShadowMapperBase
 {
 	private _depthCameras:Array<Camera>;
 	private _projections:Array<PerspectiveProjection>;
@@ -24,7 +24,7 @@ class CubeMapShadowMapper extends ShadowMapperBase
 		this.initCameras();
 	}
 
-	private initCameras()
+	private initCameras():void
 	{
 		this._depthCameras = new Array();
 		this._projections = new Array();
@@ -38,7 +38,7 @@ class CubeMapShadowMapper extends ShadowMapperBase
 		this.addCamera(0, 180, 0);
 	}
 
-	private addCamera(rotationX:number, rotationY:number, rotationZ:number)
+	private addCamera(rotationX:number, rotationY:number, rotationZ:number):void
 	{
 		var cam:Camera = new Camera();
 		cam.rotationX = rotationX;
@@ -60,7 +60,7 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pUpdateDepthProjection(camera:Camera)
+	public pUpdateDepthProjection(camera:Camera):void
 	{
 		var light:PointLight = <PointLight>(this._pLight);
 		var maxDistance:number = light._pFallOff;
@@ -75,12 +75,10 @@ class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(scene:Scene, target:SingleCubeTexture, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:SingleCubeTexture, renderer:IRenderer):void
 	{
 		for (var i:number = 0; i < 6; ++i)
 			if (this._needsRender[i])
 				renderer._iRender(this._depthCameras[i], scene, target.imageCube, null, i)
 	}
 }
-
-export default CubeMapShadowMapper;

@@ -1,4 +1,4 @@
-class ElementsType
+export class ElementsType
 {
 	/**
 	 *
@@ -10,5 +10,3 @@ class ElementsType
 	 */
 	public static LINE:string = "line";
 }
-
-export default ElementsType;

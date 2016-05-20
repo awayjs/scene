@@ -17,9 +17,9 @@ import * as prefabs					from "./lib/prefabs";
 import * as text					from "./lib/text";
 import * as textures				from "./lib/textures";
 import * as utils					from "./lib/utils";
-import IRenderer					from "./lib/IRenderer";
-import ITraverser					from "./lib/ITraverser";
-import View							from "./lib/View";
+import {IRenderer}					from "./lib/IRenderer";
+import {ITraverser}					from "./lib/ITraverser";
+import {View}							from "./lib/View";
 
 partition.PartitionBase.registerAbstraction(partition.CameraNode, display.Camera);
 partition.PartitionBase.registerAbstraction(partition.DirectionalLightNode, display.DirectionalLight);

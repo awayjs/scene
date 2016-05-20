@@ -1,7 +1,7 @@
-import Camera						from "../../display/Camera";
-import DirectionalShadowMapper		from "../../materials/shadowmappers/DirectionalShadowMapper";
+import {Camera}						from "../../display/Camera";
+import {DirectionalShadowMapper}		from "../../materials/shadowmappers/DirectionalShadowMapper";
 
-class NearDirectionalShadowMapper extends DirectionalShadowMapper
+export class NearDirectionalShadowMapper extends DirectionalShadowMapper
 {
 	private _coverageRatio:number;
 
@@ -29,7 +29,7 @@ class NearDirectionalShadowMapper extends DirectionalShadowMapper
 		this._coverageRatio = value;
 	}
 
-	public pUpdateDepthProjection(camera:Camera)
+	public pUpdateDepthProjection(camera:Camera):void
 	{
 		var corners:Array<number> = camera.projection.frustumCorners;
 
@@ -43,5 +43,3 @@ class NearDirectionalShadowMapper extends DirectionalShadowMapper
 		this._pOverallDepthProjection.matrix = this._pMatrix;
 	}
 }
-
-export default NearDirectionalShadowMapper;

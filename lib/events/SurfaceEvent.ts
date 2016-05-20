@@ -1,8 +1,8 @@
-import EventBase					from "awayjs-core/lib/events/EventBase";
+import {EventBase}					from "awayjs-core/lib/events/EventBase";
 
-import ISurface						from "../base/ISurface";
+import {ISurface}						from "../base/ISurface";
 
-class SurfaceEvent extends EventBase
+export class SurfaceEvent extends EventBase
 {
 	public static INVALIDATE_TEXTURE:string = "invalidateTexture";
 
@@ -43,5 +43,3 @@ class SurfaceEvent extends EventBase
 		return new SurfaceEvent(this.type, this._surface);
 	}
 }
-
-export default SurfaceEvent;

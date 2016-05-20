@@ -1,6 +1,6 @@
-import EventBase					from "awayjs-core/lib/events/EventBase";
+import {EventBase}					from "awayjs-core/lib/events/EventBase";
 
-import IRenderable						from "../base/IRenderable";
+import {IRenderable}						from "../base/IRenderable";
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.
@@ -8,7 +8,7 @@ import IRenderable						from "../base/IRenderable";
  * @class away.events.RenderableEvent
  * @see away.core.base.Graphics
  */
-class RenderableEvent extends EventBase
+export class RenderableEvent extends EventBase
 {
 	/**
 	 * Dispatched when a Renderable owners's render object owner has been updated.
@@ -52,5 +52,3 @@ class RenderableEvent extends EventBase
 		return new RenderableEvent(this.type, this._renderable);
 	}
 }
-
-export default RenderableEvent;

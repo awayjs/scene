@@ -19,7 +19,7 @@
  * <code>TriangleCulling.NEGATIVE</code> algorithm is used, triangles with
  * negative normals will not be rendered. </p>
  */
-class TriangleCulling
+export class TriangleCulling
 {
 	/**
 	 * Specifies culling of all triangles facing toward the current view point.
@@ -37,5 +37,3 @@ class TriangleCulling
 	 */
 	public static POSITIVE:string = "positive";
 }
-
-export default TriangleCulling;

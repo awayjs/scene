@@ -1,7 +1,7 @@
 /**
  * The GridFitType class defines values for grid fitting in the TextField class.
  */
-class GridFitType
+export class GridFitType
 {
 	/**
 	 * Doesn't set grid fitting. Horizontal and vertical lines in the glyphs are
@@ -32,5 +32,3 @@ class GridFitType
 	 */
 	public static SUBPIXEL:string = "subpixel";
 }
-
-export default GridFitType;

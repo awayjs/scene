@@ -1,37 +1,37 @@
-import BlendMode					from "awayjs-core/lib/image/BlendMode";
-import Box							from "awayjs-core/lib/geom/Box";
-import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import MathConsts					from "awayjs-core/lib/geom/MathConsts";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
-import Point						from "awayjs-core/lib/geom/Point";
-import Rectangle					from "awayjs-core/lib/geom/Rectangle";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
-import LoaderInfo					from "awayjs-core/lib/library/LoaderInfo";
-import EventBase					from "awayjs-core/lib/events/EventBase";
+import {BlendMode}					from "awayjs-core/lib/image/BlendMode";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {MathConsts}					from "awayjs-core/lib/geom/MathConsts";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
+import {Point}						from "awayjs-core/lib/geom/Point";
+import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {LoaderInfo}					from "awayjs-core/lib/library/LoaderInfo";
+import {EventBase}					from "awayjs-core/lib/events/EventBase";
 
-import IRenderer					from "../IRenderer";
-import IDisplayObjectAdapter		from "../adapters/IDisplayObjectAdapter";
-import HierarchicalProperties		from "../base/HierarchicalProperties";
-import BoundsType					from "../bounds/BoundsType";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import Scene						from "../display/Scene";
-import ControllerBase				from "../controllers/ControllerBase";
-import AlignmentMode				from "../base/AlignmentMode";
-import OrientationMode				from "../base/OrientationMode";
-import IBitmapDrawable				from "../base/IBitmapDrawable";
-import Transform					from "../base/Transform";
-import PartitionBase				from "../partition/PartitionBase";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
-import Camera						from "../display/Camera";
-import IEntity						from "../display/IEntity";
-import DisplayObjectEvent			from "../events/DisplayObjectEvent";
-import TransformEvent				from "../events/TransformEvent";
-import PrefabBase					from "../prefabs/PrefabBase";
-import ITraverser				from "../ITraverser";
+import {IRenderer}					from "../IRenderer";
+import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
+import {HierarchicalProperties}		from "../base/HierarchicalProperties";
+import {BoundsType}					from "../bounds/BoundsType";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {Scene}						from "../display/Scene";
+import {ControllerBase}				from "../controllers/ControllerBase";
+import {AlignmentMode}				from "../base/AlignmentMode";
+import {OrientationMode}				from "../base/OrientationMode";
+import {IBitmapDrawable}				from "../base/IBitmapDrawable";
+import {Transform}					from "../base/Transform";
+import {PartitionBase}				from "../partition/PartitionBase";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
+import {Camera}						from "../display/Camera";
+import {IEntity}						from "../display/IEntity";
+import {DisplayObjectEvent}			from "../events/DisplayObjectEvent";
+import {TransformEvent}				from "../events/TransformEvent";
+import {PrefabBase}					from "../prefabs/PrefabBase";
+import {ITraverser}				from "../ITraverser";
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -162,7 +162,7 @@ import ITraverser				from "../ITraverser";
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
+export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
 	public _iIsRoot:boolean;
 	public _adapter:IDisplayObjectAdapter;
@@ -595,7 +595,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get isEntity()
+	public get isEntity():boolean
 	{
 		return this._pIsEntity;
 	}
@@ -603,7 +603,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get isContainer()
+	public get isContainer():boolean
 	{
 		return this._pIsContainer;
 	}
@@ -1412,7 +1412,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public addEventListener(type:string, listener:(event:EventBase) => void)
+	public addEventListener(type:string, listener:(event:EventBase) => void):void
 	{
 		super.addEventListener(type, listener);
 
@@ -1438,7 +1438,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return newInstance;
 	}
 
-	public copyTo(newInstance:DisplayObject)
+	public copyTo(newInstance:DisplayObject):void
 	{
 		newInstance.partition = this._explicitPartition;
 		newInstance.boundsType = this._boundsType;
@@ -1464,12 +1464,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 		this.disposeValues();
 	}
 
-	public disposeValues()
+	public disposeValues():void
 	{
 		if (this._pParent)
 			this._pParent.removeChild(this);
@@ -1804,7 +1804,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 * @param    target        The vector defining the point to be looked at
 	 * @param    upAxis        An optional vector used to define the desired up orientation of the 3d object after rotation has occurred
 	 */
-	public lookAt(target:Vector3D, upAxis:Vector3D = null)
+	public lookAt(target:Vector3D, upAxis:Vector3D = null):void
 	{
 
 		var yAxis:Vector3D;
@@ -1933,7 +1933,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 * @param    dy        The amount of movement along the local y axis.
 	 * @param    dz        The amount of movement along the local z axis.
 	 */
-	public movePivot(dx:number, dy:number, dz:number)
+	public movePivot(dx:number, dy:number, dz:number):void
 	{
 		if (dx == 0 && dy == 0 && dz == 0)
 			return;
@@ -1987,7 +1987,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public removeEventListener(type:string, listener:(event:EventBase) => void)
+	public removeEventListener(type:string, listener:(event:EventBase) => void):void
 	{
 		super.removeEventListener(type, listener);
 
@@ -2031,7 +2031,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public iSetParent(value:DisplayObjectContainer)
+	public iSetParent(value:DisplayObjectContainer):void
 	{
 		this._pParent = value;
 
@@ -2071,7 +2071,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @protected
 	 */
-	public _iSetScene(scene:Scene, partition:PartitionBase)
+	public _iSetScene(scene:Scene, partition:PartitionBase):void
 	{
 		var sceneChanged:boolean = this._pScene != scene;
 
@@ -2108,7 +2108,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @protected
 	 */
-	public pUpdateSceneTransform()
+	public pUpdateSceneTransform():void
 	{
 		if (this._iController)
 			this._iController.updateController();
@@ -2143,7 +2143,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public _iInternalUpdate()
+	public _iInternalUpdate():void
 	{
 		if (this._iController)
 			this._iController.update();
@@ -2217,7 +2217,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
 	}
 
-	public _acceptTraverser(collector:ITraverser)
+	public _acceptTraverser(collector:ITraverser):void
 	{
 		//nothing to do here
 	}
@@ -2227,7 +2227,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 *
 	 * @private
 	 */
-	private _onInvalidateMatrix3D(event:TransformEvent)
+	private _onInvalidateMatrix3D(event:TransformEvent):void
 	{
 		if (this._matrix3DDirty)
 			return;
@@ -2240,12 +2240,12 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @private
 	 */
-	private _onInvalidateColorTransform(event:TransformEvent)
+	private _onInvalidateColorTransform(event:TransformEvent):void
 	{
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 	}
 
-	public _pInvalidateBounds()
+	public _pInvalidateBounds():void
 	{
 		this._boxBoundsInvalid = true;
 		this._sphereBoundsInvalid = true;
@@ -2257,7 +2257,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pParent._pInvalidateBounds();
 	}
 
-	public _pUpdateBoxBounds()
+	public _pUpdateBoxBounds():void
 	{
 		this._boxBoundsInvalid = false;
 
@@ -2265,7 +2265,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pBoxBounds = new Box();
 	}
 
-	public _pUpdateSphereBounds()
+	public _pUpdateSphereBounds():void
 	{
 		this._sphereBoundsInvalid = false;
 
@@ -2273,13 +2273,13 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pSphereBounds = new Sphere();
 	}
 
-	private queueDispatch(event:EventBase)
+	private queueDispatch(event:EventBase):void
 	{
 		// Store event to be dispatched later.
 		this._queuedEvents.push(event);
 	}
 
-	private _setScaleX(val:number)
+	private _setScaleX(val:number):void
 	{
 		if (this.scaleX == val)
 			return;
@@ -2289,7 +2289,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._transform.invalidateMatrix3D();
 	}
 
-	private _setScaleY(val:number)
+	private _setScaleY(val:number):void
 	{
 		if (this.scaleY == val)
 			return;
@@ -2299,7 +2299,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._transform.invalidateMatrix3D();
 	}
 
-	private _setScaleZ(val:number)
+	private _setScaleZ(val:number):void
 	{
 		if (this.scaleZ == val)
 			return;
@@ -2309,7 +2309,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._transform.invalidateMatrix3D();
 	}
 
-	public _updateMouseEnabled()
+	public _updateMouseEnabled():void
 	{
 		this._pImplicitMouseEnabled = (this._pParent)? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
 
@@ -2320,21 +2320,21 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
 	}
 
-	private _updateVisible()
+	private _updateVisible():void
 	{
 		this._pImplicitVisibility = (this._pParent)? this._explicitVisibility && this._pParent._iIsVisible() : this._explicitVisibility;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.VISIBLE;
 	}
 
-	private _updateMaskId()
+	private _updateMaskId():void
 	{
 		this._pImplicitMaskId = (this._pParent && this._pParent._iAssignedMaskId() != -1)? this._pParent._iAssignedMaskId() : this._explicitMaskId;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
 	}
 
-	private _updateMasks()
+	private _updateMasks():void
 	{
 		this._pImplicitMasks = (this._pParent && this._pParent._iAssignedMasks())? (this._explicitMasks != null)? this._pParent._iAssignedMasks().concat([this._explicitMasks]) : this._pParent._iAssignedMasks().concat() : (this._explicitMasks != null)? [this._explicitMasks] : null;
 
@@ -2359,7 +2359,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASKS;
 	}
 
-	private _updateColorTransform()
+	private _updateColorTransform():void
 	{
 		if (!this._pImplicitColorTransform)
 			this._pImplicitColorTransform = new ColorTransform();
@@ -2379,7 +2379,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
 	}
 
-	public _updateMaskMode()
+	public _updateMaskMode():void
 	{
 		if (this.maskMode)
 			this.mouseEnabled = false;
@@ -2387,7 +2387,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
 
-	public clear()
+	public clear():void
 	{
 		super.clear();
 
@@ -2397,7 +2397,7 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._pImplicitMasks = null;
 	}
 
-	public invalidatePartitionBounds()
+	public invalidatePartitionBounds():void
 	{
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this));
 	}
@@ -2407,5 +2407,3 @@ class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return false;
 	}
 }
-
-export default DisplayObject;

@@ -1,13 +1,13 @@
-import IAsset					from "awayjs-core/lib/library/IAsset";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import AnimationNodeBase		from "../animators/nodes/AnimationNodeBase";
+import {AnimationNodeBase}		from "../animators/nodes/AnimationNodeBase";
 
 /**
  * Provides an interface for data set classes that hold animation data for use in animator classes.
  *
  * @see away.animators.AnimatorBase
  */
-interface IAnimationSet extends IAsset
+export interface IAnimationSet extends IAsset
 {
 	/**
 	 * Check to determine whether a state is registered in the animation set under the given name.
@@ -46,5 +46,3 @@ interface IAnimationSet extends IAsset
 	 */
 	cancelGPUCompatibility();
 }
-
-export default IAnimationSet;

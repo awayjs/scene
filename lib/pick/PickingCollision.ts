@@ -1,8 +1,8 @@
-import Point						from "awayjs-core/lib/geom/Point";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Point}						from "awayjs-core/lib/geom/Point";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import IEntity						from "../display/IEntity";
-import IRenderable					from "../base/IRenderable";
+import {IEntity}						from "../display/IEntity";
+import {IRenderable}					from "../base/IRenderable";
 
 /**
  * Value object for a picking collision returned by a picking collider. Created as unique objects on display objects
@@ -12,7 +12,7 @@ import IRenderable					from "../base/IRenderable";
  *
  * @class away.pick.PickingCollision
  */
-class PickingCollision
+export class PickingCollision
 {
 	/**
 	 * The entity to which this collision object belongs.
@@ -84,5 +84,3 @@ class PickingCollision
 		this.entity = entity;
 	}
 }
-
-export default PickingCollision;

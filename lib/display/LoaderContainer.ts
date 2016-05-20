@@ -1,16 +1,16 @@
-import AssetLibraryBundle			from "awayjs-core/lib/library/AssetLibraryBundle";
-import Loader						from "awayjs-core/lib/library/Loader";
-import LoaderContext				from "awayjs-core/lib/library/LoaderContext";
-import URLRequest					from "awayjs-core/lib/net/URLRequest";
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import EventDispatcher				from "awayjs-core/lib/events/EventDispatcher";
-import URLLoaderEvent				from "awayjs-core/lib/events/URLLoaderEvent";
-import LoaderEvent					from "awayjs-core/lib/events/LoaderEvent";
-import ParserEvent					from "awayjs-core/lib/events/ParserEvent";
-import ParserBase					from "awayjs-core/lib/parsers/ParserBase";
+import {AssetLibraryBundle}			from "awayjs-core/lib/library/AssetLibraryBundle";
+import {Loader}						from "awayjs-core/lib/library/Loader";
+import {LoaderContext}				from "awayjs-core/lib/library/LoaderContext";
+import {URLRequest}					from "awayjs-core/lib/net/URLRequest";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {EventDispatcher}				from "awayjs-core/lib/events/EventDispatcher";
+import {URLLoaderEvent}				from "awayjs-core/lib/events/URLLoaderEvent";
+import {LoaderEvent}					from "awayjs-core/lib/events/LoaderEvent";
+import {ParserEvent}					from "awayjs-core/lib/events/ParserEvent";
+import {ParserBase}					from "awayjs-core/lib/parsers/ParserBase";
 
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import DisplayObject				from "../display/DisplayObject";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {DisplayObject}				from "../display/DisplayObject";
 
 /**
  * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)
@@ -75,7 +75,7 @@ import DisplayObject				from "../display/DisplayObject";
  * of the LoaderContainer object) from drawing to portions of the Stage outside of that
  * mask, as shown in the following code:</p>
  */
-class LoaderContainer extends DisplayObjectContainer
+export class LoaderContainer extends DisplayObjectContainer
 {
 	/**
 	 * Dispatched when any asset finishes parsing. Also see specific events for each
@@ -193,7 +193,7 @@ class LoaderContainer extends DisplayObjectContainer
 	 * progress for the Loader instance.
 	 *
 	 */
-	public close()
+	public close():void
 	{
 		if (!this._loader)
 			return;
@@ -374,7 +374,7 @@ class LoaderContainer extends DisplayObjectContainer
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	public load(request:URLRequest, context:LoaderContext = null, ns:string = null, parser:ParserBase = null)
+	public load(request:URLRequest, context:LoaderContext = null, ns:string = null, parser:ParserBase = null):void
 	{
 		this._getLoader().load(request, context, ns, parser);
 	}
@@ -465,12 +465,12 @@ class LoaderContainer extends DisplayObjectContainer
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	public loadData(data:any, context:LoaderContext = null, ns:string = null, parser:ParserBase = null)
+	public loadData(data:any, context:LoaderContext = null, ns:string = null, parser:ParserBase = null):void
 	{
 		this._getLoader().loadData(data, '', context, ns, parser);
 	}
 
-	private _getLoader()
+	private _getLoader():Loader
 	{
 		if (this._useAssetLib) {
 			var lib:AssetLibraryBundle = AssetLibraryBundle.getInstance(this._assetLibId);
@@ -490,7 +490,7 @@ class LoaderContainer extends DisplayObjectContainer
 		return this._loader;
 	}
 
-	private _disposeLoader()
+	private _disposeLoader():void
 	{
 		this._loader.removeEventListener(LoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
 		this._loader.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
@@ -525,7 +525,7 @@ class LoaderContainer extends DisplayObjectContainer
 	 * closeAllStreams);</pre>
 	 *
 	 */
-	public unload()
+	public unload():void
 	{
 		//TODO
 	}
@@ -539,7 +539,7 @@ class LoaderContainer extends DisplayObjectContainer
 	 * @param parserClass The parser class to enable.
 	 * @see away.parsers.Parsers
 	 */
-	public static enableParser(parserClass:Object)
+	public static enableParser(parserClass:Object):void
 	{
 		Loader.enableParser(parserClass);
 	}
@@ -553,12 +553,12 @@ class LoaderContainer extends DisplayObjectContainer
 	 * @param parserClasses A Vector of parser classes to enable.
 	 * @see away.parsers.Parsers
 	 */
-	public static enableParsers(parserClasses:Array<Object>)
+	public static enableParsers(parserClasses:Array<Object>):void
 	{
 		Loader.enableParsers(parserClasses);
 	}
 
-	private onAssetComplete(event:AssetEvent)
+	private onAssetComplete(event:AssetEvent):void
 	{
 		this.dispatchEvent(event);
 	}
@@ -589,7 +589,7 @@ class LoaderContainer extends DisplayObjectContainer
 		}
 	}
 
-	private onTextureSizeError(event:AssetEvent)
+	private onTextureSizeError(event:AssetEvent):void
 	{
 		this.dispatchEvent(event);
 	}
@@ -597,7 +597,7 @@ class LoaderContainer extends DisplayObjectContainer
 	/**
 	 * Called when the resource and all of its dependencies was retrieved.
 	 */
-	private onLoadComplete(event:LoaderEvent)
+	private onLoadComplete(event:LoaderEvent):void
 	{
 		this._content = <DisplayObject> event.content;
 
@@ -609,5 +609,3 @@ class LoaderContainer extends DisplayObjectContainer
 		this._disposeLoader();
 	}
 }
-
-export default LoaderContainer;

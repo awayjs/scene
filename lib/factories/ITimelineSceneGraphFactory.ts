@@ -1,11 +1,9 @@
-import Timeline from "../base/Timeline";
-import MovieClip from "../display/MovieClip";
-import TextField from "../display/TextField";
+import {Timeline}				from "../base/Timeline";
+import {MovieClip}			from "../display/MovieClip";
+import {TextField}			from "../display/TextField";
 
-interface ITimelineSceneGraphFactory
+export interface ITimelineSceneGraphFactory
 {
-    createMovieClip(timelime:Timeline): MovieClip;
-    createTextField(): TextField;
+	createMovieClip(timelime:Timeline):MovieClip;
+	createTextField():TextField;
 }
-
-export default ITimelineSceneGraphFactory;

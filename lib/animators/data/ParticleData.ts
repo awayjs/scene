@@ -1,6 +1,6 @@
-import TriangleElements				from "../../graphics/TriangleElements";
+import {TriangleElements}				from "../../graphics/TriangleElements";
 
-class ParticleData
+export class ParticleData
 {
 	public particleIndex:number /*uint*/;
 	public numVertices:number /*uint*/;

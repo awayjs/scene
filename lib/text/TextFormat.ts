@@ -1,7 +1,7 @@
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import TesselatedFontTable			from "../text/TesselatedFontTable";
-import MaterialBase					from "../materials/MaterialBase";
+import {TesselatedFontTable}			from "../text/TesselatedFontTable";
+import {MaterialBase}					from "../materials/MaterialBase";
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You
@@ -28,7 +28,7 @@ import MaterialBase					from "../materials/MaterialBase";
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-class TextFormat extends AssetBase
+export class TextFormat extends AssetBase
 {
 	public static assetType:string = "[asset TextFormat]";
 
@@ -294,5 +294,3 @@ class TextFormat extends AssetBase
 		return TextFormat.assetType;
 	}
 }
-
-export default TextFormat;

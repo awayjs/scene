@@ -1,21 +1,21 @@
-import Box							from "awayjs-core/lib/geom/Box";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import IAnimator					from "../animators/IAnimator";
-import RenderableEvent				from "../events/RenderableEvent";
-import MaterialBase					from "../materials/MaterialBase";
-import Style						from "../base/Style";
-import StyleEvent					from "../events/StyleEvent";
-import ElementsEvent				from "../events/ElementsEvent";
-import IRenderable 					from "../base/IRenderable";
-import Graphics						from "../graphics/Graphics";
-import ElementsBase					from "../graphics/ElementsBase";
-import TriangleElements				from "../graphics/TriangleElements";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
+import {IAnimator}					from "../animators/IAnimator";
+import {RenderableEvent}				from "../events/RenderableEvent";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {Style}						from "../base/Style";
+import {StyleEvent}					from "../events/StyleEvent";
+import {ElementsEvent}				from "../events/ElementsEvent";
+import {IRenderable}					from "../base/IRenderable";
+import {Graphics}						from "../graphics/Graphics";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {TriangleElements}				from "../graphics/TriangleElements";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * Graphic wraps a Elements as a scene graph instantiation. A Graphic is owned by a Sprite object.
@@ -26,7 +26,7 @@ import PickingCollision				from "../pick/PickingCollision";
  *
  * @class away.base.Graphic
  */
-class Graphic extends AssetBase implements IRenderable
+export class Graphic extends AssetBase implements IRenderable
 {
 	public static _available:Array<Graphic> = new Array<Graphic>();
 
@@ -158,7 +158,7 @@ class Graphic extends AssetBase implements IRenderable
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 		super.dispose();
 
@@ -168,7 +168,7 @@ class Graphic extends AssetBase implements IRenderable
 		Graphic._available.push(this);
 	}
 
-	public invalidate()
+	public invalidate():void
 	{
 		super.invalidate();
 
@@ -176,7 +176,7 @@ class Graphic extends AssetBase implements IRenderable
 		this._sphereBoundsInvalid = true;
 	}
 	
-	public invalidateElements()
+	public invalidateElements():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 
@@ -184,7 +184,7 @@ class Graphic extends AssetBase implements IRenderable
 		this._sphereBoundsInvalid = true;
 	}
 
-	public invalidateSurface()
+	public invalidateSurface():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
@@ -199,12 +199,12 @@ class Graphic extends AssetBase implements IRenderable
 		return this._style;
 	}
 
-	private _onInvalidateProperties(event:StyleEvent)
+	private _onInvalidateProperties(event:StyleEvent):void
 	{
 		this.invalidateSurface();
 	}
 
-	private _onInvalidateVertices(event:ElementsEvent)
+	private _onInvalidateVertices(event:ElementsEvent):void
 	{
 		if (event.attributesView != (<TriangleElements> event.target).positions)
 			return;
@@ -229,12 +229,12 @@ class Graphic extends AssetBase implements IRenderable
 	}
 
 
-	public applyTransformation(transform:Matrix3D)
+	public applyTransformation(transform:Matrix3D):void
 	{
 		this._elements.applyTransformation(transform, this.count, this.offset);
 	}
 
-	public hitTestPoint(x:number, y:number, z:number)
+	public hitTestPoint(x:number, y:number, z:number):boolean
 	{
 		var box:Box;
 
@@ -245,12 +245,12 @@ class Graphic extends AssetBase implements IRenderable
 		return this._elements.hitTestPoint(x, y, z, box, this.count, this.offset);
 	}
 	
-	public scale(scale:number)
+	public scale(scale:number):void
 	{
 		this._elements.scale(scale, this.count, this.offset);
 	}
 
-	public scaleUV(scaleU:number = 1, scaleV:number = 1)
+	public scaleUV(scaleU:number = 1, scaleV:number = 1):void
 	{
 		this._elements.scaleUV(scaleU, scaleV, this.count, this.offset);
 	}
@@ -271,5 +271,3 @@ class Graphic extends AssetBase implements IRenderable
 		return this._elements.getSphereBounds(center, target, this.count, this.offset);
 	}
 }
-
-export default Graphic;

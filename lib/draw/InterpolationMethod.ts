@@ -5,7 +5,7 @@
  * <code>Graphics.lineGradientStyle()</code> methods. This parameter
  * determines the RGB space to use when rendering the gradient.
  */
-class InterpolationMethod
+export class InterpolationMethod
 {
 
 	/**
@@ -36,5 +36,3 @@ class InterpolationMethod
 	 */
 	public static RGB:string = "rgb";
 }
-
-export default InterpolationMethod;

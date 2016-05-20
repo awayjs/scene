@@ -1,19 +1,19 @@
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import Box							from "awayjs-core/lib/geom/Box";
-import Point						from "awayjs-core/lib/geom/Point";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Point}						from "awayjs-core/lib/geom/Point";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					from "../ITraverser";
-import IAnimator					from "../animators/IAnimator";
-import DisplayObject				from "../display/DisplayObject";
-import Graphics						from "../graphics/Graphics";
-import ElementsBase					from "../graphics/ElementsBase";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import MaterialBase					from "../materials/MaterialBase";
-import TextureBase					from "../textures/TextureBase";
-import ElementsUtils				from "../utils/ElementsUtils";
-import Style						from "../base/Style";
-import StyleEvent					from "../events/StyleEvent";
+import {ITraverser}					from "../ITraverser";
+import {IAnimator}					from "../animators/IAnimator";
+import {DisplayObject}				from "../display/DisplayObject";
+import {Graphics}						from "../graphics/Graphics";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {TextureBase}					from "../textures/TextureBase";
+import {ElementsUtils}				from "../utils/ElementsUtils";
+import {Style}						from "../base/Style";
+import {StyleEvent}					from "../events/StyleEvent";
 
 /**
  * This class is used to create lightweight shapes using the ActionScript
@@ -29,7 +29,7 @@ import StyleEvent					from "../events/StyleEvent";
  * However, a Shape object supports user input events, while a Shape object
  * does not.</p>
  */
-class Shape extends DisplayObject
+export class Shape extends DisplayObject
 {
 	private static _shapes:Array<Shape> = new Array<Shape>();
 
@@ -127,7 +127,7 @@ class Shape extends DisplayObject
 	/**
 	 *
 	 */
-	public bakeTransformations()
+	public bakeTransformations():void
 	{
 		this._graphics.applyTransformation(this.transform.matrix3D);
 		this.transform.clearMatrix3D();
@@ -136,7 +136,7 @@ class Shape extends DisplayObject
 	/**
 	 * @inheritDoc
 	 */
-	public dispose()
+	public dispose():void
 	{
 		this.disposeValues();
 
@@ -146,7 +146,7 @@ class Shape extends DisplayObject
 	/**
 	 * @inheritDoc
 	 */
-	public disposeValues()
+	public disposeValues():void
 	{
 		super.disposeValues();
 
@@ -178,7 +178,7 @@ class Shape extends DisplayObject
 		return newInstance;
 	}
 
-	public copyTo(shape:Shape)
+	public copyTo(shape:Shape):void
 	{
 		super.copyTo(shape);
 
@@ -190,7 +190,7 @@ class Shape extends DisplayObject
 	 *
 	 * @protected
 	 */
-	public _pUpdateBoxBounds()
+	public _pUpdateBoxBounds():void
 	{
 		super._pUpdateBoxBounds();
 
@@ -198,7 +198,7 @@ class Shape extends DisplayObject
 	}
 
 
-	public _pUpdateSphereBounds()
+	public _pUpdateSphereBounds():void
 	{
 		super._pUpdateSphereBounds();
 
@@ -219,7 +219,7 @@ class Shape extends DisplayObject
 	 *
 	 * @private
 	 */
-	private _onGraphicsInvalidate(event:AssetEvent)
+	private _onGraphicsInvalidate(event:AssetEvent):void
 	{
 		if (this._pIsEntity != Boolean(this._graphics.count)) {
 			if (this._pImplicitPartition)
@@ -240,7 +240,7 @@ class Shape extends DisplayObject
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:ITraverser)
+	public _acceptTraverser(traverser:ITraverser):void
 	{
 		this.graphics.acceptTraverser(traverser);
 	}
@@ -268,12 +268,10 @@ class Shape extends DisplayObject
 		return false;
 	}
 
-	public clear()
+	public clear():void
 	{
 		super.clear();
 
 		this._graphics.clear();
 	}
 }
-
-export default Shape;

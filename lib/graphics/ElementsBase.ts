@@ -1,25 +1,25 @@
-import AttributesBuffer				from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView				from "awayjs-core/lib/attributes/AttributesView";
-import Float3Attributes				from "awayjs-core/lib/attributes/Float3Attributes";
-import Short3Attributes				from "awayjs-core/lib/attributes/Short3Attributes";
-import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
-import Box							from "awayjs-core/lib/geom/Box";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import Rectangle					from "awayjs-core/lib/geom/Rectangle";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {AttributesBuffer}				from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}				from "awayjs-core/lib/attributes/AttributesView";
+import {Float3Attributes}				from "awayjs-core/lib/attributes/Float3Attributes";
+import {Short3Attributes}				from "awayjs-core/lib/attributes/Short3Attributes";
+import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import ElementsEvent				from "../events/ElementsEvent";
-import Graphic						from "../graphics/Graphic";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
-import MaterialBase					from "../materials/MaterialBase";
+import {ElementsEvent}				from "../events/ElementsEvent";
+import {Graphic}						from "../graphics/Graphic";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
+import {MaterialBase}					from "../materials/MaterialBase";
 
 /**
  * @class away.base.TriangleElements
  */
-class ElementsBase extends AssetBase
+export class ElementsBase extends AssetBase
 {
 	private _indices:Short3Attributes;
 	private _customAttributesNames:Array<string> = new Array<string>();
@@ -88,7 +88,7 @@ class ElementsBase extends AssetBase
 	}
 
 
-	public copyTo(elements:ElementsBase)
+	public copyTo(elements:ElementsBase):void
 	{
 		if (this.indices)
 			elements.setIndices(this.indices.clone());
@@ -100,7 +100,7 @@ class ElementsBase extends AssetBase
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 		super.dispose();
 
@@ -123,7 +123,7 @@ class ElementsBase extends AssetBase
 	public setIndices(array:Array<number>, offset?:number);
 	public setIndices(uint16Array:Uint16Array, offset?:number);
 	public setIndices(short3Attributes:Short3Attributes, offset?:number);
-	public setIndices(values:any, offset:number = 0)
+	public setIndices(values:any, offset:number = 0):void
 	{
 		if (values instanceof Short3Attributes) {
 			if (this._indices)
@@ -157,7 +157,7 @@ class ElementsBase extends AssetBase
 	public setCustomAttributes(name:string, array:Array<number>, offset?:number);
 	public setCustomAttributes(name:string, arrayBufferView:ArrayBufferView, offset?:number);
 	public setCustomAttributes(name:string, attributesView:AttributesView, offset?:number);
-	public setCustomAttributes(name:string, values:any, offset:number = 0)
+	public setCustomAttributes(name:string, values:any, offset:number = 0):void
 	{
 		if (values == this._customAttributes[name])
 			return;
@@ -194,7 +194,7 @@ class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public applyTransformation(transform:Matrix3D, count:number = 0, offset:number = 0)
+	public applyTransformation(transform:Matrix3D, count:number = 0, offset:number = 0):void
 	{
 		throw new AbstractMethodError();
 	}
@@ -203,12 +203,12 @@ class ElementsBase extends AssetBase
 	 * Scales the geometry.
 	 * @param scale The amount by which to scale.
 	 */
-	public scale(scale:number, count:number = 0, offset:number = 0)
+	public scale(scale:number, count:number = 0, offset:number = 0):void
 	{
 		throw new AbstractMethodError();
 	}
 
-	public scaleUV(scaleU:number = 1, scaleV:number = 1, count:number = 0, offset:number = 0)
+	public scaleUV(scaleU:number = 1, scaleV:number = 1, count:number = 0, offset:number = 0):void
 	{
 		throw new AbstractMethodError();
 	}
@@ -228,7 +228,7 @@ class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	private invalidateIndicies()
+	private invalidateIndicies():void
 	{
 		if (!this._invalidateIndices)
 			this._invalidateIndices = new ElementsEvent(ElementsEvent.INVALIDATE_INDICES, this._indices);
@@ -236,12 +236,12 @@ class ElementsBase extends AssetBase
 		this.dispatchEvent(this._invalidateIndices);
 	}
 
-	private clearIndices()
+	private clearIndices():void
 	{
 		this.dispatchEvent(new ElementsEvent(ElementsEvent.CLEAR_INDICES, this._indices));
 	}
 
-	public invalidateVertices(attributesView:AttributesView)
+	public invalidateVertices(attributesView:AttributesView):void
 	{
 		if (!attributesView || this._verticesDirty[attributesView.id])
 			return;
@@ -255,7 +255,7 @@ class ElementsBase extends AssetBase
 	}
 
 
-	public clearVertices(attributesView:AttributesView)
+	public clearVertices(attributesView:AttributesView):void
 	{
 		if (!attributesView)
 			return;
@@ -273,5 +273,3 @@ class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 }
-
-export default ElementsBase;

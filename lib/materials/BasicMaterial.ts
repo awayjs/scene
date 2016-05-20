@@ -1,14 +1,14 @@
-import Image2D						from "awayjs-core/lib/image/Image2D";
+import {Image2D}						from "awayjs-core/lib/image/Image2D";
 
-import MaterialBase					from "../materials/MaterialBase";
-import Single2DTexture				from "../textures/Single2DTexture";
-import TextureBase					from "../textures/TextureBase";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {Single2DTexture}				from "../textures/Single2DTexture";
+import {TextureBase}					from "../textures/TextureBase";
 
 /**
  * BasicMaterial forms an abstract base class for the default shaded materials provided by Stage,
  * using material methods to define their appearance.
  */
-class BasicMaterial extends MaterialBase
+export class BasicMaterial extends MaterialBase
 {
 	public static assetType:string = "[materials BasicMaterial]";
 
@@ -84,5 +84,3 @@ class BasicMaterial extends MaterialBase
         this.invalidateTexture();
     }
 }
-
-export default BasicMaterial;

@@ -1,4 +1,4 @@
-export {default as MappingMode}						from "./textures/MappingMode";
-export {default as Single2DTexture}					from "./textures/Single2DTexture";
-export {default as SingleCubeTexture}				from "./textures/SingleCubeTexture";
-export {default as TextureBase}						from "./textures/TextureBase";
+export {MappingMode}						from "./textures/MappingMode";
+export {Single2DTexture}					from "./textures/Single2DTexture";
+export {SingleCubeTexture}				from "./textures/SingleCubeTexture";
+export {TextureBase}						from "./textures/TextureBase";

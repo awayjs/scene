@@ -8,10 +8,8 @@
  * <p> When paths intersect or overlap, the winding direction determines the
  * rules for filling the areas created by the intersection or overlap:</p>
  */
-class GraphicsPathWinding
+export class GraphicsPathWinding
 {
 	public static EVEN_ODD:string = "evenOdd";
 	public static NON_ZERO:string = "nonZero";
 }
-
-export default GraphicsPathWinding;

@@ -1,18 +1,18 @@
-import BlendMode					from "awayjs-core/lib/image/BlendMode";
-import ImageBase					from "awayjs-core/lib/image/ImageBase";
-import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {BlendMode}					from "awayjs-core/lib/image/BlendMode";
+import {ImageBase}					from "awayjs-core/lib/image/ImageBase";
+import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import IAnimationSet				from "../animators/IAnimationSet";
-import IAnimator					from "../animators/IAnimator";
-import ISurface						from "../base/ISurface";
-import IRenderable					from "../base/IRenderable";
-import SurfaceEvent					from "../events/SurfaceEvent";
-import LightPickerBase				from "../materials/lightpickers/LightPickerBase";
-import TextureBase					from "../textures/TextureBase";
-import Style						from "../base/Style";
-import StyleEvent					from "../events/StyleEvent";
+import {IAnimationSet}				from "../animators/IAnimationSet";
+import {IAnimator}					from "../animators/IAnimator";
+import {ISurface}						from "../base/ISurface";
+import {IRenderable}					from "../base/IRenderable";
+import {SurfaceEvent}					from "../events/SurfaceEvent";
+import {LightPickerBase}				from "../materials/lightpickers/LightPickerBase";
+import {TextureBase}					from "../textures/TextureBase";
+import {Style}						from "../base/Style";
+import {StyleEvent}					from "../events/StyleEvent";
 
 /**
  * MaterialBase forms an abstract base class for any material.
@@ -25,7 +25,7 @@ import StyleEvent					from "../events/StyleEvent";
  * methods to build the shader code. MaterialBase can be extended to build specific and high-performant custom
  * shaders, or entire new material frameworks.
  */
-class MaterialBase extends AssetBase implements ISurface
+export class MaterialBase extends AssetBase implements ISurface
 {
 	private _textures:Array<TextureBase> = new Array<TextureBase>();
 	private _colorTransform:ColorTransform;
@@ -458,7 +458,7 @@ class MaterialBase extends AssetBase implements ISurface
 	 *
 	 * @internal
 	 */
-	public iAddOwner(owner:IRenderable)
+	public iAddOwner(owner:IRenderable):void
 	{
 		this._owners.push(owner);
 
@@ -490,7 +490,7 @@ class MaterialBase extends AssetBase implements ISurface
 	 *
 	 * @internal
 	 */
-	public iRemoveOwner(owner:IRenderable)
+	public iRemoveOwner(owner:IRenderable):void
 	{
 		this._owners.splice(this._owners.indexOf(owner), 1);
 
@@ -528,17 +528,17 @@ class MaterialBase extends AssetBase implements ISurface
 	 *
 	 * @private
 	 */
-	public invalidatePasses()
+	public invalidatePasses():void
 	{
 		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
 	}
 
-	private invalidateAnimation()
+	private invalidateAnimation():void
 	{
 		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_ANIMATION, this));
 	}
 
-	public invalidateSurfaces()
+	public invalidateSurfaces():void
 	{
 		var len:number = this._owners.length;
 		for (var i:number = 0; i < len; i++)
@@ -548,17 +548,17 @@ class MaterialBase extends AssetBase implements ISurface
 	/**
 	 * Called when the light picker's configuration changed.
 	 */
-	private onLightsChange(event:AssetEvent)
+	private onLightsChange(event:AssetEvent):void
 	{
 		this.invalidate();
 	}
 
-	public invalidateTexture()
+	public invalidateTexture():void
 	{
 		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_TEXTURE, this));
 	}
 
-	public addTextureAt(texture:TextureBase, index:number)
+	public addTextureAt(texture:TextureBase, index:number):void
 	{
 		var i:number = this._textures.indexOf(texture);
 
@@ -574,7 +574,7 @@ class MaterialBase extends AssetBase implements ISurface
 		this.onTextureInvalidate();
 	}
 
-	public addTexture(texture:TextureBase)
+	public addTexture(texture:TextureBase):void
 	{
 		if (this._textures.indexOf(texture) != -1)
 			return;
@@ -586,7 +586,7 @@ class MaterialBase extends AssetBase implements ISurface
 		this.onTextureInvalidate();
 	}
 	
-	public removeTexture(texture:TextureBase)
+	public removeTexture(texture:TextureBase):void
 	{
 		this._textures.splice(this._textures.indexOf(texture), 1);
 
@@ -595,7 +595,7 @@ class MaterialBase extends AssetBase implements ISurface
 		this.onTextureInvalidate();
 	}
 	
-	private onTextureInvalidate(event:AssetEvent = null)
+	private onTextureInvalidate(event:AssetEvent = null):void
 	{
 		this.invalidatePasses();
 
@@ -603,10 +603,8 @@ class MaterialBase extends AssetBase implements ISurface
 		this.invalidateSurfaces();
 	}
 
-	private _onInvalidateProperties(event:StyleEvent)
+	private _onInvalidateProperties(event:StyleEvent):void
 	{
 		this.invalidatePasses();
 	}
 }
-
-export default MaterialBase;

@@ -1,19 +1,19 @@
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import ProjectionEvent				from "awayjs-core/lib/events/ProjectionEvent";
-import IProjection					from "awayjs-core/lib/projections/IProjection";
-import PerspectiveProjection		from "awayjs-core/lib/projections/PerspectiveProjection";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {ProjectionEvent}				from "awayjs-core/lib/events/ProjectionEvent";
+import {IProjection}					from "awayjs-core/lib/projections/IProjection";
+import {PerspectiveProjection}		from "awayjs-core/lib/projections/PerspectiveProjection";
 
-import HierarchicalProperties		from "../base/HierarchicalProperties";
-import IRenderer					from "../IRenderer";
-import BoundsType					from "../bounds/BoundsType";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import IEntity						from "../display/IEntity";
-import CameraEvent					from "../events/CameraEvent";
+import {HierarchicalProperties}		from "../base/HierarchicalProperties";
+import {IRenderer}					from "../IRenderer";
+import {BoundsType}					from "../bounds/BoundsType";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {IEntity}						from "../display/IEntity";
+import {CameraEvent}					from "../events/CameraEvent";
 
 
-class Camera extends DisplayObjectContainer implements IEntity
+export class Camera extends DisplayObjectContainer implements IEntity
 {
 	public static assetType:string = "[asset Camera]";
 
@@ -52,7 +52,7 @@ class Camera extends DisplayObjectContainer implements IEntity
 		return Camera.assetType;
 	}
 
-	private onProjectionMatrixChanged(event:ProjectionEvent)
+	private onProjectionMatrixChanged(event:ProjectionEvent):void
 	{
 		this._viewProjectionDirty = true;
 		this._frustumPlanesDirty = true;
@@ -67,7 +67,7 @@ class Camera extends DisplayObjectContainer implements IEntity
 		return this._frustumPlanes;
 	}
 
-	private updateFrustum()
+	private updateFrustum():void
 	{
 		var a:number, b:number, c:number;
 		//var d : Number;
@@ -252,7 +252,7 @@ class Camera extends DisplayObjectContainer implements IEntity
 		return this.sceneTransform.transformVector(this._projection.unproject(nX, nY, sZ));
 	}
 
-	public _applyRenderer(renderer:IRenderer)
+	public _applyRenderer(renderer:IRenderer):void
 	{
 		// Since this getter is invoked every iteration of the render loop, and
 		// the prefab construct could affect the sub-sprites, the prefab is
@@ -263,5 +263,3 @@ class Camera extends DisplayObjectContainer implements IEntity
 		//nothing to do here
 	}
 }
-
-export default Camera;

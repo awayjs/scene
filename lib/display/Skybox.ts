@@ -1,31 +1,31 @@
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import BlendMode					from "awayjs-core/lib/image/BlendMode";
-import ImageCube					from "awayjs-core/lib/image/ImageCube";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {BlendMode}					from "awayjs-core/lib/image/BlendMode";
+import {ImageCube}					from "awayjs-core/lib/image/ImageCube";
 
-import ITraverser					from "../ITraverser";
-import IAnimationSet				from "../animators/IAnimationSet";
-import IAnimator					from "../animators/IAnimator";
-import DisplayObject				from "../display/DisplayObject";
-import IRenderable					from "../base/IRenderable";
-import ISurface						from "../base/ISurface";
-import BoundsType					from "../bounds/BoundsType";
-import IEntity						from "../display/IEntity";
-import RenderableEvent				from "../events/RenderableEvent";
-import SurfaceEvent					from "../events/SurfaceEvent";
-import LightPickerBase				from "../materials/lightpickers/LightPickerBase";
-import SingleCubeTexture			from "../textures/SingleCubeTexture";
-import TextureBase					from "../textures/TextureBase";
-import Style						from "../base/Style";
-import StyleEvent					from "../events/StyleEvent";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
+import {ITraverser}					from "../ITraverser";
+import {IAnimationSet}				from "../animators/IAnimationSet";
+import {IAnimator}					from "../animators/IAnimator";
+import {DisplayObject}				from "../display/DisplayObject";
+import {IRenderable}					from "../base/IRenderable";
+import {ISurface}						from "../base/ISurface";
+import {BoundsType}					from "../bounds/BoundsType";
+import {IEntity}						from "../display/IEntity";
+import {RenderableEvent}				from "../events/RenderableEvent";
+import {SurfaceEvent}					from "../events/SurfaceEvent";
+import {LightPickerBase}				from "../materials/lightpickers/LightPickerBase";
+import {SingleCubeTexture}			from "../textures/SingleCubeTexture";
+import {TextureBase}					from "../textures/TextureBase";
+import {Style}						from "../base/Style";
+import {StyleEvent}					from "../events/StyleEvent";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
+export class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 {
 	private _textures:Array<TextureBase> = new Array<TextureBase>();
 
@@ -243,22 +243,22 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 	 *
 	 * @private
 	 */
-	public invalidatePasses()
+	public invalidatePasses():void
 	{
 		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
 	}
 
-	public invalidateElements()
+	public invalidateElements():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 	
-	public invalidateSurface()
+	public invalidateSurface():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
 
-	public addTexture(texture:TextureBase)
+	public addTexture(texture:TextureBase):void
 	{
 		this._textures.push(texture);
 
@@ -267,7 +267,7 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 		this.onTextureInvalidate();
 	}
 
-	public removeTexture(texture:TextureBase)
+	public removeTexture(texture:TextureBase):void
 	{
 		this._textures.splice(this._textures.indexOf(texture), 1);
 
@@ -276,17 +276,17 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 		this.onTextureInvalidate();
 	}
 
-	private onTextureInvalidate(event:AssetEvent = null)
+	private onTextureInvalidate(event:AssetEvent = null):void
 	{
 		this.invalidate();
 	}
 
-	private _onInvalidateProperties(event:StyleEvent)
+	private _onInvalidateProperties(event:StyleEvent):void
 	{
 		this.invalidatePasses();
 	}
 
-	public _acceptTraverser(traverser:ITraverser)
+	public _acceptTraverser(traverser:ITraverser):void
 	{
 		traverser.applyRenderable(this);
 	}
@@ -304,5 +304,3 @@ class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
 		return false;
 	}
 }
-
-export default Skybox;

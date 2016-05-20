@@ -1,15 +1,15 @@
-import EntityNode					from "../partition/EntityNode";
-import ITraverser				from "../ITraverser";
+import {EntityNode}					from "../partition/EntityNode";
+import {ITraverser}				from "../ITraverser";
 
 /**
  * @class away.partition.LightProbeNode
  */
-class LightProbeNode extends EntityNode
+export class LightProbeNode extends EntityNode
 {
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ITraverser)
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		if (traverser.enterNode(this))
 			traverser.applyLightProbe(this._displayObject);
@@ -24,5 +24,3 @@ class LightProbeNode extends EntityNode
 		return false;
 	}
 }
-
-export default LightProbeNode;

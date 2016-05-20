@@ -1,15 +1,15 @@
-import IAsset					from "awayjs-core/lib/library/IAsset";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import ElementsType				from "../graphics/ElementsType";
-import ElementsBase				from "../graphics/ElementsBase";
-import TriangleElements			from "../graphics/TriangleElements";
-import MaterialBase				from "../materials/MaterialBase";
-import PrimitivePrefabBase		from "../prefabs/PrimitivePrefabBase";
+import {ElementsType}				from "../graphics/ElementsType";
+import {ElementsBase}				from "../graphics/ElementsBase";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {MaterialBase}				from "../materials/MaterialBase";
+import {PrimitivePrefabBase}		from "../prefabs/PrimitivePrefabBase";
 
 /**
  * A UV Cylinder primitive sprite.
  */
-class PrimitiveTorusPrefab extends PrimitivePrefabBase
+export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 {
 	private _radius:number;
 	private _tubeRadius:number;
@@ -113,7 +113,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGraphics(target:ElementsBase, elementsType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string):void
 	{
 		var indices:Uint16Array;
 		var positions:ArrayBufferView;
@@ -256,7 +256,7 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:ElementsBase, elementsType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string):void
 	{
 
 		var i:number, j:number;
@@ -294,5 +294,3 @@ class PrimitiveTorusPrefab extends PrimitivePrefabBase
 		}
 	}
 }
-
-export default PrimitiveTorusPrefab;

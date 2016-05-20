@@ -1,8 +1,8 @@
-import EventBase					from "awayjs-core/lib/events/EventBase";
+import {EventBase}					from "awayjs-core/lib/events/EventBase";
 
-import Style						from "../base/Style";
+import {Style}						from "../base/Style";
 
-class StyleEvent extends EventBase
+export class StyleEvent extends EventBase
 {
 	private _style:Style;
 
@@ -32,5 +32,3 @@ class StyleEvent extends EventBase
 		return new StyleEvent(this.type, this._style);
 	}
 }
-
-export default StyleEvent;

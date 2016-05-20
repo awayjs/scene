@@ -1,7 +1,7 @@
 /**
  *
  */
-class AlignmentMode
+export class AlignmentMode
 {
 	/**
 	 *
@@ -13,5 +13,3 @@ class AlignmentMode
 	 */
 	public static PIVOT_POINT:string = "pivot";
 }
-
-export default AlignmentMode;

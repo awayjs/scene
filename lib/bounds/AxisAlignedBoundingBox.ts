@@ -1,21 +1,21 @@
-import Box							from "awayjs-core/lib/geom/Box";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import PlaneClassification			from "awayjs-core/lib/geom/PlaneClassification";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {PlaneClassification}			from "awayjs-core/lib/geom/PlaneClassification";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsType					from "../graphics/ElementsType";
-import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
-import IEntity						from "../display/IEntity";
-import Sprite						from "../display/Sprite";
-import PrimitiveCubePrefab			from "../prefabs/PrimitiveCubePrefab";
+import {ElementsType}					from "../graphics/ElementsType";
+import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
+import {IEntity}						from "../display/IEntity";
+import {Sprite}						from "../display/Sprite";
+import {PrimitiveCubePrefab}			from "../prefabs/PrimitiveCubePrefab";
 
 
 /**
  * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
  * This is useful for most sprites.
  */
-class AxisAlignedBoundingBox extends BoundingVolumeBase
+export class AxisAlignedBoundingBox extends BoundingVolumeBase
 {
 	public _box:Box;
 	private _x:number = 0;
@@ -43,7 +43,7 @@ class AxisAlignedBoundingBox extends BoundingVolumeBase
 	/**
 	 * @inheritDoc
 	 */
-	public nullify()
+	public nullify():void
 	{
 		this._x = this._y = this._z = 0;
 		this._width = this._height = this._depth = 0;
@@ -108,7 +108,7 @@ class AxisAlignedBoundingBox extends BoundingVolumeBase
 		return centerDistance > boundOffset? PlaneClassification.FRONT : centerDistance < -boundOffset? PlaneClassification.BACK : PlaneClassification.INTERSECT;
 	}
 
-	public _pUpdate()
+	public _pUpdate():void
 	{
 		super._pUpdate();
 
@@ -157,5 +157,3 @@ class AxisAlignedBoundingBox extends BoundingVolumeBase
 		return <Sprite> this._prefab.getNewObject();
 	}
 }
-
-export default AxisAlignedBoundingBox;

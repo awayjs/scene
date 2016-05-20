@@ -1,22 +1,22 @@
-import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
-import Image2D						from "awayjs-core/lib/image/Image2D";
-import Rectangle					from "awayjs-core/lib/geom/Rectangle";
+import {Sampler2D}					from "awayjs-core/lib/image/Sampler2D";
+import {Image2D}						from "awayjs-core/lib/image/Image2D";
+import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
 
-import ITraverser					from "../ITraverser";
-import IAnimator					from "../animators/IAnimator";
-import DisplayObject				from "../display/DisplayObject";
-import IRenderable					from "../base/IRenderable";
-import BoundsType					from "../bounds/BoundsType";
-import IEntity						from "../display/IEntity";
-import RenderableEvent				from "../events/RenderableEvent";
-import SurfaceEvent					from "../events/SurfaceEvent";
-import DefaultMaterialManager		from "../managers/DefaultMaterialManager";
-import MaterialBase					from "../materials/MaterialBase";
-import TextureBase					from "../textures/TextureBase";
-import Style						from "../base/Style";
-import StyleEvent					from "../events/StyleEvent";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
+import {ITraverser}					from "../ITraverser";
+import {IAnimator}					from "../animators/IAnimator";
+import {DisplayObject}				from "../display/DisplayObject";
+import {IRenderable}					from "../base/IRenderable";
+import {BoundsType}					from "../bounds/BoundsType";
+import {IEntity}						from "../display/IEntity";
+import {RenderableEvent}				from "../events/RenderableEvent";
+import {SurfaceEvent}					from "../events/SurfaceEvent";
+import {DefaultMaterialManager}		from "../managers/DefaultMaterialManager";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {TextureBase}					from "../textures/TextureBase";
+import {Style}						from "../base/Style";
+import {StyleEvent}					from "../events/StyleEvent";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -53,7 +53,7 @@ import PickingCollision				from "../pick/PickingCollision";
  * contains the Billboard object.</p>
  */
 
-class Billboard extends DisplayObject implements IEntity, IRenderable
+export class Billboard extends DisplayObject implements IEntity, IRenderable
 {
 	public static assetType:string = "[asset Billboard]";
 
@@ -155,7 +155,7 @@ class Billboard extends DisplayObject implements IEntity, IRenderable
 	/**
 	 * @protected
 	 */
-	public _pUpdateBoxBounds()
+	public _pUpdateBoxBounds():void
 	{
 		super._pUpdateBoxBounds();
 
@@ -209,17 +209,17 @@ class Billboard extends DisplayObject implements IEntity, IRenderable
 	/**
 	 * @private
 	 */
-	private onInvalidateTexture(event:SurfaceEvent)
+	private onInvalidateTexture(event:SurfaceEvent):void
 	{
 		this._updateDimensions();
 	}
 
-	public _acceptTraverser(traverser:ITraverser)
+	public _acceptTraverser(traverser:ITraverser):void
 	{
 		traverser.applyRenderable(this);
 	}
 
-	private _updateDimensions()
+	private _updateDimensions():void
 	{
 		var texture:TextureBase = this.material.getTextureAt(0);
 
@@ -248,22 +248,20 @@ class Billboard extends DisplayObject implements IEntity, IRenderable
 	}
 
 
-	public invalidateElements()
+	public invalidateElements():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 	
-	public invalidateSurface()
+	public invalidateSurface():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
 	}
 
-	private _onInvalidateProperties(event:StyleEvent = null)
+	private _onInvalidateProperties(event:StyleEvent = null):void
 	{
 		this.invalidateSurface();
 
 		this._updateDimensions();
 	}
 }
-
-export default Billboard;

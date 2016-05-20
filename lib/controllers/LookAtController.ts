@@ -1,10 +1,10 @@
-import Vector3D					from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject			from "../display/DisplayObject";
-import ControllerBase			from "../controllers/ControllerBase";
-import DisplayObjectEvent		from "../events/DisplayObjectEvent";
+import {DisplayObject}			from "../display/DisplayObject";
+import {ControllerBase}			from "../controllers/ControllerBase";
+import {DisplayObjectEvent}		from "../events/DisplayObjectEvent";
 
-class LookAtController extends ControllerBase
+export class LookAtController extends ControllerBase
 {
 	public _pLookAtPosition:Vector3D;
 	public _pLookAtObject:DisplayObject;
@@ -65,7 +65,7 @@ class LookAtController extends ControllerBase
 	}
 
 	//@override
-	public update(interpolate:boolean = true)
+	public update(interpolate:boolean = true):void
 	{
 		if (this._pTargetObject) {
 			if (this._pLookAtPosition)
@@ -75,10 +75,8 @@ class LookAtController extends ControllerBase
 		}
 	}
 
-	private onLookAtObjectChanged(event:DisplayObjectEvent)
+	private onLookAtObjectChanged(event:DisplayObjectEvent):void
 	{
 		this.pNotifyUpdate();
 	}
 }
-
-export default LookAtController;

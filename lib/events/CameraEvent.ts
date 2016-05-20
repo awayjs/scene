@@ -1,11 +1,11 @@
-import EventBase				from "awayjs-core/lib/events/EventBase";
+import {EventBase}				from "awayjs-core/lib/events/EventBase";
 
-import Camera					from "../display/Camera";
+import {Camera}					from "../display/Camera";
 
 /**
  * @class away.events.CameraEvent
  */
-class CameraEvent extends EventBase
+export class CameraEvent extends EventBase
 {
 	public static PROJECTION_CHANGED:string = "projectionChanged";
 
@@ -32,5 +32,3 @@ class CameraEvent extends EventBase
 		return new CameraEvent(this.type, this._camera);
 	}
 }
-
-export default CameraEvent;

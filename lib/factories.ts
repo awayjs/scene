@@ -1,1 +1,1 @@
-export {default as ITimelineSceneGraphFactory}		from "./factories/ITimelineSceneGraphFactory";
+export {ITimelineSceneGraphFactory}		from "./factories/ITimelineSceneGraphFactory";

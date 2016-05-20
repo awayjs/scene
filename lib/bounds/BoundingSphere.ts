@@ -1,16 +1,16 @@
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import PlaneClassification			from "awayjs-core/lib/geom/PlaneClassification";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {PlaneClassification}			from "awayjs-core/lib/geom/PlaneClassification";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsType					from "../graphics/ElementsType";
-import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
-import IEntity						from "../display/IEntity";
-import Sprite						from "../display/Sprite";
-import PrimitiveSpherePrefab		from "../prefabs/PrimitiveSpherePrefab";
+import {ElementsType}					from "../graphics/ElementsType";
+import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
+import {IEntity}						from "../display/IEntity";
+import {Sprite}						from "../display/Sprite";
+import {PrimitiveSpherePrefab}		from "../prefabs/PrimitiveSpherePrefab";
 
-class BoundingSphere extends BoundingVolumeBase
+export class BoundingSphere extends BoundingVolumeBase
 {
 	private _sphere:Sphere;
 	private _radius:number = 0;
@@ -24,7 +24,7 @@ class BoundingSphere extends BoundingVolumeBase
 		super(entity);
 	}
 
-	public nullify()
+	public nullify():void
 	{
 		this._centerX = this._centerY = this._centerZ = 0;
 		this._radius = 0;
@@ -78,7 +78,7 @@ class BoundingSphere extends BoundingVolumeBase
 		return dd > rr? PlaneClassification.FRONT : dd < -rr? PlaneClassification.BACK : PlaneClassification.INTERSECT;
 	}
 
-	public _pUpdate()
+	public _pUpdate():void
 	{
 		super._pUpdate();
 
@@ -121,5 +121,3 @@ class BoundingSphere extends BoundingVolumeBase
 		return <Sprite> this._prefab.getNewObject();
 	}
 }
-
-export default BoundingSphere;

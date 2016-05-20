@@ -6,7 +6,7 @@
  * three types of joints: miter, round, and bevel, as the following example
  * shows:
  */
-class JointStyle
+export class JointStyle
 {
 	/**
 	 * Specifies beveled joints in the <code>joints</code> parameter of the
@@ -26,5 +26,3 @@ class JointStyle
 	 */
 	public static ROUND:number = 1;
 }
-
-export default JointStyle;

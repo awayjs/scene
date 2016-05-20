@@ -1,4 +1,4 @@
-export {default as ParticleData}					from "./animators/data/ParticleData";
-export {default as AnimationNodeBase}				from "./animators/nodes/AnimationNodeBase";
-export {default as IAnimationSet}					from "./animators/IAnimationSet";
-export {default as IAnimator}						from "./animators/IAnimator";
+export {ParticleData}					from "./animators/data/ParticleData";
+export {AnimationNodeBase}				from "./animators/nodes/AnimationNodeBase";
+export {IAnimationSet}					from "./animators/IAnimationSet";
+export {IAnimator}						from "./animators/IAnimator";

@@ -1,12 +1,12 @@
-import IAsset					from "awayjs-core/lib/library/IAsset";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import MaterialBase				from "../materials/MaterialBase";
-import PrimitiveCylinderPrefab	from "../prefabs/PrimitiveCylinderPrefab";
+import {MaterialBase}				from "../materials/MaterialBase";
+import {PrimitiveCylinderPrefab}	from "../prefabs/PrimitiveCylinderPrefab";
 
 /**
  * A UV RegularPolygon primitive sprite.
  */
-class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab
+export class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab
 {
 
 	/**
@@ -60,5 +60,3 @@ class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab
 		super(material, elementsType, radius, 0, 0, sides, 1, true, false, false, yUp);
 	}
 }
-
-export default PrimitivePolygonPrefab;

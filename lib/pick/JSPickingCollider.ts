@@ -1,11 +1,11 @@
-import Vector3D							from "awayjs-core/lib/geom/Vector3D";
-import Point							from "awayjs-core/lib/geom/Point";
-import LineElements						from "../graphics/LineElements";
-import TriangleElements					from "../graphics/TriangleElements";
-import Billboard						from "../display/Billboard";
-import PickingCollision					from "../pick/PickingCollision";
-import IPickingCollider					from "../pick/IPickingCollider";
-import MaterialBase						from "../materials/MaterialBase";
+import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
+import {Point}							from "awayjs-core/lib/geom/Point";
+import {LineElements}						from "../graphics/LineElements";
+import {TriangleElements}					from "../graphics/TriangleElements";
+import {Billboard}						from "../display/Billboard";
+import {PickingCollision}					from "../pick/PickingCollision";
+import {IPickingCollider}					from "../pick/IPickingCollider";
+import {MaterialBase}						from "../materials/MaterialBase";
 
 
 /**
@@ -16,7 +16,7 @@ import MaterialBase						from "../materials/MaterialBase";
  *
  * @class away.pick.JSPickingCollider
  */
-class JSPickingCollider implements IPickingCollider
+export class JSPickingCollider implements IPickingCollider
 {
 	private _findClosestCollision:boolean;
 
@@ -38,7 +38,7 @@ class JSPickingCollider implements IPickingCollider
 	 * @param pickingCollision The collision object used to store the collision results
 	 * @param findClosest
 	 */
-	public testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollision:PickingCollision)
+	public testBillboardCollision(billboard:Billboard, material:MaterialBase, pickingCollision:PickingCollision):boolean
 	{
 		pickingCollision.renderable = null;
 
@@ -352,5 +352,3 @@ class JSPickingCollider implements IPickingCollider
 		return false;
 	}
 }
-
-export default JSPickingCollider;

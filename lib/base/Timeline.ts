@@ -1,12 +1,12 @@
-import HierarchicalProperties			from "../base/HierarchicalProperties";
-import MovieClip						from "../display/MovieClip";
-import DisplayObject                    from "../display/DisplayObject";
-import ColorTransform					from "awayjs-core/lib/geom/ColorTransform";
-import Matrix3D							from "awayjs-core/lib/geom/Matrix3D";
-import FrameScriptManager				from "../managers/FrameScriptManager";
+import {HierarchicalProperties}			from "../base/HierarchicalProperties";
+import {MovieClip}						from "../display/MovieClip";
+import {DisplayObject}					from "../display/DisplayObject";
+import {ColorTransform}					from "awayjs-core/lib/geom/ColorTransform";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {FrameScriptManager}				from "../managers/FrameScriptManager";
 
 
-class Timeline
+export class Timeline
 {
 	private _functions:Array<(child:DisplayObject, target_mc:MovieClip, i:number) => void> = [];
 	private _blocked:boolean;
@@ -112,7 +112,7 @@ class Timeline
 			throw new Error("Framescript is already translated to Function!!!");
 		}
 	}
-	public add_framescript(value:string, keyframe_index:number)
+	public add_framescript(value:string, keyframe_index:number):void
 	{
 		if(FrameScriptManager.frameScriptDebug){
 			// if we are in debug mode, we try to extract the function name from the first line of framescript code,
@@ -188,7 +188,7 @@ class Timeline
 			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
 	}
 
-	public gotoFrame(target_mc:MovieClip, value:number, skip_script:boolean = false)
+	public gotoFrame(target_mc:MovieClip, value:number, skip_script:boolean = false):void
 	{
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
 		var target_keyframe_idx:number = this.keyframe_indices[value];
@@ -275,7 +275,7 @@ class Timeline
 		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 	}
 
-	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object)
+	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object):void
 	{
 		var i:number;
 		var k:number;
@@ -310,7 +310,7 @@ class Timeline
 		}
 	}
 
-	public pass2(target_mc:MovieClip)
+	public pass2(target_mc:MovieClip):void
 	{
 		var k:number;
 		var len:number = this._update_indices.length;
@@ -318,7 +318,7 @@ class Timeline
 			this.update_childs(target_mc, this._update_indices[k]);
 	}
 
-	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean = true, scriptPass1:Boolean = false)
+	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean = true, scriptPass1:Boolean = false):void
 	{
 		var frameIndex:number = target_mc.currentFrameIndex;
 		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
@@ -350,7 +350,7 @@ class Timeline
 
 
 
-	public remove_childs_continous(sourceMovieClip:MovieClip, frame_command_idx:number)
+	public remove_childs_continous(sourceMovieClip:MovieClip, frame_command_idx:number):void
 	{
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
@@ -360,7 +360,7 @@ class Timeline
 
 
 	// used to add childs when jumping between frames
-	public add_childs_continous(sourceMovieClip:MovieClip, frame_command_idx:number)
+	public add_childs_continous(sourceMovieClip:MovieClip, frame_command_idx:number):void
 	{
 		// apply add commands in reversed order to have script exeucted in correct order.
 		// this could be changed in exporter
@@ -373,7 +373,7 @@ class Timeline
 		}
 	}
 
-	public update_childs(target_mc:MovieClip, frame_command_idx:number)
+	public update_childs(target_mc:MovieClip, frame_command_idx:number):void
 	{
 		var p:number;
 		var props_start_idx:number;
@@ -395,7 +395,7 @@ class Timeline
 		}
 	}
 
-	public update_mtx_all(child:DisplayObject, target_mc:MovieClip, i:number)
+	public update_mtx_all(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		if (this._blocked)
 			return;
@@ -412,7 +412,7 @@ class Timeline
 		child.transform.invalidateComponents();
 	}
 
-	public update_colortransform(child:DisplayObject, target_mc:MovieClip, i:number)
+	public update_colortransform(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		if (this._blocked)
 			return;
@@ -431,7 +431,7 @@ class Timeline
 		child.transform.invalidateColorTransform();
 	}
 
-	public update_masks(child:DisplayObject, target_mc:MovieClip, i:number)
+	public update_masks(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		// an object could have multiple groups of masks, in case a graphic clip was merged into the timeline
 		// this is not implmeented in the runtime yet
@@ -450,13 +450,13 @@ class Timeline
 		child.masks = masks;
 	}
 
-	public update_name(child:DisplayObject, target_mc:MovieClip, i:number)
+	public update_name(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		child.name = this.properties_stream_strings[i];
 		target_mc.adapter.registerScriptObject(child);
 	}
 
-	public update_button_name(target:DisplayObject, sourceMovieClip:MovieClip, i:number)
+	public update_button_name(target:DisplayObject, sourceMovieClip:MovieClip, i:number):void
 	{
 		target.name = this.properties_stream_strings[i];
 		// todo: creating the buttonlistenrs later should also be done, but for icycle i dont think this will cause problems
@@ -464,13 +464,13 @@ class Timeline
 		sourceMovieClip.adapter.registerScriptObject(target);
 	}
 
-	public update_visibility(child:DisplayObject, target_mc:MovieClip, i:number)
+	public update_visibility(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		if (!child.adapter || !child.adapter.isVisibilityByScript())
 			child.visible = Boolean(i);
 	}
 
-	public update_mtx_scale_rot(child:DisplayObject, target_mc:MovieClip, i:number)
+	public update_mtx_scale_rot(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		if (this._blocked)
 			return;
@@ -488,7 +488,7 @@ class Timeline
 		child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
-	public update_mtx_pos(child:DisplayObject, target_mc:MovieClip, i:number)
+	public update_mtx_pos(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		if (this._blocked)
 			return;
@@ -502,15 +502,13 @@ class Timeline
 		child.transform.invalidatePosition();
 	}
 
-	public enable_maskmode(child:DisplayObject, target_mc:MovieClip, i:number)
+	public enable_maskmode(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		child.maskMode = true;
 	}
 
-	public remove_masks(child:DisplayObject, target_mc:MovieClip, i:number)
+	public remove_masks(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		child.masks = null;
 	}
 }
-
-export default Timeline;

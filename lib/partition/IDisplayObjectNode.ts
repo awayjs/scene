@@ -1,5 +1,5 @@
-import DisplayObject				from "../display/DisplayObject";
-import INode						from "../partition/INode";
+import {DisplayObject}				from "../display/DisplayObject";
+import {INode}						from "../partition/INode";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -7,7 +7,7 @@ import INode						from "../partition/INode";
  *
  * @class away.pool.IDisplayObjectNode
  */
-interface IDisplayObjectNode extends INode
+export interface IDisplayObjectNode extends INode
 {
 	_iUpdateQueueNext:IDisplayObjectNode;
 
@@ -15,5 +15,3 @@ interface IDisplayObjectNode extends INode
 
 	isSceneGraphNode:boolean;
 }
-
-export default IDisplayObjectNode;

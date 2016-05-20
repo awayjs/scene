@@ -1,16 +1,16 @@
-import IAsset					from "awayjs-core/lib/library/IAsset";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import ElementsType				from "../graphics/ElementsType";
-import LineElements				from "../graphics/LineElements";
-import ElementsBase				from "../graphics/ElementsBase";
-import TriangleElements			from "../graphics/TriangleElements";
-import MaterialBase				from "../materials/MaterialBase";
-import PrimitivePrefabBase		from "../prefabs/PrimitivePrefabBase";
+import {ElementsType}				from "../graphics/ElementsType";
+import {LineElements}				from "../graphics/LineElements";
+import {ElementsBase}				from "../graphics/ElementsBase";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {MaterialBase}				from "../materials/MaterialBase";
+import {PrimitivePrefabBase}		from "../prefabs/PrimitivePrefabBase";
 
 /**
  * A Plane primitive sprite.
  */
-class PrimitivePlanePrefab extends PrimitivePrefabBase
+export class PrimitivePlanePrefab extends PrimitivePrefabBase
 {
 	private _segmentsW:number;
 	private _segmentsH:number;
@@ -142,7 +142,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGraphics(target:ElementsBase, elementsType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string):void
 	{
 		var indices:Uint16Array;
 		var x:number, y:number;
@@ -323,7 +323,7 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:ElementsBase, elementsType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string):void
 	{
 		var uvs:ArrayBufferView;
 		var numVertices:number;
@@ -369,5 +369,3 @@ class PrimitivePlanePrefab extends PrimitivePrefabBase
 		}
 	}
 }
-
-export default PrimitivePlanePrefab;

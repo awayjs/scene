@@ -1,16 +1,16 @@
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
 
-import ITraverser					from "../ITraverser";
-import DisplayObject				from "../display/DisplayObject";
-import Scene						from "../display/Scene";
-import View							from "../View";
-import IPicker						from "../pick/IPicker";
-import PickingCollision				from "../pick/PickingCollision";
-import IEntity						from "../display/IEntity";
-import IRenderable					from "../base/IRenderable";
-import INode						from "../partition/INode";
-import IPickingCollider				from "../pick/IPickingCollider";
+import {ITraverser}					from "../ITraverser";
+import {DisplayObject}				from "../display/DisplayObject";
+import {Scene}						from "../display/Scene";
+import {View}							from "../View";
+import {IPicker}						from "../pick/IPicker";
+import {PickingCollision}				from "../pick/PickingCollision";
+import {IEntity}						from "../display/IEntity";
+import {IRenderable}					from "../base/IRenderable";
+import {INode}						from "../partition/INode";
+import {IPickingCollider}				from "../pick/IPickingCollider";
 
 /**
  * Picks a 3d object from a view or scene by 3D raycast calculations.
@@ -19,7 +19,7 @@ import IPickingCollider				from "../pick/IPickingCollider";
  *
  * @class away.pick.RaycastPicker
  */
-class RaycastPicker implements IPicker, ITraverser
+export class RaycastPicker implements IPicker, ITraverser
 {
 	private _rayPosition:Vector3D;
 	private _rayDirection:Vector3D;
@@ -117,7 +117,7 @@ class RaycastPicker implements IPicker, ITraverser
 //			return this.getPickingCollision(this._raycastCollector);
 //		}
 
-	public setIgnoreList(entities:Array<IEntity>)
+	public setIgnoreList(entities:Array<IEntity>):void
 	{
 		this._ignoredEntities = entities;
 	}
@@ -185,7 +185,7 @@ class RaycastPicker implements IPicker, ITraverser
 		return this._bestCollision;
 	}
 
-	private updatePosition(pickingCollision:PickingCollision)
+	private updatePosition(pickingCollision:PickingCollision):void
 	{
 		var collisionPos:Vector3D = pickingCollision.position || (pickingCollision.position = new Vector3D());
 
@@ -197,7 +197,7 @@ class RaycastPicker implements IPicker, ITraverser
 		collisionPos.z = rayPos.z + t*rayDir.z;
 	}
 
-	public dispose()
+	public dispose():void
 	{
 		//TODO
 	}
@@ -206,7 +206,7 @@ class RaycastPicker implements IPicker, ITraverser
 	 *
 	 * @param entity
 	 */
-	public applyEntity(entity:IEntity)
+	public applyEntity(entity:IEntity):void
 	{
 		if (!this.isIgnored(entity))
 			this._entities.push(entity);
@@ -216,7 +216,7 @@ class RaycastPicker implements IPicker, ITraverser
 	 *
 	 * @param entity
 	 */
-	public applyRenderable(renderable:IRenderable)
+	public applyRenderable(renderable:IRenderable):void
 	{
 		if (renderable._iTestCollision(this._testCollision, this._testCollider))
 			this._bestCollision = this._testCollision;
@@ -226,7 +226,7 @@ class RaycastPicker implements IPicker, ITraverser
 	 *
 	 * @param entity
 	 */
-	public applyDirectionalLight(entity:IEntity)
+	public applyDirectionalLight(entity:IEntity):void
 	{
 		//don't do anything here
 	}
@@ -235,7 +235,7 @@ class RaycastPicker implements IPicker, ITraverser
 	 *
 	 * @param entity
 	 */
-	public applyLightProbe(entity:IEntity)
+	public applyLightProbe(entity:IEntity):void
 	{
 		//don't do anything here
 	}
@@ -244,7 +244,7 @@ class RaycastPicker implements IPicker, ITraverser
 	 *
 	 * @param entity
 	 */
-	public applyPointLight(entity:IEntity)
+	public applyPointLight(entity:IEntity):void
 	{
 		//don't do anything here
 	}
@@ -253,10 +253,8 @@ class RaycastPicker implements IPicker, ITraverser
 	 *
 	 * @param entity
 	 */
-	public applySkybox(entity:IEntity)
+	public applySkybox(entity:IEntity):void
 	{
 		//don't do anything here
 	}
 }
-
-export default RaycastPicker;

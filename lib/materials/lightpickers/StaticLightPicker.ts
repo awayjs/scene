@@ -1,18 +1,18 @@
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
 
-import LightBase					from "../../display/LightBase";
-import DirectionalLight				from "../../display/DirectionalLight";
-import LightProbe					from "../../display/LightProbe";
-import PointLight					from "../../display/PointLight";
-import LightEvent					from "../../events/LightEvent";
-import LightPickerBase				from "../../materials/lightpickers/LightPickerBase";
+import {LightBase}					from "../../display/LightBase";
+import {DirectionalLight}				from "../../display/DirectionalLight";
+import {LightProbe}					from "../../display/LightProbe";
+import {PointLight}					from "../../display/PointLight";
+import {LightEvent}					from "../../events/LightEvent";
+import {LightPickerBase}				from "../../materials/lightpickers/LightPickerBase";
 
 /**
  * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but
  * if the configuration changes (number of directional lights, point lights, etc), a material recompilation may
  * occur.
  */
-class StaticLightPicker extends LightPickerBase
+export class StaticLightPicker extends LightPickerBase
 {
 	private _lights:Array<any>;
 	private _onCastShadowChangeDelegate:(event:LightEvent) => void;
@@ -33,7 +33,7 @@ class StaticLightPicker extends LightPickerBase
 	/**
 	 * The lights used for shading.
 	 */
-	public get lights()
+	public get lights():Array<any>
 	{
 		return this._lights;
 	}
@@ -101,7 +101,7 @@ class StaticLightPicker extends LightPickerBase
 	/**
 	 * Remove configuration change listeners on the lights.
 	 */
-	private clearListeners()
+	private clearListeners():void
 	{
 		var len:number = this._lights.length;
 		for (var i:number = 0; i < len; ++i)
@@ -111,7 +111,7 @@ class StaticLightPicker extends LightPickerBase
 	/**
 	 * Notifies the material of a configuration change.
 	 */
-	private onCastShadowChange(event:LightEvent)
+	private onCastShadowChange(event:LightEvent):void
 	{
 		// TODO: Assign to special caster collections, just append it to the lights in SinglePass
 		// But keep seperated in multipass
@@ -129,7 +129,7 @@ class StaticLightPicker extends LightPickerBase
 	/**
 	 * Called when a directional light's shadow casting configuration changes.
 	 */
-	private updateDirectionalCasting(light:DirectionalLight)
+	private updateDirectionalCasting(light:DirectionalLight):void
 	{
 		var dl:DirectionalLight = <DirectionalLight> light;
 
@@ -153,7 +153,7 @@ class StaticLightPicker extends LightPickerBase
 	/**
 	 * Called when a point light's shadow casting configuration changes.
 	 */
-	private updatePointCasting(light:PointLight)
+	private updatePointCasting(light:PointLight):void
 	{
 		var pl:PointLight = <PointLight> light;
 
@@ -171,5 +171,3 @@ class StaticLightPicker extends LightPickerBase
 		}
 	}
 }
-
-export default StaticLightPicker;

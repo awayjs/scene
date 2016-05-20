@@ -9,7 +9,7 @@
  * @see away.materials.TextureMaterial.diffuseLightSources
  * @see away.materials.TextureMaterial.specularLightSources
  */
-class LightSources
+export class LightSources
 {
 	/**
 	 * Defines normal lights are to be used as the source for the lighting
@@ -29,5 +29,3 @@ class LightSources
 	 */
 	public static ALL:number = 0x03;
 }
-
-export default LightSources;

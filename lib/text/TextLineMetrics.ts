@@ -4,7 +4,7 @@
  * pixels. Objects of this class are returned by the 
  * <code>away.entities.TextField.getLineMetrics()</code> method.
  */
-class TextLineMetrics
+export class TextLineMetrics
 {
 	/**
 	 * The ascent value of the text is the length from the baseline to the top of
@@ -69,5 +69,3 @@ class TextLineMetrics
 
 	}
 }
-
-export default TextLineMetrics;

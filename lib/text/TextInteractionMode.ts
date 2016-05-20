@@ -3,7 +3,7 @@
  *
  * @see away.entities.TextField#textInteractionMode
  */
-class TextInteractionMode
+export class TextInteractionMode
 {
 	/**
 	 * The text field's default interaction mode is NORMAL and it varies across
@@ -21,5 +21,3 @@ class TextInteractionMode
 	 */
 	public static SELECTION:string = "selection";
 }
-
-export default TextInteractionMode;

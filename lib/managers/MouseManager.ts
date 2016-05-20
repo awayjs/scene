@@ -1,17 +1,17 @@
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				from "../display/DisplayObject";
-import TouchPoint					from "../base/TouchPoint";
-import View							from "../View";
-import PickingCollision				from "../pick/PickingCollision";
-import AwayMouseEvent				from "../events/MouseEvent";
-import FrameScriptManager			from "../managers/FrameScriptManager";
+import {DisplayObject}				from "../display/DisplayObject";
+import {TouchPoint}					from "../base/TouchPoint";
+import {View}							from "../View";
+import {PickingCollision}				from "../pick/PickingCollision";
+import {MouseEvent}					from "../events/MouseEvent";
+import {FrameScriptManager}			from "../managers/FrameScriptManager";
 
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
  * it provides a manager class for detecting mouse hits on scene objects and sending out mouse events.
  */
-class MouseManager
+export class MouseManager
 {
 	private static _instance:MouseManager;
 
@@ -23,41 +23,41 @@ class MouseManager
 	
 	private _nullVector:Vector3D = new Vector3D();
 	private _previousCollidingObject:PickingCollision;
-	private _queuedEvents:Array<AwayMouseEvent> = new Array<AwayMouseEvent>();
+	private _queuedEvents:Array<MouseEvent> = new Array<MouseEvent>();
 
-	private _mouseMoveEvent:MouseEvent;
+	private _mouseMoveEvent;
 
-	private _mouseUp:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_UP);
-	private _mouseClick:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.CLICK);
-	private _mouseOut:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_OUT);
-	private _mouseDown:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_DOWN);
-	private _mouseMove:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_MOVE);
-	private _mouseOver:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_OVER);
-	private _mouseWheel:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_WHEEL);
-	private _mouseDoubleClick:AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DOUBLE_CLICK);
+	private _mouseUp:MouseEvent = new MouseEvent(MouseEvent.MOUSE_UP);
+	private _mouseClick:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+	private _mouseOut:MouseEvent = new MouseEvent(MouseEvent.MOUSE_OUT);
+	private _mouseDown:MouseEvent = new MouseEvent(MouseEvent.MOUSE_DOWN);
+	private _mouseMove:MouseEvent = new MouseEvent(MouseEvent.MOUSE_MOVE);
+	private _mouseOver:MouseEvent = new MouseEvent(MouseEvent.MOUSE_OVER);
+	private _mouseWheel:MouseEvent = new MouseEvent(MouseEvent.MOUSE_WHEEL);
+	private _mouseDoubleClick:MouseEvent = new MouseEvent(MouseEvent.DOUBLE_CLICK);
 
-	private onClickDelegate:(event:MouseEvent) => void;
-	private onDoubleClickDelegate:(event:MouseEvent) => void;
-	private onMouseDownDelegate:(event:MouseEvent) => void;
-	private onMouseMoveDelegate:(event:MouseEvent) => void;
-	private onMouseUpDelegate:(event:MouseEvent) => void;
-	private onMouseWheelDelegate:(event:MouseEvent) => void;
-	private onMouseOverDelegate:(event:MouseEvent) => void;
-	private onMouseOutDelegate:(event:MouseEvent) => void;
+	private onClickDelegate:(event) => void;
+	private onDoubleClickDelegate:(event) => void;
+	private onMouseDownDelegate:(event) => void;
+	private onMouseMoveDelegate:(event) => void;
+	private onMouseUpDelegate:(event) => void;
+	private onMouseWheelDelegate:(event) => void;
+	private onMouseOverDelegate:(event) => void;
+	private onMouseOutDelegate:(event) => void;
 
 	/**
 	 * Creates a new <code>MouseManager</code> object.
 	 */
 	constructor()
 	{
-		this.onClickDelegate = (event:MouseEvent) => this.onClick(event);
-		this.onDoubleClickDelegate = (event:MouseEvent) => this.onDoubleClick(event);
-		this.onMouseDownDelegate = (event:MouseEvent) => this.onMouseDown(event);
-		this.onMouseMoveDelegate = (event:MouseEvent) => this.onMouseMove(event);
-		this.onMouseUpDelegate = (event:MouseEvent) => this.onMouseUp(event);
-		this.onMouseWheelDelegate = (event:MouseEvent) => this.onMouseWheel(event);
-		this.onMouseOverDelegate = (event:MouseEvent) => this.onMouseOver(event);
-		this.onMouseOutDelegate = (event:MouseEvent) => this.onMouseOut(event);
+		this.onClickDelegate = (event) => this.onClick(event);
+		this.onDoubleClickDelegate = (event) => this.onDoubleClick(event);
+		this.onMouseDownDelegate = (event) => this.onMouseDown(event);
+		this.onMouseMoveDelegate = (event) => this.onMouseMove(event);
+		this.onMouseUpDelegate = (event) => this.onMouseUp(event);
+		this.onMouseWheelDelegate = (event) => this.onMouseWheel(event);
+		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
+		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
 	}
 
 	public static getInstance():MouseManager
@@ -68,7 +68,7 @@ class MouseManager
 		return (this._instance = new MouseManager());
 	}
 
-	public fireMouseEvents(forceMouseMove:boolean)
+	public fireMouseEvents(forceMouseMove:boolean):void
 	{
 		 // If colliding object has changed, queue over/out events.
 		if (this._iCollision != this._previousCollidingObject) {
@@ -83,7 +83,7 @@ class MouseManager
 		 if (forceMouseMove && this._iCollision)
 			this.queueDispatch( this._mouseMove, this._mouseMoveEvent);
 
-		var event:AwayMouseEvent;
+		var event:MouseEvent;
 		var dispatcher:DisplayObject;
 
 		// Dispatch all queued events.
@@ -129,7 +129,7 @@ class MouseManager
 //			_viewCount = _childDepth;
 //		}
 
-	public registerView(view:View)
+	public registerView(view:View):void
 	{
 		if(view && view.htmlElement) {
 			view.htmlElement.addEventListener("click", this.onClickDelegate);
@@ -147,7 +147,7 @@ class MouseManager
 		}
 	}
 
-	public unregisterView(view:View)
+	public unregisterView(view:View):void
 	{
 		if(view && view.htmlElement) {
 			view.htmlElement.removeEventListener("click", this.onClickDelegate);
@@ -170,7 +170,7 @@ class MouseManager
 	// Private.
 	// ---------------------------------------------------------------------
 
-	private queueDispatch(event:AwayMouseEvent, sourceEvent, collision:PickingCollision = null)
+	private queueDispatch(event:MouseEvent, sourceEvent, collision:PickingCollision = null):void
 	{
 		// 2D properties.
 		if (sourceEvent) {
@@ -214,7 +214,7 @@ class MouseManager
 	// Listeners.
 	// ---------------------------------------------------------------------
 
-	private onMouseMove(event:MouseEvent)
+	private onMouseMove(event):void
 	{
 		event.preventDefault();
 
@@ -224,7 +224,7 @@ class MouseManager
 			this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
 	}
 
-	private onMouseOut(event:MouseEvent)
+	private onMouseOut(event):void
 	{
 		this._iActiveDiv = null;
 
@@ -234,7 +234,7 @@ class MouseManager
 			this.queueDispatch(this._mouseOut, event);
 	}
 
-	private onMouseOver(event:MouseEvent)
+	private onMouseOver(event):void
 	{
 		this._iActiveDiv = <HTMLDivElement> event.target;
 
@@ -244,7 +244,7 @@ class MouseManager
 			this.queueDispatch( this._mouseOver, event);
 	}
 
-	private onClick(event:MouseEvent)
+	private onClick(event):void
 	{
 		this.updateColliders(event);
 
@@ -252,7 +252,7 @@ class MouseManager
 			this.queueDispatch(this._mouseClick, event);
 	}
 
-	private onDoubleClick(event:MouseEvent)
+	private onDoubleClick(event):void
 	{
 		this.updateColliders(event);
 
@@ -260,7 +260,7 @@ class MouseManager
 			this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
-	private onMouseDown(event)
+	private onMouseDown(event):void
 	{
 		event.preventDefault();
 
@@ -272,7 +272,7 @@ class MouseManager
 			this.queueDispatch(this._mouseDown, event);
 	}
 
-	private onMouseUp(event)
+	private onMouseUp(event):void
 	{
 		event.preventDefault();
 
@@ -282,7 +282,7 @@ class MouseManager
 			this.queueDispatch(this._mouseUp , event);
 	}
 
-	private onMouseWheel(event:MouseEvent)
+	private onMouseWheel(event):void
 	{
 		this.updateColliders(event);
 
@@ -291,7 +291,7 @@ class MouseManager
 	}
 
 
-	private updateColliders(event)
+	private updateColliders(event):void
 	{
 		var view:View;
 		var bounds:ClientRect;
@@ -332,5 +332,3 @@ class MouseManager
 		this._iUpdateDirty = true;
 	}
 }
-
-export default MouseManager;

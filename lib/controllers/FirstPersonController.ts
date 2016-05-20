@@ -1,14 +1,14 @@
-import MathConsts				from "awayjs-core/lib/geom/MathConsts";
+import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
 
-import ControllerBase			from "../controllers/ControllerBase";
-import DisplayObject			from "../display/DisplayObject";
+import {ControllerBase}			from "../controllers/ControllerBase";
+import {DisplayObject}			from "../display/DisplayObject";
 
 /**
  * Extended camera used to hover round a specified target object.
  *
  * @see    away3d.containers.View3D
  */
-class FirstPersonController extends ControllerBase
+export class FirstPersonController extends ControllerBase
 {
 	public _iCurrentPanAngle:number = 0;
 	public  _iCurrentTiltAngle:number = 90;
@@ -176,7 +176,7 @@ class FirstPersonController extends ControllerBase
 	 * @see    #panAngle
 	 * @see    #steps
 	 */
-	public update(interpolate:boolean = true)
+	public update(interpolate:boolean = true):void
 	{
 		if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
 
@@ -233,7 +233,7 @@ class FirstPersonController extends ControllerBase
 
 	}
 
-	public incrementWalk(val:number)
+	public incrementWalk(val:number):void
 	{
 		if (val == 0)
 			return;
@@ -243,7 +243,7 @@ class FirstPersonController extends ControllerBase
 		this.pNotifyUpdate();
 	}
 
-	public incrementStrafe(val:number)
+	public incrementStrafe(val:number):void
 	{
 		if (val == 0)
 			return;
@@ -254,5 +254,3 @@ class FirstPersonController extends ControllerBase
 	}
 
 }
-
-export default FirstPersonController;

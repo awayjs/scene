@@ -2,7 +2,7 @@
  * The AntiAliasType class provides values for anti-aliasing in the
  * away.text.TextField class.
  */
-class AntiAliasType
+export class AntiAliasType
 {
 	/**
 	 * Sets anti-aliasing to advanced anti-aliasing. Advanced anti-aliasing
@@ -24,5 +24,3 @@ class AntiAliasType
 	 */
 	public static NORMAL:string = "normal";
 }
-
-export default AntiAliasType;

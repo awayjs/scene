@@ -1,7 +1,7 @@
-import IDisplayObjectAdapter		from "../adapters/IDisplayObjectAdapter";
-import DisplayObject				from "../display/DisplayObject";
+import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
+import {DisplayObject}				from "../display/DisplayObject";
 
-interface IMovieClipAdapter extends IDisplayObjectAdapter
+export interface IMovieClipAdapter extends IDisplayObjectAdapter
 {
 	evalScript(str:string):Function;
 
@@ -9,5 +9,3 @@ interface IMovieClipAdapter extends IDisplayObjectAdapter
 
 	unregisterScriptObject(child:DisplayObject):void;
 }
-
-export default IMovieClipAdapter;

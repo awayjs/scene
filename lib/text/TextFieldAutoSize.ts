@@ -2,7 +2,7 @@
  * The TextFieldAutoSize class is an enumeration of constant values used in
  * setting the <code>autoSize</code> property of the TextField class.
  */
-class TextFieldAutoSize
+export class TextFieldAutoSize
 {
 	/**
 	 * Specifies that the text is to be treated as center-justified text. Any
@@ -30,5 +30,3 @@ class TextFieldAutoSize
 	 */
 	public static RIGHT:string = "right";
 }
-
-export default TextFieldAutoSize;

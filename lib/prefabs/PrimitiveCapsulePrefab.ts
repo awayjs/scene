@@ -1,16 +1,16 @@
-import IAsset					from "awayjs-core/lib/library/IAsset";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import ElementsType				from "../graphics/ElementsType";
-import LineElements				from "../graphics/LineElements";
-import ElementsBase				from "../graphics/ElementsBase";
-import TriangleElements			from "../graphics/TriangleElements";
-import MaterialBase				from "../materials/MaterialBase";
-import PrimitivePrefabBase		from "../prefabs/PrimitivePrefabBase";
+import {ElementsType}				from "../graphics/ElementsType";
+import {LineElements}				from "../graphics/LineElements";
+import {ElementsBase}				from "../graphics/ElementsBase";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {MaterialBase}				from "../materials/MaterialBase";
+import {PrimitivePrefabBase}		from "../prefabs/PrimitivePrefabBase";
 
 /**
  * A Capsule primitive sprite.
  */
-class PrimitiveCapsulePrefab extends PrimitivePrefabBase
+export class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 {
 	private _radius:number;
 	private _height:number;
@@ -117,7 +117,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGraphics(target:ElementsBase, elementsType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string):void
 	{
 		var indices:Uint16Array;
 		var positions:ArrayBufferView;
@@ -260,7 +260,7 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:ElementsBase, elementsType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string):void
 	{
 		var i:number, j:number;
 		var uvs:ArrayBufferView;
@@ -297,5 +297,3 @@ class PrimitiveCapsulePrefab extends PrimitivePrefabBase
 		}
 	}
 }
-
-export default PrimitiveCapsulePrefab;

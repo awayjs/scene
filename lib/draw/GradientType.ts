@@ -4,7 +4,7 @@
  * <code>lineGradientStyle()</code> methods of the flash.display.Graphics
  * class.
  */
-class GradientType
+export class GradientType
 {
 	/**
 	 * Value used to specify a linear gradient fill.
@@ -16,5 +16,3 @@ class GradientType
 	 */
 	public static RADIAL:string = "radial";
 }
-
-export default GradientType;

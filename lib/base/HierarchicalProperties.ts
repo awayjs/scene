@@ -1,7 +1,7 @@
 /**
  *
  */
-class HierarchicalProperties
+export class HierarchicalProperties
 {
 	/**
 	 *
@@ -38,5 +38,3 @@ class HierarchicalProperties
 	 */
 	public static ALL:number = 63;
 }
-
-export default HierarchicalProperties;

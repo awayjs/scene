@@ -1,25 +1,25 @@
-import Box							from "awayjs-core/lib/geom/Box";
-import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import IAsset						from "awayjs-core/lib/library/IAsset";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {IAsset}						from "awayjs-core/lib/library/IAsset";
 
-import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
-import DisplayObject				from "../display/DisplayObject";
-import Transform					from "../base/Transform";
-import Scene						from "../display/Scene";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import ControllerBase				from "../controllers/ControllerBase";
-import Camera						from "../display/Camera";
-import PartitionBase				from "../partition/PartitionBase";
-import EntityNode					from "../partition/EntityNode";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
-import IRenderer					from "../IRenderer";
-import ITraverser					from "../ITraverser";
+import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
+import {DisplayObject}				from "../display/DisplayObject";
+import {Transform}					from "../base/Transform";
+import {Scene}						from "../display/Scene";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {ControllerBase}				from "../controllers/ControllerBase";
+import {Camera}						from "../display/Camera";
+import {PartitionBase}				from "../partition/PartitionBase";
+import {EntityNode}					from "../partition/EntityNode";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
+import {IRenderer}					from "../IRenderer";
+import {ITraverser}					from "../ITraverser";
 
-interface IEntity extends IAsset
+export interface IEntity extends IAsset
 {
 	parent:DisplayObjectContainer;
 
@@ -160,5 +160,3 @@ interface IEntity extends IAsset
 	 */
 	_acceptTraverser(collector:ITraverser);
 }
-
-export default IEntity;

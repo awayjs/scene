@@ -1,12 +1,12 @@
-﻿﻿import Sampler2D				from "awayjs-core/lib/image/Sampler2D";
-import Image2D					from "awayjs-core/lib/image/Image2D";
-import ErrorBase				from "awayjs-core/lib/errors/ErrorBase";
-import ImageUtils				from "awayjs-core/lib/utils/ImageUtils";
+﻿﻿import {Sampler2D}				from "awayjs-core/lib/image/Sampler2D";
+import {Image2D}					from "awayjs-core/lib/image/Image2D";
+import {ErrorBase}				from "awayjs-core/lib/errors/ErrorBase";
+import {ImageUtils}				from "awayjs-core/lib/utils/ImageUtils";
 
-import MappingMode				from "../textures/MappingMode";
-import TextureBase				from "../textures/TextureBase";
+import {MappingMode}				from "../textures/MappingMode";
+import {TextureBase}				from "../textures/TextureBase";
 
-class Single2DTexture extends TextureBase
+export class Single2DTexture extends TextureBase
 {
 	private _mappingMode:string;
 
@@ -84,5 +84,3 @@ class Single2DTexture extends TextureBase
 		this._mappingMode = MappingMode.NORMAL;
 	}
 }
-
-export default Single2DTexture;

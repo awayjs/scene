@@ -1,11 +1,11 @@
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import IEntity						from "../../display/IEntity";
-import LightBase					from "../../display/LightBase";
-import DirectionalLight				from "../../display/DirectionalLight";
-import LightProbe					from "../../display/LightProbe";
-import PointLight					from "../../display/PointLight";
+import {IEntity}						from "../../display/IEntity";
+import {LightBase}					from "../../display/LightBase";
+import {DirectionalLight}				from "../../display/DirectionalLight";
+import {LightProbe}					from "../../display/LightProbe";
+import {PointLight}					from "../../display/PointLight";
 
 /**
  * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for
@@ -14,7 +14,7 @@ import PointLight					from "../../display/PointLight";
  *
  * @see StaticLightPicker
  */
-class LightPickerBase extends AssetBase
+export class LightPickerBase extends AssetBase
 {
 	public static assetType:string = "[asset LightPicker]";
 
@@ -43,7 +43,7 @@ class LightPickerBase extends AssetBase
 	/**
 	 * Disposes resources used by the light picker.
 	 */
-	public dispose()
+	public dispose():void
 	{
 	}
 
@@ -154,7 +154,7 @@ class LightPickerBase extends AssetBase
 	/**
 	 * Updates set of lights for a given renderable and EntityCollector. Always call super.collectLights() after custom overridden code.
 	 */
-	public collectLights(entity:IEntity)
+	public collectLights(entity:IEntity):void
 	{
 		this.updateProbeWeights(entity);
 	}
@@ -163,7 +163,7 @@ class LightPickerBase extends AssetBase
 	 * Updates the weights for the light probes, based on the renderable's position relative to them.
 	 * @param renderable The renderble for which to calculate the light probes' influence.
 	 */
-	private updateProbeWeights(entity:IEntity)
+	private updateProbeWeights(entity:IEntity):void
 	{
 		// todo: this will cause the same calculations to occur per TriangleGraphic. See if this can be improved.
 		var objectPos:Vector3D = entity.scenePosition;
@@ -197,5 +197,3 @@ class LightPickerBase extends AssetBase
 			this._pLightProbeWeights[i] *= total;
 	}
 }
-
-export default LightPickerBase;

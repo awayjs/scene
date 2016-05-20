@@ -1,14 +1,14 @@
-import AssetEvent                   from "awayjs-core/lib/events/AssetEvent";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
 
-import DisplayObject                from "../display/DisplayObject";
-import Sprite                       from "../display/Sprite";
-import TextField                    from "../display/TextField";
-import MouseEvent                   from "../events/MouseEvent";
-import IMovieClipAdapter	    	from "../adapters/IMovieClipAdapter";
-import Timeline                     from "../base/Timeline";
-import FrameScriptManager           from "../managers/FrameScriptManager";
+import {DisplayObject}				from "../display/DisplayObject";
+import {Sprite}						from "../display/Sprite";
+import {TextField}					from "../display/TextField";
+import {MouseEvent}					from "../events/MouseEvent";
+import {IMovieClipAdapter}			from "../adapters/IMovieClipAdapter";
+import {Timeline}						from "../base/Timeline";
+import {FrameScriptManager}			from "../managers/FrameScriptManager";
 
-class MovieClip extends Sprite
+export class MovieClip extends Sprite
 {
 	private static _skipAdvance:boolean;
 
@@ -68,14 +68,14 @@ class MovieClip extends Sprite
 		this._timeline = timeline || new Timeline();
 	}
 
-	public dispose()
+	public dispose():void
 	{
 		this.disposeValues();
 
 		MovieClip._movieClips.push(this);
 	}
 
-	public disposeValues()
+	public disposeValues():void
 	{
 		super.disposeValues();
 
@@ -84,7 +84,7 @@ class MovieClip extends Sprite
 		this._sessionID_childs = {};
 	}
 
-	public reset_textclones()
+	public reset_textclones():void
 	{
 		if(this.timeline) {
 			var len:number = this._potentialInstances.length;
@@ -128,7 +128,7 @@ class MovieClip extends Sprite
 		return this._timeline.numFrames;
 	}
 
-	public jumpToLabel(label:string)
+	public jumpToLabel(label:string):void
 	{
 		// the timeline.jumpTolabel will set currentFrameIndex
 		this._timeline.jumpToLabel(this, label);
@@ -166,7 +166,7 @@ class MovieClip extends Sprite
 	}
 
 
-	public resetSessionIDs()
+	public resetSessionIDs():void
 	{
 		this._depth_sessionIDs = {};
 	}
@@ -212,7 +212,7 @@ class MovieClip extends Sprite
 		this._timeline.gotoFrame(this, value, skip_script);
 	}
 
-	public addButtonListeners()
+	public addButtonListeners():void
 	{
 		this._isButton = true;
 
@@ -224,7 +224,7 @@ class MovieClip extends Sprite
 		this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
 	}
 
-	public removeButtonListeners()
+	public removeButtonListeners():void
 	{
 		this.removeEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
 		this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
@@ -290,7 +290,7 @@ class MovieClip extends Sprite
 	/**
 	 * Starts playback of animation from current position
 	 */
-	public play()
+	public play():void
 	{
 		if (this._timeline.keyframe_indices.length > 1)
 			this._isPlaying = true;
@@ -299,7 +299,7 @@ class MovieClip extends Sprite
 	/**
 	 * should be called right before the call to away3d-render.
 	 */
-	public update()
+	public update():void
 	{
 		MovieClip._skipAdvance = true;
 
@@ -338,7 +338,7 @@ class MovieClip extends Sprite
 	/**
 	 * Stop playback of animation and hold current position
 	 */
-	public stop()
+	public stop():void
 	{
 		this._isPlaying = false;
 	}
@@ -352,7 +352,7 @@ class MovieClip extends Sprite
 		return newInstance;
 	}
 
-	public copyTo(newInstance:MovieClip)
+	public copyTo(newInstance:MovieClip):void
 	{
 		super.copyTo(newInstance);
 
@@ -360,7 +360,7 @@ class MovieClip extends Sprite
 		newInstance.loop = this.loop;
 	}
 
-	public advanceFrame()
+	public advanceFrame():void
 	{
 		if (this._isPlaying && !this._skipAdvance) {
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
@@ -403,7 +403,7 @@ class MovieClip extends Sprite
 		}
 	}
 
-	printHierarchyName(depth:number, target:DisplayObject)
+	printHierarchyName(depth:number, target:DisplayObject):void
 	{
 		var str = "";
 		for (var i = 0; i < depth; ++i)
@@ -413,7 +413,7 @@ class MovieClip extends Sprite
 		console.log(str);
 	}
 
-	public clear()
+	public clear():void
 	{
 		//clear out potential instances
 		var len:number = this._potentialInstances.length;

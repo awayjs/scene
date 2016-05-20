@@ -1,20 +1,20 @@
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import getTimer						from "awayjs-core/lib/utils/getTimer";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {getTimer}						from "awayjs-core/lib/utils/getTimer";
 
-import IRenderer					from "./IRenderer";
-import DisplayObject				from "./display/DisplayObject";
-import TouchPoint					from "./base/TouchPoint";
-import Scene						from "./display/Scene";
-import IPicker						from "./pick/IPicker";
-import PickingCollision				from "./pick/PickingCollision";
-import RaycastPicker				from "./pick/RaycastPicker";
-import Camera						from "./display/Camera";
-import CameraEvent					from "./events/CameraEvent";
-import DisplayObjectEvent			from "./events/DisplayObjectEvent";
-import RendererEvent				from "./events/RendererEvent";
-import MouseManager					from "./managers/MouseManager";
+import {IRenderer}					from "./IRenderer";
+import {DisplayObject}				from "./display/DisplayObject";
+import {TouchPoint}					from "./base/TouchPoint";
+import {Scene}						from "./display/Scene";
+import {IPicker}						from "./pick/IPicker";
+import {PickingCollision}				from "./pick/PickingCollision";
+import {RaycastPicker}				from "./pick/RaycastPicker";
+import {Camera}						from "./display/Camera";
+import {CameraEvent}					from "./events/CameraEvent";
+import {DisplayObjectEvent}			from "./events/DisplayObjectEvent";
+import {RendererEvent}				from "./events/RendererEvent";
+import {MouseManager}					from "./managers/MouseManager";
 
-class View
+export class View
 {
 
 	/*
@@ -444,7 +444,7 @@ class View
 	/**
 	 * Renders the view.
 	 */
-	public render()
+	public render():void
 	{
 		this.pUpdateTime();
 
@@ -492,7 +492,7 @@ class View
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 		this._pRenderer.dispose();
 
@@ -512,7 +512,7 @@ class View
 	 *
 	 * @param e
 	 */
-	private _onPartitionChanged(event:DisplayObjectEvent)
+	private _onPartitionChanged(event:DisplayObjectEvent):void
 	{
 		if (this._pCamera)
 			this._pScene.partition._iRegisterEntity(this._pCamera);
@@ -521,7 +521,7 @@ class View
 	/**
 	 *
 	 */
-	private _onProjectionChanged(event:CameraEvent)
+	private _onProjectionChanged(event:CameraEvent):void
 	{
 		this._scissorDirty = true;
 		this._viewportDirty = true;
@@ -530,7 +530,7 @@ class View
 	/**
 	 *
 	 */
-	private _onViewportUpdated(event:RendererEvent)
+	private _onViewportUpdated(event:RendererEvent):void
 	{
 		this._viewportDirty = true;
 	}
@@ -538,7 +538,7 @@ class View
 	/**
 	 *
 	 */
-	private _onScissorUpdated(event:RendererEvent)
+	private _onScissorUpdated(event:RendererEvent):void
 	{
 		this._scissorDirty = true;
 	}
@@ -593,7 +593,7 @@ class View
 	 */
 
 	// TODO: required dependency stageGL
-	public updateCollider()
+	public updateCollider():void
 	{
 		if (!this._shareContext) {
 			if (this._htmlElement == this._mouseManager._iActiveDiv)
@@ -606,5 +606,3 @@ class View
 		}
 	}
 }
-
-export default View;

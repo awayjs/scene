@@ -1,14 +1,14 @@
-import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import LightBase					from "../display/LightBase";
-import HierarchicalProperties		from "../base/HierarchicalProperties";
-import BoundsType					from "../bounds/BoundsType";
-import IEntity						from "../display/IEntity";
-import DirectionalShadowMapper		from "../materials/shadowmappers/DirectionalShadowMapper";
+import {LightBase}					from "../display/LightBase";
+import {HierarchicalProperties}		from "../base/HierarchicalProperties";
+import {BoundsType}					from "../bounds/BoundsType";
+import {IEntity}						from "../display/IEntity";
+import {DirectionalShadowMapper}		from "../materials/shadowmappers/DirectionalShadowMapper";
 
-class DirectionalLight extends LightBase implements IEntity
+export class DirectionalLight extends LightBase implements IEntity
 {
 	public static assetType:string = "[light DirectionalLight]";
 
@@ -65,7 +65,7 @@ class DirectionalLight extends LightBase implements IEntity
 	}
 
 	//@override
-	public pUpdateSceneTransform()
+	public pUpdateSceneTransform():void
 	{
 		super.pUpdateSceneTransform();
 
@@ -150,7 +150,7 @@ class DirectionalLight extends LightBase implements IEntity
 	 *
 	 * @protected
 	 */
-	public _pUpdateBoxBounds()
+	public _pUpdateBoxBounds():void
 	{
 		super._pUpdateBoxBounds();
 
@@ -188,5 +188,3 @@ class DirectionalLight extends LightBase implements IEntity
 		this._pAabbPoints[23] = maxZ;
 	}
 }
-
-export default DirectionalLight;

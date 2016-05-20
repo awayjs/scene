@@ -1,2 +1,2 @@
-export {default as IDisplayObjectAdapter}			from "./adapters/IDisplayObjectAdapter";
-export {default as IMovieClipAdapter}				from "./adapters/IMovieClipAdapter";
+export {IDisplayObjectAdapter}			from "./adapters/IDisplayObjectAdapter";
+export {IMovieClipAdapter}				from "./adapters/IMovieClipAdapter";

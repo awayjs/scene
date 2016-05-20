@@ -1,15 +1,15 @@
-import MathConsts				from "awayjs-core/lib/geom/MathConsts";
-import Vector3D					from "awayjs-core/lib/geom/Vector3D";
+import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
+import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject			from "../display/DisplayObject";
-import LookAtController			from "../controllers/LookAtController";
+import {DisplayObject}			from "../display/DisplayObject";
+import {LookAtController}			from "../controllers/LookAtController";
 
 /**
  * Extended camera used to hover round a specified target object.
  *
  * @see    away.containers.View
  */
-class HoverController extends LookAtController
+export class HoverController extends LookAtController
 {
 	public _iCurrentPanAngle:number = 0;
 	public _iCurrentTiltAngle:number = 90;
@@ -261,7 +261,7 @@ class HoverController extends LookAtController
 	 * @see    #panAngle
 	 * @see    #steps
 	 */
-	public update(interpolate:boolean = true)
+	public update(interpolate:boolean = true):void
 	{
 		if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
 
@@ -315,5 +315,3 @@ class HoverController extends LookAtController
 		}
 	}
 }
-
-export default HoverController;

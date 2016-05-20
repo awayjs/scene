@@ -1,17 +1,17 @@
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
-import Rectangle					from "awayjs-core/lib/geom/Rectangle";
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import FreeMatrixProjection			from "awayjs-core/lib/projections/FreeMatrixProjection";
-import IProjection					from "awayjs-core/lib/projections/IProjection";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
+import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {FreeMatrixProjection}			from "awayjs-core/lib/projections/FreeMatrixProjection";
+import {IProjection}					from "awayjs-core/lib/projections/IProjection";
 
-import IRenderer					from "../../IRenderer";
-import Scene						from "../../display/Scene";
-import Camera						from "../../display/Camera";
-import DirectionalShadowMapper		from "../../materials/shadowmappers/DirectionalShadowMapper";
-import Single2DTexture				from "../../textures/Single2DTexture";
+import {IRenderer}					from "../../IRenderer";
+import {Scene}						from "../../display/Scene";
+import {Camera}						from "../../display/Camera";
+import {DirectionalShadowMapper}		from "../../materials/shadowmappers/DirectionalShadowMapper";
+import {Single2DTexture}				from "../../textures/Single2DTexture";
 
-class CascadeShadowMapper extends DirectionalShadowMapper
+export class CascadeShadowMapper extends DirectionalShadowMapper
 {
 	public _pScissorRects:Rectangle[];
 	private _pScissorRectsInvalid:boolean = true;
@@ -42,7 +42,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		return this._splitRatios[index];
 	}
 
-	public setSplitRatio(index:number /*uint*/, value:number)
+	public setSplitRatio(index:number /*uint*/, value:number):void
 	{
 		if (value < 0)
 			value = 0;
@@ -60,7 +60,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		return this._depthCameras[partition].viewProjection;
 	}
 
-	private init()
+	private init():void
 	{
 		this._splitRatios = new Array<number>(this._numCascades);
 		this._nearPlaneDistances = new Array<number>(this._numCascades);
@@ -83,14 +83,14 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		}
 	}
 
-	public _pSetDepthMapSize(value:number /*uint*/)
+	public _pSetDepthMapSize(value:number /*uint*/):void
 	{
 		super._pSetDepthMapSize(value);
 
 		this.invalidateScissorRects();
 	}
 
-	private invalidateScissorRects()
+	private invalidateScissorRects():void
 	{
 		this._pScissorRectsInvalid = true;
 	}
@@ -114,7 +114,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		this.dispatchEvent(new AssetEvent(AssetEvent.INVALIDATE, this));
 	}
 
-	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer):void
 	{
 		if (this._pScissorRectsInvalid)
 			this.updateScissorRects();
@@ -123,7 +123,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		renderer._iRenderCascades(this._pOverallDepthCamera, scene, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
 	}
 
-	private updateScissorRects()
+	private updateScissorRects():void
 	{
 		var half:number = this._pDepthMapSize*.5;
 
@@ -135,7 +135,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		this._pScissorRectsInvalid = false;
 	}
 
-	public pUpdateDepthProjection(camera:Camera)
+	public pUpdateDepthProjection(camera:Camera):void
 	{
 		var matrix:Matrix3D;
 		var projection:IProjection = camera.projection;
@@ -159,7 +159,7 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		}
 	}
 
-	private updateProjectionPartition(matrix:Matrix3D, splitRatio:number, texOffsetX:number, texOffsetY:number)
+	private updateProjectionPartition(matrix:Matrix3D, splitRatio:number, texOffsetX:number, texOffsetY:number):void
 	{
 		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var xN:number, yN:number, zN:number;
@@ -241,5 +241,3 @@ class CascadeShadowMapper extends DirectionalShadowMapper
 		return this._nearPlaneDistances;
 	}
 }
-
-export default CascadeShadowMapper;

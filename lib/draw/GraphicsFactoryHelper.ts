@@ -1,33 +1,33 @@
-import BitmapImage2D			from "awayjs-core/lib/image/BitmapImage2D";
-import Matrix					from "awayjs-core/lib/geom/Matrix";
+import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
+import {Matrix}					from "awayjs-core/lib/geom/Matrix";
 
-import CapsStyle				from "../draw/CapsStyle";
-import GradientType				from "../draw/GradientType";
-import GraphicsPathWinding		from "../draw/GraphicsPathWinding";
-import IGraphicsData			from "../draw/IGraphicsData";
-import InterpolationMethod		from "../draw/InterpolationMethod";
-import JointStyle				from "../draw/JointStyle";
-import LineScaleMode			from "../draw/LineScaleMode";
-import TriangleCulling			from "../draw/TriangleCulling";
-import SpreadMethod				from "../draw/SpreadMethod";
+import {CapsStyle}				from "../draw/CapsStyle";
+import {GradientType}				from "../draw/GradientType";
+import {GraphicsPathWinding}		from "../draw/GraphicsPathWinding";
+import {IGraphicsData}			from "../draw/IGraphicsData";
+import {InterpolationMethod}		from "../draw/InterpolationMethod";
+import {JointStyle}				from "../draw/JointStyle";
+import {LineScaleMode}			from "../draw/LineScaleMode";
+import {TriangleCulling}			from "../draw/TriangleCulling";
+import {SpreadMethod}				from "../draw/SpreadMethod";
 
-import GraphicsPath				from "../draw/GraphicsPath";
-import GraphicsPathCommand		from "../draw/GraphicsPathCommand";
-import DefaultMaterialManager	from "../managers/DefaultMaterialManager";
-import MovieClip				from "../display/MovieClip";
+import {GraphicsPath}				from "../draw/GraphicsPath";
+import {GraphicsPathCommand}		from "../draw/GraphicsPathCommand";
+import {DefaultMaterialManager}	from "../managers/DefaultMaterialManager";
+import {MovieClip}				from "../display/MovieClip";
 
-import Point					from "awayjs-core/lib/geom/Point";
-import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
-import Sprite					from "../display/Sprite";
-import Float3Attributes			from "awayjs-core/lib/attributes/Float3Attributes";
-import Float2Attributes			from "awayjs-core/lib/attributes/Float2Attributes";
+import {Point}					from "awayjs-core/lib/geom/Point";
+import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
+import {Sprite}					from "../display/Sprite";
+import {Float3Attributes}			from "awayjs-core/lib/attributes/Float3Attributes";
+import {Float2Attributes}			from "awayjs-core/lib/attributes/Float2Attributes";
 
-import MathConsts				from "awayjs-core/lib/geom/MathConsts";
+import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
 
-import PartialImplementationError		from "awayjs-core/lib/errors/PartialImplementationError";
-import TriangleElements from "../graphics/TriangleElements";
-import MaterialBase from "../materials/MaterialBase";
+import {PartialImplementationError}		from "awayjs-core/lib/errors/PartialImplementationError";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {MaterialBase}				from "../materials/MaterialBase";
 /**
  * The Graphics class contains a set of methods that you can use to create a
  * vector shape. Display objects that support drawing include Sprite and Shape
@@ -42,7 +42,7 @@ import MaterialBase from "../materials/MaterialBase";
  *
  * <p>The Graphics class is final; it cannot be subclassed.</p>
  */
-class GraphicsFactoryHelper
+export class GraphicsFactoryHelper
 {
 
 	public static _tess_obj:any;
@@ -78,12 +78,12 @@ class GraphicsFactoryHelper
 	{
 		return c;
 	}
-	public static drawPoint(startX:number,startY:number, vertices:Array<number>)
+	public static drawPoint(startX:number,startY:number, vertices:Array<number>):void
 	{
 		GraphicsFactoryHelper.addTriangle(startX-2, startY-2, startX+2, startY-2, startX+2, startY+2, 0, vertices);
 		GraphicsFactoryHelper.addTriangle(startX-2, startY-2, startX-2, startY+2, startX+2, startY+2, 0, vertices);
 	}
-	public static addTriangle(startX:number,startY:number, controlX:number, controlY:number, endX:number, endY:number, tri_type:number, vertices:Array<number>)
+	public static addTriangle(startX:number,startY:number, controlX:number, controlY:number, endX:number, endY:number, tri_type:number, vertices:Array<number>):void
 	{
 		var final_vert_cnt:number = vertices.length;
 		if(tri_type==0){
@@ -122,7 +122,7 @@ class GraphicsFactoryHelper
 		}
 
 	}
-	public static createCap(startX:number, startY:number, start_le:Point, start_ri:Point, dir_vec:Point, capstyle:number, cap_position:number, thickness:number, vertices:Array<number>)
+	public static createCap(startX:number, startY:number, start_le:Point, start_ri:Point, dir_vec:Point, capstyle:number, cap_position:number, thickness:number, vertices:Array<number>):void
 	{
 
 		if (capstyle == CapsStyle.ROUND) {
@@ -221,5 +221,3 @@ class GraphicsFactoryHelper
 	}
 
 }
-
-export default GraphicsFactoryHelper;

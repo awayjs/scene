@@ -1,7 +1,7 @@
 /**
  *
  */
-class TouchPoint
+export class TouchPoint
 {
 	x:number;
 
@@ -16,5 +16,3 @@ class TouchPoint
 		this.id = id;
 	}
 }
-
-export default TouchPoint;

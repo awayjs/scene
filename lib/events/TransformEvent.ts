@@ -1,8 +1,8 @@
-import EventBase				from "awayjs-core/lib/events/EventBase";
+import {EventBase}				from "awayjs-core/lib/events/EventBase";
 
-import Transform				from "../base/Transform";
+import {Transform}				from "../base/Transform";
 
-class TransformEvent extends EventBase
+export class TransformEvent extends EventBase
 {
 	private _transform:Transform;
 
@@ -37,5 +37,3 @@ class TransformEvent extends EventBase
 		return new TransformEvent(this.type, this._transform);
 	}
 }
-
-export default TransformEvent;

@@ -1,16 +1,16 @@
-import IAsset					from "awayjs-core/lib/library/IAsset";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import ElementsType				from "../graphics/ElementsType";
-import LineElements				from "../graphics/LineElements";
-import ElementsBase				from "../graphics/ElementsBase";
-import TriangleElements			from "../graphics/TriangleElements";
-import MaterialBase				from "../materials/MaterialBase";
-import PrimitivePrefabBase		from "../prefabs/PrimitivePrefabBase";
+import {ElementsType}				from "../graphics/ElementsType";
+import {LineElements}				from "../graphics/LineElements";
+import {ElementsBase}				from "../graphics/ElementsBase";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {MaterialBase}				from "../materials/MaterialBase";
+import {PrimitivePrefabBase}		from "../prefabs/PrimitivePrefabBase";
 
 /**
  * A Cylinder primitive sprite.
  */
-class PrimitiveCylinderPrefab extends PrimitivePrefabBase
+export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 {
 	public _pBottomRadius:number;
 	public _pSegmentsW:number;
@@ -80,7 +80,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 		this.setSegmentsW(value);
 	}
 
-	public setSegmentsW(value:number)
+	public setSegmentsW(value:number):void
 	{
 		this._pSegmentsW = value;
 		this._pInvalidatePrimitive();
@@ -102,7 +102,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 
 	}
 
-	public setSegmentsH(value:number)
+	public setSegmentsH(value:number):void
 	{
 		this._pSegmentsH = value;
 		this._pInvalidatePrimitive();
@@ -182,7 +182,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGraphics(target:ElementsBase, elementsType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string):void
 	{
 		var indices:Uint16Array;
 		var positions:ArrayBufferView;
@@ -584,7 +584,7 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:ElementsBase, elementsType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string):void
 	{
 		var i:number;
 		var j:number;
@@ -663,5 +663,3 @@ class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 		}
 	}
 }
-
-export default PrimitiveCylinderPrefab;

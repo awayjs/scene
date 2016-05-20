@@ -6,7 +6,7 @@
  * <p>The following example shows the same gradient fill using various spread
  * methods:</p>
  */
-class SpreadMethod
+export class SpreadMethod
 {
 	/**
 	 * Specifies that the gradient use the <i>pad</i> spread method.
@@ -23,5 +23,3 @@ class SpreadMethod
 	 */
 	public static REPEAT:string = "repeat";
 }
-
-export default SpreadMethod;

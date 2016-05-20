@@ -1,8 +1,8 @@
-import IGraphicsData		from "../draw/IGraphicsData";
-import JointStyle		    from "../draw/JointStyle";
-import CapsStyle		    from "../draw/CapsStyle";
+import {IGraphicsData}		from "../draw/IGraphicsData";
+import {JointStyle}		    from "../draw/JointStyle";
+import {CapsStyle}		    from "../draw/CapsStyle";
 
-class GraphicsStrokeStyle implements IGraphicsData
+export class GraphicsStrokeStyle implements IGraphicsData
 {
     public static data_type:string = "[graphicsdata StrokeStyle]";
 
@@ -84,5 +84,3 @@ class GraphicsStrokeStyle implements IGraphicsData
         this._capstyle = value;
     }
 }
-
-export default GraphicsStrokeStyle;

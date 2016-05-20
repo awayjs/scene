@@ -1,6 +1,6 @@
-import TesselatedFontTable			from "../text/TesselatedFontTable";
-import MaterialBase					from "../materials/MaterialBase";
-import TriangleElements				from "../graphics/TriangleElements";
+import {TesselatedFontTable}			from "../text/TesselatedFontTable";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {TriangleElements}				from "../graphics/TriangleElements";
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -28,7 +28,7 @@ import TriangleElements				from "../graphics/TriangleElements";
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-class TesselatedFontChar
+export class TesselatedFontChar
 {
 
 	/**
@@ -57,5 +57,3 @@ class TesselatedFontChar
 	}
 
 }
-
-export default TesselatedFontChar;

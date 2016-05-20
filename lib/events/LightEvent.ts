@@ -1,6 +1,6 @@
-import EventBase				from "awayjs-core/lib/events/EventBase";
+import {EventBase}				from "awayjs-core/lib/events/EventBase";
 
-class LightEvent extends EventBase
+export class LightEvent extends EventBase
 {
 	public static CASTS_SHADOW_CHANGE:string = "castsShadowChange";
 
@@ -15,5 +15,3 @@ class LightEvent extends EventBase
 		return new LightEvent(this.type);
 	}
 }
-
-export default LightEvent;

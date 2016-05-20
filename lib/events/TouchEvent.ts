@@ -1,13 +1,13 @@
-import Point					from "awayjs-core/lib/geom/Point";
-import Vector3D					from "awayjs-core/lib/geom/Vector3D";
-import EventBase				from "awayjs-core/lib/events/EventBase";
+import {Point}					from "awayjs-core/lib/geom/Point";
+import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
+import {EventBase}				from "awayjs-core/lib/events/EventBase";
 
-import IEntity					from "../display/IEntity";
-import IRenderable				from "../base/IRenderable";
-import View						from "../View";
-import MaterialBase				from "../materials/MaterialBase";
+import {IEntity}					from "../display/IEntity";
+import {IRenderable}				from "../base/IRenderable";
+import {View}						from "../View";
+import {MaterialBase}				from "../materials/MaterialBase";
 
-class TouchEvent extends EventBase
+export class TouchEvent extends EventBase
 {
 	// Private.
 	public _iAllowedToPropagate:boolean = true;
@@ -130,7 +130,7 @@ class TouchEvent extends EventBase
 	/**
 	 * @inheritDoc
 	 */
-	public stopPropagation()
+	public stopPropagation():void
 	{
 		this._iAllowedToPropagate = false;
 		
@@ -141,7 +141,7 @@ class TouchEvent extends EventBase
 	/**
 	 * @inheritDoc
 	 */
-	public stopImmediatePropagation()
+	public stopImmediatePropagation():void
 	{
 		this._iAllowedToPropagate = false;
 
@@ -200,5 +200,3 @@ class TouchEvent extends EventBase
 		return sceneNormal;
 	}
 }
-
-export default TouchEvent;

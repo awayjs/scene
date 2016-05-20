@@ -1,9 +1,9 @@
-import AssetBase				from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}				from "awayjs-core/lib/library/AssetBase";
 
 /**
  * Provides an abstract base class for nodes in an animation blend tree.
  */
-class AnimationNodeBase extends AssetBase
+export class AnimationNodeBase extends AssetBase
 {
 	public static assetType:string = "[asset AnimationNodeBase]";
 
@@ -25,7 +25,7 @@ class AnimationNodeBase extends AssetBase
 	/**
 	 * @inheritDoc
 	 */
-	public dispose()
+	public dispose():void
 	{
 	}
 
@@ -37,5 +37,3 @@ class AnimationNodeBase extends AssetBase
 		return AnimationNodeBase.assetType;
 	}
 }
-
-export default AnimationNodeBase;

@@ -1,26 +1,26 @@
-import AttributesBuffer				from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView				from "awayjs-core/lib/attributes/AttributesView";
-import Float4Attributes				from "awayjs-core/lib/attributes/Float4Attributes";
-import Float3Attributes				from "awayjs-core/lib/attributes/Float3Attributes";
-import Float2Attributes				from "awayjs-core/lib/attributes/Float2Attributes";
-import Float1Attributes				from "awayjs-core/lib/attributes/Float1Attributes";
-import Short3Attributes				from "awayjs-core/lib/attributes/Short3Attributes";
-import Box							from "awayjs-core/lib/geom/Box";
-import Sphere						from "awayjs-core/lib/geom/Sphere";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {AttributesBuffer}				from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}				from "awayjs-core/lib/attributes/AttributesView";
+import {Float4Attributes}				from "awayjs-core/lib/attributes/Float4Attributes";
+import {Float3Attributes}				from "awayjs-core/lib/attributes/Float3Attributes";
+import {Float2Attributes}				from "awayjs-core/lib/attributes/Float2Attributes";
+import {Float1Attributes}				from "awayjs-core/lib/attributes/Float1Attributes";
+import {Short3Attributes}				from "awayjs-core/lib/attributes/Short3Attributes";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Sphere}						from "awayjs-core/lib/geom/Sphere";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ElementsBase					from "../graphics/ElementsBase";
-import Graphic						from "../graphics/Graphic";
-import MaterialBase					from "../materials/MaterialBase";
-import ElementsUtils				from "../utils/ElementsUtils";
-import IPickingCollider				from "../pick/IPickingCollider";
-import PickingCollision				from "../pick/PickingCollision";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {Graphic}						from "../graphics/Graphic";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {ElementsUtils}				from "../utils/ElementsUtils";
+import {IPickingCollider}				from "../pick/IPickingCollider";
+import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * @class away.base.TriangleElements
  */
-class TriangleElements extends ElementsBase
+export class TriangleElements extends ElementsBase
 {
 	public static assetType:string = "[asset TriangleElements]";
 	
@@ -232,7 +232,7 @@ class TriangleElements extends ElementsBase
 	public setPositions(array:Array<number>, offset?:number);
 	public setPositions(arrayBufferView:ArrayBufferView, offset?:number);
 	public setPositions(attributesView:AttributesView, offset?:number);
-	public setPositions(values:any, offset:number = 0)
+	public setPositions(values:any, offset:number = 0):void
 	{
 		if (values == this._positions)
 			return;
@@ -269,7 +269,7 @@ class TriangleElements extends ElementsBase
 	public setNormals(array:Array<number>, offset?:number);
 	public setNormals(float32Array:Float32Array, offset?:number);
 	public setNormals(float3Attributes:Float3Attributes, offset?:number);
-	public setNormals(values:any, offset:number = 0)
+	public setNormals(values:any, offset:number = 0):void
 	{
 		if (!this._autoDeriveNormals) {
 			if (values == this._normals)
@@ -303,7 +303,7 @@ class TriangleElements extends ElementsBase
 	public setTangents(array:Array<number>, offset?:number);
 	public setTangents(float32Array:Float32Array, offset?:number);
 	public setTangents(float3Attributes:Float3Attributes, offset?:number);
-	public setTangents(values:any, offset:number = 0)
+	public setTangents(values:any, offset:number = 0):void
 	{
 		if (!this._autoDeriveTangents) {
 			if (values == this._tangents)
@@ -337,7 +337,7 @@ class TriangleElements extends ElementsBase
 	public setUVs(array:Array<number>, offset?:number);
 	public setUVs(arrayBufferView:ArrayBufferView, offset?:number);
 	public setUVs(attributesView:AttributesView, offset?:number);
-	public setUVs(values:any, offset:number = 0)
+	public setUVs(values:any, offset:number = 0):void
 	{
 		if (values == this._uvs)
 			return;
@@ -367,7 +367,7 @@ class TriangleElements extends ElementsBase
 	public setJointIndices(array:Array<number>, offset?:number);
 	public setJointIndices(float32Array:Float32Array, offset?:number);
 	public setJointIndices(attributesView:AttributesView, offset?:number);
-	public setJointIndices(values:any, offset:number = 0)
+	public setJointIndices(values:any, offset:number = 0):void
 	{
 		if (values == this._jointIndices)
 			return;
@@ -420,7 +420,7 @@ class TriangleElements extends ElementsBase
 	public setJointWeights(array:Array<number>, offset?:number);
 	public setJointWeights(float32Array:Float32Array, offset?:number);
 	public setJointWeights(attributesView:AttributesView, offset?:number);
-	public setJointWeights(values:any, offset:number = 0)
+	public setJointWeights(values:any, offset:number = 0):void
 	{
 		if (values == this._jointWeights)
 			return;
@@ -448,7 +448,7 @@ class TriangleElements extends ElementsBase
 	/**
 	 *
 	 */
-	public dispose()
+	public dispose():void
 	{
 		super.dispose();
 
@@ -501,7 +501,7 @@ class TriangleElements extends ElementsBase
 	public setIndices(array:Array<number>, offset?:number);
 	public setIndices(uint16Array:Uint16Array, offset?:number);
 	public setIndices(short3Attributes:Short3Attributes, offset?:number);
-	public setIndices(values:any, offset:number = 0)
+	public setIndices(values:any, offset:number = 0):void
 	{
 		super.setIndices(values, offset);
 
@@ -515,7 +515,7 @@ class TriangleElements extends ElementsBase
 			this.invalidateVertices(this._tangents);
 	}
 
-	public copyTo(elements:TriangleElements)
+	public copyTo(elements:TriangleElements):void
 	{
 		super.copyTo(elements);
 
@@ -562,7 +562,7 @@ class TriangleElements extends ElementsBase
 		return clone;
 	}
 
-	public scaleUV(scaleU:number = 1, scaleV:number = 1, count:number = 0, offset:number = 0)
+	public scaleUV(scaleU:number = 1, scaleV:number = 1, count:number = 0, offset:number = 0):void
 	{
 		if (this.uvs) // only scale if uvs exist
 			ElementsUtils.scaleUVs(scaleU, scaleV, this.uvs, count || this._numVertices, offset);
@@ -572,12 +572,12 @@ class TriangleElements extends ElementsBase
 	 * Scales the geometry.
 	 * @param scale The amount by which to scale.
 	 */
-	public scale(scale:number, count:number = 0, offset:number = 0)
+	public scale(scale:number, count:number = 0, offset:number = 0):void
 	{
 		ElementsUtils.scale(scale, this.positions, count || this._numVertices, offset);
 	}
 
-	public applyTransformation(transform:Matrix3D, count:number = 0, offset:number = 0)
+	public applyTransformation(transform:Matrix3D, count:number = 0, offset:number = 0):void
 	{
 		ElementsUtils.applyTransformation(transform, this.positions, this.normals, this.tangents, count || this._numVertices, offset);
 	}
@@ -585,7 +585,7 @@ class TriangleElements extends ElementsBase
 	/**
 	 * Updates the tangents for each face.
 	 */
-	private updateFaceTangents()
+	private updateFaceTangents():void
 	{
 		this._faceTangents = ElementsUtils.generateFaceTangents(this.indices, this.positions, this.uvs || this.positions, this._faceTangents, this.numElements);
 
@@ -595,7 +595,7 @@ class TriangleElements extends ElementsBase
 	/**
 	 * Updates the normals for each face.
 	 */
-	private updateFaceNormals()
+	private updateFaceNormals():void
 	{
 		this._faceNormals = ElementsUtils.generateFaceNormals(this.indices, this.positions, this._faceNormals, this.numElements);
 
@@ -607,5 +607,3 @@ class TriangleElements extends ElementsBase
 		return pickingCollider.testTriangleCollision(this, material, pickingCollision, count || this._numVertices, offset);
 	}
 }
-
-export default TriangleElements;

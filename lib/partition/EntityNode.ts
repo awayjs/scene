@@ -1,18 +1,18 @@
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				from "../display/DisplayObject";
-import ITraverser					from "../ITraverser";
-import DisplayObjectEvent			from "../events/DisplayObjectEvent";
-import PickingCollision				from "../pick/PickingCollision";
-import DisplayObjectNode			from "../partition/DisplayObjectNode";
-import PartitionBase				from "../partition/PartitionBase";
+import {DisplayObject}				from "../display/DisplayObject";
+import {ITraverser}					from "../ITraverser";
+import {DisplayObjectEvent}			from "../events/DisplayObjectEvent";
+import {PickingCollision}				from "../pick/PickingCollision";
+import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
+import {PartitionBase}				from "../partition/PartitionBase";
 
 /**
  * @class away.partition.EntityNode
  */
-class EntityNode extends DisplayObjectNode
+export class EntityNode extends DisplayObjectNode
 {
 	public numEntities:number = 1;
 
@@ -27,7 +27,7 @@ class EntityNode extends DisplayObjectNode
 		this._partition = partition;
 	}
 
-	public onClear(event:AssetEvent)
+	public onClear(event:AssetEvent):void
 	{
 		super.onClear(event);
 
@@ -90,20 +90,20 @@ class EntityNode extends DisplayObjectNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ITraverser)
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		if (traverser.enterNode(this))
 			traverser.applyEntity(this._displayObject);
 	}
 
-	public _onInvalidatePartitionBounds(event:DisplayObjectEvent)
+	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
 	{
 		this.bounds.invalidate();
 
 		this._partition.iMarkForUpdate(this);
 	}
 
-	private isIntersectingMasks(globalRayPosition:Vector3D, globalRayDirection:Vector3D, masks:Array<Array<DisplayObject>>)
+	private isIntersectingMasks(globalRayPosition:Vector3D, globalRayDirection:Vector3D, masks:Array<Array<DisplayObject>>):boolean
 	{
 		//horrible hack for 2d masks
 		if (masks != null) {
@@ -132,5 +132,3 @@ class EntityNode extends DisplayObjectNode
 		return true;
 	}
 }
-
-export default EntityNode;

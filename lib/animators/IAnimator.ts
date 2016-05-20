@@ -1,14 +1,14 @@
-import IAsset					from "awayjs-core/lib/library/IAsset";
+import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import IAnimationSet			from "../animators/IAnimationSet";
-import IEntity					from "../display/IEntity";
+import {IAnimationSet}			from "../animators/IAnimationSet";
+import {IEntity}					from "../display/IEntity";
 
 /**
  * Provides an interface for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.
  *
  * @see away.animators.IAnimationSet
  */
-interface IAnimator extends IAsset
+export interface IAnimator extends IAsset
 {
 	/**
 	 *
@@ -39,5 +39,3 @@ interface IAnimator extends IAsset
 	 */
 	removeOwner(sprite:IEntity);
 }
-
-export default IAnimator;

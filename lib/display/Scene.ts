@@ -1,10 +1,10 @@
-import ITraverser					from "../ITraverser";
-import DisplayObject				from "../display/DisplayObject";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import BasicPartition				from "../partition/BasicPartition";
-import PartitionBase				from "../partition/PartitionBase";
+import {ITraverser}					from "../ITraverser";
+import {DisplayObject}				from "../display/DisplayObject";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {BasicPartition}				from "../partition/BasicPartition";
+import {PartitionBase}				from "../partition/PartitionBase";
 
-class Scene extends DisplayObjectContainer
+export class Scene extends DisplayObjectContainer
 {
 	private _expandedPartitions:Array<PartitionBase> = new Array<PartitionBase>();
 	private _partitions:Array<PartitionBase> = new Array<PartitionBase>();
@@ -21,7 +21,7 @@ class Scene extends DisplayObjectContainer
 		this._pScene = this;
 	}
 
-	public traversePartitions(traverser:ITraverser)
+	public traversePartitions(traverser:ITraverser):void
 	{
 		var i:number = 0;
 		var len:number = this._partitions.length;
@@ -33,7 +33,7 @@ class Scene extends DisplayObjectContainer
 	/**
 	 * @internal
 	 */
-	public _iRegisterPartition(partition:PartitionBase)
+	public _iRegisterPartition(partition:PartitionBase):void
 	{
 		this._expandedPartitions.push(partition);
 
@@ -45,7 +45,7 @@ class Scene extends DisplayObjectContainer
 	/**
 	 * @internal
 	 */
-	public _iUnregisterPartition(partition:PartitionBase)
+	public _iUnregisterPartition(partition:PartitionBase):void
 	{
 		this._expandedPartitions.splice(this._expandedPartitions.indexOf(partition), 1);
 
@@ -54,5 +54,3 @@ class Scene extends DisplayObjectContainer
 			this._partitions.splice(this._partitions.indexOf(partition), 1);
 	}
 }
-
-export default Scene;

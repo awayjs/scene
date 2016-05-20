@@ -1,38 +1,38 @@
-import BitmapImage2D			from "awayjs-core/lib/image/BitmapImage2D";
-import Matrix					from "awayjs-core/lib/geom/Matrix";
+import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
+import {Matrix}					from "awayjs-core/lib/geom/Matrix";
 
-import CapsStyle				from "../draw/CapsStyle";
-import GradientType				from "../draw/GradientType";
-import GraphicsPathWinding		from "../draw/GraphicsPathWinding";
-import IGraphicsData			from "../draw/IGraphicsData";
-import InterpolationMethod		from "../draw/InterpolationMethod";
-import JointStyle				from "../draw/JointStyle";
-import LineScaleMode			from "../draw/LineScaleMode";
-import TriangleCulling			from "../draw/TriangleCulling";
-import SpreadMethod				from "../draw/SpreadMethod";
+import {CapsStyle}				from "../draw/CapsStyle";
+import {GradientType}				from "../draw/GradientType";
+import {GraphicsPathWinding}		from "../draw/GraphicsPathWinding";
+import {IGraphicsData}			from "../draw/IGraphicsData";
+import {InterpolationMethod}		from "../draw/InterpolationMethod";
+import {JointStyle}				from "../draw/JointStyle";
+import {LineScaleMode}			from "../draw/LineScaleMode";
+import {TriangleCulling}			from "../draw/TriangleCulling";
+import {SpreadMethod}				from "../draw/SpreadMethod";
 
-import Style					from "../base/Style";
-import Graphics					from "../graphics/Graphics";
-import Graphic					from "../graphics/Graphic";
-import GraphicsPath				from "../draw/GraphicsPath";
-import GraphicsPathCommand		from "../draw/GraphicsPathCommand";
-import DefaultMaterialManager	from "../managers/DefaultMaterialManager";
-import MovieClip				from "../display/MovieClip";
+import {Style}					from "../base/Style";
+import {Graphics}					from "../graphics/Graphics";
+import {Graphic}					from "../graphics/Graphic";
+import {GraphicsPath}				from "../draw/GraphicsPath";
+import {GraphicsPathCommand}		from "../draw/GraphicsPathCommand";
+import {DefaultMaterialManager}	from "../managers/DefaultMaterialManager";
+import {MovieClip}				from "../display/MovieClip";
 
-import Point					from "awayjs-core/lib/geom/Point";
-import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
-import Sprite					from "../display/Sprite";
-import Float3Attributes			from "awayjs-core/lib/attributes/Float3Attributes";
-import Float2Attributes			from "awayjs-core/lib/attributes/Float2Attributes";
+import {Point}					from "awayjs-core/lib/geom/Point";
+import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
+import {Sprite}					from "../display/Sprite";
+import {Float3Attributes}			from "awayjs-core/lib/attributes/Float3Attributes";
+import {Float2Attributes}			from "awayjs-core/lib/attributes/Float2Attributes";
 
-import MathConsts				from "awayjs-core/lib/geom/MathConsts";
+import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
 
-import GraphicsFactoryHelper				from "../draw/GraphicsFactoryHelper";
+import {GraphicsFactoryHelper}				from "../draw/GraphicsFactoryHelper";
 
-import PartialImplementationError		from "awayjs-core/lib/errors/PartialImplementationError";
-import TriangleElements from "../graphics/TriangleElements";
-import MaterialBase from "../materials/MaterialBase";
+import {PartialImplementationError}		from "awayjs-core/lib/errors/PartialImplementationError";
+import {TriangleElements}				from "../graphics/TriangleElements";
+import {MaterialBase}					from "../materials/MaterialBase";
 /**
  * The Graphics class contains a set of methods that you can use to create a
  * vector shape. Display objects that support drawing include Sprite and Shape
@@ -47,7 +47,7 @@ import MaterialBase from "../materials/MaterialBase";
  *
  * <p>The Graphics class is final; it cannot be subclassed.</p>
  */
-class GraphicsFactoryFills
+export class GraphicsFactoryFills
 {
 
 	public static draw_pathes(targetGraphic:Graphics) {
@@ -341,5 +341,3 @@ class GraphicsFactoryFills
 		targetGraphic.queued_fill_pathes.length=0;
 	}
 }
-
-export default GraphicsFactoryFills;

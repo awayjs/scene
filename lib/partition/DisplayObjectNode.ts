@@ -1,26 +1,26 @@
-import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import IAbstractionPool				from "awayjs-core/lib/library/IAbstractionPool";
-import AbstractionBase				from "awayjs-core/lib/library/AbstractionBase";
+import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {IAbstractionPool}				from "awayjs-core/lib/library/IAbstractionPool";
+import {AbstractionBase}				from "awayjs-core/lib/library/AbstractionBase";
 
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject				from "../display/DisplayObject";
-import AxisAlignedBoundingBox		from "../bounds/AxisAlignedBoundingBox";
-import BoundingSphere				from "../bounds/BoundingSphere";
-import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
-import BoundsType					from "../bounds/BoundsType";
-import NullBounds					from "../bounds/NullBounds";
-import SceneGraphNode				from "../partition/SceneGraphNode";
-import ITraverser					from "../ITraverser";
-import IEntity						from "../display/IEntity";
-import DisplayObjectEvent			from "../events/DisplayObjectEvent";
-import INode						from "../partition/INode";
+import {DisplayObject}				from "../display/DisplayObject";
+import {AxisAlignedBoundingBox}		from "../bounds/AxisAlignedBoundingBox";
+import {BoundingSphere}				from "../bounds/BoundingSphere";
+import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
+import {BoundsType}					from "../bounds/BoundsType";
+import {NullBounds}					from "../bounds/NullBounds";
+import {SceneGraphNode}				from "../partition/SceneGraphNode";
+import {ITraverser}					from "../ITraverser";
+import {IEntity}						from "../display/IEntity";
+import {DisplayObjectEvent}			from "../events/DisplayObjectEvent";
+import {INode}						from "../partition/INode";
 
 /**
  * @class away.partition.EntityNode
  */
-class DisplayObjectNode extends AbstractionBase implements INode
+export class DisplayObjectNode extends AbstractionBase implements INode
 {
 	public numEntities:number = 0;
 
@@ -86,7 +86,7 @@ class DisplayObjectNode extends AbstractionBase implements INode
 		return this._displayObject.maskMode;
 	}
 
-	public onClear(event:AssetEvent)
+	public onClear(event:AssetEvent):void
 	{
 		super.onClear(event);
 
@@ -99,7 +99,7 @@ class DisplayObjectNode extends AbstractionBase implements INode
 		this._bounds = null;
 	}
 
-	public onInvalidate(event:AssetEvent)
+	public onInvalidate(event:AssetEvent):void
 	{
 		super.onInvalidate(event);
 
@@ -141,17 +141,17 @@ class DisplayObjectNode extends AbstractionBase implements INode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ITraverser)
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		// do nothing here
 	}
 
-	public _onInvalidatePartitionBounds(event:DisplayObjectEvent)
+	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
 	{
 		// do nothing here
 	}
 
-	private _updateBounds()
+	private _updateBounds():void
 	{
 		if (this._bounds)
 			this._bounds.dispose();
@@ -166,5 +166,3 @@ class DisplayObjectNode extends AbstractionBase implements INode
 		this._boundsDirty = false;
 	}
 }
-
-export default DisplayObjectNode;

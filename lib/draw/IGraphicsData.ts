@@ -8,10 +8,8 @@
  * @see away.base.Graphics.drawGraphicsData()
  * @see away.base.Graphics.readGraphicsData()
  */
-interface IGraphicsData
+export interface IGraphicsData
 {
     data_type:string;
 
 }
-
-export default IGraphicsData;

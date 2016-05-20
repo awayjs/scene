@@ -1,15 +1,15 @@
-import EntityNode					from "../partition/EntityNode";
-import ITraverser				from "../ITraverser";
+import {EntityNode}					from "../partition/EntityNode";
+import {ITraverser}				from "../ITraverser";
 
 /**
  * @class away.partition.PointLightNode
  */
-class PointLightNode extends EntityNode
+export class PointLightNode extends EntityNode
 {
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:ITraverser)
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		if (traverser.enterNode(this))
 			traverser.applyPointLight(this._displayObject);
@@ -24,5 +24,3 @@ class PointLightNode extends EntityNode
 		return false;
 	}
 }
-
-export default PointLightNode;

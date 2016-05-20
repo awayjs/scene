@@ -4,7 +4,7 @@
  *
  * @see away.entities.TextField#type
  */
-class TextFieldType
+export class TextFieldType
 {
 	/**
 	 * Used to specify a <code>dynamic</code> TextField.
@@ -21,5 +21,3 @@ class TextFieldType
 	 */
 	public static STATIC:string = "input";
 }
-
-export default TextFieldType;

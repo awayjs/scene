@@ -3,7 +3,7 @@
  * the pixel snapping options by using the <code>pixelSnapping</code> property
  * of a Bitmap object.
  */
-class PixelSnapping
+export class PixelSnapping
 {
 	/**
 	 * A constant value used in the <code>pixelSnapping</code> property of a
@@ -29,5 +29,3 @@ class PixelSnapping
 	 */
 	public static NEVER:string = "never";
 }
-
-export default PixelSnapping;

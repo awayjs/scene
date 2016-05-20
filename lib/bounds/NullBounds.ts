@@ -1,10 +1,10 @@
-import PlaneClassification			from "awayjs-core/lib/geom/PlaneClassification";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
+import {PlaneClassification}			from "awayjs-core/lib/geom/PlaneClassification";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
 
-import BoundingVolumeBase			from "../bounds/BoundingVolumeBase";
+import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
 
 
-class NullBounds extends BoundingVolumeBase
+export class NullBounds extends BoundingVolumeBase
 {
 	private _alwaysIn:boolean;
 
@@ -32,5 +32,3 @@ class NullBounds extends BoundingVolumeBase
 		return PlaneClassification.INTERSECT;
 	}
 }
-
-export default NullBounds;

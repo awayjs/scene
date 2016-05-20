@@ -1,5 +1,5 @@
-import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
-import EventBase				from "awayjs-core/lib/events/EventBase";
+import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
+import {EventBase}				from "awayjs-core/lib/events/EventBase";
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.
@@ -7,7 +7,7 @@ import EventBase				from "awayjs-core/lib/events/EventBase";
  * @class away.events.ElementsEvent
  * @see away.core.base.Graphics
  */
-class ElementsEvent extends EventBase
+export class ElementsEvent extends EventBase
 {
 	/**
 	 * Dispatched when a Elements's index data has been updated.
@@ -62,5 +62,3 @@ class ElementsEvent extends EventBase
 		return new ElementsEvent(this.type, this._attributesView);
 	}
 }
-
-export default ElementsEvent;

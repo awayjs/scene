@@ -1,13 +1,13 @@
-import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
-import AssetBase					from "awayjs-core/lib/library/AssetBase";
+import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
+import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
-import Scene						from "../../display/Scene";
-import LightBase					from "../../display/LightBase";
-import IRenderer					from "../../IRenderer";
-import Camera						from "../../display/Camera";
-import TextureBase					from "../../textures/TextureBase";
+import {Scene}						from "../../display/Scene";
+import {LightBase}					from "../../display/LightBase";
+import {IRenderer}					from "../../IRenderer";
+import {Camera}						from "../../display/Camera";
+import {TextureBase}					from "../../textures/TextureBase";
 
-class ShadowMapperBase extends AssetBase
+export class ShadowMapperBase extends AssetBase
 {
 	public _depthMap:TextureBase;
 	public _pDepthMapSize:number = 2048;
@@ -26,12 +26,12 @@ class ShadowMapperBase extends AssetBase
 		this._autoUpdateShadows = value;
 	}
 
-	public updateShadows()
+	public updateShadows():void
 	{
 		this._iShadowsInvalid = true;
 	}
 
-	public iSetDepthMap(depthMap:TextureBase)
+	public iSetDepthMap(depthMap:TextureBase):void
 	{
 		if (this._depthMap && !this._explicitDepthMap)
 			this._depthMap.dispose();
@@ -70,7 +70,7 @@ class ShadowMapperBase extends AssetBase
 		this._pSetDepthMapSize(value);
 	}
 
-	public dispose()
+	public dispose():void
 	{
 		if (this._depthMap && !this._explicitDepthMap)
 			this._depthMap.dispose();
@@ -83,7 +83,7 @@ class ShadowMapperBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public iRenderDepthMap(camera:Camera, scene:Scene, renderer:IRenderer)
+	public iRenderDepthMap(camera:Camera, scene:Scene, renderer:IRenderer):void
 	{
 		this._iShadowsInvalid = false;
 
@@ -95,17 +95,17 @@ class ShadowMapperBase extends AssetBase
 		this.pDrawDepthMap(scene, this._depthMap, renderer);
 	}
 
-	public pUpdateDepthProjection(camera:Camera)
+	public pUpdateDepthProjection(camera:Camera):void
 	{
 		throw new AbstractMethodError();
 	}
 
-	public pDrawDepthMap(scene:Scene, target:TextureBase, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:TextureBase, renderer:IRenderer):void
 	{
 		throw new AbstractMethodError();
 	}
 
-	public _pSetDepthMapSize(value)
+	public _pSetDepthMapSize(value):void
 	{
 		this._pDepthMapSize = value;
 
@@ -117,5 +117,3 @@ class ShadowMapperBase extends AssetBase
 		}
 	}
 }
-
-export default ShadowMapperBase;

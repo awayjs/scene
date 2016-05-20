@@ -7,9 +7,7 @@
  * @see away.base.BitmapData
  * @see away.base.DisplayObject
  */
-interface IBitmapDrawable
+export interface IBitmapDrawable
 {
 
 }
-
-export default IBitmapDrawable;

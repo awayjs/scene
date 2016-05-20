@@ -1,5 +1,5 @@
-import DisplayObject			from "../display/DisplayObject";
-import HoverController			from "../controllers/HoverController";
+import {DisplayObject}			from "../display/DisplayObject";
+import {HoverController}			from "../controllers/HoverController";
 
 /**
  * Controller used to follow behind an object on the XZ plane, with an optional
@@ -7,14 +7,14 @@ import HoverController			from "../controllers/HoverController";
  *
  * @see    away3d.containers.View3D
  */
-class FollowController extends HoverController
+export class FollowController extends HoverController
 {
 	constructor(targetObject:DisplayObject = null, lookAtObject:DisplayObject = null, tiltAngle:number = 45, distance:number = 700)
 	{
 		super(targetObject, lookAtObject, 0, tiltAngle, distance);
 	}
 
-	public update(interpolate:boolean = true)
+	public update(interpolate:boolean = true):void
 	{
 		if (!this.lookAtObject)
 			return;
@@ -23,5 +23,3 @@ class FollowController extends HoverController
 		super.update();
 	}
 }
-
-export default FollowController;

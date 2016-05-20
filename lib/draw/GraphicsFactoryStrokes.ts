@@ -1,37 +1,37 @@
-import BitmapImage2D			from "awayjs-core/lib/image/BitmapImage2D";
-import Matrix					from "awayjs-core/lib/geom/Matrix";
-import MathConsts				from "awayjs-core/lib/geom/MathConsts";
+import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
+import {Matrix}					from "awayjs-core/lib/geom/Matrix";
+import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
 
-import CapsStyle				from "../draw/CapsStyle";
-import GradientType				from "../draw/GradientType";
-import GraphicsPathWinding		from "../draw/GraphicsPathWinding";
-import IGraphicsData			from "../draw/IGraphicsData";
-import InterpolationMethod		from "../draw/InterpolationMethod";
-import JointStyle				from "../draw/JointStyle";
-import LineScaleMode			from "../draw/LineScaleMode";
-import TriangleCulling			from "../draw/TriangleCulling";
-import SpreadMethod				from "../draw/SpreadMethod";
+import {CapsStyle}				from "../draw/CapsStyle";
+import {GradientType}				from "../draw/GradientType";
+import {GraphicsPathWinding}		from "../draw/GraphicsPathWinding";
+import {IGraphicsData}			from "../draw/IGraphicsData";
+import {InterpolationMethod}		from "../draw/InterpolationMethod";
+import {JointStyle}				from "../draw/JointStyle";
+import {LineScaleMode}			from "../draw/LineScaleMode";
+import {TriangleCulling}			from "../draw/TriangleCulling";
+import {SpreadMethod}				from "../draw/SpreadMethod";
 
-import Graphics					from "../graphics/Graphics";
-import GraphicsPath				from "../draw/GraphicsPath";
-import GraphicsPathCommand		from "../draw/GraphicsPathCommand";
-import DefaultMaterialManager	from "../managers/DefaultMaterialManager";
-import MovieClip				from "../display/MovieClip";
+import {Graphics}					from "../graphics/Graphics";
+import {GraphicsPath}				from "../draw/GraphicsPath";
+import {GraphicsPathCommand}		from "../draw/GraphicsPathCommand";
+import {DefaultMaterialManager}	from "../managers/DefaultMaterialManager";
+import {MovieClip}				from "../display/MovieClip";
 
-import Point					from "awayjs-core/lib/geom/Point";
-import AttributesBuffer			from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView			from "awayjs-core/lib/attributes/AttributesView";
-import Sprite					from "../display/Sprite";
-import Float3Attributes			from "awayjs-core/lib/attributes/Float3Attributes";
-import Float2Attributes			from "awayjs-core/lib/attributes/Float2Attributes";
+import {Point}					from "awayjs-core/lib/geom/Point";
+import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
+import {Sprite}					from "../display/Sprite";
+import {Float3Attributes}			from "awayjs-core/lib/attributes/Float3Attributes";
+import {Float2Attributes}			from "awayjs-core/lib/attributes/Float2Attributes";
 
-import GraphicsFactoryHelper			from "../draw/GraphicsFactoryHelper";
-import GraphicsStrokeStyle				from "../draw/GraphicsStrokeStyle";
+import {GraphicsFactoryHelper}			from "../draw/GraphicsFactoryHelper";
+import {GraphicsStrokeStyle}				from "../draw/GraphicsStrokeStyle";
 
 
-import PartialImplementationError		from "awayjs-core/lib/errors/PartialImplementationError";
-import TriangleElements 				from "../graphics/TriangleElements";
-import MaterialBase 					from "../materials/MaterialBase";
+import {PartialImplementationError}		from "awayjs-core/lib/errors/PartialImplementationError";
+import {TriangleElements}					from "../graphics/TriangleElements";
+import {MaterialBase}						from "../materials/MaterialBase";
 /**
  * The Graphics class contains a set of methods that you can use to create a
  * vector shape. Display objects that support drawing include Sprite and Shape
@@ -46,7 +46,7 @@ import MaterialBase 					from "../materials/MaterialBase";
  *
  * <p>The Graphics class is final; it cannot be subclassed.</p>
  */
-class GraphicsFactoryStrokes
+export class GraphicsFactoryStrokes
 {
 	public static draw_pathes(targetGraphic:Graphics){
 		var len=targetGraphic.queued_stroke_pathes.length;
@@ -579,5 +579,3 @@ class GraphicsFactoryStrokes
 	}
 
 }
-
-export default GraphicsFactoryStrokes;

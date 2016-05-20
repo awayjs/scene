@@ -1,16 +1,16 @@
-﻿﻿import IAsset					from "awayjs-core/lib/library/IAsset";
+﻿﻿import {IAsset}					from "awayjs-core/lib/library/IAsset";
 
-import ElementsType				from "../graphics/ElementsType";
-import LineElements				from "../graphics/LineElements";
-import ElementsBase				from "../graphics/ElementsBase";
-import TriangleElements			from "../graphics/TriangleElements";
-import MaterialBase				from "../materials/MaterialBase";
-import PrimitivePrefabBase		from "../prefabs/PrimitivePrefabBase";
+import {ElementsType}				from "../graphics/ElementsType";
+import {LineElements}				from "../graphics/LineElements";
+import {ElementsBase}				from "../graphics/ElementsBase";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {MaterialBase}				from "../materials/MaterialBase";
+import {PrimitivePrefabBase}		from "../prefabs/PrimitivePrefabBase";
 
 /**
  * A Cube primitive prefab.
  */
-class PrimitiveCubePrefab extends PrimitivePrefabBase
+export class PrimitiveCubePrefab extends PrimitivePrefabBase
 {
 	private _width:number;
 	private _height:number;
@@ -160,7 +160,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGraphics(target:ElementsBase, elementsType:string)
+	public _pBuildGraphics(target:ElementsBase, elementsType:string):void
 	{
 		var indices:Uint16Array;
 		var positions:ArrayBufferView;
@@ -529,7 +529,7 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:ElementsBase, elementsType:string)
+	public _pBuildUVs(target:ElementsBase, elementsType:string):void
 	{
 		var i:number, j:number, index:number;
 		var uvs:ArrayBufferView;
@@ -633,5 +633,3 @@ class PrimitiveCubePrefab extends PrimitivePrefabBase
 		}
 	}
 }
-
-export default PrimitiveCubePrefab;

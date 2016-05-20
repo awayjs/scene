@@ -1,4 +1,4 @@
-import INode						from "../partition/INode";
+import {INode}						from "../partition/INode";
 
 /**
  * IDisplayObjectNode is an interface for the constructable class definition EntityNode that is used to
@@ -6,7 +6,7 @@ import INode						from "../partition/INode";
  *
  * @class away.pool.IDisplayObjectNode
  */
-interface IContainerNode extends INode
+export interface IContainerNode extends INode
 {
 	numEntities:number;
 
@@ -14,5 +14,3 @@ interface IContainerNode extends INode
 
 	iRemoveNode(node:INode);
 }
-
-export default IContainerNode;

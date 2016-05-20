@@ -1,18 +1,18 @@
-import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
-import BitmapImage2D				from "awayjs-core/lib/image/BitmapImage2D";
-import BitmapImageCube				from "awayjs-core/lib/image/BitmapImageCube";
+import {Sampler2D}					from "awayjs-core/lib/image/Sampler2D";
+import {BitmapImage2D}				from "awayjs-core/lib/image/BitmapImage2D";
+import {BitmapImageCube}				from "awayjs-core/lib/image/BitmapImageCube";
 
-import IRenderable					from "../base/IRenderable";
-import LineElements					from "../graphics/LineElements";
-import Skybox						from "../display/Skybox";
-import MaterialBase					from "../materials/MaterialBase";
-import BasicMaterial				from "../materials/BasicMaterial";
-import Single2DTexture				from "../textures/Single2DTexture";
-import SingleCubeTexture			from "../textures/SingleCubeTexture";
-import TextureBase					from "../textures/TextureBase";
-import Graphic						from "../graphics/Graphic";
+import {IRenderable}					from "../base/IRenderable";
+import {LineElements}					from "../graphics/LineElements";
+import {Skybox}						from "../display/Skybox";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {BasicMaterial}				from "../materials/BasicMaterial";
+import {Single2DTexture}				from "../textures/Single2DTexture";
+import {SingleCubeTexture}			from "../textures/SingleCubeTexture";
+import {TextureBase}					from "../textures/TextureBase";
+import {Graphic}						from "../graphics/Graphic";
 
-class DefaultMaterialManager
+export class DefaultMaterialManager
 {
 	private static _defaultSampler2D:Sampler2D;
 	private static _defaultBitmapImage2D:BitmapImage2D;
@@ -84,19 +84,19 @@ class DefaultMaterialManager
 		return DefaultMaterialManager._defaultSampler2D;
 	}
 
-	private static createDefaultTexture()
+	private static createDefaultTexture():void
 	{
 		DefaultMaterialManager._defaultTexture = new Single2DTexture();
 		DefaultMaterialManager._defaultTexture.name = "defaultTexture";
 	}
 
-	private static createDefaultCubeTexture()
+	private static createDefaultCubeTexture():void
 	{
 		DefaultMaterialManager._defaultCubeTexture = new SingleCubeTexture();
 		DefaultMaterialManager._defaultCubeTexture.name = "defaultCubeTexture";
 	}
 
-	private static createDefaultImageCube()
+	private static createDefaultImageCube():void
 	{
 		if (!DefaultMaterialManager._defaultBitmapImage2D)
 			DefaultMaterialManager.createDefaultImage2D();
@@ -109,7 +109,7 @@ class DefaultMaterialManager
 		DefaultMaterialManager._defaultBitmapImageCube = b;
 	}
 
-	private static createDefaultImage2D()
+	private static createDefaultImage2D():void
 	{
 		var b:BitmapImage2D = new BitmapImage2D(8, 8, false, 0x000000);
 
@@ -123,7 +123,7 @@ class DefaultMaterialManager
 		DefaultMaterialManager._defaultBitmapImage2D = b;
 	}
 
-	private static createDefaultTextureMaterial()
+	private static createDefaultTextureMaterial():void
 	{
 		if (!DefaultMaterialManager._defaultTexture)
 			DefaultMaterialManager.createDefaultTexture();
@@ -133,7 +133,7 @@ class DefaultMaterialManager
 		DefaultMaterialManager._defaultTextureMaterial.name = "defaultTextureMaterial";
 	}
 
-	private static createDefaultCubeTextureMaterial()
+	private static createDefaultCubeTextureMaterial():void
 	{
 		if (!DefaultMaterialManager._defaultCubeTexture)
 			DefaultMaterialManager.createDefaultCubeTexture();
@@ -143,17 +143,15 @@ class DefaultMaterialManager
 		DefaultMaterialManager._defaultCubeTextureMaterial.name = "defaultCubeTextureMaterial";
 	}
 
-	private static createDefaultColorMaterial()
+	private static createDefaultColorMaterial():void
 	{
 		DefaultMaterialManager._defaultColorMaterial = new BasicMaterial(0xFFFFFF);
 		DefaultMaterialManager._defaultColorMaterial.name = "defaultColorMaterial";
 	}
 
-	private static createDefaultSampler2D()
+	private static createDefaultSampler2D():void
 	{
 		DefaultMaterialManager._defaultSampler2D = new Sampler2D();
 	}
 
 }
-
-export default DefaultMaterialManager;

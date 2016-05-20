@@ -1,4 +1,4 @@
-class OrientationMode
+export class OrientationMode
 {
 	/**
 	 *
@@ -15,5 +15,3 @@ class OrientationMode
 	 */
 	public static CAMERA_POSITION:string = "cameraPosition";
 }
-
-export default OrientationMode;

@@ -1,17 +1,17 @@
-import GraphicsPathWinding		from "../draw/GraphicsPathWinding";
-import GraphicsPathCommand		from "../draw/GraphicsPathCommand";
-import IGraphicsData		    from "../draw/IGraphicsData";
-import GraphicsFillStyle		from "../draw/GraphicsFillStyle";
-import GraphicsStrokeStyle		from "../draw/GraphicsStrokeStyle";
+import {GraphicsPathWinding}		from "../draw/GraphicsPathWinding";
+import {GraphicsPathCommand}		from "../draw/GraphicsPathCommand";
+import {IGraphicsData}		    from "../draw/IGraphicsData";
+import {GraphicsFillStyle}		from "../draw/GraphicsFillStyle";
+import {GraphicsStrokeStyle}		from "../draw/GraphicsStrokeStyle";
 
-import Point					from "awayjs-core/lib/geom/Point";
+import {Point}					from "awayjs-core/lib/geom/Point";
 /**
 
  * Defines the values to use for specifying path-drawing commands.
  * The values in this class are used by the Graphics.drawPath() method,
  *or stored in the commands vector of a GraphicsPath object.
  */
-class GraphicsPath implements IGraphicsData
+export class GraphicsPath implements IGraphicsData
 {
     public static data_type:string = "[graphicsdata path]";
     /**
@@ -205,5 +205,3 @@ class GraphicsPath implements IGraphicsData
     }
 
 }
-
-export default GraphicsPath;

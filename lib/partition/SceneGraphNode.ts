@@ -1,12 +1,12 @@
-import ITraverser				from "../ITraverser";
-import DisplayObjectNode			from "../partition/DisplayObjectNode";
-import EntityNode					from "../partition/EntityNode";
-import IContainerNode				from "../partition/IContainerNode";
+import {ITraverser}				from "../ITraverser";
+import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
+import {EntityNode}					from "../partition/EntityNode";
+import {IContainerNode}				from "../partition/IContainerNode";
 
 /**
  * Maintains scenegraph heirarchy when collecting nodes
  */
-class SceneGraphNode extends DisplayObjectNode implements IContainerNode
+export class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 {
 	public isSceneGraphNode:boolean = true;
 
@@ -20,7 +20,7 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:ITraverser)
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		//containers nodes are for ordering only, no need to check enterNode or debugVisible
 		if (this.numEntities == 0)
@@ -39,7 +39,7 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	 * @param node
 	 * @internal
 	 */
-	public iAddNode(node:DisplayObjectNode)
+	public iAddNode(node:DisplayObjectNode):void
 	{
 		node.parent = this;
 
@@ -78,7 +78,7 @@ class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 	 * @param node
 	 * @internal
 	 */
-	public iRemoveNode(node:DisplayObjectNode)
+	public iRemoveNode(node:DisplayObjectNode):void
 	{
 		if (node._displayObject.maskMode) {
 			this._childMasks.splice(this._childMasks.indexOf(node), 1);

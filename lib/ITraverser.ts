@@ -1,6 +1,6 @@
-import IEntity						from "./display/IEntity";
-import INode						from "./partition/INode";
-import IRenderable					from "./base/IRenderable";
+import {IEntity}						from "./display/IEntity";
+import {INode}						from "./partition/INode";
+import {IRenderable}					from "./base/IRenderable";
 
 /**
  * ITraverser is an interface for classes that are used in the rendering pipeline to render the
@@ -8,7 +8,7 @@ import IRenderable					from "./base/IRenderable";
  *
  * @class away.render.ITraverser
  */
-interface ITraverser
+export interface ITraverser
 {
 	/**
 	 *
@@ -53,5 +53,3 @@ interface ITraverser
 	 */
 	applySkybox(entity:IEntity);
 }
-
-export default ITraverser;

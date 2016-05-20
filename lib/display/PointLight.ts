@@ -1,15 +1,15 @@
-import Box							from "awayjs-core/lib/geom/Box";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import LightBase					from "../display/LightBase";
-import BoundsType					from "../bounds/BoundsType";
-import Camera						from "../display/Camera";
-import IEntity						from "../display/IEntity";
-import CubeMapShadowMapper			from "../materials/shadowmappers/CubeMapShadowMapper";
+import {LightBase}					from "../display/LightBase";
+import {BoundsType}					from "../bounds/BoundsType";
+import {Camera}						from "../display/Camera";
+import {IEntity}						from "../display/IEntity";
+import {CubeMapShadowMapper}			from "../materials/shadowmappers/CubeMapShadowMapper";
 
-class PointLight extends LightBase implements IEntity
+export class PointLight extends LightBase implements IEntity
 {
 	public static assetType:string = "[light PointLight]";
 
@@ -82,7 +82,7 @@ class PointLight extends LightBase implements IEntity
 		this._pInvalidateBounds();
 	}
 
-	public _pUpdateSphereBounds()
+	public _pUpdateSphereBounds():void
 	{
 		super._pUpdateSphereBounds();
 
@@ -130,5 +130,3 @@ class PointLight extends LightBase implements IEntity
 		return target;
 	}
 }
-
-export default PointLight;

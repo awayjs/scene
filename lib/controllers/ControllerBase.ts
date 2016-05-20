@@ -1,8 +1,8 @@
-import AbstractMethodError		from "awayjs-core/lib/errors/AbstractMethodError";
+import {AbstractMethodError}		from "awayjs-core/lib/errors/AbstractMethodError";
 
-import DisplayObject			from "../display/DisplayObject";
+import {DisplayObject}			from "../display/DisplayObject";
 
-class ControllerBase
+export class ControllerBase
 {
 	public _pControllerDirty:boolean;
 	public _pAutoUpdate:boolean = true;
@@ -13,7 +13,7 @@ class ControllerBase
 		this.targetObject = targetObject;
 	}
 
-	public pNotifyUpdate()
+	public pNotifyUpdate():void
 	{
 		if (this._pTargetObject)
 			this._pTargetObject.invalidatePartitionBounds();
@@ -60,12 +60,12 @@ class ControllerBase
 		}
 	}
 
-	public update(interpolate:boolean = true)
+	public update(interpolate:boolean = true):void
 	{
 		throw new AbstractMethodError();
 	}
 
-	public updateController()
+	public updateController():void
 	{
 		if (this._pControllerDirty && this._pAutoUpdate) {
 			this._pControllerDirty = false;
@@ -73,5 +73,3 @@ class ControllerBase
 		}
 	}
 }
-
-export default ControllerBase;

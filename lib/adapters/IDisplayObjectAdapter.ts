@@ -1,6 +1,6 @@
-import DisplayObject				from "../display/DisplayObject";
+import {DisplayObject}				from "../display/DisplayObject";
 
-interface IDisplayObjectAdapter
+export interface IDisplayObjectAdapter
 {
 	adaptee:DisplayObject;
 
@@ -14,5 +14,3 @@ interface IDisplayObjectAdapter
 
 	dispose();
 }
-
-export default IDisplayObjectAdapter;

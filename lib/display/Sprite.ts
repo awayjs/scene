@@ -1,26 +1,26 @@
-﻿import AssetEvent					from "awayjs-core/lib/events/AssetEvent";
-import Box							from "awayjs-core/lib/geom/Box";
-import Point						from "awayjs-core/lib/geom/Point";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
+﻿import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Point}						from "awayjs-core/lib/geom/Point";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 
-import ITraverser					from "../ITraverser";
-import IAnimator					from "../animators/IAnimator";
-import DisplayObject				from "../display/DisplayObject";
-import Graphics						from "../graphics/Graphics";
-import ElementsBase					from "../graphics/ElementsBase";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import MaterialBase					from "../materials/MaterialBase";
-import TextureBase					from "../textures/TextureBase";
-import ElementsUtils				from "../utils/ElementsUtils";
-import Style						from "../base/Style";
-import StyleEvent					from "../events/StyleEvent";
+import {ITraverser}					from "../ITraverser";
+import {IAnimator}					from "../animators/IAnimator";
+import {DisplayObject}				from "../display/DisplayObject";
+import {Graphics}						from "../graphics/Graphics";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {MaterialBase}					from "../materials/MaterialBase";
+import {TextureBase}					from "../textures/TextureBase";
+import {ElementsUtils}				from "../utils/ElementsUtils";
+import {Style}						from "../base/Style";
+import {StyleEvent}					from "../events/StyleEvent";
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
  * of the graphics to be assigned different materials.
  */
-class Sprite extends DisplayObjectContainer
+export class Sprite extends DisplayObjectContainer
 {
 	private static _sprites:Array<Sprite> = new Array<Sprite>();
 
@@ -118,7 +118,7 @@ class Sprite extends DisplayObjectContainer
 	/**
 	 *
 	 */
-	public bakeTransformations()
+	public bakeTransformations():void
 	{
 		this._graphics.applyTransformation(this.transform.matrix3D);
 		this.transform.clearMatrix3D();
@@ -127,7 +127,7 @@ class Sprite extends DisplayObjectContainer
 	/**
 	 * @inheritDoc
 	 */
-	public dispose()
+	public dispose():void
 	{
 		this.disposeValues();
 
@@ -137,7 +137,7 @@ class Sprite extends DisplayObjectContainer
 	/**
 	 * @inheritDoc
 	 */
-	public disposeValues()
+	public disposeValues():void
 	{
 		super.disposeValues();
 
@@ -169,7 +169,7 @@ class Sprite extends DisplayObjectContainer
 		return newInstance;
 	}
 
-	public copyTo(sprite:Sprite)
+	public copyTo(sprite:Sprite):void
 	{
 		super.copyTo(sprite);
 
@@ -181,7 +181,7 @@ class Sprite extends DisplayObjectContainer
 	 *
 	 * @protected
 	 */
-	public _pUpdateBoxBounds()
+	public _pUpdateBoxBounds():void
 	{
 		super._pUpdateBoxBounds();
 
@@ -189,7 +189,7 @@ class Sprite extends DisplayObjectContainer
 	}
 
 
-	public _pUpdateSphereBounds()
+	public _pUpdateSphereBounds():void
 	{
 		super._pUpdateSphereBounds();
 
@@ -210,7 +210,7 @@ class Sprite extends DisplayObjectContainer
 	 *
 	 * @private
 	 */
-	private _onGraphicsInvalidate(event:AssetEvent)
+	private _onGraphicsInvalidate(event:AssetEvent):void
 	{
 		if (this._pIsEntity != Boolean(this._graphics.count)) {
 			if (this._pImplicitPartition)
@@ -231,7 +231,7 @@ class Sprite extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:ITraverser)
+	public _acceptTraverser(traverser:ITraverser):void
 	{
 		this.graphics.acceptTraverser(traverser);
 	}
@@ -259,12 +259,10 @@ class Sprite extends DisplayObjectContainer
 		return super._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
 
-	public clear()
+	public clear():void
 	{
 		super.clear();
 
 		this._graphics.clear();
 	}
 }
-
-export default Sprite;

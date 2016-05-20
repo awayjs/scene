@@ -1,6 +1,6 @@
-import EventBase				from "awayjs-core/lib/events/EventBase";
+import {EventBase}				from "awayjs-core/lib/events/EventBase";
 
-class ResizeEvent extends EventBase
+export class ResizeEvent extends EventBase
 {
 	public static RESIZE:string = "resize";
 
@@ -35,5 +35,3 @@ class ResizeEvent extends EventBase
 		return new ResizeEvent(this.type, this._oldHeight, this._oldWidth);
 	}
 }
-
-export default ResizeEvent;

@@ -1,13 +1,13 @@
-import Box							from "awayjs-core/lib/geom/Box";
-import Point						from "awayjs-core/lib/geom/Point";
-import ArgumentError				from "awayjs-core/lib/errors/ArgumentError";
-import RangeError					from "awayjs-core/lib/errors/RangeError";
-import Extensions					from "awayjs-core/lib/utils/Extensions";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Point}						from "awayjs-core/lib/geom/Point";
+import {ArgumentError}				from "awayjs-core/lib/errors/ArgumentError";
+import {RangeError}					from "awayjs-core/lib/errors/RangeError";
+import {Extensions}					from "awayjs-core/lib/utils/Extensions";
 
-import DisplayObject				from "../display/DisplayObject";
-import HierarchicalProperties		from "../base/HierarchicalProperties";
-import PartitionBase				from "../partition/PartitionBase";
-import Scene						from "../display/Scene";
+import {DisplayObject}				from "../display/DisplayObject";
+import {HierarchicalProperties}		from "../base/HierarchicalProperties";
+import {PartitionBase}				from "../partition/PartitionBase";
+import {Scene}						from "../display/Scene";
 
 /**
  * The DisplayObjectContainer class is the base class for all objects that can
@@ -30,7 +30,7 @@ import Scene						from "../display/Scene";
  * <p>For more information, see the "Display Programming" chapter of the
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  */
-class DisplayObjectContainer extends DisplayObject
+export class DisplayObjectContainer extends DisplayObject
 {
 	public static assetType:string = "[asset DisplayObjectContainer]";
 
@@ -90,7 +90,7 @@ class DisplayObjectContainer extends DisplayObject
 	/**
 	 * Returns the number of children of this object.
 	 */
-	public get numChildren():number /*int*/
+	public get numChildren():number
 	{
 		return this._children.length;
 	}
@@ -230,7 +230,7 @@ class DisplayObjectContainer extends DisplayObject
 		return this.addChildAtDepth(child, (index < this._children.length)? this._children[index]._depthID : this.getNextHighestDepth(), false);
 	}
 
-	public addChildren(...childarray:Array<DisplayObject>)
+	public addChildren(...childarray:Array<DisplayObject>):void
 	{
 		var len:number = childarray.length;
 		for (var i:number = 0; i <  len; i++)
@@ -249,7 +249,7 @@ class DisplayObjectContainer extends DisplayObject
 		return newInstance;
 	}
 
-	public copyTo(newInstance:DisplayObjectContainer)
+	public copyTo(newInstance:DisplayObjectContainer):void
 	{
 		super.copyTo(newInstance);
 
@@ -280,7 +280,7 @@ class DisplayObjectContainer extends DisplayObject
 	/**
 	 *
 	 */
-	public disposeValues()
+	public disposeValues():void
 	{
 		for (var i:number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
@@ -302,7 +302,7 @@ class DisplayObjectContainer extends DisplayObject
 	 * @throws RangeError    Throws if the index does not exist in the child
 	 *                       list.
 	 */
-	public getChildAt(index:number /*int*/):DisplayObject
+	public getChildAt(index:number):DisplayObject
 	{
 		var child:DisplayObject = this._children[index];
 
@@ -344,7 +344,7 @@ class DisplayObjectContainer extends DisplayObject
 	 * @throws ArgumentError Throws if the child parameter is not a child of this
 	 *                       object.
 	 */
-	public getChildIndex(child:DisplayObject):number /*int*/
+	public getChildIndex(child:DisplayObject):number
 	{
 		var childIndex:number = this._children.indexOf(child);
 
@@ -354,7 +354,7 @@ class DisplayObjectContainer extends DisplayObject
 		return childIndex;
 	}
 
-	public getNextHighestDepth()
+	public getNextHighestDepth():number
 	{
 		if (this._nextHighestDepthDirty)
 			this._updateNextHighestDepth();
@@ -415,7 +415,7 @@ class DisplayObjectContainer extends DisplayObject
 		return child;
 	}
 
-	public removeChildAtDepth(depth:number /*int*/):DisplayObject
+	public removeChildAtDepth(depth:number):DisplayObject
 	{
 		return this.removeChildAt(this.getDepthIndexInternal(depth));
 	}
@@ -442,7 +442,7 @@ class DisplayObjectContainer extends DisplayObject
 	 *                       can avoid this situation by having the child movie
 	 *                       call the <code>Security.allowDomain()</code> method.
 	 */
-	public removeChildAt(index:number /*int*/):DisplayObject
+	public removeChildAt(index:number):DisplayObject
 	{
 		var child:DisplayObject = this.removeChildAtInternal(index);
 
@@ -469,7 +469,7 @@ class DisplayObjectContainer extends DisplayObject
 	 * @throws RangeError    Throws if the beginIndex or endIndex positions do
 	 *                       not exist in the child list.
 	 */
-	public removeChildren(beginIndex:number /*int*/ = 0, endIndex:number /*int*/ = 2147483647)
+	public removeChildren(beginIndex:number = 0, endIndex:number = 2147483647):void
 	{
 		if (beginIndex < 0)
 			throw new RangeError("beginIndex is out of range of the child list");
@@ -509,7 +509,7 @@ class DisplayObjectContainer extends DisplayObject
 	 * @throws RangeError    Throws if the index does not exist in the child
 	 *                       list.
 	 */
-	public setChildIndex(child:DisplayObject, index:number /*int*/)
+	public setChildIndex(child:DisplayObject, index:number):void
 	{
 		//TODO
 	}
@@ -524,7 +524,7 @@ class DisplayObjectContainer extends DisplayObject
 	 * @throws ArgumentError Throws if either child parameter is not a child of
 	 *                       this object.
 	 */
-	public swapChildren(child1:DisplayObject, child2:DisplayObject)
+	public swapChildren(child1:DisplayObject, child2:DisplayObject):void
 	{
 		this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2))
 	}
@@ -538,7 +538,7 @@ class DisplayObjectContainer extends DisplayObject
 	 * @param index2 The index position of the second child object.
 	 * @throws RangeError If either index does not exist in the child list.
 	 */
-	public swapChildrenAt(index1:number, index2:number)
+	public swapChildrenAt(index1:number, index2:number):void
 	{
 		var depth:number = this._children[index2]._depthID;
 		var child:DisplayObject = this._children[index1];
@@ -553,7 +553,7 @@ class DisplayObjectContainer extends DisplayObject
 	 *
 	 * @protected
 	 */
-	public _pUpdateBoxBounds()
+	public _pUpdateBoxBounds():void
 	{
 		super._pUpdateBoxBounds();
 
@@ -605,7 +605,7 @@ class DisplayObjectContainer extends DisplayObject
 	/**
 	 * @protected
 	 */
-	public pInvalidateHierarchicalProperties(bitFlag:number)
+	public pInvalidateHierarchicalProperties(bitFlag:number):boolean
 	{
 		if (super.pInvalidateHierarchicalProperties(bitFlag))
 			return true;
@@ -621,7 +621,7 @@ class DisplayObjectContainer extends DisplayObject
 	/**
 	 * @internal
 	 */
-	public _iSetScene(value:Scene, partition:PartitionBase)
+	public _iSetScene(value:Scene, partition:PartitionBase):void
 	{
 		super._iSetScene(value, partition);
 
@@ -650,7 +650,7 @@ class DisplayObjectContainer extends DisplayObject
 		return child;
 	}
 
-	public getDepthIndexInternal(depth:number /*int*/):number
+	public getDepthIndexInternal(depth:number):number
 	{
 		if (!this._depth_childs[depth])
 			return -1;
@@ -658,7 +658,7 @@ class DisplayObjectContainer extends DisplayObject
 		return this._children.indexOf(this._depth_childs[depth]);
 	}
 
-	private _updateNextHighestDepth()
+	private _updateNextHighestDepth():void
 	{
 		this._nextHighestDepthDirty = false;
 
@@ -681,7 +681,7 @@ class DisplayObjectContainer extends DisplayObject
 		return false;
 	}
 
-	public _updateMaskMode()
+	public _updateMaskMode():void
 	{
 		if (this.maskMode)
 			this.mouseChildren = false;
@@ -689,7 +689,7 @@ class DisplayObjectContainer extends DisplayObject
 		super._updateMaskMode();
 	}
 
-	private _invalidateChildren()
+	private _invalidateChildren():void
 	{
 		if (this._pIsContainer != Boolean(this._children.length)) {
 			if (this._pImplicitPartition)
@@ -704,5 +704,3 @@ class DisplayObjectContainer extends DisplayObject
 		this._pInvalidateBounds();
 	}
 }
-
-export default DisplayObjectContainer;

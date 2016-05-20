@@ -1,13 +1,13 @@
-import Box							from "awayjs-core/lib/geom/Box";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import AbstractMethodError			from "awayjs-core/lib/errors/AbstractMethodError";
+import {Box}							from "awayjs-core/lib/geom/Box";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
 
-import IEntity						from "../display/IEntity";
-import Sprite						from "../display/Sprite";
+import {IEntity}						from "../display/IEntity";
+import {Sprite}						from "../display/Sprite";
 
-class BoundingVolumeBase
+export class BoundingVolumeBase
 {
 	public _pEntity:IEntity;
 	public _pBoundsPrimitive:Sprite;
@@ -18,7 +18,7 @@ class BoundingVolumeBase
 		this._pEntity = entity;
 	}
 
-	public dispose()
+	public dispose():void
 	{
 		this._pEntity = null;
 		this._pBoundsPrimitive = null;
@@ -38,7 +38,7 @@ class BoundingVolumeBase
 		return this._pBoundsPrimitive;
 	}
 
-	public nullify()
+	public nullify():void
 	{
 		throw new AbstractMethodError();
 	}
@@ -63,12 +63,12 @@ class BoundingVolumeBase
 		throw new AbstractMethodError();
 	}
 
-	public _pUpdate()
+	public _pUpdate():void
 	{
 		this._pInvalidated = false;
 	}
 
-	public invalidate()
+	public invalidate():void
 	{
 		this._pInvalidated = true;
 	}
@@ -78,5 +78,3 @@ class BoundingVolumeBase
 		throw new AbstractMethodError();
 	}
 }
-
-export default BoundingVolumeBase;

@@ -1,32 +1,32 @@
-import AttributesBuffer				from "awayjs-core/lib/attributes/AttributesBuffer";
-import AttributesView				from "awayjs-core/lib/attributes/AttributesView";
-import Float2Attributes				from "awayjs-core/lib/attributes/Float2Attributes";
-import Byte4Attributes				from "awayjs-core/lib/attributes/Byte4Attributes";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Matrix						from "awayjs-core/lib/geom/Matrix";
-import ColorTransform				from "awayjs-core/lib/geom/ColorTransform";
-import Rectangle					from "awayjs-core/lib/geom/Rectangle";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import Sampler2D					from "awayjs-core/lib/image/Sampler2D";
+import {AttributesBuffer}				from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}				from "awayjs-core/lib/attributes/AttributesView";
+import {Float2Attributes}				from "awayjs-core/lib/attributes/Float2Attributes";
+import {Byte4Attributes}				from "awayjs-core/lib/attributes/Byte4Attributes";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Matrix}						from "awayjs-core/lib/geom/Matrix";
+import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
+import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Sampler2D}					from "awayjs-core/lib/image/Sampler2D";
 
-import HierarchicalProperties		from "../base/HierarchicalProperties";
-import Style 						from "../base/Style";
-import DisplayObject				from "../display/DisplayObject";
-import AntiAliasType				from "../text/AntiAliasType";
-import GridFitType					from "../text/GridFitType";
-import TextFieldAutoSize			from "../text/TextFieldAutoSize";
-import TextFieldType				from "../text/TextFieldType";
-import TextFormat					from "../text/TextFormat";
-import TextInteractionMode			from "../text/TextInteractionMode";
-import TextLineMetrics				from "../text/TextLineMetrics";
-import Sprite						from "../display/Sprite";
-import Graphics						from "../graphics/Graphics";
-import Graphic						from "../graphics/Graphic";
-import ElementsBase					from "../graphics/ElementsBase";
-import TriangleElements				from "../graphics/TriangleElements";
-import TesselatedFontChar			from "../text/TesselatedFontChar";
-import TextFormatAlign				from "../text/TextFormatAlign";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
+import {HierarchicalProperties}		from "../base/HierarchicalProperties";
+import {Style}						from "../base/Style";
+import {DisplayObject}				from "../display/DisplayObject";
+import {AntiAliasType}				from "../text/AntiAliasType";
+import {GridFitType}					from "../text/GridFitType";
+import {TextFieldAutoSize}			from "../text/TextFieldAutoSize";
+import {TextFieldType}				from "../text/TextFieldType";
+import {TextFormat}					from "../text/TextFormat";
+import {TextInteractionMode}			from "../text/TextInteractionMode";
+import {TextLineMetrics}				from "../text/TextLineMetrics";
+import {Sprite}						from "../display/Sprite";
+import {Graphics}						from "../graphics/Graphics";
+import {Graphic}						from "../graphics/Graphic";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {TriangleElements}				from "../graphics/TriangleElements";
+import {TesselatedFontChar}			from "../text/TesselatedFontChar";
+import {TextFormatAlign}				from "../text/TextFormatAlign";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -107,7 +107,7 @@ import DisplayObjectContainer		from "../display/DisplayObjectContainer";
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-class TextField extends Sprite
+export class TextField extends Sprite
 {
 	private static _textFields:Array<TextField> = new Array<TextField>();
 
@@ -670,7 +670,7 @@ class TextField extends Sprite
 	 */
 	public _textColor:number /*int*/;
 
-	public get textColor()
+	public get textColor():number
 	{
 		return this._textColor;
 	}
@@ -771,7 +771,7 @@ class TextField extends Sprite
 	/**
 	 *
 	 */
-	public get isEntity()
+	public get isEntity():boolean
 	{
 		return true; //TODO do this better
 	}
@@ -791,7 +791,7 @@ class TextField extends Sprite
 		this.type = TextFieldType.STATIC;
 	}
 
-	public clear()
+	public clear():void
 	{
 		super.clear();
 
@@ -802,7 +802,7 @@ class TextField extends Sprite
 	/**
 	 * @inheritDoc
 	 */
-	public dispose()
+	public dispose():void
 	{
 		this.disposeValues();
 
@@ -812,7 +812,7 @@ class TextField extends Sprite
 	/**
 	 * @inheritDoc
 	 */
-	public disposeValues()
+	public disposeValues():void
 	{
 		super.disposeValues();
 
@@ -1061,7 +1061,7 @@ class TextField extends Sprite
 	 * *tells the Textfield that a paragraph is defined completly.
 	 * e.g. the textfield will start a new line for future added text.
 	 */
-	public closeParagraph()
+	public closeParagraph():void
 	{
 		//TODO
 	}
@@ -1275,7 +1275,7 @@ class TextField extends Sprite
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public replaceSelectedText(value:string)
+	public replaceSelectedText(value:string):void
 	{
 
 	}
@@ -1298,7 +1298,7 @@ class TextField extends Sprite
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public replaceText(beginIndex:number /*int*/, endIndex:number /*int*/, newText:string)
+	public replaceText(beginIndex:number /*int*/, endIndex:number /*int*/, newText:string):void
 	{
 
 	}
@@ -1316,7 +1316,7 @@ class TextField extends Sprite
 	 * @param endIndex   The zero-based index value of the last character in the
 	 *                   selection.
 	 */
-	public setSelection(beginIndex:number /*int*/, endIndex:number /*int*/)
+	public setSelection(beginIndex:number /*int*/, endIndex:number /*int*/):void
 	{
 
 	}
@@ -1366,7 +1366,7 @@ class TextField extends Sprite
 	 * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
 	 *                    specified is out of range.
 	 */
-	public setTextFormat(format:TextFormat, beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1)
+	public setTextFormat(format:TextFormat, beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):void
 	{
 
 	}
@@ -1415,7 +1415,7 @@ class TextField extends Sprite
     }
 
 
-	public copyTo(newInstance:TextField)
+	public copyTo(newInstance:TextField):void
 	{
 		super.copyTo(newInstance);
 
@@ -1426,5 +1426,3 @@ class TextField extends Sprite
 		newInstance.text = this._text;
 	}
 }
-
-export default TextField;

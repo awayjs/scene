@@ -1,7 +1,7 @@
 /**
  * @class away.base.HitTestCache
  */
-class HitTestCache
+export class HitTestCache
 {
 	/**
 	 * 
@@ -18,5 +18,3 @@ class HitTestCache
 	 */
 	public divisions:number;
 }
-
-export default HitTestCache;

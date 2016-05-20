@@ -1,14 +1,14 @@
-import Vector3D					from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
 
-import DisplayObject			from "../display/DisplayObject";
-import LookAtController			from "../controllers/LookAtController";
+import {DisplayObject}			from "../display/DisplayObject";
+import {LookAtController}			from "../controllers/LookAtController";
 
 /**
  * Uses spring physics to animate the target object towards a position that is
  * defined as the lookAtTarget object's position plus the vector defined by the
  * positionOffset property.
  */
-class SpringController extends LookAtController
+export class SpringController extends LookAtController
 {
 	private _velocity:Vector3D;
 	private _dv:Vector3D;
@@ -56,7 +56,7 @@ class SpringController extends LookAtController
 
 	}
 
-	public update(interpolate:boolean = true)
+	public update(interpolate:boolean = true):void
 	{
 		var offs:Vector3D;
 
@@ -91,5 +91,3 @@ class SpringController extends LookAtController
 		super.update();
 	}
 }
-
-export default SpringController;

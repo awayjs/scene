@@ -1,4 +1,4 @@
-export {default as DefaultMaterialManager}			from "./managers/DefaultMaterialManager";
-export {default as FrameScriptManager}				from "./managers/FrameScriptManager";
-export {default as MouseManager}					from "./managers/MouseManager";
-export {default as TouchManager}					from "./managers/TouchManager";
+export {DefaultMaterialManager}			from "./managers/DefaultMaterialManager";
+export {FrameScriptManager}				from "./managers/FrameScriptManager";
+export {MouseManager}					from "./managers/MouseManager";
+export {TouchManager}					from "./managers/TouchManager";

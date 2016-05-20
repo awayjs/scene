@@ -1,17 +1,17 @@
-import IAbstractionPool				from "awayjs-core/lib/library/IAbstractionPool";
+import {IAbstractionPool}				from "awayjs-core/lib/library/IAbstractionPool";
 
-import DisplayObject				from "../display/DisplayObject";
-import DisplayObjectContainer		from "../display/DisplayObjectContainer";
-import ITraverser				from "../ITraverser";
-import SceneGraphNode				from "../partition/SceneGraphNode";
-import PartitionBase				from "../partition/PartitionBase";
-import IContainerNode				from "../partition/IContainerNode";
-import DisplayObjectNode			from "../partition/DisplayObjectNode";
+import {DisplayObject}				from "../display/DisplayObject";
+import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {ITraverser}				from "../ITraverser";
+import {SceneGraphNode}				from "../partition/SceneGraphNode";
+import {PartitionBase}				from "../partition/PartitionBase";
+import {IContainerNode}				from "../partition/IContainerNode";
+import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
 
 /**
  * @class away.partition.Partition
  */
-class SceneGraphPartition extends PartitionBase
+export class SceneGraphPartition extends PartitionBase
 {
 	private _sceneGraphNodePool:SceneGraphNodePool;
 
@@ -22,7 +22,7 @@ class SceneGraphPartition extends PartitionBase
 		this._sceneGraphNodePool = new SceneGraphNodePool();
 	}
 
-	public traverse(traverser:ITraverser)
+	public traverse(traverser:ITraverser):void
 	{
 		super.traverse(traverser);
 	}
@@ -49,7 +49,7 @@ class SceneGraphPartition extends PartitionBase
 	/**
 	 * @internal
 	 */
-	public _iRegisterEntity(displayObject:DisplayObject)
+	public _iRegisterEntity(displayObject:DisplayObject):void
 	{
 		super._iRegisterEntity(displayObject);
 
@@ -60,7 +60,7 @@ class SceneGraphPartition extends PartitionBase
 	/**
 	 * @internal
 	 */
-	public _iUnregisterEntity(displayObject:DisplayObject)
+	public _iUnregisterEntity(displayObject:DisplayObject):void
 	{
 		super._iUnregisterEntity(displayObject);
 
@@ -69,13 +69,11 @@ class SceneGraphPartition extends PartitionBase
 	}
 }
 
-export default SceneGraphPartition;
-
 
 /**
  * @class away.pool.SceneGraphNodePool
  */
-class SceneGraphNodePool implements IAbstractionPool
+export class SceneGraphNodePool implements IAbstractionPool
 {
 	private _abstractionPool:Object = new Object();
 
@@ -95,7 +93,7 @@ class SceneGraphNodePool implements IAbstractionPool
 	 *
 	 * @param entity
 	 */
-	public clearAbstraction(displayObjectContainer:DisplayObjectContainer)
+	public clearAbstraction(displayObjectContainer:DisplayObjectContainer):void
 	{
 		delete this._abstractionPool[displayObjectContainer.id];
 	}

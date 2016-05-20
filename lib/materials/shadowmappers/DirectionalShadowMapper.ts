@@ -1,18 +1,18 @@
-import Image2D						from "awayjs-core/lib/image/Image2D";
-import Matrix3D						from "awayjs-core/lib/geom/Matrix3D";
-import Matrix3DUtils				from "awayjs-core/lib/geom/Matrix3DUtils";
-import Plane3D						from "awayjs-core/lib/geom/Plane3D";
-import Vector3D						from "awayjs-core/lib/geom/Vector3D";
-import FreeMatrixProjection			from "awayjs-core/lib/projections/FreeMatrixProjection";
+import {Image2D}						from "awayjs-core/lib/image/Image2D";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
+import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {FreeMatrixProjection}			from "awayjs-core/lib/projections/FreeMatrixProjection";
 
-import Scene						from "../../display/Scene";
-import IRenderer					from "../../IRenderer";
-import Camera						from "../../display/Camera";
-import DirectionalLight				from "../../display/DirectionalLight";
-import ShadowMapperBase				from "../../materials/shadowmappers/ShadowMapperBase";
-import Single2DTexture				from "../../textures/Single2DTexture";
+import {Scene}						from "../../display/Scene";
+import {IRenderer}					from "../../IRenderer";
+import {Camera}						from "../../display/Camera";
+import {DirectionalLight}				from "../../display/DirectionalLight";
+import {ShadowMapperBase}				from "../../materials/shadowmappers/ShadowMapperBase";
+import {Single2DTexture}				from "../../textures/Single2DTexture";
 
-class DirectionalShadowMapper extends ShadowMapperBase
+export class DirectionalShadowMapper extends ShadowMapperBase
 {
 	public _pOverallDepthCamera:Camera;
 	public _pLocalFrustum:Array<number>;
@@ -69,7 +69,7 @@ class DirectionalShadowMapper extends ShadowMapperBase
 		return this._pMaxZ - this._pMinZ;
 	}
 
-	public iSetDepthMap(depthMap:Single2DTexture)
+	public iSetDepthMap(depthMap:Single2DTexture):void
 	{
 		if (this._depthMap == depthMap)
 			return;
@@ -90,14 +90,14 @@ class DirectionalShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer)
+	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer):void
 	{
 		renderer.cullPlanes = this._pCullPlanes;
 		renderer._iRender(this._pOverallDepthCamera, scene, target.image2D);
 	}
 
 	//@protected
-	public pUpdateCullPlanes(camera:Camera)
+	public pUpdateCullPlanes(camera:Camera):void
 	{
 		var lightFrustumPlanes:Array<Plane3D> = this._pOverallDepthCamera.frustumPlanes;
 		var viewFrustumPlanes:Array<Plane3D> = camera.frustumPlanes;
@@ -122,14 +122,14 @@ class DirectionalShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pUpdateDepthProjection(camera:Camera)
+	public pUpdateDepthProjection(camera:Camera):void
 	{
 		this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
 		this._pOverallDepthProjection.matrix = this._pMatrix;
 		this.pUpdateCullPlanes(camera);
 	}
 
-	public pUpdateProjectionFromFrustumCorners(camera:Camera, corners:Array<number>, matrix:Matrix3D)
+	public pUpdateProjectionFromFrustumCorners(camera:Camera, corners:Array<number>, matrix:Matrix3D):void
 	{
 		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var dir:Vector3D;
@@ -211,5 +211,3 @@ class DirectionalShadowMapper extends ShadowMapperBase
 		matrix.copyRawDataFrom(raw);
 	}
 }
-
-export default DirectionalShadowMapper;

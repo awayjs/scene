@@ -1,7 +1,7 @@
 /**
  *
  */
-class BoundsType
+export class BoundsType
 {
 	/**
 	 *
@@ -18,5 +18,3 @@ class BoundsType
 	 */
 	public static NULL:string = "null";
 }
-
-export default BoundsType;

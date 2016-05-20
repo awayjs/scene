@@ -1,17 +1,17 @@
-import IAbstractionPool				from "awayjs-core/lib/library/IAbstractionPool";
-import IAssetClass					from "awayjs-core/lib/library/IAssetClass";
+import {IAbstractionPool}				from "awayjs-core/lib/library/IAbstractionPool";
+import {IAssetClass}					from "awayjs-core/lib/library/IAssetClass";
 
-import ITraverser					from "../ITraverser";
-import DisplayObject				from "../display/DisplayObject";
-import EntityNode					from "../partition/EntityNode";
-import IEntityNodeClass				from "../partition/IEntityNodeClass";
-import DisplayObjectNode			from "../partition/DisplayObjectNode";
-import IContainerNode				from "../partition/IContainerNode";
+import {ITraverser}					from "../ITraverser";
+import {DisplayObject}				from "../display/DisplayObject";
+import {EntityNode}					from "../partition/EntityNode";
+import {IEntityNodeClass}				from "../partition/IEntityNodeClass";
+import {DisplayObjectNode}			from "../partition/DisplayObjectNode";
+import {IContainerNode}				from "../partition/IContainerNode";
 
 /**
  * @class away.partition.Partition
  */
-class PartitionBase implements IAbstractionPool
+export class PartitionBase implements IAbstractionPool
 {
 	private static _abstractionClassPool:Object = new Object();
 
@@ -35,12 +35,12 @@ class PartitionBase implements IAbstractionPool
 	 *
 	 * @param image
 	 */
-	public clearAbstraction(displayObject:DisplayObject)
+	public clearAbstraction(displayObject:DisplayObject):void
 	{
 		this._abstractionPool[displayObject.id] = null;
 	}
 
-	public traverse(traverser:ITraverser)
+	public traverse(traverser:ITraverser):void
 	{
 		if (this._updatesMade)
 			this.updateEntities();
@@ -50,7 +50,7 @@ class PartitionBase implements IAbstractionPool
 		}
 	}
 
-	public iMarkForUpdate(node:DisplayObjectNode)
+	public iMarkForUpdate(node:DisplayObjectNode):void
 	{
 		var t:DisplayObjectNode = this._updateQueue;
 
@@ -67,7 +67,7 @@ class PartitionBase implements IAbstractionPool
 		this._updatesMade = true;
 	}
 
-	public iRemoveEntity(node:DisplayObjectNode)
+	public iRemoveEntity(node:DisplayObjectNode):void
 	{
 		var t:DisplayObjectNode;
 
@@ -104,7 +104,7 @@ class PartitionBase implements IAbstractionPool
 		return this._rootNode;
 	}
 
-	private updateEntities()
+	private updateEntities():void
 	{
 		var node:DisplayObjectNode = this._updateQueue;
 		while (node) {
@@ -138,7 +138,7 @@ class PartitionBase implements IAbstractionPool
 	/**
 	 * @internal
 	 */
-	public _iRegisterEntity(displayObject:DisplayObject)
+	public _iRegisterEntity(displayObject:DisplayObject):void
 	{
 		if (displayObject.isEntity)
 			this.iMarkForUpdate(this.getAbstraction(displayObject));
@@ -147,7 +147,7 @@ class PartitionBase implements IAbstractionPool
 	/**
 	 * @internal
 	 */
-	public _iUnregisterEntity(displayObject:DisplayObject)
+	public _iUnregisterEntity(displayObject:DisplayObject):void
 	{
 		if (displayObject.isEntity)
 			this.iRemoveEntity(this.getAbstraction(displayObject));
@@ -157,10 +157,8 @@ class PartitionBase implements IAbstractionPool
 	 *
 	 * @param imageObjectClass
 	 */
-	public static registerAbstraction(entityNodeClass:IEntityNodeClass, assetClass:IAssetClass)
+	public static registerAbstraction(entityNodeClass:IEntityNodeClass, assetClass:IAssetClass):void
 	{
 		PartitionBase._abstractionClassPool[assetClass.assetType] = entityNodeClass;
 	}
 }
-
-export default PartitionBase;
