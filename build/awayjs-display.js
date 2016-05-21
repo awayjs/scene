@@ -1138,14 +1138,14 @@ var Timeline = (function () {
             return;
         i *= 8;
         var new_ct = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform_1.ColorTransform());
-        new_ct.redMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.greenMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.blueMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.alphaMultiplier = this.properties_stream_f32_ct[i++];
-        new_ct.redOffset = this.properties_stream_f32_ct[i++];
-        new_ct.greenOffset = this.properties_stream_f32_ct[i++];
-        new_ct.blueOffset = this.properties_stream_f32_ct[i++];
-        new_ct.alphaOffset = this.properties_stream_f32_ct[i];
+        new_ct.rawData[0] = this.properties_stream_f32_ct[i++];
+        new_ct.rawData[1] = this.properties_stream_f32_ct[i++];
+        new_ct.rawData[2] = this.properties_stream_f32_ct[i++];
+        new_ct.rawData[3] = this.properties_stream_f32_ct[i++];
+        new_ct.rawData[4] = this.properties_stream_f32_ct[i++];
+        new_ct.rawData[5] = this.properties_stream_f32_ct[i++];
+        new_ct.rawData[6] = this.properties_stream_f32_ct[i++];
+        new_ct.rawData[7] = this.properties_stream_f32_ct[i];
         child.transform.invalidateColorTransform();
     };
     Timeline.prototype.update_masks = function (child, target_mc, i) {
@@ -16751,8 +16751,10 @@ var SceneGraphNode = (function (_super) {
     function SceneGraphNode() {
         _super.apply(this, arguments);
         this.isSceneGraphNode = true;
+        this._numNodes = 0;
         this._pChildNodes = new Array();
         this._childDepths = new Array();
+        this._numMasks = 0;
         this._childMasks = new Array();
     }
     /**
@@ -16764,9 +16766,9 @@ var SceneGraphNode = (function (_super) {
         if (this.numEntities == 0)
             return;
         var i;
-        for (i = 0; i < this._pChildNodes.length; i++)
+        for (i = 0; i < this._numNodes; i++)
             this._pChildNodes[i].acceptTraverser(traverser);
-        for (i = 0; i < this._childMasks.length; i++)
+        for (i = 0; i < this._numMasks; i++)
             this._childMasks[i].acceptTraverser(traverser);
     };
     /**
@@ -16778,6 +16780,7 @@ var SceneGraphNode = (function (_super) {
         node.parent = this;
         if (node._displayObject.maskMode) {
             this._childMasks.push(node);
+            this._numMasks++;
         }
         else {
             var depth = node._displayObject._depthID;
@@ -16795,6 +16798,7 @@ var SceneGraphNode = (function (_super) {
                 this._pChildNodes.push(node);
                 this._childDepths.push(depth);
             }
+            this._numNodes++;
         }
         var numEntities = node.isSceneGraphNode ? node.numEntities : 1;
         node = this;
@@ -16810,11 +16814,13 @@ var SceneGraphNode = (function (_super) {
     SceneGraphNode.prototype.iRemoveNode = function (node) {
         if (node._displayObject.maskMode) {
             this._childMasks.splice(this._childMasks.indexOf(node), 1);
+            this._numMasks--;
         }
         else {
             var index = this._pChildNodes.indexOf(node);
             this._pChildNodes.splice(index, 1);
             this._childDepths.splice(index, 1);
+            this._numNodes--;
         }
         var numEntities = node.numEntities;
         node = this;
