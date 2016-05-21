@@ -1,56 +1,61 @@
-import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesBuffer}				from "awayjs-core/lib/attributes/AttributesBuffer";
 import {AttributesView}				from "awayjs-core/lib/attributes/AttributesView";
-import {Float2Attributes}			from "awayjs-core/lib/attributes/Float2Attributes";
-import {Byte4Attributes}			from "awayjs-core/lib/attributes/Byte4Attributes";
-import {Matrix3D}					from "awayjs-core/lib/geom/Matrix3D";
+import {Float2Attributes}				from "awayjs-core/lib/attributes/Float2Attributes";
+import {Byte4Attributes}				from "awayjs-core/lib/attributes/Byte4Attributes";
+import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
 import {Matrix}						from "awayjs-core/lib/geom/Matrix";
 import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
 import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
-import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
 import {Sampler2D}					from "awayjs-core/lib/image/Sampler2D";
 
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {Style}						from "../base/Style";
 import {DisplayObject}				from "../display/DisplayObject";
 import {AntiAliasType}				from "../text/AntiAliasType";
-import {GridFitType}				from "../text/GridFitType";
+import {GridFitType}					from "../text/GridFitType";
 import {TextFieldAutoSize}			from "../text/TextFieldAutoSize";
 import {TextFieldType}				from "../text/TextFieldType";
 import {TextFormat}					from "../text/TextFormat";
-import {TextInteractionMode}		from "../text/TextInteractionMode";
-import {TextLineMetrics}			from "../text/TextLineMetrics";
+import {TextInteractionMode}			from "../text/TextInteractionMode";
+import {TextLineMetrics}				from "../text/TextLineMetrics";
 import {Sprite}						from "../display/Sprite";
-import {Graphics}					from "../graphics/Graphics";
-import {Graphic}					from "../graphics/Graphic";
-import {ElementsBase}				from "../graphics/ElementsBase";
-import {TriangleElements}			from "../graphics/TriangleElements";
+import {Graphics}						from "../graphics/Graphics";
+import {Graphic}						from "../graphics/Graphic";
+import {ElementsBase}					from "../graphics/ElementsBase";
+import {TriangleElements}				from "../graphics/TriangleElements";
 import {TesselatedFontChar}			from "../text/TesselatedFontChar";
-import {TextFormatAlign}			from "../text/TextFormatAlign";
-import {TesselatedFontTable}		from "../text/TesselatedFontTable";
+import {TextFormatAlign}				from "../text/TextFormatAlign";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {BitmapFontTable}				from "../text/BitmapFontTable";
+import {Single2DTexture}				from "../textures/Single2DTexture";
+import {IFontTable}				from "../text/IFontTable";
+import {TesselatedFontTable}			from "../text/TesselatedFontTable";
+import {BasicMaterial}					from "../materials/BasicMaterial";
+import {MaterialBase}					from "../materials/MaterialBase";
 
 /**
- * The TextField class is used to create display objects for text display and
- * input. <ph outputclass="flexonly">You can use the TextField class to
+ * The TextFieldMultiRender class is used to create display objects for text display and
+ * input. <ph outputclass="flexonly">You can use the TextFieldMultiRender class to
  * perform low-level text rendering. However, in Flex, you typically use the
  * Label, Text, TextArea, and TextInput controls to process text. <ph
  * outputclass="flashonly">You can give a text field an instance name in the
- * Property inspector and use the methods and properties of the TextField
- * class to manipulate it with ActionScript. TextField instance names are
+ * Property inspector and use the methods and properties of the TextFieldMultiRender
+ * class to manipulate it with ActionScript. TextFieldMultiRender instance names are
  * displayed in the Movie Explorer and in the Insert Target Path dialog box in
  * the Actions panel.
  *
- * <p>To create a text field dynamically, use the <code>TextField()</code>
+ * <p>To create a text field dynamically, use the <code>TextFieldMultiRender()</code>
  * constructor.</p>
  *
- * <p>The methods of the TextField class let you set, select, and manipulate
+ * <p>The methods of the TextFieldMultiRender class let you set, select, and manipulate
  * text in a dynamic or input text field that you create during authoring or
  * at runtime. </p>
  *
  * <p>ActionScript provides several ways to format your text at runtime. The
  * TextFormat class lets you set character and paragraph formatting for
- * TextField objects. You can apply Cascading Style Sheets(CSS) styles to
- * text fields by using the <code>TextField.styleSheet</code> property and the
+ * TextFieldMultiRender objects. You can apply Cascading Style Sheets(CSS) styles to
+ * text fields by using the <code>TextFieldMultiRender.styleSheet</code> property and the
  * StyleSheet class. You can use CSS to style built-in HTML tags, define new
  * formatting tags, or apply styles. You can assign HTML formatted text, which
  * optionally uses CSS styles, directly to a text field. HTML text that you
@@ -89,7 +94,7 @@ import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
  *                                  user attempts to input text. You cannot
  *                                  put text into a text field by sending it
  *                                  <code>textInput</code> events.</p>
- * @event scroll                    Dispatched by a TextField object
+ * @event scroll                    Dispatched by a TextFieldMultiRender object
  *                                  <i>after</i> the user scrolls.
  * @event textInput                 Flash Player dispatches the
  *                                  <code>textInput</code> event when a user
@@ -108,12 +113,15 @@ import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-export class TextField extends Sprite
+export class TextFieldMultiRender extends Sprite
 {
-	private static _textFields:Array<TextField> = new Array<TextField>();
+	private static _textFields:Array<TextFieldMultiRender> = new Array<TextFieldMultiRender>();
 
-	public static assetType:string = "[asset TextField]";
+	public static assetType:string = "[asset TextFieldMultiRender]";
 
+	private _explicitFormats:Array<TextFormat> = new Array<TextFormat>();
+	private _explicitFormatsRanges:Array<number> = new Array<number>();
+	private _line_indices:Array<number> = new Array<number>();
 	private _textGraphicsDirty:boolean;
 	private _bottomScrollV:number;
 	private _caretIndex:number;
@@ -214,9 +222,47 @@ export class TextField extends Sprite
 	 */
 	public get assetType():string
 	{
-		return TextField.assetType;
+		return TextFieldMultiRender.assetType;
 	}
 
+	private setFormatForRange(start:number, end:number, format:TextFormat)
+	{
+		var i:number=0;
+		var len:number=this._explicitFormats.length;
+		var is_added:boolean=false;
+		var new_formatslist:Array<TextFormat>=new Array<TextFormat>();
+		var new_formatsranges:Array<number>=new Array<number>();
+		var new_cnt=0;
+		for(i=0; i<len; i++){
+			if(!is_added){
+				if (this._explicitFormatsRanges[(i*2)]>start){
+					is_added=true;
+					new_formatslist[new_cnt]=format;
+					new_formatsranges[new_cnt*2]=start;
+					new_formatsranges[(new_cnt*2)+1]=end;
+					new_cnt++;
+				}
+			}
+			new_formatslist[new_cnt]=this._explicitFormats[i];
+			new_formatsranges[new_cnt*2]=this._explicitFormatsRanges[(i*2)];
+			new_formatsranges[(new_cnt*2)+1]=this._explicitFormatsRanges[(i*2)+1];
+			new_cnt++;
+		}
+		this._explicitFormats=new_formatslist;
+		this._explicitFormatsRanges=new_formatsranges;
+	}
+	private getFormatAtChar(char_pos:number):TextFormat
+	{
+		var i:number=0;
+		var len:number=this._explicitFormats.length;
+		var active_format:TextFormat=this.textFormat;
+		for(i=0; i<len; i++){
+			if((this._explicitFormatsRanges[(i*2)]<=char_pos)&&(this._explicitFormatsRanges[(i*2)+1]>=char_pos)){
+				active_format=this._explicitFormats[i];
+			}
+		}
+		return active_format;
+	}
 	/**
 	 * Specifies whether the text field has a background fill. If
 	 * <code>true</code>, the text field has a background fill. If
@@ -308,7 +354,7 @@ export class TextField extends Sprite
 	 * <code>setSelection()</code> and <code>replaceSelectedText()</code>, the
 	 * <code>defaultTextFormat</code> will be applied only if the text has been
 	 * selected up to and including the last character. Here is an example:</p>
-	 * <pre xml:space="preserve"> public my_txt:TextField new TextField();
+	 * <pre xml:space="preserve"> public my_txt:TextFieldMultiRender new TextFieldMultiRender();
 	 * my_txt.text = "Flash Macintosh version"; public my_fmt:TextFormat = new
 	 * TextFormat(); my_fmt.color = 0xFF0000; my_txt.defaultTextFormat = my_fmt;
 	 * my_txt.setSelection(6,15); // partial text selected - defaultTextFormat
@@ -435,7 +481,7 @@ export class TextField extends Sprite
 	 * of type <code>TextFieldType.INPUT</code>, the <code>multiline</code> value
 	 * determines whether the <code>Enter</code> key creates a new line(a value
 	 * of <code>false</code>, and the <code>Enter</code> key is ignored). If you
-	 * paste text into a <code>TextField</code> with a <code>multiline</code>
+	 * paste text into a <code>TextFieldMultiRender</code> with a <code>multiline</code>
 	 * value of <code>false</code>, newlines are stripped out of the text.
 	 * 
 	 * @default false
@@ -600,9 +646,9 @@ export class TextField extends Sprite
 	 * use is removed, the text field is redrawn without a style sheet. </p>
 	 *
 	 * <p><b>Note:</b> If the style sheet is removed, the contents of both
-	 * <code>TextField.text</code> and <code> TextField.htmlText</code> change to
+	 * <code>TextFieldMultiRender.text</code> and <code> TextFieldMultiRender.htmlText</code> change to
 	 * incorporate the formatting previously applied by the style sheet. To
-	 * preserve the original <code>TextField.htmlText</code> contents without the
+	 * preserve the original <code>TextFieldMultiRender.htmlText</code> contents without the
 	 * formatting, save the value in a variable before removing the style
 	 * sheet.</p>
 	 */
@@ -671,7 +717,7 @@ export class TextField extends Sprite
 	 */
 	public _textColor:number /*int*/;
 
-	public get textColor():number
+	public get textColor()
 	{
 		return this._textColor;
 	}
@@ -772,15 +818,15 @@ export class TextField extends Sprite
 	/**
 	 *
 	 */
-	public get isEntity():boolean
+	public get isEntity()
 	{
 		return true; //TODO do this better
 	}
 
 	/**
-	 * Creates a new TextField instance. After you create the TextField instance,
+	 * Creates a new TextFieldMultiRender instance. After you create the TextFieldMultiRender instance,
 	 * call the <code>addChild()</code> or <code>addChildAt()</code> method of
-	 * the parent DisplayObjectContainer object to add the TextField instance to
+	 * the parent DisplayObjectContainer object to add the TextFieldMultiRender instance to
 	 * the display list.
 	 *
 	 * <p>The default size for a text field is 100 x 100 pixels.</p>
@@ -792,7 +838,7 @@ export class TextField extends Sprite
 		this.type = TextFieldType.STATIC;
 	}
 
-	public clear():void
+	public clear()
 	{
 		super.clear();
 
@@ -803,17 +849,17 @@ export class TextField extends Sprite
 	/**
 	 * @inheritDoc
 	 */
-	public dispose():void
+	public dispose()
 	{
 		this.disposeValues();
 
-		TextField._textFields.push(this);
+		TextFieldMultiRender._textFields.push(this);
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public disposeValues():void
+	public disposeValues()
 	{
 		super.disposeValues();
 
@@ -829,7 +875,7 @@ export class TextField extends Sprite
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
-	public reConstruct() {
+	public reConstruct(useCanvas2dhack:boolean=false) {
 
 		this._textGraphicsDirty = false;
 
@@ -849,206 +895,306 @@ export class TextField extends Sprite
 		if(this._text == "")
 			return;
 
-		var numVertices:number = 0;
-		var elements:TriangleElements;
-		var thisFormat:TesselatedFontTable=<TesselatedFontTable>this._textFormat.font_table;
+		var activeFormat:TextFormat=null;
+		var newFormat:TextFormat=null;
 
-		var fallbackFormat:TesselatedFontTable=null;
-		if (this._textFormat.fallback_font_table)
-			fallbackFormat = <TesselatedFontTable>this._textFormat.fallback_font_table;
-
-
-		var char_scale:number=this._textFormat.size/thisFormat.get_font_em_size();
-		var y_offset:number=0;
-		var prev_char:TesselatedFontChar = null;
-		var j:number = 0;
-		var k:number = 0;
-		var whitespace_width=(thisFormat.get_whitespace_width() * char_scale)+this._textFormat.letterSpacing;
+		// split text into lines
+		// todo: split at all sorts of linebreaks (incl escaped linebreaks like we do right now)
 		var textlines:Array<string> = this.text.toString().split("\\n");
-		var final_lines_chars:Array<Array<TesselatedFontChar>> = [];
-		var final_lines_char_scale:Array<Array<number>> = [];
-		var final_lines_width:Array<number> = [];
-		var final_lines_justify_bool:Array<Boolean> = [];
-		var final_lines_justify:Array<number> = [];
 		var maxlineWidth:number=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
-		for (var tl = 0; tl < textlines.length; tl++) {
 
-			final_lines_chars.push([]);
-			final_lines_char_scale.push([]);
-			final_lines_width.push(0);
-			final_lines_justify.push(0);
-			final_lines_justify_bool.push(false);
+		var tl_char_codes:Array<Array<number>> = [];
+		var tl_char_widths:Array<Array<number>> = [];
+		var tl_char_formats:Array<Array<TextFormat>> = [];
+		var tl_width:Array<number> = [];
+		var tl_height:Array<number> = [];
+		var tl_cnt:number=0;
+		var w:number=0;
+		var c:number=0;
+		var tl:number=0;
+		var words:Array<string>;
+		var char_cnt:number=0;
+		var char_width:number=0;
+		var numVertices:number = 0;
+		this._line_indices=[];
+		// sort all chars into final lines
+		for (tl = 0; tl < textlines.length; tl++) {
+			console.log("textline nr: "+tl+" : "+textlines[tl]);
+			this._line_indices[tl_cnt]=char_cnt;
+			tl_char_codes[tl_cnt]=[];
+			tl_char_widths[tl_cnt]=[];
+			tl_char_formats[tl_cnt]=[];
+			tl_width[tl_cnt]=0;
+			tl_height[tl_cnt]=0;
+			tl_cnt++;
+			words = textlines[tl].split(" ");
+			for (w = 0; w < words.length; w++) {
+				var word_width:number=0;
+				var char_widths:Array<number>=[];
+				var char_formats:Array<TextFormat>=[];
+				var max_word_height:number=0;
+				for (c = 0; c < words[w].length; c++) {
+					newFormat=this.getFormatAtChar(char_cnt);
+					if(newFormat!=activeFormat){
+						activeFormat=newFormat;
+						activeFormat.font_table.initFontSize(activeFormat.size);
+					}
+					char_formats[c]=activeFormat;
+					var lineHeight:number=activeFormat.font_table.getLineHeight();
+					if(lineHeight>max_word_height)max_word_height=lineHeight;
 
-
-			var words:Array<string> = textlines[tl].split(" ");
-			for (var i = 0; i < words.length; i++) {
-				var word_width:number = 0;
-				var word_chars:Array<TesselatedFontChar> = [];
-				var word_chars_scale:Array<number> = [];
-				var c_cnt:number = 0;
-				for (var w = 0; w < words[i].length; w++) {
-					char_scale = this._textFormat.size / thisFormat.get_font_em_size();
-					var this_char:TesselatedFontChar = <TesselatedFontChar> thisFormat.getChar(words[i].charCodeAt(w).toString());
-					if (this_char == null) {
-						if (fallbackFormat) {
-							char_scale = this._textFormat.size / fallbackFormat.get_font_em_size();
-							this_char = fallbackFormat.getChar(words[i].charCodeAt(w).toString());
-						}
-					}
-					if (this_char != null) {
-						elements = this_char.elements;
-						if (elements != null) {
-							numVertices += elements.numVertices;
-							// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-							var kerning_value:number = 0;
-							if (prev_char != null) {
-								for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
-									if (prev_char.kerningCharCodes[k] == words[i].charCodeAt(w)) {
-										kerning_value = prev_char.kerningValues[k];
-										break;
-									}
-								}
-							}
-							word_width += ((2 + this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
-						}
-						else {
-							// if no char-elements was found, we insert a "space"
-							word_width += whitespace_width;
-						}
-					}
-					else {
-						// if no char-elements was found, we insert a "space"
-						//x_offset += thisFormat.get_font_em_size() * char_scale;
-						word_width += whitespace_width;
-					}
-					word_chars_scale[c_cnt] = char_scale;
-					word_chars[c_cnt++] = this_char;
+					char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
+					numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());
+					char_widths[c]=char_width;
+					word_width += char_width;
+					char_cnt++;
 				}
-
-				if (((final_lines_width[final_lines_width.length - 1] + word_width) <= maxlineWidth)||(final_lines_chars[final_lines_chars.length - 1].length==0)) {
-					// if line can hold this word without breaking the bounds, we can just add all chars
-					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
-						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
-						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+				// word fits into line, just add it to the last line
+				if((tl_width[tl_cnt-1]+word_width) <= maxlineWidth){
+					if(tl_width[tl_cnt-1]!=0){
+						// there is already a word in this line. we want to add a space
+						tl_char_codes[tl_cnt-1].push(32);
+						//todo: get correct format
+						tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32"));
+						tl_char_formats[tl_cnt-1].push(activeFormat);
+						tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32");
 					}
-					final_lines_width[final_lines_width.length - 1] += word_width;
+					for (c = 0; c < words[w].length; c++) {
+						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+						tl_char_widths[tl_cnt-1].push(char_widths[c]);
+						tl_char_formats[tl_cnt-1].push(char_formats[c]);
+						tl_width[tl_cnt-1]+=word_width;
+					}
+					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
-				else {
-					// word does not fit
-					// todo respect autowrapping properties.
-					// right now we just pretend everything has autowrapping and multiline
-					if(final_lines_chars[final_lines_chars.length - 1][final_lines_chars[final_lines_chars.length - 1].length-1]==null){
-						final_lines_chars[final_lines_chars.length - 1].pop();
-						final_lines_char_scale[final_lines_char_scale.length - 1].pop();
-						final_lines_width[final_lines_width.length - 1] -= whitespace_width;
-						final_lines_justify[final_lines_justify.length - 1]-=1;
+				// word does not fit into line, but it is first word added to line, so we add it anyway.
+				// todo: respect auto--wrap / multiline settings + optional include 3rd party tool for splitting into sylibils
+				else if(tl_width[tl_cnt-1]==0){
+					for (c = 0; c < words[w].length; c++) {
+						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+						tl_char_widths[tl_cnt-1].push(char_widths[c]);
+						tl_char_formats[tl_cnt-1].push(char_formats[c]);
+						tl_width[tl_cnt-1]+=word_width;
 					}
-					final_lines_justify_bool[final_lines_justify_bool.length - 1]=true;
-					final_lines_chars.push([]);
-					final_lines_char_scale.push([]);
-					final_lines_width.push(0);
-					final_lines_justify.push(0);
-					final_lines_justify_bool.push(false);
-					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
-						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
-						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
-					}
-					final_lines_width[final_lines_width.length - 1] = word_width;
+					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
-				if (i < (words.length - 1)) {
-					if ((final_lines_width[final_lines_width.length - 1]) <= maxlineWidth) {
-						final_lines_chars[final_lines_chars.length - 1].push(null);
-						final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
-						final_lines_width[final_lines_width.length - 1] += whitespace_width;
-						final_lines_justify[final_lines_justify.length - 1]+=1;
-
+				// word does not fit, and there are already words on this line
+				else{
+					tl_char_codes[tl_cnt]=[];
+					tl_char_widths[tl_cnt]=[];
+					tl_char_formats[tl_cnt]=[];
+					tl_width[tl_cnt]=0;
+					tl_height[tl_cnt]=0;
+					tl_cnt++;
+					for (c = 0; c < words[w].length; c++) {
+						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+						tl_char_widths[tl_cnt-1].push(char_widths[c]);
+						tl_char_formats[tl_cnt-1].push(char_formats[c]);
+						tl_width[tl_cnt-1]+=word_width;
 					}
+					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
 			}
 		}
-
-		y_offset=2+(thisFormat.ascent-thisFormat.get_font_em_size())*char_scale;
-
-		var vertices:Float32Array = new Float32Array(numVertices*3);
-
-		for (var i = 0; i < final_lines_chars.length; i++) {
+		var tl_startx:Array<Array<number> >=[];
+		// calculate the final positions of the chars
+		for (tl = 0; tl < tl_width.length; tl++) {
 
 			var x_offset:number= 2 + this._textFormat.leftMargin + this._textFormat.indent;
 			var justify_addion:number=0;
 			if(this._textFormat.align=="center"){
-				x_offset=2 + this._textFormat.leftMargin + this._textFormat.indent+(maxlineWidth-final_lines_width[i])/2;
+				x_offset=2 + this._textFormat.leftMargin + this._textFormat.indent+(maxlineWidth-tl_width[tl])/2;
 			}
 			else if(this._textFormat.align=="justify"){
-				if(final_lines_justify_bool[i]){
+				/*if(final_lines_justify_bool[i]){
 					justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
-				}
+				}*/
 			}
 			else if(this._textFormat.align=="right"){
-				x_offset=(this._textWidth-final_lines_width[i])-(2 + this._textFormat.rightMargin);
+				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
 			}
-			//console.log("this._textFormat.align="+this._textFormat.align);
-			//console.log("this._width="+this._width);
-			for (var t = 0; t < final_lines_chars[i].length; t++) {
-				var this_char:TesselatedFontChar = final_lines_chars[i][t];
-				char_scale = final_lines_char_scale[i][t];
-				if (this_char != null) {
-					elements = this_char.elements;
-					if (elements != null) {
-						var buffer:Float32Array = new Float32Array(elements.concatenatedBuffer.buffer);
-						for (var v:number = 0; v < elements.numVertices; v++) {
-							vertices[j++] = buffer[v*3]*char_scale + x_offset;
-							vertices[j++] = buffer[v*3 + 1]*char_scale + y_offset;
-							vertices[j++] = buffer[v*3 + 2];
-						}
-						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-						var kerning_value:number = 0;
-						if (prev_char != null) {
-							for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
-								if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-									kerning_value = prev_char.kerningValues[k];
-									break;
-								}
-							}
-						}
-						x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
-
-					}
-					else {
-						// if no char-elements was found, we insert a "space"
-						x_offset+=whitespace_width+justify_addion;
-					}
-				}
-				else{
-					x_offset+=whitespace_width+justify_addion;
+			tl_startx[tl]=[];
+			this.textHeight=0;
+			for (var c = 0; c < tl_char_codes[tl].length; c++) {
+				this.textHeight+=tl_height[tl];
+				tl_startx[tl][c]=x_offset;
+				x_offset+=tl_char_widths[tl][c];
+				// if this is a whitespace, we add the justify additional spacer
+				if(tl_char_codes[tl][c]==32){
+					x_offset+=justify_addion;
 				}
 			}
-			// hack for multiline textfield in icycle.
-
-			y_offset+=(thisFormat.ascent + thisFormat.descent)*char_scale;
-			//y_offset+=(thisFormat.get_font_em_size()-thisFormat.descent)*char_scale;
-			y_offset+= this._textFormat.leading;
-
-
 		}
 
 
-		var attributesView:AttributesView = new AttributesView(Float32Array, 3);
-		attributesView.set(vertices);
-		var vertexBuffer:AttributesBuffer = attributesView.buffer;
-		attributesView.dispose();
+		//todo: i tried to use the isAsset() function instead of comparing the strings myself, but this didnt seem to work. need to find out why
+		if(this._textFormat.font_table.assetType==TesselatedFontTable.assetType){
+			var tess_fontTable:TesselatedFontTable = <TesselatedFontTable>this._textFormat.font_table;
+			var elements:TriangleElements;
+			var j:number = 0;
+			var k:number = 0;
+			var y_offset:number=0;
+			var char_scale:number=0;
+			var vertices:Float32Array = new Float32Array(numVertices*3);
 
-		this._textElements = new TriangleElements(vertexBuffer);
-		this._textElements.setPositions(new Float2Attributes(vertexBuffer));
-		this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+			for (tl = 0; tl < tl_width.length; tl++) {
+				console.log("textline nr: "+tl+" : "+tl_char_codes[tl]);
+				//console.log("tl_width = "+tl_width[tl]);
+				y_offset+=tl_height[tl];
+				for (var c = 0; c < tl_char_codes[tl].length; c++) {
+					var this_char:TesselatedFontChar = tess_fontTable.getChar(tl_char_codes[tl][c].toString());
+					char_scale = tess_fontTable._size_multiply;
+					if (this_char != null) {
+						elements = this_char.elements;
+						if (elements != null) {
+							var buffer:Float32Array = new Float32Array(elements.concatenatedBuffer.buffer);
+							for (var v:number = 0; v < elements.numVertices; v++) {
+								vertices[j++] = buffer[v*3] * char_scale + tl_startx[tl][c];
+								vertices[j++] = buffer[v*3 + 1] * char_scale + y_offset-tl_height[tl];
+								vertices[j++] = buffer[v*3 + 2];
+							}
+						}
+					}
+				}
+			}
 
-		this._textGraphic = this._graphics.addGraphic(this._textElements);
 
-		this.material = this._textFormat.material;
-		var sampler:Sampler2D = new Sampler2D();
-		this.style = new Style();
-		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
-		this.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
-		this.material.animateUVs = true;
+			var attributesView:AttributesView = new AttributesView(Float32Array, 3);
+			attributesView.set(vertices);
+			var vertexBuffer:AttributesBuffer = attributesView.buffer;
+			attributesView.dispose();
+
+			this._textElements = new TriangleElements(vertexBuffer);
+			this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+			this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+
+			this._textGraphic = this._graphics.addGraphic(this._textElements);
+
+			this.material = this._textFormat.material;
+			var sampler:Sampler2D = new Sampler2D();
+			this.style = new Style();
+			this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+			this.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+			this.material.animateUVs = true;
+		}
+
+		else if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
+			console.log("contruct bitmap text = "+this._text);
+			var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
+			if(!useCanvas2dhack){
+				var vertices:Float32Array = new Float32Array(numVertices*7);
+				var vert_cnt:number=0;
+				var y_offset:number=0;//2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+				for (tl = 0; tl < tl_width.length; tl++) {
+					console.log("textline nr: "+tl+" : "+tl_char_codes[tl]);
+					//console.log("tl_width = "+tl_width[tl]);
+					y_offset+=tl_height[tl];
+					for (var c = 0; c < tl_char_codes[tl].length; c++) {
+						//console.log("tl_char_codes[tl] = "+tl_char_codes[tl][c]);
+						//console.log("tl_startx[tl] = "+tl_startx[tl][c]);
+						//console.log("y_offset = "+y_offset);
+						//console.log("vert_cnt = "+vert_cnt);
+						var char_data:Array<number>=bitmap_fontTable.getCharData(tl_char_codes[tl][c].toString());
+
+						console.log("char_data = "+char_data);
+						vertices[vert_cnt++] = tl_startx[tl][c]+char_data[4];
+						vertices[vert_cnt++] = y_offset-tl_height[tl]+char_data[5];
+						vertices[vert_cnt++] = char_data[0];
+						vertices[vert_cnt++] = char_data[1];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c]+char_data[4];
+						vertices[vert_cnt++] = y_offset -tl_height[tl]+char_data[5];
+						vertices[vert_cnt++] = char_data[0] + char_data[2];
+						vertices[vert_cnt++] = char_data[1];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c]+char_data[4];
+						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = char_data[0] + char_data[2];
+						vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c]+char_data[4];
+						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = char_data[0] + char_data[2];
+						vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+						vertices[vert_cnt++] = tl_startx[tl][c]+char_data[4];
+						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = char_data[0];
+						vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+						vertices[vert_cnt++] = tl_startx[tl][c]+char_data[4];
+						vertices[vert_cnt++] = y_offset -tl_height[tl]+char_data[5];
+						vertices[vert_cnt++] = char_data[0];
+						vertices[vert_cnt++] = char_data[1];
+					}
+				}
+				var attributesView:AttributesView = new AttributesView(Float32Array, 4);
+				attributesView.set(vertices);
+				var vertexBuffer:AttributesBuffer = attributesView.buffer;
+				attributesView.dispose();
+
+				this._textElements = new TriangleElements(vertexBuffer);
+				this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+				//this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+				//this._textElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+				this._textElements.setUVs(new Float2Attributes(vertexBuffer));
+
+				this._textGraphic = this._graphics.addGraphic(this._textElements);
+
+				var basic_mat:BasicMaterial = new BasicMaterial();
+				basic_mat.texture = new Single2DTexture(bitmap_fontTable.get_page());
+				basic_mat.bothSides = true;
+				//basic_mat.preserveAlpha = true;
+				basic_mat.alphaBlending = true;
+				this.material = <MaterialBase>basic_mat;
+				//var sampler:Sampler2D = new Sampler2D();
+				//this.style = new Style();
+				//this.style.addSamplerAt(sampler, new Single2DTexture(bitmap_fontTable.get_page()));
+				//this.style.uvMatrix = new Matrix(0,0,0,0, 0, 0);
+				//this.material.animateUVs = true;
+			}
+			else{
+
+				var canvas:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
+				if (canvas==null){
+					canvas = document.createElement("canvas");
+					canvas.id = "myCanvas";
+					document.body.appendChild(canvas);
+
+				}
+				var ctx = canvas.getContext("2d");
+				ctx.canvas.width  = window.innerWidth;
+				ctx.canvas.height = window.innerHeight;
+				//var transform_mx:Matrix3D=this.transform.matrix3D;
+				//ctx.setTransform(transform_mx.a,transform_mx.b,transform_mx.c,transform_mx.d,transform_mx.tx,transform_mx.ty);
+				ctx.rect(0, 0, this.textWidth, this.textHeight);
+				ctx.fillStyle = "black";
+				ctx.fill();
+				//ctx.drawImage(bitmap_fontTable.get_page().getCanvas(), 50, 50, 200, 200, 0, 0, 100, 100);
+				var y_offset:number=0;//2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+				for (tl = 0; tl < tl_width.length; tl++) {
+					console.log("textline nr: "+tl+" : "+tl_char_codes[tl]);
+					//console.log("tl_width = "+tl_width[tl]);
+					y_offset+=tl_height[tl];
+					for (var c = 0; c < tl_char_codes[tl].length; c++) {
+						var char_data:Array<number>=bitmap_fontTable.getCharDataCanvas(tl_char_codes[tl][c].toString());
+
+						ctx.drawImage(
+							bitmap_fontTable.get_page().getCanvas(),
+							char_data[0], char_data[1],
+							char_data[2], char_data[3],
+							tl_startx[tl][c] + char_data[4], y_offset - tl_height[tl] + char_data[5],
+							tl_char_widths[tl][c], tl_height[tl] - char_data[5]
+						);
+
+
+					}
+				}
+			}
+		}
+
+
+
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
@@ -1067,7 +1213,7 @@ export class TextField extends Sprite
 	 * *tells the Textfield that a paragraph is defined completly.
 	 * e.g. the textfield will start a new line for future added text.
 	 */
-	public closeParagraph():void
+	public closeParagraph()
 	{
 		//TODO
 	}
@@ -1281,7 +1427,7 @@ export class TextField extends Sprite
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public replaceSelectedText(value:string):void
+	public replaceSelectedText(value:string)
 	{
 
 	}
@@ -1304,7 +1450,7 @@ export class TextField extends Sprite
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public replaceText(beginIndex:number /*int*/, endIndex:number /*int*/, newText:string):void
+	public replaceText(beginIndex:number /*int*/, endIndex:number /*int*/, newText:string)
 	{
 
 	}
@@ -1322,7 +1468,7 @@ export class TextField extends Sprite
 	 * @param endIndex   The zero-based index value of the last character in the
 	 *                   selection.
 	 */
-	public setSelection(beginIndex:number /*int*/, endIndex:number /*int*/):void
+	public setSelection(beginIndex:number /*int*/, endIndex:number /*int*/)
 	{
 
 	}
@@ -1372,7 +1518,7 @@ export class TextField extends Sprite
 	 * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
 	 *                    specified is out of range.
 	 */
-	public setTextFormat(format:TextFormat, beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):void
+	public setTextFormat(format:TextFormat, beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1)
 	{
 
 	}
@@ -1382,13 +1528,13 @@ export class TextField extends Sprite
 	 * <code>fontName</code> and <code>fontStyle</code> where
 	 * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
 	 * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
-	 * SWF file. Normal embedded fonts are only used with TextField objects. CFF
+	 * SWF file. Normal embedded fonts are only used with TextFieldMultiRender objects. CFF
 	 * embedded fonts are only used with the flash.text.engine classes. The two
 	 * types are distinguished by the <code>fontType</code> property of the
 	 * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
 	 * function.
 	 *
-	 * <p>TextField cannot use a font of type <code>EMBEDDED_CFF</code>. If
+	 * <p>TextFieldMultiRender cannot use a font of type <code>EMBEDDED_CFF</code>. If
 	 * <code>embedFonts</code> is set to <code>true</code> and the only font
 	 * available at run time with the specified name and style is of type
 	 * <code>EMBEDDED_CFF</code>, Flash Player fails to render the text, as if no
@@ -1411,9 +1557,9 @@ export class TextField extends Sprite
 		return false;
 	}
 
-    public clone():TextField
+    public clone():TextFieldMultiRender
     {
-		var newInstance:TextField = (TextField._textFields.length)? TextField._textFields.pop() : new TextField();
+		var newInstance:TextFieldMultiRender = (TextFieldMultiRender._textFields.length)? TextFieldMultiRender._textFields.pop() : new TextFieldMultiRender();
 
 		this.copyTo(newInstance);
 
@@ -1421,7 +1567,7 @@ export class TextField extends Sprite
     }
 
 
-	public copyTo(newInstance:TextField):void
+	public copyTo(newInstance:TextFieldMultiRender)
 	{
 		super.copyTo(newInstance);
 

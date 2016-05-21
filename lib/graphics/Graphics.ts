@@ -18,9 +18,6 @@ import {StyleEvent}					from "../events/StyleEvent";
 import {ITraverser}					from "../ITraverser";
 import {ParticleData}					from "../animators/data/ParticleData";
 
-
-
-
 import {GraphicsPath}					from "../draw/GraphicsPath";
 import {GraphicsPathCommand}			from "../draw/GraphicsPathCommand";
 import {GraphicsFactoryFills}			from "../draw/GraphicsFactoryFills";

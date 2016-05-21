@@ -1,6 +1,6 @@
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}						from "awayjs-core/lib/library/AssetBase";
 
-import {TesselatedFontTable}			from "../text/TesselatedFontTable";
+import {IFontTable}						from "../text/IFontTable";
 import {MaterialBase}					from "../materials/MaterialBase";
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -109,12 +109,12 @@ export class TextFormat extends AssetBase
 	/**
 	 * The font-table that provides the subgeos for the chars
 	 */
-	public font_table:TesselatedFontTable;
+	public font_table:IFontTable;
 
 	/**
 	 * The font-table that provides the subgeos for the chars
 	 */
-	public fallback_font_table:TesselatedFontTable;
+	public fallback_font_table:IFontTable;
 
 	/**
 	 * Indicates the indentation from the left margin to the first character in
@@ -190,7 +190,7 @@ export class TextFormat extends AssetBase
 	 * (<code>null</code>), the default tab stop is 4(average character width).
 	 */
 	//todo: not used with in tesselated-font-table yet
-	public tabStops:Array<number /*int*/> = new Array<number>();
+	public tabStops:Array<number /*int*/> = [];
 
 	/**
 	 * Indicates the target window where the hyperlink is displayed. If the

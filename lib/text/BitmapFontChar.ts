@@ -28,32 +28,32 @@ import {TriangleElements}				from "../graphics/TriangleElements";
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-export class TesselatedFontChar
+export class BitmapFontChar
 {
 
-	/**
-	 * The width of the char
-	 */
-	public char_width:number;
+	public id:string;
+	public x:number;
+	public y:number;
+	public width:number;
+	public height:number;
+	public x_offset:number;
+	public y_offset:number;
+	public x_advance:number;
+	public page:number;
+	public channel:number;
 
-	/**
-	 * Elements for this char
-	 */
-	public elements:TriangleElements;
-
-	/**
-	 * the char_codes that this geom has kerning set for
-	 */
-	public kerningCharCodes:Array<number>=[];
-	/**
-	 * the kerning values per char_code
-	 */
-	public kerningValues:Array<number>=[];
-
-
-	constructor(elements:TriangleElements)
+	constructor(id:string, x:number,y:number, width:number,  height:number, xoff:number, yoff:number, xadv:number, page:number, channel: number)
 	{
-		this.elements = elements;
+		this.id = id;
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.x_offset = xoff;
+		this.y_offset = yoff;
+		this.x_advance = xadv;
+		this.page = page;
+		this.channel = channel;
 	}
 
 }

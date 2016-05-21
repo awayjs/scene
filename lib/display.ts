@@ -15,3 +15,4 @@ export {Shape}							from "./display/Shape";
 export {Skybox}							from "./display/Skybox";
 export {Sprite}							from "./display/Sprite";
 export {TextField}						from "./display/TextField";
+export {TextFieldMultiRender}			from "./display/TextFieldMultiRender";
