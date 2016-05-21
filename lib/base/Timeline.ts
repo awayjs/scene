@@ -419,14 +419,14 @@ export class Timeline
 
 		i *= 8;
 		var new_ct:ColorTransform = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
-		new_ct.redMultiplier = this.properties_stream_f32_ct[i++];
-		new_ct.greenMultiplier = this.properties_stream_f32_ct[i++];
-		new_ct.blueMultiplier = this.properties_stream_f32_ct[i++];
-		new_ct.alphaMultiplier = this.properties_stream_f32_ct[i++];
-		new_ct.redOffset = this.properties_stream_f32_ct[i++];
-		new_ct.greenOffset = this.properties_stream_f32_ct[i++];
-		new_ct.blueOffset = this.properties_stream_f32_ct[i++];
-		new_ct.alphaOffset = this.properties_stream_f32_ct[i];
+		new_ct.rawData[0] = this.properties_stream_f32_ct[i++];
+		new_ct.rawData[1] = this.properties_stream_f32_ct[i++];
+		new_ct.rawData[2] = this.properties_stream_f32_ct[i++];
+		new_ct.rawData[3] = this.properties_stream_f32_ct[i++];
+		new_ct.rawData[4] = this.properties_stream_f32_ct[i++];
+		new_ct.rawData[5] = this.properties_stream_f32_ct[i++];
+		new_ct.rawData[6] = this.properties_stream_f32_ct[i++];
+		new_ct.rawData[7] = this.properties_stream_f32_ct[i];
 
 		child.transform.invalidateColorTransform();
 	}
