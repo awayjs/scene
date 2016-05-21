@@ -48,16 +48,14 @@ partition.PartitionBase.registerAbstraction(partition.EntityNode, display.MovieC
 partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Billboard);
 partition.PartitionBase.registerAbstraction(partition.EntityNode, display.LineSegment);
 partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextField);
+partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextFieldMultiRender);
 partition.PartitionBase.registerAbstraction(partition.LightProbeNode, display.LightProbe);
 partition.PartitionBase.registerAbstraction(partition.PointLightNode, display.PointLight);
 partition.PartitionBase.registerAbstraction(partition.SkyboxNode, display.Skybox);
-
 },{"./lib/View":"awayjs-display/lib/View","./lib/adapters":"awayjs-display/lib/adapters","./lib/animators":"awayjs-display/lib/animators","./lib/base":"awayjs-display/lib/base","./lib/bounds":"awayjs-display/lib/bounds","./lib/controllers":"awayjs-display/lib/controllers","./lib/display":"awayjs-display/lib/display","./lib/draw":"awayjs-display/lib/draw","./lib/errors":"awayjs-display/lib/errors","./lib/events":"awayjs-display/lib/events","./lib/factories":"awayjs-display/lib/factories","./lib/graphics":"awayjs-display/lib/graphics","./lib/managers":"awayjs-display/lib/managers","./lib/materials":"awayjs-display/lib/materials","./lib/partition":"awayjs-display/lib/partition","./lib/pick":"awayjs-display/lib/pick","./lib/prefabs":"awayjs-display/lib/prefabs","./lib/text":"awayjs-display/lib/text","./lib/textures":"awayjs-display/lib/textures","./lib/utils":"awayjs-display/lib/utils"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/ITraverser":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/View":[function(require,module,exports){
 "use strict";
 var getTimer_1 = require("awayjs-core/lib/utils/getTimer");
@@ -549,22 +547,16 @@ var View = (function () {
     return View;
 }());
 exports.View = View;
-
 },{"./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./display/Camera":"awayjs-display/lib/display/Camera","./display/Scene":"awayjs-display/lib/display/Scene","./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker","awayjs-core/lib/utils/getTimer":undefined}],"awayjs-display/lib/adapters/IDisplayObjectAdapter":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/adapters/IMovieClipAdapter":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/adapters":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/IAnimationSet":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/IAnimator":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/data/ParticleData":[function(require,module,exports){
 "use strict";
 var ParticleData = (function () {
@@ -575,7 +567,6 @@ var ParticleData = (function () {
 exports.ParticleData = ParticleData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ParticleData;
-
 },{}],"awayjs-display/lib/animators/nodes/AnimationNodeBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -621,14 +612,12 @@ var AnimationNodeBase = (function (_super) {
     return AnimationNodeBase;
 }(AssetBase_1.AssetBase));
 exports.AnimationNodeBase = AnimationNodeBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/animators":[function(require,module,exports){
 "use strict";
 var ParticleData_1 = require("./animators/data/ParticleData");
 exports.ParticleData = ParticleData_1.ParticleData;
 var AnimationNodeBase_1 = require("./animators/nodes/AnimationNodeBase");
 exports.AnimationNodeBase = AnimationNodeBase_1.AnimationNodeBase;
-
 },{"./animators/data/ParticleData":"awayjs-display/lib/animators/data/ParticleData","./animators/nodes/AnimationNodeBase":"awayjs-display/lib/animators/nodes/AnimationNodeBase"}],"awayjs-display/lib/base/AlignmentMode":[function(require,module,exports){
 "use strict";
 /**
@@ -648,7 +637,6 @@ var AlignmentMode = (function () {
     return AlignmentMode;
 }());
 exports.AlignmentMode = AlignmentMode;
-
 },{}],"awayjs-display/lib/base/HierarchicalProperties":[function(require,module,exports){
 "use strict";
 /**
@@ -688,16 +676,12 @@ var HierarchicalProperties = (function () {
     return HierarchicalProperties;
 }());
 exports.HierarchicalProperties = HierarchicalProperties;
-
 },{}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/IRenderable":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/ISurface":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/OrientationMode":[function(require,module,exports){
 "use strict";
 var OrientationMode = (function () {
@@ -718,7 +702,6 @@ var OrientationMode = (function () {
     return OrientationMode;
 }());
 exports.OrientationMode = OrientationMode;
-
 },{}],"awayjs-display/lib/base/Style":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -835,7 +818,6 @@ var Style = (function (_super) {
     return Style;
 }(EventDispatcher_1.EventDispatcher));
 exports.Style = Style;
-
 },{"../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/events/EventDispatcher":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
 "use strict";
 var HierarchicalProperties_1 = require("../base/HierarchicalProperties");
@@ -1206,7 +1188,6 @@ var Timeline = (function () {
     return Timeline;
 }());
 exports.Timeline = Timeline;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/ColorTransform":undefined}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
 "use strict";
 /**
@@ -1221,7 +1202,6 @@ var TouchPoint = (function () {
     return TouchPoint;
 }());
 exports.TouchPoint = TouchPoint;
-
 },{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1736,7 +1716,6 @@ var Transform = (function (_super) {
     return Transform;
 }(EventDispatcher_1.EventDispatcher));
 exports.Transform = Transform;
-
 },{"../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/base":[function(require,module,exports){
 "use strict";
 var AlignmentMode_1 = require("./base/AlignmentMode");
@@ -1753,7 +1732,6 @@ var TouchPoint_1 = require("./base/TouchPoint");
 exports.TouchPoint = TouchPoint_1.TouchPoint;
 var Transform_1 = require("./base/Transform");
 exports.Transform = Transform_1.Transform;
-
 },{"./base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","./base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","./base/OrientationMode":"awayjs-display/lib/base/OrientationMode","./base/Style":"awayjs-display/lib/base/Style","./base/Timeline":"awayjs-display/lib/base/Timeline","./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./base/Transform":"awayjs-display/lib/base/Transform"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1877,7 +1855,6 @@ var AxisAlignedBoundingBox = (function (_super) {
     return AxisAlignedBoundingBox;
 }(BoundingVolumeBase_1.BoundingVolumeBase));
 exports.AxisAlignedBoundingBox = AxisAlignedBoundingBox;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1971,7 +1948,6 @@ var BoundingSphere = (function (_super) {
     return BoundingSphere;
 }(BoundingVolumeBase_1.BoundingVolumeBase));
 exports.BoundingSphere = BoundingSphere;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingVolumeBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -2024,7 +2000,6 @@ var BoundingVolumeBase = (function () {
     return BoundingVolumeBase;
 }());
 exports.BoundingVolumeBase = BoundingVolumeBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/bounds/BoundsType":[function(require,module,exports){
 "use strict";
 /**
@@ -2048,7 +2023,6 @@ var BoundsType = (function () {
     return BoundsType;
 }());
 exports.BoundsType = BoundsType;
-
 },{}],"awayjs-display/lib/bounds/NullBounds":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2079,7 +2053,6 @@ var NullBounds = (function (_super) {
     return NullBounds;
 }(BoundingVolumeBase_1.BoundingVolumeBase));
 exports.NullBounds = NullBounds;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds":[function(require,module,exports){
 "use strict";
 var AxisAlignedBoundingBox_1 = require("./bounds/AxisAlignedBoundingBox");
@@ -2092,7 +2065,6 @@ var BoundsType_1 = require("./bounds/BoundsType");
 exports.BoundsType = BoundsType_1.BoundsType;
 var NullBounds_1 = require("./bounds/NullBounds");
 exports.NullBounds = NullBounds_1.NullBounds;
-
 },{"./bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","./bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","./bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","./bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","./bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -2154,7 +2126,6 @@ var ControllerBase = (function () {
     return ControllerBase;
 }());
 exports.ControllerBase = ControllerBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/controllers/FirstPersonController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2386,7 +2357,6 @@ var FirstPersonController = (function (_super) {
     return FirstPersonController;
 }(ControllerBase_1.ControllerBase));
 exports.FirstPersonController = FirstPersonController;
-
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","awayjs-core/lib/geom/MathConsts":undefined}],"awayjs-display/lib/controllers/FollowController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2420,7 +2390,6 @@ var FollowController = (function (_super) {
     return FollowController;
 }(HoverController_1.HoverController));
 exports.FollowController = FollowController;
-
 },{"../controllers/HoverController":"awayjs-display/lib/controllers/HoverController"}],"awayjs-display/lib/controllers/HoverController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2720,7 +2689,6 @@ var HoverController = (function (_super) {
     return HoverController;
 }(LookAtController_1.LookAtController));
 exports.HoverController = HoverController;
-
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/LookAtController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2795,7 +2763,6 @@ var LookAtController = (function (_super) {
     return LookAtController;
 }(ControllerBase_1.ControllerBase));
 exports.LookAtController = LookAtController;
-
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/SpringController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2860,7 +2827,6 @@ var SpringController = (function (_super) {
     return SpringController;
 }(LookAtController_1.LookAtController));
 exports.SpringController = SpringController;
-
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers":[function(require,module,exports){
 "use strict";
 var ControllerBase_1 = require("./controllers/ControllerBase");
@@ -2875,7 +2841,6 @@ var LookAtController_1 = require("./controllers/LookAtController");
 exports.LookAtController = LookAtController_1.LookAtController;
 var SpringController_1 = require("./controllers/SpringController");
 exports.SpringController = SpringController_1.SpringController;
-
 },{"./controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","./controllers/FirstPersonController":"awayjs-display/lib/controllers/FirstPersonController","./controllers/FollowController":"awayjs-display/lib/controllers/FollowController","./controllers/HoverController":"awayjs-display/lib/controllers/HoverController","./controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","./controllers/SpringController":"awayjs-display/lib/controllers/SpringController"}],"awayjs-display/lib/display/Billboard":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3102,7 +3067,6 @@ var Billboard = (function (_super) {
     return Billboard;
 }(DisplayObject_1.DisplayObject));
 exports.Billboard = Billboard;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/geom/Rectangle":undefined}],"awayjs-display/lib/display/Camera":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3335,7 +3299,6 @@ var Camera = (function (_super) {
     return Camera;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.Camera = Camera;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined}],"awayjs-display/lib/display/DirectionalLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3497,7 +3460,6 @@ var DirectionalLight = (function (_super) {
     return DirectionalLight;
 }(LightBase_1.LightBase));
 exports.DirectionalLight = DirectionalLight;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/DisplayObjectContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -4085,7 +4047,6 @@ var DisplayObjectContainer = (function (_super) {
     return DisplayObjectContainer;
 }(DisplayObject_1.DisplayObject));
 exports.DisplayObjectContainer = DisplayObjectContainer;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/RangeError":undefined}],"awayjs-display/lib/display/DisplayObject":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -5968,10 +5929,8 @@ var DisplayObject = (function (_super) {
     return DisplayObject;
 }(AssetBase_1.AssetBase));
 exports.DisplayObject = DisplayObject;
-
 },{"../base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/OrientationMode":"awayjs-display/lib/base/OrientationMode","../base/Transform":"awayjs-display/lib/base/Transform","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","../pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/display/IEntity":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/display/LightBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6131,7 +6090,6 @@ var LightBase = (function (_super) {
     return LightBase;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.LightBase = LightBase;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/LightEvent":"awayjs-display/lib/events/LightEvent","awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/display/LightProbe":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6172,7 +6130,6 @@ var LightProbe = (function (_super) {
     return LightProbe;
 }(LightBase_1.LightBase));
 exports.LightProbe = LightProbe;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/image/SamplerCube":undefined}],"awayjs-display/lib/display/LineSegment":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6372,7 +6329,6 @@ var LineSegment = (function (_super) {
     return LineSegment;
 }(DisplayObject_1.DisplayObject));
 exports.LineSegment = LineSegment;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/display/LoaderContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6934,7 +6890,6 @@ var LoaderContainer = (function (_super) {
     return LoaderContainer;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.LoaderContainer = LoaderContainer;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined}],"awayjs-display/lib/display/MovieClip":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7266,7 +7221,6 @@ var MovieClip = (function (_super) {
 exports.MovieClip = MovieClip;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MovieClip;
-
 },{"../base/Timeline":"awayjs-display/lib/base/Timeline","../display/Sprite":"awayjs-display/lib/display/Sprite","../display/TextField":"awayjs-display/lib/display/TextField","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/display/PointLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7378,7 +7332,6 @@ var PointLight = (function (_super) {
     return PointLight;
 }(LightBase_1.LightBase));
 exports.PointLight = PointLight;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Scene":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7427,7 +7380,6 @@ var Scene = (function (_super) {
     return Scene;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.Scene = Scene;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/display/Shape":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7653,7 +7605,6 @@ var Shape = (function (_super) {
     return Shape;
 }(DisplayObject_1.DisplayObject));
 exports.Shape = Shape;
-
 },{"../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7913,7 +7864,6 @@ var Skybox = (function (_super) {
     return Skybox;
 }(DisplayObject_1.DisplayObject));
 exports.Skybox = Skybox;
-
 },{"../base/Style":"awayjs-display/lib/base/Style","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined}],"awayjs-display/lib/display/Sprite":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -8130,8 +8080,1019 @@ var Sprite = (function (_super) {
     return Sprite;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.Sprite = Sprite;
-
-},{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
+},{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/TextFieldMultiRender":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
+var Float2Attributes_1 = require("awayjs-core/lib/attributes/Float2Attributes");
+var Byte4Attributes_1 = require("awayjs-core/lib/attributes/Byte4Attributes");
+var Matrix_1 = require("awayjs-core/lib/geom/Matrix");
+var ColorTransform_1 = require("awayjs-core/lib/geom/ColorTransform");
+var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
+var HierarchicalProperties_1 = require("../base/HierarchicalProperties");
+var Style_1 = require("../base/Style");
+var TextFieldType_1 = require("../text/TextFieldType");
+var Sprite_1 = require("../display/Sprite");
+var TriangleElements_1 = require("../graphics/TriangleElements");
+var BitmapFontTable_1 = require("../text/BitmapFontTable");
+var Single2DTexture_1 = require("../textures/Single2DTexture");
+var TesselatedFontTable_1 = require("../text/TesselatedFontTable");
+var BasicMaterial_1 = require("../materials/BasicMaterial");
+/**
+ * The TextFieldMultiRender class is used to create display objects for text display and
+ * input. <ph outputclass="flexonly">You can use the TextFieldMultiRender class to
+ * perform low-level text rendering. However, in Flex, you typically use the
+ * Label, Text, TextArea, and TextInput controls to process text. <ph
+ * outputclass="flashonly">You can give a text field an instance name in the
+ * Property inspector and use the methods and properties of the TextFieldMultiRender
+ * class to manipulate it with ActionScript. TextFieldMultiRender instance names are
+ * displayed in the Movie Explorer and in the Insert Target Path dialog box in
+ * the Actions panel.
+ *
+ * <p>To create a text field dynamically, use the <code>TextFieldMultiRender()</code>
+ * constructor.</p>
+ *
+ * <p>The methods of the TextFieldMultiRender class let you set, select, and manipulate
+ * text in a dynamic or input text field that you create during authoring or
+ * at runtime. </p>
+ *
+ * <p>ActionScript provides several ways to format your text at runtime. The
+ * TextFormat class lets you set character and paragraph formatting for
+ * TextFieldMultiRender objects. You can apply Cascading Style Sheets(CSS) styles to
+ * text fields by using the <code>TextFieldMultiRender.styleSheet</code> property and the
+ * StyleSheet class. You can use CSS to style built-in HTML tags, define new
+ * formatting tags, or apply styles. You can assign HTML formatted text, which
+ * optionally uses CSS styles, directly to a text field. HTML text that you
+ * assign to a text field can contain embedded media(movie clips, SWF files,
+ * GIF files, PNG files, and JPEG files). The text wraps around the embedded
+ * media in the same way that a web browser wraps text around media embedded
+ * in an HTML document. </p>
+ *
+ * <p>Flash Player supports a subset of HTML tags that you can use to format
+ * text. See the list of supported HTML tags in the description of the
+ * <code>htmlText</code> property.</p>
+ *
+ * @event change                    Dispatched after a control value is
+ *                                  modified, unlike the
+ *                                  <code>textInput</code> event, which is
+ *                                  dispatched before the value is modified.
+ *                                  Unlike the W3C DOM Event Model version of
+ *                                  the <code>change</code> event, which
+ *                                  dispatches the event only after the
+ *                                  control loses focus, the ActionScript 3.0
+ *                                  version of the <code>change</code> event
+ *                                  is dispatched any time the control
+ *                                  changes. For example, if a user types text
+ *                                  into a text field, a <code>change</code>
+ *                                  event is dispatched after every keystroke.
+ * @event link                      Dispatched when a user clicks a hyperlink
+ *                                  in an HTML-enabled text field, where the
+ *                                  URL begins with "event:". The remainder of
+ *                                  the URL after "event:" is placed in the
+ *                                  text property of the LINK event.
+ *
+ *                                  <p><b>Note:</b> The default behavior,
+ *                                  adding the text to the text field, occurs
+ *                                  only when Flash Player generates the
+ *                                  event, which in this case happens when a
+ *                                  user attempts to input text. You cannot
+ *                                  put text into a text field by sending it
+ *                                  <code>textInput</code> events.</p>
+ * @event scroll                    Dispatched by a TextFieldMultiRender object
+ *                                  <i>after</i> the user scrolls.
+ * @event textInput                 Flash Player dispatches the
+ *                                  <code>textInput</code> event when a user
+ *                                  enters one or more characters of text.
+ *                                  Various text input methods can generate
+ *                                  this event, including standard keyboards,
+ *                                  input method editors(IMEs), voice or
+ *                                  speech recognition systems, and even the
+ *                                  act of pasting plain text with no
+ *                                  formatting or style information.
+ * @event textInteractionModeChange Flash Player dispatches the
+ *                                  <code>textInteractionModeChange</code>
+ *                                  event when a user changes the interaction
+ *                                  mode of a text field. for example on
+ *                                  Android, one can toggle from NORMAL mode
+ *                                  to SELECTION mode using context menu
+ *                                  options
+ */
+var TextFieldMultiRender = (function (_super) {
+    __extends(TextFieldMultiRender, _super);
+    /**
+     * Creates a new TextFieldMultiRender instance. After you create the TextFieldMultiRender instance,
+     * call the <code>addChild()</code> or <code>addChildAt()</code> method of
+     * the parent DisplayObjectContainer object to add the TextFieldMultiRender instance to
+     * the display list.
+     *
+     * <p>The default size for a text field is 100 x 100 pixels.</p>
+     */
+    function TextFieldMultiRender() {
+        _super.call(this);
+        this._explicitFormats = new Array();
+        this._explicitFormatsRanges = new Array();
+        this._line_indices = new Array();
+        this._text = "";
+        this.type = TextFieldType_1.TextFieldType.STATIC;
+    }
+    Object.defineProperty(TextFieldMultiRender.prototype, "assetType", {
+        /**
+         *
+         * @returns {string}
+         */
+        get: function () {
+            return TextFieldMultiRender.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    TextFieldMultiRender.prototype.setFormatForRange = function (start, end, format) {
+        var i = 0;
+        var len = this._explicitFormats.length;
+        var is_added = false;
+        var new_formatslist = new Array();
+        var new_formatsranges = new Array();
+        var new_cnt = 0;
+        for (i = 0; i < len; i++) {
+            if (!is_added) {
+                if (this._explicitFormatsRanges[(i * 2)] > start) {
+                    is_added = true;
+                    new_formatslist[new_cnt] = format;
+                    new_formatsranges[new_cnt * 2] = start;
+                    new_formatsranges[(new_cnt * 2) + 1] = end;
+                    new_cnt++;
+                }
+            }
+            new_formatslist[new_cnt] = this._explicitFormats[i];
+            new_formatsranges[new_cnt * 2] = this._explicitFormatsRanges[(i * 2)];
+            new_formatsranges[(new_cnt * 2) + 1] = this._explicitFormatsRanges[(i * 2) + 1];
+            new_cnt++;
+        }
+        this._explicitFormats = new_formatslist;
+        this._explicitFormatsRanges = new_formatsranges;
+    };
+    TextFieldMultiRender.prototype.getFormatAtChar = function (char_pos) {
+        var i = 0;
+        var len = this._explicitFormats.length;
+        var active_format = this.textFormat;
+        for (i = 0; i < len; i++) {
+            if ((this._explicitFormatsRanges[(i * 2)] <= char_pos) && (this._explicitFormatsRanges[(i * 2) + 1] >= char_pos)) {
+                active_format = this._explicitFormats[i];
+            }
+        }
+        return active_format;
+    };
+    Object.defineProperty(TextFieldMultiRender.prototype, "bottomScrollV", {
+        /**
+         * An integer(1-based index) that indicates the bottommost line that is
+         * currently visible in the specified text field. Think of the text field as
+         * a window onto a block of text. The <code>scrollV</code> property is the
+         * 1-based index of the topmost visible line in the window.
+         *
+         * <p>All the text between the lines indicated by <code>scrollV</code> and
+         * <code>bottomScrollV</code> is currently visible in the text field.</p>
+         */
+        get: function () {
+            return this._bottomScrollV;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "caretIndex", {
+        /**
+         * The index of the insertion point(caret) position. If no insertion point
+         * is displayed, the value is the position the insertion point would be if
+         * you restored focus to the field(typically where the insertion point last
+         * was, or 0 if the field has not had focus).
+         *
+         * <p>Selection span indexes are zero-based(for example, the first position
+         * is 0, the second position is 1, and so on).</p>
+         */
+        get: function () {
+            return this._caretIndex;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "length", {
+        /**
+         * The number of characters in a text field. A character such as tab
+         * (<code>\t</code>) counts as one character.
+         */
+        get: function () {
+            return this._length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * The maximum value of <code>scrollH</code>.
+     */
+    TextFieldMultiRender.prototype.maxScrollH = function () {
+        return this._maxScrollH;
+    };
+    /**
+     * The maximum value of <code>scrollV</code>.
+     */
+    TextFieldMultiRender.prototype.maxScrollV = function () {
+        return this._maxScrollV;
+    };
+    Object.defineProperty(TextFieldMultiRender.prototype, "numLines", {
+        /**
+         * Defines the number of text lines in a multiline text field. If
+         * <code>wordWrap</code> property is set to <code>true</code>, the number of
+         * lines increases when text wraps.
+         */
+        get: function () {
+            return this._numLines;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "selectionBeginIndex", {
+        /**
+         * The zero-based character index value of the first character in the current
+         * selection. For example, the first character is 0, the second character is
+         * 1, and so on. If no text is selected, this property is the value of
+         * <code>caretIndex</code>.
+         */
+        get: function () {
+            return this._selectionBeginIndex;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "selectionEndIndex", {
+        /**
+         * The zero-based character index value of the last character in the current
+         * selection. For example, the first character is 0, the second character is
+         * 1, and so on. If no text is selected, this property is the value of
+         * <code>caretIndex</code>.
+         */
+        get: function () {
+            return this._selectionEndIndex;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "text", {
+        /**
+         * A string that is the current text in the text field. Lines are separated
+         * by the carriage return character(<code>'\r'</code>, ASCII 13). This
+         * property contains unformatted text in the text field, without HTML tags.
+         *
+         * <p>To get the text in HTML form, use the <code>htmlText</code>
+         * property.</p>
+         */
+        get: function () {
+            return this._text;
+        },
+        set: function (value) {
+            value = value.toString();
+            if (this._text == value)
+                return;
+            this._text = value;
+            this._textGraphicsDirty = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "textFormat", {
+        get: function () {
+            return this._textFormat;
+        },
+        set: function (value) {
+            if (this._textFormat == value)
+                return;
+            this._textFormat = value;
+            this._textGraphicsDirty = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "graphics", {
+        /**
+         * The graphics used by the sprite that provides it with its shape.
+         */
+        get: function () {
+            if (this._textGraphicsDirty)
+                this.reConstruct();
+            return this._graphics;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "textColor", {
+        get: function () {
+            return this._textColor;
+        },
+        set: function (value) {
+            this._textColor = value;
+            if (!this.transform.colorTransform)
+                this.transform.colorTransform = new ColorTransform_1.ColorTransform();
+            this.transform.colorTransform.color = value;
+            this.pInvalidateHierarchicalProperties(HierarchicalProperties_1.HierarchicalProperties.COLOR_TRANSFORM);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "textInteractionMode", {
+        /**
+         * The interaction mode property, Default value is
+         * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
+         * that the text can be scrolled but not selected. One can switch to the
+         * selectable mode through the in-built context menu on the text field. On
+         * Desktop, the normal mode implies that the text is in scrollable as well as
+         * selection mode.
+         */
+        get: function () {
+            return this._textInteractionMode;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "textWidth", {
+        /**
+         * The width of the text in pixels.
+         */
+        get: function () {
+            return this._textWidth;
+        },
+        set: function (value) {
+            this._textWidth = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "textHeight", {
+        /**
+         * The width of the text in pixels.
+         */
+        get: function () {
+            return this._textHeight;
+        },
+        set: function (value) {
+            this._textHeight = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TextFieldMultiRender.prototype, "isEntity", {
+        /**
+         *
+         */
+        get: function () {
+            return true; //TODO do this better
+        },
+        enumerable: true,
+        configurable: true
+    });
+    TextFieldMultiRender.prototype.clear = function () {
+        _super.prototype.clear.call(this);
+        if (this._textElements)
+            this._textElements.clear();
+    };
+    /**
+     * @inheritDoc
+     */
+    TextFieldMultiRender.prototype.dispose = function () {
+        this.disposeValues();
+        TextFieldMultiRender._textFields.push(this);
+    };
+    /**
+     * @inheritDoc
+     */
+    TextFieldMultiRender.prototype.disposeValues = function () {
+        _super.prototype.disposeValues.call(this);
+        this._textFormat = null;
+        this._textGraphic = null;
+        if (this._textElements) {
+            this._textElements.dispose();
+            this._textElements = null;
+        }
+    };
+    /**
+     * Reconstructs the Graphics for this Text-field.
+     */
+    TextFieldMultiRender.prototype.reConstruct = function (useCanvas2dhack) {
+        if (useCanvas2dhack === void 0) { useCanvas2dhack = false; }
+        this._textGraphicsDirty = false;
+        if (this._textFormat == null)
+            return;
+        if (this._textGraphic) {
+            this._textGraphic.dispose();
+            this._textGraphic = null;
+            this._textElements.clear();
+            this._textElements.dispose();
+            this._textElements = null;
+        }
+        if (this._text == "")
+            return;
+        var activeFormat = null;
+        var newFormat = null;
+        // split text into lines
+        // todo: split at all sorts of linebreaks (incl escaped linebreaks like we do right now)
+        var textlines = this.text.toString().split("\\n");
+        var maxlineWidth = this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+        var tl_char_codes = [];
+        var tl_char_widths = [];
+        var tl_char_formats = [];
+        var tl_width = [];
+        var tl_height = [];
+        var tl_cnt = 0;
+        var w = 0;
+        var c = 0;
+        var tl = 0;
+        var words;
+        var char_cnt = 0;
+        var char_width = 0;
+        var numVertices = 0;
+        this._line_indices = [];
+        // sort all chars into final lines
+        for (tl = 0; tl < textlines.length; tl++) {
+            console.log("textline nr: " + tl + " : " + textlines[tl]);
+            this._line_indices[tl_cnt] = char_cnt;
+            tl_char_codes[tl_cnt] = [];
+            tl_char_widths[tl_cnt] = [];
+            tl_char_formats[tl_cnt] = [];
+            tl_width[tl_cnt] = 0;
+            tl_height[tl_cnt] = 0;
+            tl_cnt++;
+            words = textlines[tl].split(" ");
+            for (w = 0; w < words.length; w++) {
+                var word_width = 0;
+                var char_widths = [];
+                var char_formats = [];
+                var max_word_height = 0;
+                for (c = 0; c < words[w].length; c++) {
+                    newFormat = this.getFormatAtChar(char_cnt);
+                    if (newFormat != activeFormat) {
+                        activeFormat = newFormat;
+                        activeFormat.font_table.initFontSize(activeFormat.size);
+                    }
+                    char_formats[c] = activeFormat;
+                    var lineHeight = activeFormat.font_table.getLineHeight();
+                    if (lineHeight > max_word_height)
+                        max_word_height = lineHeight;
+                    char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
+                    numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());
+                    char_widths[c] = char_width;
+                    word_width += char_width;
+                    char_cnt++;
+                }
+                // word fits into line, just add it to the last line
+                if ((tl_width[tl_cnt - 1] + word_width) <= maxlineWidth) {
+                    if (tl_width[tl_cnt - 1] != 0) {
+                        // there is already a word in this line. we want to add a space
+                        tl_char_codes[tl_cnt - 1].push(32);
+                        //todo: get correct format
+                        tl_char_widths[tl_cnt - 1].push(activeFormat.font_table.getCharWidth("32"));
+                        tl_char_formats[tl_cnt - 1].push(activeFormat);
+                        tl_width[tl_cnt - 1] += activeFormat.font_table.getCharWidth("32");
+                    }
+                    for (c = 0; c < words[w].length; c++) {
+                        tl_char_codes[tl_cnt - 1].push(words[w].charCodeAt(c));
+                        tl_char_widths[tl_cnt - 1].push(char_widths[c]);
+                        tl_char_formats[tl_cnt - 1].push(char_formats[c]);
+                        tl_width[tl_cnt - 1] += word_width;
+                    }
+                    if (tl_height[tl_cnt - 1] < max_word_height)
+                        tl_height[tl_cnt - 1] = max_word_height;
+                }
+                else if (tl_width[tl_cnt - 1] == 0) {
+                    for (c = 0; c < words[w].length; c++) {
+                        tl_char_codes[tl_cnt - 1].push(words[w].charCodeAt(c));
+                        tl_char_widths[tl_cnt - 1].push(char_widths[c]);
+                        tl_char_formats[tl_cnt - 1].push(char_formats[c]);
+                        tl_width[tl_cnt - 1] += word_width;
+                    }
+                    if (tl_height[tl_cnt - 1] < max_word_height)
+                        tl_height[tl_cnt - 1] = max_word_height;
+                }
+                else {
+                    tl_char_codes[tl_cnt] = [];
+                    tl_char_widths[tl_cnt] = [];
+                    tl_char_formats[tl_cnt] = [];
+                    tl_width[tl_cnt] = 0;
+                    tl_height[tl_cnt] = 0;
+                    tl_cnt++;
+                    for (c = 0; c < words[w].length; c++) {
+                        tl_char_codes[tl_cnt - 1].push(words[w].charCodeAt(c));
+                        tl_char_widths[tl_cnt - 1].push(char_widths[c]);
+                        tl_char_formats[tl_cnt - 1].push(char_formats[c]);
+                        tl_width[tl_cnt - 1] += word_width;
+                    }
+                    if (tl_height[tl_cnt - 1] < max_word_height)
+                        tl_height[tl_cnt - 1] = max_word_height;
+                }
+            }
+        }
+        var tl_startx = [];
+        // calculate the final positions of the chars
+        for (tl = 0; tl < tl_width.length; tl++) {
+            var x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent;
+            var justify_addion = 0;
+            if (this._textFormat.align == "center") {
+                x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent + (maxlineWidth - tl_width[tl]) / 2;
+            }
+            else if (this._textFormat.align == "justify") {
+            }
+            else if (this._textFormat.align == "right") {
+                x_offset = (this._textWidth - tl_width[tl]) - (2 + this._textFormat.rightMargin);
+            }
+            tl_startx[tl] = [];
+            this.textHeight = 0;
+            for (var c = 0; c < tl_char_codes[tl].length; c++) {
+                this.textHeight += tl_height[tl];
+                tl_startx[tl][c] = x_offset;
+                x_offset += tl_char_widths[tl][c];
+                // if this is a whitespace, we add the justify additional spacer
+                if (tl_char_codes[tl][c] == 32) {
+                    x_offset += justify_addion;
+                }
+            }
+        }
+        //todo: i tried to use the isAsset() function instead of comparing the strings myself, but this didnt seem to work. need to find out why
+        if (this._textFormat.font_table.assetType == TesselatedFontTable_1.TesselatedFontTable.assetType) {
+            var tess_fontTable = this._textFormat.font_table;
+            var elements;
+            var j = 0;
+            var k = 0;
+            var y_offset = 0;
+            var char_scale = 0;
+            var vertices = new Float32Array(numVertices * 3);
+            for (tl = 0; tl < tl_width.length; tl++) {
+                console.log("textline nr: " + tl + " : " + tl_char_codes[tl]);
+                //console.log("tl_width = "+tl_width[tl]);
+                y_offset += tl_height[tl];
+                for (var c = 0; c < tl_char_codes[tl].length; c++) {
+                    var this_char = tess_fontTable.getChar(tl_char_codes[tl][c].toString());
+                    char_scale = tess_fontTable._size_multiply;
+                    if (this_char != null) {
+                        elements = this_char.elements;
+                        if (elements != null) {
+                            var buffer = new Float32Array(elements.concatenatedBuffer.buffer);
+                            for (var v = 0; v < elements.numVertices; v++) {
+                                vertices[j++] = buffer[v * 3] * char_scale + tl_startx[tl][c];
+                                vertices[j++] = buffer[v * 3 + 1] * char_scale + y_offset - tl_height[tl];
+                                vertices[j++] = buffer[v * 3 + 2];
+                            }
+                        }
+                    }
+                }
+            }
+            var attributesView = new AttributesView_1.AttributesView(Float32Array, 3);
+            attributesView.set(vertices);
+            var vertexBuffer = attributesView.buffer;
+            attributesView.dispose();
+            this._textElements = new TriangleElements_1.TriangleElements(vertexBuffer);
+            this._textElements.setPositions(new Float2Attributes_1.Float2Attributes(vertexBuffer));
+            this._textElements.setCustomAttributes("curves", new Byte4Attributes_1.Byte4Attributes(vertexBuffer, false));
+            this._textGraphic = this._graphics.addGraphic(this._textElements);
+            this.material = this._textFormat.material;
+            var sampler = new Sampler2D_1.Sampler2D();
+            this.style = new Style_1.Style();
+            this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+            this.style.uvMatrix = new Matrix_1.Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+            this.material.animateUVs = true;
+        }
+        else if (this._textFormat.font_table.assetType == BitmapFontTable_1.BitmapFontTable.assetType) {
+            console.log("contruct bitmap text = " + this._text);
+            var bitmap_fontTable = this._textFormat.font_table;
+            if (!useCanvas2dhack) {
+                var vertices = new Float32Array(numVertices * 7);
+                var vert_cnt = 0;
+                var y_offset = 0; //2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+                for (tl = 0; tl < tl_width.length; tl++) {
+                    console.log("textline nr: " + tl + " : " + tl_char_codes[tl]);
+                    //console.log("tl_width = "+tl_width[tl]);
+                    y_offset += tl_height[tl];
+                    for (var c = 0; c < tl_char_codes[tl].length; c++) {
+                        //console.log("tl_char_codes[tl] = "+tl_char_codes[tl][c]);
+                        //console.log("tl_startx[tl] = "+tl_startx[tl][c]);
+                        //console.log("y_offset = "+y_offset);
+                        //console.log("vert_cnt = "+vert_cnt);
+                        var char_data = bitmap_fontTable.getCharData(tl_char_codes[tl][c].toString());
+                        console.log("char_data = " + char_data);
+                        vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
+                        vertices[vert_cnt++] = y_offset - tl_height[tl] + char_data[5];
+                        vertices[vert_cnt++] = char_data[0];
+                        vertices[vert_cnt++] = char_data[1];
+                        vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+                        vertices[vert_cnt++] = y_offset - tl_height[tl] + char_data[5];
+                        vertices[vert_cnt++] = char_data[0] + char_data[2];
+                        vertices[vert_cnt++] = char_data[1];
+                        vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+                        vertices[vert_cnt++] = y_offset;
+                        vertices[vert_cnt++] = char_data[0] + char_data[2];
+                        vertices[vert_cnt++] = char_data[1] + char_data[3];
+                        vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+                        vertices[vert_cnt++] = y_offset;
+                        vertices[vert_cnt++] = char_data[0] + char_data[2];
+                        vertices[vert_cnt++] = char_data[1] + char_data[3];
+                        vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
+                        vertices[vert_cnt++] = y_offset;
+                        vertices[vert_cnt++] = char_data[0];
+                        vertices[vert_cnt++] = char_data[1] + char_data[3];
+                        vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
+                        vertices[vert_cnt++] = y_offset - tl_height[tl] + char_data[5];
+                        vertices[vert_cnt++] = char_data[0];
+                        vertices[vert_cnt++] = char_data[1];
+                    }
+                }
+                var attributesView = new AttributesView_1.AttributesView(Float32Array, 4);
+                attributesView.set(vertices);
+                var vertexBuffer = attributesView.buffer;
+                attributesView.dispose();
+                this._textElements = new TriangleElements_1.TriangleElements(vertexBuffer);
+                this._textElements.setPositions(new Float2Attributes_1.Float2Attributes(vertexBuffer));
+                //this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+                //this._textElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+                this._textElements.setUVs(new Float2Attributes_1.Float2Attributes(vertexBuffer));
+                this._textGraphic = this._graphics.addGraphic(this._textElements);
+                var basic_mat = new BasicMaterial_1.BasicMaterial();
+                basic_mat.texture = new Single2DTexture_1.Single2DTexture(bitmap_fontTable.get_page());
+                basic_mat.bothSides = true;
+                //basic_mat.preserveAlpha = true;
+                basic_mat.alphaBlending = true;
+                this.material = basic_mat;
+            }
+            else {
+                var canvas = document.getElementById("myCanvas");
+                if (canvas == null) {
+                    canvas = document.createElement("canvas");
+                    canvas.id = "myCanvas";
+                    document.body.appendChild(canvas);
+                }
+                var ctx = canvas.getContext("2d");
+                ctx.canvas.width = window.innerWidth;
+                ctx.canvas.height = window.innerHeight;
+                //var transform_mx:Matrix3D=this.transform.matrix3D;
+                //ctx.setTransform(transform_mx.a,transform_mx.b,transform_mx.c,transform_mx.d,transform_mx.tx,transform_mx.ty);
+                ctx.rect(0, 0, this.textWidth, this.textHeight);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                //ctx.drawImage(bitmap_fontTable.get_page().getCanvas(), 50, 50, 200, 200, 0, 0, 100, 100);
+                var y_offset = 0; //2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+                for (tl = 0; tl < tl_width.length; tl++) {
+                    console.log("textline nr: " + tl + " : " + tl_char_codes[tl]);
+                    //console.log("tl_width = "+tl_width[tl]);
+                    y_offset += tl_height[tl];
+                    for (var c = 0; c < tl_char_codes[tl].length; c++) {
+                        var char_data = bitmap_fontTable.getCharDataCanvas(tl_char_codes[tl][c].toString());
+                        ctx.drawImage(bitmap_fontTable.get_page().getCanvas(), char_data[0], char_data[1], char_data[2], char_data[3], tl_startx[tl][c] + char_data[4], y_offset - tl_height[tl] + char_data[5], tl_char_widths[tl][c], tl_height[tl] - char_data[5]);
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * Appends the string specified by the <code>newText</code> parameter to the
+     * end of the text of the text field. This method is more efficient than an
+     * addition assignment(<code>+=</code>) on a <code>text</code> property
+     * (such as <code>someTextField.text += moreText</code>), particularly for a
+     * text field that contains a significant amount of content.
+     *
+     * @param newText The string to append to the existing text.
+     */
+    TextFieldMultiRender.prototype.appendText = function (newText) {
+        this._text += newText;
+    };
+    /**
+     * *tells the Textfield that a paragraph is defined completly.
+     * e.g. the textfield will start a new line for future added text.
+     */
+    TextFieldMultiRender.prototype.closeParagraph = function () {
+        //TODO
+    };
+    /**
+     * Returns a rectangle that is the bounding box of the character.
+     *
+     * @param charIndex The zero-based index value for the character(for
+     *                  example, the first position is 0, the second position is
+     *                  1, and so on).
+     * @return A rectangle with <code>x</code> and <code>y</code> minimum and
+     *         maximum values defining the bounding box of the character.
+     */
+    TextFieldMultiRender.prototype.getCharBoundaries = function (charIndex) {
+        return this._charBoundaries;
+    };
+    /**
+     * Returns the zero-based index value of the character at the point specified
+     * by the <code>x</code> and <code>y</code> parameters.
+     *
+     * @param x The <i>x</i> coordinate of the character.
+     * @param y The <i>y</i> coordinate of the character.
+     * @return The zero-based index value of the character(for example, the
+     *         first position is 0, the second position is 1, and so on). Returns
+     *         -1 if the point is not over any character.
+     */
+    TextFieldMultiRender.prototype.getCharIndexAtPoint = function (x, y) {
+        return this._charIndexAtPoint;
+    };
+    /**
+     * Given a character index, returns the index of the first character in the
+     * same paragraph.
+     *
+     * @param charIndex The zero-based index value of the character(for example,
+     *                  the first character is 0, the second character is 1, and
+     *                  so on).
+     * @return The zero-based index value of the first character in the same
+     *         paragraph.
+     * @throws RangeError The character index specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getFirstCharInParagraph = function (charIndex /*int*/) {
+        return this._firstCharInParagraph;
+    };
+    /**
+     * Returns a DisplayObject reference for the given <code>id</code>, for an
+     * image or SWF file that has been added to an HTML-formatted text field by
+     * using an <code><img></code> tag. The <code><img></code> tag is in the
+     * following format:
+     *
+     * <p><pre xml:space="preserve"><code> <img src = 'filename.jpg' id =
+     * 'instanceName' ></code></pre></p>
+     *
+     * @param id The <code>id</code> to match(in the <code>id</code> attribute
+     *           of the <code><img></code> tag).
+     * @return The display object corresponding to the image or SWF file with the
+     *         matching <code>id</code> attribute in the <code><img></code> tag
+     *         of the text field. For media loaded from an external source, this
+     *         object is a Loader object, and, once loaded, the media object is a
+     *         child of that Loader object. For media embedded in the SWF file,
+     *         it is the loaded object. If no <code><img></code> tag with the
+     *         matching <code>id</code> exists, the method returns
+     *         <code>null</code>.
+     */
+    TextFieldMultiRender.prototype.getImageReference = function (id) {
+        return this._imageReference;
+    };
+    /**
+     * Returns the zero-based index value of the line at the point specified by
+     * the <code>x</code> and <code>y</code> parameters.
+     *
+     * @param x The <i>x</i> coordinate of the line.
+     * @param y The <i>y</i> coordinate of the line.
+     * @return The zero-based index value of the line(for example, the first
+     *         line is 0, the second line is 1, and so on). Returns -1 if the
+     *         point is not over any line.
+     */
+    TextFieldMultiRender.prototype.getLineIndexAtPoint = function (x, y) {
+        return this._lineIndexAtPoint;
+    };
+    /**
+     * Returns the zero-based index value of the line containing the character
+     * specified by the <code>charIndex</code> parameter.
+     *
+     * @param charIndex The zero-based index value of the character(for example,
+     *                  the first character is 0, the second character is 1, and
+     *                  so on).
+     * @return The zero-based index value of the line.
+     * @throws RangeError The character index specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getLineIndexOfChar = function (charIndex /*int*/) {
+        return this._lineIndexOfChar;
+    };
+    /**
+     * Returns the number of characters in a specific text line.
+     *
+     * @param lineIndex The line number for which you want the length.
+     * @return The number of characters in the line.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getLineLength = function (lineIndex /*int*/) {
+        return this._lineLength;
+    };
+    /**
+     * Returns metrics information about a given text line.
+     *
+     * @param lineIndex The line number for which you want metrics information.
+     * @return A TextLineMetrics object.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getLineMetrics = function (lineIndex /*int*/) {
+        return this._lineMetrics;
+    };
+    /**
+     * Returns the character index of the first character in the line that the
+     * <code>lineIndex</code> parameter specifies.
+     *
+     * @param lineIndex The zero-based index value of the line(for example, the
+     *                  first line is 0, the second line is 1, and so on).
+     * @return The zero-based index value of the first character in the line.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getLineOffset = function (lineIndex /*int*/) {
+        return this._lineOffset;
+    };
+    /**
+     * Returns the text of the line specified by the <code>lineIndex</code>
+     * parameter.
+     *
+     * @param lineIndex The zero-based index value of the line(for example, the
+     *                  first line is 0, the second line is 1, and so on).
+     * @return The text string contained in the specified line.
+     * @throws RangeError The line number specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getLineText = function (lineIndex /*int*/) {
+        return this._lineText;
+    };
+    /**
+     * Given a character index, returns the length of the paragraph containing
+     * the given character. The length is relative to the first character in the
+     * paragraph(as returned by <code>getFirstCharInParagraph()</code>), not to
+     * the character index passed in.
+     *
+     * @param charIndex The zero-based index value of the character(for example,
+     *                  the first character is 0, the second character is 1, and
+     *                  so on).
+     * @return Returns the number of characters in the paragraph.
+     * @throws RangeError The character index specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getParagraphLength = function (charIndex /*int*/) {
+        return this._paragraphLength;
+    };
+    /**
+     * Returns a TextFormat object that contains formatting information for the
+     * range of text that the <code>beginIndex</code> and <code>endIndex</code>
+     * parameters specify. Only properties that are common to the entire text
+     * specified are set in the resulting TextFormat object. Any property that is
+     * <i>mixed</i>, meaning that it has different values at different points in
+     * the text, has a value of <code>null</code>.
+     *
+     * <p>If you do not specify values for these parameters, this method is
+     * applied to all the text in the text field. </p>
+     *
+     * <p>The following table describes three possible usages:</p>
+     *
+     * @return The TextFormat object that represents the formatting properties
+     *         for the specified text.
+     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
+     *                    specified is out of range.
+     */
+    TextFieldMultiRender.prototype.getTextFormat = function (beginIndex, endIndex) {
+        if (beginIndex === void 0) { beginIndex = -1; }
+        if (endIndex === void 0) { endIndex = -1; }
+        return this._textFormat;
+    };
+    /**
+     * Replaces the current selection with the contents of the <code>value</code>
+     * parameter. The text is inserted at the position of the current selection,
+     * using the current default character format and default paragraph format.
+     * The text is not treated as HTML.
+     *
+     * <p>You can use the <code>replaceSelectedText()</code> method to insert and
+     * delete text without disrupting the character and paragraph formatting of
+     * the rest of the text.</p>
+     *
+     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+     * the text field.</p>
+     *
+     * @param value The string to replace the currently selected text.
+     * @throws Error This method cannot be used on a text field with a style
+     *               sheet.
+     */
+    TextFieldMultiRender.prototype.replaceSelectedText = function (value) {
+    };
+    /**
+     * Replaces the range of characters that the <code>beginIndex</code> and
+     * <code>endIndex</code> parameters specify with the contents of the
+     * <code>newText</code> parameter. As designed, the text from
+     * <code>beginIndex</code> to <code>endIndex-1</code> is replaced.
+     *
+     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+     * the text field.</p>
+     *
+     * @param beginIndex The zero-based index value for the start position of the
+     *                   replacement range.
+     * @param endIndex   The zero-based index position of the first character
+     *                   after the desired text span.
+     * @param newText    The text to use to replace the specified range of
+     *                   characters.
+     * @throws Error This method cannot be used on a text field with a style
+     *               sheet.
+     */
+    TextFieldMultiRender.prototype.replaceText = function (beginIndex /*int*/, endIndex /*int*/, newText) {
+    };
+    /**
+     * Sets as selected the text designated by the index values of the first and
+     * last characters, which are specified with the <code>beginIndex</code> and
+     * <code>endIndex</code> parameters. If the two parameter values are the
+     * same, this method sets the insertion point, as if you set the
+     * <code>caretIndex</code> property.
+     *
+     * @param beginIndex The zero-based index value of the first character in the
+     *                   selection(for example, the first character is 0, the
+     *                   second character is 1, and so on).
+     * @param endIndex   The zero-based index value of the last character in the
+     *                   selection.
+     */
+    TextFieldMultiRender.prototype.setSelection = function (beginIndex /*int*/, endIndex /*int*/) {
+    };
+    /**
+     * Applies the text formatting that the <code>format</code> parameter
+     * specifies to the specified text in a text field. The value of
+     * <code>format</code> must be a TextFormat object that specifies the desired
+     * text formatting changes. Only the non-null properties of
+     * <code>format</code> are applied to the text field. Any property of
+     * <code>format</code> that is set to <code>null</code> is not applied. By
+     * default, all of the properties of a newly created TextFormat object are
+     * set to <code>null</code>.
+     *
+     * <p><b>Note:</b> This method does not work if a style sheet is applied to
+     * the text field.</p>
+     *
+     * <p>The <code>setTextFormat()</code> method changes the text formatting
+     * applied to a range of characters or to the entire body of text in a text
+     * field. To apply the properties of format to all text in the text field, do
+     * not specify values for <code>beginIndex</code> and <code>endIndex</code>.
+     * To apply the properties of the format to a range of text, specify values
+     * for the <code>beginIndex</code> and the <code>endIndex</code> parameters.
+     * You can use the <code>length</code> property to determine the index
+     * values.</p>
+     *
+     * <p>The two types of formatting information in a TextFormat object are
+     * character level formatting and paragraph level formatting. Each character
+     * in a text field can have its own character formatting settings, such as
+     * font name, font size, bold, and italic.</p>
+     *
+     * <p>For paragraphs, the first character of the paragraph is examined for
+     * the paragraph formatting settings for the entire paragraph. Examples of
+     * paragraph formatting settings are left margin, right margin, and
+     * indentation.</p>
+     *
+     * <p>Any text inserted manually by the user, or replaced by the
+     * <code>replaceSelectedText()</code> method, receives the default text field
+     * formatting for new text, and not the formatting specified for the text
+     * insertion point. To set the default formatting for new text, use
+     * <code>defaultTextFormat</code>.</p>
+     *
+     * @param format A TextFormat object that contains character and paragraph
+     *               formatting information.
+     * @throws Error      This method cannot be used on a text field with a style
+     *                    sheet.
+     * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
+     *                    specified is out of range.
+     */
+    TextFieldMultiRender.prototype.setTextFormat = function (format, beginIndex, endIndex) {
+        if (beginIndex === void 0) { beginIndex = -1; }
+        if (endIndex === void 0) { endIndex = -1; }
+    };
+    /**
+     * Returns true if an embedded font is available with the specified
+     * <code>fontName</code> and <code>fontStyle</code> where
+     * <code>Font.fontType</code> is <code>flash.text.FontType.EMBEDDED</code>.
+     * Starting with Flash Player 10, two kinds of embedded fonts can appear in a
+     * SWF file. Normal embedded fonts are only used with TextFieldMultiRender objects. CFF
+     * embedded fonts are only used with the flash.text.engine classes. The two
+     * types are distinguished by the <code>fontType</code> property of the
+     * <code>Font</code> class, as returned by the <code>enumerateFonts()</code>
+     * function.
+     *
+     * <p>TextFieldMultiRender cannot use a font of type <code>EMBEDDED_CFF</code>. If
+     * <code>embedFonts</code> is set to <code>true</code> and the only font
+     * available at run time with the specified name and style is of type
+     * <code>EMBEDDED_CFF</code>, Flash Player fails to render the text, as if no
+     * embedded font were available with the specified name and style.</p>
+     *
+     * <p>If both <code>EMBEDDED</code> and <code>EMBEDDED_CFF</code> fonts are
+     * available with the same name and style, the <code>EMBEDDED</code> font is
+     * selected and text renders with the <code>EMBEDDED</code> font.</p>
+     *
+     * @param fontName  The name of the embedded font to check.
+     * @param fontStyle Specifies the font style to check. Use
+     *                  <code>flash.text.FontStyle</code>
+     * @return <code>true</code> if a compatible embedded font is available,
+     *         otherwise <code>false</code>.
+     * @throws ArgumentError The <code>fontStyle</code> specified is not a member
+     *                       of <code>flash.text.FontStyle</code>.
+     */
+    TextFieldMultiRender.isFontCompatible = function (fontName, fontStyle) {
+        return false;
+    };
+    TextFieldMultiRender.prototype.clone = function () {
+        var newInstance = (TextFieldMultiRender._textFields.length) ? TextFieldMultiRender._textFields.pop() : new TextFieldMultiRender();
+        this.copyTo(newInstance);
+        return newInstance;
+    };
+    TextFieldMultiRender.prototype.copyTo = function (newInstance) {
+        _super.prototype.copyTo.call(this, newInstance);
+        newInstance.textWidth = this._textWidth;
+        newInstance.textHeight = this._textHeight;
+        newInstance.textFormat = this._textFormat;
+        //newInstance.textColor = this._textColor;
+        newInstance.text = this._text;
+    };
+    TextFieldMultiRender._textFields = new Array();
+    TextFieldMultiRender.assetType = "[asset TextFieldMultiRender]";
+    return TextFieldMultiRender;
+}(Sprite_1.Sprite));
+exports.TextFieldMultiRender = TextFieldMultiRender;
+},{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","../text/BitmapFontTable":"awayjs-display/lib/text/BitmapFontTable","../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -8501,12 +9462,16 @@ var TextField = (function (_super) {
             return;
         var numVertices = 0;
         var elements;
-        var char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
+        var thisFormat = this._textFormat.font_table;
+        var fallbackFormat = null;
+        if (this._textFormat.fallback_font_table)
+            fallbackFormat = this._textFormat.fallback_font_table;
+        var char_scale = this._textFormat.size / thisFormat.get_font_em_size();
         var y_offset = 0;
         var prev_char = null;
         var j = 0;
         var k = 0;
-        var whitespace_width = (this._textFormat.font_table.get_whitespace_width() * char_scale) + this._textFormat.letterSpacing;
+        var whitespace_width = (thisFormat.get_whitespace_width() * char_scale) + this._textFormat.letterSpacing;
         var textlines = this.text.toString().split("\\n");
         var final_lines_chars = [];
         var final_lines_char_scale = [];
@@ -8527,12 +9492,12 @@ var TextField = (function (_super) {
                 var word_chars_scale = [];
                 var c_cnt = 0;
                 for (var w = 0; w < words[i].length; w++) {
-                    char_scale = this._textFormat.size / this._textFormat.font_table.get_font_em_size();
-                    var this_char = this._textFormat.font_table.getChar(words[i].charCodeAt(w).toString());
+                    char_scale = this._textFormat.size / thisFormat.get_font_em_size();
+                    var this_char = thisFormat.getChar(words[i].charCodeAt(w).toString());
                     if (this_char == null) {
-                        if (this._textFormat.fallback_font_table) {
-                            char_scale = this._textFormat.size / this._textFormat.fallback_font_table.get_font_em_size();
-                            this_char = this._textFormat.fallback_font_table.getChar(words[i].charCodeAt(w).toString());
+                        if (fallbackFormat) {
+                            char_scale = this._textFormat.size / fallbackFormat.get_font_em_size();
+                            this_char = fallbackFormat.getChar(words[i].charCodeAt(w).toString());
                         }
                     }
                     if (this_char != null) {
@@ -8558,7 +9523,7 @@ var TextField = (function (_super) {
                     }
                     else {
                         // if no char-elements was found, we insert a "space"
-                        //x_offset += this._textFormat.font_table.get_font_em_size() * char_scale;
+                        //x_offset += thisFormat.get_font_em_size() * char_scale;
                         word_width += whitespace_width;
                     }
                     word_chars_scale[c_cnt] = char_scale;
@@ -8604,7 +9569,7 @@ var TextField = (function (_super) {
                 }
             }
         }
-        y_offset = 2 + (this._textFormat.font_table.ascent - this._textFormat.font_table.get_font_em_size()) * char_scale;
+        y_offset = 2 + (thisFormat.ascent - thisFormat.get_font_em_size()) * char_scale;
         var vertices = new Float32Array(numVertices * 3);
         for (var i = 0; i < final_lines_chars.length; i++) {
             var x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent;
@@ -8656,8 +9621,8 @@ var TextField = (function (_super) {
                 }
             }
             // hack for multiline textfield in icycle.
-            y_offset += (this._textFormat.font_table.ascent + this._textFormat.font_table.descent) * char_scale;
-            //y_offset+=(this._textFormat.font_table.get_font_em_size()-this._textFormat.font_table.descent)*char_scale;
+            y_offset += (thisFormat.ascent + thisFormat.descent) * char_scale;
+            //y_offset+=(thisFormat.get_font_em_size()-thisFormat.descent)*char_scale;
             y_offset += this._textFormat.leading;
         }
         var attributesView = new AttributesView_1.AttributesView(Float32Array, 3);
@@ -9017,7 +9982,6 @@ var TextField = (function (_super) {
     return TextField;
 }(Sprite_1.Sprite));
 exports.TextField = TextField;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display":[function(require,module,exports){
 "use strict";
 var Billboard_1 = require("./display/Billboard");
@@ -9052,8 +10016,9 @@ var Sprite_1 = require("./display/Sprite");
 exports.Sprite = Sprite_1.Sprite;
 var TextField_1 = require("./display/TextField");
 exports.TextField = TextField_1.TextField;
-
-},{"./display/Billboard":"awayjs-display/lib/display/Billboard","./display/Camera":"awayjs-display/lib/display/Camera","./display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","./display/DisplayObject":"awayjs-display/lib/display/DisplayObject","./display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","./display/LightBase":"awayjs-display/lib/display/LightBase","./display/LightProbe":"awayjs-display/lib/display/LightProbe","./display/LineSegment":"awayjs-display/lib/display/LineSegment","./display/LoaderContainer":"awayjs-display/lib/display/LoaderContainer","./display/MovieClip":"awayjs-display/lib/display/MovieClip","./display/PointLight":"awayjs-display/lib/display/PointLight","./display/Scene":"awayjs-display/lib/display/Scene","./display/Shape":"awayjs-display/lib/display/Shape","./display/Skybox":"awayjs-display/lib/display/Skybox","./display/Sprite":"awayjs-display/lib/display/Sprite","./display/TextField":"awayjs-display/lib/display/TextField"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
+var TextFieldMultiRender_1 = require("./display/TextFieldMultiRender");
+exports.TextFieldMultiRender = TextFieldMultiRender_1.TextFieldMultiRender;
+},{"./display/Billboard":"awayjs-display/lib/display/Billboard","./display/Camera":"awayjs-display/lib/display/Camera","./display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","./display/DisplayObject":"awayjs-display/lib/display/DisplayObject","./display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","./display/LightBase":"awayjs-display/lib/display/LightBase","./display/LightProbe":"awayjs-display/lib/display/LightProbe","./display/LineSegment":"awayjs-display/lib/display/LineSegment","./display/LoaderContainer":"awayjs-display/lib/display/LoaderContainer","./display/MovieClip":"awayjs-display/lib/display/MovieClip","./display/PointLight":"awayjs-display/lib/display/PointLight","./display/Scene":"awayjs-display/lib/display/Scene","./display/Shape":"awayjs-display/lib/display/Shape","./display/Skybox":"awayjs-display/lib/display/Skybox","./display/Sprite":"awayjs-display/lib/display/Sprite","./display/TextField":"awayjs-display/lib/display/TextField","./display/TextFieldMultiRender":"awayjs-display/lib/display/TextFieldMultiRender"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 "use strict";
 /**
  * The CapsStyle class is an enumeration of constant values that specify the
@@ -9083,7 +10048,6 @@ var CapsStyle = (function () {
     return CapsStyle;
 }());
 exports.CapsStyle = CapsStyle;
-
 },{}],"awayjs-display/lib/draw/GradientType":[function(require,module,exports){
 "use strict";
 /**
@@ -9106,7 +10070,6 @@ var GradientType = (function () {
     return GradientType;
 }());
 exports.GradientType = GradientType;
-
 },{}],"awayjs-display/lib/draw/GraphicsFactoryFills":[function(require,module,exports){
 "use strict";
 var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
@@ -9409,7 +10372,6 @@ var GraphicsFactoryFills = (function () {
     return GraphicsFactoryFills;
 }());
 exports.GraphicsFactoryFills = GraphicsFactoryFills;
-
 },{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryHelper":[function(require,module,exports){
 "use strict";
 var CapsStyle_1 = require("../draw/CapsStyle");
@@ -9580,7 +10542,6 @@ var GraphicsFactoryHelper = (function () {
     return GraphicsFactoryHelper;
 }());
 exports.GraphicsFactoryHelper = GraphicsFactoryHelper;
-
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryStrokes":[function(require,module,exports){
 "use strict";
 var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
@@ -10065,7 +11026,6 @@ var GraphicsFactoryStrokes = (function () {
     return GraphicsFactoryStrokes;
 }());
 exports.GraphicsFactoryStrokes = GraphicsFactoryStrokes;
-
 },{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFillStyle":[function(require,module,exports){
 "use strict";
 var GraphicsFillStyle = (function () {
@@ -10086,7 +11046,6 @@ var GraphicsFillStyle = (function () {
     return GraphicsFillStyle;
 }());
 exports.GraphicsFillStyle = GraphicsFillStyle;
-
 },{}],"awayjs-display/lib/draw/GraphicsPathCommand":[function(require,module,exports){
 "use strict";
 /**
@@ -10142,7 +11101,6 @@ var GraphicsPathCommand = (function () {
 exports.GraphicsPathCommand = GraphicsPathCommand;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPathCommand;
-
 },{}],"awayjs-display/lib/draw/GraphicsPathWinding":[function(require,module,exports){
 "use strict";
 /**
@@ -10163,7 +11121,6 @@ var GraphicsPathWinding = (function () {
     return GraphicsPathWinding;
 }());
 exports.GraphicsPathWinding = GraphicsPathWinding;
-
 },{}],"awayjs-display/lib/draw/GraphicsPath":[function(require,module,exports){
 "use strict";
 var GraphicsPathWinding_1 = require("../draw/GraphicsPathWinding");
@@ -10340,7 +11297,6 @@ var GraphicsPath = (function () {
     return GraphicsPath;
 }());
 exports.GraphicsPath = GraphicsPath;
-
 },{"../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsStrokeStyle":[function(require,module,exports){
 "use strict";
 var JointStyle_1 = require("../draw/JointStyle");
@@ -10438,10 +11394,8 @@ var GraphicsStrokeStyle = (function () {
     return GraphicsStrokeStyle;
 }());
 exports.GraphicsStrokeStyle = GraphicsStrokeStyle;
-
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle"}],"awayjs-display/lib/draw/IGraphicsData":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/draw/InterpolationMethod":[function(require,module,exports){
 "use strict";
 /**
@@ -10483,7 +11437,6 @@ var InterpolationMethod = (function () {
     return InterpolationMethod;
 }());
 exports.InterpolationMethod = InterpolationMethod;
-
 },{}],"awayjs-display/lib/draw/JointStyle":[function(require,module,exports){
 "use strict";
 /**
@@ -10515,7 +11468,6 @@ var JointStyle = (function () {
     return JointStyle;
 }());
 exports.JointStyle = JointStyle;
-
 },{}],"awayjs-display/lib/draw/LineScaleMode":[function(require,module,exports){
 "use strict";
 /**
@@ -10559,7 +11511,6 @@ var LineScaleMode = (function () {
     return LineScaleMode;
 }());
 exports.LineScaleMode = LineScaleMode;
-
 },{}],"awayjs-display/lib/draw/PixelSnapping":[function(require,module,exports){
 "use strict";
 /**
@@ -10594,7 +11545,6 @@ var PixelSnapping = (function () {
     return PixelSnapping;
 }());
 exports.PixelSnapping = PixelSnapping;
-
 },{}],"awayjs-display/lib/draw/SpreadMethod":[function(require,module,exports){
 "use strict";
 /**
@@ -10623,7 +11573,6 @@ var SpreadMethod = (function () {
     return SpreadMethod;
 }());
 exports.SpreadMethod = SpreadMethod;
-
 },{}],"awayjs-display/lib/draw/TriangleCulling":[function(require,module,exports){
 "use strict";
 /**
@@ -10666,7 +11615,6 @@ var TriangleCulling = (function () {
     return TriangleCulling;
 }());
 exports.TriangleCulling = TriangleCulling;
-
 },{}],"awayjs-display/lib/draw":[function(require,module,exports){
 "use strict";
 var CapsStyle_1 = require("./draw/CapsStyle");
@@ -10701,7 +11649,6 @@ var SpreadMethod_1 = require("./draw/SpreadMethod");
 exports.SpreadMethod = SpreadMethod_1.SpreadMethod;
 var TriangleCulling_1 = require("./draw/TriangleCulling");
 exports.TriangleCulling = TriangleCulling_1.TriangleCulling;
-
 },{"./draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","./draw/GradientType":"awayjs-display/lib/draw/GradientType","./draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","./draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","./draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","./draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","./draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","./draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","./draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","./draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","./draw/InterpolationMethod":"awayjs-display/lib/draw/InterpolationMethod","./draw/JointStyle":"awayjs-display/lib/draw/JointStyle","./draw/LineScaleMode":"awayjs-display/lib/draw/LineScaleMode","./draw/PixelSnapping":"awayjs-display/lib/draw/PixelSnapping","./draw/SpreadMethod":"awayjs-display/lib/draw/SpreadMethod","./draw/TriangleCulling":"awayjs-display/lib/draw/TriangleCulling"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10718,12 +11665,10 @@ var CastError = (function (_super) {
     return CastError;
 }(ErrorBase_1.ErrorBase));
 exports.CastError = CastError;
-
 },{"awayjs-core/lib/errors/ErrorBase":undefined}],"awayjs-display/lib/errors":[function(require,module,exports){
 "use strict";
 var CastError_1 = require("./errors/CastError");
 exports.CastError = CastError_1.CastError;
-
 },{"./errors/CastError":"awayjs-display/lib/errors/CastError"}],"awayjs-display/lib/events/CameraEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10759,7 +11704,6 @@ var CameraEvent = (function (_super) {
     return CameraEvent;
 }(EventBase_1.EventBase));
 exports.CameraEvent = CameraEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/DisplayObjectEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10811,7 +11755,6 @@ var DisplayObjectEvent = (function (_super) {
     return DisplayObjectEvent;
 }(EventBase_1.EventBase));
 exports.DisplayObjectEvent = DisplayObjectEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ElementsEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10874,7 +11817,6 @@ var ElementsEvent = (function (_super) {
     return ElementsEvent;
 }(EventBase_1.EventBase));
 exports.ElementsEvent = ElementsEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/LightEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10896,7 +11838,6 @@ var LightEvent = (function (_super) {
     return LightEvent;
 }(EventBase_1.EventBase));
 exports.LightEvent = LightEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/MouseEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11040,7 +11981,6 @@ var MouseEvent = (function (_super) {
     return MouseEvent;
 }(EventBase_1.EventBase));
 exports.MouseEvent = MouseEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderableEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11095,7 +12035,6 @@ var RenderableEvent = (function (_super) {
     return RenderableEvent;
 }(EventBase_1.EventBase));
 exports.RenderableEvent = RenderableEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RendererEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11114,7 +12053,6 @@ var RendererEvent = (function (_super) {
     return RendererEvent;
 }(EventBase_1.EventBase));
 exports.RendererEvent = RendererEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ResizeEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11158,7 +12096,6 @@ var ResizeEvent = (function (_super) {
     return ResizeEvent;
 }(EventBase_1.EventBase));
 exports.ResizeEvent = ResizeEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/StyleEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11194,7 +12131,6 @@ var StyleEvent = (function (_super) {
     return StyleEvent;
 }(EventBase_1.EventBase));
 exports.StyleEvent = StyleEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/SurfaceEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11238,7 +12174,6 @@ var SurfaceEvent = (function (_super) {
     return SurfaceEvent;
 }(EventBase_1.EventBase));
 exports.SurfaceEvent = SurfaceEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11356,7 +12291,6 @@ var TouchEvent = (function (_super) {
     return TouchEvent;
 }(EventBase_1.EventBase));
 exports.TouchEvent = TouchEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TransformEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11396,7 +12330,6 @@ var TransformEvent = (function (_super) {
     return TransformEvent;
 }(EventBase_1.EventBase));
 exports.TransformEvent = TransformEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events":[function(require,module,exports){
 "use strict";
 var CameraEvent_1 = require("./events/CameraEvent");
@@ -11423,13 +12356,10 @@ var TouchEvent_1 = require("./events/TouchEvent");
 exports.TouchEvent = TouchEvent_1.TouchEvent;
 var TransformEvent_1 = require("./events/TransformEvent");
 exports.TransformEvent = TransformEvent_1.TransformEvent;
-
 },{"./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","./events/LightEvent":"awayjs-display/lib/events/LightEvent","./events/MouseEvent":"awayjs-display/lib/events/MouseEvent","./events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./events/ResizeEvent":"awayjs-display/lib/events/ResizeEvent","./events/StyleEvent":"awayjs-display/lib/events/StyleEvent","./events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","./events/TouchEvent":"awayjs-display/lib/events/TouchEvent","./events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/factories/ITimelineSceneGraphFactory":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/factories":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/graphics/ElementsBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11654,7 +12584,6 @@ var ElementsBase = (function (_super) {
     return ElementsBase;
 }(AssetBase_1.AssetBase));
 exports.ElementsBase = ElementsBase;
-
 },{"../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Short3Attributes":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/ElementsType":[function(require,module,exports){
 "use strict";
 var ElementsType = (function () {
@@ -11671,7 +12600,6 @@ var ElementsType = (function () {
     return ElementsType;
 }());
 exports.ElementsType = ElementsType;
-
 },{}],"awayjs-display/lib/graphics/Graphics":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12940,7 +13868,6 @@ var Graphics = (function (_super) {
     return Graphics;
 }(AssetBase_1.AssetBase));
 exports.Graphics = Graphics;
-
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13148,7 +14075,6 @@ var Graphic = (function (_super) {
     return Graphic;
 }(AssetBase_1.AssetBase));
 exports.Graphic = Graphic;
-
 },{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/HitTestCache":[function(require,module,exports){
 "use strict";
 /**
@@ -13168,7 +14094,6 @@ var HitTestCache = (function () {
     return HitTestCache;
 }());
 exports.HitTestCache = HitTestCache;
-
 },{}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13402,7 +14327,6 @@ var LineElements = (function (_super) {
     return LineElements;
 }(ElementsBase_1.ElementsBase));
 exports.LineElements = LineElements;
-
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float1Attributes":undefined}],"awayjs-display/lib/graphics/TriangleElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13900,7 +14824,6 @@ var TriangleElements = (function (_super) {
     return TriangleElements;
 }(ElementsBase_1.ElementsBase));
 exports.TriangleElements = TriangleElements;
-
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined}],"awayjs-display/lib/graphics":[function(require,module,exports){
 "use strict";
 var ElementsBase_1 = require("./graphics/ElementsBase");
@@ -13915,7 +14838,6 @@ var LineElements_1 = require("./graphics/LineElements");
 exports.LineElements = LineElements_1.LineElements;
 var TriangleElements_1 = require("./graphics/TriangleElements");
 exports.TriangleElements = TriangleElements_1.TriangleElements;
-
 },{"./graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","./graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","./graphics/Graphic":"awayjs-display/lib/graphics/Graphic","./graphics/Graphics":"awayjs-display/lib/graphics/Graphics","./graphics/LineElements":"awayjs-display/lib/graphics/LineElements","./graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements"}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
 "use strict";
 var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
@@ -14022,7 +14944,6 @@ var DefaultMaterialManager = (function () {
     return DefaultMaterialManager;
 }());
 exports.DefaultMaterialManager = DefaultMaterialManager;
-
 },{"../display/Skybox":"awayjs-display/lib/display/Skybox","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
 "use strict";
 var FrameScriptManager = (function () {
@@ -14110,7 +15031,6 @@ var FrameScriptManager = (function () {
 exports.FrameScriptManager = FrameScriptManager;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FrameScriptManager;
-
 },{}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -14357,7 +15277,6 @@ var MouseManager = (function () {
     return MouseManager;
 }());
 exports.MouseManager = MouseManager;
-
 },{"../base/TouchPoint":"awayjs-display/lib/base/TouchPoint","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -14536,7 +15455,6 @@ var TouchPoint = (function () {
     }
     return TouchPoint;
 }());
-
 },{"../events/TouchEvent":"awayjs-display/lib/events/TouchEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers":[function(require,module,exports){
 "use strict";
 var DefaultMaterialManager_1 = require("./managers/DefaultMaterialManager");
@@ -14547,7 +15465,6 @@ var MouseManager_1 = require("./managers/MouseManager");
 exports.MouseManager = MouseManager_1.MouseManager;
 var TouchManager_1 = require("./managers/TouchManager");
 exports.TouchManager = TouchManager_1.TouchManager;
-
 },{"./managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","./managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./managers/TouchManager":"awayjs-display/lib/managers/TouchManager"}],"awayjs-display/lib/materials/BasicMaterial":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14623,7 +15540,6 @@ var BasicMaterial = (function (_super) {
     return BasicMaterial;
 }(MaterialBase_1.MaterialBase));
 exports.BasicMaterial = BasicMaterial;
-
 },{"../materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
 "use strict";
 /**
@@ -14658,7 +15574,6 @@ var LightSources = (function () {
     return LightSources;
 }());
 exports.LightSources = LightSources;
-
 },{}],"awayjs-display/lib/materials/MaterialBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15149,7 +16064,6 @@ var MaterialBase = (function (_super) {
     return MaterialBase;
 }(AssetBase_1.AssetBase));
 exports.MaterialBase = MaterialBase;
-
 },{"../base/Style":"awayjs-display/lib/base/Style","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/ImageBase":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15353,7 +16267,6 @@ var LightPickerBase = (function (_super) {
     return LightPickerBase;
 }(AssetBase_1.AssetBase));
 exports.LightPickerBase = LightPickerBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/StaticLightPicker":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15502,7 +16415,6 @@ var StaticLightPicker = (function (_super) {
     return StaticLightPicker;
 }(LightPickerBase_1.LightPickerBase));
 exports.StaticLightPicker = StaticLightPicker;
-
 },{"../../display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","../../display/LightProbe":"awayjs-display/lib/display/LightProbe","../../display/PointLight":"awayjs-display/lib/display/PointLight","../../events/LightEvent":"awayjs-display/lib/events/LightEvent","../../materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15691,7 +16603,6 @@ var CascadeShadowMapper = (function (_super) {
     return CascadeShadowMapper;
 }(DirectionalShadowMapper_1.DirectionalShadowMapper));
 exports.CascadeShadowMapper = CascadeShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15759,7 +16670,6 @@ var CubeMapShadowMapper = (function (_super) {
     return CubeMapShadowMapper;
 }(ShadowMapperBase_1.ShadowMapperBase));
 exports.CubeMapShadowMapper = CubeMapShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/ImageCube":undefined}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15938,7 +16848,6 @@ var DirectionalShadowMapper = (function (_super) {
     return DirectionalShadowMapper;
 }(ShadowMapperBase_1.ShadowMapperBase));
 exports.DirectionalShadowMapper = DirectionalShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15984,7 +16893,6 @@ var NearDirectionalShadowMapper = (function (_super) {
     return NearDirectionalShadowMapper;
 }(DirectionalShadowMapper_1.DirectionalShadowMapper));
 exports.NearDirectionalShadowMapper = NearDirectionalShadowMapper;
-
 },{"../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16084,7 +16992,6 @@ var ShadowMapperBase = (function (_super) {
     return ShadowMapperBase;
 }(AssetBase_1.AssetBase));
 exports.ShadowMapperBase = ShadowMapperBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials":[function(require,module,exports){
 "use strict";
 var LightPickerBase_1 = require("./materials/lightpickers/LightPickerBase");
@@ -16107,7 +17014,6 @@ var LightSources_1 = require("./materials/LightSources");
 exports.LightSources = LightSources_1.LightSources;
 var MaterialBase_1 = require("./materials/MaterialBase");
 exports.MaterialBase = MaterialBase_1.MaterialBase;
-
 },{"./materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","./materials/LightSources":"awayjs-display/lib/materials/LightSources","./materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","./materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","./materials/lightpickers/StaticLightPicker":"awayjs-display/lib/materials/lightpickers/StaticLightPicker","./materials/shadowmappers/CascadeShadowMapper":"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper","./materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","./materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","./materials/shadowmappers/NearDirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper","./materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase"}],"awayjs-display/lib/partition/BasicPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16129,7 +17035,6 @@ var BasicPartition = (function (_super) {
     return BasicPartition;
 }(PartitionBase_1.PartitionBase));
 exports.BasicPartition = BasicPartition;
-
 },{"../partition/NodeBase":"awayjs-display/lib/partition/NodeBase","../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16155,7 +17060,6 @@ var CameraNode = (function (_super) {
     return CameraNode;
 }(EntityNode_1.EntityNode));
 exports.CameraNode = CameraNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DirectionalLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16189,7 +17093,6 @@ var DirectionalLightNode = (function (_super) {
     return DirectionalLightNode;
 }(EntityNode_1.EntityNode));
 exports.DirectionalLightNode = DirectionalLightNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DisplayObjectNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16312,7 +17215,6 @@ var DisplayObjectNode = (function (_super) {
     return DisplayObjectNode;
 }(AbstractionBase_1.AbstractionBase));
 exports.DisplayObjectNode = DisplayObjectNode;
-
 },{"../bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","../bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/library/AbstractionBase":undefined}],"awayjs-display/lib/partition/EntityNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16415,19 +17317,14 @@ var EntityNode = (function (_super) {
     return EntityNode;
 }(DisplayObjectNode_1.DisplayObjectNode));
 exports.EntityNode = EntityNode;
-
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/partition/IContainerNode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/IDisplayObjectNode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/IEntityNodeClass":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/INode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16461,7 +17358,6 @@ var LightProbeNode = (function (_super) {
     return LightProbeNode;
 }(EntityNode_1.EntityNode));
 exports.LightProbeNode = LightProbeNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/NodeBase":[function(require,module,exports){
 "use strict";
 var NullBounds_1 = require("../bounds/NullBounds");
@@ -16584,7 +17480,6 @@ var NodeBase = (function () {
     return NodeBase;
 }());
 exports.NodeBase = NodeBase;
-
 },{"../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/partition/PartitionBase":[function(require,module,exports){
 "use strict";
 /**
@@ -16700,7 +17595,6 @@ var PartitionBase = (function () {
     return PartitionBase;
 }());
 exports.PartitionBase = PartitionBase;
-
 },{}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16734,7 +17628,6 @@ var PointLightNode = (function (_super) {
     return PointLightNode;
 }(EntityNode_1.EntityNode));
 exports.PointLightNode = PointLightNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SceneGraphNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16827,7 +17720,6 @@ var SceneGraphNode = (function (_super) {
 exports.SceneGraphNode = SceneGraphNode;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SceneGraphNode;
-
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode"}],"awayjs-display/lib/partition/SceneGraphPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16909,7 +17801,6 @@ var SceneGraphNodePool = (function () {
     return SceneGraphNodePool;
 }());
 exports.SceneGraphNodePool = SceneGraphNodePool;
-
 },{"../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","../partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16950,7 +17841,6 @@ var SkyboxNode = (function (_super) {
     return SkyboxNode;
 }(EntityNode_1.EntityNode));
 exports.SkyboxNode = SkyboxNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition":[function(require,module,exports){
 "use strict";
 var BasicPartition_1 = require("./partition/BasicPartition");
@@ -16977,13 +17867,10 @@ var SceneGraphPartition_1 = require("./partition/SceneGraphPartition");
 exports.SceneGraphPartition = SceneGraphPartition_1.SceneGraphPartition;
 var SkyboxNode_1 = require("./partition/SkyboxNode");
 exports.SkyboxNode = SkyboxNode_1.SkyboxNode;
-
 },{"./partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition","./partition/CameraNode":"awayjs-display/lib/partition/CameraNode","./partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","./partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","./partition/EntityNode":"awayjs-display/lib/partition/EntityNode","./partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","./partition/NodeBase":"awayjs-display/lib/partition/NodeBase","./partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","./partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","./partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode","./partition/SceneGraphPartition":"awayjs-display/lib/partition/SceneGraphPartition","./partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/pick/IPicker":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/pick/IPickingCollider":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/pick/JSPickingCollider":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -17312,7 +18199,6 @@ var JSPickingCollider = (function () {
     return JSPickingCollider;
 }());
 exports.JSPickingCollider = JSPickingCollider;
-
 },{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick/PickingCollision":[function(require,module,exports){
 "use strict";
 /**
@@ -17335,7 +18221,6 @@ var PickingCollision = (function () {
     return PickingCollision;
 }());
 exports.PickingCollision = PickingCollision;
-
 },{}],"awayjs-display/lib/pick/RaycastPicker":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -17527,7 +18412,6 @@ var RaycastPicker = (function () {
     return RaycastPicker;
 }());
 exports.RaycastPicker = RaycastPicker;
-
 },{"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick":[function(require,module,exports){
 "use strict";
 var JSPickingCollider_1 = require("./pick/JSPickingCollider");
@@ -17536,7 +18420,6 @@ var PickingCollision_1 = require("./pick/PickingCollision");
 exports.PickingCollision = PickingCollision_1.PickingCollision;
 var RaycastPicker_1 = require("./pick/RaycastPicker");
 exports.RaycastPicker = RaycastPicker_1.RaycastPicker;
-
 },{"./pick/JSPickingCollider":"awayjs-display/lib/pick/JSPickingCollider","./pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17584,7 +18467,6 @@ var PrefabBase = (function (_super) {
     return PrefabBase;
 }(AssetBase_1.AssetBase));
 exports.PrefabBase = PrefabBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17851,7 +18733,6 @@ var PrimitiveCapsulePrefab = (function (_super) {
     return PrimitiveCapsulePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveCapsulePrefab = PrimitiveCapsulePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveConePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17901,7 +18782,6 @@ var PrimitiveConePrefab = (function (_super) {
     return PrimitiveConePrefab;
 }(PrimitiveCylinderPrefab_1.PrimitiveCylinderPrefab));
 exports.PrimitiveConePrefab = PrimitiveConePrefab;
-
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitiveCubePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18439,7 +19319,6 @@ var PrimitiveCubePrefab = (function (_super) {
     return PrimitiveCubePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveCubePrefab = PrimitiveCubePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19016,7 +19895,6 @@ var PrimitiveCylinderPrefab = (function (_super) {
     return PrimitiveCylinderPrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveCylinderPrefab = PrimitiveCylinderPrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePlanePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19320,7 +20198,6 @@ var PrimitivePlanePrefab = (function (_super) {
     return PrimitivePlanePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitivePlanePrefab = PrimitivePlanePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePolygonPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19391,7 +20268,6 @@ var PrimitivePolygonPrefab = (function (_super) {
     return PrimitivePolygonPrefab;
 }(PrimitiveCylinderPrefab_1.PrimitiveCylinderPrefab));
 exports.PrimitivePolygonPrefab = PrimitivePolygonPrefab;
-
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitivePrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19556,7 +20432,6 @@ var PrimitivePrefabBase = (function (_super) {
     return PrimitivePrefabBase;
 }(PrefabBase_1.PrefabBase));
 exports.PrimitivePrefabBase = PrimitivePrefabBase;
-
 },{"../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19850,7 +20725,6 @@ var PrimitiveSpherePrefab = (function (_super) {
     return PrimitiveSpherePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveSpherePrefab = PrimitiveSpherePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20109,7 +20983,6 @@ var PrimitiveTorusPrefab = (function (_super) {
     return PrimitiveTorusPrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveTorusPrefab = PrimitiveTorusPrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs":[function(require,module,exports){
 "use strict";
 var PrefabBase_1 = require("./prefabs/PrefabBase");
@@ -20132,7 +21005,6 @@ var PrimitiveSpherePrefab_1 = require("./prefabs/PrimitiveSpherePrefab");
 exports.PrimitiveSpherePrefab = PrimitiveSpherePrefab_1.PrimitiveSpherePrefab;
 var PrimitiveTorusPrefab_1 = require("./prefabs/PrimitiveTorusPrefab");
 exports.PrimitiveTorusPrefab = PrimitiveTorusPrefab_1.PrimitiveTorusPrefab;
-
 },{"./prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","./prefabs/PrimitiveCapsulePrefab":"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab","./prefabs/PrimitiveConePrefab":"awayjs-display/lib/prefabs/PrimitiveConePrefab","./prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","./prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab","./prefabs/PrimitivePlanePrefab":"awayjs-display/lib/prefabs/PrimitivePlanePrefab","./prefabs/PrimitivePolygonPrefab":"awayjs-display/lib/prefabs/PrimitivePolygonPrefab","./prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase","./prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","./prefabs/PrimitiveTorusPrefab":"awayjs-display/lib/prefabs/PrimitiveTorusPrefab"}],"awayjs-display/lib/text/AntiAliasType":[function(require,module,exports){
 "use strict";
 /**
@@ -20163,8 +21035,219 @@ var AntiAliasType = (function () {
     return AntiAliasType;
 }());
 exports.AntiAliasType = AntiAliasType;
-
-},{}],"awayjs-display/lib/text/Font":[function(require,module,exports){
+},{}],"awayjs-display/lib/text/BitmapFontChar":[function(require,module,exports){
+"use strict";
+/**
+ * The TextFormat class represents character formatting information. Use the
+ * TextFormat class to create specific text formatting for text fields. You
+ * can apply text formatting to both static and dynamic text fields. The
+ * properties of the TextFormat class apply to device and embedded fonts.
+ * However, for embedded fonts, bold and italic text actually require specific
+ * fonts. If you want to display bold or italic text with an embedded font,
+ * you need to embed the bold and italic variations of that font.
+ *
+ * <p> You must use the constructor <code>new TextFormat()</code> to create a
+ * TextFormat object before setting its properties. When you apply a
+ * TextFormat object to a text field using the
+ * <code>TextField.defaultTextFormat</code> property or the
+ * <code>TextField.setTextFormat()</code> method, only its defined properties
+ * are applied. Use the <code>TextField.defaultTextFormat</code> property to
+ * apply formatting BEFORE you add text to the <code>TextField</code>, and the
+ * <code>setTextFormat()</code> method to add formatting AFTER you add text to
+ * the <code>TextField</code>. The TextFormat properties are <code>null</code>
+ * by default because if you don't provide values for the properties, Flash
+ * Player uses its own default formatting. The default formatting that Flash
+ * Player uses for each property(if property's value is <code>null</code>) is
+ * as follows:</p>
+ *
+ * <p>The default formatting for each property is also described in each
+ * property description.</p>
+ */
+var BitmapFontChar = (function () {
+    function BitmapFontChar(id, x, y, width, height, xoff, yoff, xadv, page, channel) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.x_offset = xoff;
+        this.y_offset = yoff;
+        this.x_advance = xadv;
+        this.page = page;
+        this.channel = channel;
+    }
+    return BitmapFontChar;
+}());
+exports.BitmapFontChar = BitmapFontChar;
+},{}],"awayjs-display/lib/text/BitmapFontTable":[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
+var BitmapFontChar_1 = require("../text/BitmapFontChar");
+/**
+ * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
+ *
+ *
+ * @see away.base.TriangleElements
+ * @see away.entities.Sprite
+ *
+ * @class away.base.GraphicBase
+ */
+var BitmapFontTable = (function (_super) {
+    __extends(BitmapFontTable, _super);
+    //TODO test shader picking
+    //		public get shaderPickingDetails():boolean
+    //		{
+    //
+    //			return this.sourceEntity.shaderPickingDetails;
+    //		}
+    /**
+     * Creates a new TesselatedFont object
+     */
+    function BitmapFontTable() {
+        _super.call(this);
+        this._font_chars = [];
+        this._bitmap_pages = [];
+        this._font_chars_dic = new Object();
+        this._ascent = 0;
+        this._descent = 0;
+        this._current_size = 0;
+        this._size_multiply = 0;
+        this._init_size = 0;
+    }
+    Object.defineProperty(BitmapFontTable.prototype, "assetType", {
+        get: function () {
+            return BitmapFontTable.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BitmapFontTable.prototype.initFontSize = function (font_size) {
+        if (this._current_size == font_size)
+            return;
+        this._current_size = font_size;
+        this._size_multiply = font_size / this._init_size;
+    };
+    BitmapFontTable.prototype.getCharDataCanvas = function (char_code) {
+        var this_char = this._font_chars_dic[char_code];
+        if (this_char) {
+            //console.log("this_char found");
+            return [this_char.x, this_char.y, this_char.width, this_char.height, this_char.x_offset * this._size_multiply, this_char.y_offset * this._size_multiply];
+        }
+        //console.log("this_char not found" + char_code);
+        return [];
+    };
+    BitmapFontTable.prototype.getCharData = function (char_code) {
+        var this_char = this._font_chars_dic[char_code];
+        if (this_char) {
+            //console.log("this_char found");
+            return [this_char.x / 256, this_char.y / 256, this_char.width / 256, this_char.height / 256, this_char.x_offset * this._size_multiply, this_char.y_offset * this._size_multiply];
+        }
+        //console.log("this_char not found" + char_code);
+        return [];
+    };
+    BitmapFontTable.prototype.getCharVertCnt = function (char_code) {
+        return 6 * 4;
+    };
+    BitmapFontTable.prototype.getCharWidth = function (char_code) {
+        var this_char = this._font_chars_dic[char_code];
+        if (this_char)
+            return this._size_multiply * this_char.x_advance;
+        return 0;
+    };
+    BitmapFontTable.prototype.getLineHeight = function () {
+        return this._current_size;
+    };
+    /**
+     *
+     */
+    BitmapFontTable.prototype.dispose = function () {
+    };
+    BitmapFontTable.prototype.add_page = function (image) {
+        this._bitmap_pages.push(image);
+    };
+    BitmapFontTable.prototype.get_page = function (idx) {
+        if (idx === void 0) { idx = 0; }
+        return this._bitmap_pages[idx];
+    };
+    Object.defineProperty(BitmapFontTable.prototype, "ascent", {
+        get: function () {
+            return this._ascent;
+        },
+        set: function (value) {
+            this._ascent = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BitmapFontTable.prototype, "descent", {
+        get: function () {
+            return this._descent;
+        },
+        set: function (value) {
+            this._descent = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BitmapFontTable.prototype, "offset_x", {
+        get: function () {
+            return this._offset_x;
+        },
+        set: function (value) {
+            this._offset_x = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BitmapFontTable.prototype, "offset_y", {
+        get: function () {
+            return this._offset_y;
+        },
+        set: function (value) {
+            this._offset_y = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BitmapFontTable.prototype.get_font_chars = function () {
+        return this._font_chars;
+    };
+    BitmapFontTable.prototype.get_font_em_size = function () {
+        return this._font_em_size;
+    };
+    BitmapFontTable.prototype.set_whitespace_width = function (value) {
+        this._whitespace_width = value;
+    };
+    BitmapFontTable.prototype.get_whitespace_width = function () {
+        return this._whitespace_width;
+    };
+    BitmapFontTable.prototype.set_font_em_size = function (font_em_size) {
+        this._font_em_size = font_em_size;
+    };
+    /**
+     *
+     */
+    BitmapFontTable.prototype.getChar = function (name) {
+        return this._font_chars_dic[name];
+    };
+    /**
+     *
+     */
+    BitmapFontTable.prototype.setChar = function (id, x, y, width, height, xoff, yoff, xadv, page, channel) {
+        var bitmap_font_char = new BitmapFontChar_1.BitmapFontChar(id, x, y, width, height, xoff, yoff, xadv, page, channel);
+        this._font_chars.push(bitmap_font_char);
+        this._font_chars_dic[id] = bitmap_font_char;
+    };
+    BitmapFontTable.assetType = "[asset BitmapFontTable]";
+    return BitmapFontTable;
+}(AssetBase_1.AssetBase));
+exports.BitmapFontTable = BitmapFontTable;
+},{"../text/BitmapFontChar":"awayjs-display/lib/text/BitmapFontChar","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/Font":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -20173,6 +21256,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
 var TesselatedFontTable_1 = require("../text/TesselatedFontTable");
+var BitmapFontTable_1 = require("../text/BitmapFontTable");
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
@@ -20195,7 +21279,7 @@ var Font = (function (_super) {
      */
     function Font() {
         _super.call(this);
-        this._font_styles = new Array();
+        this._font_styles = [];
     }
     Object.defineProperty(Font.prototype, "font_styles", {
         get: function () {
@@ -20222,13 +21306,21 @@ var Font = (function (_super) {
     /**
      *Get a font-table for a specific name, or create one if it does not exists.
      */
-    Font.prototype.get_font_table = function (style_name) {
+    Font.prototype.get_font_table = function (style_name, assetType) {
+        if (assetType === void 0) { assetType = TesselatedFontTable_1.TesselatedFontTable.assetType; }
         var len = this._font_styles.length;
         for (var i = 0; i < len; ++i) {
-            if (this._font_styles[i].name == style_name)
+            if ((this._font_styles[i].assetType == assetType) && (this._font_styles[i].name == style_name)) {
                 return this._font_styles[i];
+            }
         }
-        var font_style = new TesselatedFontTable_1.TesselatedFontTable();
+        var font_style = null;
+        if (assetType == TesselatedFontTable_1.TesselatedFontTable.assetType) {
+            font_style = new TesselatedFontTable_1.TesselatedFontTable();
+        }
+        else if (assetType == BitmapFontTable_1.BitmapFontTable.assetType) {
+            font_style = new BitmapFontTable_1.BitmapFontTable();
+        }
         font_style.name = style_name;
         this._font_styles.push(font_style);
         return font_style;
@@ -20237,8 +21329,7 @@ var Font = (function (_super) {
     return Font;
 }(AssetBase_1.AssetBase));
 exports.Font = Font;
-
-},{"../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
+},{"../text/BitmapFontTable":"awayjs-display/lib/text/BitmapFontTable","../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
 "use strict";
 /**
  * The GridFitType class defines values for grid fitting in the TextField class.
@@ -20275,7 +21366,8 @@ var GridFitType = (function () {
     return GridFitType;
 }());
 exports.GridFitType = GridFitType;
-
+},{}],"awayjs-display/lib/text/IFontTable":[function(require,module,exports){
+"use strict";
 },{}],"awayjs-display/lib/text/TesselatedFontChar":[function(require,module,exports){
 "use strict";
 /**
@@ -20309,17 +21401,16 @@ var TesselatedFontChar = (function () {
         /**
          * the char_codes that this geom has kerning set for
          */
-        this.kerningCharCodes = new Array();
+        this.kerningCharCodes = [];
         /**
          * the kerning values per char_code
          */
-        this.kerningValues = new Array();
+        this.kerningValues = [];
         this.elements = elements;
     }
     return TesselatedFontChar;
 }());
 exports.TesselatedFontChar = TesselatedFontChar;
-
 },{}],"awayjs-display/lib/text/TesselatedFontTable":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20351,11 +21442,44 @@ var TesselatedFontTable = (function (_super) {
      */
     function TesselatedFontTable() {
         _super.call(this);
-        this._font_chars = new Array();
+        this._font_chars = [];
         this._font_chars_dic = new Object();
         this._ascent = 0;
         this._descent = 0;
+        this._current_size = 0;
+        this._size_multiply = 0;
+        this._font_em_size = 0;
     }
+    TesselatedFontTable.prototype.initFontSize = function (font_size) {
+        if (this._current_size == font_size)
+            return;
+        this._current_size = font_size;
+        this._size_multiply = font_size / this._font_em_size;
+    };
+    TesselatedFontTable.prototype.getCharVertCnt = function (char_code) {
+        var tesselated_font_char = this._font_chars_dic[char_code];
+        if (tesselated_font_char) {
+            return tesselated_font_char.elements.numVertices * 3;
+        }
+        return 0;
+    };
+    TesselatedFontTable.prototype.getCharWidth = function (char_code) {
+        var tesselated_font_char = this._font_chars_dic[char_code];
+        if (tesselated_font_char) {
+            return tesselated_font_char.char_width * this._size_multiply;
+        }
+        return 0;
+    };
+    TesselatedFontTable.prototype.getLineHeight = function () {
+        return 0;
+    };
+    Object.defineProperty(TesselatedFontTable.prototype, "assetType", {
+        get: function () {
+            return TesselatedFontTable.assetType;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      *
      */
@@ -20432,10 +21556,10 @@ var TesselatedFontTable = (function (_super) {
         this._font_chars.push(tesselated_font_char);
         this._font_chars_dic[name] = tesselated_font_char;
     };
+    TesselatedFontTable.assetType = "[asset TesselatedFontTable]";
     return TesselatedFontTable;
 }(AssetBase_1.AssetBase));
 exports.TesselatedFontTable = TesselatedFontTable;
-
 },{"../text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 "use strict";
 /**
@@ -20470,7 +21594,6 @@ var TextFieldAutoSize = (function () {
     return TextFieldAutoSize;
 }());
 exports.TextFieldAutoSize = TextFieldAutoSize;
-
 },{}],"awayjs-display/lib/text/TextFieldType":[function(require,module,exports){
 "use strict";
 /**
@@ -20497,7 +21620,6 @@ var TextFieldType = (function () {
     return TextFieldType;
 }());
 exports.TextFieldType = TextFieldType;
-
 },{}],"awayjs-display/lib/text/TextFormatAlign":[function(require,module,exports){
 "use strict";
 /**
@@ -20530,7 +21652,6 @@ var TextFormatAlign = (function () {
     return TextFormatAlign;
 }());
 exports.TextFormatAlign = TextFormatAlign;
-
 },{}],"awayjs-display/lib/text/TextFormat":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20627,7 +21748,7 @@ var TextFormat = (function (_super) {
          * (<code>null</code>), the default tab stop is 4(average character width).
          */
         //todo: not used with in tesselated-font-table yet
-        this.tabStops = new Array();
+        this.tabStops = [];
         this.font_name = font;
         this.size = size;
         this.bold = bold;
@@ -20655,7 +21776,6 @@ var TextFormat = (function (_super) {
     return TextFormat;
 }(AssetBase_1.AssetBase));
 exports.TextFormat = TextFormat;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
 "use strict";
 /**
@@ -20683,7 +21803,6 @@ var TextInteractionMode = (function () {
     return TextInteractionMode;
 }());
 exports.TextInteractionMode = TextInteractionMode;
-
 },{}],"awayjs-display/lib/text/TextLineMetrics":[function(require,module,exports){
 "use strict";
 /**
@@ -20722,7 +21841,6 @@ var TextLineMetrics = (function () {
     return TextLineMetrics;
 }());
 exports.TextLineMetrics = TextLineMetrics;
-
 },{}],"awayjs-display/lib/text":[function(require,module,exports){
 "use strict";
 var AntiAliasType_1 = require("./text/AntiAliasType");
@@ -20731,10 +21849,14 @@ var Font_1 = require("./text/Font");
 exports.Font = Font_1.Font;
 var GridFitType_1 = require("./text/GridFitType");
 exports.GridFitType = GridFitType_1.GridFitType;
-var TesselatedFontChar_1 = require("./text/TesselatedFontChar");
-exports.TesselatedFontChar = TesselatedFontChar_1.TesselatedFontChar;
 var TesselatedFontTable_1 = require("./text/TesselatedFontTable");
 exports.TesselatedFontTable = TesselatedFontTable_1.TesselatedFontTable;
+var BitmapFontTable_1 = require("./text/BitmapFontTable");
+exports.BitmapFontTable = BitmapFontTable_1.BitmapFontTable;
+var TesselatedFontChar_1 = require("./text/TesselatedFontChar");
+exports.TesselatedFontChar = TesselatedFontChar_1.TesselatedFontChar;
+var BitmapFontChar_1 = require("./text/BitmapFontChar");
+exports.BitmapFontChar = BitmapFontChar_1.BitmapFontChar;
 var TextFieldAutoSize_1 = require("./text/TextFieldAutoSize");
 exports.TextFieldAutoSize = TextFieldAutoSize_1.TextFieldAutoSize;
 var TextFieldType_1 = require("./text/TextFieldType");
@@ -20747,8 +21869,7 @@ var TextInteractionMode_1 = require("./text/TextInteractionMode");
 exports.TextInteractionMode = TextInteractionMode_1.TextInteractionMode;
 var TextLineMetrics_1 = require("./text/TextLineMetrics");
 exports.TextLineMetrics = TextLineMetrics_1.TextLineMetrics;
-
-},{"./text/AntiAliasType":"awayjs-display/lib/text/AntiAliasType","./text/Font":"awayjs-display/lib/text/Font","./text/GridFitType":"awayjs-display/lib/text/GridFitType","./text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","./text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","./text/TextFieldAutoSize":"awayjs-display/lib/text/TextFieldAutoSize","./text/TextFieldType":"awayjs-display/lib/text/TextFieldType","./text/TextFormat":"awayjs-display/lib/text/TextFormat","./text/TextFormatAlign":"awayjs-display/lib/text/TextFormatAlign","./text/TextInteractionMode":"awayjs-display/lib/text/TextInteractionMode","./text/TextLineMetrics":"awayjs-display/lib/text/TextLineMetrics"}],"awayjs-display/lib/textures/MappingMode":[function(require,module,exports){
+},{"./text/AntiAliasType":"awayjs-display/lib/text/AntiAliasType","./text/BitmapFontChar":"awayjs-display/lib/text/BitmapFontChar","./text/BitmapFontTable":"awayjs-display/lib/text/BitmapFontTable","./text/Font":"awayjs-display/lib/text/Font","./text/GridFitType":"awayjs-display/lib/text/GridFitType","./text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","./text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","./text/TextFieldAutoSize":"awayjs-display/lib/text/TextFieldAutoSize","./text/TextFieldType":"awayjs-display/lib/text/TextFieldType","./text/TextFormat":"awayjs-display/lib/text/TextFormat","./text/TextFormatAlign":"awayjs-display/lib/text/TextFormatAlign","./text/TextInteractionMode":"awayjs-display/lib/text/TextInteractionMode","./text/TextLineMetrics":"awayjs-display/lib/text/TextLineMetrics"}],"awayjs-display/lib/textures/MappingMode":[function(require,module,exports){
 "use strict";
 /**
 
@@ -20772,7 +21893,6 @@ var MappingMode = (function () {
     return MappingMode;
 }());
 exports.MappingMode = MappingMode;
-
 },{}],"awayjs-display/lib/textures/Single2DTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20854,7 +21974,6 @@ var Single2DTexture = (function (_super) {
     return Single2DTexture;
 }(TextureBase_1.TextureBase));
 exports.Single2DTexture = Single2DTexture;
-
 },{"../textures/MappingMode":"awayjs-display/lib/textures/MappingMode","../textures/TextureBase":"awayjs-display/lib/textures/TextureBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/utils/ImageUtils":undefined}],"awayjs-display/lib/textures/SingleCubeTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20918,7 +22037,6 @@ var SingleCubeTexture = (function (_super) {
     return SingleCubeTexture;
 }(TextureBase_1.TextureBase));
 exports.SingleCubeTexture = SingleCubeTexture;
-
 },{"../textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/TextureBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20969,7 +22087,6 @@ var TextureBase = (function (_super) {
     return TextureBase;
 }(AssetBase_1.AssetBase));
 exports.TextureBase = TextureBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/textures":[function(require,module,exports){
 "use strict";
 var MappingMode_1 = require("./textures/MappingMode");
@@ -20980,7 +22097,6 @@ var SingleCubeTexture_1 = require("./textures/SingleCubeTexture");
 exports.SingleCubeTexture = SingleCubeTexture_1.SingleCubeTexture;
 var TextureBase_1 = require("./textures/TextureBase");
 exports.TextureBase = TextureBase_1.TextureBase;
-
 },{"./textures/MappingMode":"awayjs-display/lib/textures/MappingMode","./textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","./textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","./textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/utils/Cast":[function(require,module,exports){
 "use strict";
 var Image2D_1 = require("awayjs-core/lib/image/Image2D");
@@ -21252,7 +22368,6 @@ var Cast = (function () {
     return Cast;
 }());
 exports.Cast = Cast;
-
 },{"../errors/CastError":"awayjs-display/lib/errors/CastError","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/utils/ByteArray":undefined}],"awayjs-display/lib/utils/ElementsUtils":[function(require,module,exports){
 "use strict";
 var AttributesBuffer_1 = require("awayjs-core/lib/attributes/AttributesBuffer");
@@ -22066,13 +23181,11 @@ var ElementsUtils = (function () {
     return ElementsUtils;
 }());
 exports.ElementsUtils = ElementsUtils;
-
 },{"../graphics/HitTestCache":"awayjs-display/lib/graphics/HitTestCache","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/utils":[function(require,module,exports){
 "use strict";
 var Cast_1 = require("./utils/Cast");
 exports.Cast = Cast_1.Cast;
 var ElementsUtils_1 = require("./utils/ElementsUtils");
 exports.ElementsUtils = ElementsUtils_1.ElementsUtils;
-
 },{"./utils/Cast":"awayjs-display/lib/utils/Cast","./utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}]},{},[1])
 //# sourceMappingURL=awayjs-display.js.map
