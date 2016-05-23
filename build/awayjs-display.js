@@ -52,13 +52,10 @@ partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextFi
 partition.PartitionBase.registerAbstraction(partition.LightProbeNode, display.LightProbe);
 partition.PartitionBase.registerAbstraction(partition.PointLightNode, display.PointLight);
 partition.PartitionBase.registerAbstraction(partition.SkyboxNode, display.Skybox);
-
 },{"./lib/View":"awayjs-display/lib/View","./lib/adapters":"awayjs-display/lib/adapters","./lib/animators":"awayjs-display/lib/animators","./lib/base":"awayjs-display/lib/base","./lib/bounds":"awayjs-display/lib/bounds","./lib/controllers":"awayjs-display/lib/controllers","./lib/display":"awayjs-display/lib/display","./lib/draw":"awayjs-display/lib/draw","./lib/errors":"awayjs-display/lib/errors","./lib/events":"awayjs-display/lib/events","./lib/factories":"awayjs-display/lib/factories","./lib/graphics":"awayjs-display/lib/graphics","./lib/managers":"awayjs-display/lib/managers","./lib/materials":"awayjs-display/lib/materials","./lib/partition":"awayjs-display/lib/partition","./lib/pick":"awayjs-display/lib/pick","./lib/prefabs":"awayjs-display/lib/prefabs","./lib/text":"awayjs-display/lib/text","./lib/textures":"awayjs-display/lib/textures","./lib/utils":"awayjs-display/lib/utils"}],"awayjs-display/lib/IRenderer":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/ITraverser":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/View":[function(require,module,exports){
 "use strict";
 var getTimer_1 = require("awayjs-core/lib/utils/getTimer");
@@ -550,22 +547,16 @@ var View = (function () {
     return View;
 }());
 exports.View = View;
-
 },{"./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./display/Camera":"awayjs-display/lib/display/Camera","./display/Scene":"awayjs-display/lib/display/Scene","./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker","awayjs-core/lib/utils/getTimer":undefined}],"awayjs-display/lib/adapters/IDisplayObjectAdapter":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/adapters/IMovieClipAdapter":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/adapters":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/IAnimationSet":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/IAnimator":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/animators/data/ParticleData":[function(require,module,exports){
 "use strict";
 var ParticleData = (function () {
@@ -576,7 +567,6 @@ var ParticleData = (function () {
 exports.ParticleData = ParticleData;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ParticleData;
-
 },{}],"awayjs-display/lib/animators/nodes/AnimationNodeBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -622,14 +612,12 @@ var AnimationNodeBase = (function (_super) {
     return AnimationNodeBase;
 }(AssetBase_1.AssetBase));
 exports.AnimationNodeBase = AnimationNodeBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/animators":[function(require,module,exports){
 "use strict";
 var ParticleData_1 = require("./animators/data/ParticleData");
 exports.ParticleData = ParticleData_1.ParticleData;
 var AnimationNodeBase_1 = require("./animators/nodes/AnimationNodeBase");
 exports.AnimationNodeBase = AnimationNodeBase_1.AnimationNodeBase;
-
 },{"./animators/data/ParticleData":"awayjs-display/lib/animators/data/ParticleData","./animators/nodes/AnimationNodeBase":"awayjs-display/lib/animators/nodes/AnimationNodeBase"}],"awayjs-display/lib/base/AlignmentMode":[function(require,module,exports){
 "use strict";
 /**
@@ -649,7 +637,6 @@ var AlignmentMode = (function () {
     return AlignmentMode;
 }());
 exports.AlignmentMode = AlignmentMode;
-
 },{}],"awayjs-display/lib/base/HierarchicalProperties":[function(require,module,exports){
 "use strict";
 /**
@@ -689,16 +676,12 @@ var HierarchicalProperties = (function () {
     return HierarchicalProperties;
 }());
 exports.HierarchicalProperties = HierarchicalProperties;
-
 },{}],"awayjs-display/lib/base/IBitmapDrawable":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/IRenderable":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/ISurface":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/base/OrientationMode":[function(require,module,exports){
 "use strict";
 var OrientationMode = (function () {
@@ -719,7 +702,6 @@ var OrientationMode = (function () {
     return OrientationMode;
 }());
 exports.OrientationMode = OrientationMode;
-
 },{}],"awayjs-display/lib/base/Style":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -836,7 +818,6 @@ var Style = (function (_super) {
     return Style;
 }(EventDispatcher_1.EventDispatcher));
 exports.Style = Style;
-
 },{"../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/events/EventDispatcher":undefined}],"awayjs-display/lib/base/Timeline":[function(require,module,exports){
 "use strict";
 var HierarchicalProperties_1 = require("../base/HierarchicalProperties");
@@ -859,6 +840,8 @@ var Timeline = (function () {
         this._functions[4] = this.update_name;
         this._functions[5] = this.update_button_name;
         this._functions[6] = this.update_visibility;
+        this._functions[7] = this.update_blendmode;
+        this._functions[8] = this.update_rendermode;
         this._functions[11] = this.update_mtx_scale_rot;
         this._functions[12] = this.update_mtx_pos;
         this._functions[200] = this.enable_maskmode;
@@ -1204,10 +1187,15 @@ var Timeline = (function () {
     Timeline.prototype.remove_masks = function (child, target_mc, i) {
         child.masks = null;
     };
+    Timeline.prototype.update_blendmode = function (child, target_mc, i) {
+        console.log("update blendmode " + i);
+    };
+    Timeline.prototype.update_rendermode = function (child, target_mc, i) {
+        console.log("update rendermode " + i);
+    };
     return Timeline;
 }());
 exports.Timeline = Timeline;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/ColorTransform":undefined}],"awayjs-display/lib/base/TouchPoint":[function(require,module,exports){
 "use strict";
 /**
@@ -1222,7 +1210,6 @@ var TouchPoint = (function () {
     return TouchPoint;
 }());
 exports.TouchPoint = TouchPoint;
-
 },{}],"awayjs-display/lib/base/Transform":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1737,7 +1724,6 @@ var Transform = (function (_super) {
     return Transform;
 }(EventDispatcher_1.EventDispatcher));
 exports.Transform = Transform;
-
 },{"../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","awayjs-core/lib/events/EventDispatcher":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/base":[function(require,module,exports){
 "use strict";
 var AlignmentMode_1 = require("./base/AlignmentMode");
@@ -1754,7 +1740,6 @@ var TouchPoint_1 = require("./base/TouchPoint");
 exports.TouchPoint = TouchPoint_1.TouchPoint;
 var Transform_1 = require("./base/Transform");
 exports.Transform = Transform_1.Transform;
-
 },{"./base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","./base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","./base/OrientationMode":"awayjs-display/lib/base/OrientationMode","./base/Style":"awayjs-display/lib/base/Style","./base/Timeline":"awayjs-display/lib/base/Timeline","./base/TouchPoint":"awayjs-display/lib/base/TouchPoint","./base/Transform":"awayjs-display/lib/base/Transform"}],"awayjs-display/lib/bounds/AxisAlignedBoundingBox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1878,7 +1863,6 @@ var AxisAlignedBoundingBox = (function (_super) {
     return AxisAlignedBoundingBox;
 }(BoundingVolumeBase_1.BoundingVolumeBase));
 exports.AxisAlignedBoundingBox = AxisAlignedBoundingBox;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingSphere":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -1972,7 +1956,6 @@ var BoundingSphere = (function (_super) {
     return BoundingSphere;
 }(BoundingVolumeBase_1.BoundingVolumeBase));
 exports.BoundingSphere = BoundingSphere;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds/BoundingVolumeBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -2025,7 +2008,6 @@ var BoundingVolumeBase = (function () {
     return BoundingVolumeBase;
 }());
 exports.BoundingVolumeBase = BoundingVolumeBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/bounds/BoundsType":[function(require,module,exports){
 "use strict";
 /**
@@ -2049,7 +2031,6 @@ var BoundsType = (function () {
     return BoundsType;
 }());
 exports.BoundsType = BoundsType;
-
 },{}],"awayjs-display/lib/bounds/NullBounds":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2080,7 +2061,6 @@ var NullBounds = (function (_super) {
     return NullBounds;
 }(BoundingVolumeBase_1.BoundingVolumeBase));
 exports.NullBounds = NullBounds;
-
 },{"../bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","awayjs-core/lib/geom/PlaneClassification":undefined}],"awayjs-display/lib/bounds":[function(require,module,exports){
 "use strict";
 var AxisAlignedBoundingBox_1 = require("./bounds/AxisAlignedBoundingBox");
@@ -2093,7 +2073,6 @@ var BoundsType_1 = require("./bounds/BoundsType");
 exports.BoundsType = BoundsType_1.BoundsType;
 var NullBounds_1 = require("./bounds/NullBounds");
 exports.NullBounds = NullBounds_1.NullBounds;
-
 },{"./bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","./bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","./bounds/BoundingVolumeBase":"awayjs-display/lib/bounds/BoundingVolumeBase","./bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","./bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/controllers/ControllerBase":[function(require,module,exports){
 "use strict";
 var AbstractMethodError_1 = require("awayjs-core/lib/errors/AbstractMethodError");
@@ -2155,7 +2134,6 @@ var ControllerBase = (function () {
     return ControllerBase;
 }());
 exports.ControllerBase = ControllerBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/controllers/FirstPersonController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2387,7 +2365,6 @@ var FirstPersonController = (function (_super) {
     return FirstPersonController;
 }(ControllerBase_1.ControllerBase));
 exports.FirstPersonController = FirstPersonController;
-
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","awayjs-core/lib/geom/MathConsts":undefined}],"awayjs-display/lib/controllers/FollowController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2421,7 +2398,6 @@ var FollowController = (function (_super) {
     return FollowController;
 }(HoverController_1.HoverController));
 exports.FollowController = FollowController;
-
 },{"../controllers/HoverController":"awayjs-display/lib/controllers/HoverController"}],"awayjs-display/lib/controllers/HoverController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2721,7 +2697,6 @@ var HoverController = (function (_super) {
     return HoverController;
 }(LookAtController_1.LookAtController));
 exports.HoverController = HoverController;
-
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/LookAtController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2796,7 +2771,6 @@ var LookAtController = (function (_super) {
     return LookAtController;
 }(ControllerBase_1.ControllerBase));
 exports.LookAtController = LookAtController;
-
 },{"../controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers/SpringController":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2861,7 +2835,6 @@ var SpringController = (function (_super) {
     return SpringController;
 }(LookAtController_1.LookAtController));
 exports.SpringController = SpringController;
-
 },{"../controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/controllers":[function(require,module,exports){
 "use strict";
 var ControllerBase_1 = require("./controllers/ControllerBase");
@@ -2876,7 +2849,6 @@ var LookAtController_1 = require("./controllers/LookAtController");
 exports.LookAtController = LookAtController_1.LookAtController;
 var SpringController_1 = require("./controllers/SpringController");
 exports.SpringController = SpringController_1.SpringController;
-
 },{"./controllers/ControllerBase":"awayjs-display/lib/controllers/ControllerBase","./controllers/FirstPersonController":"awayjs-display/lib/controllers/FirstPersonController","./controllers/FollowController":"awayjs-display/lib/controllers/FollowController","./controllers/HoverController":"awayjs-display/lib/controllers/HoverController","./controllers/LookAtController":"awayjs-display/lib/controllers/LookAtController","./controllers/SpringController":"awayjs-display/lib/controllers/SpringController"}],"awayjs-display/lib/display/Billboard":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3103,7 +3075,6 @@ var Billboard = (function (_super) {
     return Billboard;
 }(DisplayObject_1.DisplayObject));
 exports.Billboard = Billboard;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/geom/Rectangle":undefined}],"awayjs-display/lib/display/Camera":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3336,7 +3307,6 @@ var Camera = (function (_super) {
     return Camera;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.Camera = Camera;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/CameraEvent":"awayjs-display/lib/events/CameraEvent","awayjs-core/lib/events/ProjectionEvent":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Plane3D":undefined,"awayjs-core/lib/projections/PerspectiveProjection":undefined}],"awayjs-display/lib/display/DirectionalLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3498,7 +3468,6 @@ var DirectionalLight = (function (_super) {
     return DirectionalLight;
 }(LightBase_1.LightBase));
 exports.DirectionalLight = DirectionalLight;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/DisplayObjectContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -4086,7 +4055,6 @@ var DisplayObjectContainer = (function (_super) {
     return DisplayObjectContainer;
 }(DisplayObject_1.DisplayObject));
 exports.DisplayObjectContainer = DisplayObjectContainer;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","awayjs-core/lib/errors/ArgumentError":undefined,"awayjs-core/lib/errors/RangeError":undefined}],"awayjs-display/lib/display/DisplayObject":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -5969,10 +5937,8 @@ var DisplayObject = (function (_super) {
     return DisplayObject;
 }(AssetBase_1.AssetBase));
 exports.DisplayObject = DisplayObject;
-
 },{"../base/AlignmentMode":"awayjs-display/lib/base/AlignmentMode","../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/OrientationMode":"awayjs-display/lib/base/OrientationMode","../base/Transform":"awayjs-display/lib/base/Transform","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","../events/TransformEvent":"awayjs-display/lib/events/TransformEvent","../pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/display/IEntity":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/display/LightBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6132,7 +6098,6 @@ var LightBase = (function (_super) {
     return LightBase;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.LightBase = LightBase;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../events/LightEvent":"awayjs-display/lib/events/LightEvent","awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/display/LightProbe":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6173,7 +6138,6 @@ var LightProbe = (function (_super) {
     return LightProbe;
 }(LightBase_1.LightBase));
 exports.LightProbe = LightProbe;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/image/SamplerCube":undefined}],"awayjs-display/lib/display/LineSegment":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6373,7 +6337,6 @@ var LineSegment = (function (_super) {
     return LineSegment;
 }(DisplayObject_1.DisplayObject));
 exports.LineSegment = LineSegment;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent"}],"awayjs-display/lib/display/LoaderContainer":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -6935,7 +6898,6 @@ var LoaderContainer = (function (_super) {
     return LoaderContainer;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.LoaderContainer = LoaderContainer;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/events/LoaderEvent":undefined,"awayjs-core/lib/events/ParserEvent":undefined,"awayjs-core/lib/events/URLLoaderEvent":undefined,"awayjs-core/lib/library/AssetLibraryBundle":undefined,"awayjs-core/lib/library/Loader":undefined}],"awayjs-display/lib/display/MovieClip":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7267,7 +7229,6 @@ var MovieClip = (function (_super) {
 exports.MovieClip = MovieClip;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = MovieClip;
-
 },{"../base/Timeline":"awayjs-display/lib/base/Timeline","../display/Sprite":"awayjs-display/lib/display/Sprite","../display/TextField":"awayjs-display/lib/display/TextField","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/display/PointLight":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7379,7 +7340,6 @@ var PointLight = (function (_super) {
     return PointLight;
 }(LightBase_1.LightBase));
 exports.PointLight = PointLight;
-
 },{"../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/LightBase":"awayjs-display/lib/display/LightBase","../materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Scene":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7428,7 +7388,6 @@ var Scene = (function (_super) {
     return Scene;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.Scene = Scene;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition"}],"awayjs-display/lib/display/Shape":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7654,7 +7613,6 @@ var Shape = (function (_super) {
     return Shape;
 }(DisplayObject_1.DisplayObject));
 exports.Shape = Shape;
-
 },{"../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/Skybox":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -7914,7 +7872,6 @@ var Skybox = (function (_super) {
     return Skybox;
 }(DisplayObject_1.DisplayObject));
 exports.Skybox = Skybox;
-
 },{"../base/Style":"awayjs-display/lib/base/Style","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../display/DisplayObject":"awayjs-display/lib/display/DisplayObject","../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/image/BlendMode":undefined}],"awayjs-display/lib/display/Sprite":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -8131,7 +8088,6 @@ var Sprite = (function (_super) {
     return Sprite;
 }(DisplayObjectContainer_1.DisplayObjectContainer));
 exports.Sprite = Sprite;
-
 },{"../display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","../graphics/Graphics":"awayjs-display/lib/graphics/Graphics","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/display/TextFieldMultiRender":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -9144,7 +9100,6 @@ var TextFieldMultiRender = (function (_super) {
     return TextFieldMultiRender;
 }(Sprite_1.Sprite));
 exports.TextFieldMultiRender = TextFieldMultiRender;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","../text/BitmapFontTable":"awayjs-display/lib/text/BitmapFontTable","../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -10035,7 +9990,6 @@ var TextField = (function (_super) {
     return TextField;
 }(Sprite_1.Sprite));
 exports.TextField = TextField;
-
 },{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display":[function(require,module,exports){
 "use strict";
 var Billboard_1 = require("./display/Billboard");
@@ -10072,7 +10026,6 @@ var TextField_1 = require("./display/TextField");
 exports.TextField = TextField_1.TextField;
 var TextFieldMultiRender_1 = require("./display/TextFieldMultiRender");
 exports.TextFieldMultiRender = TextFieldMultiRender_1.TextFieldMultiRender;
-
 },{"./display/Billboard":"awayjs-display/lib/display/Billboard","./display/Camera":"awayjs-display/lib/display/Camera","./display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","./display/DisplayObject":"awayjs-display/lib/display/DisplayObject","./display/DisplayObjectContainer":"awayjs-display/lib/display/DisplayObjectContainer","./display/LightBase":"awayjs-display/lib/display/LightBase","./display/LightProbe":"awayjs-display/lib/display/LightProbe","./display/LineSegment":"awayjs-display/lib/display/LineSegment","./display/LoaderContainer":"awayjs-display/lib/display/LoaderContainer","./display/MovieClip":"awayjs-display/lib/display/MovieClip","./display/PointLight":"awayjs-display/lib/display/PointLight","./display/Scene":"awayjs-display/lib/display/Scene","./display/Shape":"awayjs-display/lib/display/Shape","./display/Skybox":"awayjs-display/lib/display/Skybox","./display/Sprite":"awayjs-display/lib/display/Sprite","./display/TextField":"awayjs-display/lib/display/TextField","./display/TextFieldMultiRender":"awayjs-display/lib/display/TextFieldMultiRender"}],"awayjs-display/lib/draw/CapsStyle":[function(require,module,exports){
 "use strict";
 /**
@@ -10103,7 +10056,6 @@ var CapsStyle = (function () {
     return CapsStyle;
 }());
 exports.CapsStyle = CapsStyle;
-
 },{}],"awayjs-display/lib/draw/GradientType":[function(require,module,exports){
 "use strict";
 /**
@@ -10126,7 +10078,6 @@ var GradientType = (function () {
     return GradientType;
 }());
 exports.GradientType = GradientType;
-
 },{}],"awayjs-display/lib/draw/GraphicsFactoryFills":[function(require,module,exports){
 "use strict";
 var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
@@ -10429,7 +10380,6 @@ var GraphicsFactoryFills = (function () {
     return GraphicsFactoryFills;
 }());
 exports.GraphicsFactoryFills = GraphicsFactoryFills;
-
 },{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryHelper":[function(require,module,exports){
 "use strict";
 var CapsStyle_1 = require("../draw/CapsStyle");
@@ -10600,7 +10550,6 @@ var GraphicsFactoryHelper = (function () {
     return GraphicsFactoryHelper;
 }());
 exports.GraphicsFactoryHelper = GraphicsFactoryHelper;
-
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFactoryStrokes":[function(require,module,exports){
 "use strict";
 var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
@@ -11085,7 +11034,6 @@ var GraphicsFactoryStrokes = (function () {
     return GraphicsFactoryStrokes;
 }());
 exports.GraphicsFactoryStrokes = GraphicsFactoryStrokes;
-
 },{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFillStyle":[function(require,module,exports){
 "use strict";
 var GraphicsFillStyle = (function () {
@@ -11106,7 +11054,6 @@ var GraphicsFillStyle = (function () {
     return GraphicsFillStyle;
 }());
 exports.GraphicsFillStyle = GraphicsFillStyle;
-
 },{}],"awayjs-display/lib/draw/GraphicsPathCommand":[function(require,module,exports){
 "use strict";
 /**
@@ -11162,7 +11109,6 @@ var GraphicsPathCommand = (function () {
 exports.GraphicsPathCommand = GraphicsPathCommand;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = GraphicsPathCommand;
-
 },{}],"awayjs-display/lib/draw/GraphicsPathWinding":[function(require,module,exports){
 "use strict";
 /**
@@ -11183,7 +11129,6 @@ var GraphicsPathWinding = (function () {
     return GraphicsPathWinding;
 }());
 exports.GraphicsPathWinding = GraphicsPathWinding;
-
 },{}],"awayjs-display/lib/draw/GraphicsPath":[function(require,module,exports){
 "use strict";
 var GraphicsPathWinding_1 = require("../draw/GraphicsPathWinding");
@@ -11360,7 +11305,6 @@ var GraphicsPath = (function () {
     return GraphicsPath;
 }());
 exports.GraphicsPath = GraphicsPath;
-
 },{"../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsStrokeStyle":[function(require,module,exports){
 "use strict";
 var JointStyle_1 = require("../draw/JointStyle");
@@ -11458,10 +11402,8 @@ var GraphicsStrokeStyle = (function () {
     return GraphicsStrokeStyle;
 }());
 exports.GraphicsStrokeStyle = GraphicsStrokeStyle;
-
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle"}],"awayjs-display/lib/draw/IGraphicsData":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/draw/InterpolationMethod":[function(require,module,exports){
 "use strict";
 /**
@@ -11503,7 +11445,6 @@ var InterpolationMethod = (function () {
     return InterpolationMethod;
 }());
 exports.InterpolationMethod = InterpolationMethod;
-
 },{}],"awayjs-display/lib/draw/JointStyle":[function(require,module,exports){
 "use strict";
 /**
@@ -11535,7 +11476,6 @@ var JointStyle = (function () {
     return JointStyle;
 }());
 exports.JointStyle = JointStyle;
-
 },{}],"awayjs-display/lib/draw/LineScaleMode":[function(require,module,exports){
 "use strict";
 /**
@@ -11579,7 +11519,6 @@ var LineScaleMode = (function () {
     return LineScaleMode;
 }());
 exports.LineScaleMode = LineScaleMode;
-
 },{}],"awayjs-display/lib/draw/PixelSnapping":[function(require,module,exports){
 "use strict";
 /**
@@ -11614,7 +11553,6 @@ var PixelSnapping = (function () {
     return PixelSnapping;
 }());
 exports.PixelSnapping = PixelSnapping;
-
 },{}],"awayjs-display/lib/draw/SpreadMethod":[function(require,module,exports){
 "use strict";
 /**
@@ -11643,7 +11581,6 @@ var SpreadMethod = (function () {
     return SpreadMethod;
 }());
 exports.SpreadMethod = SpreadMethod;
-
 },{}],"awayjs-display/lib/draw/TriangleCulling":[function(require,module,exports){
 "use strict";
 /**
@@ -11686,7 +11623,6 @@ var TriangleCulling = (function () {
     return TriangleCulling;
 }());
 exports.TriangleCulling = TriangleCulling;
-
 },{}],"awayjs-display/lib/draw":[function(require,module,exports){
 "use strict";
 var CapsStyle_1 = require("./draw/CapsStyle");
@@ -11721,7 +11657,6 @@ var SpreadMethod_1 = require("./draw/SpreadMethod");
 exports.SpreadMethod = SpreadMethod_1.SpreadMethod;
 var TriangleCulling_1 = require("./draw/TriangleCulling");
 exports.TriangleCulling = TriangleCulling_1.TriangleCulling;
-
 },{"./draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","./draw/GradientType":"awayjs-display/lib/draw/GradientType","./draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","./draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","./draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","./draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","./draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","./draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","./draw/GraphicsPathWinding":"awayjs-display/lib/draw/GraphicsPathWinding","./draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","./draw/InterpolationMethod":"awayjs-display/lib/draw/InterpolationMethod","./draw/JointStyle":"awayjs-display/lib/draw/JointStyle","./draw/LineScaleMode":"awayjs-display/lib/draw/LineScaleMode","./draw/PixelSnapping":"awayjs-display/lib/draw/PixelSnapping","./draw/SpreadMethod":"awayjs-display/lib/draw/SpreadMethod","./draw/TriangleCulling":"awayjs-display/lib/draw/TriangleCulling"}],"awayjs-display/lib/errors/CastError":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11738,12 +11673,10 @@ var CastError = (function (_super) {
     return CastError;
 }(ErrorBase_1.ErrorBase));
 exports.CastError = CastError;
-
 },{"awayjs-core/lib/errors/ErrorBase":undefined}],"awayjs-display/lib/errors":[function(require,module,exports){
 "use strict";
 var CastError_1 = require("./errors/CastError");
 exports.CastError = CastError_1.CastError;
-
 },{"./errors/CastError":"awayjs-display/lib/errors/CastError"}],"awayjs-display/lib/events/CameraEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11779,7 +11712,6 @@ var CameraEvent = (function (_super) {
     return CameraEvent;
 }(EventBase_1.EventBase));
 exports.CameraEvent = CameraEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/DisplayObjectEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11831,7 +11763,6 @@ var DisplayObjectEvent = (function (_super) {
     return DisplayObjectEvent;
 }(EventBase_1.EventBase));
 exports.DisplayObjectEvent = DisplayObjectEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ElementsEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11894,7 +11825,6 @@ var ElementsEvent = (function (_super) {
     return ElementsEvent;
 }(EventBase_1.EventBase));
 exports.ElementsEvent = ElementsEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/LightEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -11916,7 +11846,6 @@ var LightEvent = (function (_super) {
     return LightEvent;
 }(EventBase_1.EventBase));
 exports.LightEvent = LightEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/MouseEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12060,7 +11989,6 @@ var MouseEvent = (function (_super) {
     return MouseEvent;
 }(EventBase_1.EventBase));
 exports.MouseEvent = MouseEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RenderableEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12115,7 +12043,6 @@ var RenderableEvent = (function (_super) {
     return RenderableEvent;
 }(EventBase_1.EventBase));
 exports.RenderableEvent = RenderableEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/RendererEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12134,7 +12061,6 @@ var RendererEvent = (function (_super) {
     return RendererEvent;
 }(EventBase_1.EventBase));
 exports.RendererEvent = RendererEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/ResizeEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12178,7 +12104,6 @@ var ResizeEvent = (function (_super) {
     return ResizeEvent;
 }(EventBase_1.EventBase));
 exports.ResizeEvent = ResizeEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/StyleEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12214,7 +12139,6 @@ var StyleEvent = (function (_super) {
     return StyleEvent;
 }(EventBase_1.EventBase));
 exports.StyleEvent = StyleEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/SurfaceEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12258,7 +12182,6 @@ var SurfaceEvent = (function (_super) {
     return SurfaceEvent;
 }(EventBase_1.EventBase));
 exports.SurfaceEvent = SurfaceEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TouchEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12376,7 +12299,6 @@ var TouchEvent = (function (_super) {
     return TouchEvent;
 }(EventBase_1.EventBase));
 exports.TouchEvent = TouchEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events/TransformEvent":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12416,7 +12338,6 @@ var TransformEvent = (function (_super) {
     return TransformEvent;
 }(EventBase_1.EventBase));
 exports.TransformEvent = TransformEvent;
-
 },{"awayjs-core/lib/events/EventBase":undefined}],"awayjs-display/lib/events":[function(require,module,exports){
 "use strict";
 var CameraEvent_1 = require("./events/CameraEvent");
@@ -12443,13 +12364,10 @@ var TouchEvent_1 = require("./events/TouchEvent");
 exports.TouchEvent = TouchEvent_1.TouchEvent;
 var TransformEvent_1 = require("./events/TransformEvent");
 exports.TransformEvent = TransformEvent_1.TransformEvent;
-
 },{"./events/CameraEvent":"awayjs-display/lib/events/CameraEvent","./events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","./events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","./events/LightEvent":"awayjs-display/lib/events/LightEvent","./events/MouseEvent":"awayjs-display/lib/events/MouseEvent","./events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","./events/RendererEvent":"awayjs-display/lib/events/RendererEvent","./events/ResizeEvent":"awayjs-display/lib/events/ResizeEvent","./events/StyleEvent":"awayjs-display/lib/events/StyleEvent","./events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","./events/TouchEvent":"awayjs-display/lib/events/TouchEvent","./events/TransformEvent":"awayjs-display/lib/events/TransformEvent"}],"awayjs-display/lib/factories/ITimelineSceneGraphFactory":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/factories":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/graphics/ElementsBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -12674,7 +12592,6 @@ var ElementsBase = (function (_super) {
     return ElementsBase;
 }(AssetBase_1.AssetBase));
 exports.ElementsBase = ElementsBase;
-
 },{"../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Short3Attributes":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/ElementsType":[function(require,module,exports){
 "use strict";
 var ElementsType = (function () {
@@ -12691,7 +12608,6 @@ var ElementsType = (function () {
     return ElementsType;
 }());
 exports.ElementsType = ElementsType;
-
 },{}],"awayjs-display/lib/graphics/Graphics":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -13960,7 +13876,6 @@ var Graphics = (function (_super) {
     return Graphics;
 }(AssetBase_1.AssetBase));
 exports.Graphics = Graphics;
-
 },{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14168,7 +14083,6 @@ var Graphic = (function (_super) {
     return Graphic;
 }(AssetBase_1.AssetBase));
 exports.Graphic = Graphic;
-
 },{"../events/RenderableEvent":"awayjs-display/lib/events/RenderableEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/HitTestCache":[function(require,module,exports){
 "use strict";
 /**
@@ -14188,7 +14102,6 @@ var HitTestCache = (function () {
     return HitTestCache;
 }());
 exports.HitTestCache = HitTestCache;
-
 },{}],"awayjs-display/lib/graphics/LineElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14422,7 +14335,6 @@ var LineElements = (function (_super) {
     return LineElements;
 }(ElementsBase_1.ElementsBase));
 exports.LineElements = LineElements;
-
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float1Attributes":undefined}],"awayjs-display/lib/graphics/TriangleElements":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -14920,7 +14832,6 @@ var TriangleElements = (function (_super) {
     return TriangleElements;
 }(ElementsBase_1.ElementsBase));
 exports.TriangleElements = TriangleElements;
-
 },{"../graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","../utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined}],"awayjs-display/lib/graphics":[function(require,module,exports){
 "use strict";
 var ElementsBase_1 = require("./graphics/ElementsBase");
@@ -14935,7 +14846,6 @@ var LineElements_1 = require("./graphics/LineElements");
 exports.LineElements = LineElements_1.LineElements;
 var TriangleElements_1 = require("./graphics/TriangleElements");
 exports.TriangleElements = TriangleElements_1.TriangleElements;
-
 },{"./graphics/ElementsBase":"awayjs-display/lib/graphics/ElementsBase","./graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","./graphics/Graphic":"awayjs-display/lib/graphics/Graphic","./graphics/Graphics":"awayjs-display/lib/graphics/Graphics","./graphics/LineElements":"awayjs-display/lib/graphics/LineElements","./graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements"}],"awayjs-display/lib/managers/DefaultMaterialManager":[function(require,module,exports){
 "use strict";
 var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
@@ -15042,7 +14952,6 @@ var DefaultMaterialManager = (function () {
     return DefaultMaterialManager;
 }());
 exports.DefaultMaterialManager = DefaultMaterialManager;
-
 },{"../display/Skybox":"awayjs-display/lib/display/Skybox","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/BitmapImage2D":undefined,"awayjs-core/lib/image/BitmapImageCube":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/managers/FrameScriptManager":[function(require,module,exports){
 "use strict";
 var FrameScriptManager = (function () {
@@ -15130,7 +15039,6 @@ var FrameScriptManager = (function () {
 exports.FrameScriptManager = FrameScriptManager;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FrameScriptManager;
-
 },{}],"awayjs-display/lib/managers/MouseManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -15377,7 +15285,6 @@ var MouseManager = (function () {
     return MouseManager;
 }());
 exports.MouseManager = MouseManager;
-
 },{"../base/TouchPoint":"awayjs-display/lib/base/TouchPoint","../events/MouseEvent":"awayjs-display/lib/events/MouseEvent","../managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers/TouchManager":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -15556,7 +15463,6 @@ var TouchPoint = (function () {
     }
     return TouchPoint;
 }());
-
 },{"../events/TouchEvent":"awayjs-display/lib/events/TouchEvent","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/managers":[function(require,module,exports){
 "use strict";
 var DefaultMaterialManager_1 = require("./managers/DefaultMaterialManager");
@@ -15567,7 +15473,6 @@ var MouseManager_1 = require("./managers/MouseManager");
 exports.MouseManager = MouseManager_1.MouseManager;
 var TouchManager_1 = require("./managers/TouchManager");
 exports.TouchManager = TouchManager_1.TouchManager;
-
 },{"./managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","./managers/FrameScriptManager":"awayjs-display/lib/managers/FrameScriptManager","./managers/MouseManager":"awayjs-display/lib/managers/MouseManager","./managers/TouchManager":"awayjs-display/lib/managers/TouchManager"}],"awayjs-display/lib/materials/BasicMaterial":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -15643,7 +15548,6 @@ var BasicMaterial = (function (_super) {
     return BasicMaterial;
 }(MaterialBase_1.MaterialBase));
 exports.BasicMaterial = BasicMaterial;
-
 },{"../materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined}],"awayjs-display/lib/materials/LightSources":[function(require,module,exports){
 "use strict";
 /**
@@ -15678,7 +15582,6 @@ var LightSources = (function () {
     return LightSources;
 }());
 exports.LightSources = LightSources;
-
 },{}],"awayjs-display/lib/materials/MaterialBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16169,7 +16072,6 @@ var MaterialBase = (function (_super) {
     return MaterialBase;
 }(AssetBase_1.AssetBase));
 exports.MaterialBase = MaterialBase;
-
 },{"../base/Style":"awayjs-display/lib/base/Style","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../events/SurfaceEvent":"awayjs-display/lib/events/SurfaceEvent","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/image/BlendMode":undefined,"awayjs-core/lib/image/ImageBase":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/LightPickerBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16373,7 +16275,6 @@ var LightPickerBase = (function (_super) {
     return LightPickerBase;
 }(AssetBase_1.AssetBase));
 exports.LightPickerBase = LightPickerBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials/lightpickers/StaticLightPicker":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16522,7 +16423,6 @@ var StaticLightPicker = (function (_super) {
     return StaticLightPicker;
 }(LightPickerBase_1.LightPickerBase));
 exports.StaticLightPicker = StaticLightPicker;
-
 },{"../../display/DirectionalLight":"awayjs-display/lib/display/DirectionalLight","../../display/LightProbe":"awayjs-display/lib/display/LightProbe","../../display/PointLight":"awayjs-display/lib/display/PointLight","../../events/LightEvent":"awayjs-display/lib/events/LightEvent","../../materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","awayjs-core/lib/events/AssetEvent":undefined}],"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16711,7 +16611,6 @@ var CascadeShadowMapper = (function (_super) {
     return CascadeShadowMapper;
 }(DirectionalShadowMapper_1.DirectionalShadowMapper));
 exports.CascadeShadowMapper = CascadeShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","awayjs-core/lib/events/AssetEvent":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/geom/Rectangle":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16779,7 +16678,6 @@ var CubeMapShadowMapper = (function (_super) {
     return CubeMapShadowMapper;
 }(ShadowMapperBase_1.ShadowMapperBase));
 exports.CubeMapShadowMapper = CubeMapShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","awayjs-core/lib/image/ImageCube":undefined}],"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -16958,7 +16856,6 @@ var DirectionalShadowMapper = (function (_super) {
     return DirectionalShadowMapper;
 }(ShadowMapperBase_1.ShadowMapperBase));
 exports.DirectionalShadowMapper = DirectionalShadowMapper;
-
 },{"../../display/Camera":"awayjs-display/lib/display/Camera","../../materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase","../../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/geom/Matrix3D":undefined,"awayjs-core/lib/geom/Matrix3DUtils":undefined,"awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/projections/FreeMatrixProjection":undefined}],"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17004,7 +16901,6 @@ var NearDirectionalShadowMapper = (function (_super) {
     return NearDirectionalShadowMapper;
 }(DirectionalShadowMapper_1.DirectionalShadowMapper));
 exports.NearDirectionalShadowMapper = NearDirectionalShadowMapper;
-
 },{"../../materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper"}],"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17104,7 +17000,6 @@ var ShadowMapperBase = (function (_super) {
     return ShadowMapperBase;
 }(AssetBase_1.AssetBase));
 exports.ShadowMapperBase = ShadowMapperBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/materials":[function(require,module,exports){
 "use strict";
 var LightPickerBase_1 = require("./materials/lightpickers/LightPickerBase");
@@ -17127,7 +17022,6 @@ var LightSources_1 = require("./materials/LightSources");
 exports.LightSources = LightSources_1.LightSources;
 var MaterialBase_1 = require("./materials/MaterialBase");
 exports.MaterialBase = MaterialBase_1.MaterialBase;
-
 },{"./materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","./materials/LightSources":"awayjs-display/lib/materials/LightSources","./materials/MaterialBase":"awayjs-display/lib/materials/MaterialBase","./materials/lightpickers/LightPickerBase":"awayjs-display/lib/materials/lightpickers/LightPickerBase","./materials/lightpickers/StaticLightPicker":"awayjs-display/lib/materials/lightpickers/StaticLightPicker","./materials/shadowmappers/CascadeShadowMapper":"awayjs-display/lib/materials/shadowmappers/CascadeShadowMapper","./materials/shadowmappers/CubeMapShadowMapper":"awayjs-display/lib/materials/shadowmappers/CubeMapShadowMapper","./materials/shadowmappers/DirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/DirectionalShadowMapper","./materials/shadowmappers/NearDirectionalShadowMapper":"awayjs-display/lib/materials/shadowmappers/NearDirectionalShadowMapper","./materials/shadowmappers/ShadowMapperBase":"awayjs-display/lib/materials/shadowmappers/ShadowMapperBase"}],"awayjs-display/lib/partition/BasicPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17149,7 +17043,6 @@ var BasicPartition = (function (_super) {
     return BasicPartition;
 }(PartitionBase_1.PartitionBase));
 exports.BasicPartition = BasicPartition;
-
 },{"../partition/NodeBase":"awayjs-display/lib/partition/NodeBase","../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase"}],"awayjs-display/lib/partition/CameraNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17175,7 +17068,6 @@ var CameraNode = (function (_super) {
     return CameraNode;
 }(EntityNode_1.EntityNode));
 exports.CameraNode = CameraNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DirectionalLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17209,7 +17101,6 @@ var DirectionalLightNode = (function (_super) {
     return DirectionalLightNode;
 }(EntityNode_1.EntityNode));
 exports.DirectionalLightNode = DirectionalLightNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/DisplayObjectNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17332,7 +17223,6 @@ var DisplayObjectNode = (function (_super) {
     return DisplayObjectNode;
 }(AbstractionBase_1.AbstractionBase));
 exports.DisplayObjectNode = DisplayObjectNode;
-
 },{"../bounds/AxisAlignedBoundingBox":"awayjs-display/lib/bounds/AxisAlignedBoundingBox","../bounds/BoundingSphere":"awayjs-display/lib/bounds/BoundingSphere","../bounds/BoundsType":"awayjs-display/lib/bounds/BoundsType","../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds","../events/DisplayObjectEvent":"awayjs-display/lib/events/DisplayObjectEvent","awayjs-core/lib/library/AbstractionBase":undefined}],"awayjs-display/lib/partition/EntityNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17435,19 +17325,14 @@ var EntityNode = (function (_super) {
     return EntityNode;
 }(DisplayObjectNode_1.DisplayObjectNode));
 exports.EntityNode = EntityNode;
-
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/partition/IContainerNode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/IDisplayObjectNode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/IEntityNodeClass":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/INode":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/partition/LightProbeNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17481,7 +17366,6 @@ var LightProbeNode = (function (_super) {
     return LightProbeNode;
 }(EntityNode_1.EntityNode));
 exports.LightProbeNode = LightProbeNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/NodeBase":[function(require,module,exports){
 "use strict";
 var NullBounds_1 = require("../bounds/NullBounds");
@@ -17604,7 +17488,6 @@ var NodeBase = (function () {
     return NodeBase;
 }());
 exports.NodeBase = NodeBase;
-
 },{"../bounds/NullBounds":"awayjs-display/lib/bounds/NullBounds"}],"awayjs-display/lib/partition/PartitionBase":[function(require,module,exports){
 "use strict";
 /**
@@ -17720,7 +17603,6 @@ var PartitionBase = (function () {
     return PartitionBase;
 }());
 exports.PartitionBase = PartitionBase;
-
 },{}],"awayjs-display/lib/partition/PointLightNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17754,7 +17636,6 @@ var PointLightNode = (function (_super) {
     return PointLightNode;
 }(EntityNode_1.EntityNode));
 exports.PointLightNode = PointLightNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition/SceneGraphNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17853,7 +17734,6 @@ var SceneGraphNode = (function (_super) {
 exports.SceneGraphNode = SceneGraphNode;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SceneGraphNode;
-
 },{"../partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode"}],"awayjs-display/lib/partition/SceneGraphPartition":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17935,7 +17815,6 @@ var SceneGraphNodePool = (function () {
     return SceneGraphNodePool;
 }());
 exports.SceneGraphNodePool = SceneGraphNodePool;
-
 },{"../partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","../partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode"}],"awayjs-display/lib/partition/SkyboxNode":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -17976,7 +17855,6 @@ var SkyboxNode = (function (_super) {
     return SkyboxNode;
 }(EntityNode_1.EntityNode));
 exports.SkyboxNode = SkyboxNode;
-
 },{"../partition/EntityNode":"awayjs-display/lib/partition/EntityNode"}],"awayjs-display/lib/partition":[function(require,module,exports){
 "use strict";
 var BasicPartition_1 = require("./partition/BasicPartition");
@@ -18003,13 +17881,10 @@ var SceneGraphPartition_1 = require("./partition/SceneGraphPartition");
 exports.SceneGraphPartition = SceneGraphPartition_1.SceneGraphPartition;
 var SkyboxNode_1 = require("./partition/SkyboxNode");
 exports.SkyboxNode = SkyboxNode_1.SkyboxNode;
-
 },{"./partition/BasicPartition":"awayjs-display/lib/partition/BasicPartition","./partition/CameraNode":"awayjs-display/lib/partition/CameraNode","./partition/DirectionalLightNode":"awayjs-display/lib/partition/DirectionalLightNode","./partition/DisplayObjectNode":"awayjs-display/lib/partition/DisplayObjectNode","./partition/EntityNode":"awayjs-display/lib/partition/EntityNode","./partition/LightProbeNode":"awayjs-display/lib/partition/LightProbeNode","./partition/NodeBase":"awayjs-display/lib/partition/NodeBase","./partition/PartitionBase":"awayjs-display/lib/partition/PartitionBase","./partition/PointLightNode":"awayjs-display/lib/partition/PointLightNode","./partition/SceneGraphNode":"awayjs-display/lib/partition/SceneGraphNode","./partition/SceneGraphPartition":"awayjs-display/lib/partition/SceneGraphPartition","./partition/SkyboxNode":"awayjs-display/lib/partition/SkyboxNode"}],"awayjs-display/lib/pick/IPicker":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/pick/IPickingCollider":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/pick/JSPickingCollider":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -18338,7 +18213,6 @@ var JSPickingCollider = (function () {
     return JSPickingCollider;
 }());
 exports.JSPickingCollider = JSPickingCollider;
-
 },{"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick/PickingCollision":[function(require,module,exports){
 "use strict";
 /**
@@ -18361,7 +18235,6 @@ var PickingCollision = (function () {
     return PickingCollision;
 }());
 exports.PickingCollision = PickingCollision;
-
 },{}],"awayjs-display/lib/pick/RaycastPicker":[function(require,module,exports){
 "use strict";
 var Vector3D_1 = require("awayjs-core/lib/geom/Vector3D");
@@ -18553,7 +18426,6 @@ var RaycastPicker = (function () {
     return RaycastPicker;
 }());
 exports.RaycastPicker = RaycastPicker;
-
 },{"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/pick":[function(require,module,exports){
 "use strict";
 var JSPickingCollider_1 = require("./pick/JSPickingCollider");
@@ -18562,7 +18434,6 @@ var PickingCollision_1 = require("./pick/PickingCollision");
 exports.PickingCollision = PickingCollision_1.PickingCollision;
 var RaycastPicker_1 = require("./pick/RaycastPicker");
 exports.RaycastPicker = RaycastPicker_1.RaycastPicker;
-
 },{"./pick/JSPickingCollider":"awayjs-display/lib/pick/JSPickingCollider","./pick/PickingCollision":"awayjs-display/lib/pick/PickingCollision","./pick/RaycastPicker":"awayjs-display/lib/pick/RaycastPicker"}],"awayjs-display/lib/prefabs/PrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18610,7 +18481,6 @@ var PrefabBase = (function (_super) {
     return PrefabBase;
 }(AssetBase_1.AssetBase));
 exports.PrefabBase = PrefabBase;
-
 },{"awayjs-core/lib/errors/AbstractMethodError":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18877,7 +18747,6 @@ var PrimitiveCapsulePrefab = (function (_super) {
     return PrimitiveCapsulePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveCapsulePrefab = PrimitiveCapsulePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveConePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -18927,7 +18796,6 @@ var PrimitiveConePrefab = (function (_super) {
     return PrimitiveConePrefab;
 }(PrimitiveCylinderPrefab_1.PrimitiveCylinderPrefab));
 exports.PrimitiveConePrefab = PrimitiveConePrefab;
-
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitiveCubePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19465,7 +19333,6 @@ var PrimitiveCubePrefab = (function (_super) {
     return PrimitiveCubePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveCubePrefab = PrimitiveCubePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20042,7 +19909,6 @@ var PrimitiveCylinderPrefab = (function (_super) {
     return PrimitiveCylinderPrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveCylinderPrefab = PrimitiveCylinderPrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePlanePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20346,7 +20212,6 @@ var PrimitivePlanePrefab = (function (_super) {
     return PrimitivePlanePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitivePlanePrefab = PrimitivePlanePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitivePolygonPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20417,7 +20282,6 @@ var PrimitivePolygonPrefab = (function (_super) {
     return PrimitivePolygonPrefab;
 }(PrimitiveCylinderPrefab_1.PrimitiveCylinderPrefab));
 exports.PrimitivePolygonPrefab = PrimitivePolygonPrefab;
-
 },{"../prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab"}],"awayjs-display/lib/prefabs/PrimitivePrefabBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20582,7 +20446,6 @@ var PrimitivePrefabBase = (function (_super) {
     return PrimitivePrefabBase;
 }(PrefabBase_1.PrefabBase));
 exports.PrimitivePrefabBase = PrimitivePrefabBase;
-
 },{"../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../graphics/LineElements":"awayjs-display/lib/graphics/LineElements","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/errors/AbstractMethodError":undefined}],"awayjs-display/lib/prefabs/PrimitiveSpherePrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -20876,7 +20739,6 @@ var PrimitiveSpherePrefab = (function (_super) {
     return PrimitiveSpherePrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveSpherePrefab = PrimitiveSpherePrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs/PrimitiveTorusPrefab":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -21135,7 +20997,6 @@ var PrimitiveTorusPrefab = (function (_super) {
     return PrimitiveTorusPrefab;
 }(PrimitivePrefabBase_1.PrimitivePrefabBase));
 exports.PrimitiveTorusPrefab = PrimitiveTorusPrefab;
-
 },{"../graphics/ElementsType":"awayjs-display/lib/graphics/ElementsType","../prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase"}],"awayjs-display/lib/prefabs":[function(require,module,exports){
 "use strict";
 var PrefabBase_1 = require("./prefabs/PrefabBase");
@@ -21158,7 +21019,6 @@ var PrimitiveSpherePrefab_1 = require("./prefabs/PrimitiveSpherePrefab");
 exports.PrimitiveSpherePrefab = PrimitiveSpherePrefab_1.PrimitiveSpherePrefab;
 var PrimitiveTorusPrefab_1 = require("./prefabs/PrimitiveTorusPrefab");
 exports.PrimitiveTorusPrefab = PrimitiveTorusPrefab_1.PrimitiveTorusPrefab;
-
 },{"./prefabs/PrefabBase":"awayjs-display/lib/prefabs/PrefabBase","./prefabs/PrimitiveCapsulePrefab":"awayjs-display/lib/prefabs/PrimitiveCapsulePrefab","./prefabs/PrimitiveConePrefab":"awayjs-display/lib/prefabs/PrimitiveConePrefab","./prefabs/PrimitiveCubePrefab":"awayjs-display/lib/prefabs/PrimitiveCubePrefab","./prefabs/PrimitiveCylinderPrefab":"awayjs-display/lib/prefabs/PrimitiveCylinderPrefab","./prefabs/PrimitivePlanePrefab":"awayjs-display/lib/prefabs/PrimitivePlanePrefab","./prefabs/PrimitivePolygonPrefab":"awayjs-display/lib/prefabs/PrimitivePolygonPrefab","./prefabs/PrimitivePrefabBase":"awayjs-display/lib/prefabs/PrimitivePrefabBase","./prefabs/PrimitiveSpherePrefab":"awayjs-display/lib/prefabs/PrimitiveSpherePrefab","./prefabs/PrimitiveTorusPrefab":"awayjs-display/lib/prefabs/PrimitiveTorusPrefab"}],"awayjs-display/lib/text/AntiAliasType":[function(require,module,exports){
 "use strict";
 /**
@@ -21189,7 +21049,6 @@ var AntiAliasType = (function () {
     return AntiAliasType;
 }());
 exports.AntiAliasType = AntiAliasType;
-
 },{}],"awayjs-display/lib/text/BitmapFontChar":[function(require,module,exports){
 "use strict";
 /**
@@ -21234,7 +21093,6 @@ var BitmapFontChar = (function () {
     return BitmapFontChar;
 }());
 exports.BitmapFontChar = BitmapFontChar;
-
 },{}],"awayjs-display/lib/text/BitmapFontTable":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -21403,7 +21261,6 @@ var BitmapFontTable = (function (_super) {
     return BitmapFontTable;
 }(AssetBase_1.AssetBase));
 exports.BitmapFontTable = BitmapFontTable;
-
 },{"../text/BitmapFontChar":"awayjs-display/lib/text/BitmapFontChar","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/Font":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -21486,7 +21343,6 @@ var Font = (function (_super) {
     return Font;
 }(AssetBase_1.AssetBase));
 exports.Font = Font;
-
 },{"../text/BitmapFontTable":"awayjs-display/lib/text/BitmapFontTable","../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/GridFitType":[function(require,module,exports){
 "use strict";
 /**
@@ -21524,10 +21380,8 @@ var GridFitType = (function () {
     return GridFitType;
 }());
 exports.GridFitType = GridFitType;
-
 },{}],"awayjs-display/lib/text/IFontTable":[function(require,module,exports){
 "use strict";
-
 },{}],"awayjs-display/lib/text/TesselatedFontChar":[function(require,module,exports){
 "use strict";
 /**
@@ -21571,7 +21425,6 @@ var TesselatedFontChar = (function () {
     return TesselatedFontChar;
 }());
 exports.TesselatedFontChar = TesselatedFontChar;
-
 },{}],"awayjs-display/lib/text/TesselatedFontTable":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -21721,7 +21574,6 @@ var TesselatedFontTable = (function (_super) {
     return TesselatedFontTable;
 }(AssetBase_1.AssetBase));
 exports.TesselatedFontTable = TesselatedFontTable;
-
 },{"../text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 "use strict";
 /**
@@ -21756,7 +21608,6 @@ var TextFieldAutoSize = (function () {
     return TextFieldAutoSize;
 }());
 exports.TextFieldAutoSize = TextFieldAutoSize;
-
 },{}],"awayjs-display/lib/text/TextFieldType":[function(require,module,exports){
 "use strict";
 /**
@@ -21783,7 +21634,6 @@ var TextFieldType = (function () {
     return TextFieldType;
 }());
 exports.TextFieldType = TextFieldType;
-
 },{}],"awayjs-display/lib/text/TextFormatAlign":[function(require,module,exports){
 "use strict";
 /**
@@ -21816,7 +21666,6 @@ var TextFormatAlign = (function () {
     return TextFormatAlign;
 }());
 exports.TextFormatAlign = TextFormatAlign;
-
 },{}],"awayjs-display/lib/text/TextFormat":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -21941,7 +21790,6 @@ var TextFormat = (function (_super) {
     return TextFormat;
 }(AssetBase_1.AssetBase));
 exports.TextFormat = TextFormat;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextInteractionMode":[function(require,module,exports){
 "use strict";
 /**
@@ -21969,7 +21817,6 @@ var TextInteractionMode = (function () {
     return TextInteractionMode;
 }());
 exports.TextInteractionMode = TextInteractionMode;
-
 },{}],"awayjs-display/lib/text/TextLineMetrics":[function(require,module,exports){
 "use strict";
 /**
@@ -22008,7 +21855,6 @@ var TextLineMetrics = (function () {
     return TextLineMetrics;
 }());
 exports.TextLineMetrics = TextLineMetrics;
-
 },{}],"awayjs-display/lib/text":[function(require,module,exports){
 "use strict";
 var AntiAliasType_1 = require("./text/AntiAliasType");
@@ -22037,7 +21883,6 @@ var TextInteractionMode_1 = require("./text/TextInteractionMode");
 exports.TextInteractionMode = TextInteractionMode_1.TextInteractionMode;
 var TextLineMetrics_1 = require("./text/TextLineMetrics");
 exports.TextLineMetrics = TextLineMetrics_1.TextLineMetrics;
-
 },{"./text/AntiAliasType":"awayjs-display/lib/text/AntiAliasType","./text/BitmapFontChar":"awayjs-display/lib/text/BitmapFontChar","./text/BitmapFontTable":"awayjs-display/lib/text/BitmapFontTable","./text/Font":"awayjs-display/lib/text/Font","./text/GridFitType":"awayjs-display/lib/text/GridFitType","./text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","./text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","./text/TextFieldAutoSize":"awayjs-display/lib/text/TextFieldAutoSize","./text/TextFieldType":"awayjs-display/lib/text/TextFieldType","./text/TextFormat":"awayjs-display/lib/text/TextFormat","./text/TextFormatAlign":"awayjs-display/lib/text/TextFormatAlign","./text/TextInteractionMode":"awayjs-display/lib/text/TextInteractionMode","./text/TextLineMetrics":"awayjs-display/lib/text/TextLineMetrics"}],"awayjs-display/lib/textures/MappingMode":[function(require,module,exports){
 "use strict";
 /**
@@ -22062,7 +21907,6 @@ var MappingMode = (function () {
     return MappingMode;
 }());
 exports.MappingMode = MappingMode;
-
 },{}],"awayjs-display/lib/textures/Single2DTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -22144,7 +21988,6 @@ var Single2DTexture = (function (_super) {
     return Single2DTexture;
 }(TextureBase_1.TextureBase));
 exports.Single2DTexture = Single2DTexture;
-
 },{"../textures/MappingMode":"awayjs-display/lib/textures/MappingMode","../textures/TextureBase":"awayjs-display/lib/textures/TextureBase","awayjs-core/lib/errors/ErrorBase":undefined,"awayjs-core/lib/utils/ImageUtils":undefined}],"awayjs-display/lib/textures/SingleCubeTexture":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -22208,7 +22051,6 @@ var SingleCubeTexture = (function (_super) {
     return SingleCubeTexture;
 }(TextureBase_1.TextureBase));
 exports.SingleCubeTexture = SingleCubeTexture;
-
 },{"../textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/textures/TextureBase":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -22259,7 +22101,6 @@ var TextureBase = (function (_super) {
     return TextureBase;
 }(AssetBase_1.AssetBase));
 exports.TextureBase = TextureBase;
-
 },{"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/textures":[function(require,module,exports){
 "use strict";
 var MappingMode_1 = require("./textures/MappingMode");
@@ -22270,7 +22111,6 @@ var SingleCubeTexture_1 = require("./textures/SingleCubeTexture");
 exports.SingleCubeTexture = SingleCubeTexture_1.SingleCubeTexture;
 var TextureBase_1 = require("./textures/TextureBase");
 exports.TextureBase = TextureBase_1.TextureBase;
-
 },{"./textures/MappingMode":"awayjs-display/lib/textures/MappingMode","./textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","./textures/SingleCubeTexture":"awayjs-display/lib/textures/SingleCubeTexture","./textures/TextureBase":"awayjs-display/lib/textures/TextureBase"}],"awayjs-display/lib/utils/Cast":[function(require,module,exports){
 "use strict";
 var Image2D_1 = require("awayjs-core/lib/image/Image2D");
@@ -22542,7 +22382,6 @@ var Cast = (function () {
     return Cast;
 }());
 exports.Cast = Cast;
-
 },{"../errors/CastError":"awayjs-display/lib/errors/CastError","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/image/Image2D":undefined,"awayjs-core/lib/utils/ByteArray":undefined}],"awayjs-display/lib/utils/ElementsUtils":[function(require,module,exports){
 "use strict";
 var AttributesBuffer_1 = require("awayjs-core/lib/attributes/AttributesBuffer");
@@ -23356,13 +23195,11 @@ var ElementsUtils = (function () {
     return ElementsUtils;
 }());
 exports.ElementsUtils = ElementsUtils;
-
 },{"../graphics/HitTestCache":"awayjs-display/lib/graphics/HitTestCache","awayjs-core/lib/attributes/AttributesBuffer":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/attributes/Float4Attributes":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Sphere":undefined,"awayjs-core/lib/geom/Vector3D":undefined}],"awayjs-display/lib/utils":[function(require,module,exports){
 "use strict";
 var Cast_1 = require("./utils/Cast");
 exports.Cast = Cast_1.Cast;
 var ElementsUtils_1 = require("./utils/ElementsUtils");
 exports.ElementsUtils = ElementsUtils_1.ElementsUtils;
-
 },{"./utils/Cast":"awayjs-display/lib/utils/Cast","./utils/ElementsUtils":"awayjs-display/lib/utils/ElementsUtils"}]},{},[1])
 //# sourceMappingURL=awayjs-display.js.map
