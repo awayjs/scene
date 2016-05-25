@@ -68,6 +68,8 @@ export class Timeline
 		this._functions[4] = this.update_name;
 		this._functions[5] = this.update_button_name;
 		this._functions[6] = this.update_visibility;
+		this._functions[7] = this.update_blendmode;
+		this._functions[8] = this.update_rendermode;
 		this._functions[11] = this.update_mtx_scale_rot;
 		this._functions[12] = this.update_mtx_pos;
 		this._functions[200] = this.enable_maskmode;
@@ -510,5 +512,13 @@ export class Timeline
 	public remove_masks(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		child.masks = null;
+	}
+	public update_blendmode(child:DisplayObject, target_mc:MovieClip, i:number):void
+	{
+		console.log("update blendmode "+i);
+	}
+	public update_rendermode(child:DisplayObject, target_mc:MovieClip, i:number):void
+	{
+		console.log("update rendermode "+i);
 	}
 }
