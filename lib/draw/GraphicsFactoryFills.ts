@@ -326,7 +326,7 @@ export class GraphicsFactoryFills
 			//	console.log("final verts "+i+" = "+final_vert_list[i*7]+" / "+final_vert_list[i*7+1]);
 			var attributesView:AttributesView = new AttributesView(Float32Array, 7);
 			attributesView.set(final_vert_list);
-			var attributesBuffer:AttributesBuffer = attributesView.buffer;
+			var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer;
 			attributesView.dispose();
 			var elements:TriangleElements = new TriangleElements(attributesBuffer);
 			elements.setPositions(new Float2Attributes(attributesBuffer));

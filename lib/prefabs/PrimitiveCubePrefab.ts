@@ -1,6 +1,4 @@
-﻿﻿import {IAsset}					from "awayjs-core/lib/library/IAsset";
-
-import {ElementsType}				from "../graphics/ElementsType";
+﻿import {ElementsType}				from "../graphics/ElementsType";
 import {LineElements}				from "../graphics/LineElements";
 import {ElementsBase}				from "../graphics/ElementsBase";
 import {TriangleElements}			from "../graphics/TriangleElements";
@@ -166,7 +164,8 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
-
+		var stride:number;
+		
 		var tl:number, tr:number, bl:number, br:number;
 		var i:number, j:number, inc:number = 0;
 
@@ -190,19 +189,24 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 			var numIndices:number = ((this._segmentsW*this._segmentsH + this._segmentsW*this._segmentsD + this._segmentsH*this._segmentsD)*12);
 
 			if (numVertices == triangleGraphics.numVertices && triangleGraphics.indices != null) {
-				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
-				positions = triangleGraphics.positions.get(numVertices);
-				normals = triangleGraphics.normals.get(numVertices);
-				tangents = triangleGraphics.tangents.get(numVertices);
+				triangleGraphics.invalidateIndices();
+				triangleGraphics.invalidateVertices(triangleGraphics.positions);
+				triangleGraphics.invalidateVertices(triangleGraphics.normals);
+				triangleGraphics.invalidateVertices(triangleGraphics.tangents);
 			} else {
-				indices = new Uint16Array(numIndices);
-				positions = new Float32Array(numVertices*3);
-				normals = new Float32Array(numVertices*3);
-				tangents = new Float32Array(numVertices*3);
-
+				triangleGraphics.setIndices(new Uint16Array(numIndices));
+				triangleGraphics.setPositions(new Float32Array(numVertices*3));
+				triangleGraphics.setNormals(new Float32Array(numVertices*3));
+				triangleGraphics.setTangents(new Float32Array(numVertices*3));
 				this._pInvalidateUVs();
 			}
 
+			indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+			positions = triangleGraphics.positions.get(numVertices);
+			normals = triangleGraphics.normals.get(numVertices);
+			tangents = triangleGraphics.tangents.get(numVertices);
+			stride = triangleGraphics.concatenatedBuffer.stride/4;
+			
 			vidx = 0;
 			fidx = 0;
 
@@ -225,7 +229,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 					tangents[vidx] = 1;
 					tangents[vidx + 1] = 0;
 					tangents[vidx + 2] = 0;
-					vidx += 3;
+					vidx += stride;
 
 					// back
 					positions[vidx] = outer_pos;
@@ -237,7 +241,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 					tangents[vidx] = -1;
 					tangents[vidx + 1] = 0;
 					tangents[vidx + 2] = 0;
-					vidx += 3;
+					vidx += stride;
 
 					if (i && j) {
 						tl = 2*((i - 1)*(this._segmentsH + 1) + (j - 1));
@@ -277,7 +281,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 					tangents[vidx] = 1;
 					tangents[vidx + 1] = 0;
 					tangents[vidx + 2] = 0;
-					vidx += 3;
+					vidx += stride;
 
 					// bottom
 					positions[vidx] = outer_pos;
@@ -289,7 +293,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 					tangents[vidx] = 1;
 					tangents[vidx + 1] = 0;
 					tangents[vidx + 2] = 0;
-					vidx += 3;
+					vidx += stride;
 
 					if (i && j) {
 						tl = inc + 2*((i - 1)*(this._segmentsD + 1) + (j - 1));
@@ -329,7 +333,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 					tangents[vidx] = 0;
 					tangents[vidx+1] = 0;
 					tangents[vidx+2] = -1;
-					vidx += 3;
+					vidx += stride;
 
 					// right
 					positions[vidx] = hw;
@@ -341,7 +345,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 					tangents[vidx] = 0;
 					tangents[vidx+1] = 0;
 					tangents[vidx+2] = 1;
-					vidx += 3;
+					vidx += stride;
 
 					if (i && j) {
 						tl = inc + 2*((i - 1)*(this._segmentsH + 1) + (j - 1));
@@ -365,12 +369,6 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 				}
 			}
 
-			triangleGraphics.setIndices(indices);
-
-			triangleGraphics.setPositions(positions);
-			triangleGraphics.setNormals(normals);
-			triangleGraphics.setTangents(tangents);
-
 		} else if (elementsType == ElementsType.LINE) {
 			var lineGraphics:LineElements = <LineElements> target;
 
@@ -391,7 +389,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 				positions[vidx++] = -hd;
 
 				positions[vidx++] = hw;
-				positions[vidx++] = i*this._height/this._segmentsH - hh
+				positions[vidx++] = i*this._height/this._segmentsH - hh;
 				positions[vidx++] = -hd;
 
 				thickness[fidx++] = 1;
@@ -436,7 +434,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 				positions[vidx++] = -hd;
 
 				positions[vidx++] = -hw;
-				positions[vidx++] = i*this._height/this._segmentsH - hh
+				positions[vidx++] = i*this._height/this._segmentsH - hh;
 				positions[vidx++] = hd;
 
 				thickness[fidx++] = 1;
@@ -453,7 +451,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 			}
 
 			for (i = 0; i < this._segmentsD; ++i) {
-				positions[vidx++] = hw
+				positions[vidx++] = hw;
 				positions[vidx++] = -hh;
 				positions[vidx++] = i*this._depth/this._segmentsD - hd;
 
@@ -533,6 +531,7 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 	{
 		var i:number, j:number, index:number;
 		var uvs:ArrayBufferView;
+		var stride:number;
 
 		var u_tile_dim:number, v_tile_dim:number;
 		var u_tile_step:number, v_tile_step:number;
@@ -547,11 +546,14 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 
 			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
-			if (numVertices == triangleGraphics.numVertices && triangleGraphics.uvs != null) {
-				uvs = triangleGraphics.uvs.get(numVertices);
+			if (triangleGraphics.uvs && numVertices == triangleGraphics.numVertices) {
+				triangleGraphics.invalidateVertices(triangleGraphics.uvs);
 			} else {
-				uvs = new Float32Array(numVertices*2);
+				triangleGraphics.setUVs(new Float32Array(numVertices*2));
 			}
+
+			uvs = triangleGraphics.uvs.get(numVertices);
+			stride = triangleGraphics.uvs.stride;
 
 			if (this._tile6) {
 				u_tile_dim = u_tile_step = 1/3;
@@ -584,11 +586,15 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 			dv = v_tile_dim/this._segmentsH;
 			for (i = 0; i <= this._segmentsW; i++) {
 				for (j = 0; j <= this._segmentsH; j++) {
-					uvs[index++] = ( tl0u + i*du )*this._scaleU;
-					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
+					uvs[index] = ( tl0u + i*du )*this._scaleU;
+					uvs[index + 1] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
 
-					uvs[index++] = ( tl1u + (u_tile_dim - i*du))*this._scaleU;
-					uvs[index++] = ( tl1v + (v_tile_dim - j*dv))*this._scaleV;
+					index += stride;
+
+					uvs[index] = ( tl1u + (u_tile_dim - i*du))*this._scaleU;
+					uvs[index + 1] = ( tl1v + (v_tile_dim - j*dv))*this._scaleV;
+
+					index += stride;
 				}
 			}
 
@@ -601,11 +607,15 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 			dv = v_tile_dim/this._segmentsD;
 			for (i = 0; i <= this._segmentsW; i++) {
 				for (j = 0; j <= this._segmentsD; j++) {
-					uvs[index++] = ( tl0u + i*du)*this._scaleU;
-					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
+					uvs[index] = ( tl0u + i*du)*this._scaleU;
+					uvs[index + 1] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
 
-					uvs[index++] = ( tl1u + i*du)*this._scaleU;
-					uvs[index++] = ( tl1v + j*dv)*this._scaleV;
+					index += stride;
+
+					uvs[index] = ( tl1u + i*du)*this._scaleU;
+					uvs[index + 1] = ( tl1v + j*dv)*this._scaleV;
+
+					index += stride;
 				}
 			}
 
@@ -618,15 +628,17 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase
 			dv = v_tile_dim/this._segmentsH;
 			for (i = 0; i <= this._segmentsD; i++) {
 				for (j = 0; j <= this._segmentsH; j++) {
-					uvs[index++] = ( tl0u + i*du)*this._scaleU;
-					uvs[index++] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
+					uvs[index] = ( tl0u + i*du)*this._scaleU;
+					uvs[index + 1] = ( tl0v + (v_tile_dim - j*dv))*this._scaleV;
 
-					uvs[index++] = ( tl1u + (u_tile_dim - i*du))*this._scaleU;
-					uvs[index++] = ( tl1v + (v_tile_dim - j*dv))*this._scaleV;
+					index += stride;
+
+					uvs[index] = ( tl1u + (u_tile_dim - i*du))*this._scaleU;
+					uvs[index + 1] = ( tl1v + (v_tile_dim - j*dv))*this._scaleV;
+
+					index += stride;
 				}
 			}
-
-			triangleGraphics.setUVs(uvs);
 
 		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here

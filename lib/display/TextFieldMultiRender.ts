@@ -1061,7 +1061,7 @@ export class TextFieldMultiRender extends Sprite
 
 			var attributesView:AttributesView = new AttributesView(Float32Array, 3);
 			attributesView.set(vertices);
-			var vertexBuffer:AttributesBuffer = attributesView.buffer;
+			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
 			attributesView.dispose();
 
 			this._textElements = new TriangleElements(vertexBuffer);
@@ -1130,7 +1130,7 @@ export class TextFieldMultiRender extends Sprite
 				}
 				var attributesView:AttributesView = new AttributesView(Float32Array, 4);
 				attributesView.set(vertices);
-				var vertexBuffer:AttributesBuffer = attributesView.buffer;
+				var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
 				attributesView.dispose();
 
 				this._textElements = new TriangleElements(vertexBuffer);

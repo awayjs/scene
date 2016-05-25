@@ -565,7 +565,7 @@ export class TriangleElements extends ElementsBase
 	public scaleUV(scaleU:number = 1, scaleV:number = 1, count:number = 0, offset:number = 0):void
 	{
 		if (this.uvs) // only scale if uvs exist
-			ElementsUtils.scaleUVs(scaleU, scaleV, this.uvs, count || this._numVertices, offset);
+			ElementsUtils.scale(scaleU, scaleV, 0, this.uvs, count || this._numVertices, offset);
 	}
 
 	/**
@@ -574,7 +574,7 @@ export class TriangleElements extends ElementsBase
 	 */
 	public scale(scale:number, count:number = 0, offset:number = 0):void
 	{
-		ElementsUtils.scale(scale, this.positions, count || this._numVertices, offset);
+		ElementsUtils.scale(scale, scale, scale, this.positions, count || this._numVertices, offset);
 	}
 
 	public applyTransformation(transform:Matrix3D, count:number = 0, offset:number = 0):void

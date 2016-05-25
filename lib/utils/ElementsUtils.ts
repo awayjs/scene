@@ -23,24 +23,23 @@ export class ElementsUtils
 	
 	private static _indexSwap:Array<number> = new Array<number>();
 
-	public static generateFaceNormals(indexAttributes:Short3Attributes, positionAttributes:AttributesView, output:Float4Attributes, count:number, offset:number = 0):Float4Attributes
+	public static generateFaceNormals(indexAttributes:Short3Attributes, positionAttributes:AttributesView, faceNormalAttributes:Float4Attributes, count:number, offset:number = 0):Float4Attributes
 	{
 		var indices:Uint16Array = indexAttributes.get(count, offset);
 		var positions:ArrayBufferView = positionAttributes.get(positionAttributes.count);
 
-		if (output == null)
-			output = new Float4Attributes(count + offset);
-		else if (output.count < count + offset)
-			output.count = count + offset;
+		if (faceNormalAttributes == null)
+			faceNormalAttributes = new Float4Attributes(count + offset);
+		else if (faceNormalAttributes.count < count + offset)
+			faceNormalAttributes.count = count + offset;
 
-		var indexDim:number = indexAttributes.dimensions;
-		var positionDim:number = positionAttributes.dimensions;
+		var indexDim:number = indexAttributes.stride;
+		var posDim:number = positionAttributes.dimensions;
+		var posStride:number = positionAttributes.stride;
 
-		var faceNormals:Float32Array = output.get(count, offset);
+		var faceNormals:Float32Array = faceNormalAttributes.get(count, offset);
 
-		//multiply by dimension to get index length
-		count *= indexDim;
-
+		var len:number = count*indexDim;
 		var i:number = 0;
 		var j:number = 0;
 		var index:number;
@@ -53,17 +52,17 @@ export class ElementsUtils
 		var cx:number, cy:number, cz:number;
 		var d:number;
 
-		if (positionDim == 3) {
-			while (i < count) {
-				index = indices[i++]*3;
+		if (posDim == 3) {
+			for (i = 0; i < len; i += indexDim) {
+				index = indices[i]*posStride;
 				x1 = positions[index];
 				y1 = positions[index + 1];
 				z1 = positions[index + 2];
-				index = indices[i++]*3;
+				index = indices[i + 1]*posStride;
 				x2 = positions[index];
 				y2 = positions[index + 1];
 				z2 = positions[index + 2];
-				index = indices[i++]*3;
+				index = indices[i + 2]*posStride;
 				x3 = positions[index];
 				y3 = positions[index + 1];
 				z3 = positions[index + 2];
@@ -84,45 +83,41 @@ export class ElementsUtils
 				faceNormals[j++] = cz;
 				faceNormals[j++] = d;
 			}
-		} else if (positionDim == 2) {
-			while (i < count) {
+		} else if (posDim == 2) {
+			for (i = 0; i < len; i += indexDim) {
 				faceNormals[j++] = 0;
 				faceNormals[j++] = 0;
 				faceNormals[j++] = 1;
 				faceNormals[j++] = 1;
-				i += 3;
 			}
 		}
 
-		output.set(faceNormals, offset);
-
-		return output;
+		return faceNormalAttributes;
 	}
 
-	public static generateNormals(indexAttributes:Short3Attributes, faceNormalAttributes:Float4Attributes, output:Float3Attributes, concatenatedBuffer:AttributesBuffer):Float3Attributes
+	public static generateNormals(indexAttributes:Short3Attributes, faceNormalAttributes:Float4Attributes, normalAttributes:Float3Attributes, concatenatedBuffer:AttributesBuffer):Float3Attributes
 	{
 		var indices:Uint16Array = indexAttributes.get(indexAttributes.count);
 		var faceNormals:Float32Array = faceNormalAttributes.get(faceNormalAttributes.count);
 
-		if (output == null)
-			output = new Float3Attributes(concatenatedBuffer);
+		if (normalAttributes == null)
+			normalAttributes = new Float3Attributes(concatenatedBuffer);
 
 		var indexDim:number = indexAttributes.dimensions;
-		var outputDim:number = output.dimensions;
+		var normalStride:number = normalAttributes.stride;
 
-		var normals:Float32Array = output.get(output.count);
+		var normals:Float32Array = normalAttributes.get(normalAttributes.count);
 
-		var i:number = 0;
-		var len:number = output.count*outputDim;
+		var i:number;
+		var len:number = normalAttributes.count*normalStride;
 
 		//clear normal values
-		while (i < len) {
-			normals[i++] = 0;
-			normals[i++] = 0;
-			normals[i++] = 0;
+		for (i = 0; i < len; i += normalStride) {
+			normals[i] = 0;
+			normals[i + 1] = 0;
+			normals[i + 2] = 0;
 		}
 
-		i = 0;
 		len = indexAttributes.count*indexDim;
 		var index:number;
 		var f1:number = 0;
@@ -130,16 +125,16 @@ export class ElementsUtils
 		var f3:number = 2;
 
 		//collect face normals
-		while (i < len) {
-			index = indices[i++]*outputDim;
+		for (i = 0; i < len; i += indexDim) {
+			index = indices[i]*normalStride;
 			normals[index] += faceNormals[f1];
 			normals[index + 1] += faceNormals[f2];
 			normals[index + 2] += faceNormals[f3];
-			index = indices[i++]*outputDim;
+			index = indices[i + 1]*normalStride;
 			normals[index] += faceNormals[f1];
 			normals[index + 1] += faceNormals[f2];
 			normals[index + 2] += faceNormals[f3];
-			index = indices[i++]*outputDim;
+			index = indices[i + 2]*normalStride;
 			normals[index] += faceNormals[f1];
 			normals[index + 1] += faceNormals[f2];
 			normals[index + 2] += faceNormals[f3];
@@ -148,46 +143,44 @@ export class ElementsUtils
 			f3 += 4;
 		}
 
-		i = 0;
-		len = output.count*outputDim;
+		len = normalAttributes.count*normalStride;
 		var vx:number;
 		var vy:number;
 		var vz:number;
 		var d:number;
 
 		//normalise normals collections
-		while (i < len) {
+		for (i = 0; i < len; i += normalStride) {
 			vx = normals[i];
 			vy = normals[i + 1];
 			vz = normals[i + 2];
 			d = 1.0/Math.sqrt(vx*vx + vy*vy + vz*vz);
 
-			normals[i++] = vx*d;
-			normals[i++] = vy*d;
-			normals[i++] = vz*d;
+			normals[i] = vx*d;
+			normals[i + 1] = vy*d;
+			normals[i + 2] = vz*d;
 		}
 
-		output.set(normals);
-
-		return output;
+		return normalAttributes;
 	}
 
-	public static generateFaceTangents(indexAttributes:Short3Attributes, positionAttributes:AttributesView, uvAttributes:AttributesView, output:Float4Attributes, count:number, offset:number = 0, useFaceWeights:boolean = false):Float4Attributes
+	public static generateFaceTangents(indexAttributes:Short3Attributes, positionAttributes:AttributesView, uvAttributes:AttributesView, faceTangentAttributes:Float4Attributes, count:number, offset:number = 0, useFaceWeights:boolean = false):Float4Attributes
 	{
 		var indices:Uint16Array = indexAttributes.get(count, offset);
 		var positions:ArrayBufferView = positionAttributes.get(positionAttributes.count);
 		var uvs:Float32Array = <Float32Array> uvAttributes.get(uvAttributes.count);
 
-		if (output == null)
-			output = new Float3Attributes(count + offset);
-		else if (output.count < count + offset)
-			output.count = count + offset;
+		if (faceTangentAttributes == null)
+			faceTangentAttributes = new Float4Attributes(count + offset);
+		else if (faceTangentAttributes.count < count + offset)
+			faceTangentAttributes.count = count + offset;
 
-		var positionDim:number = positionAttributes.dimensions;
-		var uvDim:number = uvAttributes.dimensions;
 		var indexDim:number = indexAttributes.dimensions;
+		var posDim:number = positionAttributes.dimensions;
+		var posStride:number = positionAttributes.stride;
+		var uvStride:number = uvAttributes.stride;
 
-		var faceTangents:Float32Array = output.get(count, offset);
+		var faceTangents:Float32Array = faceTangentAttributes.get(count, offset);
 
 		var i:number = 0;
 		var index1:number;
@@ -205,20 +198,19 @@ export class ElementsUtils
 		var cx:number, cy:number, cz:number;
 
 		//multiply by dimension to get index length
-		count *= indexDim;
-
-		while (i < count) {
+		var len:number = count*indexDim;
+		for (i = 0; i < len; i += indexDim) {
 			index1 = indices[i];
 			index2 = indices[i + 1];
 			index3 = indices[i + 2];
 
-			v0 = uvs[index1*uvDim + 1];
-			dv1 = uvs[index2*uvDim + 1] - v0;
-			dv2 = uvs[index3*uvDim + 1] - v0;
+			v0 = uvs[index1*uvStride + 1];
+			dv1 = uvs[index2*uvStride + 1] - v0;
+			dv2 = uvs[index3*uvStride + 1] - v0;
 
-			v0 = index1*positionDim;
-			v1 = index2*positionDim;
-			v2 = index3*positionDim;
+			v0 = index1*posStride;
+			v1 = index2*posStride;
+			v2 = index3*posStride;
 
 			x0 = positions[v0];
 			dx1 = positions[v1] - x0;
@@ -230,7 +222,7 @@ export class ElementsUtils
 			dy2 = positions[v2 + 1] - y0;
 			cy = dv2*dy1 - dv1*dy2;
 
-			if (positionDim == 3) {
+			if (posDim == 3) {
 				z0 = positions[v0 + 2];
 				dz1 = positions[v1 + 2] - z0;
 				dz2 = positions[v2 + 2] - z0;
@@ -241,38 +233,36 @@ export class ElementsUtils
 
 			denom = 1/Math.sqrt(cx*cx + cy*cy + cz*cz);
 
-			faceTangents[i++] = denom*cx;
-			faceTangents[i++] = denom*cy;
-			faceTangents[i++] = denom*cz;
+			faceTangents[i] = denom*cx;
+			faceTangents[i + 1] = denom*cy;
+			faceTangents[i + 2] = denom*cz;
 		}
 
-		output.set(faceTangents, offset);
-
-		return output;
+		return faceTangentAttributes;
 	}
 
-	public static generateTangents(indexAttributes:Short3Attributes, faceTangentAttributes:Float3Attributes, faceNormalAttributes:Float4Attributes, output:Float3Attributes, concatenatedBuffer:AttributesBuffer):Float3Attributes
+	public static generateTangents(indexAttributes:Short3Attributes, faceTangentAttributes:Float3Attributes, faceNormalAttributes:Float4Attributes, tangentAttributes:Float3Attributes, concatenatedBuffer:AttributesBuffer):Float3Attributes
 	{
 		var indices:Uint16Array = indexAttributes.get(indexAttributes.count);
 		var faceTangents:Float32Array = faceTangentAttributes.get(faceTangentAttributes.count);
 		var faceNormals:Float32Array = faceNormalAttributes.get(faceNormalAttributes.count);
 
-		if (output == null)
-			output = new Float3Attributes(concatenatedBuffer);
+		if (tangentAttributes == null)
+			tangentAttributes = new Float3Attributes(concatenatedBuffer);
 
 		var indexDim:number = indexAttributes.dimensions;
-		var outputDim:number = output.dimensions;
+		var tangentStride:number = tangentAttributes.stride;
 
-		var tangents:Float32Array = output.get(output.count);
+		var tangents:Float32Array = tangentAttributes.get(tangentAttributes.count);
 
-		var i:number = 0;
-		var len:number = output.count*outputDim;
+		var i:number;
+		var len:number = tangentAttributes.count*tangentStride;
 
 		//clear tangent values
-		while (i < len) {
-			tangents[i++] = 0;
-			tangents[i++] = 0;
-			tangents[i++] = 0;
+		for (i = 0; i < len; i += tangentStride) {
+			tangents[i] = 0;
+			tangents[i + 1] = 0;
+			tangents[i + 2] = 0;
 		}
 
 		var weight:number;
@@ -282,21 +272,20 @@ export class ElementsUtils
 		var f3:number = 2;
 		var f4:number = 3;
 
-		i = 0;
 		len = indexAttributes.count*indexDim;
 
 		//collect face tangents
-		while (i < len) {
+		for (i = 0; i < len; i += indexDim) {
 			weight = faceNormals[f4];
-			index = indices[i++]*outputDim;
+			index = indices[i]*tangentStride;
 			tangents[index++] += faceTangents[f1]*weight;
 			tangents[index++] += faceTangents[f2]*weight;
 			tangents[index] += faceTangents[f3]*weight;
-			index = indices[i++]*outputDim;
+			index = indices[i + 1]*tangentStride;
 			tangents[index++] += faceTangents[f1]*weight;
 			tangents[index++] += faceTangents[f2]*weight;
 			tangents[index] += faceTangents[f3]*weight;
-			index = indices[i++]*outputDim;
+			index = indices[i + 2]*tangentStride;
 			tangents[index++] += faceTangents[f1]*weight;
 			tangents[index++] += faceTangents[f2]*weight;
 			tangents[index] += faceTangents[f3]*weight;
@@ -306,122 +295,89 @@ export class ElementsUtils
 			f4 += 4;
 		}
 
-		i = 0;
-		len = output.count*outputDim;
 		var vx:number;
 		var vy:number;
 		var vz:number;
 		var d:number;
 
 		//normalise tangents collections
-		while (i < len) {
+		for (i = 0; i < len; i += tangentStride) {
 			vx = tangents[i];
 			vy = tangents[i + 1];
 			vz = tangents[i + 2];
 			d = 1.0/Math.sqrt(vx*vx + vy*vy + vz*vz);
 
-			tangents[i++] = vx*d;
-			tangents[i++] = vy*d;
-			tangents[i++] = vz*d;
+			tangents[i] = vx*d;
+			tangents[i + 1] = vy*d;
+			tangents[i + 2] = vz*d;
 		}
 
-		output.set(tangents);
-
-		return output;
+		return tangentAttributes;
 	}
 
-	public static generateColors(indexAttributes:Short3Attributes, output:Byte4Attributes, concatenatedBuffer:AttributesBuffer, count:number, offset:number = 0):Byte4Attributes
+	public static generateColors(indexAttributes:Short3Attributes, colorAttributes:Byte4Attributes, concatenatedBuffer:AttributesBuffer, count:number, offset:number = 0):Byte4Attributes
 	{
-		if (output == null)
-			output = new Byte4Attributes(concatenatedBuffer);
+		if (colorAttributes == null)
+			colorAttributes = new Byte4Attributes(concatenatedBuffer);
 
-		var index:number = 0;
-		var colors:Uint8Array = new Uint8Array(count*4);
+		if (colorAttributes.count < count + offset)
+			colorAttributes.count = count + offset;
 
-		while (index < count*4) {
-			if (index/4 & 1) {
-				colors[index] = 0xFF;
-				colors[index + 1] = 0xFF;
-				colors[index + 2] = 0xFF;
-				colors[index + 3] = 0xFF;
-			} else {
-				colors[index] = 0xFF;
-				colors[index + 1] = 0xFF;
-				colors[index + 2] = 0xFF;
-				colors[index + 3] = 0xFF;
-			}
+		var colors:Uint8Array = colorAttributes.get(count, offset);
+		var colorStride:number = colorAttributes.stride;
 
-			index += 4;
+		var len:number = colorAttributes.count*colorStride;
+		for (var i:number = 0; i < len; i += colorStride) {
+			colors[i] = 0xFF;
+			colors[i + 1] = 0xFF;
+			colors[i + 2] = 0xFF;
+			colors[i + 3] = 0xFF;
 		}
 
-		output.set(colors, offset);
-
-		return output;
+		return colorAttributes;
 	}
 
-	public static scaleUVs(scaleU:number, scaleV:number, output:AttributesView, count:number, offset:number = 0):void
+	public static scale(scaleA:number, scaleB:number, scaleC:number, output:AttributesView, count:number, offset:number = 0):void
 	{
 		if (output.count < count + offset)
 			output.count = count + offset;
 
+		var scaleArray:Float32Array = new Float32Array([scaleA, scaleB, scaleC]);
+		var values:ArrayBufferView = output.get(count, offset);
+		var outputStride:number = output.stride;
 		var outputDim:number = output.dimensions;
 
-		var uvs:ArrayBufferView = output.get(count, offset);
+		var i:number;
+		var j:number;
+		var len:number = count*outputStride;
 
-		var i:number = 0;
-		var j:number = 0;
-		var len:number = count*outputDim;
+		for (i = 0; i < len; i += outputStride)
+			for (j = 0; j < outputDim; j++)
+				values[i+j] *= scaleArray[j];
 
-		while (i < len) {
-			uvs[i++] *= scaleU;
-			uvs[i++] *= scaleV;
-		}
-
-		output.set(uvs, offset);
-	}
-
-	public static scale(scale:number, output:AttributesView, count:number, offset:number = 0):void
-	{
-		if (output.count < count + offset)
-			output.count = count + offset;
-
-		var outputDim:number = output.dimensions;
-
-		var positions:ArrayBufferView = output.get(count, offset);
-
-		var i:number = 0;
-		var j:number = 0;
-		var len:number = count*outputDim;
-
-		while (i < len) {
-			positions[i++] *= scale;
-			positions[i++] *= scale;
-			positions[i++] *= scale;
-		}
-
-		output.set(positions, offset);
+		output.invalidate();
 	}
 
 	public static applyTransformation(transform:Matrix3D, positionAttributes:AttributesView, normalAttributes:Float3Attributes, tangentAttributes:Float3Attributes, count:number, offset:number = 0):void
 	{
 		//todo: make this compatible with 2-dimensional positions
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
-		var positionDim:number = positionAttributes.dimensions;
+		var positionStride:number = positionAttributes.stride;
 
 		var normals:Float32Array;
-		var normalDim:number;
+		var normalStride:number;
 
 		if (normalAttributes) {
 			normals = normalAttributes.get(count, offset);
-			normalDim = normalAttributes.dimensions;
+			normalStride = normalAttributes.stride;
 		}
 
 		var tangents:Float32Array;
-		var tangentDim:number;
+		var tangentStride:number;
 
 		if (tangentAttributes) {
 			tangents = tangentAttributes.get(count, offset);
-			tangentDim = tangentAttributes.dimensions;
+			tangentStride = tangentAttributes.stride;
 		}
 
 		var i:number;
@@ -451,7 +407,7 @@ export class ElementsUtils
 			positions[vi0] = vector.x;
 			positions[i1] = vector.y;
 			positions[i2] = vector.z;
-			vi0 += positionDim;
+			vi0 += positionStride;
 
 			if	(normals) {
 				// bake normal
@@ -465,7 +421,7 @@ export class ElementsUtils
 				normals[ni0] = vector.x;
 				normals[i1] = vector.y;
 				normals[i2] = vector.z;
-				ni0 += normalDim;
+				ni0 += normalStride;
 			}
 
 			if (tangents) {
@@ -480,24 +436,24 @@ export class ElementsUtils
 				tangents[ti0] = vector.x;
 				tangents[i1] = vector.y;
 				tangents[i2] = vector.z;
-				ti0 += tangentDim;
+				ti0 += tangentStride;
 			}
 		}
 
-		positionAttributes.set(positions, offset);
+		positionAttributes.invalidate();
 
 		if (normalAttributes)
-			normalAttributes.set(normals, offset);
+			normalAttributes.invalidate();
 
 		if (tangentAttributes)
-			tangentAttributes.set(tangents, offset);
+			tangentAttributes.invalidate();
 	}
 
 	public static getSubIndices(indexAttributes:Short2Attributes, numVertices:number, indexMappings:Array<number>, indexOffset?:number):AttributesBuffer;
 	public static getSubIndices(indexAttributes:Short3Attributes, numVertices:number, indexMappings:Array<number>, indexOffset?:number):AttributesBuffer;
 	public static getSubIndices(indexAttributes:AttributesView, numVertices:number, indexMappings:Array<number>, indexOffset:number = 0):AttributesBuffer
 	{
-		var buffer:AttributesBuffer = indexAttributes.buffer;
+		var buffer:AttributesBuffer = indexAttributes.attributesBuffer;
 		var numIndices:number = indexAttributes.length;
 		
 		//reset mappings
@@ -587,8 +543,8 @@ export class ElementsUtils
 		var positionAttributes:AttributesView = triangleElements.positions;
 		var curveAttributes:AttributesView = triangleElements.getCustomAtributes("curves");
 
-		var posDim:number = positionAttributes.dimensions;
-		var curveDim:number = curveAttributes.dimensions;
+		var posStride:number = positionAttributes.stride;
+		var curveStride:number = curveAttributes.stride;
 
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var curves:ArrayBufferView = curveAttributes? curveAttributes.get(count, offset) : null;
@@ -605,7 +561,7 @@ export class ElementsUtils
 		var cy:number;
 
 		var hitTestCache:HitTestCache = triangleElements.hitTestCache[offset] || (triangleElements.hitTestCache[offset] = new HitTestCache());
-		var index:number = hitTestCache.lastCollisionIndex;
+		var index:number = -1;//hitTestCache.lastCollisionIndex;
 		
 		if(index != -1 && index < count)
 		{
@@ -615,12 +571,12 @@ export class ElementsUtils
 				id1 = index + 1;
 				id2 = index + 0;
 
-				ax = positions[id0 * posDim];
-				ay = positions[id0 * posDim + 1];
-				bx = positions[id1 * posDim];
-				by = positions[id1 * posDim + 1];
-				cx = positions[id2 * posDim];
-				cy = positions[id2 * posDim + 1];
+				ax = positions[id0 * posStride];
+				ay = positions[id0 * posStride + 1];
+				bx = positions[id1 * posStride];
+				by = positions[id1 * posStride + 1];
+				cx = positions[id2 * posStride];
+				cy = positions[id2 * posStride + 1];
 
 				//console.log(ax, ay, bx, by, cx, cy);
 
@@ -660,9 +616,9 @@ export class ElementsUtils
 					break precheck;
 
 				if (curves) {
-					var curvey0:number = curves[id0 * curveDim + 2];
-					var curvey1:number = curves[id1 * curveDim + 2];
-					var curvey2:number = curves[id2 * curveDim + 2];
+					var curvey0:number = curves[id0 * curveStride + 2];
+					var curvey1:number = curves[id1 * curveStride + 2];
+					var curvey2:number = curves[id2 * curveStride + 2];
 					//check if not solid
 					if (curvey0 || curvey1 || curvey2) {
 
@@ -684,7 +640,7 @@ export class ElementsUtils
 
 						var d:number = uu * uu - vv;
 
-						var az:number = curves[id0 * curveDim];
+						var az:number = curves[id0 * curveStride];
 						if (d > 0 && az == -128) {
 							break precheck;;
 						} else if (d < 0 && az == 127) {
@@ -718,12 +674,12 @@ export class ElementsUtils
 					id1 = k + 1;
 					id2 = k + 0;
 
-					ax = positions[id0 * posDim];
-					ay = positions[id0 * posDim + 1];
-					bx = positions[id1 * posDim];
-					by = positions[id1 * posDim + 1];
-					cx = positions[id2 * posDim];
-					cy = positions[id2 * posDim + 1];
+					ax = positions[id0 * posStride];
+					ay = positions[id0 * posStride + 1];
+					bx = positions[id1 * posStride];
+					by = positions[id1 * posStride + 1];
+					cx = positions[id2 * posStride];
+					cy = positions[id2 * posStride + 1];
 
 					//subtractions to push into positive space
 					var min_index_x:number = Math.floor((Math.min(ax, bx, cx) - minx)*conversionX);
@@ -764,13 +720,13 @@ export class ElementsUtils
 
 				id1 = nodes[k + 1];
 				id0 = nodes[k];
-				
-				ax = positions[id0 * posDim];
-				ay = positions[id0 * posDim + 1];
-				bx = positions[id1 * posDim];
-				by = positions[id1 * posDim + 1];
-				cx = positions[id2 * posDim];
-				cy = positions[id2 * posDim + 1];
+
+				ax = positions[id0 * posStride];
+				ay = positions[id0 * posStride + 1];
+				bx = positions[id1 * posStride];
+				by = positions[id1 * posStride + 1];
+				cx = positions[id2 * posStride];
+				cy = positions[id2 * posStride + 1];
 
 				//from a to p
 				var dx:number = ax - x;
@@ -806,9 +762,9 @@ export class ElementsUtils
 					continue;
 
 				if (curves) {
-					var curvey0:number = curves[id0 * curveDim + 2];
-					var curvey1:number = curves[id1 * curveDim + 2];
-					var curvey2:number = curves[id2 * curveDim + 2];
+					var curvey0:number = curves[id0 * curveStride + 2];
+					var curvey1:number = curves[id1 * curveStride + 2];
+					var curvey2:number = curves[id2 * curveStride + 2];
 					//check if not solid
 					if (curvey0 || curvey1 || curvey2) {
 
@@ -829,7 +785,7 @@ export class ElementsUtils
 						var vv:number = w;
 
 						var d:number = uu * uu - vv;
-						var az:number = curves[id0 * curveDim];
+						var az:number = curves[id0 * curveStride];
 
 						if (d > 0 && az == -128)
 							continue;
@@ -851,13 +807,13 @@ export class ElementsUtils
 			
 			id1 = k + 1;
 			id0 = k + 2;
-			
-			ax = positions[id0 * posDim];
-			ay = positions[id0 * posDim + 1];
-			bx = positions[id1 * posDim];
-			by = positions[id1 * posDim + 1];
-			cx = positions[id2 * posDim];
-			cy = positions[id2 * posDim + 1];
+
+			ax = positions[id0 * posStride];
+			ay = positions[id0 * posStride + 1];
+			bx = positions[id1 * posStride];
+			by = positions[id1 * posStride + 1];
+			cx = positions[id2 * posStride];
+			cy = positions[id2 * posStride + 1];
 
 			//console.log(ax, ay, bx, by, cx, cy);
 
@@ -897,9 +853,9 @@ export class ElementsUtils
 				continue;
 
 			if (curves) {
-				var curvey0:number = curves[id0 * curveDim + 2];
-				var curvey1:number = curves[id1 * curveDim + 2];
-				var curvey2:number = curves[id2 * curveDim + 2];
+				var curvey0:number = curves[id0 * curveStride + 2];
+				var curvey1:number = curves[id1 * curveStride + 2];
+				var curvey2:number = curves[id2 * curveStride + 2];
 				//check if not solid
 				if (curvey0 || curvey1 || curvey2) {
 
@@ -921,7 +877,7 @@ export class ElementsUtils
 
 					var d:number = uu * uu - vv;
 
-					var az:number = curves[id0 * curveDim];
+					var az:number = curves[id0 * curveStride];
 					if (d > 0 && az == -128) {
 						continue;
 					} else if (d < 0 && az == 127) {
@@ -939,13 +895,14 @@ export class ElementsUtils
 	{
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var posDim:number = positionAttributes.dimensions;
+		var posStride:number = positionAttributes.stride;
 
 		var pos:number;
 		var minX:number = 0, minY:number = 0, minZ:number = 0;
 		var maxX:number = 0, maxY:number = 0, maxZ:number = 0;
 
-		var len:number = count*posDim;
-		for (var i:number = 0; i < len; i += posDim) {
+		var len:number = count*posStride;
+		for (var i:number = 0; i < len; i += posStride) {
 			if (i == 0) {
 				maxX = minX = positions[i];
 				maxY = minY = positions[i + 1];
@@ -974,10 +931,10 @@ export class ElementsUtils
 				}
 			}
 		}
-		
+
 		if (output == null)
 			output = new Box();
-		
+
 		output.x = minX;
 		output.y = minY;
 		output.z = minZ;
@@ -992,15 +949,16 @@ export class ElementsUtils
 	{
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var posDim:number = positionAttributes.dimensions;
+		var posStride:number = positionAttributes.stride;
 
 		var maxRadiusSquared:number = 0;
 		var radiusSquared:number;
-		var len = count*posDim;
+		var len = count*posStride;
 		var distanceX:number;
 		var distanceY:number;
 		var distanceZ:number;
 
-		for (var i:number = 0; i < len; i += posDim) {
+		for (var i:number = 0; i < len; i += posStride) {
 			distanceX = positions[i] - center.x;
 			distanceY = positions[i + 1] - center.y;
 			distanceZ = (posDim == 3)? positions[i + 2] - center.z : -center.z;

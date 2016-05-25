@@ -83,6 +83,7 @@ export class JSPickingCollider implements IPickingCollider
 
 		var positions:ArrayBufferView = triangleElements.positions.get(count, offset);
 		var posDim:number = triangleElements.positions.dimensions;
+		var posStride:number = triangleElements.positions.stride;
 
 		var indices:Uint16Array;
 		if (triangleElements.indices) {
@@ -93,13 +94,13 @@ export class JSPickingCollider implements IPickingCollider
 		for (var index:number = 0; index < count; index+=3) { // sweep all triangles
 			// evaluate triangle indices
 			if (indices) {
-				i0 = indices[index]*posDim;
-				i1 = indices[index + 1]*posDim;
-				i2 = indices[index + 2]*posDim;
+				i0 = indices[index]*posStride;
+				i1 = indices[index + 1]*posStride;
+				i2 = indices[index + 2]*posStride;
 			} else {
-				i0 = index*posDim;
-				i1 = (index + 1)*posDim;
-				i2 = (index + 2)*posDim;
+				i0 = index*posStride;
+				i1 = (index + 1)*posStride;
+				i2 = (index + 2)*posStride;
 			}
 
 
@@ -172,13 +173,13 @@ export class JSPickingCollider implements IPickingCollider
 					pickingCollision.normal = new Vector3D(nx, ny, nz);
 					if (triangleElements.uvs) { //uv calculations
 						var uvs:ArrayBufferView = triangleElements.uvs.get(triangleElements.numVertices);
-						var uvDim:number = triangleElements.uvs.dimensions;
+						var uvStride:number = triangleElements.uvs.stride;
 
-						var uIndex:number = indices[index]*uvDim;
+						var uIndex:number = indices[index]*uvStride;
 						var uv0:Vector3D = new Vector3D(uvs[uIndex], uvs[uIndex + 1]);
-						uIndex = indices[index + 1]*uvDim;
+						uIndex = indices[index + 1]*uvStride;
 						var uv1:Vector3D = new Vector3D(uvs[uIndex], uvs[uIndex + 1]);
-						uIndex = indices[index + 2]*uvDim;
+						uIndex = indices[index + 2]*uvStride;
 						var uv2:Vector3D = new Vector3D(uvs[uIndex], uvs[uIndex + 1]);
 						pickingCollision.uv = new Point(u*uv0.x + v*uv1.x + w*uv2.x, u*uv0.y + v*uv1.y + w*uv2.y);
 					}

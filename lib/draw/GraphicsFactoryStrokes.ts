@@ -562,7 +562,7 @@ export class GraphicsFactoryStrokes
 
 			var attributesView:AttributesView = new AttributesView(Float32Array, 5);
 			attributesView.set(final_vert_list);
-			var attributesBuffer:AttributesBuffer = attributesView.buffer;
+			var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer;
 			attributesView.dispose();
 			var elements:TriangleElements = new TriangleElements(attributesBuffer);
 			elements.setPositions(new Float2Attributes(attributesBuffer));

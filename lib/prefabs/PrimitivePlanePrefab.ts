@@ -147,6 +147,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 		var indices:Uint16Array;
 		var x:number, y:number;
 		var numIndices:number;
+		var stride:number;
 		var base:number;
 		var tw:number = this._segmentsW + 1;
 
@@ -173,25 +174,32 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 				numIndices *= 2;
 
 			if (triangleGraphics.indices != null && numIndices == triangleGraphics.indices.length) {
-				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+				triangleGraphics.invalidateIndices();
 			} else {
-				indices = new Uint16Array(numIndices);
-
+				triangleGraphics.setIndices(new Uint16Array(numIndices));
+				
 				this._pInvalidateUVs();
 			}
 
+			indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+			
 			if (numVertices == triangleGraphics.numVertices) {
-				positions = triangleGraphics.positions.get(numVertices);
-				normals = triangleGraphics.normals.get(numVertices);
-				tangents = triangleGraphics.tangents.get(numVertices);
+				triangleGraphics.invalidateVertices(triangleGraphics.positions);
+				triangleGraphics.invalidateVertices(triangleGraphics.normals);
+				triangleGraphics.invalidateVertices(triangleGraphics.tangents);
 			} else {
-				positions = new Float32Array(numVertices*3);
-				normals = new Float32Array(numVertices*3);
-				tangents = new Float32Array(numVertices*3);
-
+				triangleGraphics.setPositions(new Float32Array(numVertices*3));
+				triangleGraphics.setNormals(new Float32Array(numVertices*3));
+				triangleGraphics.setTangents(new Float32Array(numVertices*3));
+				
 				this._pInvalidateUVs();
 			}
 
+			positions = triangleGraphics.positions.get(numVertices);
+			normals = triangleGraphics.normals.get(numVertices);
+			tangents = triangleGraphics.tangents.get(numVertices);
+			stride = triangleGraphics.concatenatedBuffer.stride/4;
+			
 			fidx = 0;
 
 			vidx = 0;
@@ -225,7 +233,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 					tangents[vidx + 1] = 0;
 					tangents[vidx + 2] = 0;
 
-					vidx += 3;
+					vidx += stride;
 
 					// add vertex with same position, but with inverted normal & tangent
 					if (this._doubleSided) {
@@ -236,7 +244,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 							tangents[i] = -tangents[i - 3];
 						}
 
-						vidx += 3;
+						vidx += stride;
 
 					}
 
@@ -265,13 +273,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 					}
 				}
 			}
-
-			triangleGraphics.setIndices(indices);
-
-			triangleGraphics.setPositions(positions);
-			triangleGraphics.setNormals(normals);
-			triangleGraphics.setTangents(tangents);
-
+			
 		} else if (elementsType == ElementsType.LINE) {
 			var lineGraphics:LineElements = <LineElements> target;
 
@@ -326,6 +328,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 	public _pBuildUVs(target:ElementsBase, elementsType:string):void
 	{
 		var uvs:ArrayBufferView;
+		var stride:number;
 		var numVertices:number;
 
 		if (elementsType == ElementsType.TRIANGLE) {
@@ -338,11 +341,13 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
 			if (triangleGraphics.uvs && numVertices == triangleGraphics.numVertices) {
-				uvs = triangleGraphics.uvs.get(numVertices);
+				triangleGraphics.invalidateVertices(triangleGraphics.uvs);
 			} else {
-				uvs = new Float32Array(numVertices*2);
-				this._pInvalidatePrimitive()
+				triangleGraphics.setUVs(new Float32Array(numVertices*2));
 			}
+
+			uvs = triangleGraphics.uvs.get(numVertices);
+			stride = triangleGraphics.uvs.stride;
 
 			var index:number = 0;
 
@@ -351,18 +356,17 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 				for (var xi:number = 0; xi <= this._segmentsW; ++xi) {
 					uvs[index] = (xi/this._segmentsW)*this._scaleU;
 					uvs[index + 1] = (1 - yi/this._segmentsH)*this._scaleV;
-					index += 2;
+					
+					index += stride;
 
 					if (this._doubleSided) {
 						uvs[index] = (xi/this._segmentsW)*this._scaleU;
-						uvs[index+1] = (1 - yi/this._segmentsH)*this._scaleV;
-						index += 2;
+						uvs[index + 1] = (1 - yi/this._segmentsH)*this._scaleV;
+						
+						index += stride;
 					}
 				}
 			}
-
-			triangleGraphics.setUVs(uvs);
-
 
 		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here

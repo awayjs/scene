@@ -145,7 +145,7 @@ export class ElementsBase extends AssetBase
 		if (this._indices) {
 			this._numElements = this._indices.count;
 
-			this.invalidateIndicies();
+			this.invalidateIndices();
 		} else {
 			this._numElements = 0;
 		}
@@ -228,7 +228,7 @@ export class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	private invalidateIndicies():void
+	public invalidateIndices():void
 	{
 		if (!this._invalidateIndices)
 			this._invalidateIndices = new ElementsEvent(ElementsEvent.INVALIDATE_INDICES, this._indices);

@@ -106,7 +106,8 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase
 		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
-
+		var stride:number;
+		
 		var i:number;
 		var j:number;
 		var vidx:number, fidx:number; // indices
@@ -123,19 +124,24 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase
 			numVertices = (this._segmentsH + 1)*(this._segmentsW + 1);
 
 			if (numVertices == triangleGraphics.numVertices && triangleGraphics.indices != null) {
-				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
-				positions = triangleGraphics.positions.get(numVertices);
-				normals = triangleGraphics.normals.get(numVertices);
-				tangents = triangleGraphics.tangents.get(numVertices);
+				triangleGraphics.invalidateIndices();
+				triangleGraphics.invalidateVertices(triangleGraphics.positions);
+				triangleGraphics.invalidateVertices(triangleGraphics.normals);
+				triangleGraphics.invalidateVertices(triangleGraphics.tangents);
 			} else {
-				indices = new Uint16Array((this._segmentsH - 1)*this._segmentsW*6);
-				positions = new Float32Array(numVertices*3);
-				normals = new Float32Array(numVertices*3);
-				tangents = new Float32Array(numVertices*3);
-
+				triangleGraphics.setIndices(new Uint16Array((this._segmentsH - 1)*this._segmentsW*6));
+				triangleGraphics.setPositions(new Float32Array(numVertices*3));
+				triangleGraphics.setNormals(new Float32Array(numVertices*3));
+				triangleGraphics.setTangents(new Float32Array(numVertices*3));
 				this._pInvalidateUVs();
 			}
 
+			indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+			positions = triangleGraphics.positions.get(numVertices);
+			normals = triangleGraphics.normals.get(numVertices);
+			tangents = triangleGraphics.tangents.get(numVertices);
+			stride = triangleGraphics.concatenatedBuffer.stride/4;
+			
 			vidx = 0;
 			fidx = 0;
 
@@ -229,15 +235,9 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase
 						}
 					}
 
-					vidx += 3;
+					vidx += stride;
 				}
 			}
-
-			triangleGraphics.setIndices(indices);
-
-			triangleGraphics.setPositions(positions);
-			triangleGraphics.setNormals(normals);
-			triangleGraphics.setTangents(tangents);
 
 		} else if (elementsType == ElementsType.LINE) {
 
@@ -318,7 +318,7 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase
 		var i:number, j:number;
 		var numVertices:number = (this._segmentsH + 1)*(this._segmentsW + 1);
 		var uvs:ArrayBufferView;
-
+		var stride:number;
 
 		if (elementsType == ElementsType.TRIANGLE) {
 
@@ -326,21 +326,24 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase
 
 			var triangleGraphics:TriangleElements = <TriangleElements> target;
 
-			if (numVertices == triangleGraphics.numVertices && triangleGraphics.uvs != null) {
-				uvs = triangleGraphics.uvs.get(numVertices);
+			if (triangleGraphics.uvs && numVertices == triangleGraphics.numVertices) {
+				triangleGraphics.invalidateVertices(triangleGraphics.uvs);
 			} else {
-				uvs = new Float32Array(numVertices*2);
+				triangleGraphics.setUVs(new Float32Array(numVertices*2));
 			}
 
+			uvs = triangleGraphics.uvs.get(numVertices);
+			stride = triangleGraphics.uvs.stride;
+			
 			var index:number = 0;
 			for (j = 0; j <= this._segmentsH; ++j) {
 				for (i = 0; i <= this._segmentsW; ++i) {
-					uvs[index++] = ( i/this._segmentsW )*this._scaleU;
-					uvs[index++] = ( j/this._segmentsH )*this._scaleV;
+					uvs[index] = ( i/this._segmentsW )*this._scaleU;
+					uvs[index + 1] = ( j/this._segmentsH )*this._scaleV;
+
+					index += stride;
 				}
 			}
-
-			triangleGraphics.setUVs(uvs);
 
 		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here

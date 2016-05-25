@@ -119,6 +119,7 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 		var positions:ArrayBufferView;
 		var normals:Float32Array;
 		var tangents:Float32Array;
+		var stride:number;
 
 		var i:number, j:number;
 		var x:number, y:number, z:number, nx:number, ny:number, nz:number, revolutionAngleR:number, revolutionAngleT:number;
@@ -136,19 +137,24 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 
 			// need to initialize raw arrays or can be reused?
 			if (this._numVertices == triangleGraphics.numVertices) {
-				indices = triangleGraphics.indices.get(triangleGraphics.numElements);
-				positions = triangleGraphics.positions.get(this._numVertices);
-				normals = triangleGraphics.normals.get(this._numVertices);
-				tangents = triangleGraphics.tangents.get(this._numVertices);
+				triangleGraphics.invalidateIndices();
+				triangleGraphics.invalidateVertices(triangleGraphics.positions);
+				triangleGraphics.invalidateVertices(triangleGraphics.normals);
+				triangleGraphics.invalidateVertices(triangleGraphics.tangents);
 			} else {
-				indices = new Uint16Array(numIndices);
-				positions = new Float32Array(this._numVertices*3);
-				normals = new Float32Array(this._numVertices*3);
-				tangents = new Float32Array(this._numVertices*3);
+				triangleGraphics.setIndices(new Uint16Array(numIndices));
+				triangleGraphics.setPositions(new Float32Array(this._numVertices*3));
+				triangleGraphics.setNormals(new Float32Array(this._numVertices*3));
+				triangleGraphics.setTangents(new Float32Array(this._numVertices*3));
 
 				this._pInvalidateUVs();
 			}
 
+			indices = triangleGraphics.indices.get(triangleGraphics.numElements);
+			positions = triangleGraphics.positions.get(this._numVertices);
+			normals = triangleGraphics.normals.get(this._numVertices);
+			tangents = triangleGraphics.tangents.get(this._numVertices);
+			stride = triangleGraphics.concatenatedBuffer.stride/4;
 
 			vidx = 0;
 			fidx = 0;
@@ -167,7 +173,7 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 
 			for (j = 0; j <= this._segmentsT; ++j) {
 
-				startIndex = nextVertexIndex*3;
+				startIndex = vidx;
 
 				for (i = 0; i <= this._segmentsR; ++i) {
 
@@ -219,7 +225,7 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 					tangents[vidx + 1] = t1;
 					tangents[vidx + 2] = t2;
 
-					vidx += 3;
+					vidx += stride;
 
 					// close triangle
 					if (i > 0 && j > 0) {
@@ -241,13 +247,6 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 				}
 			}
 
-			// build real data from raw data
-			triangleGraphics.setIndices(indices);
-
-			triangleGraphics.setPositions(positions);
-			triangleGraphics.setNormals(normals);
-			triangleGraphics.setTangents(tangents);
-
 		} else if (elementsType == ElementsType.LINE) {
 			//TODO
 		}
@@ -261,6 +260,7 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 
 		var i:number, j:number;
 		var uvs:ArrayBufferView;
+		var stride:number;
 
 
 		if (elementsType == ElementsType.TRIANGLE) {
@@ -269,10 +269,13 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 
 			// need to initialize raw array or can be reused?
 			if (triangleGraphics.uvs && this._numVertices == triangleGraphics.numVertices) {
-				uvs = triangleGraphics.uvs.get(this._numVertices);
+				triangleGraphics.invalidateVertices(triangleGraphics.uvs);
 			} else {
-				uvs = new Float32Array(this._numVertices*2);
+				triangleGraphics.setUVs(new Float32Array(this._numVertices*2));
 			}
+
+			uvs = triangleGraphics.uvs.get(this._numVertices);
+			stride = triangleGraphics.uvs.stride;
 
 			// current uv component index
 			var index:number = 0;
@@ -281,13 +284,12 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 			for (j = 0; j <= this._segmentsT; ++j) {
 				for (i = 0; i <= this._segmentsR; ++i) {
 					// revolution vertex
-					uvs[index++] = ( i/this._segmentsR )*this._scaleU;
-					uvs[index++] = ( j/this._segmentsT )*this._scaleV;
+					uvs[index] = ( i/this._segmentsR )*this._scaleU;
+					uvs[index + 1] = ( j/this._segmentsT )*this._scaleV;
+
+					index += stride;
 				}
 			}
-
-			// build real data from raw data
-			triangleGraphics.setUVs(uvs);
 
 		} else if (elementsType == ElementsType.LINE) {
 			//nothing to do here
