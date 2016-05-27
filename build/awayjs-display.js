@@ -19767,9 +19767,9 @@ var PrimitiveCylinderPrefab = (function (_super) {
                         comp2 = z;
                     }
                     if (i == this._pSegmentsW) {
-                        positions[vidx] = positions[startIndex + 3];
-                        positions[vidx + 1] = positions[startIndex + 4];
-                        positions[vidx + 2] = positions[startIndex + 5];
+                        positions[vidx] = positions[startIndex + stride];
+                        positions[vidx + 1] = positions[startIndex + stride + 1];
+                        positions[vidx + 2] = positions[startIndex + stride + 2];
                     }
                     else {
                         positions[vidx] = x;
@@ -19795,7 +19795,7 @@ var PrimitiveCylinderPrefab = (function (_super) {
             // bottom
             if (this._bottomClosed && this._pBottomRadius > 0) {
                 z = 0.5 * this._height;
-                startIndex = vidx;
+                startIndex = nextVertexIndex * stride;
                 centerVertexIndex = nextVertexIndex;
                 // central vertex
                 if (this._yUp) {
@@ -19837,9 +19837,9 @@ var PrimitiveCylinderPrefab = (function (_super) {
                         comp2 = z;
                     }
                     if (i == this._pSegmentsW) {
-                        positions[vidx] = positions[startIndex + 3];
-                        positions[vidx + 1] = positions[startIndex + 4];
-                        positions[vidx + 2] = positions[startIndex + 5];
+                        positions[vidx] = positions[startIndex + stride];
+                        positions[vidx + 1] = positions[startIndex + stride + 1];
+                        positions[vidx + 2] = positions[startIndex + stride + 2];
                     }
                     else {
                         positions[vidx] = x;
@@ -19879,7 +19879,7 @@ var PrimitiveCylinderPrefab = (function (_super) {
                 for (j = 0; j <= this._pSegmentsH; ++j) {
                     radius = this._topRadius - ((j / this._pSegmentsH) * (this._topRadius - this._pBottomRadius));
                     z = -(this._height / 2) + (j / this._pSegmentsH * this._height);
-                    startIndex = vidx;
+                    startIndex = nextVertexIndex * stride;
                     for (i = 0; i <= this._pSegmentsW; ++i) {
                         // revolution vertex
                         revolutionAngle = i * revolutionAngleDelta;
