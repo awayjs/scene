@@ -309,9 +309,9 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 					}
 
 					if (i == this._pSegmentsW) {
-						positions[vidx] = positions[startIndex + 3];
-						positions[vidx + 1] = positions[startIndex + 4];
-						positions[vidx + 2] = positions[startIndex + 5];
+						positions[vidx] = positions[startIndex + stride];
+						positions[vidx + 1] = positions[startIndex + stride + 1];
+						positions[vidx + 2] = positions[startIndex + stride + 2];
 
 					} else {
 						positions[vidx] = x;
@@ -343,7 +343,7 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 
 				z = 0.5*this._height;
 
-				startIndex = vidx;
+				startIndex = nextVertexIndex*stride;
 
 				centerVertexIndex = nextVertexIndex;
 
@@ -391,9 +391,9 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 					}
 
 					if (i == this._pSegmentsW) {
-						positions[vidx] = positions[startIndex + 3];
-						positions[vidx + 1] = positions[startIndex + 4];
-						positions[vidx + 2] = positions[startIndex + 5];
+						positions[vidx] = positions[startIndex + stride];
+						positions[vidx + 1] = positions[startIndex + stride + 1];
+						positions[vidx + 2] = positions[startIndex + stride + 2];
 					} else {
 						positions[vidx] = x;
 						positions[vidx + 1] = comp1;
@@ -439,7 +439,7 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 					radius = this._topRadius - ((j/this._pSegmentsH)*(this._topRadius - this._pBottomRadius));
 					z = -(this._height/2) + (j/this._pSegmentsH*this._height);
 
-					startIndex = vidx;
+					startIndex = nextVertexIndex*stride;
 
 					for (i = 0; i <= this._pSegmentsW; ++i) {
 						// revolution vertex
