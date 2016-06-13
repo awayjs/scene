@@ -100,6 +100,29 @@ export class GraphicsPath implements IGraphicsData
 
     public curveTo(controlX:number, controlY:number, anchorX:number, anchorY:number)
     {
+        // if controlpoint and anchor are same, we add lineTo command
+        if((controlX==anchorX)&&(controlY==anchorY)){
+            this.lineTo(controlX, controlY);
+            this.moveTo(anchorX, anchorY);
+            return;
+        }
+        // if anchor is current point, but controlpoint is different, we lineto controlpoint
+        if(((this._cur_point.x==anchorX)&&(this._cur_point.y==anchorY))&&((this._cur_point.x!=controlX)||(this._cur_point.y!=controlY))){
+            this.lineTo(controlX, controlY);
+            this.moveTo(anchorX, anchorY);
+            return;
+        }
+        // if controlpoint is current point, but anchor is different, we lineto anchor
+        if(((this._cur_point.x!=anchorX)||(this._cur_point.y!=anchorY))&&((this._cur_point.x==controlX)&&(this._cur_point.y==controlY))){
+            this.lineTo(anchorX, anchorY);
+            return;
+        }
+        // if controlpoint and anchor are same as current point
+        if(((this._cur_point.x==anchorX)&&(this._cur_point.y==anchorY))&&((this._cur_point.x==controlX)&&(this._cur_point.y==controlY))){
+            console.log("curveTo command not added because startpoint and endpoint are the same.");
+            this.lineTo(anchorX, anchorY);
+            return;
+        }
         if(this._commands[this._commands.length-1].length==0){
             // every contour must start with a moveTo command, so we make sure we have correct startpoint
             this._commands[this._commands.length-1].push(GraphicsPathCommand.MOVE_TO);
@@ -107,40 +130,6 @@ export class GraphicsPath implements IGraphicsData
             this._data[this._data.length-1].push(this._cur_point.y);
         }
         this._commands[this._commands.length-1].push(GraphicsPathCommand.CURVE_TO);
-        /*
-         if(this.isFill){
-         this._tmp_point.x=anchorX-this._cur_point.x;
-         this._tmp_point.y=anchorY-this._cur_point.y;
-         this._tmp_point.normalize();
-
-         var testpoint:Point=new Point(this._tmp_point.x, this._tmp_point.y);
-         testpoint.normalize();
-         var degree_anchor:number=Math.acos(this._tmp_point.x * this._direction.x + this._tmp_point.y * this._direction.y) * 180 / Math.PI;
-         if(degree_anchor>180)degree_anchor-=360;
-         //var degree_anchor:number=Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
-         this._draw_directions[this._draw_directions.length-1]+=degree_anchor;
-         this._tmp_point.x=controlX-this._cur_point.x;
-         this._tmp_point.y=controlY-this._cur_point.y;
-         this._tmp_point.normalize();
-         //angle = atan2( a.x*b.y - a.y*b.x, a.x*b.x + a.y*b.y );
-         var degree_control:number=(Math.atan2(this._tmp_point.x* testpoint.y - this._tmp_point.y* testpoint.x, this._tmp_point.x* testpoint.x + this._tmp_point.y* testpoint.y));
-         if(degree_control>180)degree_control-=360;
-         //var degree_control:number=(Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI);
-         console.log("degree_control "+degree_control);
-         console.log("degree_anchor "+degree_anchor);
-         console.log("this._draw_directions[this._draw_directions.length-1] "+this._draw_directions[this._draw_directions.length-1]);
-         this._direction.x=testpoint.x;
-         this._direction.y=testpoint.y;
-         if((degree_control)<0)
-         this._data[this._data.length-1].push(1);
-         else
-         this._data[this._data.length-1].push(2);
-
-         }
-         else{
-         this._data[this._data.length-1].push(1);
-         }
-         */
         this._data[this._data.length-1].push(controlX);
         this._data[this._data.length-1].push(controlY);
         this._data[this._data.length-1].push(anchorX);
@@ -150,8 +139,34 @@ export class GraphicsPath implements IGraphicsData
 
     }
 
+    public cubicCurveTo(controlX:number, controlY:number, control2X:number, control2Y:number, anchorX:number, anchorY:number)
+    {
+        console.log("cubicCurveTo not yet fully supported.");
+        if((this._cur_point.x==anchorX)&&(this._cur_point.y==anchorY)){
+            console.log("curveTo command not added because startpoint and endpoint are the same.");
+            return;
+        }
+        if(this._commands[this._commands.length-1].length==0){
+            // every contour must start with a moveTo command, so we make sure we have correct startpoint
+            this._commands[this._commands.length-1].push(GraphicsPathCommand.MOVE_TO);
+            this._data[this._data.length-1].push(this._cur_point.x);
+            this._data[this._data.length-1].push(this._cur_point.y);
+        }
+        this._commands[this._commands.length-1].push(GraphicsPathCommand.CURVE_TO);
+        this._data[this._data.length-1].push(controlX);
+        this._data[this._data.length-1].push(controlY);
+        this._data[this._data.length-1].push(anchorX);
+        this._data[this._data.length-1].push(anchorY);
+        this._cur_point.x=anchorX;
+        this._cur_point.y=anchorY;
+
+    }
     public lineTo(x:number, y:number)
     {
+        if((this._cur_point.x==x)&&(this._cur_point.y==y)){
+            console.log("lineTo command not added because startpoint and endpoint are the same.");
+            return;
+        }
         if(this._commands[this._commands.length-1].length==0){
             // every contour must start with a moveTo command, so we make sure we have correct startpoint
             this._commands[this._commands.length-1].push(GraphicsPathCommand.MOVE_TO);
@@ -169,6 +184,10 @@ export class GraphicsPath implements IGraphicsData
 
     public moveTo(x:number, y:number)
     {
+        if((this._cur_point.x==x)&&(this._cur_point.y==y)){
+            console.log("moveTo command not added because startpoint and endpoint are the same.");
+            return;
+        }
         // whenever a moveTo command apears, we start a new contour
         if(this._commands[this._commands.length-1].length>0){
             this._commands.push([GraphicsPathCommand.MOVE_TO]);

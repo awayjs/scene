@@ -206,48 +206,30 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						var len=thisPath.commands.length;
 
 						//awayPath.lineTo(0, 0);
-						awayPath.moveTo(0,0);//-100);
-						awayPath.curveTo(100, 250, 200,0);
+						//awayPath.moveTo(0,0);//-100);
+						//awayPath.curveTo(100, 250, 200,0);
 						//awayPath.lineTo(150, 100);
-						awayPath.moveTo(0,20);
-						awayPath.curveTo(100, 270, 200,20);
+						//awayPath.moveTo(0,20);
+						//awayPath.curveTo(100, 270, 200,20);
 						//awayPath.moveTo(0,-20);
 						//awayPath.moveTo(0,-10);
 						//awayPath.curveTo(100, -110, 200,-10);
 
-						/*
-						 var startx:number=0;
-						 var starty:number=0;
-						 for(i=0;i<len;i++){
-						 var cmd = thisPath.commands[i];
-						 if (cmd.type === 'M') {
-						 awayPath.moveTo(cmd.x, cmd.y);
-						 console.log("awayPath.moveTo("+cmd.x+", "+cmd.y+");");
-						 startx=cmd.x;
-						 starty=cmd.y;
-						 } else if (cmd.type === 'L') {
-						 awayPath.lineTo(cmd.x, cmd.y);
-						 console.log("awayPath.lineTo("+cmd.x+", "+cmd.y+");");
-						 } else if (cmd.type === 'Q') {
-						 //awayPath.lineTo(cmd.x, cmd.y);
-						 awayPath.curveTo(cmd.x1, cmd.y1, cmd.x, cmd.y);
-						 console.log("awayPath.curveTo("+cmd.x1+", "+cmd.y1+","+cmd.x+", "+cmd.y+");");
-						 } else if (cmd.type === 'C') {
-						 //todo: support cubic curveTos
-						 awayPath.cubicCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
-						 //ctx.bezierCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
-						 console.log("awayPath.cubicCurveTo("+cmd.x1+", "+cmd.y1+", "+cmd.x2+", "+cmd.y2+", "+cmd.x+", "+cmd.y+");");
-						 //awayPath.curveTo(cmd.x1, cmd.y1, cmd.x ,cmd.y);
-						 } else if (cmd.type === 'Z') {
-						 //todo: support cubic curveTos
-						 awayPath.lineTo(startx, starty);
-						 console.log("awayPath.lineTo("+startx+", "+starty+");");
-						 //awayPath.curveTo(cmd.x1, cmd.y1, cmd.x ,cmd.y);
-						 }
-						 }
 
-						 */
-
+						var startx:number=0;
+						var starty:number=0;
+						for(i=0;i<len;i++){
+							var cmd = thisPath.commands[i];
+							if (cmd.type === 'M') {
+								awayPath.moveTo(cmd.x, cmd.y);
+								startx=cmd.x;
+								starty=cmd.y;
+							}
+							else if (cmd.type === 'L') {	awayPath.lineTo(cmd.x, cmd.y);}
+							else if (cmd.type === 'Q') {	awayPath.curveTo(cmd.x1, cmd.y1, cmd.x, cmd.y);}
+							else if (cmd.type === 'C') {	awayPath.cubicCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);}
+							else if (cmd.type === 'Z') {	awayPath.lineTo(startx, starty);}
+						}
 
 
 						awayPath.style = new  GraphicsStrokeStyle(0xff0000, 1, 1, JointStyle.MITER, CapsStyle.NONE, 100);

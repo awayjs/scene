@@ -393,7 +393,7 @@ export class GraphicsFactoryStrokes
 
 						tmp_point3.normalize();
 
-						GraphicsFactoryHelper.drawPoint(curve_x,curve_y, final_vert_list);
+						//GraphicsFactoryHelper.drawPoint(curve_x,curve_y, final_vert_list);
 
 						// move the point on the curve to use correct thickness
 						ctr_right.x = curve_x - (tmp_point3.x * strokeStyle.half_thickness);
@@ -489,13 +489,13 @@ export class GraphicsFactoryStrokes
 						 */
 						//ctr_right=ctr_point;
 						//ctr_left=ctr_point;
-						console.log(start_point.x);
+						//console.log(start_point.x);
 
-						console.log(start_point.y);
-						console.log(ctr_point.x);
-						console.log(ctr_point.y);
-						console.log(end_point.x);
-						console.log(end_point.y);
+						//console.log(start_point.y);
+						//console.log(ctr_point.x);
+						//console.log(ctr_point.y);
+						//console.log(end_point.x);
+						//console.log(end_point.y);
 						var subdivided:Array<number> = [];
 						var subdivided2:Array<number> = [];
 						GraphicsFactoryHelper.subdivideCurve(start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y, start_left.x, start_left.y, ctr_left.x, ctr_left.y, end_left.x, end_left.y, subdivided, subdivided2);
