@@ -8095,21 +8095,10 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
-var Float2Attributes_1 = require("awayjs-core/lib/attributes/Float2Attributes");
-var Byte4Attributes_1 = require("awayjs-core/lib/attributes/Byte4Attributes");
-var Matrix_1 = require("awayjs-core/lib/geom/Matrix");
 var ColorTransform_1 = require("awayjs-core/lib/geom/ColorTransform");
-var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
 var HierarchicalProperties_1 = require("../base/HierarchicalProperties");
-var Style_1 = require("../base/Style");
 var TextFieldType_1 = require("../text/TextFieldType");
 var Sprite_1 = require("../display/Sprite");
-var TriangleElements_1 = require("../graphics/TriangleElements");
-var BitmapFontTable_1 = require("../text/BitmapFontTable");
-var Single2DTexture_1 = require("../textures/Single2DTexture");
-var TesselatedFontTable_1 = require("../text/TesselatedFontTable");
-var BasicMaterial_1 = require("../materials/BasicMaterial");
 /**
  * The TextFieldMultiRender class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextFieldMultiRender class to
@@ -8487,276 +8476,326 @@ var TextFieldMultiRender = (function (_super) {
      * Reconstructs the Graphics for this Text-field.
      */
     TextFieldMultiRender.prototype.reConstruct = function (useCanvas2dhack) {
-        if (useCanvas2dhack === void 0) { useCanvas2dhack = false; }
+        /* temporary disabled this...
+
         this._textGraphicsDirty = false;
-        if (this._textFormat == null)
+
+        if(this._textFormat == null)
             return;
+
+
         if (this._textGraphic) {
             this._textGraphic.dispose();
             this._textGraphic = null;
+
             this._textElements.clear();
             this._textElements.dispose();
             this._textElements = null;
         }
-        if (this._text == "")
+
+        if(this._text == "")
             return;
-        var activeFormat = null;
-        var newFormat = null;
+
+        var activeFormat:TextFormat=null;
+        var newFormat:TextFormat=null;
+
         // split text into lines
         // todo: split at all sorts of linebreaks (incl escaped linebreaks like we do right now)
-        var textlines = this.text.toString().split("\\n");
-        var maxlineWidth = this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
-        var tl_char_codes = [];
-        var tl_char_widths = [];
-        var tl_char_formats = [];
-        var tl_width = [];
-        var tl_height = [];
-        var tl_cnt = 0;
-        var w = 0;
-        var c = 0;
-        var tl = 0;
-        var words;
-        var char_cnt = 0;
-        var char_width = 0;
-        var numVertices = 0;
-        this._line_indices = [];
+        var textlines:Array<string> = this.text.toString().split("\\n");
+        var maxlineWidth:number=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+
+        var tl_char_codes:Array<Array<number>> = [];
+        var tl_char_widths:Array<Array<number>> = [];
+        var tl_char_formats:Array<Array<TextFormat>> = [];
+        var tl_width:Array<number> = [];
+        var tl_height:Array<number> = [];
+        var tl_cnt:number=0;
+        var w:number=0;
+        var c:number=0;
+        var tl:number=0;
+        var words:Array<string>;
+        var char_cnt:number=0;
+        var char_width:number=0;
+        var numVertices:number = 0;
+        this._line_indices=[];
         // sort all chars into final lines
         for (tl = 0; tl < textlines.length; tl++) {
-            console.log("textline nr: " + tl + " : " + textlines[tl]);
-            this._line_indices[tl_cnt] = char_cnt;
-            tl_char_codes[tl_cnt] = [];
-            tl_char_widths[tl_cnt] = [];
-            tl_char_formats[tl_cnt] = [];
-            tl_width[tl_cnt] = 0;
-            tl_height[tl_cnt] = 0;
+            console.log("textline nr: "+tl+" : "+textlines[tl]);
+            this._line_indices[tl_cnt]=char_cnt;
+            tl_char_codes[tl_cnt]=[];
+            tl_char_widths[tl_cnt]=[];
+            tl_char_formats[tl_cnt]=[];
+            tl_width[tl_cnt]=0;
+            tl_height[tl_cnt]=0;
             tl_cnt++;
             words = textlines[tl].split(" ");
             for (w = 0; w < words.length; w++) {
-                var word_width = 0;
-                var char_widths = [];
-                var char_formats = [];
-                var max_word_height = 0;
+                var word_width:number=0;
+                var char_widths:Array<number>=[];
+                var char_formats:Array<TextFormat>=[];
+                var max_word_height:number=0;
                 for (c = 0; c < words[w].length; c++) {
-                    newFormat = this.getFormatAtChar(char_cnt);
-                    if (newFormat != activeFormat) {
-                        activeFormat = newFormat;
+                    newFormat=this.getFormatAtChar(char_cnt);
+                    if(newFormat!=activeFormat){
+                        activeFormat=newFormat;
                         activeFormat.font_table.initFontSize(activeFormat.size);
                     }
-                    char_formats[c] = activeFormat;
-                    var lineHeight = activeFormat.font_table.getLineHeight();
-                    if (lineHeight > max_word_height)
-                        max_word_height = lineHeight;
+                    char_formats[c]=activeFormat;
+                    var lineHeight:number=activeFormat.font_table.getLineHeight();
+                    if(lineHeight>max_word_height)max_word_height=lineHeight;
+
                     char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
                     numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());
-                    char_widths[c] = char_width;
+                    char_widths[c]=char_width;
                     word_width += char_width;
                     char_cnt++;
                 }
                 // word fits into line, just add it to the last line
-                if ((tl_width[tl_cnt - 1] + word_width) <= maxlineWidth) {
-                    if (tl_width[tl_cnt - 1] != 0) {
+                if((tl_width[tl_cnt-1]+word_width) <= maxlineWidth){
+                    if(tl_width[tl_cnt-1]!=0){
                         // there is already a word in this line. we want to add a space
-                        tl_char_codes[tl_cnt - 1].push(32);
+                        tl_char_codes[tl_cnt-1].push(32);
                         //todo: get correct format
-                        tl_char_widths[tl_cnt - 1].push(activeFormat.font_table.getCharWidth("32"));
-                        tl_char_formats[tl_cnt - 1].push(activeFormat);
-                        tl_width[tl_cnt - 1] += activeFormat.font_table.getCharWidth("32");
+                        tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32"));
+                        tl_char_formats[tl_cnt-1].push(activeFormat);
+                        tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32");
                     }
                     for (c = 0; c < words[w].length; c++) {
-                        tl_char_codes[tl_cnt - 1].push(words[w].charCodeAt(c));
-                        tl_char_widths[tl_cnt - 1].push(char_widths[c]);
-                        tl_char_formats[tl_cnt - 1].push(char_formats[c]);
-                        tl_width[tl_cnt - 1] += word_width;
+                        tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+                        tl_char_widths[tl_cnt-1].push(char_widths[c]);
+                        tl_char_formats[tl_cnt-1].push(char_formats[c]);
+                        tl_width[tl_cnt-1]+=word_width;
                     }
-                    if (tl_height[tl_cnt - 1] < max_word_height)
-                        tl_height[tl_cnt - 1] = max_word_height;
+                    if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
                 }
-                else if (tl_width[tl_cnt - 1] == 0) {
+                // word does not fit into line, but it is first word added to line, so we add it anyway.
+                // todo: respect auto--wrap / multiline settings + optional include 3rd party tool for splitting into sylibils
+                else if(tl_width[tl_cnt-1]==0){
                     for (c = 0; c < words[w].length; c++) {
-                        tl_char_codes[tl_cnt - 1].push(words[w].charCodeAt(c));
-                        tl_char_widths[tl_cnt - 1].push(char_widths[c]);
-                        tl_char_formats[tl_cnt - 1].push(char_formats[c]);
-                        tl_width[tl_cnt - 1] += word_width;
+                        tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+                        tl_char_widths[tl_cnt-1].push(char_widths[c]);
+                        tl_char_formats[tl_cnt-1].push(char_formats[c]);
+                        tl_width[tl_cnt-1]+=word_width;
                     }
-                    if (tl_height[tl_cnt - 1] < max_word_height)
-                        tl_height[tl_cnt - 1] = max_word_height;
+                    if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
                 }
-                else {
-                    tl_char_codes[tl_cnt] = [];
-                    tl_char_widths[tl_cnt] = [];
-                    tl_char_formats[tl_cnt] = [];
-                    tl_width[tl_cnt] = 0;
-                    tl_height[tl_cnt] = 0;
+                // word does not fit, and there are already words on this line
+                else{
+                    tl_char_codes[tl_cnt]=[];
+                    tl_char_widths[tl_cnt]=[];
+                    tl_char_formats[tl_cnt]=[];
+                    tl_width[tl_cnt]=0;
+                    tl_height[tl_cnt]=0;
                     tl_cnt++;
                     for (c = 0; c < words[w].length; c++) {
-                        tl_char_codes[tl_cnt - 1].push(words[w].charCodeAt(c));
-                        tl_char_widths[tl_cnt - 1].push(char_widths[c]);
-                        tl_char_formats[tl_cnt - 1].push(char_formats[c]);
-                        tl_width[tl_cnt - 1] += word_width;
+                        tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+                        tl_char_widths[tl_cnt-1].push(char_widths[c]);
+                        tl_char_formats[tl_cnt-1].push(char_formats[c]);
+                        tl_width[tl_cnt-1]+=word_width;
                     }
-                    if (tl_height[tl_cnt - 1] < max_word_height)
-                        tl_height[tl_cnt - 1] = max_word_height;
+                    if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
                 }
             }
         }
-        var tl_startx = [];
+        var tl_startx:Array<Array<number> >=[];
         // calculate the final positions of the chars
         for (tl = 0; tl < tl_width.length; tl++) {
-            var x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent;
-            var justify_addion = 0;
-            if (this._textFormat.align == "center") {
-                x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent + (maxlineWidth - tl_width[tl]) / 2;
+
+            var x_offset:number= 2 + this._textFormat.leftMargin + this._textFormat.indent;
+            var justify_addion:number=0;
+            if(this._textFormat.align=="center"){
+                x_offset=2 + this._textFormat.leftMargin + this._textFormat.indent+(maxlineWidth-tl_width[tl])/2;
             }
-            else if (this._textFormat.align == "justify") {
+            else if(this._textFormat.align=="justify"){
+                /*if(final_lines_justify_bool[i]){
+                    justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
+                }*/ /*
+    }
+    else if(this._textFormat.align=="right"){
+        x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
+    }
+    tl_startx[tl]=[];
+    this.textHeight=0;
+    for (var c = 0; c < tl_char_codes[tl].length; c++) {
+        this.textHeight+=tl_height[tl];
+        tl_startx[tl][c]=x_offset;
+        x_offset+=tl_char_widths[tl][c];
+        // if this is a whitespace, we add the justify additional spacer
+        if(tl_char_codes[tl][c]==32){
+            x_offset+=justify_addion;
+        }
+    }
+}
+
+
+//todo: i tried to use the isAsset() function instead of comparing the strings myself, but this didnt seem to work. need to find out why
+if(this._textFormat.font_table.assetType==TesselatedFontTable.assetType){
+    var tess_fontTable:TesselatedFontTable = <TesselatedFontTable>this._textFormat.font_table;
+    var elements:TriangleElements;
+    var j:number = 0;
+    var k:number = 0;
+    var y_offset:number=0;
+    var char_scale:number=0;
+    var vertices:Float32Array = new Float32Array(numVertices*3);
+
+    for (tl = 0; tl < tl_width.length; tl++) {
+        console.log("textline nr: "+tl+" : "+tl_char_codes[tl]);
+        //console.log("tl_width = "+tl_width[tl]);
+        y_offset+=tl_height[tl];
+        for (var c = 0; c < tl_char_codes[tl].length; c++) {
+            var this_char:TesselatedFontChar = tess_fontTable.getChar(tl_char_codes[tl][c].toString());
+            char_scale = tess_fontTable._size_multiply;
+            if (this_char != null) {
+                elements = this_char.elements;
+                if (elements != null) {
+                    var buffer:Float32Array = new Float32Array(elements.concatenatedBuffer.buffer);
+                    for (var v:number = 0; v < elements.numVertices; v++) {
+                        vertices[j++] = buffer[v*3] * char_scale + tl_startx[tl][c];
+                        vertices[j++] = buffer[v*3 + 1] * char_scale + y_offset-tl_height[tl];
+                        vertices[j++] = buffer[v*3 + 2];
+                    }
+                }
             }
-            else if (this._textFormat.align == "right") {
-                x_offset = (this._textWidth - tl_width[tl]) - (2 + this._textFormat.rightMargin);
-            }
-            tl_startx[tl] = [];
-            this.textHeight = 0;
+        }
+    }
+
+
+    var attributesView:AttributesView = new AttributesView(Float32Array, 3);
+    attributesView.set(vertices);
+    var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+    attributesView.dispose();
+
+    this._textElements = new TriangleElements(vertexBuffer);
+    this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+    this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+
+    this._textGraphic = this._graphics.addGraphic(this._textElements);
+
+    this.material = this._textFormat.material;
+    var sampler:Sampler2D = new Sampler2D();
+    this.style = new Style();
+    this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
+    this.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+    this.material.animateUVs = true;
+}
+
+else if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
+    console.log("contruct bitmap text = "+this._text);
+    var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
+    if(!useCanvas2dhack){
+        var vertices:Float32Array = new Float32Array(numVertices*7);
+        var vert_cnt:number=0;
+        var y_offset:number=0;//2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+        for (tl = 0; tl < tl_width.length; tl++) {
+            console.log("textline nr: "+tl+" : "+tl_char_codes[tl]);
+            //console.log("tl_width = "+tl_width[tl]);
+            y_offset+=tl_height[tl];
             for (var c = 0; c < tl_char_codes[tl].length; c++) {
-                this.textHeight += tl_height[tl];
-                tl_startx[tl][c] = x_offset;
-                x_offset += tl_char_widths[tl][c];
-                // if this is a whitespace, we add the justify additional spacer
-                if (tl_char_codes[tl][c] == 32) {
-                    x_offset += justify_addion;
-                }
+                //console.log("tl_char_codes[tl] = "+tl_char_codes[tl][c]);
+                //console.log("tl_startx[tl] = "+tl_startx[tl][c]);
+                //console.log("y_offset = "+y_offset);
+                //console.log("vert_cnt = "+vert_cnt);
+                var char_data:Array<number>=bitmap_fontTable.getCharData(tl_char_codes[tl][c].toString());
+
+                console.log("char_data = "+char_data);
+                vertices[vert_cnt++] = tl_startx[tl][c]+char_data[4];
+                vertices[vert_cnt++] = y_offset-tl_height[tl]+char_data[5];
+                vertices[vert_cnt++] = char_data[0];
+                vertices[vert_cnt++] = char_data[1];
+
+                vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c]+char_data[4];
+                vertices[vert_cnt++] = y_offset -tl_height[tl]+char_data[5];
+                vertices[vert_cnt++] = char_data[0] + char_data[2];
+                vertices[vert_cnt++] = char_data[1];
+
+                vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c]+char_data[4];
+                vertices[vert_cnt++] = y_offset;
+                vertices[vert_cnt++] = char_data[0] + char_data[2];
+                vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+                vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c]+char_data[4];
+                vertices[vert_cnt++] = y_offset;
+                vertices[vert_cnt++] = char_data[0] + char_data[2];
+                vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+                vertices[vert_cnt++] = tl_startx[tl][c]+char_data[4];
+                vertices[vert_cnt++] = y_offset;
+                vertices[vert_cnt++] = char_data[0];
+                vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+                vertices[vert_cnt++] = tl_startx[tl][c]+char_data[4];
+                vertices[vert_cnt++] = y_offset -tl_height[tl]+char_data[5];
+                vertices[vert_cnt++] = char_data[0];
+                vertices[vert_cnt++] = char_data[1];
             }
         }
-        //todo: i tried to use the isAsset() function instead of comparing the strings myself, but this didnt seem to work. need to find out why
-        if (this._textFormat.font_table.assetType == TesselatedFontTable_1.TesselatedFontTable.assetType) {
-            var tess_fontTable = this._textFormat.font_table;
-            var elements;
-            var j = 0;
-            var k = 0;
-            var y_offset = 0;
-            var char_scale = 0;
-            var vertices = new Float32Array(numVertices * 3);
-            for (tl = 0; tl < tl_width.length; tl++) {
-                console.log("textline nr: " + tl + " : " + tl_char_codes[tl]);
-                //console.log("tl_width = "+tl_width[tl]);
-                y_offset += tl_height[tl];
-                for (var c = 0; c < tl_char_codes[tl].length; c++) {
-                    var this_char = tess_fontTable.getChar(tl_char_codes[tl][c].toString());
-                    char_scale = tess_fontTable._size_multiply;
-                    if (this_char != null) {
-                        elements = this_char.elements;
-                        if (elements != null) {
-                            var buffer = new Float32Array(elements.concatenatedBuffer.buffer);
-                            for (var v = 0; v < elements.numVertices; v++) {
-                                vertices[j++] = buffer[v * 3] * char_scale + tl_startx[tl][c];
-                                vertices[j++] = buffer[v * 3 + 1] * char_scale + y_offset - tl_height[tl];
-                                vertices[j++] = buffer[v * 3 + 2];
-                            }
-                        }
-                    }
-                }
-            }
-            var attributesView = new AttributesView_1.AttributesView(Float32Array, 3);
-            attributesView.set(vertices);
-            var vertexBuffer = attributesView.attributesBuffer;
-            attributesView.dispose();
-            this._textElements = new TriangleElements_1.TriangleElements(vertexBuffer);
-            this._textElements.setPositions(new Float2Attributes_1.Float2Attributes(vertexBuffer));
-            this._textElements.setCustomAttributes("curves", new Byte4Attributes_1.Byte4Attributes(vertexBuffer, false));
-            this._textGraphic = this._graphics.addGraphic(this._textElements);
-            this.material = this._textFormat.material;
-            var sampler = new Sampler2D_1.Sampler2D();
-            this.style = new Style_1.Style();
-            this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
-            this.style.uvMatrix = new Matrix_1.Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
-            this.material.animateUVs = true;
+        var attributesView:AttributesView = new AttributesView(Float32Array, 4);
+        attributesView.set(vertices);
+        var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+        attributesView.dispose();
+
+        this._textElements = new TriangleElements(vertexBuffer);
+        this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+        //this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+        //this._textElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
+        this._textElements.setUVs(new Float2Attributes(vertexBuffer));
+
+        this._textGraphic = this._graphics.addGraphic(this._textElements);
+
+        var basic_mat:BasicMaterial = new BasicMaterial();
+        basic_mat.texture = new Single2DTexture(bitmap_fontTable.get_page());
+        basic_mat.bothSides = true;
+        //basic_mat.preserveAlpha = true;
+        basic_mat.alphaBlending = true;
+        this.material = <MaterialBase>basic_mat;
+        //var sampler:Sampler2D = new Sampler2D();
+        //this.style = new Style();
+        //this.style.addSamplerAt(sampler, new Single2DTexture(bitmap_fontTable.get_page()));
+        //this.style.uvMatrix = new Matrix(0,0,0,0, 0, 0);
+        //this.material.animateUVs = true;
+    }
+    else{
+
+        var canvas:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
+        if (canvas==null){
+            canvas = document.createElement("canvas");
+            canvas.id = "myCanvas";
+            document.body.appendChild(canvas);
+
         }
-        else if (this._textFormat.font_table.assetType == BitmapFontTable_1.BitmapFontTable.assetType) {
-            console.log("contruct bitmap text = " + this._text);
-            var bitmap_fontTable = this._textFormat.font_table;
-            if (!useCanvas2dhack) {
-                var vertices = new Float32Array(numVertices * 7);
-                var vert_cnt = 0;
-                var y_offset = 0; //2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
-                for (tl = 0; tl < tl_width.length; tl++) {
-                    console.log("textline nr: " + tl + " : " + tl_char_codes[tl]);
-                    //console.log("tl_width = "+tl_width[tl]);
-                    y_offset += tl_height[tl];
-                    for (var c = 0; c < tl_char_codes[tl].length; c++) {
-                        //console.log("tl_char_codes[tl] = "+tl_char_codes[tl][c]);
-                        //console.log("tl_startx[tl] = "+tl_startx[tl][c]);
-                        //console.log("y_offset = "+y_offset);
-                        //console.log("vert_cnt = "+vert_cnt);
-                        var char_data = bitmap_fontTable.getCharData(tl_char_codes[tl][c].toString());
-                        console.log("char_data = " + char_data);
-                        vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
-                        vertices[vert_cnt++] = y_offset - tl_height[tl] + char_data[5];
-                        vertices[vert_cnt++] = char_data[0];
-                        vertices[vert_cnt++] = char_data[1];
-                        vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-                        vertices[vert_cnt++] = y_offset - tl_height[tl] + char_data[5];
-                        vertices[vert_cnt++] = char_data[0] + char_data[2];
-                        vertices[vert_cnt++] = char_data[1];
-                        vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-                        vertices[vert_cnt++] = y_offset;
-                        vertices[vert_cnt++] = char_data[0] + char_data[2];
-                        vertices[vert_cnt++] = char_data[1] + char_data[3];
-                        vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-                        vertices[vert_cnt++] = y_offset;
-                        vertices[vert_cnt++] = char_data[0] + char_data[2];
-                        vertices[vert_cnt++] = char_data[1] + char_data[3];
-                        vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
-                        vertices[vert_cnt++] = y_offset;
-                        vertices[vert_cnt++] = char_data[0];
-                        vertices[vert_cnt++] = char_data[1] + char_data[3];
-                        vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
-                        vertices[vert_cnt++] = y_offset - tl_height[tl] + char_data[5];
-                        vertices[vert_cnt++] = char_data[0];
-                        vertices[vert_cnt++] = char_data[1];
-                    }
-                }
-                var attributesView = new AttributesView_1.AttributesView(Float32Array, 4);
-                attributesView.set(vertices);
-                var vertexBuffer = attributesView.attributesBuffer;
-                attributesView.dispose();
-                this._textElements = new TriangleElements_1.TriangleElements(vertexBuffer);
-                this._textElements.setPositions(new Float2Attributes_1.Float2Attributes(vertexBuffer));
-                //this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
-                //this._textElements.setCustomAttributes("curves", new Float3Attributes(vertexBuffer));
-                this._textElements.setUVs(new Float2Attributes_1.Float2Attributes(vertexBuffer));
-                this._textGraphic = this._graphics.addGraphic(this._textElements);
-                var basic_mat = new BasicMaterial_1.BasicMaterial();
-                basic_mat.texture = new Single2DTexture_1.Single2DTexture(bitmap_fontTable.get_page());
-                basic_mat.bothSides = true;
-                //basic_mat.preserveAlpha = true;
-                basic_mat.alphaBlending = true;
-                this.material = basic_mat;
-            }
-            else {
-                var canvas = document.getElementById("myCanvas");
-                if (canvas == null) {
-                    canvas = document.createElement("canvas");
-                    canvas.id = "myCanvas";
-                    document.body.appendChild(canvas);
-                }
-                var ctx = canvas.getContext("2d");
-                ctx.canvas.width = window.innerWidth;
-                ctx.canvas.height = window.innerHeight;
-                //var transform_mx:Matrix3D=this.transform.matrix3D;
-                //ctx.setTransform(transform_mx.a,transform_mx.b,transform_mx.c,transform_mx.d,transform_mx.tx,transform_mx.ty);
-                ctx.rect(0, 0, this.textWidth, this.textHeight);
-                ctx.fillStyle = "black";
-                ctx.fill();
-                //ctx.drawImage(bitmap_fontTable.get_page().getCanvas(), 50, 50, 200, 200, 0, 0, 100, 100);
-                var y_offset = 0; //2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
-                for (tl = 0; tl < tl_width.length; tl++) {
-                    console.log("textline nr: " + tl + " : " + tl_char_codes[tl]);
-                    //console.log("tl_width = "+tl_width[tl]);
-                    y_offset += tl_height[tl];
-                    for (var c = 0; c < tl_char_codes[tl].length; c++) {
-                        var char_data = bitmap_fontTable.getCharDataCanvas(tl_char_codes[tl][c].toString());
-                        ctx.drawImage(bitmap_fontTable.get_page().getCanvas(), char_data[0], char_data[1], char_data[2], char_data[3], tl_startx[tl][c] + char_data[4], y_offset - tl_height[tl] + char_data[5], tl_char_widths[tl][c], tl_height[tl] - char_data[5]);
-                    }
-                }
+        var ctx = canvas.getContext("2d");
+        ctx.canvas.width  = window.innerWidth;
+        ctx.canvas.height = window.innerHeight;
+        //var transform_mx:Matrix3D=this.transform.matrix3D;
+        //ctx.setTransform(transform_mx.a,transform_mx.b,transform_mx.c,transform_mx.d,transform_mx.tx,transform_mx.ty);
+        ctx.rect(0, 0, this.textWidth, this.textHeight);
+        ctx.fillStyle = "black";
+        ctx.fill();
+        //ctx.drawImage(bitmap_fontTable.get_page().getCanvas(), 50, 50, 200, 200, 0, 0, 100, 100);
+        var y_offset:number=0;//2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+        for (tl = 0; tl < tl_width.length; tl++) {
+            console.log("textline nr: "+tl+" : "+tl_char_codes[tl]);
+            //console.log("tl_width = "+tl_width[tl]);
+            y_offset+=tl_height[tl];
+            for (var c = 0; c < tl_char_codes[tl].length; c++) {
+                var char_data:Array<number>=bitmap_fontTable.getCharDataCanvas(tl_char_codes[tl][c].toString());
+
+                ctx.drawImage(
+                    bitmap_fontTable.get_page().getCanvas(),
+                    char_data[0], char_data[1],
+                    char_data[2], char_data[3],
+                    tl_startx[tl][c] + char_data[4], y_offset - tl_height[tl] + char_data[5],
+                    tl_char_widths[tl][c], tl_height[tl] - char_data[5]
+                );
+
+
             }
         }
+    }
+}
+
+*/
+        if (useCanvas2dhack === void 0) { useCanvas2dhack = false; }
     };
     /**
      * Appends the string specified by the <code>newText</code> parameter to the
@@ -9100,7 +9139,7 @@ var TextFieldMultiRender = (function (_super) {
     return TextFieldMultiRender;
 }(Sprite_1.Sprite));
 exports.TextFieldMultiRender = TextFieldMultiRender;
-},{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../materials/BasicMaterial":"awayjs-display/lib/materials/BasicMaterial","../text/BitmapFontTable":"awayjs-display/lib/text/BitmapFontTable","../text/TesselatedFontTable":"awayjs-display/lib/text/TesselatedFontTable","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","../textures/Single2DTexture":"awayjs-display/lib/textures/Single2DTexture","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
+},{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../display/Sprite":"awayjs-display/lib/display/Sprite","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","awayjs-core/lib/geom/ColorTransform":undefined}],"awayjs-display/lib/display/TextField":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -9118,6 +9157,7 @@ var Style_1 = require("../base/Style");
 var TextFieldType_1 = require("../text/TextFieldType");
 var Sprite_1 = require("../display/Sprite");
 var TriangleElements_1 = require("../graphics/TriangleElements");
+var DefaultMaterialManager_1 = require("../managers/DefaultMaterialManager");
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -9470,6 +9510,7 @@ var TextField = (function (_super) {
             return;
         var numVertices = 0;
         var elements;
+        var char_vertices;
         var thisFormat = this._textFormat.font_table;
         var fallbackFormat = null;
         if (this._textFormat.fallback_font_table)
@@ -9509,9 +9550,10 @@ var TextField = (function (_super) {
                         }
                     }
                     if (this_char != null) {
-                        elements = this_char.elements;
-                        if (elements != null) {
-                            numVertices += elements.numVertices;
+                        char_vertices = this_char.fill_data;
+                        char_vertices = this_char.fill_data;
+                        if (char_vertices != null) {
+                            numVertices += char_vertices.count;
                             // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
                             var kerning_value = 0;
                             if (prev_char != null) {
@@ -9599,10 +9641,10 @@ var TextField = (function (_super) {
                 var this_char = final_lines_chars[i][t];
                 char_scale = final_lines_char_scale[i][t];
                 if (this_char != null) {
-                    elements = this_char.elements;
-                    if (elements != null) {
-                        var buffer = new Float32Array(elements.concatenatedBuffer.buffer);
-                        for (var v = 0; v < elements.numVertices; v++) {
+                    char_vertices = this_char.fill_data;
+                    if (char_vertices != null) {
+                        var buffer = new Float32Array(char_vertices.buffer);
+                        for (var v = 0; v < char_vertices.count; v++) {
                             vertices[j++] = buffer[v * 3] * char_scale + x_offset;
                             vertices[j++] = buffer[v * 3 + 1] * char_scale + y_offset;
                             vertices[j++] = buffer[v * 3 + 2];
@@ -9641,12 +9683,25 @@ var TextField = (function (_super) {
         this._textElements.setPositions(new Float2Attributes_1.Float2Attributes(vertexBuffer));
         this._textElements.setCustomAttributes("curves", new Byte4Attributes_1.Byte4Attributes(vertexBuffer, false));
         this._textGraphic = this._graphics.addGraphic(this._textElements);
-        this.material = this._textFormat.material;
         var sampler = new Sampler2D_1.Sampler2D();
-        this.style = new Style_1.Style();
-        this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
-        this.style.uvMatrix = new Matrix_1.Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
-        this.material.animateUVs = true;
+        this._textGraphic.style = new Style_1.Style();
+        if (this._textFormat.material) {
+            this._textGraphic.material = this._textFormat.material;
+            this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+            this._textGraphic.material.animateUVs = true;
+            this._textGraphic.style.uvMatrix = new Matrix_1.Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+        }
+        else {
+            this._textGraphic.material = DefaultMaterialManager_1.DefaultMaterialManager.getDefaultMaterial();
+            this._textGraphic.material.bothSides = true;
+            //this._textGraphic.material.useColorTransform = true;
+            this._textGraphic.material.curves = true;
+            this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+            //sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
+            this._textGraphic.style.uvMatrix = new Matrix_1.Matrix(0, 0, 0, 0, 0.126, 0);
+            this._textGraphic.material.animateUVs = true;
+        }
+        this.material = this._textGraphic.material;
     };
     /**
      * Appends the string specified by the <code>newText</code> parameter to the
@@ -9990,7 +10045,7 @@ var TextField = (function (_super) {
     return TextField;
 }(Sprite_1.Sprite));
 exports.TextField = TextField;
-},{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display":[function(require,module,exports){
+},{"../base/HierarchicalProperties":"awayjs-display/lib/base/HierarchicalProperties","../base/Style":"awayjs-display/lib/base/Style","../display/Sprite":"awayjs-display/lib/display/Sprite","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","../text/TextFieldType":"awayjs-display/lib/text/TextFieldType","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/geom/ColorTransform":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/image/Sampler2D":undefined}],"awayjs-display/lib/display":[function(require,module,exports){
 "use strict";
 var Billboard_1 = require("./display/Billboard");
 exports.Billboard = Billboard_1.Billboard;
@@ -10456,36 +10511,35 @@ var GraphicsFactoryHelper = (function () {
         if (tri_type == 0) {
             vertices[final_vert_cnt++] = startX;
             vertices[final_vert_cnt++] = startY;
-            vertices[final_vert_cnt++] = 1;
-            vertices[final_vert_cnt++] = 2.0;
-            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = 4.5736980577097704e-41; // ((127<<24)+(127<<16)+0+0)
             vertices[final_vert_cnt++] = controlX;
             vertices[final_vert_cnt++] = controlY;
-            vertices[final_vert_cnt++] = 1;
-            vertices[final_vert_cnt++] = 2.0;
-            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = 4.5736980577097704e-41; // ((127<<24)+(127<<16)+0+0)
             vertices[final_vert_cnt++] = endX;
             vertices[final_vert_cnt++] = endY;
-            vertices[final_vert_cnt++] = 1;
-            vertices[final_vert_cnt++] = 2.0;
-            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = 4.5736980577097704e-41; // ((127<<24)+(127<<16)+0+0)
         }
-        else {
+        else if (tri_type < 0) {
             vertices[final_vert_cnt++] = startX;
             vertices[final_vert_cnt++] = startY;
-            vertices[final_vert_cnt++] = tri_type;
-            vertices[final_vert_cnt++] = 1.0;
-            vertices[final_vert_cnt++] = 1.0;
+            vertices[final_vert_cnt++] = 1.1708844992641982e-38; // ((127<<24)+(127<<16)+0+0)
             vertices[final_vert_cnt++] = controlX;
             vertices[final_vert_cnt++] = controlY;
-            vertices[final_vert_cnt++] = tri_type;
-            vertices[final_vert_cnt++] = 0.5;
-            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = 2.2778106537599901e-41; // ((127<<24)+(63<<16)+0+0)
             vertices[final_vert_cnt++] = endX;
             vertices[final_vert_cnt++] = endY;
-            vertices[final_vert_cnt++] = tri_type;
-            vertices[final_vert_cnt++] = 0.0;
-            vertices[final_vert_cnt++] = 0.0;
+            vertices[final_vert_cnt++] = 1.7796490496925177e-43; // ((127<<24)+0+0+0)
+        }
+        else if (tri_type > 0) {
+            vertices[final_vert_cnt++] = startX;
+            vertices[final_vert_cnt++] = startY;
+            vertices[final_vert_cnt++] = 1.1708846393940446e-38; // ((-128<<24)+(127<<16)+0+0)
+            vertices[final_vert_cnt++] = controlX;
+            vertices[final_vert_cnt++] = controlY;
+            vertices[final_vert_cnt++] = 2.2779507836064226e-41; // ((-128<<24)+(63<<16)+0+0)
+            vertices[final_vert_cnt++] = endX;
+            vertices[final_vert_cnt++] = endY;
+            vertices[final_vert_cnt++] = 1.793662034335766e-43; // ((-128<<24)+0+0+0)
         }
     };
     GraphicsFactoryHelper.createCap = function (startX, startY, start_le, start_ri, dir_vec, capstyle, cap_position, thickness, vertices) {
@@ -10579,13 +10633,8 @@ exports.GraphicsFactoryHelper = GraphicsFactoryHelper;
 var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
 var JointStyle_1 = require("../draw/JointStyle");
 var GraphicsPathCommand_1 = require("../draw/GraphicsPathCommand");
-var DefaultMaterialManager_1 = require("../managers/DefaultMaterialManager");
 var Point_1 = require("awayjs-core/lib/geom/Point");
-var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
-var Float3Attributes_1 = require("awayjs-core/lib/attributes/Float3Attributes");
-var Float2Attributes_1 = require("awayjs-core/lib/attributes/Float2Attributes");
 var GraphicsFactoryHelper_1 = require("../draw/GraphicsFactoryHelper");
-var TriangleElements_1 = require("../graphics/TriangleElements");
 /**
  * The Graphics class contains a set of methods that you can use to create a
  * vector shape. Display objects that support drawing include Sprite and Shape
@@ -10603,8 +10652,8 @@ var TriangleElements_1 = require("../graphics/TriangleElements");
 var GraphicsFactoryStrokes = (function () {
     function GraphicsFactoryStrokes() {
     }
-    GraphicsFactoryStrokes.draw_pathes = function (targetGraphic) {
-        var len = targetGraphic.queued_stroke_pathes.length;
+    GraphicsFactoryStrokes.draw_pathes = function (graphic_pathes, final_vert_list) {
+        var len = graphic_pathes.length;
         var contour_commands;
         var contour_data;
         var strokeStyle;
@@ -10615,7 +10664,6 @@ var GraphicsFactoryStrokes = (function () {
         var k = 0;
         var vert_cnt = 0;
         var data_cnt = 0;
-        var final_vert_list = [];
         var final_vert_cnt = 0;
         var lastPoint = new Point_1.Point();
         var start_point = new Point_1.Point();
@@ -10635,11 +10683,10 @@ var GraphicsFactoryStrokes = (function () {
         var last_dir_vec = new Point_1.Point();
         var cp = 0;
         for (cp = 0; cp < len; cp++) {
-            one_path = targetGraphic.queued_stroke_pathes[cp];
+            one_path = graphic_pathes[cp];
             contour_commands = one_path.commands;
             contour_data = one_path.data;
             strokeStyle = one_path.stroke();
-            var tessVerts = [];
             for (k = 0; k < contour_commands.length; k++) {
                 commands = contour_commands[k];
                 data = contour_data[k];
@@ -10697,6 +10744,7 @@ var GraphicsFactoryStrokes = (function () {
                     if (dir_delta < -180) {
                         dir_delta += 360;
                     }
+                    //console.log("DIRECTION DELTA: "+dir_delta);
                     last_direction = new_dir;
                     //console.log("segment "+i+" direction: "+dir_delta);
                     // rotate direction around 90 degree
@@ -10723,8 +10771,8 @@ var GraphicsFactoryStrokes = (function () {
                                 add_segment = true;
                             }
                         }
-                        if (dir_delta == 180) {
-                            console.log("path goes straight back (180�). DO we need to handle this edge case different ? !");
+                        if (Math.abs(dir_delta) == 180) {
+                            add_segment = true;
                         }
                         else if (dir_delta != 0) {
                             add_segment = true;
@@ -10890,28 +10938,17 @@ var GraphicsFactoryStrokes = (function () {
                         var angle_1 = Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts_1.MathConsts.RADIANS_TO_DEGREES;
                         var angle_2 = Math.atan2(tmp_point2.y, tmp_point2.x) * MathConsts_1.MathConsts.RADIANS_TO_DEGREES;
                         dir_delta = angle_2 - angle_1;
-                        if (dir_delta > 180) {
+                        if (dir_delta > 180)
                             dir_delta -= 360;
-                        }
-                        if (dir_delta < -180) {
+                        if (dir_delta < -180)
                             dir_delta += 360;
-                        }
-                        if (dir_delta == 0) {
-                            console.log("This is not a curve, we can just draw it like a straight line");
-                        }
-                        //console.log("segment : '"+i+"' direction:"+dir_delta);
-                        var dirNumber = 1;
-                        if (dir_delta < 0) {
-                            dirNumber = -1;
-                        }
-                        var half_angle = dir_delta * 0.5 * MathConsts_1.MathConsts.DEGREES_TO_RADIANS;
-                        var lengthpos = Math.abs(length1 * Math.sin(half_angle));
-                        var distance = strokeStyle.half_thickness / Math.sin(half_angle);
-                        tmp_point3.x = tmp_point2.x * Math.cos(half_angle) + tmp_point2.y * Math.sin(half_angle);
-                        tmp_point3.y = tmp_point2.y * Math.cos(half_angle) - tmp_point2.x * Math.sin(half_angle);
-                        tmp_point3.normalize();
-                        var merged_pnt_ri = new Point_1.Point(ctr_point.x - (tmp_point3.x * distance), ctr_point.y - (tmp_point3.y * distance));
-                        var merged_pnt_le = new Point_1.Point(ctr_point.x + (tmp_point3.x * distance), ctr_point.y + (tmp_point3.y * distance));
+                        //var half_angle:number=dir_delta*0.5*MathConsts.DEGREES_TO_RADIANS;
+                        //var distance:number=strokeStyle.half_thickness / Math.sin(half_angle);
+                        //tmp_point3.x = tmp_point2.x * Math.cos(half_angle) + tmp_point2.y * Math.sin(half_angle);
+                        //tmp_point3.y = tmp_point2.y * Math.cos(half_angle) - tmp_point2.x * Math.sin(half_angle);
+                        //tmp_point3.normalize();
+                        //var merged_pnt_ri:Point = new Point(ctr_point.x - (tmp_point3.x * distance), ctr_point.y - (tmp_point3.y * distance));
+                        //var merged_pnt_le:Point = new Point(ctr_point.x + (tmp_point3.x * distance), ctr_point.y + (tmp_point3.y * distance));
                         var curve_x = GraphicsFactoryHelper_1.GraphicsFactoryHelper.getQuadricBezierPosition(0.5, start_point.x, ctr_point.x, end_point.x);
                         var curve_y = GraphicsFactoryHelper_1.GraphicsFactoryHelper.getQuadricBezierPosition(0.5, start_point.y, ctr_point.y, end_point.y);
                         var curve_2x = GraphicsFactoryHelper_1.GraphicsFactoryHelper.getQuadricBezierPosition(0.501, start_point.x, ctr_point.x, end_point.x);
@@ -10919,12 +10956,12 @@ var GraphicsFactoryStrokes = (function () {
                         tmp_point3.x = -1 * (curve_y - curve_2y);
                         tmp_point3.y = curve_x - curve_2x;
                         tmp_point3.normalize();
-                        //GraphicsFactoryHelper.drawPoint(curve_x,curve_y, final_vert_list);
+                        GraphicsFactoryHelper_1.GraphicsFactoryHelper.drawPoint(curve_x, curve_y, final_vert_list);
                         // move the point on the curve to use correct thickness
-                        ctr_right.x = curve_x + (dirNumber * tmp_point3.x * strokeStyle.half_thickness);
-                        ctr_right.y = curve_y + (dirNumber * tmp_point3.y * strokeStyle.half_thickness);
-                        ctr_left.x = curve_x - (dirNumber * tmp_point3.x * strokeStyle.half_thickness);
-                        ctr_left.y = curve_y - (dirNumber * tmp_point3.y * strokeStyle.half_thickness);
+                        ctr_right.x = curve_x - (tmp_point3.x * strokeStyle.half_thickness);
+                        ctr_right.y = curve_y - (tmp_point3.y * strokeStyle.half_thickness);
+                        ctr_left.x = curve_x + (tmp_point3.x * strokeStyle.half_thickness);
+                        ctr_left.y = curve_y + (tmp_point3.y * strokeStyle.half_thickness);
                         //GraphicsFactoryHelper.drawPoint(ctr_right.x, ctr_right.y , final_vert_list);
                         //GraphicsFactoryHelper.drawPoint(ctr_left.x, ctr_left.y , final_vert_list);
                         // calculate the actual controlpoints
@@ -10935,28 +10972,86 @@ var GraphicsFactoryStrokes = (function () {
                         //ctr_right=merged_pnt_ri;
                         //ctr_left=merged_pnt_le;
                         /*
-                        // controlpoints version2:
-                        tmp_dir_point.x = start_left.x-start_right.x;
-                        tmp_dir_point.y = start_left.y-start_right.y;
-                        tmp_point2.x = end_left.x-end_right.x;
-                        tmp_point2.y = end_left.y-end_right.y;
+                         // controlpoints version2:
+                         tmp_dir_point.x = start_left.x-start_right.x;
+                         tmp_dir_point.y = start_left.y-start_right.y;
+                         tmp_point2.x = end_left.x-end_right.x;
+                         tmp_point2.y = end_left.y-end_right.y;
 
-                        ctr_right.x = ctr_point.x-(tmp_dir_point.x/2);
-                        ctr_right.y = ctr_point.y-(tmp_dir_point.y/2);
-                        var new_end_ri:Point = new Point(end_point.x+(tmp_dir_point.x/2), end_point.y+(tmp_dir_point.y/2));
+                         ctr_right.x = ctr_point.x-(tmp_dir_point.x/2);
+                         ctr_right.y = ctr_point.y-(tmp_dir_point.y/2);
+                         var new_end_ri:Point = new Point(end_point.x+(tmp_dir_point.x/2), end_point.y+(tmp_dir_point.y/2));
 
-                        ctr_left.x = ctr_point.x+(tmp_dir_point.x/2);
-                        ctr_left.y = ctr_point.y+(tmp_dir_point.y/2);
-                        var new_end_le:Point = new Point(end_point.x-(tmp_dir_point.x/2), end_point.y-(tmp_dir_point.y/2));
-                        */
+                         ctr_left.x = ctr_point.x+(tmp_dir_point.x/2);
+                         ctr_left.y = ctr_point.y+(tmp_dir_point.y/2);
+                         var new_end_le:Point = new Point(end_point.x-(tmp_dir_point.x/2), end_point.y-(tmp_dir_point.y/2));
+
+                         */
                         /*
-                                                GraphicsFactoryHelper.drawPoint(start_right.x, start_right.y , final_vert_list);
-                                                GraphicsFactoryHelper.drawPoint(start_left.x, start_left.y , final_vert_list);
-                                                GraphicsFactoryHelper.drawPoint(ctr_right.x, ctr_right.y , final_vert_list);
-                                                GraphicsFactoryHelper.drawPoint(ctr_left.x, ctr_left.y , final_vert_list);
-                                                GraphicsFactoryHelper.drawPoint(end_right.x, end_right.y , final_vert_list);
-                                                GraphicsFactoryHelper.drawPoint(end_left.x, end_left.y , final_vert_list);
-                        */
+                         tmp_point2.x=ctr_point.x-start_point.x;
+                         tmp_point2.y=ctr_point.y-start_point.y;
+                         var m1:number=tmp_point2.y/tmp_point2.x;
+                         tmp_point2.x=end_point.x-ctr_point.x;
+                         tmp_point2.y=end_point.y-ctr_point.y;
+                         var m2:number=tmp_point2.y/tmp_point2.x;
+
+                         if(m1==m2){
+                         console.log("lines for curve are parallel - this should not be possible!")
+                         }
+                         if((!isFinite(m1))&&(!isFinite(m2))){
+                         console.log("both lines are vertical - this should not be possible!")
+                         }
+                         else if((isFinite(m1))&&(isFinite(m2))) {
+                         var b_r1:number = start_right.y - (m1 * start_right.x);
+                         var b_l1:number = start_left.y - (m1 * start_left.x);
+                         var b_r2:number = end_right.y - (m2 * end_right.x);
+                         var b_l2:number = end_left.y - (m2 * end_left.x);
+                         ctr_right.x = (b_r2 - b_r1) / (m1 - m2);
+                         ctr_right.y = m1 * ctr_right.x + b_r1;
+                         ctr_left.x = (b_l2 - b_l1) / (m1 - m2);
+                         ctr_left.y = m1 * ctr_left.x + b_l1;
+                         }
+                         else if((!isFinite(m1))&&(isFinite(m2))) {
+                         console.log("second part of curve is vertical line");
+                         var b_r2:number = end_right.y - (m2 * end_right.x);
+                         var b_l2:number = end_left.y - (m2 * end_left.x);
+                         ctr_right.x =  start_right.x;
+                         ctr_right.y = m2 * ctr_right.x + b_r2;
+                         ctr_left.x =  start_left.x;
+                         ctr_left.y = m2 * ctr_left.x + b_l2;
+                         }
+                         else if((isFinite(m1))&&(!isFinite(m2))) {
+                         console.log("first part of curve is vertical line");
+                         var b_r1:number = start_right.y - (m1 * start_right.x);
+                         var b_l1:number = start_left.y - (m1 * start_left.x);
+                         ctr_right.x =  end_right.x;
+                         ctr_right.y = m1 * ctr_right.x + b_r1;
+                         ctr_left.x =  end_left.x;
+                         ctr_left.y = m1 * ctr_left.x + b_l1;
+                         }
+                         */
+                        /*
+                         tmp_point2.x=ctr_right.x-ctr_left.x;
+                         tmp_point2.y=ctr_right.y-ctr_left.y;
+                         if(tmp_point2.length!=strokeStyle.thickness){
+
+                         tmp_point.x=ctr_left.x+tmp_point2.x*0.5;
+                         tmp_point.y=ctr_left.y+tmp_point2.y*0.5;
+                         tmp_point2.normalize();
+                         ctr_left.x=tmp_point.x-tmp_point2.x*strokeStyle.half_thickness;
+                         ctr_left.y=tmp_point.y-tmp_point2.y*strokeStyle.half_thickness;
+                         ctr_right.x=tmp_point.x+tmp_point2.x*strokeStyle.half_thickness;
+                         ctr_right.y=tmp_point.y+tmp_point2.y*strokeStyle.half_thickness;
+                         }
+                         */
+                        //ctr_right=ctr_point;
+                        //ctr_left=ctr_point;
+                        console.log(start_point.x);
+                        console.log(start_point.y);
+                        console.log(ctr_point.x);
+                        console.log(ctr_point.y);
+                        console.log(end_point.x);
+                        console.log(end_point.y);
                         var subdivided = [];
                         var subdivided2 = [];
                         GraphicsFactoryHelper_1.GraphicsFactoryHelper.subdivideCurve(start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y, start_left.x, start_left.y, ctr_left.x, ctr_left.y, end_left.x, end_left.y, subdivided, subdivided2);
@@ -10964,37 +11059,35 @@ var GraphicsFactoryStrokes = (function () {
                             for (var sc = 0; sc < subdivided.length / 6; sc++) {
                                 // right curved
                                 // concave curves:
-                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 1, final_vert_list);
+                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], -128, final_vert_list);
                                 // fills
                                 GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], 0, final_vert_list);
                                 GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], 0, final_vert_list);
                                 GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 0, final_vert_list);
                                 // convex curves:
-                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], -1, final_vert_list);
+                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], 127, final_vert_list);
                             }
                         }
                         else {
                             for (var sc = 0; sc < subdivided.length / 6; sc++) {
                                 // left curved
                                 // convex curves:
-                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], -1, final_vert_list);
+                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 127, final_vert_list);
                                 // fills
                                 GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], 0, final_vert_list);
                                 GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], 0, final_vert_list);
                                 GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], 0, final_vert_list);
                                 // concave curves:
-                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], 1, final_vert_list);
+                                GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], -128, final_vert_list);
                             }
                         }
                     }
                     else if (new_cmds[i] >= GraphicsPathCommand_1.GraphicsPathCommand.BUILD_JOINT) {
                         new_pnts_cnt += 3;
-                        //GraphicsFactoryHelper.addTriangle(start_right.x,  start_right.y,  start_left.x,  start_left.y,  end_right.x,  end_right.y, 0, final_vert_list);
                         if (new_cmds[i] == GraphicsPathCommand_1.GraphicsPathCommand.BUILD_ROUND_JOINT) {
                             end_left = new_pnts[new_pnts_cnt++]; // concave curves:
                             start_right = new_pnts[new_pnts_cnt++];
                             start_left = new_pnts[new_pnts_cnt++];
-                            //console.log("add round tri");
                             GraphicsFactoryHelper_1.GraphicsFactoryHelper.addTriangle(start_right.x, start_right.y, end_left.x, end_left.y, start_left.x, start_left.y, -1, final_vert_list);
                         }
                     }
@@ -11029,36 +11122,20 @@ var GraphicsFactoryStrokes = (function () {
                     last_dir_vec.x = data[2] - data[0];
                     last_dir_vec.y = data[3] - data[1];
                     last_dir_vec.normalize();
-                    GraphicsFactoryHelper_1.GraphicsFactoryHelper.createCap(data[0], data[1], new_pnts[0], new_pnts[1], last_dir_vec, strokeStyle.capstyle, -1, strokeStyle.half_thickness, final_vert_list);
+                    GraphicsFactoryHelper_1.GraphicsFactoryHelper.createCap(data[0], data[1], new_pnts[0], new_pnts[1], last_dir_vec, strokeStyle.capstyle, -128, strokeStyle.half_thickness, final_vert_list);
                     last_dir_vec.x = data[data.length - 2] - data[data.length - 4];
                     last_dir_vec.y = data[data.length - 1] - data[data.length - 3];
                     last_dir_vec.normalize();
-                    GraphicsFactoryHelper_1.GraphicsFactoryHelper.createCap(data[data.length - 2], data[data.length - 1], new_pnts[new_pnts.length - 2], new_pnts[new_pnts.length - 1], last_dir_vec, strokeStyle.capstyle, 1, strokeStyle.half_thickness, final_vert_list);
+                    GraphicsFactoryHelper_1.GraphicsFactoryHelper.createCap(data[data.length - 2], data[data.length - 1], new_pnts[new_pnts.length - 2], new_pnts[new_pnts.length - 1], last_dir_vec, strokeStyle.capstyle, 127, strokeStyle.half_thickness, final_vert_list);
                 }
             }
-            //console.log("final_vert_cnt "+(final_vert_cnt/5));
-            // todo: handle material / submesh settings, and check if a material / submesh already exists for this settings
-            var attributesView = new AttributesView_1.AttributesView(Float32Array, 5);
-            attributesView.set(final_vert_list);
-            var attributesBuffer = attributesView.attributesBuffer;
-            attributesView.dispose();
-            var elements = new TriangleElements_1.TriangleElements(attributesBuffer);
-            elements.setPositions(new Float2Attributes_1.Float2Attributes(attributesBuffer));
-            elements.setCustomAttributes("curves", new Float3Attributes_1.Float3Attributes(attributesBuffer));
-            //elements.setUVs(new Float2Attributes(attributesBuffer));
-            //curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
-            var material = DefaultMaterialManager_1.DefaultMaterialManager.getDefaultMaterial();
-            material.bothSides = true;
-            material.useColorTransform = true;
-            material.curves = true;
-            targetGraphic.addGraphic(elements, material);
         }
-        targetGraphic.queued_stroke_pathes.length = 0;
+        //targetGraphic.queued_stroke_pathes.length=0;
     };
     return GraphicsFactoryStrokes;
 }());
 exports.GraphicsFactoryStrokes = GraphicsFactoryStrokes;
-},{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/attributes/Float3Attributes":undefined,"awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFillStyle":[function(require,module,exports){
+},{"../draw/GraphicsFactoryHelper":"awayjs-display/lib/draw/GraphicsFactoryHelper","../draw/GraphicsPathCommand":"awayjs-display/lib/draw/GraphicsPathCommand","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","awayjs-core/lib/geom/MathConsts":undefined,"awayjs-core/lib/geom/Point":undefined}],"awayjs-display/lib/draw/GraphicsFillStyle":[function(require,module,exports){
 "use strict";
 var GraphicsFillStyle = (function () {
     function GraphicsFillStyle(color, alpha) {
@@ -12641,8 +12718,15 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var Point_1 = require("awayjs-core/lib/geom/Point");
 var Box_1 = require("awayjs-core/lib/geom/Box");
+var Matrix_1 = require("awayjs-core/lib/geom/Matrix");
 var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
+var Sampler2D_1 = require("awayjs-core/lib/image/Sampler2D");
+var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
+var Byte4Attributes_1 = require("awayjs-core/lib/attributes/Byte4Attributes");
+var Float2Attributes_1 = require("awayjs-core/lib/attributes/Float2Attributes");
+var TriangleElements_1 = require("../graphics/TriangleElements");
 var Graphic_1 = require("../graphics/Graphic");
+var Style_1 = require("../base/Style");
 var ElementsEvent_1 = require("../events/ElementsEvent");
 var StyleEvent_1 = require("../events/StyleEvent");
 var GraphicsPath_1 = require("../draw/GraphicsPath");
@@ -12653,6 +12737,8 @@ var JointStyle_1 = require("../draw/JointStyle");
 var CapsStyle_1 = require("../draw/CapsStyle");
 var GraphicsStrokeStyle_1 = require("../draw/GraphicsStrokeStyle");
 var GraphicsFillStyle_1 = require("../draw/GraphicsFillStyle");
+var DefaultMaterialManager_1 = require("../managers/DefaultMaterialManager");
+;
 /**
  *
  * Graphics is a collection of SubGeometries, each of which contain the actual geometrical data such as vertices,
@@ -12957,7 +13043,31 @@ var Graphics = (function (_super) {
         GraphicsFactoryFills_1.GraphicsFactoryFills.draw_pathes(this);
     };
     Graphics.prototype.draw_strokes = function () {
-        GraphicsFactoryStrokes_1.GraphicsFactoryStrokes.draw_pathes(this);
+        var final_vert_list = [];
+        GraphicsFactoryStrokes_1.GraphicsFactoryStrokes.draw_pathes(this.queued_stroke_pathes, final_vert_list);
+        this.queued_stroke_pathes.length = 0;
+        var attributesView = new AttributesView_1.AttributesView(Float32Array, 3);
+        attributesView.set(final_vert_list);
+        var attributesBuffer = attributesView.attributesBuffer;
+        attributesView.dispose();
+        var elements = new TriangleElements_1.TriangleElements(attributesBuffer);
+        elements.setPositions(new Float2Attributes_1.Float2Attributes(attributesBuffer));
+        elements.setCustomAttributes("curves", new Byte4Attributes_1.Byte4Attributes(attributesBuffer, false));
+        //elements.setUVs(new Float2Attributes(attributesBuffer));
+        //curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
+        var material = DefaultMaterialManager_1.DefaultMaterialManager.getDefaultMaterial();
+        material.bothSides = true;
+        material.useColorTransform = true;
+        material.curves = true;
+        var sampler = new Sampler2D_1.Sampler2D();
+        var graphic = this.addGraphic(elements, material);
+        if (graphic) {
+            graphic.style = new Style_1.Style();
+            graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
+            //sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
+            graphic.style.uvMatrix = new Matrix_1.Matrix(0, 0, 0, 0, 0.126, 0);
+            graphic.material.animateUVs = true;
+        }
     };
     /**
      * Fills a drawing area with a bitmap image. The bitmap can be repeated or
@@ -13900,7 +14010,7 @@ var Graphics = (function (_super) {
     return Graphics;
 }(AssetBase_1.AssetBase));
 exports.Graphics = Graphics;
-},{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
+},{"../base/Style":"awayjs-display/lib/base/Style","../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/GraphicsFactoryFills":"awayjs-display/lib/draw/GraphicsFactoryFills","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsFillStyle":"awayjs-display/lib/draw/GraphicsFillStyle","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../events/ElementsEvent":"awayjs-display/lib/events/ElementsEvent","../events/StyleEvent":"awayjs-display/lib/events/StyleEvent","../graphics/Graphic":"awayjs-display/lib/graphics/Graphic","../graphics/TriangleElements":"awayjs-display/lib/graphics/TriangleElements","../managers/DefaultMaterialManager":"awayjs-display/lib/managers/DefaultMaterialManager","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/attributes/Byte4Attributes":undefined,"awayjs-core/lib/attributes/Float2Attributes":undefined,"awayjs-core/lib/errors/PartialImplementationError":undefined,"awayjs-core/lib/geom/Box":undefined,"awayjs-core/lib/geom/Matrix":undefined,"awayjs-core/lib/geom/Point":undefined,"awayjs-core/lib/image/Sampler2D":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/graphics/Graphic":[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -21366,13 +21476,10 @@ var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
 var TesselatedFontTable_1 = require("../text/TesselatedFontTable");
 var BitmapFontTable_1 = require("../text/BitmapFontTable");
 /**
- * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
+ * Font is a container for FontTables.
  *
  *
- * @see away.base.TriangleElements
- * @see away.entities.Sprite
  *
- * @class away.base.GraphicBase
  */
 var Font = (function (_super) {
     __extends(Font, _super);
@@ -21414,17 +21521,19 @@ var Font = (function (_super) {
     /**
      *Get a font-table for a specific name, or create one if it does not exists.
      */
-    Font.prototype.get_font_table = function (style_name, assetType) {
+    Font.prototype.get_font_table = function (style_name, assetType, openTypeFont) {
         if (assetType === void 0) { assetType = TesselatedFontTable_1.TesselatedFontTable.assetType; }
+        if (openTypeFont === void 0) { openTypeFont = null; }
         var len = this._font_styles.length;
         for (var i = 0; i < len; ++i) {
             if ((this._font_styles[i].assetType == assetType) && (this._font_styles[i].name == style_name)) {
+                // mak
                 return this._font_styles[i];
             }
         }
         var font_style = null;
         if (assetType == TesselatedFontTable_1.TesselatedFontTable.assetType) {
-            font_style = new TesselatedFontTable_1.TesselatedFontTable();
+            font_style = new TesselatedFontTable_1.TesselatedFontTable(openTypeFont);
         }
         else if (assetType == BitmapFontTable_1.BitmapFontTable.assetType) {
             font_style = new BitmapFontTable_1.BitmapFontTable();
@@ -21505,7 +21614,9 @@ exports.GridFitType = GridFitType;
  * property description.</p>
  */
 var TesselatedFontChar = (function () {
-    function TesselatedFontChar(elements) {
+    function TesselatedFontChar(fill_data, stroke_data) {
+        if (fill_data === void 0) { fill_data = null; }
+        if (stroke_data === void 0) { stroke_data = null; }
         /**
          * the char_codes that this geom has kerning set for
          */
@@ -21514,7 +21625,8 @@ var TesselatedFontChar = (function () {
          * the kerning values per char_code
          */
         this.kerningValues = [];
-        this.elements = elements;
+        this.fill_data = fill_data;
+        this.stroke_data = stroke_data;
     }
     return TesselatedFontChar;
 }());
@@ -21528,6 +21640,13 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var AssetBase_1 = require("awayjs-core/lib/library/AssetBase");
 var TesselatedFontChar_1 = require("../text/TesselatedFontChar");
+var GraphicsPath_1 = require("../draw/GraphicsPath");
+var GraphicsFactoryStrokes_1 = require("../draw/GraphicsFactoryStrokes");
+var JointStyle_1 = require("../draw/JointStyle");
+var CapsStyle_1 = require("../draw/CapsStyle");
+var DrawMode_1 = require("../draw/DrawMode");
+var GraphicsStrokeStyle_1 = require("../draw/GraphicsStrokeStyle");
+var AttributesView_1 = require("awayjs-core/lib/attributes/AttributesView");
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
@@ -21547,17 +21666,44 @@ var TesselatedFontTable = (function (_super) {
     //		}
     /**
      * Creates a new TesselatedFont object
+     * If a opentype_font object is passed, the chars will get tessellated whenever requested.
+     * If no opentype font object is passed, it is expected that tesselated chars
      */
-    function TesselatedFontTable() {
+    function TesselatedFontTable(opentype_font) {
+        if (opentype_font === void 0) { opentype_font = null; }
         _super.call(this);
         this._font_chars = [];
         this._font_chars_dic = new Object();
-        this._ascent = 0;
-        this._descent = 0;
         this._current_size = 0;
         this._size_multiply = 0;
-        this._font_em_size = 0;
+        this._ascent = 0;
+        this._descent = 0;
+        if (opentype_font) {
+            this._opentype_font = opentype_font;
+            /*
+             console.log("head.yMax "+head.yMax);
+             console.log("head.yMin "+head.yMin);
+             console.log("font.numGlyphs "+font.numGlyphs);
+             console.log('Ascender', font.tables.hhea.ascender);
+             console.log('Descender', font.tables.hhea.descender);
+             console.log('Typo Ascender', font.tables.os2.sTypoAscender);
+             console.log('Typo Descender', font.tables.os2.sTypoDescender);
+             */
+            //this._ascent=this._opentype_font.tables.hhea.ascender;
+            //this._descent=this._opentype_font.tables.hhea.descender;
+            this._font_em_size = 72;
+            this._current_size = 0;
+            this._size_multiply = 0;
+            return;
+        }
     }
+    TesselatedFontTable.prototype.changeOpenTypeFont = function (newOpenTypeFont, tesselateAllOld) {
+        if (tesselateAllOld === void 0) { tesselateAllOld = true; }
+        if ((tesselateAllOld) && (this._opentype_font)) {
+        }
+        // todo: when updating a font we must take care that they are compatible in terms of em_size
+        this._opentype_font = newOpenTypeFont;
+    };
     TesselatedFontTable.prototype.initFontSize = function (font_size) {
         if (this._current_size == font_size)
             return;
@@ -21567,7 +21713,7 @@ var TesselatedFontTable = (function (_super) {
     TesselatedFontTable.prototype.getCharVertCnt = function (char_code) {
         var tesselated_font_char = this._font_chars_dic[char_code];
         if (tesselated_font_char) {
-            return tesselated_font_char.elements.numVertices * 3;
+            return tesselated_font_char.fill_data.length;
         }
         return 0;
     };
@@ -21652,23 +21798,132 @@ var TesselatedFontTable = (function (_super) {
      *
      */
     TesselatedFontTable.prototype.getChar = function (name) {
+        if (this._font_chars_dic[name] == null) {
+            if (this._opentype_font) {
+                console.log("get char for '" + String.fromCharCode(parseInt(name)) + "'. char does not exists yet. try creating it from opentype.");
+                var thisGlyph = this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
+                if (thisGlyph) {
+                    console.log("got the glyph from opentype");
+                    if (true) {
+                        var thisPath = thisGlyph.getPath();
+                        var awayPath = new GraphicsPath_1.GraphicsPath();
+                        var i = 0;
+                        var len = thisPath.commands.length;
+                        //awayPath.lineTo(0, 0);
+                        awayPath.moveTo(0, 0); //-100);
+                        awayPath.curveTo(100, 250, 200, 0);
+                        //awayPath.lineTo(150, 100);
+                        awayPath.moveTo(0, 20);
+                        awayPath.curveTo(100, 270, 200, 20);
+                        //awayPath.moveTo(0,-20);
+                        //awayPath.moveTo(0,-10);
+                        //awayPath.curveTo(100, -110, 200,-10);
+                        /*
+                         var startx:number=0;
+                         var starty:number=0;
+                         for(i=0;i<len;i++){
+                         var cmd = thisPath.commands[i];
+                         if (cmd.type === 'M') {
+                         awayPath.moveTo(cmd.x, cmd.y);
+                         console.log("awayPath.moveTo("+cmd.x+", "+cmd.y+");");
+                         startx=cmd.x;
+                         starty=cmd.y;
+                         } else if (cmd.type === 'L') {
+                         awayPath.lineTo(cmd.x, cmd.y);
+                         console.log("awayPath.lineTo("+cmd.x+", "+cmd.y+");");
+                         } else if (cmd.type === 'Q') {
+                         //awayPath.lineTo(cmd.x, cmd.y);
+                         awayPath.curveTo(cmd.x1, cmd.y1, cmd.x, cmd.y);
+                         console.log("awayPath.curveTo("+cmd.x1+", "+cmd.y1+","+cmd.x+", "+cmd.y+");");
+                         } else if (cmd.type === 'C') {
+                         //todo: support cubic curveTos
+                         awayPath.cubicCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
+                         //ctx.bezierCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
+                         console.log("awayPath.cubicCurveTo("+cmd.x1+", "+cmd.y1+", "+cmd.x2+", "+cmd.y2+", "+cmd.x+", "+cmd.y+");");
+                         //awayPath.curveTo(cmd.x1, cmd.y1, cmd.x ,cmd.y);
+                         } else if (cmd.type === 'Z') {
+                         //todo: support cubic curveTos
+                         awayPath.lineTo(startx, starty);
+                         console.log("awayPath.lineTo("+startx+", "+starty+");");
+                         //awayPath.curveTo(cmd.x1, cmd.y1, cmd.x ,cmd.y);
+                         }
+                         }
+
+                         */
+                        awayPath.style = new GraphicsStrokeStyle_1.GraphicsStrokeStyle(0xff0000, 1, 1, JointStyle_1.JointStyle.MITER, CapsStyle_1.CapsStyle.NONE, 100);
+                        var final_vert_list = [];
+                        GraphicsFactoryStrokes_1.GraphicsFactoryStrokes.draw_pathes([awayPath], final_vert_list);
+                        var attributesView = new AttributesView_1.AttributesView(Float32Array, 3);
+                        attributesView.set(final_vert_list);
+                        var attributesBuffer = attributesView.attributesBuffer;
+                        attributesView.dispose();
+                        var tesselated_font_char = new TesselatedFontChar_1.TesselatedFontChar(attributesBuffer, null);
+                        tesselated_font_char.char_width = (thisGlyph.advanceWidth * (1 / thisGlyph.path.unitsPerEm * 72));
+                        console.log("tesselated_font_char.char_width " + tesselated_font_char.char_width);
+                        this._font_chars.push(tesselated_font_char);
+                        this._font_chars_dic[name] = tesselated_font_char;
+                    }
+                }
+            }
+        }
         return this._font_chars_dic[name];
     };
     /**
      *
      */
-    TesselatedFontTable.prototype.setChar = function (name, elements, char_width) {
-        var tesselated_font_char = new TesselatedFontChar_1.TesselatedFontChar(elements);
+    TesselatedFontTable.prototype.setChar = function (name, char_width, fills_data, stroke_data) {
+        if (fills_data === void 0) { fills_data = null; }
+        if (stroke_data === void 0) { stroke_data = null; }
+        if ((fills_data == null) && (stroke_data == null))
+            throw ("TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data and stroke_data is null)");
+        var tesselated_font_char = new TesselatedFontChar_1.TesselatedFontChar(fills_data, stroke_data);
         tesselated_font_char.char_width = char_width;
-        elements.name = name;
         this._font_chars.push(tesselated_font_char);
         this._font_chars_dic[name] = tesselated_font_char;
+    };
+    TesselatedFontTable.prototype.buildTextRuns = function (textRuns, output_verts) {
+        if ((textRuns.length * 2) != (output_verts.length))
+            throw ("Invalid data passed to TesselatedFontTable.buildTextRuns(). output_verts.length is not double textRuns.length.");
+        var i = 0;
+        var font_size = 0;
+        var drawMode = 0;
+        var charCode = 0;
+        var xpos = 0;
+        var ypos = 0;
+        var runCnt = 0;
+        var runLen = 0;
+        var vertCnt = 0;
+        var len = textRuns.length;
+        var textrun;
+        var thisChar;
+        for (i = 0; i < len; i++) {
+            textrun = textRuns[i];
+            font_size = textrun[0];
+            drawMode = textrun[1];
+            ypos = textrun[2];
+            runLen = textrun.length;
+            for (runCnt = 3; runCnt < runLen; runCnt += 2) {
+                charCode = textrun[runCnt];
+                xpos = textrun[runCnt + 1];
+                thisChar = this.getChar(charCode.toString());
+                if ((drawMode == DrawMode_1.DrawMode.BOTH) || (drawMode == DrawMode_1.DrawMode.STROKE)) {
+                    if (output_verts[i * 2] == null) {
+                        throw ("Trying to render strokes for a textrun, but no output_vert list was set for this textrun strokes");
+                    }
+                }
+                if ((drawMode == DrawMode_1.DrawMode.BOTH) || (drawMode == DrawMode_1.DrawMode.FILL)) {
+                    if (output_verts[i * 2 + 1] == null) {
+                        throw ("Trying to render fills for a textrun, but no output_vert list was set for this textrun fills");
+                    }
+                }
+            }
+        }
     };
     TesselatedFontTable.assetType = "[asset TesselatedFontTable]";
     return TesselatedFontTable;
 }(AssetBase_1.AssetBase));
 exports.TesselatedFontTable = TesselatedFontTable;
-},{"../text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
+},{"../draw/CapsStyle":"awayjs-display/lib/draw/CapsStyle","../draw/DrawMode":"awayjs-display/lib/draw/DrawMode","../draw/GraphicsFactoryStrokes":"awayjs-display/lib/draw/GraphicsFactoryStrokes","../draw/GraphicsPath":"awayjs-display/lib/draw/GraphicsPath","../draw/GraphicsStrokeStyle":"awayjs-display/lib/draw/GraphicsStrokeStyle","../draw/JointStyle":"awayjs-display/lib/draw/JointStyle","../text/TesselatedFontChar":"awayjs-display/lib/text/TesselatedFontChar","awayjs-core/lib/attributes/AttributesView":undefined,"awayjs-core/lib/library/AssetBase":undefined}],"awayjs-display/lib/text/TextFieldAutoSize":[function(require,module,exports){
 "use strict";
 /**
  * The TextFieldAutoSize class is an enumeration of constant values used in
