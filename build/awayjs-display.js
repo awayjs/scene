@@ -10956,7 +10956,7 @@ var GraphicsFactoryStrokes = (function () {
                         tmp_point3.x = -1 * (curve_y - curve_2y);
                         tmp_point3.y = curve_x - curve_2x;
                         tmp_point3.normalize();
-                        GraphicsFactoryHelper_1.GraphicsFactoryHelper.drawPoint(curve_x, curve_y, final_vert_list);
+                        //GraphicsFactoryHelper.drawPoint(curve_x,curve_y, final_vert_list);
                         // move the point on the curve to use correct thickness
                         ctr_right.x = curve_x - (tmp_point3.x * strokeStyle.half_thickness);
                         ctr_right.y = curve_y - (tmp_point3.y * strokeStyle.half_thickness);
@@ -11046,12 +11046,12 @@ var GraphicsFactoryStrokes = (function () {
                          */
                         //ctr_right=ctr_point;
                         //ctr_left=ctr_point;
-                        console.log(start_point.x);
-                        console.log(start_point.y);
-                        console.log(ctr_point.x);
-                        console.log(ctr_point.y);
-                        console.log(end_point.x);
-                        console.log(end_point.y);
+                        //console.log(start_point.x);
+                        //console.log(start_point.y);
+                        //console.log(ctr_point.x);
+                        //console.log(ctr_point.y);
+                        //console.log(end_point.x);
+                        //console.log(end_point.y);
                         var subdivided = [];
                         var subdivided2 = [];
                         GraphicsFactoryHelper_1.GraphicsFactoryHelper.subdivideCurve(start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y, start_left.x, start_left.y, ctr_left.x, ctr_left.y, end_left.x, end_left.y, subdivided, subdivided2);
@@ -11310,6 +11310,29 @@ var GraphicsPath = (function () {
         configurable: true
     });
     GraphicsPath.prototype.curveTo = function (controlX, controlY, anchorX, anchorY) {
+        // if controlpoint and anchor are same, we add lineTo command
+        if ((controlX == anchorX) && (controlY == anchorY)) {
+            this.lineTo(controlX, controlY);
+            this.moveTo(anchorX, anchorY);
+            return;
+        }
+        // if anchor is current point, but controlpoint is different, we lineto controlpoint
+        if (((this._cur_point.x == anchorX) && (this._cur_point.y == anchorY)) && ((this._cur_point.x != controlX) || (this._cur_point.y != controlY))) {
+            this.lineTo(controlX, controlY);
+            this.moveTo(anchorX, anchorY);
+            return;
+        }
+        // if controlpoint is current point, but anchor is different, we lineto anchor
+        if (((this._cur_point.x != anchorX) || (this._cur_point.y != anchorY)) && ((this._cur_point.x == controlX) && (this._cur_point.y == controlY))) {
+            this.lineTo(anchorX, anchorY);
+            return;
+        }
+        // if controlpoint and anchor are same as current point
+        if (((this._cur_point.x == anchorX) && (this._cur_point.y == anchorY)) && ((this._cur_point.x == controlX) && (this._cur_point.y == controlY))) {
+            console.log("curveTo command not added because startpoint and endpoint are the same.");
+            this.lineTo(anchorX, anchorY);
+            return;
+        }
         if (this._commands[this._commands.length - 1].length == 0) {
             // every contour must start with a moveTo command, so we make sure we have correct startpoint
             this._commands[this._commands.length - 1].push(GraphicsPathCommand_1.GraphicsPathCommand.MOVE_TO);
@@ -11317,40 +11340,26 @@ var GraphicsPath = (function () {
             this._data[this._data.length - 1].push(this._cur_point.y);
         }
         this._commands[this._commands.length - 1].push(GraphicsPathCommand_1.GraphicsPathCommand.CURVE_TO);
-        /*
-         if(this.isFill){
-         this._tmp_point.x=anchorX-this._cur_point.x;
-         this._tmp_point.y=anchorY-this._cur_point.y;
-         this._tmp_point.normalize();
-
-         var testpoint:Point=new Point(this._tmp_point.x, this._tmp_point.y);
-         testpoint.normalize();
-         var degree_anchor:number=Math.acos(this._tmp_point.x * this._direction.x + this._tmp_point.y * this._direction.y) * 180 / Math.PI;
-         if(degree_anchor>180)degree_anchor-=360;
-         //var degree_anchor:number=Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI;
-         this._draw_directions[this._draw_directions.length-1]+=degree_anchor;
-         this._tmp_point.x=controlX-this._cur_point.x;
-         this._tmp_point.y=controlY-this._cur_point.y;
-         this._tmp_point.normalize();
-         //angle = atan2( a.x*b.y - a.y*b.x, a.x*b.x + a.y*b.y );
-         var degree_control:number=(Math.atan2(this._tmp_point.x* testpoint.y - this._tmp_point.y* testpoint.x, this._tmp_point.x* testpoint.x + this._tmp_point.y* testpoint.y));
-         if(degree_control>180)degree_control-=360;
-         //var degree_control:number=(Math.atan2(this._tmp_point.x, this._tmp_point.y) * 180 / Math.PI);
-         console.log("degree_control "+degree_control);
-         console.log("degree_anchor "+degree_anchor);
-         console.log("this._draw_directions[this._draw_directions.length-1] "+this._draw_directions[this._draw_directions.length-1]);
-         this._direction.x=testpoint.x;
-         this._direction.y=testpoint.y;
-         if((degree_control)<0)
-         this._data[this._data.length-1].push(1);
-         else
-         this._data[this._data.length-1].push(2);
-
-         }
-         else{
-         this._data[this._data.length-1].push(1);
-         }
-         */
+        this._data[this._data.length - 1].push(controlX);
+        this._data[this._data.length - 1].push(controlY);
+        this._data[this._data.length - 1].push(anchorX);
+        this._data[this._data.length - 1].push(anchorY);
+        this._cur_point.x = anchorX;
+        this._cur_point.y = anchorY;
+    };
+    GraphicsPath.prototype.cubicCurveTo = function (controlX, controlY, control2X, control2Y, anchorX, anchorY) {
+        console.log("cubicCurveTo not yet fully supported.");
+        if ((this._cur_point.x == anchorX) && (this._cur_point.y == anchorY)) {
+            console.log("curveTo command not added because startpoint and endpoint are the same.");
+            return;
+        }
+        if (this._commands[this._commands.length - 1].length == 0) {
+            // every contour must start with a moveTo command, so we make sure we have correct startpoint
+            this._commands[this._commands.length - 1].push(GraphicsPathCommand_1.GraphicsPathCommand.MOVE_TO);
+            this._data[this._data.length - 1].push(this._cur_point.x);
+            this._data[this._data.length - 1].push(this._cur_point.y);
+        }
+        this._commands[this._commands.length - 1].push(GraphicsPathCommand_1.GraphicsPathCommand.CURVE_TO);
         this._data[this._data.length - 1].push(controlX);
         this._data[this._data.length - 1].push(controlY);
         this._data[this._data.length - 1].push(anchorX);
@@ -11359,6 +11368,10 @@ var GraphicsPath = (function () {
         this._cur_point.y = anchorY;
     };
     GraphicsPath.prototype.lineTo = function (x, y) {
+        if ((this._cur_point.x == x) && (this._cur_point.y == y)) {
+            console.log("lineTo command not added because startpoint and endpoint are the same.");
+            return;
+        }
         if (this._commands[this._commands.length - 1].length == 0) {
             // every contour must start with a moveTo command, so we make sure we have correct startpoint
             this._commands[this._commands.length - 1].push(GraphicsPathCommand_1.GraphicsPathCommand.MOVE_TO);
@@ -11372,6 +11385,10 @@ var GraphicsPath = (function () {
         this._cur_point.y = y;
     };
     GraphicsPath.prototype.moveTo = function (x, y) {
+        if ((this._cur_point.x == x) && (this._cur_point.y == y)) {
+            console.log("moveTo command not added because startpoint and endpoint are the same.");
+            return;
+        }
         // whenever a moveTo command apears, we start a new contour
         if (this._commands[this._commands.length - 1].length > 0) {
             this._commands.push([GraphicsPathCommand_1.GraphicsPathCommand.MOVE_TO]);
@@ -21810,46 +21827,36 @@ var TesselatedFontTable = (function (_super) {
                         var i = 0;
                         var len = thisPath.commands.length;
                         //awayPath.lineTo(0, 0);
-                        awayPath.moveTo(0, 0); //-100);
-                        awayPath.curveTo(100, 250, 200, 0);
+                        //awayPath.moveTo(0,0);//-100);
+                        //awayPath.curveTo(100, 250, 200,0);
                         //awayPath.lineTo(150, 100);
-                        awayPath.moveTo(0, 20);
-                        awayPath.curveTo(100, 270, 200, 20);
+                        //awayPath.moveTo(0,20);
+                        //awayPath.curveTo(100, 270, 200,20);
                         //awayPath.moveTo(0,-20);
                         //awayPath.moveTo(0,-10);
                         //awayPath.curveTo(100, -110, 200,-10);
-                        /*
-                         var startx:number=0;
-                         var starty:number=0;
-                         for(i=0;i<len;i++){
-                         var cmd = thisPath.commands[i];
-                         if (cmd.type === 'M') {
-                         awayPath.moveTo(cmd.x, cmd.y);
-                         console.log("awayPath.moveTo("+cmd.x+", "+cmd.y+");");
-                         startx=cmd.x;
-                         starty=cmd.y;
-                         } else if (cmd.type === 'L') {
-                         awayPath.lineTo(cmd.x, cmd.y);
-                         console.log("awayPath.lineTo("+cmd.x+", "+cmd.y+");");
-                         } else if (cmd.type === 'Q') {
-                         //awayPath.lineTo(cmd.x, cmd.y);
-                         awayPath.curveTo(cmd.x1, cmd.y1, cmd.x, cmd.y);
-                         console.log("awayPath.curveTo("+cmd.x1+", "+cmd.y1+","+cmd.x+", "+cmd.y+");");
-                         } else if (cmd.type === 'C') {
-                         //todo: support cubic curveTos
-                         awayPath.cubicCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
-                         //ctx.bezierCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
-                         console.log("awayPath.cubicCurveTo("+cmd.x1+", "+cmd.y1+", "+cmd.x2+", "+cmd.y2+", "+cmd.x+", "+cmd.y+");");
-                         //awayPath.curveTo(cmd.x1, cmd.y1, cmd.x ,cmd.y);
-                         } else if (cmd.type === 'Z') {
-                         //todo: support cubic curveTos
-                         awayPath.lineTo(startx, starty);
-                         console.log("awayPath.lineTo("+startx+", "+starty+");");
-                         //awayPath.curveTo(cmd.x1, cmd.y1, cmd.x ,cmd.y);
-                         }
-                         }
-
-                         */
+                        var startx = 0;
+                        var starty = 0;
+                        for (i = 0; i < len; i++) {
+                            var cmd = thisPath.commands[i];
+                            if (cmd.type === 'M') {
+                                awayPath.moveTo(cmd.x, cmd.y);
+                                startx = cmd.x;
+                                starty = cmd.y;
+                            }
+                            else if (cmd.type === 'L') {
+                                awayPath.lineTo(cmd.x, cmd.y);
+                            }
+                            else if (cmd.type === 'Q') {
+                                awayPath.curveTo(cmd.x1, cmd.y1, cmd.x, cmd.y);
+                            }
+                            else if (cmd.type === 'C') {
+                                awayPath.cubicCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);
+                            }
+                            else if (cmd.type === 'Z') {
+                                awayPath.lineTo(startx, starty);
+                            }
+                        }
                         awayPath.style = new GraphicsStrokeStyle_1.GraphicsStrokeStyle(0xff0000, 1, 1, JointStyle_1.JointStyle.MITER, CapsStyle_1.CapsStyle.NONE, 100);
                         var final_vert_list = [];
                         GraphicsFactoryStrokes_1.GraphicsFactoryStrokes.draw_pathes([awayPath], final_vert_list);
