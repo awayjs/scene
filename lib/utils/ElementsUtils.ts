@@ -616,11 +616,8 @@ export class ElementsUtils
 					break precheck;
 
 				if (curves) {
-					var curvey0:number = curves[id0 * curveStride + 2];
-					var curvey1:number = curves[id1 * curveStride + 2];
-					var curvey2:number = curves[id2 * curveStride + 2];
 					//check if not solid
-					if (curvey0 || curvey1 || curvey2) {
+					if (curves[id0 * curveStride + 2]!=-128) {
 
 						var v0x:number = bx - ax;
 						var v0y:number = by - ay;
@@ -762,11 +759,8 @@ export class ElementsUtils
 					continue;
 
 				if (curves) {
-					var curvey0:number = curves[id0 * curveStride + 2];
-					var curvey1:number = curves[id1 * curveStride + 2];
-					var curvey2:number = curves[id2 * curveStride + 2];
 					//check if not solid
-					if (curvey0 || curvey1 || curvey2) {
+					if (curves[id0 * curveStride + 2]!=-128) {
 
 						var v0x:number = bx - ax;
 						var v0y:number = by - ay;
@@ -853,11 +847,8 @@ export class ElementsUtils
 				continue;
 
 			if (curves) {
-				var curvey0:number = curves[id0 * curveStride + 2];
-				var curvey1:number = curves[id1 * curveStride + 2];
-				var curvey2:number = curves[id2 * curveStride + 2];
 				//check if not solid
-				if (curvey0 || curvey1 || curvey2) {
+				if (curves[id0 * curveStride + 2]!=-128) {
 
 					var v0x:number = bx - ax;
 					var v0y:number = by - ay;
