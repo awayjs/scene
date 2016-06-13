@@ -89,36 +89,36 @@ export class GraphicsFactoryHelper
 		if(tri_type==0){
 			vertices[final_vert_cnt++] = startX;
 			vertices[final_vert_cnt++] = startY;
-			vertices[final_vert_cnt++] = 1;
-			vertices[final_vert_cnt++] = 2.0;
-			vertices[final_vert_cnt++] = 0.0;
+			vertices[final_vert_cnt++] = 4.5736980577097704e-41;// ((127<<24)+(127<<16)+0+0)
 			vertices[final_vert_cnt++] = controlX;
 			vertices[final_vert_cnt++] = controlY;
-			vertices[final_vert_cnt++] = 1;
-			vertices[final_vert_cnt++] = 2.0;
-			vertices[final_vert_cnt++] = 0.0;
+			vertices[final_vert_cnt++] = 4.5736980577097704e-41;// ((127<<24)+(127<<16)+0+0)
 			vertices[final_vert_cnt++] = endX;
 			vertices[final_vert_cnt++] = endY;
-			vertices[final_vert_cnt++] = 1;
-			vertices[final_vert_cnt++] = 2.0;
-			vertices[final_vert_cnt++] = 0.0;
+			vertices[final_vert_cnt++] = 4.5736980577097704e-41;// ((127<<24)+(127<<16)+0+0)
 		}
-		else{
+		else if(tri_type<0){
 			vertices[final_vert_cnt++] = startX;
 			vertices[final_vert_cnt++] = startY;
-			vertices[final_vert_cnt++] = tri_type;
-			vertices[final_vert_cnt++] = 1.0;
-			vertices[final_vert_cnt++] = 1.0;
+			vertices[final_vert_cnt++] = 1.1708844992641982e-38;// ((127<<24)+(127<<16)+0+0)
 			vertices[final_vert_cnt++] = controlX;
 			vertices[final_vert_cnt++] = controlY;
-			vertices[final_vert_cnt++] = tri_type;
-			vertices[final_vert_cnt++] = 0.5;
-			vertices[final_vert_cnt++] = 0.0;
+			vertices[final_vert_cnt++] = 2.2778106537599901e-41;// ((127<<24)+(63<<16)+0+0)
 			vertices[final_vert_cnt++] = endX;
 			vertices[final_vert_cnt++] = endY;
-			vertices[final_vert_cnt++] = tri_type;
-			vertices[final_vert_cnt++] = 0.0;
-			vertices[final_vert_cnt++] = 0.0;
+			vertices[final_vert_cnt++] = 1.7796490496925177e-43;// ((127<<24)+0+0+0)
+		}
+		else if(tri_type>0){
+			vertices[final_vert_cnt++] = startX;
+			vertices[final_vert_cnt++] = startY;
+			vertices[final_vert_cnt++] = 1.1708846393940446e-38;// ((-128<<24)+(127<<16)+0+0)
+			vertices[final_vert_cnt++] = controlX;
+			vertices[final_vert_cnt++] = controlY;
+			vertices[final_vert_cnt++] = 2.2779507836064226e-41;// ((-128<<24)+(63<<16)+0+0)
+			vertices[final_vert_cnt++] = endX;
+			vertices[final_vert_cnt++] = endY;
+			vertices[final_vert_cnt++] = 1.793662034335766e-43;// ((-128<<24)+0+0+0)
+
 		}
 
 	}

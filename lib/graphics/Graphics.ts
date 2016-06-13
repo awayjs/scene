@@ -7,6 +7,12 @@ import {Matrix}						from "awayjs-core/lib/geom/Matrix";
 import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
 import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
 
+import {Sampler2D}						from "awayjs-core/lib/image/Sampler2D";
+
+import {AttributesBuffer}				from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesView}					from "awayjs-core/lib/attributes/AttributesView";
+import {Byte4Attributes}				from "awayjs-core/lib/attributes/Byte4Attributes";
+import {Float2Attributes}				from "awayjs-core/lib/attributes/Float2Attributes";
 import {ElementsBase}					from "../graphics/ElementsBase";
 import {TriangleElements}				from "../graphics/TriangleElements";
 import {Graphic}						from "../graphics/Graphic";
@@ -34,6 +40,9 @@ import {GraphicsPathWinding}			from "../draw/GraphicsPathWinding";
 import {IGraphicsData}				from "../draw/IGraphicsData";
 import {GraphicsStrokeStyle}			from "../draw/GraphicsStrokeStyle";
 import {GraphicsFillStyle}			from "../draw/GraphicsFillStyle";
+
+import {DefaultMaterialManager}			from "../managers/DefaultMaterialManager";
+;
 
 
 /**
@@ -423,7 +432,34 @@ export class Graphics extends AssetBase
 	}
 
 	public draw_strokes(){
-		GraphicsFactoryStrokes.draw_pathes(this);
+		var final_vert_list:Array<number>=[];
+		GraphicsFactoryStrokes.draw_pathes(this.queued_stroke_pathes, final_vert_list);
+		this.queued_stroke_pathes.length=0;
+		var attributesView:AttributesView = new AttributesView(Float32Array, 3);
+		attributesView.set(final_vert_list);
+		var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer;
+		attributesView.dispose();
+		var elements:TriangleElements = new TriangleElements(attributesBuffer);
+		elements.setPositions(new Float2Attributes(attributesBuffer));
+		elements.setCustomAttributes("curves", new Byte4Attributes(attributesBuffer, false));
+		//elements.setUVs(new Float2Attributes(attributesBuffer));
+		//curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
+
+		var material:MaterialBase = DefaultMaterialManager.getDefaultMaterial();
+		material.bothSides = true;
+		material.useColorTransform = true;
+		material.curves = true;
+
+		var sampler:Sampler2D = new Sampler2D();
+		var graphic:Graphic = this.addGraphic(elements, material);
+		if(graphic) {
+			graphic.style = new Style();
+			graphic.style.addSamplerAt(sampler, graphic.material.getTextureAt(0));
+			//sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
+			graphic.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
+			graphic.material.animateUVs = true;
+			//graphic.material.imageRect = true;
+		}
 	}
 	/**
 	 * Fills a drawing area with a bitmap image. The bitmap can be repeated or

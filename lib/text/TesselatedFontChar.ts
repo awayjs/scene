@@ -1,6 +1,5 @@
-import {TesselatedFontTable}			from "../text/TesselatedFontTable";
-import {MaterialBase}					from "../materials/MaterialBase";
-import {TriangleElements}				from "../graphics/TriangleElements";
+import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -39,7 +38,8 @@ export class TesselatedFontChar
 	/**
 	 * Elements for this char
 	 */
-	public elements:TriangleElements;
+	public stroke_data:AttributesBuffer;
+	public fill_data:AttributesBuffer;
 
 	/**
 	 * the char_codes that this geom has kerning set for
@@ -51,9 +51,10 @@ export class TesselatedFontChar
 	public kerningValues:Array<number>=[];
 
 
-	constructor(elements:TriangleElements)
+	constructor(fill_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null)
 	{
-		this.elements = elements;
+		this.fill_data = fill_data;
+		this.stroke_data = stroke_data;
 	}
 
 }

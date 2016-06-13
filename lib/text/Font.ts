@@ -5,13 +5,10 @@ import {TesselatedFontTable}		from "../text/TesselatedFontTable";
 import {BitmapFontTable}			from "../text/BitmapFontTable";
 
 /**
- * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
+ * Font is a container for FontTables.
  *
  *
- * @see away.base.TriangleElements
- * @see away.entities.Sprite
  *
- * @class away.base.GraphicBase
  */
 export class Font extends AssetBase
 {
@@ -55,18 +52,19 @@ export class Font extends AssetBase
 	/**
 	 *Get a font-table for a specific name, or create one if it does not exists.
 	 */
-	public get_font_table(style_name:string, assetType:string=TesselatedFontTable.assetType):IFontTable
+	public get_font_table(style_name:string, assetType:string=TesselatedFontTable.assetType, openTypeFont:any=null):IFontTable
 	{
 		var len:number = this._font_styles.length;
 
 		for (var i:number = 0; i < len; ++i) {
 			if((this._font_styles[i].assetType==assetType)&&(this._font_styles[i].name==style_name)){
+				// mak
 				return this._font_styles[i];
 			}
 		}
 		var font_style:IFontTable=null;
 		if(assetType==TesselatedFontTable.assetType){
-			font_style = new TesselatedFontTable();
+			font_style = new TesselatedFontTable(openTypeFont);
 		}
 		else if(assetType==BitmapFontTable.assetType){
 			font_style = new BitmapFontTable();

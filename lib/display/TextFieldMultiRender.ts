@@ -877,6 +877,9 @@ export class TextFieldMultiRender extends Sprite
 	 */
 	public reConstruct(useCanvas2dhack:boolean=false) {
 
+
+		/* temporary disabled this...
+
 		this._textGraphicsDirty = false;
 
 		if(this._textFormat == null)
@@ -1008,7 +1011,7 @@ export class TextFieldMultiRender extends Sprite
 			else if(this._textFormat.align=="justify"){
 				/*if(final_lines_justify_bool[i]){
 					justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
-				}*/
+				}*//*
 			}
 			else if(this._textFormat.align=="right"){
 				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
@@ -1193,7 +1196,7 @@ export class TextFieldMultiRender extends Sprite
 			}
 		}
 
-
+*/
 
 	}
 	/**

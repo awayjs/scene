@@ -3,35 +3,29 @@ import {Matrix}					from "awayjs-core/lib/geom/Matrix";
 import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
 
 import {CapsStyle}				from "../draw/CapsStyle";
-import {GradientType}				from "../draw/GradientType";
-import {GraphicsPathWinding}		from "../draw/GraphicsPathWinding";
+import {GradientType}			from "../draw/GradientType";
+import {GraphicsPathWinding}	from "../draw/GraphicsPathWinding";
 import {IGraphicsData}			from "../draw/IGraphicsData";
-import {InterpolationMethod}		from "../draw/InterpolationMethod";
+import {InterpolationMethod}	from "../draw/InterpolationMethod";
 import {JointStyle}				from "../draw/JointStyle";
 import {LineScaleMode}			from "../draw/LineScaleMode";
-import {TriangleCulling}			from "../draw/TriangleCulling";
-import {SpreadMethod}				from "../draw/SpreadMethod";
+import {TriangleCulling}		from "../draw/TriangleCulling";
+import {SpreadMethod}			from "../draw/SpreadMethod";
 
-import {Graphics}					from "../graphics/Graphics";
-import {GraphicsPath}				from "../draw/GraphicsPath";
-import {GraphicsPathCommand}		from "../draw/GraphicsPathCommand";
-import {DefaultMaterialManager}	from "../managers/DefaultMaterialManager";
+import {Graphics}				from "../graphics/Graphics";
+import {GraphicsPath}			from "../draw/GraphicsPath";
+import {GraphicsPathCommand}	from "../draw/GraphicsPathCommand";
 import {MovieClip}				from "../display/MovieClip";
 
 import {Point}					from "awayjs-core/lib/geom/Point";
-import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
-import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
 import {Sprite}					from "../display/Sprite";
-import {Float3Attributes}			from "awayjs-core/lib/attributes/Float3Attributes";
-import {Float2Attributes}			from "awayjs-core/lib/attributes/Float2Attributes";
 
-import {GraphicsFactoryHelper}			from "../draw/GraphicsFactoryHelper";
-import {GraphicsStrokeStyle}				from "../draw/GraphicsStrokeStyle";
+import {GraphicsFactoryHelper}	from "../draw/GraphicsFactoryHelper";
+import {GraphicsStrokeStyle}	from "../draw/GraphicsStrokeStyle";
 
-
-import {PartialImplementationError}		from "awayjs-core/lib/errors/PartialImplementationError";
-import {TriangleElements}					from "../graphics/TriangleElements";
-import {MaterialBase}						from "../materials/MaterialBase";
+import {PartialImplementationError}	from "awayjs-core/lib/errors/PartialImplementationError";
+import {TriangleElements}			from "../graphics/TriangleElements";
+import {MaterialBase}				from "../materials/MaterialBase";
 /**
  * The Graphics class contains a set of methods that you can use to create a
  * vector shape. Display objects that support drawing include Sprite and Shape
@@ -48,8 +42,8 @@ import {MaterialBase}						from "../materials/MaterialBase";
  */
 export class GraphicsFactoryStrokes
 {
-	public static draw_pathes(targetGraphic:Graphics){
-		var len=targetGraphic.queued_stroke_pathes.length;
+	public static draw_pathes(graphic_pathes:Array<GraphicsPath>, final_vert_list:Array<number>){
+		var len=graphic_pathes.length;
 		var contour_commands:Array<Array<number> >;
 		var contour_data:Array<Array<number> >;
 		var strokeStyle:GraphicsStrokeStyle;
@@ -60,7 +54,6 @@ export class GraphicsFactoryStrokes
 		var k:number=0;
 		var vert_cnt:number=0;
 		var data_cnt:number=0;
-		var final_vert_list:Array<number> = [];
 		var final_vert_cnt:number=0;
 		var lastPoint:Point=new Point();
 		var start_point:Point=new Point();
@@ -81,12 +74,11 @@ export class GraphicsFactoryStrokes
 		var cp=0;
 		for(cp=0; cp<len; cp++){
 
-			one_path = targetGraphic.queued_stroke_pathes[cp];
+			one_path = graphic_pathes[cp];
 			contour_commands = one_path.commands;
 			contour_data = one_path.data;
 			strokeStyle = one_path.stroke();
 
-			var tessVerts:Array<number>=[];
 
 			for(k=0; k<contour_commands.length; k++) {
 				commands = contour_commands[k];
@@ -156,6 +148,7 @@ export class GraphicsFactoryStrokes
 					if(dir_delta<-180){
 						dir_delta+=360;
 					}
+					//console.log("DIRECTION DELTA: "+dir_delta);
 					last_direction = new_dir;
 					//console.log("segment "+i+" direction: "+dir_delta);
 					// rotate direction around 90 degree
@@ -186,8 +179,10 @@ export class GraphicsFactoryStrokes
 								add_segment=true;
 							}
 						}
-						if (dir_delta==180){
-							console.log("path goes straight back (180�). DO we need to handle this edge case different ? !")
+						if (Math.abs(dir_delta)==180){
+							add_segment=true;
+							//todo: edgecase - path goes straight back. we can just add the contour points (?)
+							//console.log("path goes straight back (180)!")
 						}
 						else if (dir_delta!=0) {
 							add_segment=true;
@@ -369,35 +364,22 @@ export class GraphicsFactoryStrokes
 							length_calc = 0.5 + ((length1-length2)/length2)*0.5;
 						}
 
-
 						// get angle to positive x-axis for both dir-vectors, than get the difference between those
 						var angle_1:number=Math.atan2(tmp_dir_point.y, tmp_dir_point.x) * MathConsts.RADIANS_TO_DEGREES;
 						var angle_2:number=Math.atan2(tmp_point2.y, tmp_point2.x) * MathConsts.RADIANS_TO_DEGREES;
 						dir_delta=angle_2-angle_1;
+						if(dir_delta>180)	dir_delta-=360;
+						if(dir_delta<-180)	dir_delta+=360;
 
-						if(dir_delta>180){
-							dir_delta-=360;
-						}
-						if(dir_delta<-180){
-							dir_delta+=360;
-						}
-						if(dir_delta==0){
-							console.log("This is not a curve, we can just draw it like a straight line");
-						}
-						//console.log("segment : '"+i+"' direction:"+dir_delta);
-						var dirNumber:number=1;
-						if(dir_delta<0){
-							dirNumber=-1;
-						}
-						var half_angle:number=dir_delta*0.5*MathConsts.DEGREES_TO_RADIANS;
-						var lengthpos:number=Math.abs(length1*Math.sin(half_angle));
 
-						var distance:number=strokeStyle.half_thickness / Math.sin(half_angle);
-						tmp_point3.x = tmp_point2.x * Math.cos(half_angle) + tmp_point2.y * Math.sin(half_angle);
-						tmp_point3.y = tmp_point2.y * Math.cos(half_angle) - tmp_point2.x * Math.sin(half_angle);
-						tmp_point3.normalize();
-						var merged_pnt_ri:Point = new Point(ctr_point.x - (tmp_point3.x * distance), ctr_point.y - (tmp_point3.y * distance));
-						var merged_pnt_le:Point = new Point(ctr_point.x + (tmp_point3.x * distance), ctr_point.y + (tmp_point3.y * distance));
+						//var half_angle:number=dir_delta*0.5*MathConsts.DEGREES_TO_RADIANS;
+
+						//var distance:number=strokeStyle.half_thickness / Math.sin(half_angle);
+						//tmp_point3.x = tmp_point2.x * Math.cos(half_angle) + tmp_point2.y * Math.sin(half_angle);
+						//tmp_point3.y = tmp_point2.y * Math.cos(half_angle) - tmp_point2.x * Math.sin(half_angle);
+						//tmp_point3.normalize();
+						//var merged_pnt_ri:Point = new Point(ctr_point.x - (tmp_point3.x * distance), ctr_point.y - (tmp_point3.y * distance));
+						//var merged_pnt_le:Point = new Point(ctr_point.x + (tmp_point3.x * distance), ctr_point.y + (tmp_point3.y * distance));
 
 
 						var curve_x:number = GraphicsFactoryHelper.getQuadricBezierPosition(0.5, start_point.x, ctr_point.x, end_point.x);
@@ -411,13 +393,13 @@ export class GraphicsFactoryStrokes
 
 						tmp_point3.normalize();
 
-						//GraphicsFactoryHelper.drawPoint(curve_x,curve_y, final_vert_list);
+						GraphicsFactoryHelper.drawPoint(curve_x,curve_y, final_vert_list);
 
 						// move the point on the curve to use correct thickness
-						ctr_right.x = curve_x +(dirNumber * tmp_point3.x * strokeStyle.half_thickness);
-						ctr_right.y = curve_y +(dirNumber * tmp_point3.y * strokeStyle.half_thickness);
-						ctr_left.x = curve_x -(dirNumber * tmp_point3.x * strokeStyle.half_thickness);
-						ctr_left.y = curve_y -(dirNumber * tmp_point3.y * strokeStyle.half_thickness);
+						ctr_right.x = curve_x - (tmp_point3.x * strokeStyle.half_thickness);
+						ctr_right.y = curve_y - (tmp_point3.y * strokeStyle.half_thickness);
+						ctr_left.x = curve_x + (tmp_point3.x * strokeStyle.half_thickness);
+						ctr_left.y = curve_y + ( tmp_point3.y * strokeStyle.half_thickness);
 
 						//GraphicsFactoryHelper.drawPoint(ctr_right.x, ctr_right.y , final_vert_list);
 						//GraphicsFactoryHelper.drawPoint(ctr_left.x, ctr_left.y , final_vert_list);
@@ -433,29 +415,87 @@ export class GraphicsFactoryStrokes
 						//ctr_left=merged_pnt_le;
 
 						/*
-						// controlpoints version2:
-						tmp_dir_point.x = start_left.x-start_right.x;
-						tmp_dir_point.y = start_left.y-start_right.y;
-						tmp_point2.x = end_left.x-end_right.x;
-						tmp_point2.y = end_left.y-end_right.y;
+						 // controlpoints version2:
+						 tmp_dir_point.x = start_left.x-start_right.x;
+						 tmp_dir_point.y = start_left.y-start_right.y;
+						 tmp_point2.x = end_left.x-end_right.x;
+						 tmp_point2.y = end_left.y-end_right.y;
 
-						ctr_right.x = ctr_point.x-(tmp_dir_point.x/2);
-						ctr_right.y = ctr_point.y-(tmp_dir_point.y/2);
-						var new_end_ri:Point = new Point(end_point.x+(tmp_dir_point.x/2), end_point.y+(tmp_dir_point.y/2));
+						 ctr_right.x = ctr_point.x-(tmp_dir_point.x/2);
+						 ctr_right.y = ctr_point.y-(tmp_dir_point.y/2);
+						 var new_end_ri:Point = new Point(end_point.x+(tmp_dir_point.x/2), end_point.y+(tmp_dir_point.y/2));
 
-						ctr_left.x = ctr_point.x+(tmp_dir_point.x/2);
-						ctr_left.y = ctr_point.y+(tmp_dir_point.y/2);
-						var new_end_le:Point = new Point(end_point.x-(tmp_dir_point.x/2), end_point.y-(tmp_dir_point.y/2));
-						*/
+						 ctr_left.x = ctr_point.x+(tmp_dir_point.x/2);
+						 ctr_left.y = ctr_point.y+(tmp_dir_point.y/2);
+						 var new_end_le:Point = new Point(end_point.x-(tmp_dir_point.x/2), end_point.y-(tmp_dir_point.y/2));
 
-/*
-						GraphicsFactoryHelper.drawPoint(start_right.x, start_right.y , final_vert_list);
-						GraphicsFactoryHelper.drawPoint(start_left.x, start_left.y , final_vert_list);
-						GraphicsFactoryHelper.drawPoint(ctr_right.x, ctr_right.y , final_vert_list);
-						GraphicsFactoryHelper.drawPoint(ctr_left.x, ctr_left.y , final_vert_list);
-						GraphicsFactoryHelper.drawPoint(end_right.x, end_right.y , final_vert_list);
-						GraphicsFactoryHelper.drawPoint(end_left.x, end_left.y , final_vert_list);
-*/
+						 */
+						/*
+						 tmp_point2.x=ctr_point.x-start_point.x;
+						 tmp_point2.y=ctr_point.y-start_point.y;
+						 var m1:number=tmp_point2.y/tmp_point2.x;
+						 tmp_point2.x=end_point.x-ctr_point.x;
+						 tmp_point2.y=end_point.y-ctr_point.y;
+						 var m2:number=tmp_point2.y/tmp_point2.x;
+
+						 if(m1==m2){
+						 console.log("lines for curve are parallel - this should not be possible!")
+						 }
+						 if((!isFinite(m1))&&(!isFinite(m2))){
+						 console.log("both lines are vertical - this should not be possible!")
+						 }
+						 else if((isFinite(m1))&&(isFinite(m2))) {
+						 var b_r1:number = start_right.y - (m1 * start_right.x);
+						 var b_l1:number = start_left.y - (m1 * start_left.x);
+						 var b_r2:number = end_right.y - (m2 * end_right.x);
+						 var b_l2:number = end_left.y - (m2 * end_left.x);
+						 ctr_right.x = (b_r2 - b_r1) / (m1 - m2);
+						 ctr_right.y = m1 * ctr_right.x + b_r1;
+						 ctr_left.x = (b_l2 - b_l1) / (m1 - m2);
+						 ctr_left.y = m1 * ctr_left.x + b_l1;
+						 }
+						 else if((!isFinite(m1))&&(isFinite(m2))) {
+						 console.log("second part of curve is vertical line");
+						 var b_r2:number = end_right.y - (m2 * end_right.x);
+						 var b_l2:number = end_left.y - (m2 * end_left.x);
+						 ctr_right.x =  start_right.x;
+						 ctr_right.y = m2 * ctr_right.x + b_r2;
+						 ctr_left.x =  start_left.x;
+						 ctr_left.y = m2 * ctr_left.x + b_l2;
+						 }
+						 else if((isFinite(m1))&&(!isFinite(m2))) {
+						 console.log("first part of curve is vertical line");
+						 var b_r1:number = start_right.y - (m1 * start_right.x);
+						 var b_l1:number = start_left.y - (m1 * start_left.x);
+						 ctr_right.x =  end_right.x;
+						 ctr_right.y = m1 * ctr_right.x + b_r1;
+						 ctr_left.x =  end_left.x;
+						 ctr_left.y = m1 * ctr_left.x + b_l1;
+						 }
+						 */
+						/*
+						 tmp_point2.x=ctr_right.x-ctr_left.x;
+						 tmp_point2.y=ctr_right.y-ctr_left.y;
+						 if(tmp_point2.length!=strokeStyle.thickness){
+
+						 tmp_point.x=ctr_left.x+tmp_point2.x*0.5;
+						 tmp_point.y=ctr_left.y+tmp_point2.y*0.5;
+						 tmp_point2.normalize();
+						 ctr_left.x=tmp_point.x-tmp_point2.x*strokeStyle.half_thickness;
+						 ctr_left.y=tmp_point.y-tmp_point2.y*strokeStyle.half_thickness;
+						 ctr_right.x=tmp_point.x+tmp_point2.x*strokeStyle.half_thickness;
+						 ctr_right.y=tmp_point.y+tmp_point2.y*strokeStyle.half_thickness;
+						 }
+						 */
+						//ctr_right=ctr_point;
+						//ctr_left=ctr_point;
+						console.log(start_point.x);
+
+						console.log(start_point.y);
+						console.log(ctr_point.x);
+						console.log(ctr_point.y);
+						console.log(end_point.x);
+						console.log(end_point.y);
 						var subdivided:Array<number> = [];
 						var subdivided2:Array<number> = [];
 						GraphicsFactoryHelper.subdivideCurve(start_right.x, start_right.y, ctr_right.x, ctr_right.y, end_right.x, end_right.y, start_left.x, start_left.y, ctr_left.x, ctr_left.y, end_left.x, end_left.y, subdivided, subdivided2);
@@ -464,7 +504,7 @@ export class GraphicsFactoryStrokes
 							for (var sc:number = 0; sc < subdivided.length / 6; sc++) {
 								// right curved
 								// concave curves:
-								GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 1, final_vert_list);
+								GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], -128, final_vert_list);
 
 								// fills
 								GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], 0, final_vert_list);
@@ -472,14 +512,14 @@ export class GraphicsFactoryStrokes
 								GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 0, final_vert_list);
 
 								// convex curves:
-								GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], -1, final_vert_list);
+								GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], 127, final_vert_list);
 							}
 						}
 						else {
 							for (var sc:number = 0; sc < subdivided.length / 6; sc++) {
 								// left curved
 								// convex curves:
-								GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], -1, final_vert_list);
+								GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided[sc * 6 + 2], subdivided[sc * 6 + 3], subdivided[sc * 6 + 4], subdivided[sc * 6 + 5], 127, final_vert_list);
 
 								// fills
 								GraphicsFactoryHelper.addTriangle(subdivided[sc * 6], subdivided[sc * 6 + 1], subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], 0, final_vert_list);
@@ -488,7 +528,7 @@ export class GraphicsFactoryStrokes
 
 
 								// concave curves:
-								GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], 1, final_vert_list);
+								GraphicsFactoryHelper.addTriangle(subdivided2[sc * 6], subdivided2[sc * 6 + 1], subdivided2[sc * 6 + 2], subdivided2[sc * 6 + 3], subdivided2[sc * 6 + 4], subdivided2[sc * 6 + 5], -128, final_vert_list);
 							}
 						}
 
@@ -497,12 +537,10 @@ export class GraphicsFactoryStrokes
 
 					else if(new_cmds[i]>=GraphicsPathCommand.BUILD_JOINT) {
 						new_pnts_cnt+=3;
-						//GraphicsFactoryHelper.addTriangle(start_right.x,  start_right.y,  start_left.x,  start_left.y,  end_right.x,  end_right.y, 0, final_vert_list);
 						if(new_cmds[i]==GraphicsPathCommand.BUILD_ROUND_JOINT) {
 							end_left = new_pnts[new_pnts_cnt++];// concave curves:
 							start_right = new_pnts[new_pnts_cnt++];
 							start_left = new_pnts[new_pnts_cnt++];
-							//console.log("add round tri");
 							GraphicsFactoryHelper.addTriangle(start_right.x, start_right.y,  end_left.x, end_left.y,start_left.x, start_left.y, -1, final_vert_list);
 
 						}
@@ -541,12 +579,12 @@ export class GraphicsFactoryStrokes
 					last_dir_vec.x = data[2] - data[0];
 					last_dir_vec.y = data[3] - data[1];
 					last_dir_vec.normalize();
-					GraphicsFactoryHelper.createCap(data[0], data[1], new_pnts[0], new_pnts[1], last_dir_vec, strokeStyle.capstyle, -1, strokeStyle.half_thickness, final_vert_list);
+					GraphicsFactoryHelper.createCap(data[0], data[1], new_pnts[0], new_pnts[1], last_dir_vec, strokeStyle.capstyle, -128, strokeStyle.half_thickness, final_vert_list);
 
 					last_dir_vec.x = data[data.length-2] - data[data.length-4];
 					last_dir_vec.y = data[data.length-1] - data[data.length-3];
 					last_dir_vec.normalize();
-					GraphicsFactoryHelper.createCap(data[data.length-2], data[data.length-1], new_pnts[new_pnts.length-2], new_pnts[new_pnts.length-1], last_dir_vec, strokeStyle.capstyle, 1, strokeStyle.half_thickness, final_vert_list);
+					GraphicsFactoryHelper.createCap(data[data.length-2], data[data.length-1], new_pnts[new_pnts.length-2], new_pnts[new_pnts.length-1], last_dir_vec, strokeStyle.capstyle, 127, strokeStyle.half_thickness, final_vert_list);
 
 					/*
 					 last_dir_vec.x = data[data.length-2] - data[data.length-4];
@@ -560,22 +598,8 @@ export class GraphicsFactoryStrokes
 			//console.log("final_vert_cnt "+(final_vert_cnt/5));
 			// todo: handle material / submesh settings, and check if a material / submesh already exists for this settings
 
-			var attributesView:AttributesView = new AttributesView(Float32Array, 5);
-			attributesView.set(final_vert_list);
-			var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer;
-			attributesView.dispose();
-			var elements:TriangleElements = new TriangleElements(attributesBuffer);
-			elements.setPositions(new Float2Attributes(attributesBuffer));
-			elements.setCustomAttributes("curves", new Float3Attributes(attributesBuffer));
-			//elements.setUVs(new Float2Attributes(attributesBuffer));
-			//curve_sub_geom.setUVs(new Float2Attributes(attributesBuffer));
-			var material:MaterialBase = DefaultMaterialManager.getDefaultMaterial();
-			material.bothSides = true;
-			material.useColorTransform = true;
-			material.curves = true;
-			targetGraphic.addGraphic(elements, material);
 		}
-		targetGraphic.queued_stroke_pathes.length=0;
+		//targetGraphic.queued_stroke_pathes.length=0;
 	}
 
 }

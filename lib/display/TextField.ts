@@ -28,6 +28,7 @@ import {TesselatedFontChar}			from "../text/TesselatedFontChar";
 import {TextFormatAlign}			from "../text/TextFormatAlign";
 import {TesselatedFontTable}		from "../text/TesselatedFontTable";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {DefaultMaterialManager}		from "../managers/DefaultMaterialManager";
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -851,6 +852,7 @@ export class TextField extends Sprite
 
 		var numVertices:number = 0;
 		var elements:TriangleElements;
+		var char_vertices:AttributesBuffer;
 		var thisFormat:TesselatedFontTable=<TesselatedFontTable>this._textFormat.font_table;
 
 		var fallbackFormat:TesselatedFontTable=null;
@@ -896,9 +898,10 @@ export class TextField extends Sprite
 						}
 					}
 					if (this_char != null) {
-						elements = this_char.elements;
-						if (elements != null) {
-							numVertices += elements.numVertices;
+						char_vertices = this_char.fill_data;
+						char_vertices = this_char.fill_data;
+						if (char_vertices != null) {
+							numVertices += char_vertices.count;
 							// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
 							var kerning_value:number = 0;
 							if (prev_char != null) {
@@ -992,10 +995,10 @@ export class TextField extends Sprite
 				var this_char:TesselatedFontChar = final_lines_chars[i][t];
 				char_scale = final_lines_char_scale[i][t];
 				if (this_char != null) {
-					elements = this_char.elements;
-					if (elements != null) {
-						var buffer:Float32Array = new Float32Array(elements.concatenatedBuffer.buffer);
-						for (var v:number = 0; v < elements.numVertices; v++) {
+					char_vertices = this_char.fill_data;
+					if (char_vertices != null) {
+						var buffer:Float32Array = new Float32Array(char_vertices.buffer);
+						for (var v:number = 0; v < char_vertices.count; v++) {
 							vertices[j++] = buffer[v*3]*char_scale + x_offset;
 							vertices[j++] = buffer[v*3 + 1]*char_scale + y_offset;
 							vertices[j++] = buffer[v*3 + 2];
@@ -1032,6 +1035,7 @@ export class TextField extends Sprite
 		}
 
 
+
 		var attributesView:AttributesView = new AttributesView(Float32Array, 3);
 		attributesView.set(vertices);
 		var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
@@ -1043,12 +1047,27 @@ export class TextField extends Sprite
 
 		this._textGraphic = this._graphics.addGraphic(this._textElements);
 
-		this.material = this._textFormat.material;
 		var sampler:Sampler2D = new Sampler2D();
-		this.style = new Style();
-		this.style.addSamplerAt(sampler, this.material.getTextureAt(0));
-		this.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
-		this.material.animateUVs = true;
+		this._textGraphic.style = new Style();
+		if(this._textFormat.material){
+			this._textGraphic.material = this._textFormat.material;
+			this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+			this._textGraphic.material.animateUVs = true;
+			this._textGraphic.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+		}
+		else{
+
+			this._textGraphic.material = DefaultMaterialManager.getDefaultMaterial();
+			this._textGraphic.material.bothSides = true;
+			//this._textGraphic.material.useColorTransform = true;
+			this._textGraphic.material.curves = true;
+			this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+			//sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
+			this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
+			this._textGraphic.material.animateUVs = true;
+			//graphic.material.imageRect = true;
+		}
+		this.material=this._textGraphic.material;
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
