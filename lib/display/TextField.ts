@@ -870,16 +870,19 @@ export class TextField extends Sprite
 		var final_lines_chars:Array<Array<TesselatedFontChar>> = [];
 		var final_lines_char_scale:Array<Array<number>> = [];
 		var final_lines_width:Array<number> = [];
-		var final_lines_justify_bool:Array<Boolean> = [];
+		var final_lines_justify_bool:Array<boolean> = [];
+		var final_isParagraph:Array<boolean> = [];
 		var final_lines_justify:Array<number> = [];
-		var maxlineWidth:number=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+		var maxlineWidth:number;
 		for (var tl = 0; tl < textlines.length; tl++) {
 
+			maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
 			final_lines_chars.push([]);
 			final_lines_char_scale.push([]);
 			final_lines_width.push(0);
 			final_lines_justify.push(0);
 			final_lines_justify_bool.push(false);
+			final_isParagraph.push(true);
 
 
 			var words:Array<string> = textlines[tl].split(" ");
@@ -898,7 +901,6 @@ export class TextField extends Sprite
 						}
 					}
 					if (this_char != null) {
-						char_vertices = this_char.fill_data;
 						char_vertices = this_char.fill_data;
 						if (char_vertices != null) {
 							numVertices += char_vertices.count;
@@ -952,11 +954,13 @@ export class TextField extends Sprite
 					final_lines_width.push(0);
 					final_lines_justify.push(0);
 					final_lines_justify_bool.push(false);
+					final_isParagraph.push(false);
 					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
 						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
 						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
 					}
 					final_lines_width[final_lines_width.length - 1] = word_width;
+					maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin);
 				}
 				if (i < (words.length - 1)) {
 					if ((final_lines_width[final_lines_width.length - 1]) <= maxlineWidth) {
@@ -964,7 +968,6 @@ export class TextField extends Sprite
 						final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
 						final_lines_width[final_lines_width.length - 1] += whitespace_width;
 						final_lines_justify[final_lines_justify.length - 1]+=1;
-
 					}
 				}
 			}
@@ -976,10 +979,13 @@ export class TextField extends Sprite
 
 		for (var i = 0; i < final_lines_chars.length; i++) {
 
-			var x_offset:number= 2 + this._textFormat.leftMargin + this._textFormat.indent;
+			var intent:number=0;
+			if(final_isParagraph[i]){intent=this._textFormat.indent;}
+			maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + intent);
+			var x_offset:number= 2 + this._textFormat.leftMargin + intent;
 			var justify_addion:number=0;
 			if(this._textFormat.align=="center"){
-				x_offset=2 + this._textFormat.leftMargin + this._textFormat.indent+(maxlineWidth-final_lines_width[i])/2;
+				x_offset=2 + this._textFormat.leftMargin + intent+(maxlineWidth-final_lines_width[i])/2;
 			}
 			else if(this._textFormat.align=="justify"){
 				if(final_lines_justify_bool[i]){
