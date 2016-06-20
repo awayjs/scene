@@ -1,50 +1,9 @@
-import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
-import {Matrix}					from "awayjs-core/lib/geom/Matrix";
-
 import {CapsStyle}				from "../draw/CapsStyle";
-import {GradientType}				from "../draw/GradientType";
-import {GraphicsPathWinding}		from "../draw/GraphicsPathWinding";
-import {IGraphicsData}			from "../draw/IGraphicsData";
-import {InterpolationMethod}		from "../draw/InterpolationMethod";
-import {JointStyle}				from "../draw/JointStyle";
-import {LineScaleMode}			from "../draw/LineScaleMode";
-import {TriangleCulling}			from "../draw/TriangleCulling";
-import {SpreadMethod}				from "../draw/SpreadMethod";
-
-import {GraphicsPath}				from "../draw/GraphicsPath";
-import {GraphicsPathCommand}		from "../draw/GraphicsPathCommand";
-import {DefaultMaterialManager}	from "../managers/DefaultMaterialManager";
-import {MovieClip}				from "../display/MovieClip";
-
 import {Point}					from "awayjs-core/lib/geom/Point";
-import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
-import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
-import {Sprite}					from "../display/Sprite";
-import {Float3Attributes}			from "awayjs-core/lib/attributes/Float3Attributes";
-import {Float2Attributes}			from "awayjs-core/lib/attributes/Float2Attributes";
-
 import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
 
-import {PartialImplementationError}		from "awayjs-core/lib/errors/PartialImplementationError";
-import {TriangleElements}			from "../graphics/TriangleElements";
-import {MaterialBase}				from "../materials/MaterialBase";
-/**
- * The Graphics class contains a set of methods that you can use to create a
- * vector shape. Display objects that support drawing include Sprite and Shape
- * objects. Each of these classes includes a <code>graphics</code> property
- * that is a Graphics object. The following are among those helper functions
- * provided for ease of use: <code>drawRect()</code>,
- * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
- * <code>drawEllipse()</code>.
- *
- * <p>You cannot create a Graphics object directly from ActionScript code. If
- * you call <code>new Graphics()</code>, an exception is thrown.</p>
- *
- * <p>The Graphics class is final; it cannot be subclassed.</p>
- */
 export class GraphicsFactoryHelper
 {
-
 	public static _tess_obj:any;
 
 
@@ -55,13 +14,10 @@ export class GraphicsFactoryHelper
 			return false;
 		return true;
 	}
-
 	public static getSign(ax:number, ay:number, cx:number, cy:number, bx:number, by:number):number
 	{
 		return (ax - bx) * (cy - by) - (ay - by) * (cx - bx);
-
 	}
-
 	public static pointInTri(ax:number, ay:number, bx:number, by:number ,cx:number, cy:number, xx:number, xy:number):boolean
 	{
 		var b1:boolean = GraphicsFactoryHelper.getSign(ax, ay, xx, xy, bx, by) > 0;
@@ -69,7 +25,6 @@ export class GraphicsFactoryHelper
 		var b3:boolean = GraphicsFactoryHelper.getSign(cx, cy, xx, xy, ax, ay) > 0;
 		return ((b1 == b2) && (b2 == b3));
 	}
-
 	public static getControlXForCurveX(a:number, c:number, b:number):number
 	{
 		return c;
@@ -118,13 +73,10 @@ export class GraphicsFactoryHelper
 			vertices[final_vert_cnt++] = endX;
 			vertices[final_vert_cnt++] = endY;
 			vertices[final_vert_cnt++] = 1.793662034335766e-43;// ((-128<<24)+0+0+0)
-
 		}
-
 	}
 	public static createCap(startX:number, startY:number, start_le:Point, start_ri:Point, dir_vec:Point, capstyle:number, cap_position:number, thickness:number, vertices:Array<number>):void
 	{
-
 		if (capstyle == CapsStyle.ROUND) {
 			//console.log("add round cap");
 			var tmp1_x:number = startX + (cap_position * (dir_vec.x * thickness));
@@ -146,7 +98,6 @@ export class GraphicsFactoryHelper
 	}
 	public static getLineFormularData(a:Point, b:Point):Point
 	{
-
 		var tmp_x = b.x - a.x;
 		var tmp_y = b.y - a.y;
 		var return_point:Point=new Point();
@@ -155,7 +106,8 @@ export class GraphicsFactoryHelper
 		return_point.y = -(return_point.x * a.x - a.y);
 		return return_point;
 	}
-	public static getQuadricBezierPosition(t, start, control, end):number {
+	public static getQuadricBezierPosition(t, start, control, end):number
+	{
 		var xt = 1 - t;
 		return xt * xt * start + 2 * xt * t * control + t * t * end;
 	}
@@ -219,5 +171,4 @@ export class GraphicsFactoryHelper
 		GraphicsFactoryHelper.subdivideCurve(ax, ay, c2x, c2y, endx, endy, ax2, ay2, c2x2, c2y2, endx2, endy2, array_out, array2_out);
 
 	}
-
 }

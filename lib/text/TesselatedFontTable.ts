@@ -195,10 +195,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	{
 		if(this._font_chars_dic[name]==null){
 			if(this._opentype_font){
-				console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
+				//console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
 				var thisGlyph=this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
 				if(thisGlyph){
-					console.log("got the glyph from opentype");
+					//console.log("got the glyph from opentype");
 					if(true){//todo: only do this for webGL
 						var thisPath=thisGlyph.getPath();
 						var awayPath:GraphicsPath=new GraphicsPath();
@@ -243,7 +243,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 						var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(attributesBuffer, null);
 						tesselated_font_char.char_width=(thisGlyph.advanceWidth*(1 / thisGlyph.path.unitsPerEm * 72));
-						console.log("tesselated_font_char.char_width "+tesselated_font_char.char_width);
+						//console.log("tesselated_font_char.char_width "+tesselated_font_char.char_width);
 						this._font_chars.push(tesselated_font_char);
 						this._font_chars_dic[name]=tesselated_font_char;
 					}
