@@ -447,9 +447,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public set eulers(value:Vector3D)
 	{
-		this.rotationX = value.x;
-		this.rotationY = value.y;
-		this.rotationZ = value.z;
+		// previously this was using the setters for rotationX etc
+		// but because this will convert from radians to degree, i changed it to update directly
+		this._transform.rotation.x = value.x;
+		this._transform.rotation.y = value.y;
+		this._transform.rotation.z = value.z;
+
+		this._transform.invalidateMatrix3D();
 	}
 
 	/**
