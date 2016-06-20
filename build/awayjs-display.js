@@ -4360,9 +4360,12 @@ var DisplayObject = (function (_super) {
             return this._eulers;
         },
         set: function (value) {
-            this.rotationX = value.x;
-            this.rotationY = value.y;
-            this.rotationZ = value.z;
+            // previously this was using the setters for rotationX etc
+            // but because this will convert from radians to degree, i changed it to update directly
+            this._transform.rotation.x = value.x;
+            this._transform.rotation.y = value.y;
+            this._transform.rotation.z = value.z;
+            this._transform.invalidateMatrix3D();
         },
         enumerable: true,
         configurable: true
@@ -9526,14 +9529,17 @@ var TextField = (function (_super) {
         var final_lines_char_scale = [];
         var final_lines_width = [];
         var final_lines_justify_bool = [];
+        var final_isParagraph = [];
         var final_lines_justify = [];
-        var maxlineWidth = this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+        var maxlineWidth;
         for (var tl = 0; tl < textlines.length; tl++) {
+            maxlineWidth = this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
             final_lines_chars.push([]);
             final_lines_char_scale.push([]);
             final_lines_width.push(0);
             final_lines_justify.push(0);
             final_lines_justify_bool.push(false);
+            final_isParagraph.push(true);
             var words = textlines[tl].split(" ");
             for (var i = 0; i < words.length; i++) {
                 var word_width = 0;
@@ -9550,7 +9556,6 @@ var TextField = (function (_super) {
                         }
                     }
                     if (this_char != null) {
-                        char_vertices = this_char.fill_data;
                         char_vertices = this_char.fill_data;
                         if (char_vertices != null) {
                             numVertices += char_vertices.count;
@@ -9603,11 +9608,13 @@ var TextField = (function (_super) {
                     final_lines_width.push(0);
                     final_lines_justify.push(0);
                     final_lines_justify_bool.push(false);
+                    final_isParagraph.push(false);
                     for (var fw = 0; fw < word_chars_scale.length; fw++) {
                         final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
                         final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
                     }
                     final_lines_width[final_lines_width.length - 1] = word_width;
+                    maxlineWidth = this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin);
                 }
                 if (i < (words.length - 1)) {
                     if ((final_lines_width[final_lines_width.length - 1]) <= maxlineWidth) {
@@ -9622,10 +9629,15 @@ var TextField = (function (_super) {
         y_offset = 2 + (thisFormat.ascent - thisFormat.get_font_em_size()) * char_scale;
         var vertices = new Float32Array(numVertices * 3);
         for (var i = 0; i < final_lines_chars.length; i++) {
-            var x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent;
+            var intent = 0;
+            if (final_isParagraph[i]) {
+                intent = this._textFormat.indent;
+            }
+            maxlineWidth = this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + intent);
+            var x_offset = 2 + this._textFormat.leftMargin + intent;
             var justify_addion = 0;
             if (this._textFormat.align == "center") {
-                x_offset = 2 + this._textFormat.leftMargin + this._textFormat.indent + (maxlineWidth - final_lines_width[i]) / 2;
+                x_offset = 2 + this._textFormat.leftMargin + intent + (maxlineWidth - final_lines_width[i]) / 2;
             }
             else if (this._textFormat.align == "justify") {
                 if (final_lines_justify_bool[i]) {
@@ -10464,20 +10476,6 @@ exports.GraphicsFactoryFills = GraphicsFactoryFills;
 var CapsStyle_1 = require("../draw/CapsStyle");
 var Point_1 = require("awayjs-core/lib/geom/Point");
 var MathConsts_1 = require("awayjs-core/lib/geom/MathConsts");
-/**
- * The Graphics class contains a set of methods that you can use to create a
- * vector shape. Display objects that support drawing include Sprite and Shape
- * objects. Each of these classes includes a <code>graphics</code> property
- * that is a Graphics object. The following are among those helper functions
- * provided for ease of use: <code>drawRect()</code>,
- * <code>drawRoundRect()</code>, <code>drawCircle()</code>, and
- * <code>drawEllipse()</code>.
- *
- * <p>You cannot create a Graphics object directly from ActionScript code. If
- * you call <code>new Graphics()</code>, an exception is thrown.</p>
- *
- * <p>The Graphics class is final; it cannot be subclassed.</p>
- */
 var GraphicsFactoryHelper = (function () {
     function GraphicsFactoryHelper() {
     }
@@ -21817,10 +21815,10 @@ var TesselatedFontTable = (function (_super) {
     TesselatedFontTable.prototype.getChar = function (name) {
         if (this._font_chars_dic[name] == null) {
             if (this._opentype_font) {
-                console.log("get char for '" + String.fromCharCode(parseInt(name)) + "'. char does not exists yet. try creating it from opentype.");
+                //console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
                 var thisGlyph = this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
                 if (thisGlyph) {
-                    console.log("got the glyph from opentype");
+                    //console.log("got the glyph from opentype");
                     if (true) {
                         var thisPath = thisGlyph.getPath();
                         var awayPath = new GraphicsPath_1.GraphicsPath();
@@ -21866,7 +21864,7 @@ var TesselatedFontTable = (function (_super) {
                         attributesView.dispose();
                         var tesselated_font_char = new TesselatedFontChar_1.TesselatedFontChar(attributesBuffer, null);
                         tesselated_font_char.char_width = (thisGlyph.advanceWidth * (1 / thisGlyph.path.unitsPerEm * 72));
-                        console.log("tesselated_font_char.char_width " + tesselated_font_char.char_width);
+                        //console.log("tesselated_font_char.char_width "+tesselated_font_char.char_width);
                         this._font_chars.push(tesselated_font_char);
                         this._font_chars_dic[name] = tesselated_font_char;
                     }
