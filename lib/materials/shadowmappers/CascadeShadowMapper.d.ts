@@ -1,0 +1,31 @@
+import { Matrix3D } from "@awayjs/core/lib/geom/Matrix3D";
+import { Rectangle } from "@awayjs/core/lib/geom/Rectangle";
+import { IRenderer } from "../../IRenderer";
+import { Scene } from "../../display/Scene";
+import { Camera } from "../../display/Camera";
+import { DirectionalShadowMapper } from "../../materials/shadowmappers/DirectionalShadowMapper";
+import { Single2DTexture } from "../../textures/Single2DTexture";
+export declare class CascadeShadowMapper extends DirectionalShadowMapper {
+    _pScissorRects: Rectangle[];
+    private _pScissorRectsInvalid;
+    private _splitRatios;
+    private _numCascades;
+    private _depthCameras;
+    private _depthLenses;
+    private _texOffsetsX;
+    private _texOffsetsY;
+    private _nearPlaneDistances;
+    constructor(numCascades?: number);
+    getSplitRatio(index: number): number;
+    setSplitRatio(index: number, value: number): void;
+    getDepthProjections(partition: number): Matrix3D;
+    private init();
+    _pSetDepthMapSize(value: number): void;
+    private invalidateScissorRects();
+    numCascades: number;
+    pDrawDepthMap(scene: Scene, target: Single2DTexture, renderer: IRenderer): void;
+    private updateScissorRects();
+    pUpdateDepthProjection(camera: Camera): void;
+    private updateProjectionPartition(matrix, splitRatio, texOffsetX, texOffsetY);
+    readonly _iNearPlaneDistances: Array<number>;
+}

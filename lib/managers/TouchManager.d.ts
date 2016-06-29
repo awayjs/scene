@@ -1,0 +1,34 @@
+import { View } from "../View";
+export declare class TouchManager {
+    private static _instance;
+    private _updateDirty;
+    private _nullVector;
+    private _numTouchPoints;
+    private _touchPoint;
+    private _iCollision;
+    private _previousCollidingObject;
+    static _iCollisionFromTouchId: Object;
+    static _previousCollidingObjectFromTouchId: Object;
+    private _queuedEvents;
+    private _touchPoints;
+    private _touchPointFromId;
+    private _touchMoveEvent;
+    private _touchOut;
+    private _touchBegin;
+    private _touchMove;
+    private _touchEnd;
+    private _touchOver;
+    private onTouchBeginDelegate;
+    private onTouchMoveDelegate;
+    private onTouchEndDelegate;
+    constructor();
+    static getInstance(): TouchManager;
+    updateCollider(forceTouchMove: boolean): void;
+    fireTouchEvents(forceTouchMove: boolean): void;
+    registerView(view: View): void;
+    unregisterView(view: View): void;
+    private queueDispatch(event, sourceEvent, collider, touch);
+    private onTouchBegin(event);
+    private onTouchMove(event);
+    private onTouchEnd(event);
+}
