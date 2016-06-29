@@ -23,5 +23,8 @@
     "url": "https://github.com/awayjs/awayjs-display/issues"
   },
   "homepage": "https://github.com/awayjs/awayjs-display#readme",
+  "dependencies": {
+    "@awayjs/core": "^0.6.0"
+  },
   "devDependencies": {}
 }
