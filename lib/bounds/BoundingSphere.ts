@@ -1,8 +1,8 @@
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {PlaneClassification}			from "awayjs-core/lib/geom/PlaneClassification";
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {Sphere}						from "awayjs-core/lib/geom/Sphere";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {PlaneClassification}			from "@awayjs/core/lib/geom/PlaneClassification";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {ElementsType}					from "../graphics/ElementsType";
 import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";

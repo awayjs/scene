@@ -1,5 +1,5 @@
-import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
-import {Vector3D}					from "awayjs-core/lib/geom/Vector3D";
+import {MathConsts}				from "@awayjs/core/lib/geom/MathConsts";
+import {Vector3D}					from "@awayjs/core/lib/geom/Vector3D";
 
 import {DisplayObject}			from "../display/DisplayObject";
 import {LookAtController}			from "../controllers/LookAtController";

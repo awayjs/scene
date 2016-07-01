@@ -1,7 +1,7 @@
-import {IEventDispatcher}				from "awayjs-core/lib/events/IEventDispatcher";
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {ImageBase}					from "awayjs-core/lib/image/ImageBase";
-import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
+import {IEventDispatcher}				from "@awayjs/core/lib/events/IEventDispatcher";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {ImageBase}					from "@awayjs/core/lib/image/ImageBase";
+import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 
 import {ITraverser}					from "./ITraverser";
 import {Camera}						from "./display/Camera";

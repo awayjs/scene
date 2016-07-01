@@ -1,7 +1,7 @@
-import {Box}							from "awayjs-core/lib/geom/Box";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Box}							from "@awayjs/core/lib/geom/Box";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {LightBase}					from "../display/LightBase";
 import {BoundsType}					from "../bounds/BoundsType";

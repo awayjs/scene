@@ -1,5 +1,5 @@
-import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
-import {EventBase}				from "awayjs-core/lib/events/EventBase";
+import {AttributesView}			from "@awayjs/core/lib/attributes/AttributesView";
+import {EventBase}				from "@awayjs/core/lib/events/EventBase";
 
 /**
  * Dispatched to notify changes in a sub geometry object's state.

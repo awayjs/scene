@@ -1,5 +1,5 @@
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {getTimer}						from "awayjs-core/lib/utils/getTimer";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {getTimer}						from "@awayjs/core/lib/utils/getTimer";
 
 import {IRenderer}					from "./IRenderer";
 import {DisplayObject}				from "./display/DisplayObject";

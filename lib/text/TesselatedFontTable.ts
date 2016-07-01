@@ -1,4 +1,4 @@
-import {AssetBase}						from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}						from "@awayjs/core/lib/library/AssetBase";
 
 import {ElementsBase}					from "../graphics/ElementsBase";
 import {TriangleElements}				from "../graphics/TriangleElements";
@@ -12,11 +12,11 @@ import {CapsStyle}						from "../draw/CapsStyle";
 import {DrawMode}						from "../draw/DrawMode";
 import {GraphicsStrokeStyle}			from "../draw/GraphicsStrokeStyle";
 
-import {AttributesBuffer}				from "awayjs-core/lib/attributes/AttributesBuffer";
-import {AttributesView}					from "awayjs-core/lib/attributes/AttributesView";
-import {Float3Attributes}				from "awayjs-core/lib/attributes/Float3Attributes";
-import {Float2Attributes}				from "awayjs-core/lib/attributes/Float2Attributes";
-import {Byte4Attributes}				from "awayjs-core/lib/attributes/Byte4Attributes";
+import {AttributesBuffer}				from "@awayjs/core/lib/attributes/AttributesBuffer";
+import {AttributesView}					from "@awayjs/core/lib/attributes/AttributesView";
+import {Float3Attributes}				from "@awayjs/core/lib/attributes/Float3Attributes";
+import {Float2Attributes}				from "@awayjs/core/lib/attributes/Float2Attributes";
+import {Byte4Attributes}				from "@awayjs/core/lib/attributes/Byte4Attributes";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.

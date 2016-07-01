@@ -1,5 +1,5 @@
-import {SamplerCube}				from "awayjs-core/lib/image/SamplerCube";
-import {ImageCube}				from "awayjs-core/lib/image/ImageCube";
+import {SamplerCube}				from "@awayjs/core/lib/image/SamplerCube";
+import {ImageCube}				from "@awayjs/core/lib/image/ImageCube";
 
 import {TextureBase}				from "../textures/TextureBase";
 

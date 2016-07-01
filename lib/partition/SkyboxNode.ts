@@ -1,4 +1,4 @@
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 
 import {EntityNode}					from "../partition/EntityNode";
 import {ITraverser}				from "../ITraverser";

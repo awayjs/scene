@@ -1,5 +1,5 @@
-import {PlaneClassification}			from "awayjs-core/lib/geom/PlaneClassification";
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
+import {PlaneClassification}			from "@awayjs/core/lib/geom/PlaneClassification";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 
 import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
 

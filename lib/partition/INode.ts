@@ -1,5 +1,5 @@
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {ITraverser}					from "../ITraverser";
 import {DisplayObject}				from "../display/DisplayObject";

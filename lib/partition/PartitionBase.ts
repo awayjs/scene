@@ -1,5 +1,5 @@
-import {IAbstractionPool}				from "awayjs-core/lib/library/IAbstractionPool";
-import {IAssetClass}					from "awayjs-core/lib/library/IAssetClass";
+import {IAbstractionPool}				from "@awayjs/core/lib/library/IAbstractionPool";
+import {IAssetClass}					from "@awayjs/core/lib/library/IAssetClass";
 
 import {ITraverser}					from "../ITraverser";
 import {DisplayObject}				from "../display/DisplayObject";

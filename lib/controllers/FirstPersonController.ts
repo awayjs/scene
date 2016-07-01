@@ -1,4 +1,4 @@
-import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
+import {MathConsts}				from "@awayjs/core/lib/geom/MathConsts";
 
 import {ControllerBase}			from "../controllers/ControllerBase";
 import {DisplayObject}			from "../display/DisplayObject";

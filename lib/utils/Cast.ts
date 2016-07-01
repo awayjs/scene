@@ -1,5 +1,5 @@
-import {Image2D}					from "awayjs-core/lib/image/Image2D";
-import {ByteArray}				from "awayjs-core/lib/utils/ByteArray";
+import {Image2D}					from "@awayjs/core/lib/image/Image2D";
+import {ByteArray}				from "@awayjs/core/lib/utils/ByteArray";
 
 import {CastError}				from "../errors/CastError";
 import {Single2DTexture}			from "../textures/Single2DTexture";

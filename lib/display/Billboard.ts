@@ -1,6 +1,6 @@
-import {Sampler2D}					from "awayjs-core/lib/image/Sampler2D";
-import {Image2D}						from "awayjs-core/lib/image/Image2D";
-import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
+import {Sampler2D}					from "@awayjs/core/lib/image/Sampler2D";
+import {Image2D}						from "@awayjs/core/lib/image/Image2D";
+import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 
 import {ITraverser}					from "../ITraverser";
 import {IAnimator}					from "../animators/IAnimator";

@@ -1,6 +1,6 @@
-import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {LightBase}					from "../display/LightBase";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";

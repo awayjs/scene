@@ -1,8 +1,8 @@
-import {BlendMode}					from "awayjs-core/lib/image/BlendMode";
-import {ImageBase}					from "awayjs-core/lib/image/ImageBase";
-import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
-import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {BlendMode}					from "@awayjs/core/lib/image/BlendMode";
+import {ImageBase}					from "@awayjs/core/lib/image/ImageBase";
+import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
+import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
+import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
 import {IAnimationSet}				from "../animators/IAnimationSet";
 import {IAnimator}					from "../animators/IAnimator";

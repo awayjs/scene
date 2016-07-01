@@ -1,9 +1,9 @@
-import {Image2D}						from "awayjs-core/lib/image/Image2D";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {FreeMatrixProjection}			from "awayjs-core/lib/projections/FreeMatrixProjection";
+import {Image2D}						from "@awayjs/core/lib/image/Image2D";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {FreeMatrixProjection}			from "@awayjs/core/lib/projections/FreeMatrixProjection";
 
 import {Scene}						from "../../display/Scene";
 import {IRenderer}					from "../../IRenderer";

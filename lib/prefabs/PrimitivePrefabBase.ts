@@ -1,5 +1,5 @@
-import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
-import {AbstractMethodError}		from "awayjs-core/lib/errors/AbstractMethodError";
+import {AttributesBuffer}			from "@awayjs/core/lib/attributes/AttributesBuffer";
+import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
 
 import {DisplayObject}			from "../display/DisplayObject";
 import {ElementsType}				from "../graphics/ElementsType";

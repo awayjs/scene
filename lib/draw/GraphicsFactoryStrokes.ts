@@ -1,6 +1,6 @@
-import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
-import {Matrix}					from "awayjs-core/lib/geom/Matrix";
-import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
+import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
+import {Matrix}					from "@awayjs/core/lib/geom/Matrix";
+import {MathConsts}				from "@awayjs/core/lib/geom/MathConsts";
 
 import {CapsStyle}				from "../draw/CapsStyle";
 import {GradientType}			from "../draw/GradientType";
@@ -17,13 +17,13 @@ import {GraphicsPath}			from "../draw/GraphicsPath";
 import {GraphicsPathCommand}	from "../draw/GraphicsPathCommand";
 import {MovieClip}				from "../display/MovieClip";
 
-import {Point}					from "awayjs-core/lib/geom/Point";
+import {Point}					from "@awayjs/core/lib/geom/Point";
 import {Sprite}					from "../display/Sprite";
 
 import {GraphicsFactoryHelper}	from "../draw/GraphicsFactoryHelper";
 import {GraphicsStrokeStyle}	from "../draw/GraphicsStrokeStyle";
 
-import {PartialImplementationError}	from "awayjs-core/lib/errors/PartialImplementationError";
+import {PartialImplementationError}	from "@awayjs/core/lib/errors/PartialImplementationError";
 import {TriangleElements}			from "../graphics/TriangleElements";
 import {MaterialBase}				from "../materials/MaterialBase";
 /**

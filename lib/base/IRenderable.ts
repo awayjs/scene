@@ -1,5 +1,5 @@
-import {Matrix}						from "awayjs-core/lib/geom/Matrix";
-import {IAsset}						from "awayjs-core/lib/library/IAsset";
+import {Matrix}						from "@awayjs/core/lib/geom/Matrix";
+import {IAsset}						from "@awayjs/core/lib/library/IAsset";
 
 import {IAnimator}					from "../animators/IAnimator";
 import {Style}						from "../base/Style";

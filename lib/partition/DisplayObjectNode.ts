@@ -1,9 +1,9 @@
-import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
-import {IAbstractionPool}				from "awayjs-core/lib/library/IAbstractionPool";
-import {AbstractionBase}				from "awayjs-core/lib/library/AbstractionBase";
+import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
+import {IAbstractionPool}				from "@awayjs/core/lib/library/IAbstractionPool";
+import {AbstractionBase}				from "@awayjs/core/lib/library/AbstractionBase";
 
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {AxisAlignedBoundingBox}		from "../bounds/AxisAlignedBoundingBox";

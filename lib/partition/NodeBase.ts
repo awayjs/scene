@@ -1,7 +1,7 @@
 import {DisplayObject}				from "../display/DisplayObject";
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
 
 import {ITraverser}					from "../ITraverser";
 import {IEntity}						from "../display/IEntity";

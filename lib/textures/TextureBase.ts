@@ -1,7 +1,7 @@
-import {ImageBase}					from "awayjs-core/lib/image/ImageBase";
-import {SamplerBase}					from "awayjs-core/lib/image/SamplerBase";
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
-import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
+import {ImageBase}					from "@awayjs/core/lib/image/ImageBase";
+import {SamplerBase}					from "@awayjs/core/lib/image/SamplerBase";
+import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
+import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
 
 import {ISurface}						from "../base/ISurface";
 /**

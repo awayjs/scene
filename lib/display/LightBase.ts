@@ -1,5 +1,5 @@
-import {Matrix3D}					from "awayjs-core/lib/geom/Matrix3D";
-import {AbstractMethodError}		from "awayjs-core/lib/errors/AbstractMethodError";
+import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
+import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
 
 import {DisplayObjectContainer}	from "../display/DisplayObjectContainer";
 import {Camera}					from "../display/Camera";

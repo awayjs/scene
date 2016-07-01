@@ -1,5 +1,5 @@
-import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
+import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
 import {Scene}						from "../../display/Scene";
 import {LightBase}					from "../../display/LightBase";

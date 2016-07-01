@@ -1,4 +1,4 @@
-import {IAbstractionPool}				from "awayjs-core/lib/library/IAbstractionPool";
+import {IAbstractionPool}				from "@awayjs/core/lib/library/IAbstractionPool";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";

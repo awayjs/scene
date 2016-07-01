@@ -1,4 +1,4 @@
-import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
 
 import {LightBase}					from "../../display/LightBase";
 import {DirectionalLight}				from "../../display/DirectionalLight";

@@ -1,5 +1,5 @@
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
 import {IEntity}						from "../../display/IEntity";
 import {LightBase}					from "../../display/LightBase";

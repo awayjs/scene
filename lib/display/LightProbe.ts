@@ -1,8 +1,8 @@
-import {ImageCube}					from "awayjs-core/lib/image/ImageCube";
-import {SamplerCube}					from "awayjs-core/lib/image/SamplerCube";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {ErrorBase}					from "awayjs-core/lib/errors/ErrorBase";
+import {ImageCube}					from "@awayjs/core/lib/image/ImageCube";
+import {SamplerCube}					from "@awayjs/core/lib/image/SamplerCube";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {ErrorBase}					from "@awayjs/core/lib/errors/ErrorBase";
 
 import {LightBase}					from "../display/LightBase";
 import {BoundsType}					from "../bounds/BoundsType";

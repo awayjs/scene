@@ -1,9 +1,9 @@
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
 import {BitmapFontChar}			from "../text/BitmapFontChar";
 import {IFontTable}				from "../text/IFontTable";
-import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
-import {AbstractMethodError}		from "awayjs-core/lib/errors/AbstractMethodError";
+import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
+import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *

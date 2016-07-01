@@ -1,4 +1,4 @@
-import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
+import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {Sprite}						from "../display/Sprite";

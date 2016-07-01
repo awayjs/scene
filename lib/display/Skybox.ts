@@ -1,6 +1,6 @@
-import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
-import {BlendMode}					from "awayjs-core/lib/image/BlendMode";
-import {ImageCube}					from "awayjs-core/lib/image/ImageCube";
+import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
+import {BlendMode}					from "@awayjs/core/lib/image/BlendMode";
+import {ImageCube}					from "@awayjs/core/lib/image/ImageCube";
 
 import {ITraverser}					from "../ITraverser";
 import {IAnimationSet}				from "../animators/IAnimationSet";

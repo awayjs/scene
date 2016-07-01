@@ -1,8 +1,8 @@
 import {HierarchicalProperties}			from "../base/HierarchicalProperties";
 import {MovieClip}						from "../display/MovieClip";
 import {DisplayObject}					from "../display/DisplayObject";
-import {ColorTransform}					from "awayjs-core/lib/geom/ColorTransform";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
+import {ColorTransform}					from "@awayjs/core/lib/geom/ColorTransform";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
 import {FrameScriptManager}				from "../managers/FrameScriptManager";
 
 

@@ -1,9 +1,9 @@
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "awayjs-core/lib/geom/Matrix3DUtils";
-import {Rectangle}					from "awayjs-core/lib/geom/Rectangle";
-import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
-import {FreeMatrixProjection}			from "awayjs-core/lib/projections/FreeMatrixProjection";
-import {IProjection}					from "awayjs-core/lib/projections/IProjection";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
+import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
+import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
+import {FreeMatrixProjection}			from "@awayjs/core/lib/projections/FreeMatrixProjection";
+import {IProjection}					from "@awayjs/core/lib/projections/IProjection";
 
 import {IRenderer}					from "../../IRenderer";
 import {Scene}						from "../../display/Scene";

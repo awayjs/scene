@@ -1,6 +1,6 @@
-import {IAsset}						from "awayjs-core/lib/library/IAsset";
-import {ImageBase}					from "awayjs-core/lib/image/ImageBase";
-import {SamplerBase}					from "awayjs-core/lib/image/SamplerBase";
+import {IAsset}						from "@awayjs/core/lib/library/IAsset";
+import {ImageBase}					from "@awayjs/core/lib/image/ImageBase";
+import {SamplerBase}					from "@awayjs/core/lib/image/SamplerBase";
 
 import {IAnimationSet}				from "../animators/IAnimationSet";
 import {IRenderable}					from "../base/IRenderable";

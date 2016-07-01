@@ -1,4 +1,4 @@
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
 import {IFontTable}					from "../text/IFontTable";
 import {TesselatedFontTable}		from "../text/TesselatedFontTable";

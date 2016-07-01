@@ -1,9 +1,9 @@
-import {Box}							from "awayjs-core/lib/geom/Box";
-import {ColorTransform}				from "awayjs-core/lib/geom/ColorTransform";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Sphere}						from "awayjs-core/lib/geom/Sphere";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {IAsset}						from "awayjs-core/lib/library/IAsset";
+import {Box}							from "@awayjs/core/lib/geom/Box";
+import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {IAsset}						from "@awayjs/core/lib/library/IAsset";
 
 import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
 import {DisplayObject}				from "../display/DisplayObject";

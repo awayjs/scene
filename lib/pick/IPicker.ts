@@ -1,4 +1,4 @@
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {Scene}						from "../display/Scene";
 import {View}							from "../View";

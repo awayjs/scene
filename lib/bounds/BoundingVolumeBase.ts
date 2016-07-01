@@ -1,8 +1,8 @@
-import {Box}							from "awayjs-core/lib/geom/Box";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {AbstractMethodError}			from "awayjs-core/lib/errors/AbstractMethodError";
+import {Box}							from "@awayjs/core/lib/geom/Box";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
 
 import {IEntity}						from "../display/IEntity";
 import {Sprite}						from "../display/Sprite";

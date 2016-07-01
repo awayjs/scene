@@ -1,5 +1,5 @@
-import {BitmapImage2D}			from "awayjs-core/lib/image/BitmapImage2D";
-import {Matrix}					from "awayjs-core/lib/geom/Matrix";
+import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
+import {Matrix}					from "@awayjs/core/lib/geom/Matrix";
 
 import {CapsStyle}				from "../draw/CapsStyle";
 import {GradientType}				from "../draw/GradientType";
@@ -19,18 +19,18 @@ import {GraphicsPathCommand}		from "../draw/GraphicsPathCommand";
 import {DefaultMaterialManager}	from "../managers/DefaultMaterialManager";
 import {MovieClip}				from "../display/MovieClip";
 
-import {Point}					from "awayjs-core/lib/geom/Point";
-import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
-import {AttributesView}			from "awayjs-core/lib/attributes/AttributesView";
+import {Point}					from "@awayjs/core/lib/geom/Point";
+import {AttributesBuffer}			from "@awayjs/core/lib/attributes/AttributesBuffer";
+import {AttributesView}			from "@awayjs/core/lib/attributes/AttributesView";
 import {Sprite}					from "../display/Sprite";
-import {Float3Attributes}			from "awayjs-core/lib/attributes/Float3Attributes";
-import {Float2Attributes}			from "awayjs-core/lib/attributes/Float2Attributes";
+import {Float3Attributes}			from "@awayjs/core/lib/attributes/Float3Attributes";
+import {Float2Attributes}			from "@awayjs/core/lib/attributes/Float2Attributes";
 
-import {MathConsts}				from "awayjs-core/lib/geom/MathConsts";
+import {MathConsts}				from "@awayjs/core/lib/geom/MathConsts";
 
 import {GraphicsFactoryHelper}				from "../draw/GraphicsFactoryHelper";
 
-import {PartialImplementationError}		from "awayjs-core/lib/errors/PartialImplementationError";
+import {PartialImplementationError}		from "@awayjs/core/lib/errors/PartialImplementationError";
 import {TriangleElements}				from "../graphics/TriangleElements";
 import {MaterialBase}					from "../materials/MaterialBase";
 /**

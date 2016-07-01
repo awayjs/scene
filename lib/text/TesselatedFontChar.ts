@@ -1,4 +1,4 @@
-import {AttributesBuffer}			from "awayjs-core/lib/attributes/AttributesBuffer";
+import {AttributesBuffer}			from "@awayjs/core/lib/attributes/AttributesBuffer";
 
 
 /**

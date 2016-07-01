@@ -1,7 +1,7 @@
-﻿﻿import {Sampler2D}				from "awayjs-core/lib/image/Sampler2D";
-import {Image2D}					from "awayjs-core/lib/image/Image2D";
-import {ErrorBase}				from "awayjs-core/lib/errors/ErrorBase";
-import {ImageUtils}				from "awayjs-core/lib/utils/ImageUtils";
+﻿﻿import {Sampler2D}				from "@awayjs/core/lib/image/Sampler2D";
+import {Image2D}					from "@awayjs/core/lib/image/Image2D";
+import {ErrorBase}				from "@awayjs/core/lib/errors/ErrorBase";
+import {ImageUtils}				from "@awayjs/core/lib/utils/ImageUtils";
 
 import {MappingMode}				from "../textures/MappingMode";
 import {TextureBase}				from "../textures/TextureBase";

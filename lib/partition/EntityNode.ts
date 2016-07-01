@@ -1,6 +1,6 @@
-import {AssetEvent}					from "awayjs-core/lib/events/AssetEvent";
-import {Plane3D}						from "awayjs-core/lib/geom/Plane3D";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
+import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {ITraverser}					from "../ITraverser";

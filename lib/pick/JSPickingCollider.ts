@@ -1,5 +1,5 @@
-import {Vector3D}							from "awayjs-core/lib/geom/Vector3D";
-import {Point}							from "awayjs-core/lib/geom/Point";
+import {Vector3D}							from "@awayjs/core/lib/geom/Vector3D";
+import {Point}							from "@awayjs/core/lib/geom/Point";
 import {LineElements}						from "../graphics/LineElements";
 import {TriangleElements}					from "../graphics/TriangleElements";
 import {Billboard}						from "../display/Billboard";

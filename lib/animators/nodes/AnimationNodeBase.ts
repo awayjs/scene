@@ -1,4 +1,4 @@
-import {AssetBase}				from "awayjs-core/lib/library/AssetBase";
+import {AssetBase}				from "@awayjs/core/lib/library/AssetBase";
 
 /**
  * Provides an abstract base class for nodes in an animation blend tree.

@@ -1,8 +1,8 @@
-import {Box}							from "awayjs-core/lib/geom/Box";
-import {Matrix3D}						from "awayjs-core/lib/geom/Matrix3D";
-import {Sphere}						from "awayjs-core/lib/geom/Sphere";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {AssetBase}					from "awayjs-core/lib/library/AssetBase";
+import {Box}							from "@awayjs/core/lib/geom/Box";
+import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
 import {IAnimator}					from "../animators/IAnimator";
 import {RenderableEvent}				from "../events/RenderableEvent";

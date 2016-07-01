@@ -1,8 +1,8 @@
-import {Box}							from "awayjs-core/lib/geom/Box";
-import {Point}						from "awayjs-core/lib/geom/Point";
-import {ArgumentError}				from "awayjs-core/lib/errors/ArgumentError";
-import {RangeError}					from "awayjs-core/lib/errors/RangeError";
-import {Extensions}					from "awayjs-core/lib/utils/Extensions";
+import {Box}							from "@awayjs/core/lib/geom/Box";
+import {Point}						from "@awayjs/core/lib/geom/Point";
+import {ArgumentError}				from "@awayjs/core/lib/errors/ArgumentError";
+import {RangeError}					from "@awayjs/core/lib/errors/RangeError";
+import {Extensions}					from "@awayjs/core/lib/utils/Extensions";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";

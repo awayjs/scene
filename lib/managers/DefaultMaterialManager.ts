@@ -1,6 +1,6 @@
-import {Sampler2D}					from "awayjs-core/lib/image/Sampler2D";
-import {BitmapImage2D}				from "awayjs-core/lib/image/BitmapImage2D";
-import {BitmapImageCube}				from "awayjs-core/lib/image/BitmapImageCube";
+import {Sampler2D}					from "@awayjs/core/lib/image/Sampler2D";
+import {BitmapImage2D}				from "@awayjs/core/lib/image/BitmapImage2D";
+import {BitmapImageCube}				from "@awayjs/core/lib/image/BitmapImageCube";
 
 import {IRenderable}					from "../base/IRenderable";
 import {LineElements}					from "../graphics/LineElements";

@@ -1,6 +1,6 @@
-import {ImageCube}					from "awayjs-core/lib/image/ImageCube";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
-import {PerspectiveProjection}		from "awayjs-core/lib/projections/PerspectiveProjection";
+import {ImageCube}					from "@awayjs/core/lib/image/ImageCube";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
 
 import {Scene}						from "../../display/Scene";
 import {Camera}						from "../../display/Camera";

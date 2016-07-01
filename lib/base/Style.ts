@@ -1,8 +1,8 @@
-import {ImageBase}					from "awayjs-core/lib/image/ImageBase";
-import {SamplerBase}					from "awayjs-core/lib/image/SamplerBase";
-import {Matrix}						from "awayjs-core/lib/geom/Matrix";
+import {ImageBase}					from "@awayjs/core/lib/image/ImageBase";
+import {SamplerBase}					from "@awayjs/core/lib/image/SamplerBase";
+import {Matrix}						from "@awayjs/core/lib/geom/Matrix";
 
-import {EventDispatcher}				from "awayjs-core/lib/events/EventDispatcher";
+import {EventDispatcher}				from "@awayjs/core/lib/events/EventDispatcher";
 import {StyleEvent}					from "../events/StyleEvent";
 import {TextureBase}					from "../textures/TextureBase";
 

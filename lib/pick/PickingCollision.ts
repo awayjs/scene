@@ -1,5 +1,5 @@
-import {Point}						from "awayjs-core/lib/geom/Point";
-import {Vector3D}						from "awayjs-core/lib/geom/Vector3D";
+import {Point}						from "@awayjs/core/lib/geom/Point";
+import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {IEntity}						from "../display/IEntity";
 import {IRenderable}					from "../base/IRenderable";

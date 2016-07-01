@@ -1,4 +1,4 @@
-import {Image2D}						from "awayjs-core/lib/image/Image2D";
+import {Image2D}						from "@awayjs/core/lib/image/Image2D";
 
 import {MaterialBase}					from "../materials/MaterialBase";
 import {Single2DTexture}				from "../textures/Single2DTexture";
