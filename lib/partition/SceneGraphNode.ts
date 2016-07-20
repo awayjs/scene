@@ -29,10 +29,10 @@ export class SceneGraphNode extends DisplayObjectNode implements IContainerNode
 			return;
 
 		var i:number;
-		for (i = 0; i < this._numNodes; i++)
+		for (i = this._numNodes - 1; i >= 0; i--)
 			this._pChildNodes[i].acceptTraverser(traverser);
 
-		for (i = 0; i < this._numMasks; i++)
+		for (i = this._numMasks - 1; i >= 0; i--)
 			this._childMasks[i].acceptTraverser(traverser);
 	}
 

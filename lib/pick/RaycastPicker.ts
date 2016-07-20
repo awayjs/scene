@@ -139,7 +139,7 @@ export class RaycastPicker implements IPicker, ITraverser
 
 	private sortOnNearT(entity1:IEntity, entity2:IEntity):number
 	{
-		return entity2._iPickingCollision.rayEntryDistance - entity1._iPickingCollision.rayEntryDistance;
+		return entity1._iPickingCollision.rayEntryDistance > entity2._iPickingCollision.rayEntryDistance? 1 : -1;
 	}
 
 	private getPickingCollision():PickingCollision
@@ -156,7 +156,7 @@ export class RaycastPicker implements IPicker, ITraverser
 		
 		var entity:IEntity;
 		var len:number = this._entities.length;
-		for (var i:number = len - 1; i >=0; i--) {
+		for (var i:number = 0; i < len; i++) {
 			entity = this._entities[i];
 			this._testCollision = entity._iPickingCollision;
 			if (this._bestCollision == null || this._testCollision.rayEntryDistance < this._bestCollision.rayEntryDistance) {
