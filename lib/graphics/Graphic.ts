@@ -160,7 +160,7 @@ export class Graphic extends AssetBase implements IRenderable
 		this.idx_count = idx_count;
 		this.idx_offset = idx_offset;
 		if(this.idx_count==0 && this.elements)
-			this.idx_count=this.elements.numElements;
+			this.idx_count=this.elements.numElements*3;
 
 
 	}
