@@ -42,6 +42,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public _size_multiply:number;
 	private _charDictDirty:Boolean;
 	private _opentype_font:any;
+	
+	public fallbackTable:IFontTable;
 
 	//TODO test shader picking
 //		public get shaderPickingDetails():boolean
@@ -86,6 +88,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		}
 	}
 
+	public hasChar(char_code:string):boolean
+	{
+		return this._font_chars_dic[char_code]!=null;
+	}
 
 	public changeOpenTypeFont(newOpenTypeFont:any, tesselateAllOld:boolean=true)
 	{

@@ -1,11 +1,11 @@
-import {Point}						from "@awayjs/core/lib/geom/Point";
+import {Point}							from "@awayjs/core/lib/geom/Point";
 import {Box}							from "@awayjs/core/lib/geom/Box";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
-import {BitmapImage2D}			 	from "@awayjs/core/lib/image/BitmapImage2D";
-import {Matrix}						from "@awayjs/core/lib/geom/Matrix";
+import {Sphere}							from "@awayjs/core/lib/geom/Sphere";
+import {BitmapImage2D}			 		from "@awayjs/core/lib/image/BitmapImage2D";
+import {Matrix}							from "@awayjs/core/lib/geom/Matrix";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
+import {AssetBase}						from "@awayjs/core/lib/library/AssetBase";
 
 import {Sampler2D}						from "@awayjs/core/lib/image/Sampler2D";
 
@@ -16,30 +16,30 @@ import {Float2Attributes}				from "@awayjs/core/lib/attributes/Float2Attributes"
 import {ElementsBase}					from "../graphics/ElementsBase";
 import {TriangleElements}				from "../graphics/TriangleElements";
 import {Graphic}						from "../graphics/Graphic";
-import {Style}						from "../base/Style";
+import {Style}							from "../base/Style";
 import {MaterialBase}					from "../materials/MaterialBase";
-import {IAnimator}					from "../animators/IAnimator";
-import {ElementsEvent}				from "../events/ElementsEvent";
-import {StyleEvent}					from "../events/StyleEvent";
-import {ITraverser}					from "../ITraverser";
+import {IAnimator}						from "../animators/IAnimator";
+import {ElementsEvent}					from "../events/ElementsEvent";
+import {StyleEvent}						from "../events/StyleEvent";
+import {ITraverser}						from "../ITraverser";
 import {ParticleData}					from "../animators/data/ParticleData";
 
 import {GraphicsPath}					from "../draw/GraphicsPath";
 import {GraphicsPathCommand}			from "../draw/GraphicsPathCommand";
 import {GraphicsFactoryFills}			from "../draw/GraphicsFactoryFills";
-import {GraphicsFactoryStrokes}		from "../draw/GraphicsFactoryStrokes";
-import {PartialImplementationError}	from "@awayjs/core/lib/errors/PartialImplementationError";
+import {GraphicsFactoryStrokes}			from "../draw/GraphicsFactoryStrokes";
+import {PartialImplementationError}		from "@awayjs/core/lib/errors/PartialImplementationError";
 import {InterpolationMethod}			from "../draw/InterpolationMethod";
-import {JointStyle}					from "../draw/JointStyle";
-import {LineScaleMode}				from "../draw/LineScaleMode";
+import {JointStyle}						from "../draw/JointStyle";
+import {LineScaleMode}					from "../draw/LineScaleMode";
 import {TriangleCulling}				from "../draw/TriangleCulling";
 import {SpreadMethod}					from "../draw/SpreadMethod";
-import {CapsStyle}					from "../draw/CapsStyle";
+import {CapsStyle}						from "../draw/CapsStyle";
 import {GradientType}					from "../draw/GradientType";
 import {GraphicsPathWinding}			from "../draw/GraphicsPathWinding";
-import {IGraphicsData}				from "../draw/IGraphicsData";
+import {IGraphicsData}					from "../draw/IGraphicsData";
 import {GraphicsStrokeStyle}			from "../draw/GraphicsStrokeStyle";
-import {GraphicsFillStyle}			from "../draw/GraphicsFillStyle";
+import {GraphicsFillStyle}				from "../draw/GraphicsFillStyle";
 
 import {DefaultMaterialManager}			from "../managers/DefaultMaterialManager";
 ;
@@ -72,7 +72,7 @@ export class Graphics extends AssetBase
 	private _sphereBoundsInvalid = true;
 
 	private _material:MaterialBase;
-	private _graphics:Array<Graphic> = new Array<Graphic>();
+	private _graphics:Array<Graphic> = [];
 	private _animator:IAnimator;
 	private _style:Style;
 
@@ -220,7 +220,7 @@ export class Graphics extends AssetBase
 	 *
 	 * @param elements
 	 */
-	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null, count:number = 0, offset:number = 0):Graphic
+	public addGraphic(elements:ElementsBase, material:MaterialBase = null, style:Style = null, count:number = 0, offset:number = 0, idx_count:number=0, idx_offset:number=0):Graphic
 	{
 		var graphic:Graphic;
 
@@ -233,8 +233,10 @@ export class Graphics extends AssetBase
 			graphic.style = style;
 			graphic.count = count;
 			graphic.offset = offset;
+			graphic.idx_count = idx_count;
+			graphic.idx_offset = idx_offset;
 		} else {
-			graphic = new Graphic(this._graphics.length, this, elements, material, style, count, offset);
+			graphic = new Graphic(this._graphics.length, this, elements, material, style, count, offset, idx_count, idx_offset);
 		}
 
 		this._graphics.push(graphic);
@@ -268,8 +270,12 @@ export class Graphics extends AssetBase
 	public applyTransformation(transform:Matrix3D):void
 	{
 		var len:number = this._graphics.length;
-		for (var i:number = 0; i < len; ++i)
-			this._graphics[i].applyTransformation(transform);
+		for (var i:number = 0; i < len; ++i){
+			// when all graphics share same element, we only need to check the first graphic
+			if(this._graphics[i].idx_offset==0){
+				this._graphics[i].applyTransformation(transform);
+			}
+		}
 	}
 
 	public copyTo(graphics:Graphics):void
@@ -282,7 +288,7 @@ export class Graphics extends AssetBase
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i) {
 			graphic = this._graphics[i];
-			graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle(), graphic.count, graphic.offset);
+			graphics.addGraphic(graphic.elements, graphic._iGetExplicitMaterial(), graphic._iGetExplicitStyle(), graphic.count, graphic.offset, graphic.idx_count, graphic.idx_offset);
 		}
 
 		if (this._animator)
@@ -353,8 +359,9 @@ export class Graphics extends AssetBase
 			if (this._graphics.length) {
 				this._boxBounds.setBoundIdentity();
 				var len:number = this._graphics.length;
-				for (var i:number = 0; i < len; i++)
+				for (var i:number = 0; i < len; i++){
 					this._boxBounds = this._boxBounds.union(this._graphics[i].getBoxBounds(), this._boxBounds);
+				}
 			} else {
 				this._boxBounds.setEmpty();
 			}
@@ -367,8 +374,11 @@ export class Graphics extends AssetBase
 	public getSphereBounds(center:Vector3D, target:Sphere = null):Sphere
 	{
 		var len:number = this._graphics.length;
-		for (var i:number = 0; i < len; i++)
-			target = this._graphics[i].getSphereBounds(center, target);
+		for (var i:number = 0; i < len; i++){
+			if(this._graphics[i].idx_offset==0) {
+				target = this._graphics[i].getSphereBounds(center, target);
+			}
+		}
 
 		return target;
 	}

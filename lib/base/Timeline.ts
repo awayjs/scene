@@ -3,6 +3,7 @@ import {MovieClip}						from "../display/MovieClip";
 import {DisplayObject}					from "../display/DisplayObject";
 import {ColorTransform}					from "@awayjs/core/lib/geom/ColorTransform";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {AssetBase}						from "@awayjs/core/lib/library/AssetBase";
 import {FrameScriptManager}				from "../managers/FrameScriptManager";
 
 
@@ -54,6 +55,7 @@ export class Timeline
 
 	constructor()
 	{
+
 		this.keyframe_indices = [];
 
 		this._potentialPrototypes = [];
@@ -159,6 +161,11 @@ export class Timeline
 		return this.keyframe_indices.length;
 	}
 
+	public get potentialPrototypes():Array<DisplayObject>
+	{
+		return this._potentialPrototypes;
+
+	}
 
 	public getPotentialChildPrototype(id:number):DisplayObject
 	{

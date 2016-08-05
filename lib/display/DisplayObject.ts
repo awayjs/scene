@@ -1401,6 +1401,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	constructor()
 	{
 		super();
+		//global debug bounding boxes:
+		//this._debugVisible=true;
+
 
 		//creation of associated transform object
 		this._transform = new Transform();

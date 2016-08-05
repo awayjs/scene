@@ -20,7 +20,7 @@ export class ElementsUtils
 	private static LIMIT_VERTS:number = 0xffff;
 
 	private static LIMIT_INDICES:number = 0xffffff;
-	
+
 	private static _indexSwap:Array<number> = new Array<number>();
 
 	public static generateFaceNormals(indexAttributes:Short3Attributes, positionAttributes:AttributesView, faceNormalAttributes:Float4Attributes, count:number, offset:number = 0):Float4Attributes
@@ -455,7 +455,7 @@ export class ElementsUtils
 	{
 		var buffer:AttributesBuffer = indexAttributes.attributesBuffer;
 		var numIndices:number = indexAttributes.length;
-		
+
 		//reset mappings
 		indexMappings.length = 0;
 
@@ -467,7 +467,7 @@ export class ElementsUtils
 		var indices:Uint16Array = <Uint16Array> indexAttributes.get(indexAttributes.count, indexOffset);
 		var splitIndices:Array<number> = new Array<number>();
 		var indexSwap:Array<number> = ElementsUtils._indexSwap;
-		
+
 
 		indexSwap.length = numIndices;
 		for (i = 0; i < numIndices; i++)
@@ -477,9 +477,9 @@ export class ElementsUtils
 		var splitIndex:number;
 		var index:number = 0;
 		var offsetLength:number = indexOffset*indexAttributes.dimensions;
-		
+
 		// Loop over all triangles
-		
+
 		i = 0;
 		while (i < numIndices + offsetLength && i + 1 < ElementsUtils.LIMIT_INDICES && index + 1 < ElementsUtils.LIMIT_VERTS) {
 			originalIndex = indices[i];
@@ -498,12 +498,12 @@ export class ElementsUtils
 			// or from copying a new set of vertex data from the original vector
 			splitIndices[i++] = splitIndex;
 		}
-		
+
 		buffer = new AttributesBuffer(indexAttributes.size*indexAttributes.dimensions, splitIndices.length/indexAttributes.dimensions);
-		
+
 		indexAttributes = indexAttributes.clone(buffer);
 		indexAttributes.set(splitIndices);
-		
+
 		return buffer;
 	}
 
@@ -544,7 +544,7 @@ export class ElementsUtils
 		var curveAttributes:AttributesView = triangleElements.getCustomAtributes("curves");
 
 		var posStride:number = positionAttributes.stride;
-		var curveStride:number = curveAttributes.stride;
+		var curveStride:number = curveAttributes? curveAttributes.stride : null;
 
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
 		var curves:ArrayBufferView = curveAttributes? curveAttributes.get(count, offset) : null;
@@ -562,7 +562,7 @@ export class ElementsUtils
 
 		var hitTestCache:HitTestCache = triangleElements.hitTestCache[offset] || (triangleElements.hitTestCache[offset] = new HitTestCache());
 		var index:number = -1;//hitTestCache.lastCollisionIndex;
-		
+
 		if(index != -1 && index < count)
 		{
 			precheck:
@@ -798,7 +798,7 @@ export class ElementsUtils
 			id2 = k + 0;
 
 			if(id2 == index) continue;
-			
+
 			id1 = k + 1;
 			id0 = k + 2;
 
@@ -882,6 +882,323 @@ export class ElementsUtils
 		return false;
 	}
 
+	public static hitTestTriangleElementsIndices(x:number, y:number, z:number, box:Box, triangleElements:TriangleElements, idx_count:number, idx_offset:number = 0):boolean
+	{
+		var positionAttributes:AttributesView = triangleElements.positions;
+		var posStride:number = positionAttributes.stride;
+
+		var positions:ArrayBufferView = positionAttributes.get(positionAttributes.count);
+
+		var indexAttributes:Short2Attributes = triangleElements.indices;
+		var indices:Uint16Array = indexAttributes.get(indexAttributes.count);
+
+		var indexDim:number = indexAttributes.dimensions;
+
+		var i=0;
+		var id0:number;
+		var id1:number;
+		var id2:number;
+
+		var ax:number;
+		var ay:number;
+		var bx:number;
+		var by:number;
+		var cx:number;
+		var cy:number;
+
+		var hitTestCache:HitTestCache = triangleElements.hitTestCache[idx_offset] || (triangleElements.hitTestCache[idx_offset] = new HitTestCache());
+		var index:number = -1;// hitTestCache.lastCollisionIndex;
+
+		if(index != -1 && index < idx_count)
+		{
+			precheck:
+			{
+				id0 = index + 2;
+				id1 = index + 1;
+				id2 = index + 0;
+
+				ax = positions[id0 * posStride];
+				ay = positions[id0 * posStride + 1];
+				bx = positions[id1 * posStride];
+				by = positions[id1 * posStride + 1];
+				cx = positions[id2 * posStride];
+				cy = positions[id2 * posStride + 1];
+
+				//console.log(ax, ay, bx, by, cx, cy);
+
+				//from a to p
+				var dx:number = ax - x;
+				var dy:number = ay - y;
+
+				//edge normal (a-b)
+				var nx:number = by - ay;
+				var ny:number = -(bx - ax);
+
+				//console.log(ax,ay,bx,by,cx,cy);
+
+				var dot:number = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					break precheck;
+
+				dx = bx - x;
+				dy = by - y;
+				nx = cy - by;
+				ny = -(cx - bx);
+
+				dot = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					break precheck;
+
+				dx = cx - x;
+				dy = cy - y;
+				nx = ay - cy;
+				ny = -(ax - cx);
+
+				dot = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					break precheck;
+
+				return true;
+			}
+		}
+
+
+
+		//hard coded min vertex count to bother using a grid for
+		if (idx_count > 1500000) {
+			var cells:Array<Array<number>> = hitTestCache.cells;
+			var divisions:number = cells.length? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(idx_count)), 32));
+			var conversionX:number = divisions/box.width;
+			var conversionY:number = divisions/box.height;
+			var minx:number = box.x;
+			var miny:number = box.y;
+
+			if (!cells.length) { //build grid
+
+				//now we have bounds start creating grid cells and filling
+				cells.length = divisions * divisions;
+
+				for (var k:number = idx_offset; k < idx_count; k += indexDim) {
+
+					id0 = indices[i+2];
+					id1 = indices[i+1];
+					id2 = indices[i];
+
+					ax = positions[id0 * posStride];
+					ay = positions[id0 * posStride + 1];
+					bx = positions[id1 * posStride];
+					by = positions[id1 * posStride + 1];
+					cx = positions[id2 * posStride];
+					cy = positions[id2 * posStride + 1];
+
+					//subtractions to push into positive space
+					var min_index_x:number = Math.floor((Math.min(ax, bx, cx) - minx)*conversionX);
+					var min_index_y:number = Math.floor((Math.min(ay, by, cy) - miny)*conversionY);
+
+					var max_index_x:number = Math.floor((Math.max(ax, bx, cx) - minx)*conversionX);
+					var max_index_y:number = Math.floor((Math.max(ay, by, cy) - miny)*conversionY);
+
+
+					for (var i:number = min_index_x; i <= max_index_x; i++) {
+						for (var j:number = min_index_y; j <= max_index_y; j++) {
+							var index:number = i + j*divisions;
+							var nodes:Array<number> = cells[index] || (cells[index] = new Array<number>());
+
+							//push in the triangle ids
+							nodes.push(id0, id1, id2);
+						}
+					}
+				}
+			}
+
+
+			var index_x:number = Math.floor((x - minx)*conversionX);
+			var index_y:number = Math.floor((y - miny)*conversionY);
+
+			if ((index_x < 0 || index_x > divisions || index_y < 0 || index_y > divisions))
+				return false;
+
+			var nodes:Array<number> = cells[index_x + index_y*divisions];
+
+			if (nodes == null)
+				return false;
+
+			var nodeCount:number = nodes.length;
+			for (var k:number = 0; k < nodeCount; k += 3) {
+				id2 = nodes[k + 2];
+
+				if(id2 == index) continue;
+
+				id1 = nodes[k + 1];
+				id0 = nodes[k];
+
+				ax = positions[id0 * posStride];
+				ay = positions[id0 * posStride + 1];
+				bx = positions[id1 * posStride];
+				by = positions[id1 * posStride + 1];
+				cx = positions[id2 * posStride];
+				cy = positions[id2 * posStride + 1];
+
+				//from a to p
+				var dx:number = ax - x;
+				var dy:number = ay - y;
+
+				//edge normal (a-b)
+				var nx:number = by - ay;
+				var ny:number = -(bx - ax);
+
+				var dot:number = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					continue;
+
+				dx = bx - x;
+				dy = by - y;
+				nx = cy - by;
+				ny = -(cx - bx);
+
+				dot = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					continue;
+
+				dx = cx - x;
+				dy = cy - y;
+				nx = ay - cy;
+				ny = -(ax - cx);
+
+				dot = (dx * nx) + (dy * ny);
+
+				if (dot > 0)
+					continue;
+
+				hitTestCache.lastCollisionIndex = id2;
+				return true;
+			}
+			return false;
+		}
+
+		//brute force
+		for(var k:number = idx_offset; k < idx_count; k += indexDim) {
+			id2 = indices[k];
+
+			if(id2 == index) continue;
+
+			id1 = indices[k+1];
+			id0 = indices[k+2];
+
+			ax = positions[id0 * posStride];
+			ay = positions[id0 * posStride + 1];
+			bx = positions[id1 * posStride];
+			by = positions[id1 * posStride + 1];
+			cx = positions[id2 * posStride];
+			cy = positions[id2 * posStride + 1];
+
+			//console.log(ax, ay, bx, by, cx, cy);
+
+			//from a to p
+			var dx:number = ax - x;
+			var dy:number = ay - y;
+
+			//edge normal (a-b)
+			var nx:number = by - ay;
+			var ny:number = -(bx - ax);
+
+			//console.log(ax,ay,bx,by,cx,cy);
+
+			var dot:number = (dx * nx) + (dy * ny);
+
+			if (dot > 0)
+				continue;
+
+			dx = bx - x;
+			dy = by - y;
+			nx = cy - by;
+			ny = -(cx - bx);
+
+			dot = (dx * nx) + (dy * ny);
+
+			if (dot > 0)
+				continue;
+
+			dx = cx - x;
+			dy = cy - y;
+			nx = ay - cy;
+			ny = -(ax - cx);
+
+			dot = (dx * nx) + (dy * ny);
+
+			if (dot > 0)
+				continue;
+
+			hitTestCache.lastCollisionIndex = id2;
+			return true;
+		}
+		return false;
+	}
+
+	public static getTriangleGraphicsBoxBoundsIndices(positionAttributes:AttributesView, indexAttributes:Short2Attributes, output:Box, idx_count:number, idx_offset:number = 0):Box
+	{
+		var positions:ArrayBufferView = positionAttributes.get(positionAttributes.count);
+		var posDim:number = positionAttributes.dimensions;
+		var posStride:number = positionAttributes.stride;
+
+		var pos:number;
+		var minX:number = 0, minY:number = 0, minZ:number = 0;
+		var maxX:number = 0, maxY:number = 0, maxZ:number = 0;
+
+
+		var indices:Uint16Array = indexAttributes.get(indexAttributes.count);
+
+		var index:number;
+		var i=0;
+		for (i = idx_offset; i < idx_count; i++) {
+			index = indices[i] * posStride;
+			if (i == idx_offset) {
+				maxX = minX = positions[index];
+				maxY = minY = positions[index + 1];
+				maxZ = minZ = (posDim == 3)? positions[index + 2] : 0;
+			} else {
+				pos = positions[index];
+				if (pos < minX)
+					minX = pos;
+				else if (pos > maxX)
+					maxX = pos;
+
+				pos = positions[index + 1];
+
+				if (pos < minY)
+					minY = pos;
+				else if (pos > maxY)
+					maxY = pos;
+
+				if (posDim == 3) {
+					pos = positions[index + 2];
+
+					if (pos < minZ)
+						minZ = pos;
+					else if (pos > maxZ)
+						maxZ = pos;
+				}
+			}
+		}
+
+		if (output == null)
+			output = new Box();
+
+		output.x = minX;
+		output.y = minY;
+		output.z = minZ;
+		output.right = maxX;
+		output.bottom = maxY;
+		output.back = maxZ;
+
+		return output;
+
+	}
 	public static getTriangleGraphicsBoxBounds(positionAttributes:AttributesView, output:Box, count:number, offset:number = 0):Box
 	{
 		var positions:ArrayBufferView = positionAttributes.get(count, offset);
@@ -961,7 +1278,7 @@ export class ElementsUtils
 
 		if (output == null)
 			output = new Sphere();
-		
+
 		output.x = center.x;
 		output.y = center.y;
 		output.z = center.z;

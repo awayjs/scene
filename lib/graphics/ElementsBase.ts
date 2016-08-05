@@ -213,7 +213,7 @@ export class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public getBoxBounds(target:Box = null, count:number = 0, offset:number = 0):Box
+	public getBoxBounds(target:Box = null, count:number = 0, offset:number = 0, idx_count:number = 0, idx_offset:number = 0):Box
 	{
 		throw new AbstractMethodError();
 	}
@@ -223,7 +223,7 @@ export class ElementsBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public hitTestPoint(x:number, y:number, z:number, box:Box, count:number = 0, offset:number = 0):boolean
+	public hitTestPoint(x:number, y:number, z:number, box:Box, count:number = 0, offset:number = 0, idx_count:number = 0, idx_offset:number = 0):boolean
 	{
 		throw new AbstractMethodError();
 	}
@@ -268,7 +268,7 @@ export class ElementsBase extends AssetBase
 		this._invalidateVertices[attributesView.id] = null;
 	}
 
-	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision, count:number = 0, offset:number = 0):boolean
+	public _iTestCollision(pickingCollider:IPickingCollider, material:MaterialBase, pickingCollision:PickingCollision, count:number = 0, offset:number = 0, idx_count:number = 0, idx_offset:number = 0):boolean
 	{
 		throw new AbstractMethodError();
 	}

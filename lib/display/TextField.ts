@@ -8,6 +8,11 @@ import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
 import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 import {Vector3D}					from "@awayjs/core/lib/geom/Vector3D";
 import {Sampler2D}					from "@awayjs/core/lib/image/Sampler2D";
+import {Single2DTexture}				from "../textures/Single2DTexture";
+
+import {BasicMaterial}					from "../materials/BasicMaterial";
+import {MaterialBase}					from "../materials/MaterialBase";
+
 
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {Style}						from "../base/Style";
@@ -27,6 +32,8 @@ import {TriangleElements}			from "../graphics/TriangleElements";
 import {TesselatedFontChar}			from "../text/TesselatedFontChar";
 import {TextFormatAlign}			from "../text/TextFormatAlign";
 import {TesselatedFontTable}		from "../text/TesselatedFontTable";
+import {BitmapFontTable}			from "../text/BitmapFontTable";
+
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
 import {DefaultMaterialManager}		from "../managers/DefaultMaterialManager";
 
@@ -63,7 +70,7 @@ import {DefaultMaterialManager}		from "../managers/DefaultMaterialManager";
  * <p>Flash Player supports a subset of HTML tags that you can use to format
  * text. See the list of supported HTML tags in the description of the
  * <code>htmlText</code> property.</p>
- * 
+ *
  * @event change                    Dispatched after a control value is
  *                                  modified, unlike the
  *                                  <code>textInput</code> event, which is
@@ -111,9 +118,11 @@ import {DefaultMaterialManager}		from "../managers/DefaultMaterialManager";
  */
 export class TextField extends Sprite
 {
-	private static _textFields:Array<TextField> = new Array<TextField>();
+	private static _textFields:Array<TextField> = [];
 
 	public static assetType:string = "[asset TextField]";
+
+	private _line_indices:number[] = [];
 
 	private _textGraphicsDirty:boolean;
 	private _bottomScrollV:number;
@@ -142,14 +151,16 @@ export class TextField extends Sprite
 	private _paragraphLength:number;
 	private _textFormat:TextFormat;
 	private _textElements:TriangleElements;
+	private _textElements2:TriangleElements;
 	private _textGraphic:Graphic;
+	private _textGraphic2:Graphic;
 
 	/**
 	 * When set to <code>true</code> and the text field is not in focus, Flash
 	 * Player highlights the selection in the text field in gray. When set to
 	 * <code>false</code> and the text field is not in focus, Flash Player does
 	 * not highlight the selection in the text field.
-	 * 
+	 *
 	 * @default false
 	 */
 	public alwaysShowSelection:boolean;
@@ -203,7 +214,7 @@ export class TextField extends Sprite
 	 * text. If <code>wordWrap</code> is also set to <code>true</code>, only the
 	 * bottom of the text field is resized and the left and right sides remain
 	 * fixed.</p>
-	 * 
+	 *
 	 * @throws ArgumentError The <code>autoSize</code> specified is not a member
 	 *                       of flash.text.TextFieldAutoSize.
 	 */
@@ -224,7 +235,7 @@ export class TextField extends Sprite
 	 * <code>false</code>, the text field has no background fill. Use the
 	 * <code>backgroundColor</code> property to set the background color of a
 	 * text field.
-	 * 
+	 *
 	 * @default false
 	 */
 	public background:boolean;
@@ -242,7 +253,7 @@ export class TextField extends Sprite
 	 * Specifies whether the text field has a border. If <code>true</code>, the
 	 * text field has a border. If <code>false</code>, the text field has no
 	 * border. Use the <code>borderColor</code> property to set the border color.
-	 * 
+	 *
 	 * @default false
 	 */
 	public border:boolean;
@@ -323,7 +334,7 @@ export class TextField extends Sprite
 	 *
 	 * <p><b>Note:</b> You can't set this property if a style sheet is applied to
 	 * the text field.</p>
-	 * 
+	 *
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
@@ -338,7 +349,7 @@ export class TextField extends Sprite
 	 * and Copy commands and their corresponding keyboard shortcuts will not
 	 * function. This security mechanism prevents an unscrupulous user from using
 	 * the shortcuts to discover a password on an unattended computer.
-	 * 
+	 *
 	 * @default false
 	 */
 	public displayAsPassword:boolean;
@@ -353,7 +364,7 @@ export class TextField extends Sprite
 	 * <code>font</code> property of a TextFormat object applied to the text
 	 * field. If the specified font is not embedded in the SWF file, the text is
 	 * not displayed.</p>
-	 * 
+	 *
 	 * @default false
 	 */
 	public embedFonts:boolean;
@@ -369,7 +380,7 @@ export class TextField extends Sprite
 	 *
 	 * <p>For the <code>flash.text.GridFitType</code> property, you can use the
 	 * following string values:</p>
-	 * 
+	 *
 	 * @default pixel
 	 */
 	public gridFitType:GridFitType;
@@ -399,7 +410,7 @@ export class TextField extends Sprite
 	 * <code>maxChars</code> allows; the <code>maxChars</code> property indicates
 	 * only how much text a user can enter. If the value of this property is
 	 * <code>0</code>, a user can enter an unlimited amount of text.
-	 * 
+	 *
 	 * @default 0
 	 */
 	public maxChars:number /*int*/;
@@ -438,7 +449,7 @@ export class TextField extends Sprite
 	 * of <code>false</code>, and the <code>Enter</code> key is ignored). If you
 	 * paste text into a <code>TextField</code> with a <code>multiline</code>
 	 * value of <code>false</code>, newlines are stripped out of the text.
-	 * 
+	 *
 	 * @default false
 	 */
 	public multiline:boolean;
@@ -496,7 +507,7 @@ export class TextField extends Sprite
 	 * <code>restrict</code> strings. The following code includes only the
 	 * characters from ASCII 32(space) to ASCII 126(tilde).</p>
 	 * <pre xml:space="preserve"> my_txt.restrict = "\u0020-\u007E"; </pre>
-	 * 
+	 *
 	 * @default null
 	 */
 	public restrict:string;
@@ -550,7 +561,7 @@ export class TextField extends Sprite
 	 * field can be selected with the mouse or keyboard, and the text can be
 	 * copied with the Copy command. You can select text this way even if the
 	 * text field is a dynamic text field instead of an input text field. </p>
-	 * 
+	 *
 	 * @default true
 	 */
 	public selectable:boolean;
@@ -584,7 +595,7 @@ export class TextField extends Sprite
 	 * for <code>sharpness</code> is a number from -400 to 400. If you attempt to
 	 * set <code>sharpness</code> to a value outside that range, Flash sets the
 	 * property to the nearest value in the range(either -400 or 400).
-	 * 
+	 *
 	 * @default 0
 	 */
 	public sharpness:number;
@@ -657,6 +668,13 @@ export class TextField extends Sprite
 	{
 		if (this._textGraphicsDirty)
 			this.reConstruct();
+		if(this._textFormat){
+			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+			//if(new_ct.color==0xffffff){
+				this.transform.colorTransform.color = this._textFormat.color;
+				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			//}
+		}
 
 		return this._graphics;
 	}
@@ -667,7 +685,7 @@ export class TextField extends Sprite
 	 * digit has 16 possible values or characters. The characters range from 0-9
 	 * and then A-F. For example, black is <code>0x000000</code>; white is
 	 * <code>0xFFFFFF</code>.
-	 * 
+	 *
 	 * @default 0(0x000000)
 	 */
 	public _textColor:number /*int*/;
@@ -680,6 +698,7 @@ export class TextField extends Sprite
 	public set textColor(value:number)
 	{
 		this._textColor = value;
+		this._textFormat.color=value;
 		if(!this.transform.colorTransform)
 			this.transform.colorTransform = new ColorTransform();
 
@@ -734,7 +753,7 @@ export class TextField extends Sprite
 	 * you attempt to set <code>thickness</code> to a value outside that range,
 	 * the property is set to the nearest value in the range(either -200 or
 	 * 200).</p>
-	 * 
+	 *
 	 * @default 0
 	 */
 	public thickness:number;
@@ -744,7 +763,7 @@ export class TextField extends Sprite
 	 * constants: <code>TextFieldType.DYNAMIC</code>, which specifies a dynamic
 	 * text field, which a user cannot edit, or <code>TextFieldType.INPUT</code>,
 	 * which specifies an input text field, which a user can edit.
-	 * 
+	 *
 	 * @default dynamic
 	 * @throws ArgumentError The <code>type</code> specified is not a member of
 	 *                       flash.text.TextFieldType.
@@ -820,10 +839,15 @@ export class TextField extends Sprite
 
 		this._textFormat = null;
 		this._textGraphic = null;
+		this._textGraphic2 = null;
 
 		if (this._textElements) {
 			this._textElements.dispose();
 			this._textElements = null;
+		}
+		if (this._textElements2) {
+			this._textElements2.dispose();
+			this._textElements2 = null;
 		}
 	}
 
@@ -847,233 +871,508 @@ export class TextField extends Sprite
 			this._textElements = null;
 		}
 
+
+		if (this._textGraphic2) {
+			this._textGraphic2.dispose();
+			this._textGraphic2 = null;
+
+			this._textElements2.clear();
+			this._textElements2.dispose();
+			this._textElements2 = null;
+		}
 		if(this._text == "")
 			return;
 
-		var numVertices:number = 0;
-		var elements:TriangleElements;
-		var char_vertices:AttributesBuffer;
-		var thisFormat:TesselatedFontTable=<TesselatedFontTable>this._textFormat.font_table;
-
-		var fallbackFormat:TesselatedFontTable=null;
-		if (this._textFormat.fallback_font_table)
-			fallbackFormat = <TesselatedFontTable>this._textFormat.fallback_font_table;
-
-
-		var char_scale:number=this._textFormat.size/thisFormat.get_font_em_size();
-		var y_offset:number=0;
-		var prev_char:TesselatedFontChar = null;
-		var j:number = 0;
-		var k:number = 0;
-		var whitespace_width=(thisFormat.get_whitespace_width() * char_scale)+this._textFormat.letterSpacing;
+		var activeFormat:TextFormat=this._textFormat;
+		activeFormat.font_table.initFontSize(activeFormat.size);
 		var textlines:Array<string> = this.text.toString().split("\\n");
-		var final_lines_chars:Array<Array<TesselatedFontChar>> = [];
-		var final_lines_char_scale:Array<Array<number>> = [];
-		var final_lines_width:Array<number> = [];
-		var final_lines_justify_bool:Array<boolean> = [];
-		var final_isParagraph:Array<boolean> = [];
-		var final_lines_justify:Array<number> = [];
-		var maxlineWidth:number;
-		for (var tl = 0; tl < textlines.length; tl++) {
 
-			maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
-			final_lines_chars.push([]);
-			final_lines_char_scale.push([]);
-			final_lines_width.push(0);
-			final_lines_justify.push(0);
-			final_lines_justify_bool.push(false);
-			final_isParagraph.push(true);
+		var maxlineWidth:number=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
 
+		var tl_char_codes:Array<Array<number>> = [];
+		var tl_char_widths:Array<Array<number>> = [];
+		var tl_char_heights:Array<Array<number>> = [];
+		var tl_formatIdx:Array<Array<number>> = [];
+		var tl_width:Array<number> = [];
+		var tl_height:Array<number> = [];
+		var tl_cnt:number=0;
+		var w:number=0;
+		var c:number=0;
+		var tl:number=0;
+		var words:Array<string>;
+		var char_cnt:number=0;
+		var char_width:number=0;
+		var numVertices:number = 0;
+		var numVertices2:number = 0;
+		this._line_indices=[];
+		// sort all chars into final lines
+		for (tl = 0; tl < textlines.length; tl++) {
+			this._line_indices[tl_cnt]=char_cnt;
+			tl_char_codes[tl_cnt]=[];
+			tl_char_widths[tl_cnt]=[];
+			tl_char_heights[tl_cnt]=[];
+			tl_formatIdx[tl_cnt]=[];
+			tl_width[tl_cnt]=0;
+			tl_height[tl_cnt]=0;
+			tl_cnt++;
+			words = textlines[tl].split(" ");
+			for (w = 0; w < words.length; w++) {
+				var word_width:number=0;
+				var char_widths:Array<number>=[];
+				var char_heights:Array<number>=[];
+				var formatIdx:Array<number>=[];
+				var max_word_height:number=0;
+				for (c = 0; c < words[w].length; c++) {
+					var lineHeight:number=activeFormat.font_table.getLineHeight();
+					if(lineHeight>max_word_height)max_word_height=lineHeight;
+					char_width=0;
+					if(activeFormat.font_table.hasChar(words[w].charCodeAt(c).toString())){
+						char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
+						formatIdx[c]=0;
+						numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());						
+					}
+					else if(activeFormat.font_table.fallbackTable && activeFormat.font_table.fallbackTable.hasChar(words[w].charCodeAt(c).toString())){
+						formatIdx[c]=1;
+						char_width = activeFormat.font_table.fallbackTable.getCharWidth(words[w].charCodeAt(c).toString());
+						numVertices2 += activeFormat.font_table.fallbackTable.getCharVertCnt(words[w].charCodeAt(c).toString());
+						lineHeight=activeFormat.font_table.fallbackTable.getLineHeight();
+						if(lineHeight>max_word_height)max_word_height=lineHeight;
 
-			var words:Array<string> = textlines[tl].split(" ");
-			for (var i = 0; i < words.length; i++) {
-				var word_width:number = 0;
-				var word_chars:Array<TesselatedFontChar> = [];
-				var word_chars_scale:Array<number> = [];
-				var c_cnt:number = 0;
-				for (var w = 0; w < words[i].length; w++) {
-					char_scale = this._textFormat.size / thisFormat.get_font_em_size();
-					var this_char:TesselatedFontChar = <TesselatedFontChar> thisFormat.getChar(words[i].charCodeAt(w).toString());
-					if (this_char == null) {
-						if (fallbackFormat) {
-							char_scale = this._textFormat.size / fallbackFormat.get_font_em_size();
-							this_char = fallbackFormat.getChar(words[i].charCodeAt(w).toString());
-						}
 					}
-					if (this_char != null) {
-						char_vertices = this_char.fill_data;
-						if (char_vertices != null) {
-							numVertices += char_vertices.count;
-							// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-							var kerning_value:number = 0;
-							if (prev_char != null) {
-								for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
-									if (prev_char.kerningCharCodes[k] == words[i].charCodeAt(w)) {
-										kerning_value = prev_char.kerningValues[k];
-										break;
-									}
-								}
-							}
-							word_width += ((2 + this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
-						}
-						else {
-							// if no char-elements was found, we insert a "space"
-							word_width += whitespace_width;
-						}
+					else{
+						formatIdx[c]=-1;						
 					}
-					else {
-						// if no char-elements was found, we insert a "space"
-						//x_offset += thisFormat.get_font_em_size() * char_scale;
-						word_width += whitespace_width;
-					}
-					word_chars_scale[c_cnt] = char_scale;
-					word_chars[c_cnt++] = this_char;
+					
+					char_widths[c]=char_width;
+					char_heights[c]=lineHeight;
+					word_width += char_width+this._textFormat.letterSpacing+1;
+					char_cnt++;
 				}
-
-				if (((final_lines_width[final_lines_width.length - 1] + word_width) <= maxlineWidth)||(final_lines_chars[final_lines_chars.length - 1].length==0)) {
-					// if line can hold this word without breaking the bounds, we can just add all chars
-					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
-						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
-						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+				// word fits into line, just add it to the last line
+				if((tl_width[tl_cnt-1]+word_width) <= maxlineWidth){
+					if(tl_width[tl_cnt-1]!=0){
+						// there is already a word in this line. we want to add a space
+						tl_char_codes[tl_cnt-1].push(32);
+						tl_formatIdx[tl_cnt-1].push(1);
+						tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
+						tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
 					}
-					final_lines_width[final_lines_width.length - 1] += word_width;
+					for (c = 0; c < words[w].length; c++) {
+						tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
+						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+						tl_char_widths[tl_cnt-1].push(char_widths[c]);
+					}
+					tl_width[tl_cnt-1]+=word_width;
+					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
-				else {
-					// word does not fit
-					// todo respect autowrapping properties.
-					// right now we just pretend everything has autowrapping and multiline
-					if(final_lines_chars[final_lines_chars.length - 1][final_lines_chars[final_lines_chars.length - 1].length-1]==null){
-						final_lines_chars[final_lines_chars.length - 1].pop();
-						final_lines_char_scale[final_lines_char_scale.length - 1].pop();
-						final_lines_width[final_lines_width.length - 1] -= whitespace_width;
-						final_lines_justify[final_lines_justify.length - 1]-=1;
+				// word does not fit into line, but it is first word added to line, so we add it anyway.
+				// todo: respect auto--wrap / multiline settings + optional include 3rd party tool for splitting into sylibils
+				else if(tl_width[tl_cnt-1]==0){
+					for (c = 0; c < words[w].length; c++) {
+						tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
+						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+						tl_char_widths[tl_cnt-1].push(char_widths[c]);
 					}
-					final_lines_justify_bool[final_lines_justify_bool.length - 1]=true;
-					final_lines_chars.push([]);
-					final_lines_char_scale.push([]);
-					final_lines_width.push(0);
-					final_lines_justify.push(0);
-					final_lines_justify_bool.push(false);
-					final_isParagraph.push(false);
-					for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
-						final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
-						final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
-					}
-					final_lines_width[final_lines_width.length - 1] = word_width;
-					maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin);
+					tl_width[tl_cnt-1]+=word_width;
+					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
-				if (i < (words.length - 1)) {
-					if ((final_lines_width[final_lines_width.length - 1]) <= maxlineWidth) {
-						final_lines_chars[final_lines_chars.length - 1].push(null);
-						final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
-						final_lines_width[final_lines_width.length - 1] += whitespace_width;
-						final_lines_justify[final_lines_justify.length - 1]+=1;
+				// word does not fit, and there are already words on this line
+				else{
+					tl_char_codes[tl_cnt]=[];
+					tl_char_widths[tl_cnt]=[];
+					tl_formatIdx[tl_cnt]=[];
+					tl_width[tl_cnt]=0;
+					tl_height[tl_cnt]=0;
+					tl_cnt++;
+					for (c = 0; c < words[w].length; c++) {
+						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+						tl_char_widths[tl_cnt-1].push(char_widths[c]);
+						tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
 					}
+					tl_width[tl_cnt-1]+=word_width;
+					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
 			}
 		}
 
-		y_offset=2+(thisFormat.ascent-thisFormat.get_font_em_size())*char_scale;
+		var tl_startx:Array<Array<number> >=[];
+		// calculate the final positions of the chars
+		for (tl = 0; tl < tl_width.length; tl++) {
 
-		var vertices:Float32Array = new Float32Array(numVertices*3);
-
-		for (var i = 0; i < final_lines_chars.length; i++) {
-
-			var intent:number=0;
-			if(final_isParagraph[i]){intent=this._textFormat.indent;}
-			maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + intent);
-			var x_offset:number= 2 + this._textFormat.leftMargin + intent;
+			var x_offset:number= 2 + this._textFormat.leftMargin + this._textFormat.indent;
 			var justify_addion:number=0;
 			if(this._textFormat.align=="center"){
-				x_offset=2 + this._textFormat.leftMargin + intent+(maxlineWidth-final_lines_width[i])/2;
+				x_offset=2 + this._textFormat.leftMargin + this._textFormat.indent+(maxlineWidth-tl_width[tl])/2;
+				//x_offset=2 + this._textFormat.leftMargin + intent+(maxlineWidth-final_lines_width[i])/2;
 			}
 			else if(this._textFormat.align=="justify"){
-				if(final_lines_justify_bool[i]){
-					justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
-				}
+				/*if(final_lines_justify_bool[i]){
+				 justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
+				 }*/
 			}
 			else if(this._textFormat.align=="right"){
-				x_offset=(this._textWidth-final_lines_width[i])-(2 + this._textFormat.rightMargin);
+				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
 			}
-			//console.log("this._textFormat.align="+this._textFormat.align);
-			//console.log("this._width="+this._width);
-			for (var t = 0; t < final_lines_chars[i].length; t++) {
-				var this_char:TesselatedFontChar = final_lines_chars[i][t];
-				char_scale = final_lines_char_scale[i][t];
-				if (this_char != null) {
-					char_vertices = this_char.fill_data;
-					if (char_vertices != null) {
-						var buffer:Float32Array = new Float32Array(char_vertices.buffer);
-						for (var v:number = 0; v < char_vertices.count; v++) {
-							vertices[j++] = buffer[v*3]*char_scale + x_offset;
-							vertices[j++] = buffer[v*3 + 1]*char_scale + y_offset;
-							vertices[j++] = buffer[v*3 + 2];
-						}
-						// find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
-						var kerning_value:number = 0;
-						if (prev_char != null) {
-							for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
-								if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
-									kerning_value = prev_char.kerningValues[k];
-									break;
-								}
-							}
-						}
-						x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
-
-					}
-					else {
-						// if no char-elements was found, we insert a "space"
-						x_offset+=whitespace_width+justify_addion;
-					}
-				}
-				else{
-					x_offset+=whitespace_width+justify_addion;
+			tl_startx[tl]=[];
+			this.textHeight=0;
+			for (var c = 0; c < tl_char_codes[tl].length; c++) {
+				this.textHeight+=tl_height[tl];
+				tl_startx[tl][c]=x_offset;
+				x_offset+=tl_char_widths[tl][c]+this._textFormat.letterSpacing+1;
+				// if this is a whitespace, we add the justify additional spacer
+				if(tl_char_codes[tl][c]==32){
+					x_offset+=justify_addion;
 				}
 			}
-			// hack for multiline textfield in icycle.
+		}
+		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
+			//console.log("contruct bitmap text = "+this._text);
+			var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
+			var vertices:Float32Array = new Float32Array(numVertices*7);
+			var vertices2:Float32Array = new Float32Array(numVertices2*7);
+			var vert_cnt:number=0;
+			var vert_cnt2:number=0;
 
-			y_offset+=(thisFormat.ascent + thisFormat.descent)*char_scale;
-			//y_offset+=(thisFormat.get_font_em_size()-thisFormat.descent)*char_scale;
-			y_offset+= this._textFormat.leading;
+			var y_offset:number=2;//2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
 
+			for (tl = 0; tl < tl_width.length; tl++) {
+				y_offset+=tl_height[tl];
+				for (var c = 0; c < tl_char_codes[tl].length; c++) {					
+					if(tl_char_codes[tl][c]==32){
+						continue;
+					}
+					if(tl_formatIdx[tl][c]<0){
+						continue;						
+					}
+					var char_data:Array<number>;
+					if(tl_formatIdx[tl][c]==0) {
+						char_data = bitmap_fontTable.getCharData(tl_char_codes[tl][c].toString());
+						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
+						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5];
+						vertices[vert_cnt++] = char_data[0];
+						vertices[vert_cnt++] = char_data[1];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5];
+						vertices[vert_cnt++] = char_data[0] + char_data[2];
+						vertices[vert_cnt++] = char_data[1];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = char_data[0] + char_data[2];
+						vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = char_data[0] + char_data[2];
+						vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
+						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = char_data[0];
+						vertices[vert_cnt++] = char_data[1] + char_data[3];
+
+						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
+						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5];
+						vertices[vert_cnt++] = char_data[0];
+						vertices[vert_cnt++] = char_data[1];
+					}
+					if(tl_formatIdx[tl][c]==1) {
+						char_data = (<BitmapFontTable>bitmap_fontTable.fallbackTable).getCharData(tl_char_codes[tl][c].toString());
+						vertices2[vert_cnt2++] = tl_startx[tl][c] + char_data[4];
+						vertices2[vert_cnt2++] = y_offset - activeFormat.font_table.fallbackTable.getLineHeight() + char_data[5];
+						vertices2[vert_cnt2++] = char_data[0];
+						vertices2[vert_cnt2++] = char_data[1];
+
+						vertices2[vert_cnt2++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+						vertices2[vert_cnt2++] = y_offset - activeFormat.font_table.fallbackTable.getLineHeight() + char_data[5];
+						vertices2[vert_cnt2++] = char_data[0] + char_data[2];
+						vertices2[vert_cnt2++] = char_data[1];
+
+						vertices2[vert_cnt2++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+						vertices2[vert_cnt2++] = y_offset;
+						vertices2[vert_cnt2++] = char_data[0] + char_data[2];
+						vertices2[vert_cnt2++] = char_data[1] + char_data[3];
+
+						vertices2[vert_cnt2++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+						vertices2[vert_cnt2++] = y_offset;
+						vertices2[vert_cnt2++] = char_data[0] + char_data[2];
+						vertices2[vert_cnt2++] = char_data[1] + char_data[3];
+
+						vertices2[vert_cnt2++] = tl_startx[tl][c] + char_data[4];
+						vertices2[vert_cnt2++] = y_offset;
+						vertices2[vert_cnt2++] = char_data[0];
+						vertices2[vert_cnt2++] = char_data[1] + char_data[3];
+
+						vertices2[vert_cnt2++] = tl_startx[tl][c] + char_data[4];
+						vertices2[vert_cnt2++] = y_offset - activeFormat.font_table.fallbackTable.getLineHeight() + char_data[5];
+						vertices2[vert_cnt2++] = char_data[0];
+						vertices2[vert_cnt2++] = char_data[1];
+					}
+				}
+				y_offset+= this._textFormat.leading;
+			}
+			if(vert_cnt>0){
+				var attributesView:AttributesView = new AttributesView(Float32Array, 4);
+				attributesView.set(vertices);
+				var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+				attributesView.dispose();
+
+				this._textElements = new TriangleElements(vertexBuffer);
+				this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+				this._textElements.setUVs(new Float2Attributes(vertexBuffer));
+				this._textGraphic = this._graphics.addGraphic(this._textElements);
+
+				this._textGraphic.material = bitmap_fontTable.material;
+			}
+			if(vert_cnt2>0){
+				var attributesView2:AttributesView = new AttributesView(Float32Array, 4);
+				attributesView2.set(vertices2);
+				var vertexBuffer2:AttributesBuffer = attributesView2.attributesBuffer;
+				attributesView2.dispose();
+
+				this._textElements2 = new TriangleElements(vertexBuffer2);
+				this._textElements2.setPositions(new Float2Attributes(vertexBuffer2));
+				this._textElements2.setUVs(new Float2Attributes(vertexBuffer2));
+				this._textGraphic2 = this._graphics.addGraphic(this._textElements2);
+
+				this._textGraphic2.material = (<BitmapFontTable>bitmap_fontTable.fallbackTable).material;
+			}
+
+
+			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+			this.transform.colorTransform.color = activeFormat.color;
+			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 
 		}
 
+		//todo: render tesselated fonts
+		/*
+		 var numVertices:number = 0;
+		 var elements:TriangleElements;
+		 var char_vertices:AttributesBuffer;
+		 var thisFormat:TesselatedFontTable=<TesselatedFontTable>this._textFormat.font_table;
+
+		 var fallbackFormat:TesselatedFontTable=null;
+		 if (this._textFormat.fallback_font_table)
+		 fallbackFormat = <TesselatedFontTable>this._textFormat.fallback_font_table;
 
 
-		var attributesView:AttributesView = new AttributesView(Float32Array, 3);
-		attributesView.set(vertices);
-		var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
-		attributesView.dispose();
+		 var char_scale:number=this._textFormat.size/thisFormat.get_font_em_size();
+		 var y_offset:number=0;
+		 var prev_char:TesselatedFontChar = null;
+		 var j:number = 0;
+		 var k:number = 0;
+		 var whitespace_width=(thisFormat.get_whitespace_width() * char_scale)+this._textFormat.letterSpacing;
+		 var textlines:Array<string> = this.text.toString().split("\\n");
+		 var final_lines_chars:Array<Array<TesselatedFontChar>> = [];
+		 var final_lines_char_scale:Array<Array<number>> = [];
+		 var final_lines_width:Array<number> = [];
+		 var final_lines_justify_bool:Array<boolean> = [];
+		 var final_isParagraph:Array<boolean> = [];
+		 var final_lines_justify:Array<number> = [];
+		 var maxlineWidth:number;
+		 for (var tl = 0; tl < textlines.length; tl++) {
 
-		this._textElements = new TriangleElements(vertexBuffer);
-		this._textElements.setPositions(new Float2Attributes(vertexBuffer));
-		this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+		 maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+		 final_lines_chars.push([]);
+		 final_lines_char_scale.push([]);
+		 final_lines_width.push(0);
+		 final_lines_justify.push(0);
+		 final_lines_justify_bool.push(false);
+		 final_isParagraph.push(true);
 
-		this._textGraphic = this._graphics.addGraphic(this._textElements);
 
-		var sampler:Sampler2D = new Sampler2D();
-		this._textGraphic.style = new Style();
-		if(this._textFormat.material){
-			this._textGraphic.material = this._textFormat.material;
-			this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
-			this._textGraphic.material.animateUVs = true;
-			this._textGraphic.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
-		}
-		else{
+		 var words:Array<string> = textlines[tl].split(" ");
+		 for (var i = 0; i < words.length; i++) {
+		 var word_width:number = 0;
+		 var word_chars:Array<TesselatedFontChar> = [];
+		 var word_chars_scale:Array<number> = [];
+		 var c_cnt:number = 0;
+		 for (var w = 0; w < words[i].length; w++) {
+		 char_scale = this._textFormat.size / thisFormat.get_font_em_size();
+		 var this_char:TesselatedFontChar = <TesselatedFontChar> thisFormat.getChar(words[i].charCodeAt(w).toString());
+		 if (this_char == null) {
+		 if (fallbackFormat) {
+		 char_scale = this._textFormat.size / fallbackFormat.get_font_em_size();
+		 this_char = fallbackFormat.getChar(words[i].charCodeAt(w).toString());
+		 }
+		 }
+		 if (this_char != null) {
+		 char_vertices = this_char.fill_data;
+		 if (char_vertices != null) {
+		 numVertices += char_vertices.count;
+		 // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+		 var kerning_value:number = 0;
+		 if (prev_char != null) {
+		 for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
+		 if (prev_char.kerningCharCodes[k] == words[i].charCodeAt(w)) {
+		 kerning_value = prev_char.kerningValues[k];
+		 break;
+		 }
+		 }
+		 }
+		 word_width += ((2 + this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+		 }
+		 else {
+		 // if no char-elements was found, we insert a "space"
+		 word_width += whitespace_width;
+		 }
+		 }
+		 else {
+		 // if no char-elements was found, we insert a "space"
+		 //x_offset += thisFormat.get_font_em_size() * char_scale;
+		 word_width += whitespace_width;
+		 }
+		 word_chars_scale[c_cnt] = char_scale;
+		 word_chars[c_cnt++] = this_char;
+		 }
 
-			this._textGraphic.material = DefaultMaterialManager.getDefaultMaterial();
-			this._textGraphic.material.bothSides = true;
-			//this._textGraphic.material.useColorTransform = true;
-			this._textGraphic.material.curves = true;
-			this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
-			//sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
-			this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
-			this._textGraphic.material.animateUVs = true;
-			//graphic.material.imageRect = true;
-		}
-		this.material=this._textGraphic.material;
+		 if (((final_lines_width[final_lines_width.length - 1] + word_width) <= maxlineWidth)||(final_lines_chars[final_lines_chars.length - 1].length==0)) {
+		 // if line can hold this word without breaking the bounds, we can just add all chars
+		 for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
+		 final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+		 final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+		 }
+		 final_lines_width[final_lines_width.length - 1] += word_width;
+		 }
+		 else {
+		 // word does not fit
+		 // todo respect autowrapping properties.
+		 // right now we just pretend everything has autowrapping and multiline
+		 if(final_lines_chars[final_lines_chars.length - 1][final_lines_chars[final_lines_chars.length - 1].length-1]==null){
+		 final_lines_chars[final_lines_chars.length - 1].pop();
+		 final_lines_char_scale[final_lines_char_scale.length - 1].pop();
+		 final_lines_width[final_lines_width.length - 1] -= whitespace_width;
+		 final_lines_justify[final_lines_justify.length - 1]-=1;
+		 }
+		 final_lines_justify_bool[final_lines_justify_bool.length - 1]=true;
+		 final_lines_chars.push([]);
+		 final_lines_char_scale.push([]);
+		 final_lines_width.push(0);
+		 final_lines_justify.push(0);
+		 final_lines_justify_bool.push(false);
+		 final_isParagraph.push(false);
+		 for (var fw:number = 0; fw < word_chars_scale.length; fw++) {
+		 final_lines_chars[final_lines_chars.length - 1].push(word_chars[fw]);
+		 final_lines_char_scale[final_lines_char_scale.length - 1].push(word_chars_scale[fw]);
+		 }
+		 final_lines_width[final_lines_width.length - 1] = word_width;
+		 maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin);
+		 }
+		 if (i < (words.length - 1)) {
+		 if ((final_lines_width[final_lines_width.length - 1]) <= maxlineWidth) {
+		 final_lines_chars[final_lines_chars.length - 1].push(null);
+		 final_lines_char_scale[final_lines_char_scale.length - 1].push(char_scale);
+		 final_lines_width[final_lines_width.length - 1] += whitespace_width;
+		 final_lines_justify[final_lines_justify.length - 1]+=1;
+		 }
+		 }
+		 }
+		 }
+
+		 y_offset=2+(thisFormat.ascent-thisFormat.get_font_em_size())*char_scale;
+
+		 var vertices:Float32Array = new Float32Array(numVertices*3);
+
+		 for (var i = 0; i < final_lines_chars.length; i++) {
+
+		 var intent:number=0;
+		 if(final_isParagraph[i]){intent=this._textFormat.indent;}
+		 maxlineWidth=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + intent);
+		 var x_offset:number= 2 + this._textFormat.leftMargin + intent;
+		 var justify_addion:number=0;
+		 if(this._textFormat.align=="center"){
+		 x_offset=2 + this._textFormat.leftMargin + intent+(maxlineWidth-final_lines_width[i])/2;
+		 }
+		 else if(this._textFormat.align=="justify"){
+		 if(final_lines_justify_bool[i]){
+		 justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
+		 }
+		 }
+		 else if(this._textFormat.align=="right"){
+		 x_offset=(this._textWidth-final_lines_width[i])-(2 + this._textFormat.rightMargin);
+		 }
+		 //console.log("this._textFormat.align="+this._textFormat.align);
+		 //console.log("this._width="+this._width);
+		 for (var t = 0; t < final_lines_chars[i].length; t++) {
+		 var this_char:TesselatedFontChar = final_lines_chars[i][t];
+		 char_scale = final_lines_char_scale[i][t];
+		 if (this_char != null) {
+		 char_vertices = this_char.fill_data;
+		 if (char_vertices != null) {
+		 var buffer:Float32Array = new Float32Array(char_vertices.buffer);
+		 for (var v:number = 0; v < char_vertices.count; v++) {
+		 vertices[j++] = buffer[v*3]*char_scale + x_offset;
+		 vertices[j++] = buffer[v*3 + 1]*char_scale + y_offset;
+		 vertices[j++] = buffer[v*3 + 2];
+		 }
+		 // find kerning value that has been set for this char_code on previous char (if non exists, kerning_value will stay 0)
+		 var kerning_value:number = 0;
+		 if (prev_char != null) {
+		 for (var k:number = 0; k < prev_char.kerningCharCodes.length; k++) {
+		 if (prev_char.kerningCharCodes[k] == this._text.charCodeAt(i)) {
+		 kerning_value = prev_char.kerningValues[k];
+		 break;
+		 }
+		 }
+		 }
+		 x_offset += ((this_char.char_width + kerning_value) * char_scale) + this._textFormat.letterSpacing;
+
+		 }
+		 else {
+		 // if no char-elements was found, we insert a "space"
+		 x_offset+=whitespace_width+justify_addion;
+		 }
+		 }
+		 else{
+		 x_offset+=whitespace_width+justify_addion;
+		 }
+		 }
+		 // hack for multiline textfield in icycle.
+
+		 y_offset+=(thisFormat.ascent + thisFormat.descent)*char_scale;
+		 //y_offset+=(thisFormat.get_font_em_size()-thisFormat.descent)*char_scale;
+		 y_offset+= this._textFormat.leading;
+
+
+		 }
+
+
+
+		 var attributesView:AttributesView = new AttributesView(Float32Array, 3);
+		 attributesView.set(vertices);
+		 var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+		 attributesView.dispose();
+
+		 this._textElements = new TriangleElements(vertexBuffer);
+		 this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+		 this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+
+		 this._textGraphic = this._graphics.addGraphic(this._textElements);
+
+		 var sampler:Sampler2D = new Sampler2D();
+		 this._textGraphic.style = new Style();
+		 if(this._textFormat.material){
+		 this._textGraphic.material = this._textFormat.material;
+		 this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+		 this._textGraphic.material.animateUVs = true;
+		 this._textGraphic.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+		 }
+		 else{
+
+		 this._textGraphic.material = DefaultMaterialManager.getDefaultMaterial();
+		 this._textGraphic.material.bothSides = true;
+		 //this._textGraphic.material.useColorTransform = true;
+		 this._textGraphic.material.curves = true;
+		 this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+		 //sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
+		 this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
+		 this._textGraphic.material.animateUVs = true;
+		 //graphic.material.imageRect = true;
+		 }
+		 this.material=this._textGraphic.material;
+		 */
 	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
@@ -1099,7 +1398,7 @@ export class TextField extends Sprite
 
 	/**
 	 * Returns a rectangle that is the bounding box of the character.
-	 * 
+	 *
 	 * @param charIndex The zero-based index value for the character(for
 	 *                  example, the first position is 0, the second position is
 	 *                  1, and so on).
@@ -1114,7 +1413,7 @@ export class TextField extends Sprite
 	/**
 	 * Returns the zero-based index value of the character at the point specified
 	 * by the <code>x</code> and <code>y</code> parameters.
-	 * 
+	 *
 	 * @param x The <i>x</i> coordinate of the character.
 	 * @param y The <i>y</i> coordinate of the character.
 	 * @return The zero-based index value of the character(for example, the
@@ -1129,7 +1428,7 @@ export class TextField extends Sprite
 	/**
 	 * Given a character index, returns the index of the first character in the
 	 * same paragraph.
-	 * 
+	 *
 	 * @param charIndex The zero-based index value of the character(for example,
 	 *                  the first character is 0, the second character is 1, and
 	 *                  so on).
@@ -1150,7 +1449,7 @@ export class TextField extends Sprite
 	 *
 	 * <p><pre xml:space="preserve"><code> <img src = 'filename.jpg' id =
 	 * 'instanceName' ></code></pre></p>
-	 * 
+	 *
 	 * @param id The <code>id</code> to match(in the <code>id</code> attribute
 	 *           of the <code><img></code> tag).
 	 * @return The display object corresponding to the image or SWF file with the
@@ -1170,7 +1469,7 @@ export class TextField extends Sprite
 	/**
 	 * Returns the zero-based index value of the line at the point specified by
 	 * the <code>x</code> and <code>y</code> parameters.
-	 * 
+	 *
 	 * @param x The <i>x</i> coordinate of the line.
 	 * @param y The <i>y</i> coordinate of the line.
 	 * @return The zero-based index value of the line(for example, the first
@@ -1185,7 +1484,7 @@ export class TextField extends Sprite
 	/**
 	 * Returns the zero-based index value of the line containing the character
 	 * specified by the <code>charIndex</code> parameter.
-	 * 
+	 *
 	 * @param charIndex The zero-based index value of the character(for example,
 	 *                  the first character is 0, the second character is 1, and
 	 *                  so on).
@@ -1199,7 +1498,7 @@ export class TextField extends Sprite
 
 	/**
 	 * Returns the number of characters in a specific text line.
-	 * 
+	 *
 	 * @param lineIndex The line number for which you want the length.
 	 * @return The number of characters in the line.
 	 * @throws RangeError The line number specified is out of range.
@@ -1211,7 +1510,7 @@ export class TextField extends Sprite
 
 	/**
 	 * Returns metrics information about a given text line.
-	 * 
+	 *
 	 * @param lineIndex The line number for which you want metrics information.
 	 * @return A TextLineMetrics object.
 	 * @throws RangeError The line number specified is out of range.
@@ -1224,7 +1523,7 @@ export class TextField extends Sprite
 	/**
 	 * Returns the character index of the first character in the line that the
 	 * <code>lineIndex</code> parameter specifies.
-	 * 
+	 *
 	 * @param lineIndex The zero-based index value of the line(for example, the
 	 *                  first line is 0, the second line is 1, and so on).
 	 * @return The zero-based index value of the first character in the line.
@@ -1238,7 +1537,7 @@ export class TextField extends Sprite
 	/**
 	 * Returns the text of the line specified by the <code>lineIndex</code>
 	 * parameter.
-	 * 
+	 *
 	 * @param lineIndex The zero-based index value of the line(for example, the
 	 *                  first line is 0, the second line is 1, and so on).
 	 * @return The text string contained in the specified line.
@@ -1254,7 +1553,7 @@ export class TextField extends Sprite
 	 * the given character. The length is relative to the first character in the
 	 * paragraph(as returned by <code>getFirstCharInParagraph()</code>), not to
 	 * the character index passed in.
-	 * 
+	 *
 	 * @param charIndex The zero-based index value of the character(for example,
 	 *                  the first character is 0, the second character is 1, and
 	 *                  so on).
@@ -1278,7 +1577,7 @@ export class TextField extends Sprite
 	 * applied to all the text in the text field. </p>
 	 *
 	 * <p>The following table describes three possible usages:</p>
-	 * 
+	 *
 	 * @return The TextFormat object that represents the formatting properties
 	 *         for the specified text.
 	 * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
@@ -1301,7 +1600,7 @@ export class TextField extends Sprite
 	 *
 	 * <p><b>Note:</b> This method does not work if a style sheet is applied to
 	 * the text field.</p>
-	 * 
+	 *
 	 * @param value The string to replace the currently selected text.
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
@@ -1319,7 +1618,7 @@ export class TextField extends Sprite
 	 *
 	 * <p><b>Note:</b> This method does not work if a style sheet is applied to
 	 * the text field.</p>
-	 * 
+	 *
 	 * @param beginIndex The zero-based index value for the start position of the
 	 *                   replacement range.
 	 * @param endIndex   The zero-based index position of the first character
@@ -1340,7 +1639,7 @@ export class TextField extends Sprite
 	 * <code>endIndex</code> parameters. If the two parameter values are the
 	 * same, this method sets the insertion point, as if you set the
 	 * <code>caretIndex</code> property.
-	 * 
+	 *
 	 * @param beginIndex The zero-based index value of the first character in the
 	 *                   selection(for example, the first character is 0, the
 	 *                   second character is 1, and so on).
@@ -1389,7 +1688,7 @@ export class TextField extends Sprite
 	 * formatting for new text, and not the formatting specified for the text
 	 * insertion point. To set the default formatting for new text, use
 	 * <code>defaultTextFormat</code>.</p>
-	 * 
+	 *
 	 * @param format A TextFormat object that contains character and paragraph
 	 *               formatting information.
 	 * @throws Error      This method cannot be used on a text field with a style
@@ -1422,7 +1721,7 @@ export class TextField extends Sprite
 	 * <p>If both <code>EMBEDDED</code> and <code>EMBEDDED_CFF</code> fonts are
 	 * available with the same name and style, the <code>EMBEDDED</code> font is
 	 * selected and text renders with the <code>EMBEDDED</code> font.</p>
-	 * 
+	 *
 	 * @param fontName  The name of the embedded font to check.
 	 * @param fontStyle Specifies the font style to check. Use
 	 *                  <code>flash.text.FontStyle</code>
@@ -1436,14 +1735,14 @@ export class TextField extends Sprite
 		return false;
 	}
 
-    public clone():TextField
-    {
+	public clone():TextField
+	{
 		var newInstance:TextField = (TextField._textFields.length)? TextField._textFields.pop() : new TextField();
 
 		this.copyTo(newInstance);
 
 		return newInstance;
-    }
+	}
 
 
 	public copyTo(newInstance:TextField):void

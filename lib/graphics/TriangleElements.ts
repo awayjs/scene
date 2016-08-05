@@ -211,8 +211,11 @@ export class TriangleElements extends ElementsBase
 		return this._condensedIndexLookUp;
 	}
 
-	public getBoxBounds(target:Box = null, count:number = 0, offset:number = 0):Box
+	public getBoxBounds(target:Box = null, count:number = 0, offset:number = 0, idx_count:number = 0, idx_offset:number = 0 ):Box
 	{
+		if(this.indices){
+			return ElementsUtils.getTriangleGraphicsBoxBoundsIndices(this.positions, this.indices, target, idx_count || this.numElements*3, idx_offset);
+		}
 		return ElementsUtils.getTriangleGraphicsBoxBounds(this.positions, target, count || this._numVertices, offset);
 	}
 
@@ -221,8 +224,11 @@ export class TriangleElements extends ElementsBase
 		return ElementsUtils.getTriangleGraphicsSphereBounds(this.positions, center, target, count || this._numVertices, offset);
 	}
 
-	public hitTestPoint(x:number, y:number, z:number, box:Box, count:number = 0, offset:number = 0):boolean
+	public hitTestPoint(x:number, y:number, z:number, box:Box, count:number = 0, offset:number = 0, idx_count:number = 0, idx_offset:number = 0):boolean
 	{
+		if(this.indices){
+			return ElementsUtils.hitTestTriangleElementsIndices(x, y, 0, box, this, idx_count || this.numElements*3, idx_offset);
+		}
 		return ElementsUtils.hitTestTriangleElements(x, y, 0, box, this, count || this._numVertices, offset);
 	}
 

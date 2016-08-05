@@ -47,6 +47,10 @@ export class Graphic extends AssetBase implements IRenderable
 	public count:number;
 
 	public offset:number;
+
+	public idx_count:number;
+
+	public idx_offset:number;
 	
 	public parent:Graphics;
 
@@ -139,7 +143,7 @@ export class Graphic extends AssetBase implements IRenderable
 	/**
 	 * Creates a new Graphic object
 	 */
-	constructor(index:number, parent:Graphics, elements:ElementsBase, material:MaterialBase = null, style:Style = null, count:number = 0, offset:number = 0)
+	constructor(index:number, parent:Graphics, elements:ElementsBase, material:MaterialBase = null, style:Style = null, count:number = 0, offset:number = 0,idx_count:number=0, idx_offset:number=0)
 	{
 		super();
 
@@ -153,6 +157,12 @@ export class Graphic extends AssetBase implements IRenderable
 		this.style = style;
 		this.count = count;
 		this.offset = offset;
+		this.idx_count = idx_count;
+		this.idx_offset = idx_offset;
+		if(this.idx_count==0 && this.elements)
+			this.idx_count=this.elements.numElements;
+
+
 	}
 
 	/**
@@ -242,7 +252,7 @@ export class Graphic extends AssetBase implements IRenderable
 		if(!(box = this.getBoxBounds()).contains(x, y, z))
 			return false;
 
-		return this._elements.hitTestPoint(x, y, z, box, this.count, this.offset);
+		return this._elements.hitTestPoint(x, y, z, box, this.count, this.offset, this.idx_count, this.idx_offset);
 	}
 	
 	public scale(scale:number):void
@@ -260,7 +270,7 @@ export class Graphic extends AssetBase implements IRenderable
 		if (this._boxBoundsInvalid) {
 			this._boxBoundsInvalid = false;
 
-			this._boxBounds = this._elements.getBoxBounds(this._boxBounds || (this._boxBounds = new Box()), this.count, this.offset);
+			this._boxBounds = this._elements.getBoxBounds(this._boxBounds || (this._boxBounds = new Box()), this.count, this.offset, this.idx_count, this.idx_offset);
 		}
 
 		return this._boxBounds;

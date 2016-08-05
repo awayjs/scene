@@ -79,7 +79,7 @@ export class TextFormat extends AssetBase
 	 * color black(0x000000).
 	 */
 	//todo: not used with in tesselated-font-table because color must be defined my material + uv-values
-	public color:boolean;
+	public color:number;
 
 
 	/**
