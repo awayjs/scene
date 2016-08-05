@@ -390,7 +390,7 @@ export class View
 		if (this._pRenderer.x == value)
 			return;
 
-		this._pRenderer.x == value;
+		this._pRenderer.x = value;
 		if(this._htmlElement) {
 			this._htmlElement.style.left = value + "px";
 		}
@@ -409,7 +409,7 @@ export class View
 		if (this._pRenderer.y == value)
 			return;
 
-		this._pRenderer.y == value;
+		this._pRenderer.y = value;
 		if(this._htmlElement) {
 			this._htmlElement.style.top = value + "px";
 		}
