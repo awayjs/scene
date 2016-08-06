@@ -968,7 +968,7 @@ export class ElementsUtils
 
 
 		//hard coded min vertex count to bother using a grid for
-		if (idx_count > 1500000) {
+		if (idx_count > 150) {
 			var cells:Array<Array<number>> = hitTestCache.cells;
 			var divisions:number = cells.length? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(idx_count)), 32));
 			var conversionX:number = divisions/box.width;
@@ -983,9 +983,9 @@ export class ElementsUtils
 
 				for (var k:number = idx_offset; k < idx_count; k += indexDim) {
 
-					id0 = indices[i+2];
-					id1 = indices[i+1];
-					id2 = indices[i];
+					id0 = indices[k+2];
+					id1 = indices[k+1];
+					id2 = indices[k];
 
 					ax = positions[id0 * posStride];
 					ay = positions[id0 * posStride + 1];
