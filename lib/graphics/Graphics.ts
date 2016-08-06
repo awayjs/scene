@@ -271,10 +271,8 @@ export class Graphics extends AssetBase
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; ++i){
-			// when all graphics share same element, we only need to check the first graphic
-			if(this._graphics[i].idx_offset==0){
-				this._graphics[i].applyTransformation(transform);
-			}
+			this._graphics[i].applyTransformation(transform);
+
 		}
 	}
 
@@ -375,9 +373,7 @@ export class Graphics extends AssetBase
 	{
 		var len:number = this._graphics.length;
 		for (var i:number = 0; i < len; i++){
-			if(this._graphics[i].idx_offset==0) {
-				target = this._graphics[i].getSphereBounds(center, target);
-			}
+			target = this._graphics[i].getSphereBounds(center, target);
 		}
 
 		return target;
