@@ -12,7 +12,6 @@ import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 import {LoaderInfo}					from "@awayjs/core/lib/library/LoaderInfo";
 import {EventBase}					from "@awayjs/core/lib/events/EventBase";
 
-import {IRenderer}					from "../IRenderer";
 import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {BoundsType}					from "../bounds/BoundsType";
@@ -26,7 +25,6 @@ import {Transform}					from "../base/Transform";
 import {PartitionBase}				from "../partition/PartitionBase";
 import {IPickingCollider}				from "../pick/IPickingCollider";
 import {PickingCollision}				from "../pick/PickingCollision";
-import {Camera}						from "../display/Camera";
 import {IEntity}						from "../display/IEntity";
 import {DisplayObjectEvent}			from "../events/DisplayObjectEvent";
 import {TransformEvent}				from "../events/TransformEvent";

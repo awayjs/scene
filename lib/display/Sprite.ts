@@ -5,15 +5,10 @@ import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {ITraverser}					from "../ITraverser";
 import {IAnimator}					from "../animators/IAnimator";
-import {DisplayObject}				from "../display/DisplayObject";
 import {Graphics}						from "../graphics/Graphics";
-import {ElementsBase}					from "../graphics/ElementsBase";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
 import {MaterialBase}					from "../materials/MaterialBase";
-import {TextureBase}					from "../textures/TextureBase";
-import {ElementsUtils}				from "../utils/ElementsUtils";
 import {Style}						from "../base/Style";
-import {StyleEvent}					from "../events/StyleEvent";
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation

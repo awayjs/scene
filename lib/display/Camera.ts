@@ -166,9 +166,9 @@ export class Camera extends DisplayObjectContainer implements IEntity
 
 	}
 
-	public pInvalidateHierarchicalProperties(bitFlag:number):boolean
+	public pInvalidateHierarchicalProperties(propDirty:number):boolean
 	{
-		if (super.pInvalidateHierarchicalProperties(bitFlag))
+		if (super.pInvalidateHierarchicalProperties(propDirty))
 			return true;
 
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM) {

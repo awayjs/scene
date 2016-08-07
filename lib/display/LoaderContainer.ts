@@ -3,7 +3,6 @@ import {Loader}						from "@awayjs/core/lib/library/Loader";
 import {LoaderContext}				from "@awayjs/core/lib/library/LoaderContext";
 import {URLRequest}					from "@awayjs/core/lib/net/URLRequest";
 import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
-import {EventDispatcher}				from "@awayjs/core/lib/events/EventDispatcher";
 import {URLLoaderEvent}				from "@awayjs/core/lib/events/URLLoaderEvent";
 import {LoaderEvent}					from "@awayjs/core/lib/events/LoaderEvent";
 import {ParserEvent}					from "@awayjs/core/lib/events/ParserEvent";

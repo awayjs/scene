@@ -32,8 +32,6 @@ export class Single2DTexture extends TextureBase
 			return;
 
 		this._mappingMode = value;
-
-
 	}
 
 	/**

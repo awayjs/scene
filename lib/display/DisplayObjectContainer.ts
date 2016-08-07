@@ -2,7 +2,6 @@ import {Box}							from "@awayjs/core/lib/geom/Box";
 import {Point}						from "@awayjs/core/lib/geom/Point";
 import {ArgumentError}				from "@awayjs/core/lib/errors/ArgumentError";
 import {RangeError}					from "@awayjs/core/lib/errors/RangeError";
-import {Extensions}					from "@awayjs/core/lib/utils/Extensions";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
@@ -605,14 +604,14 @@ export class DisplayObjectContainer extends DisplayObject
 	/**
 	 * @protected
 	 */
-	public pInvalidateHierarchicalProperties(bitFlag:number):boolean
+	public pInvalidateHierarchicalProperties(propDirty:number):boolean
 	{
-		if (super.pInvalidateHierarchicalProperties(bitFlag))
+		if (super.pInvalidateHierarchicalProperties(propDirty))
 			return true;
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i].pInvalidateHierarchicalProperties(bitFlag);
+			this._children[i].pInvalidateHierarchicalProperties(propDirty);
 
 		return false;
 	}

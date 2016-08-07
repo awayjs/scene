@@ -1123,7 +1123,7 @@ export class TextField extends Sprite
 				this._textElements.setUVs(new Float2Attributes(vertexBuffer));
 				this._textGraphic = this._graphics.addGraphic(this._textElements);
 
-				this._textGraphic.material = bitmap_fontTable.material;
+				this._textGraphic.material = bitmap_fontTable.getMaterial();
 			}
 			if(vert_cnt2>0){
 				var attributesView2:AttributesView = new AttributesView(Float32Array, 4);
@@ -1136,7 +1136,7 @@ export class TextField extends Sprite
 				this._textElements2.setUVs(new Float2Attributes(vertexBuffer2));
 				this._textGraphic2 = this._graphics.addGraphic(this._textElements2);
 
-				this._textGraphic2.material = (<BitmapFontTable>bitmap_fontTable.fallbackTable).material;
+				this._textGraphic2.material = (<BitmapFontTable>bitmap_fontTable.fallbackTable).getMaterial();
 			}
 
 

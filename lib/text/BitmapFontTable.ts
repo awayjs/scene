@@ -2,12 +2,8 @@ import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
 import {BitmapFontChar}			from "../text/BitmapFontChar";
 import {IFontTable}				from "../text/IFontTable";
-import {BitmapImage2D}			from "@awayjs/core/lib/image/BitmapImage2D";
-import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
-import {BasicMaterial}					from "../materials/BasicMaterial";
-import {Single2DTexture}				from "../textures/Single2DTexture";
-import {Sampler2D}						from "@awayjs/core/lib/image/Sampler2D";
-import {Style}							from "../base/Style";
+import {MaterialBase}					from "../materials/MaterialBase";
+
 
 
 /**
@@ -26,7 +22,7 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	public _init_size:number;
 	public _current_size:number;
 	public _size_multiply:number;
-	private _bitmap_pages:Array<BitmapImage2D>;
+	private _materials:Array<MaterialBase>;
 	public _font_chars_dic:Object;
 	private _font_em_size:number;
 	private _whitespace_width:number;
@@ -36,7 +32,6 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	private _descent:number;
 	private _texture_width:number;
 	private _texture_height:number;
-	private _material:BasicMaterial;
 	private _charDictDirty:Boolean;
 	public fallbackTable:IFontTable;
 	public _adjust_size:number;
@@ -54,8 +49,7 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	{
 		super();
 		this._font_chars = [];
-		this._bitmap_pages = [];
-		this._material=null;
+		this._materials = [];
 		this._font_chars_dic = new Object();
 		this._ascent=0;
 		this._descent=0;
@@ -147,29 +141,17 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	{
 
 	}
-
-	public get material():BasicMaterial {
-		if(this._material)
-			return this._material;
-		this._material = new BasicMaterial();
-		this._material.texture = new Single2DTexture(this.get_page());
-		this._material.bothSides = true;
-		this._material.alphaBlending = true;
-		this._material.useColorTransform = true;
-		this._material.style = new Style();
-		var sampler:Sampler2D = new Sampler2D();
-		sampler.mipmap=true;
-		sampler.smooth=true;
-		this._material.style.addSamplerAt(sampler, this._material.getTextureAt(0));
-		return this._material;
-
+	
+	public addMaterial(material:MaterialBase)
+	{
+		this._materials.push(material);
 	}
-	public add_page(image:BitmapImage2D) {
-		this._bitmap_pages.push(image);
+	
+	public getMaterial(idx:number=0):MaterialBase
+	{
+		return this._materials[idx];
 	}
-	public get_page(idx:number=0):BitmapImage2D {
-		return this._bitmap_pages[idx];
-	}
+	
 	get ascent():number {
 		return this._ascent;
 	}
