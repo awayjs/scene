@@ -214,7 +214,7 @@ export class TriangleElements extends ElementsBase
 	public getBoxBounds(target:Box = null, count:number = 0, offset:number = 0, idx_count:number = 0, idx_offset:number = 0 ):Box
 	{
 		if(this.indices){
-			return ElementsUtils.getTriangleGraphicsBoxBoundsIndices(this.positions, this.indices, target, idx_count || this.numElements*3, idx_offset);
+			return ElementsUtils.getTriangleGraphicsBoxBoundsIndices(this.positions, this.indices, target, idx_count/3 || this.numElements, idx_offset/3);
 		}
 		return ElementsUtils.getTriangleGraphicsBoxBounds(this.positions, target, count || this._numVertices, offset);
 	}
@@ -227,7 +227,7 @@ export class TriangleElements extends ElementsBase
 	public hitTestPoint(x:number, y:number, z:number, box:Box, count:number = 0, offset:number = 0, idx_count:number = 0, idx_offset:number = 0):boolean
 	{
 		if(this.indices){
-			return ElementsUtils.hitTestTriangleElementsIndices(x, y, 0, box, this, idx_count || this.numElements*3, idx_offset);
+			return ElementsUtils.hitTestTriangleElementsIndices(x, y, 0, box, this, idx_count/3 || this.numElements, idx_offset/3);
 		}
 		return ElementsUtils.hitTestTriangleElements(x, y, 0, box, this, count || this._numVertices, offset);
 	}

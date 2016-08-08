@@ -561,7 +561,7 @@ export class ElementsUtils
 		var cy:number;
 
 		var hitTestCache:HitTestCache = triangleElements.hitTestCache[offset] || (triangleElements.hitTestCache[offset] = new HitTestCache());
-		var index:number = -1;//hitTestCache.lastCollisionIndex;
+		var index:number = hitTestCache.lastCollisionIndex;
 
 		if(index != -1 && index < count)
 		{
@@ -639,9 +639,9 @@ export class ElementsUtils
 
 						var az:number = curves[id0 * curveStride];
 						if (d > 0 && az == -128) {
-							break precheck;;
+							break precheck;
 						} else if (d < 0 && az == 127) {
-							break precheck;;
+							break precheck;
 						}
 					}
 				}
@@ -790,6 +790,7 @@ export class ElementsUtils
 				hitTestCache.lastCollisionIndex = id2;
 				return true;
 			}
+			hitTestCache.lastCollisionIndex = -1;
 			return false;
 		}
 
@@ -879,6 +880,7 @@ export class ElementsUtils
 			hitTestCache.lastCollisionIndex = id2;
 			return true;
 		}
+		hitTestCache.lastCollisionIndex = -1;
 		return false;
 	}
 
@@ -890,7 +892,7 @@ export class ElementsUtils
 		var positions:ArrayBufferView = positionAttributes.get(positionAttributes.count);
 
 		var indexAttributes:Short2Attributes = triangleElements.indices;
-		var indices:Uint16Array = indexAttributes.get(indexAttributes.count);
+		var indices:Uint16Array = indexAttributes.get(idx_count, idx_offset);
 
 		var indexDim:number = indexAttributes.dimensions;
 
@@ -907,15 +909,16 @@ export class ElementsUtils
 		var cy:number;
 
 		var hitTestCache:HitTestCache = triangleElements.hitTestCache[idx_offset] || (triangleElements.hitTestCache[idx_offset] = new HitTestCache());
-		var index:number = -1;// hitTestCache.lastCollisionIndex;
+		var index:number = hitTestCache.lastCollisionIndex;
 
-		if(index != -1 && index < idx_count)
+		var len:number = idx_count*indexDim;
+		if(index != -1 && index < len)
 		{
 			precheck:
 			{
-				id0 = index + 2;
-				id1 = index + 1;
-				id2 = index + 0;
+				id0 = indices[index + 2];
+				id1 = indices[index + 1];
+				id2 = indices[index + 0];
 
 				ax = positions[id0 * posStride];
 				ay = positions[id0 * posStride + 1];
@@ -924,8 +927,6 @@ export class ElementsUtils
 				cx = positions[id2 * posStride];
 				cy = positions[id2 * posStride + 1];
 
-				//console.log(ax, ay, bx, by, cx, cy);
-
 				//from a to p
 				var dx:number = ax - x;
 				var dy:number = ay - y;
@@ -933,8 +934,6 @@ export class ElementsUtils
 				//edge normal (a-b)
 				var nx:number = by - ay;
 				var ny:number = -(bx - ax);
-
-				//console.log(ax,ay,bx,by,cx,cy);
 
 				var dot:number = (dx * nx) + (dy * ny);
 
@@ -968,9 +967,9 @@ export class ElementsUtils
 
 
 		//hard coded min vertex count to bother using a grid for
-		if (idx_count > 150) {
+		if (len > 150) {
 			var cells:Array<Array<number>> = hitTestCache.cells;
-			var divisions:number = cells.length? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(idx_count)), 32));
+			var divisions:number = cells.length? hitTestCache.divisions : (hitTestCache.divisions = Math.min(Math.ceil(Math.sqrt(len)), 32));
 			var conversionX:number = divisions/box.width;
 			var conversionY:number = divisions/box.height;
 			var minx:number = box.x;
@@ -981,7 +980,7 @@ export class ElementsUtils
 				//now we have bounds start creating grid cells and filling
 				cells.length = divisions * divisions;
 
-				for (var k:number = idx_offset; k < idx_count; k += indexDim) {
+				for (var k:number = 0; k < len; k += indexDim) {
 
 					id0 = indices[k+2];
 					id1 = indices[k+1];
@@ -1027,10 +1026,10 @@ export class ElementsUtils
 				return false;
 
 			var nodeCount:number = nodes.length;
-			for (var k:number = 0; k < nodeCount; k += 3) {
+			for (var k:number = 0; k < nodeCount; k += indexDim) {
 				id2 = nodes[k + 2];
 
-				if(id2 == index) continue;
+				if(k + 2 == index) continue;
 
 				id1 = nodes[k + 1];
 				id0 = nodes[k];
@@ -1075,17 +1074,18 @@ export class ElementsUtils
 				if (dot > 0)
 					continue;
 
-				hitTestCache.lastCollisionIndex = id2;
+				hitTestCache.lastCollisionIndex = k;
 				return true;
 			}
+			hitTestCache.lastCollisionIndex = -1;
 			return false;
 		}
 
 		//brute force
-		for(var k:number = idx_offset; k < idx_count; k += indexDim) {
+		for(var k:number = 0; k < len; k += indexDim) {
 			id2 = indices[k];
 
-			if(id2 == index) continue;
+			if(k == index) continue;
 
 			id1 = indices[k+1];
 			id0 = indices[k+2];
@@ -1134,9 +1134,10 @@ export class ElementsUtils
 			if (dot > 0)
 				continue;
 
-			hitTestCache.lastCollisionIndex = id2;
+			hitTestCache.lastCollisionIndex = k;
 			return true;
 		}
+		hitTestCache.lastCollisionIndex = -1;
 		return false;
 	}
 
@@ -1151,13 +1152,14 @@ export class ElementsUtils
 		var maxX:number = 0, maxY:number = 0, maxZ:number = 0;
 
 
-		var indices:Uint16Array = indexAttributes.get(indexAttributes.count);
+		var indices:Uint16Array = indexAttributes.get(idx_count, idx_offset);
+		var indexDim:number = indexAttributes.dimensions;
 
 		var index:number;
-		var i=0;
-		for (i = idx_offset; i < idx_count; i++) {
+		var len:number = idx_count*indexDim;
+		for (var i:number = 0; i < len; i++) {
 			index = indices[i] * posStride;
-			if (i == idx_offset) {
+			if (i == 0) {
 				maxX = minX = positions[index];
 				maxY = minY = positions[index + 1];
 				maxZ = minZ = (posDim == 3)? positions[index + 2] : 0;
