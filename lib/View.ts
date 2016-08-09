@@ -84,7 +84,7 @@ export class View
 		this.renderer = renderer;
 
 		//make sure document border is zero
-		if(document) {
+		if(typeof document !== "undefined") {
 			document.body.style.margin = "0px";
 
 			this._htmlElement = document.createElement("div");
