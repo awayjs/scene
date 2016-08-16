@@ -945,9 +945,10 @@ export class TextField extends Sprite
 					
 					char_widths[c]=char_width;
 					char_heights[c]=lineHeight;
-					word_width += char_width+this._textFormat.letterSpacing+1;
+					word_width += char_width+this._textFormat.letterSpacing;
 					char_cnt++;
 				}
+
 				// word fits into line, just add it to the last line
 				if((tl_width[tl_cnt-1]+word_width) <= maxlineWidth){
 					if(tl_width[tl_cnt-1]!=0){
@@ -1018,7 +1019,7 @@ export class TextField extends Sprite
 			for (var c = 0; c < tl_char_codes[tl].length; c++) {
 				this.textHeight+=tl_height[tl];
 				tl_startx[tl][c]=x_offset;
-				x_offset+=tl_char_widths[tl][c]+this._textFormat.letterSpacing+1;
+				x_offset+=tl_char_widths[tl][c]+this._textFormat.letterSpacing;
 				// if this is a whitespace, we add the justify additional spacer
 				if(tl_char_codes[tl][c]==32){
 					x_offset+=justify_addion;
@@ -1052,23 +1053,23 @@ export class TextField extends Sprite
 						vertices[vert_cnt++] = char_data[0];
 						vertices[vert_cnt++] = char_data[1];
 
-						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
+						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4] + char_data[7];
 						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5];
 						vertices[vert_cnt++] = char_data[0] + char_data[2];
 						vertices[vert_cnt++] = char_data[1];
 
-						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4] + char_data[7];
+						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5]+ char_data[6];
 						vertices[vert_cnt++] = char_data[0] + char_data[2];
 						vertices[vert_cnt++] = char_data[1] + char_data[3];
 
-						vertices[vert_cnt++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4] + char_data[7];
+						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5]+ char_data[6];
 						vertices[vert_cnt++] = char_data[0] + char_data[2];
 						vertices[vert_cnt++] = char_data[1] + char_data[3];
 
 						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
-						vertices[vert_cnt++] = y_offset;
+						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5]+ char_data[6];
 						vertices[vert_cnt++] = char_data[0];
 						vertices[vert_cnt++] = char_data[1] + char_data[3];
 
