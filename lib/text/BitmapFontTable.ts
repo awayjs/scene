@@ -70,7 +70,8 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	{
 		if(this.fallbackTable)
 			this.fallbackTable.initFontSize(font_size);
-		font_size+=this._adjust_size;
+		if(this._adjust_size)
+			font_size*=this._adjust_size;
 		if(this._current_size==font_size) return;
 		this._current_size = font_size;
 		this._size_multiply= font_size/this._init_size;
@@ -90,8 +91,10 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	{
 		var this_char:BitmapFontChar=this._font_chars_dic[char_code];
 		if(this_char){
+			var realheight:number=(this_char.height/this._init_size)*this._current_size;
+			var realWidth:number=(this_char.width/this._init_size)*this._current_size;
 			//console.log("this_char found");
-			return [this_char.x/this._texture_width, this_char.y/this._texture_height, this_char.width/this._texture_width, this_char.height/this._texture_height, this_char.x_offset*this._size_multiply, this_char.y_offset*this._size_multiply];
+			return [this_char.x/this._texture_width, this_char.y/this._texture_height, this_char.width/this._texture_width, this_char.height/this._texture_height, this_char.x_offset*this._size_multiply, this_char.y_offset*this._size_multiply, realheight, realWidth];
 		}
 		//console.log("this_char not found" + char_code);
 		return [];
