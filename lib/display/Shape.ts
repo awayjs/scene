@@ -222,13 +222,13 @@ export class Shape extends DisplayObject
 	private _onGraphicsInvalidate(event:AssetEvent):void
 	{
 		if (this._pIsEntity != Boolean(this._graphics.count)) {
-			if (this._pImplicitPartition)
-				this._pImplicitPartition._iUnregisterEntity(this);
+			if (this._pScene)
+				this._pScene._iUnregisterObject(this);
 
 			this._pIsEntity = Boolean(this._graphics.count);
 
-			if (this._pImplicitPartition)
-				this._pImplicitPartition._iRegisterEntity(this);
+			if (this._pScene)
+				this._pScene._iRegisterObject(this);
 		}
 
 		this._pInvalidateBounds();

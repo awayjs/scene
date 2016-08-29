@@ -6,7 +6,7 @@ import {FreeMatrixProjection}			from "@awayjs/core/lib/projections/FreeMatrixPro
 import {IProjection}					from "@awayjs/core/lib/projections/IProjection";
 
 import {IRenderer}					from "../../IRenderer";
-import {Scene}						from "../../display/Scene";
+import {IView}						from "../../IView";
 import {Camera}						from "../../display/Camera";
 import {DirectionalShadowMapper}		from "../../materials/shadowmappers/DirectionalShadowMapper";
 import {Single2DTexture}				from "../../textures/Single2DTexture";
@@ -114,13 +114,13 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 		this.dispatchEvent(new AssetEvent(AssetEvent.INVALIDATE, this));
 	}
 
-	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer):void
+	public pDrawDepthMap(view:IView, target:Single2DTexture, renderer:IRenderer):void
 	{
 		if (this._pScissorRectsInvalid)
 			this.updateScissorRects();
 
 		renderer.cullPlanes = this._pCullPlanes;
-		renderer._iRenderCascades(this._pOverallDepthCamera, scene, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
+		renderer._iRenderCascades(this._pOverallDepthCamera, view, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
 	}
 
 	private updateScissorRects():void

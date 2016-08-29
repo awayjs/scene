@@ -1,56 +1,74 @@
-import {ITraverser}					from "../ITraverser";
 import {DisplayObject}				from "../display/DisplayObject";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {BasicPartition}				from "../partition/BasicPartition";
-import {PartitionBase}				from "../partition/PartitionBase";
+import {IView}						from "../IView";
 
 export class Scene extends DisplayObjectContainer
 {
-	private _expandedPartitions:Array<PartitionBase> = new Array<PartitionBase>();
-	private _partitions:Array<PartitionBase> = new Array<PartitionBase>();
-
+	private _objects:Array<DisplayObject> = new Array<DisplayObject>();
+	private _views:Array<IView> = new Array<IView>();
 	public _iCollectionMark = 0;
 
-	constructor(partition:PartitionBase = null)
+	public get objects():Array<DisplayObject>
+	{
+		return this._objects;
+	}
+
+	constructor()
 	{
 		super();
 
-		this.partition = partition || new BasicPartition();
-
 		this._iIsRoot = true;
+		this._iIsPartition = true;
+
 		this._pScene = this;
-	}
-
-	public traversePartitions(traverser:ITraverser):void
-	{
-		var i:number = 0;
-		var len:number = this._partitions.length;
-
-		while (i < len)
-			this._partitions[i++].traverse(traverser);
+		this._pPartition = this;
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iRegisterPartition(partition:PartitionBase):void
+	public _iRegisterObject(displayObject:DisplayObject):void
 	{
-		this._expandedPartitions.push(partition);
+		this._objects.push(displayObject);
 
-		//ensure duplicates are not found in partitions array
-		if (this._partitions.indexOf(partition) == -1)
-			this._partitions.push(partition);
+		var len:number = this._views.length;
+		for (var i:number = 0; i < len; i++)
+			this._views[i].registerObject(displayObject);
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iUnregisterPartition(partition:PartitionBase):void
+	public _iUnregisterObject(displayObject:DisplayObject):void
 	{
-		this._expandedPartitions.splice(this._expandedPartitions.indexOf(partition), 1);
+		this._objects.splice(this._objects.indexOf(displayObject), 1);
 
-		//if no more partition references found, remove from partitions array
-		if (this._expandedPartitions.indexOf(partition) == -1)
-			this._partitions.splice(this._partitions.indexOf(partition), 1);
+		var len:number = this._views.length;
+		for (var i:number = 0; i < len; i++)
+			this._views[i].unRegisterObject(displayObject);
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iRegisterView(view:IView):void
+	{
+		this._views.push(view);
+
+		var len:number = this._objects.length;
+		for (var i:number = 0; i < len; i++)
+			view.registerObject(this._objects[i]);
+	}
+
+	/**
+	 * @internal
+	 */
+	public _iUnregisterView(view:IView):void
+	{
+		this._views.splice(this._views.indexOf(view), 1);
+
+		var len:number = this._objects.length;
+		for (var i:number = 0; i < len; i++)
+			view.unRegisterObject(this._objects[i]);
 	}
 }

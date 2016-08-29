@@ -5,7 +5,6 @@ import {RangeError}					from "@awayjs/core/lib/errors/RangeError";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {PartitionBase}				from "../partition/PartitionBase";
 import {Scene}						from "../display/Scene";
 
 /**
@@ -620,13 +619,13 @@ export class DisplayObjectContainer extends DisplayObject
 	/**
 	 * @internal
 	 */
-	public _iSetScene(value:Scene, partition:PartitionBase):void
+	public _iSetScene(value:Scene, partition:DisplayObject):void
 	{
 		super._iSetScene(value, partition);
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i]._iSetScene(value, partition);
+			this._children[i]._iSetScene(value, this._pPartition);
 	}
 
 	/**
@@ -691,13 +690,13 @@ export class DisplayObjectContainer extends DisplayObject
 	private _invalidateChildren():void
 	{
 		if (this._pIsContainer != Boolean(this._children.length)) {
-			if (this._pImplicitPartition)
-				this._pImplicitPartition._iUnregisterEntity(this);
+			if (this._pScene)
+				this._pScene._iUnregisterObject(this);
 
 			this._pIsContainer = Boolean(this._children.length);
 
-			if (this._pImplicitPartition)
-				this._pImplicitPartition._iRegisterEntity(this);
+			if (this._pScene)
+				this._pScene._iRegisterObject(this);
 		}
 
 		this._pInvalidateBounds();

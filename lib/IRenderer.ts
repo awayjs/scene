@@ -5,7 +5,7 @@ import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 
 import {ITraverser}					from "./ITraverser";
 import {Camera}						from "./display/Camera";
-import {Scene}						from "./display/Scene";
+import {IView}						from "./IView";
 
 /**
  * IRenderer is an interface for classes that are used in the rendering pipeline to render the
@@ -61,7 +61,7 @@ export interface IRenderer extends ITraverser, IEventDispatcher
 	 *
 	 * @param entityCollector
 	 */
-	render(camera:Camera, scene:Scene);
+	render(view:IView);
 
 	/**
 	 * @internal
@@ -83,7 +83,7 @@ export interface IRenderer extends ITraverser, IEventDispatcher
 	 */
 	_iBackgroundAlpha:number;
 
-	_iRender(camera:Camera, scene:Scene, target?:ImageBase, scissorRect?:Rectangle, surfaceSelector?:number);
+	_iRender(camera:Camera, view:IView, target?:ImageBase, scissorRect?:Rectangle, surfaceSelector?:number);
 
-	_iRenderCascades(camera:Camera, scene:Scene, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>);
+	_iRenderCascades(camera:Camera, view:IView, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>);
 }

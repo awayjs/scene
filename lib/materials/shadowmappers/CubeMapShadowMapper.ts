@@ -2,7 +2,7 @@ import {ImageCube}					from "@awayjs/core/lib/image/ImageCube";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
 
-import {Scene}						from "../../display/Scene";
+import {IView}						from "../../IView";
 import {Camera}						from "../../display/Camera";
 import {PointLight}					from "../../display/PointLight";
 import {ShadowMapperBase}				from "../../materials/shadowmappers/ShadowMapperBase";
@@ -75,10 +75,10 @@ export class CubeMapShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(scene:Scene, target:SingleCubeTexture, renderer:IRenderer):void
+	public pDrawDepthMap(view:IView, target:SingleCubeTexture, renderer:IRenderer):void
 	{
 		for (var i:number = 0; i < 6; ++i)
 			if (this._needsRender[i])
-				renderer._iRender(this._depthCameras[i], scene, target.imageCube, null, i)
+				renderer._iRender(this._depthCameras[i], view, target.imageCube, null, i)
 	}
 }

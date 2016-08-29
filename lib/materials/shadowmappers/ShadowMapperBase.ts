@@ -1,7 +1,7 @@
 import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
 import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
-import {Scene}						from "../../display/Scene";
+import {IView}						from "../../IView";
 import {LightBase}					from "../../display/LightBase";
 import {IRenderer}					from "../../IRenderer";
 import {Camera}						from "../../display/Camera";
@@ -83,16 +83,16 @@ export class ShadowMapperBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public iRenderDepthMap(camera:Camera, scene:Scene, renderer:IRenderer):void
+	public iRenderDepthMap(view:IView, renderer:IRenderer):void
 	{
 		this._iShadowsInvalid = false;
 
-		this.pUpdateDepthProjection(camera);
+		this.pUpdateDepthProjection(view.camera);
 
 		if (!this._depthMap)
 			this._depthMap = this.pCreateDepthTexture();
 
-		this.pDrawDepthMap(scene, this._depthMap, renderer);
+		this.pDrawDepthMap(view, this._depthMap, renderer);
 	}
 
 	public pUpdateDepthProjection(camera:Camera):void
@@ -100,7 +100,7 @@ export class ShadowMapperBase extends AssetBase
 		throw new AbstractMethodError();
 	}
 
-	public pDrawDepthMap(scene:Scene, target:TextureBase, renderer:IRenderer):void
+	public pDrawDepthMap(view:IView, target:TextureBase, renderer:IRenderer):void
 	{
 		throw new AbstractMethodError();
 	}

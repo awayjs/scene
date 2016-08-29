@@ -22,7 +22,6 @@ import {AlignmentMode}				from "../base/AlignmentMode";
 import {OrientationMode}				from "../base/OrientationMode";
 import {IBitmapDrawable}				from "../base/IBitmapDrawable";
 import {Transform}					from "../base/Transform";
-import {PartitionBase}				from "../partition/PartitionBase";
 import {IPickingCollider}				from "../pick/IPickingCollider";
 import {PickingCollision}				from "../pick/PickingCollision";
 import {IEntity}						from "../display/IEntity";
@@ -163,6 +162,7 @@ import {ITraverser}				from "../ITraverser";
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
 	public _iIsRoot:boolean;
+	public _iIsPartition:boolean;
 	public _adapter:IDisplayObjectAdapter;
 	private _queuedEvents:Array<EventBase> = new Array<EventBase>();
 	private _loaderInfo:LoaderInfo;
@@ -185,11 +185,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _sessionID:number = -1;
 	public _depthID:number = -16384;
 
-	private _explicitPartition:PartitionBase;
-	public _pImplicitPartition:PartitionBase;
+	public _pPartition:DisplayObject;
 
 	private _sceneTransformChanged:DisplayObjectEvent;
 	private _sceneChanged:DisplayObjectEvent;
+	private _partitionChanged:DisplayObjectEvent;
 	private _transform:Transform;
 
 	private _inverseSceneTransform:Matrix3D = new Matrix3D();
@@ -778,19 +778,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get partition():PartitionBase
+	public get isPartition():boolean
 	{
-		return this._explicitPartition;
+		return this._iIsPartition;
 	}
 
-	public set partition(value:PartitionBase)
+	public set isPartition(value:boolean)
 	{
-		if (this._explicitPartition == value)
+		if (this._iIsPartition == value)
 			return;
 
-		this._explicitPartition = value;
+		this._iIsPartition = value;
 
-		this._iSetScene(this._pScene, this._pParent? this._pParent._iAssignedPartition : null);
+		this._iSetScene(this._pScene, this._pParent? this._pParent._pPartition : null);
 
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 	}
@@ -1108,6 +1108,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._transform.skew.z = val;
 
 		this._transform.invalidateMatrix3D();
+	}
+
+	/**
+	 *
+	 */
+	public get partition():DisplayObject
+	{
+		return this._pPartition;
 	}
 
 	/**
@@ -1445,7 +1453,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public copyTo(newInstance:DisplayObject):void
 	{
-		newInstance.partition = this._explicitPartition;
+		newInstance.isPartition = this._iIsPartition;
 		newInstance.boundsType = this._boundsType;
 		newInstance.pivot = this._pivot;
 		newInstance.name = this._pName;
@@ -2017,14 +2025,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public get _iAssignedPartition():PartitionBase
-	{
-		return this._pImplicitPartition;
-	}
-
-	/**
-	 * @internal
-	 */
 	public get _iPickingCollision():PickingCollision
 	{
 		if (!this._pickingCollision)
@@ -2041,7 +2041,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._pParent = value;
 
         if (value)
-			this._iSetScene(value._pScene, value._iAssignedPartition);
+			this._iSetScene(value._pScene, value._pPartition);
 		else
 			this._iSetScene(null, null);
 
@@ -2076,34 +2076,28 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @protected
 	 */
-	public _iSetScene(scene:Scene, partition:PartitionBase):void
+	public _iSetScene(scene:Scene, partition:DisplayObject):void
 	{
 		var sceneChanged:boolean = this._pScene != scene;
 
-		if (this._pScene && this._pImplicitPartition) {
-			//unregister partition from current scene
-			this._pScene._iUnregisterPartition(this._pImplicitPartition);
-
-			//unregister entity from current partition
-			this._pImplicitPartition._iUnregisterEntity(this);
+		if (this._pScene) {
+			//unregister object from current scene
+			this._pScene._iUnregisterObject(this);
 
 			//gc abstraction objects
 			this.clear();
 		}
 
-		// assign parent implicit partition if no explicit one is given
-		this._pImplicitPartition = this._explicitPartition || partition;
+		// assign parent partition if _iIsPartition is false
+		this._pPartition = this._iIsPartition? this : partition;
 
 		//assign scene
 		if (sceneChanged)
 			this._pScene = scene;
 
-		if (this._pScene && this._pImplicitPartition) {
-			//register partition with scene
-			this._pScene._iRegisterPartition(this._pImplicitPartition);
-
-			//register entity with new partition
-			this._pImplicitPartition._iRegisterEntity(this);
+		if (this._pScene) {
+			//register object with scene
+			this._pScene._iRegisterObject(this);
 		}
 
 		if (sceneChanged && this._listenToSceneChanged)

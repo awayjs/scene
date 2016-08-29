@@ -5,18 +5,13 @@ import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 import {IAsset}						from "@awayjs/core/lib/library/IAsset";
 
-import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
 import {DisplayObject}				from "../display/DisplayObject";
 import {Transform}					from "../base/Transform";
 import {Scene}						from "../display/Scene";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
 import {ControllerBase}				from "../controllers/ControllerBase";
-import {Camera}						from "../display/Camera";
-import {PartitionBase}				from "../partition/PartitionBase";
-import {EntityNode}					from "../partition/EntityNode";
 import {IPickingCollider}				from "../pick/IPickingCollider";
 import {PickingCollision}				from "../pick/PickingCollision";
-import {IRenderer}					from "../IRenderer";
 import {ITraverser}					from "../ITraverser";
 
 export interface IEntity extends IAsset
@@ -124,7 +119,7 @@ export interface IEntity extends IAsset
 	/**
 	 * @internal
 	 */
-	_iAssignedPartition:PartitionBase;
+	partition:DisplayObject;
 
 	/**
 	 * @internal

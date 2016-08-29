@@ -5,7 +5,7 @@ import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 import {FreeMatrixProjection}			from "@awayjs/core/lib/projections/FreeMatrixProjection";
 
-import {Scene}						from "../../display/Scene";
+import {IView}						from "../../IView";
 import {IRenderer}					from "../../IRenderer";
 import {Camera}						from "../../display/Camera";
 import {DirectionalLight}				from "../../display/DirectionalLight";
@@ -90,10 +90,10 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 	}
 
 	//@override
-	public pDrawDepthMap(scene:Scene, target:Single2DTexture, renderer:IRenderer):void
+	public pDrawDepthMap(view:IView, target:Single2DTexture, renderer:IRenderer):void
 	{
 		renderer.cullPlanes = this._pCullPlanes;
-		renderer._iRender(this._pOverallDepthCamera, scene, target.image2D);
+		renderer._iRender(this._pOverallDepthCamera, view, target.image2D);
 	}
 
 	//@protected

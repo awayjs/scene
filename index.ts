@@ -19,19 +19,7 @@ import * as textures				from "./lib/textures";
 import * as utils					from "./lib/utils";
 import {IRenderer}					from "./lib/IRenderer";
 import {ITraverser}					from "./lib/ITraverser";
-import {View}							from "./lib/View";
-
-partition.PartitionBase.registerAbstraction(partition.CameraNode, display.Camera);
-partition.PartitionBase.registerAbstraction(partition.DirectionalLightNode, display.DirectionalLight);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Sprite);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Shape);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.MovieClip);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.Billboard);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.LineSegment);
-partition.PartitionBase.registerAbstraction(partition.EntityNode, display.TextField);
-partition.PartitionBase.registerAbstraction(partition.LightProbeNode, display.LightProbe);
-partition.PartitionBase.registerAbstraction(partition.PointLightNode, display.PointLight);
-partition.PartitionBase.registerAbstraction(partition.SkyboxNode, display.Skybox);
+import {IView}							from "./lib/IView";
 
 export {
 	adapters,
@@ -55,6 +43,6 @@ export {
 	utils,
 	IRenderer,
 	ITraverser,
-	View
+	IView
 }
 

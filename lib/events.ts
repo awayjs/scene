@@ -4,7 +4,6 @@ export {ElementsEvent}					from "./events/ElementsEvent";
 export {LightEvent}						from "./events/LightEvent";
 export {MouseEvent}						from "./events/MouseEvent";
 export {RenderableEvent}					from "./events/RenderableEvent";
-export {RendererEvent}					from "./events/RendererEvent";
 export {ResizeEvent}						from "./events/ResizeEvent";
 export {StyleEvent}						from "./events/StyleEvent";
 export {SurfaceEvent}					from "./events/SurfaceEvent";

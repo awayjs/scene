@@ -4,7 +4,7 @@ import {EventBase}				from "@awayjs/core/lib/events/EventBase";
 
 import {IEntity}					from "../display/IEntity";
 import {IRenderable}				from "../base/IRenderable";
-import {View}						from "../View";
+import {IView}						from "../IView";
 import {MaterialBase}				from "../materials/MaterialBase";
 
 /**
@@ -80,7 +80,7 @@ export class MouseEvent extends EventBase
 	/**
 	 * The view object inside which the event took place.
 	 */
-	public view:View;
+	public view:IView;
 
 	/**
 	 * The entity inside which the event took place.

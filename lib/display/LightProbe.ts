@@ -6,7 +6,6 @@ import {ErrorBase}					from "@awayjs/core/lib/errors/ErrorBase";
 
 import {LightBase}					from "../display/LightBase";
 import {BoundsType}					from "../bounds/BoundsType";
-import {Camera}						from "../display/Camera";
 import {IEntity}						from "../display/IEntity";
 
 export class LightProbe extends LightBase implements IEntity
