@@ -668,11 +668,13 @@ export class TextField extends Sprite
 	{
 		if (this._textGraphicsDirty)
 			this.reConstruct();
-		if(this._textFormat){
+		if(this._textFormat && !(this._textFormat.font_table.isAsset(TesselatedFontTable) && (this._textFormat.material)) ){
+
 			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 			//if(new_ct.color==0xffffff){
-				this.transform.colorTransform.color = this._textFormat.color;
-				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			this.transform.colorTransform.color = this._textFormat.color;
+			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+
 			//}
 		}
 
@@ -893,6 +895,9 @@ export class TextField extends Sprite
 		var tl_char_widths:Array<Array<number>> = [];
 		var tl_char_heights:Array<Array<number>> = [];
 		var tl_formatIdx:Array<Array<number>> = [];
+		var tl_word_cnt:Array<number> = [];
+		var tl_justify:Array<boolean> = [];
+		var tl_linebreak:Array<boolean> = [];
 		var tl_width:Array<number> = [];
 		var tl_height:Array<number> = [];
 		var tl_cnt:number=0;
@@ -914,6 +919,10 @@ export class TextField extends Sprite
 			tl_formatIdx[tl_cnt]=[];
 			tl_width[tl_cnt]=0;
 			tl_height[tl_cnt]=0;
+			tl_word_cnt[tl_cnt]=0;
+			tl_justify[tl_cnt]=false;
+			tl_linebreak[tl_cnt]=true;
+
 			tl_cnt++;
 			words = textlines[tl].split(" ");
 			for (w = 0; w < words.length; w++) {
@@ -929,7 +938,7 @@ export class TextField extends Sprite
 					if(activeFormat.font_table.hasChar(words[w].charCodeAt(c).toString())){
 						char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
 						formatIdx[c]=0;
-						numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());						
+						numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());
 					}
 					else if(activeFormat.font_table.fallbackTable && activeFormat.font_table.fallbackTable.hasChar(words[w].charCodeAt(c).toString())){
 						formatIdx[c]=1;
@@ -940,17 +949,17 @@ export class TextField extends Sprite
 
 					}
 					else{
-						formatIdx[c]=-1;						
+						formatIdx[c]=-1;
 					}
-					
-					char_widths[c]=char_width;
+
+					char_widths[c]=char_width+this._textFormat.letterSpacing;
 					char_heights[c]=lineHeight;
 					word_width += char_width+this._textFormat.letterSpacing;
 					char_cnt++;
 				}
 
 				// word fits into line, just add it to the last line
-				if((tl_width[tl_cnt-1]+word_width) <= maxlineWidth){
+				if((tl_width[tl_cnt-1]+word_width+activeFormat.font_table.getCharWidth("32")) <= maxlineWidth){
 					if(tl_width[tl_cnt-1]!=0){
 						// there is already a word in this line. we want to add a space
 						tl_char_codes[tl_cnt-1].push(32);
@@ -964,6 +973,7 @@ export class TextField extends Sprite
 						tl_char_widths[tl_cnt-1].push(char_widths[c]);
 					}
 					tl_width[tl_cnt-1]+=word_width;
+					tl_word_cnt[tl_cnt-1]+=1;
 					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
 				// word does not fit into line, but it is first word added to line, so we add it anyway.
@@ -974,16 +984,21 @@ export class TextField extends Sprite
 						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
 						tl_char_widths[tl_cnt-1].push(char_widths[c]);
 					}
+					tl_word_cnt[tl_cnt-1]+=1;
 					tl_width[tl_cnt-1]+=word_width;
 					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
 				// word does not fit, and there are already words on this line
 				else{
+					tl_justify[tl_cnt-1]=true;
 					tl_char_codes[tl_cnt]=[];
 					tl_char_widths[tl_cnt]=[];
 					tl_formatIdx[tl_cnt]=[];
 					tl_width[tl_cnt]=0;
 					tl_height[tl_cnt]=0;
+					tl_word_cnt[tl_cnt]=0;
+					tl_justify[tl_cnt]=false;
+					tl_linebreak[tl_cnt]=false;
 					tl_cnt++;
 					for (c = 0; c < words[w].length; c++) {
 						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
@@ -999,38 +1014,46 @@ export class TextField extends Sprite
 		var tl_startx:Array<Array<number> >=[];
 		// calculate the final positions of the chars
 		for (tl = 0; tl < tl_width.length; tl++) {
-
-			var x_offset:number= 2 + this._textFormat.leftMargin + this._textFormat.indent;
+			var indent:number=this._textFormat.indent;
+			if(!tl_linebreak[tl]){
+				indent=0;
+			}
+			var x_offset:number = 2 + this._textFormat.leftMargin + indent;
 			var justify_addion:number=0;
 			if(this._textFormat.align=="center"){
-				x_offset=2 + this._textFormat.leftMargin + this._textFormat.indent+(maxlineWidth-tl_width[tl])/2;
-				//x_offset=2 + this._textFormat.leftMargin + intent+(maxlineWidth-final_lines_width[i])/2;
+				x_offset = 2 + this._textFormat.leftMargin + indent+(maxlineWidth-tl_width[tl])/2;
 			}
 			else if(this._textFormat.align=="justify"){
-				/*if(final_lines_justify_bool[i]){
-				 justify_addion=((maxlineWidth)-final_lines_width[i])/final_lines_justify[i];
-				 }*/
+				if(tl_justify[tl]){
+					justify_addion=((maxlineWidth)-tl_width[tl])/tl_word_cnt[tl];
+				}
 			}
 			else if(this._textFormat.align=="right"){
 				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
 			}
 			tl_startx[tl]=[];
 			this.textHeight=0;
+			if(tl_char_codes[tl].length==0){
+				tl_height[tl]=this._textFormat.font_table.getLineHeight();
+			}
 			for (var c = 0; c < tl_char_codes[tl].length; c++) {
 				this.textHeight+=tl_height[tl];
 				tl_startx[tl][c]=x_offset;
-				x_offset+=tl_char_widths[tl][c]+this._textFormat.letterSpacing;
+				x_offset+=tl_char_widths[tl][c];
 				// if this is a whitespace, we add the justify additional spacer
 				if(tl_char_codes[tl][c]==32){
 					x_offset+=justify_addion;
+				}
+				else{
+					//x_offset+=this._textFormat.letterSpacing;
 				}
 			}
 		}
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);
 			var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
-			var vertices:Float32Array = new Float32Array(numVertices*7);
-			var vertices2:Float32Array = new Float32Array(numVertices2*7);
+			var vertices:Float32Array = new Float32Array(numVertices);
+			var vertices2:Float32Array = new Float32Array(numVertices2);
 			var vert_cnt:number=0;
 			var vert_cnt2:number=0;
 
@@ -1038,12 +1061,12 @@ export class TextField extends Sprite
 
 			for (tl = 0; tl < tl_width.length; tl++) {
 				y_offset+=tl_height[tl];
-				for (var c = 0; c < tl_char_codes[tl].length; c++) {					
+				for (var c = 0; c < tl_char_codes[tl].length; c++) {
 					if(tl_char_codes[tl][c]==32){
 						continue;
 					}
 					if(tl_formatIdx[tl][c]<0){
-						continue;						
+						continue;
 					}
 					var char_data:Array<number>;
 					if(tl_formatIdx[tl][c]==0) {
@@ -1146,8 +1169,98 @@ export class TextField extends Sprite
 			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 
 		}
+		else if(this._textFormat.font_table.assetType==TesselatedFontTable.assetType){
 
-		//todo: render tesselated fonts
+			var tess_fontTable:TesselatedFontTable = <TesselatedFontTable>this._textFormat.font_table;
+			var vertices:Float32Array = new Float32Array(numVertices);
+			var vert_cnt:number=0;
+			var charGlyph:TesselatedFontChar;
+			var char_vertices:AttributesBuffer;
+			var char_scale:number=tess_fontTable._size_multiply;
+			var y_offset:number=2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+			x_offset=0;
+			for (tl = 0; tl < tl_width.length; tl++) {
+				for (var c = 0; c < tl_char_codes[tl].length; c++) {
+					if (tl_char_codes[tl][c] == 32) {
+						continue;
+					}
+					if (tl_formatIdx[tl][c] < 0) {
+						continue;
+					}
+					if (tl_formatIdx[tl][c] == 0) {
+						charGlyph = tess_fontTable.getChar(tl_char_codes[tl][c].toString());
+						if (charGlyph) {
+							x_offset=tl_startx[tl][c];
+							//char_scale = final_lines_char_scale[i][t];
+							char_vertices = charGlyph.fill_data;
+							if (char_vertices != null) {
+								var buffer:Float32Array = new Float32Array(char_vertices.buffer);
+								if(tess_fontTable.usesCurves) {
+									for (var v:number = 0; v < char_vertices.count; v++) {
+										vertices[vert_cnt++] = buffer[v * 3] * char_scale + x_offset;
+										vertices[vert_cnt++] = buffer[v * 3 + 1] * char_scale + y_offset;
+										vertices[vert_cnt++] = buffer[v * 3 + 2];
+									}
+								}
+								else {
+									for (var v:number = 0; v < char_vertices.count; v++) {
+										vertices[vert_cnt++] = buffer[v * 2] * char_scale + x_offset;
+										vertices[vert_cnt++] = buffer[v * 2 + 1] * char_scale + y_offset;
+									}
+								}
+							}
+						}
+					}
+				}
+				y_offset += (tess_fontTable.ascent + tess_fontTable.descent)*char_scale;
+				y_offset += this._textFormat.leading;
+			}
+			if(vert_cnt>0) {
+				var attr_length:number=(tess_fontTable.usesCurves)?3:2;
+				var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
+				attributesView.set(vertices);
+				var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+				attributesView.dispose();
+
+				this._textElements = new TriangleElements(vertexBuffer);
+				this._textElements.setPositions(new Float2Attributes(vertexBuffer));
+				if(tess_fontTable.usesCurves){
+					this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+				}
+				this._textGraphic = this._graphics.addGraphic(this._textElements);
+
+				var sampler:Sampler2D = new Sampler2D();
+				this._textGraphic.style = new Style();
+				if (this._textFormat.material) {
+					this._textGraphic.material = this._textFormat.material;
+					this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+					this._textGraphic.material.animateUVs = true;
+					this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+				}
+				else {
+					this._textGraphic.material = DefaultMaterialManager.getDefaultMaterial();
+					this._textGraphic.material.bothSides = true;
+					//this._textGraphic.material.useColorTransform = true;
+					if(tess_fontTable.usesCurves){
+						this._textGraphic.material.curves = true;
+					}
+					this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+					//sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
+					this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
+					this._textGraphic.material.animateUVs = true;
+					//graphic.material.imageRect = true;
+					var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+					this.transform.colorTransform.color = activeFormat.color;
+					this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+				}
+			}
+			this.material=this._textGraphic.material;
+			if(tess_fontTable.usesCurves) {
+				this.material.curves = true;
+			}
+			//this.material.alphaBlending=true;
+		}
+
 		/*
 		 var numVertices:number = 0;
 		 var elements:TriangleElements;

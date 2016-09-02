@@ -3,8 +3,11 @@ import {MovieClip}						from "../display/MovieClip";
 import {DisplayObject}					from "../display/DisplayObject";
 import {ColorTransform}					from "@awayjs/core/lib/geom/ColorTransform";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
+import {Matrix}							from "@awayjs/core/lib/geom/Matrix";
 import {AssetBase}						from "@awayjs/core/lib/library/AssetBase";
 import {FrameScriptManager}				from "../managers/FrameScriptManager";
+import {Billboard}						from "../display/Billboard";
+import {Style}							from "./Style";
 
 
 export class Timeline
@@ -181,6 +184,13 @@ export class Timeline
 	{
 		var this_clone:DisplayObject = this._potentialPrototypes[id].clone();
 		this_clone.name = "";
+		if (this_clone.isAsset(Billboard)){
+			var billboard:Billboard=(<Billboard>this_clone);
+			billboard.style=new Style();
+			billboard.style.uvMatrix=new Matrix();
+			billboard.style.uvMatrix.scale(1,1);
+			billboard.material.animateUVs=true;
+		}
 		return this_clone;
 	}
 

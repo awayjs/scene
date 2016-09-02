@@ -41,6 +41,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public _current_size:number;
 	public _size_multiply:number;
 	private _charDictDirty:Boolean;
+	private _usesCurves:boolean;
 	private _opentype_font:any;
 	
 	public fallbackTable:IFontTable;
@@ -66,6 +67,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		this._size_multiply=0;
 		this._ascent=0;
 		this._descent=0;
+		this._usesCurves=false;
 
 		if(opentype_font){
 			this._opentype_font=opentype_font;
@@ -103,6 +105,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	}
 	public initFontSize(font_size:number)
 	{
+		if(this.fallbackTable)
+			this.fallbackTable.initFontSize(font_size);
 		if(this._current_size==font_size) return;
 		this._current_size = font_size;
 		this._size_multiply= font_size/this._font_em_size;
@@ -120,6 +124,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	}
 	public getCharWidth(char_code:string):number
 	{
+		if(char_code=="32"){
+			return this._whitespace_width*this._size_multiply;
+		}
 		var tesselated_font_char:TesselatedFontChar = this._font_chars_dic[char_code];
 		if(tesselated_font_char){
 			return tesselated_font_char.char_width*this._size_multiply;
@@ -127,10 +134,14 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		return 0;
 	}
 
+	public get usesCurves():boolean
+	{
+		return this._usesCurves;
+	}
 
 	public getLineHeight():number
 	{
-		return 0;
+		return this._current_size;
 	}
 
 	public get assetType():string
@@ -261,10 +272,18 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	/**
 	 *
 	 */
-	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null):void
+	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false):void
 	{
 		if((fills_data==null)&&(stroke_data==null))
 			throw("TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data and stroke_data is null)");
+		if(this._font_chars.length>0){
+			if(uses_curves!=this._usesCurves){
+				throw("TesselatedFontTable: Can not set different types of graphic-glyphs (curves vs non-cuves) on the same FontTable!");
+			}
+		}
+		else{
+			this._usesCurves=uses_curves;
+		}
 		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data);
 		tesselated_font_char.char_width=char_width;
 		this._font_chars.push(tesselated_font_char);
