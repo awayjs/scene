@@ -187,8 +187,8 @@ export class Timeline
 		if (this_clone.isAsset(Billboard)){
 			var billboard:Billboard=(<Billboard>this_clone);
 			billboard.style=new Style();
-			billboard.style.uvMatrix=new Matrix();
-			billboard.style.uvMatrix.scale(1,1);
+			billboard.style.uvMatrix=new Matrix(1,0,0,-1,0,0);
+			//billboard.style.uvMatrix.scale(1,1);
 			billboard.material.animateUVs=true;
 		}
 		return this_clone;
