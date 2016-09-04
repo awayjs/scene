@@ -909,6 +909,7 @@ export class TextField extends Sprite
 		var char_width:number=0;
 		var numVertices:number = 0;
 		var numVertices2:number = 0;
+		var lastCharIsSpace:boolean = false;
 		this._line_indices=[];
 		// sort all chars into final lines
 		for (tl = 0; tl < textlines.length; tl++) {
@@ -924,91 +925,108 @@ export class TextField extends Sprite
 			tl_linebreak[tl_cnt]=true;
 
 			tl_cnt++;
+			// check if the last char is a space, if so we must add it at the end
+			/*
+			lastCharIsSpace=false;
+			if(textlines[tl].length>0){
+				lastCharIsSpace=textlines[tl].charCodeAt(textlines[tl].length-1)==32;
+			}
+			*/
 			words = textlines[tl].split(" ");
 			for (w = 0; w < words.length; w++) {
-				var word_width:number=0;
-				var char_widths:Array<number>=[];
-				var char_heights:Array<number>=[];
-				var formatIdx:Array<number>=[];
-				var max_word_height:number=0;
-				for (c = 0; c < words[w].length; c++) {
-					var lineHeight:number=activeFormat.font_table.getLineHeight();
-					if(lineHeight>max_word_height)max_word_height=lineHeight;
-					char_width=0;
-					if(activeFormat.font_table.hasChar(words[w].charCodeAt(c).toString())){
-						char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
-						formatIdx[c]=0;
-						numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());
-					}
-					else if(activeFormat.font_table.fallbackTable && activeFormat.font_table.fallbackTable.hasChar(words[w].charCodeAt(c).toString())){
-						formatIdx[c]=1;
-						char_width = activeFormat.font_table.fallbackTable.getCharWidth(words[w].charCodeAt(c).toString());
-						numVertices2 += activeFormat.font_table.fallbackTable.getCharVertCnt(words[w].charCodeAt(c).toString());
-						lineHeight=activeFormat.font_table.fallbackTable.getLineHeight();
+				if(words[w].length>0){
+					var word_width:number=0;
+					var char_widths:Array<number>=[];
+					var char_heights:Array<number>=[];
+					var formatIdx:Array<number>=[];
+					var max_word_height:number=0;
+					for (c = 0; c < words[w].length; c++) {
+						var lineHeight:number=activeFormat.font_table.getLineHeight();
 						if(lineHeight>max_word_height)max_word_height=lineHeight;
+						char_width=0;
+						if(activeFormat.font_table.hasChar(words[w].charCodeAt(c).toString())){
+							char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
+							formatIdx[c]=0;
+							numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());
+						}
+						else if(activeFormat.font_table.fallbackTable && activeFormat.font_table.fallbackTable.hasChar(words[w].charCodeAt(c).toString())){
+							formatIdx[c]=1;
+							char_width = activeFormat.font_table.fallbackTable.getCharWidth(words[w].charCodeAt(c).toString());
+							numVertices2 += activeFormat.font_table.fallbackTable.getCharVertCnt(words[w].charCodeAt(c).toString());
+							lineHeight=activeFormat.font_table.fallbackTable.getLineHeight();
+							if(lineHeight>max_word_height)max_word_height=lineHeight;
 
+						}
+						else{
+							formatIdx[c]=-1;
+						}
+
+						char_widths[c]=char_width+this._textFormat.letterSpacing;
+						char_heights[c]=lineHeight;
+						word_width += char_width+this._textFormat.letterSpacing;
+						char_cnt++;
 					}
+
+					// word fits into line, just add it to the last line
+					if((tl_width[tl_cnt-1]+word_width+activeFormat.font_table.getCharWidth("32")) <= maxlineWidth){
+						if(tl_width[tl_cnt-1]!=0){
+							// there is already a word in this line. we want to add a space
+							tl_char_codes[tl_cnt-1].push(32);
+							tl_formatIdx[tl_cnt-1].push(1);
+							tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
+							tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
+						}
+						for (c = 0; c < words[w].length; c++) {
+							tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
+							tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+							tl_char_widths[tl_cnt-1].push(char_widths[c]);
+						}
+						tl_width[tl_cnt-1]+=word_width;
+						tl_word_cnt[tl_cnt-1]+=1;
+						if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
+					}
+					// word does not fit into line, but it is first word added to line, so we add it anyway.
+					// todo: respect auto--wrap / multiline settings + optional include 3rd party tool for splitting into sylibils
+					else if(tl_width[tl_cnt-1]==0){
+						for (c = 0; c < words[w].length; c++) {
+							tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
+							tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+							tl_char_widths[tl_cnt-1].push(char_widths[c]);
+						}
+						tl_word_cnt[tl_cnt-1]+=1;
+						tl_width[tl_cnt-1]+=word_width;
+						if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
+					}
+					// word does not fit, and there are already words on this line
 					else{
-						formatIdx[c]=-1;
+						tl_justify[tl_cnt-1]=true;
+						tl_char_codes[tl_cnt]=[];
+						tl_char_widths[tl_cnt]=[];
+						tl_formatIdx[tl_cnt]=[];
+						tl_width[tl_cnt]=0;
+						tl_height[tl_cnt]=0;
+						tl_word_cnt[tl_cnt]=0;
+						tl_justify[tl_cnt]=false;
+						tl_linebreak[tl_cnt]=false;
+						tl_cnt++;
+						for (c = 0; c < words[w].length; c++) {
+							tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
+							tl_char_widths[tl_cnt-1].push(char_widths[c]);
+							tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
+						}
+						tl_width[tl_cnt-1]+=word_width;
+						if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 					}
-
-					char_widths[c]=char_width+this._textFormat.letterSpacing;
-					char_heights[c]=lineHeight;
-					word_width += char_width+this._textFormat.letterSpacing;
-					char_cnt++;
-				}
-
-				// word fits into line, just add it to the last line
-				if((tl_width[tl_cnt-1]+word_width+activeFormat.font_table.getCharWidth("32")) <= maxlineWidth){
-					if(tl_width[tl_cnt-1]!=0){
-						// there is already a word in this line. we want to add a space
-						tl_char_codes[tl_cnt-1].push(32);
-						tl_formatIdx[tl_cnt-1].push(1);
-						tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
-						tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
-					}
-					for (c = 0; c < words[w].length; c++) {
-						tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
-						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
-						tl_char_widths[tl_cnt-1].push(char_widths[c]);
-					}
-					tl_width[tl_cnt-1]+=word_width;
-					tl_word_cnt[tl_cnt-1]+=1;
-					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
-				}
-				// word does not fit into line, but it is first word added to line, so we add it anyway.
-				// todo: respect auto--wrap / multiline settings + optional include 3rd party tool for splitting into sylibils
-				else if(tl_width[tl_cnt-1]==0){
-					for (c = 0; c < words[w].length; c++) {
-						tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
-						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
-						tl_char_widths[tl_cnt-1].push(char_widths[c]);
-					}
-					tl_word_cnt[tl_cnt-1]+=1;
-					tl_width[tl_cnt-1]+=word_width;
-					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
-				}
-				// word does not fit, and there are already words on this line
-				else{
-					tl_justify[tl_cnt-1]=true;
-					tl_char_codes[tl_cnt]=[];
-					tl_char_widths[tl_cnt]=[];
-					tl_formatIdx[tl_cnt]=[];
-					tl_width[tl_cnt]=0;
-					tl_height[tl_cnt]=0;
-					tl_word_cnt[tl_cnt]=0;
-					tl_justify[tl_cnt]=false;
-					tl_linebreak[tl_cnt]=false;
-					tl_cnt++;
-					for (c = 0; c < words[w].length; c++) {
-						tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
-						tl_char_widths[tl_cnt-1].push(char_widths[c]);
-						tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
-					}
-					tl_width[tl_cnt-1]+=word_width;
-					if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
 				}
 			}
+			/*
+			if(lastCharIsSpace){
+				tl_char_codes[tl_cnt-1].push(32);
+				tl_formatIdx[tl_cnt-1].push(1);
+				tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
+				tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
+			}
+			*/
 		}
 
 		var tl_startx:Array<Array<number> >=[];
@@ -1254,11 +1272,13 @@ export class TextField extends Sprite
 					this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 				}
 			}
-			this.material=this._textGraphic.material;
-			if(tess_fontTable.usesCurves) {
-				this.material.curves = true;
+			if(this._textGraphic){
+				this.material=this._textGraphic.material;
+				if(tess_fontTable.usesCurves) {
+					this.material.curves = true;
+				}
+				//this.material.alphaBlending=true;
 			}
-			//this.material.alphaBlending=true;
 		}
 
 		/*
