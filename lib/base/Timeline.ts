@@ -421,12 +421,12 @@ export class Timeline
 
 		i *= 6;
 		var new_matrix:Matrix3D = child.transform.matrix3D;
-		new_matrix.rawData[0] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix.rawData[1] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix.rawData[4] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix.rawData[5] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix.rawData[12] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix.rawData[13] = this.properties_stream_f32_mtx_all[i];
+		new_matrix._rawData[0] = this.properties_stream_f32_mtx_all[i++];
+		new_matrix._rawData[1] = this.properties_stream_f32_mtx_all[i++];
+		new_matrix._rawData[4] = this.properties_stream_f32_mtx_all[i++];
+		new_matrix._rawData[5] = this.properties_stream_f32_mtx_all[i++];
+		new_matrix._rawData[12] = this.properties_stream_f32_mtx_all[i++];
+		new_matrix._rawData[13] = this.properties_stream_f32_mtx_all[i];
 
 		child.transform.invalidateComponents();
 	}
@@ -438,14 +438,14 @@ export class Timeline
 
 		i *= 8;
 		var new_ct:ColorTransform = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
-		new_ct.rawData[0] = this.properties_stream_f32_ct[i++];
-		new_ct.rawData[1] = this.properties_stream_f32_ct[i++];
-		new_ct.rawData[2] = this.properties_stream_f32_ct[i++];
-		new_ct.rawData[3] = this.properties_stream_f32_ct[i++];
-		new_ct.rawData[4] = this.properties_stream_f32_ct[i++];
-		new_ct.rawData[5] = this.properties_stream_f32_ct[i++];
-		new_ct.rawData[6] = this.properties_stream_f32_ct[i++];
-		new_ct.rawData[7] = this.properties_stream_f32_ct[i];
+		new_ct._rawData[0] = this.properties_stream_f32_ct[i++];
+		new_ct._rawData[1] = this.properties_stream_f32_ct[i++];
+		new_ct._rawData[2] = this.properties_stream_f32_ct[i++];
+		new_ct._rawData[3] = this.properties_stream_f32_ct[i++];
+		new_ct._rawData[4] = this.properties_stream_f32_ct[i++];
+		new_ct._rawData[5] = this.properties_stream_f32_ct[i++];
+		new_ct._rawData[6] = this.properties_stream_f32_ct[i++];
+		new_ct._rawData[7] = this.properties_stream_f32_ct[i];
 
 		child.transform.invalidateColorTransform();
 	}
@@ -497,10 +497,10 @@ export class Timeline
 		i *= 4;
 
 		var new_matrix:Matrix3D = child.transform.matrix3D;
-		new_matrix.rawData[0] = this.properties_stream_f32_mtx_scale_rot[i++];
-		new_matrix.rawData[1] = this.properties_stream_f32_mtx_scale_rot[i++];
-		new_matrix.rawData[4] = this.properties_stream_f32_mtx_scale_rot[i++];
-		new_matrix.rawData[5] = this.properties_stream_f32_mtx_scale_rot[i];
+		new_matrix._rawData[0] = this.properties_stream_f32_mtx_scale_rot[i++];
+		new_matrix._rawData[1] = this.properties_stream_f32_mtx_scale_rot[i++];
+		new_matrix._rawData[4] = this.properties_stream_f32_mtx_scale_rot[i++];
+		new_matrix._rawData[5] = this.properties_stream_f32_mtx_scale_rot[i];
 
 		child.transform.invalidateComponents();
 
@@ -515,8 +515,8 @@ export class Timeline
 		i *= 2;
 
 		var new_matrix:Matrix3D = child.transform.matrix3D;
-		new_matrix.rawData[12] = this.properties_stream_f32_mtx_pos[i++];
-		new_matrix.rawData[13] = this.properties_stream_f32_mtx_pos[i];
+		new_matrix._rawData[12] = this.properties_stream_f32_mtx_pos[i++];
+		new_matrix._rawData[13] = this.properties_stream_f32_mtx_pos[i];
 
 		child.transform.invalidatePosition();
 	}

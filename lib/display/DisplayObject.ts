@@ -1332,7 +1332,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._transform.position.x == val)
 			return;
 
-		this._transform.matrix3D.rawData[12] = val;
+		this._transform.matrix3D._rawData[12] = val;
 
 		this._transform.invalidatePosition();
 	}
@@ -1357,7 +1357,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._transform.position.y == val)
 			return;
 
-		this._transform.matrix3D.rawData[13] = val;
+		this._transform.matrix3D._rawData[13] = val;
 
 		this._transform.invalidatePosition();
 	}
@@ -1391,7 +1391,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._transform.position.z == val)
 			return;
 
-		this._transform.matrix3D.rawData[14] = val;
+		this._transform.matrix3D._rawData[14] = val;
 
 		this._transform.invalidatePosition();
 	}
@@ -2365,7 +2365,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		if (this._inheritColorTransform && this._pParent && this._pParent._iAssignedColorTransform()) {
 			this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
-
+			
 			if (this._transform.colorTransform)
 				this._pImplicitColorTransform.prepend(this._transform.colorTransform);
 		} else {

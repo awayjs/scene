@@ -120,7 +120,7 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 		var cx:number = this._box.x + hx;
 		var cy:number = this._box.y + hy;
 		var cz:number = this._box.z + hz;
-		var raw:Float32Array = matrix.rawData;
+		var raw:Float32Array = matrix._rawData;
 
 		var m11:number = raw[0], m12:number = raw[4], m13:number = raw[8], m14:number = raw[12];
 		var m21:number = raw[1], m22:number = raw[5], m23:number = raw[9], m24:number = raw[13];

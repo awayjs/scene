@@ -67,11 +67,13 @@ import {TransformEvent}				from "../events/TransformEvent";
  */
 export class Transform extends EventDispatcher
 {
+	public _rawData:Float32Array;
+	
 	private _concatenatedColorTransform:ColorTransform;
 	private _concatenatedMatrix:Matrix;
 	private _pixelBounds:Rectangle;
 	private _colorTransform:ColorTransform;
-	private _matrix3D:Matrix3D = new Matrix3D();
+	private _matrix3D:Matrix3D;
 	private _matrix3DDirty:boolean;
 	private _rotation:Vector3D = new Vector3D();
 	private _skew:Vector3D = new Vector3D();
@@ -205,8 +207,24 @@ export class Transform extends EventDispatcher
 
 	public set matrix3D(val:Matrix3D)
 	{
-		for (var i:number = 0; i < 15; i++)
-			this._matrix3D.rawData[i] = val.rawData[i];
+		var sourceData:Float32Array = val._rawData, targetData:Float32Array = this._matrix3D._rawData;
+
+		targetData[0] = sourceData[0];
+		targetData[1] = sourceData[1];
+		targetData[2] = sourceData[2];
+		targetData[3] = sourceData[3];
+		targetData[4] = sourceData[4];
+		targetData[5] = sourceData[5];
+		targetData[6] = sourceData[6];
+		targetData[7] = sourceData[7];
+		targetData[8] = sourceData[8];
+		targetData[9] = sourceData[9];
+		targetData[10] = sourceData[10];
+		targetData[11] = sourceData[11];
+		targetData[12] = sourceData[12];
+		targetData[13] = sourceData[13];
+		targetData[14] = sourceData[14];
+		targetData[15] = sourceData[15];
 		
 		this.invalidateComponents();
 	}
@@ -332,18 +350,32 @@ export class Transform extends EventDispatcher
 		return Matrix3DUtils.getUp(this.matrix3D);
 	}
 
-	constructor()
+	constructor(rawData:Float32Array = null)
 	{
 		super();
 
+		this._rawData = rawData || new Float32Array(24);
+		
+		//create the view for matrix3D
+		this._matrix3D = new Matrix3D(new Float32Array(this._rawData.buffer, 0, 16));
+
+		//create the view for colorTransform
+		this._colorTransform = new ColorTransform(new Float32Array(this._rawData.buffer, 64, 8));
+		
+		if (rawData == null) {
+			this._matrix3D.identity();
+			this._colorTransform.clear();
+		}
+		
 		// Cached vector of transformation components used when
 		// recomposing the transform matrix in updateTransform()
-
 		this._components = new Array<Vector3D>(4);
 
 		this._components[1] = this._rotation;
 		this._components[2] = this._skew;
 		this._components[3] = this._scale;
+
+		this.invalidateComponents();
 	}
 
 	public dispose():void
@@ -446,9 +478,9 @@ export class Transform extends EventDispatcher
 
 	public moveTo(dx:number, dy:number, dz:number):void
 	{
-		this._matrix3D.rawData[12] = dx;
-		this._matrix3D.rawData[13] = dy;
-		this._matrix3D.rawData[14] = dz;
+		this._matrix3D._rawData[12] = dx;
+		this._matrix3D._rawData[13] = dy;
+		this._matrix3D._rawData[14] = dz;
 
 		this.invalidatePosition();
 	}

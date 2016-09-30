@@ -111,7 +111,7 @@ export class PointLight extends LightBase implements IEntity
 		var zMin:number;
 		var zMax:number;
 
-		var z:number = m.rawData[14];
+		var z:number = m._rawData[14];
 		zMin = z - d;
 		zMax = z + d;
 
