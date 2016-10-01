@@ -1,6 +1,5 @@
 import {Image2D}						from "@awayjs/core/lib/image/Image2D";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
 import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 import {FreeMatrixProjection}			from "@awayjs/core/lib/projections/FreeMatrixProjection";
@@ -131,7 +130,6 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 
 	public pUpdateProjectionFromFrustumCorners(camera:Camera, corners:Array<number>, matrix:Matrix3D):void
 	{
-		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var dir:Vector3D;
 		var x:number, y:number, z:number;
 		var minX:number, minY:number;
@@ -199,6 +197,8 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 		w = 1/w;
 		h = 1/h;
 
+		var raw:Float32Array = matrix._rawData;
+		
 		raw[0] = 2*w;
 		raw[5] = 2*h;
 		raw[10] = d;
@@ -208,6 +208,6 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 		raw[15] = 1;
 		raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[11] = 0;
 
-		matrix.copyRawDataFrom(raw);
+		matrix.invalidatePosition();
 	}
 }

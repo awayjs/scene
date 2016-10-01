@@ -1,5 +1,4 @@
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
 import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
 import {FreeMatrixProjection}			from "@awayjs/core/lib/projections/FreeMatrixProjection";
@@ -161,7 +160,6 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 
 	private updateProjectionPartition(matrix:Matrix3D, splitRatio:number, texOffsetX:number, texOffsetY:number):void
 	{
-		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
 		var xN:number, yN:number, zN:number;
 		var xF:number, yF:number, zF:number;
 		var minX:number = Number.POSITIVE_INFINITY, minY:number = Number.POSITIVE_INFINITY, minZ:number;
@@ -221,6 +219,8 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 		w = 1/w;
 		h = 1/h;
 
+		var raw:Float32Array = matrix._rawData;
+		
 		raw[0] = 2*w;
 		raw[5] = 2*h;
 		raw[10] = d;
@@ -229,8 +229,7 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 		raw[14] = -minZ*d;
 		raw[15] = 1;
 		raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[11] = 0;
-
-		matrix.copyRawDataFrom(raw);
+		
 		matrix.appendScale(.96, .96, 1);
 		matrix.appendTranslation(texOffsetX, texOffsetY, 0);
 		matrix.appendScale(.5, .5, 1);

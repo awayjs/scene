@@ -1,4 +1,3 @@
-import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
@@ -83,8 +82,10 @@ export class DirectionalLight extends LightBase implements IEntity
 	//override
 	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
-		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
-		var m:Matrix3D = new Matrix3D();
+		if (!target)
+			target = new Matrix3D();
+		
+		var m:Matrix3D = Matrix3D.CALCULATION_MATRIX;
 
 		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
 		m.append(this.inverseSceneTransform);
@@ -127,19 +128,18 @@ export class DirectionalLight extends LightBase implements IEntity
 		var invXRange:number = 1/(xMax - xMin);
 		var invYRange:number = 1/(yMax - yMin);
 		var invZRange:number = 1/(zMax - zMin);
-		raw[0] = 2*invXRange;
-		raw[5] = 2*invYRange;
-		raw[10] = invZRange;
-		raw[12] = -(xMax + xMin)*invXRange;
-		raw[13] = -(yMax + yMin)*invYRange;
-		raw[14] = -zMin*invZRange;
-		raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[11] = 0;
-		raw[15] = 1;
 
-		if (!target)
-			target = new Matrix3D();
+		var targetData:Float32Array = target._rawData;
 
-		target.copyRawDataFrom(raw);
+		targetData[0] = 2*invXRange;
+		targetData[5] = 2*invYRange;
+		targetData[10] = invZRange;
+		targetData[12] = -(xMax + xMin)*invXRange;
+		targetData[13] = -(yMax + yMin)*invYRange;
+		targetData[14] = -zMin*invZRange;
+		targetData[1] = targetData[2] = targetData[3] = targetData[4] = targetData[6] = targetData[7] = targetData[8] = targetData[9] = targetData[11] = 0;
+		targetData[15] = 1;
+		
 		target.prepend(m);
 
 		return target;

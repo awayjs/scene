@@ -2,7 +2,6 @@ import {EventDispatcher}				from "@awayjs/core/lib/events/EventDispatcher";
 import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
 import {Matrix}						from "@awayjs/core/lib/geom/Matrix";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
 import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
@@ -68,6 +67,13 @@ import {TransformEvent}				from "../events/TransformEvent";
 export class Transform extends EventDispatcher
 {
 	public _rawData:Float32Array;
+
+	private _backVector:Vector3D;
+	private _downVector:Vector3D;
+	private _forwardVector:Vector3D;
+	private _leftVector:Vector3D;
+	private _rightVector:Vector3D;
+	private _upVector:Vector3D;
 	
 	private _concatenatedColorTransform:ColorTransform;
 	private _concatenatedMatrix:Matrix;
@@ -86,10 +92,12 @@ export class Transform extends EventDispatcher
 	 */
 	public get backVector():Vector3D
 	{
-		var director:Vector3D = Matrix3DUtils.getForward(this._matrix3D);
-		director.negate();
+		if (!this._backVector)
+			this._backVector = new Vector3D();
 
-		return director;
+		this._matrix3D.copyColumnTo(2, this._backVector, true);
+
+		return this._backVector;
 	}
 
 	/**
@@ -146,10 +154,12 @@ export class Transform extends EventDispatcher
 	 */
 	public get downVector():Vector3D
 	{
-		var director:Vector3D = Matrix3DUtils.getUp(this._matrix3D);
-		director.negate();
+		if (!this._downVector)
+			this._downVector = new Vector3D();
 
-		return director;
+		this._matrix3D.copyColumnTo(1, this._downVector, true);
+
+		return this._downVector;
 	}
 
 	/**
@@ -157,7 +167,12 @@ export class Transform extends EventDispatcher
 	 */
 	public get forwardVector():Vector3D
 	{
-		return Matrix3DUtils.getForward(this._matrix3D);
+		if (!this._forwardVector)
+			this._forwardVector = new Vector3D();
+
+		this._matrix3D.copyColumnTo(2, this._forwardVector);
+
+		return this._forwardVector;
 	}
 
 	/**
@@ -165,10 +180,12 @@ export class Transform extends EventDispatcher
 	 */
 	public get leftVector():Vector3D
 	{
-		var director:Vector3D = Matrix3DUtils.getRight(this._matrix3D);
-		director.negate();
+		if (!this._leftVector)
+			this._leftVector = new Vector3D();
 
-		return director;
+		this._matrix3D.copyColumnTo(0, this._backVector, true);
+
+		return this._leftVector;
 	}
 
 	/**
@@ -262,7 +279,12 @@ export class Transform extends EventDispatcher
 	 */
 	public get rightVector():Vector3D
 	{
-		return Matrix3DUtils.getRight(this.matrix3D);
+		if (!this._rightVector)
+			this._rightVector = new Vector3D();
+
+		this._matrix3D.copyColumnTo(0, this._rightVector);
+
+		return this._rightVector;
 	}
 
 	/**
@@ -347,7 +369,12 @@ export class Transform extends EventDispatcher
 	 */
 	public get upVector():Vector3D
 	{
-		return Matrix3DUtils.getUp(this.matrix3D);
+		if (!this._upVector)
+			this._upVector = new Vector3D();
+
+		this._matrix3D.copyColumnTo(1, this._upVector);
+
+		return this._upVector;
 	}
 
 	constructor(rawData:Float32Array = null)

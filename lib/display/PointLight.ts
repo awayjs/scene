@@ -1,6 +1,5 @@
 import {Box}							from "@awayjs/core/lib/geom/Box";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {LightBase}					from "../display/LightBase";
@@ -91,8 +90,10 @@ export class PointLight extends LightBase implements IEntity
 
 	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
-		var raw:Float32Array = Matrix3DUtils.RAW_DATA_CONTAINER;
-		var m:Matrix3D = new Matrix3D();
+		if (!target)
+			target = new Matrix3D();
+		
+		var m:Matrix3D = Matrix3D.CALCULATION_MATRIX;
 
 		// todo: do not use lookAt on Light
 		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
@@ -115,16 +116,14 @@ export class PointLight extends LightBase implements IEntity
 		zMin = z - d;
 		zMax = z + d;
 
-		raw[5] = raw[0] = zMin/d;
-		raw[10] = zMax/(zMax - zMin);
-		raw[11] = 1;
-		raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[12] = raw[13] = raw[15] = 0;
-		raw[14] = -zMin*raw[10];
+		var targetData:Float32Array = target._rawData;
 
-		if (!target)
-			target = new Matrix3D();
-
-		target.copyRawDataFrom(raw);
+		targetData[5] = targetData[0] = zMin/d;
+		targetData[10] = zMax/(zMax - zMin);
+		targetData[11] = 1;
+		targetData[1] = targetData[2] = targetData[3] = targetData[4] = targetData[6] = targetData[7] = targetData[8] = targetData[9] = targetData[12] = targetData[13] = targetData[15] = 0;
+		targetData[14] = -zMin*targetData[10];
+		
 		target.prepend(m);
 
 		return target;

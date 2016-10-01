@@ -4,7 +4,6 @@ import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
 import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
 import {MathConsts}					from "@awayjs/core/lib/geom/MathConsts";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Matrix3DUtils}				from "@awayjs/core/lib/geom/Matrix3DUtils";
 import {Point}						from "@awayjs/core/lib/geom/Point";
 import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
@@ -1817,53 +1816,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 * @param    target        The vector defining the point to be looked at
 	 * @param    upAxis        An optional vector used to define the desired up orientation of the 3d object after rotation has occurred
 	 */
-	public lookAt(target:Vector3D, upAxis:Vector3D = null):void
+	public lookAt(scenePosition:Vector3D, upAxis:Vector3D = null):void
 	{
-
-		var yAxis:Vector3D;
-		var zAxis:Vector3D;
-		var xAxis:Vector3D;
-		var raw:Float32Array;
-
 		if (upAxis == null)
 			upAxis = Vector3D.Y_AXIS;
-		else
-			upAxis.normalize();
 
-		zAxis = target.subtract(this._transform.position);
-		zAxis.normalize();
-
-		xAxis = upAxis.crossProduct(zAxis);
-		xAxis.normalize();
-
-		if (xAxis.length < 0.05) {
-			xAxis.x = upAxis.y;
-			xAxis.y = upAxis.x;
-			xAxis.z = 0;
-			xAxis.normalize();
-		}
-
-		yAxis = zAxis.crossProduct(xAxis);
-
-		raw = Matrix3DUtils.RAW_DATA_CONTAINER;
-
-		raw[0] = xAxis.x;
-		raw[1] = xAxis.y;
-		raw[2] = xAxis.z;
-		raw[3] = 0;
-
-		raw[4] = yAxis.x;
-		raw[5] = yAxis.y;
-		raw[6] = yAxis.z;
-		raw[7] = 0;
-
-		raw[8] = zAxis.x;
-		raw[9] = zAxis.y;
-		raw[10] = zAxis.z;
-		raw[11] = 0;
-
-		var m:Matrix3D = new Matrix3D();
-		m.copyRawDataFrom(raw);
+		var m:Matrix3D = Matrix3D.getPointAtMatrix(new Vector3D(), scenePosition.subtract(this._transform.position), upAxis, Matrix3D.CALCULATION_MATRIX);
 
 		var vec:Vector3D = m.decompose()[1];
 
