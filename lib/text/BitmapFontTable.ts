@@ -1,8 +1,9 @@
 import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 
+import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+
 import {BitmapFontChar}			from "../text/BitmapFontChar";
 import {IFontTable}				from "../text/IFontTable";
-import {MaterialBase}					from "../materials/MaterialBase";
 
 
 

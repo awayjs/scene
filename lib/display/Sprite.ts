@@ -3,12 +3,14 @@ import {Box}							from "@awayjs/core/lib/geom/Box";
 import {Point}						from "@awayjs/core/lib/geom/Point";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {ITraverser}					from "../ITraverser";
-import {IAnimator}					from "../animators/IAnimator";
-import {Graphics}						from "../graphics/Graphics";
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
+import {Graphics}						from "@awayjs/graphics/lib/Graphics";
+import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+import {Style}						from "@awayjs/graphics/lib/base/Style";
+import {Transform}					from "@awayjs/graphics/lib/base/Transform";
+
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {MaterialBase}					from "../materials/MaterialBase";
-import {Style}						from "../base/Style";
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -22,7 +24,7 @@ export class Sprite extends DisplayObjectContainer
 	public static assetType:string = "[asset Sprite]";
 
 	private _center:Vector3D;
-	public _graphics:Graphics; //TODO
+	public _graphics:Graphics;
 	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
 
 	//temp point used in hit testing
@@ -58,13 +60,7 @@ export class Sprite extends DisplayObjectContainer
 
 	public set animator(value:IAnimator)
 	{
-		if (this._graphics.animator)
-			this._graphics.animator.removeOwner(this);
-
 		this._graphics.animator = value;
-
-		if (this._graphics.animator)
-			this._graphics.animator.addOwner(this);
 	}
 
 	/**
@@ -104,19 +100,10 @@ export class Sprite extends DisplayObjectContainer
 
 		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
 
-		this._graphics = new Graphics(); //unique graphics object for each Sprite
+		this._graphics = new Graphics(this); //unique graphics object for each Sprite
 		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 
 		this.material = material;
-	}
-
-	/**
-	 *
-	 */
-	public bakeTransformations():void
-	{
-		this._graphics.applyTransformation(this.transform.matrix3D);
-		this.transform.clearMatrix3D();
 	}
 
 	/**
@@ -226,7 +213,7 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:ITraverser):void
+	public _acceptTraverser(traverser:TraverserBase):void
 	{
 		this.graphics.acceptTraverser(traverser);
 	}

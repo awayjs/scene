@@ -4,9 +4,10 @@ import {PlaneClassification}			from "@awayjs/core/lib/geom/PlaneClassification";
 import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {ElementsType}					from "../graphics/ElementsType";
+import {ElementsType}					from "@awayjs/graphics/lib/elements/ElementsType";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+
 import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
-import {IEntity}						from "../display/IEntity";
 import {Sprite}						from "../display/Sprite";
 import {PrimitiveCubePrefab}			from "../prefabs/PrimitiveCubePrefab";
 
@@ -112,8 +113,8 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 	{
 		super._pUpdate();
 
-		this._box = this._pEntity.getBox();
-		var matrix:Matrix3D = this._pEntity.sceneTransform;
+		this._box = this._entity.getBox();
+		var matrix:Matrix3D = this._entity.sceneTransform;
 		var hx:number = this._box.width/2;
 		var hy:number = this._box.height/2;
 		var hz:number = this._box.depth/2;

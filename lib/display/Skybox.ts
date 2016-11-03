@@ -1,32 +1,33 @@
 import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
-import {BlendMode}					from "@awayjs/core/lib/image/BlendMode";
-import {ImageCube}					from "@awayjs/core/lib/image/ImageCube";
 
-import {ITraverser}					from "../ITraverser";
-import {IAnimationSet}				from "../animators/IAnimationSet";
-import {IAnimator}					from "../animators/IAnimator";
-import {DisplayObject}				from "../display/DisplayObject";
-import {IRenderable}					from "../base/IRenderable";
-import {ISurface}						from "../base/ISurface";
+import {BlendMode}					from "@awayjs/graphics/lib/image/BlendMode";
+import {ImageCube}					from "@awayjs/graphics/lib/image/ImageCube";
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {IAnimationSet}				from "@awayjs/graphics/lib/animators/IAnimationSet";
+import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
+import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
+import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {RenderableEvent}				from "@awayjs/graphics/lib/events/RenderableEvent";
+import {MaterialEvent}					from "@awayjs/graphics/lib/events/MaterialEvent";
+import {SingleCubeTexture}			from "@awayjs/graphics/lib/textures/SingleCubeTexture";
+import {TextureBase}					from "@awayjs/graphics/lib/textures/TextureBase";
+import {Style}						from "@awayjs/graphics/lib/base/Style";
+import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
+
 import {BoundsType}					from "../bounds/BoundsType";
-import {IEntity}						from "../display/IEntity";
-import {RenderableEvent}				from "../events/RenderableEvent";
-import {SurfaceEvent}					from "../events/SurfaceEvent";
-import {LightPickerBase}				from "../materials/lightpickers/LightPickerBase";
-import {SingleCubeTexture}			from "../textures/SingleCubeTexture";
-import {TextureBase}					from "../textures/TextureBase";
-import {Style}						from "../base/Style";
-import {StyleEvent}					from "../events/StyleEvent";
-import {IPickingCollider}				from "../pick/IPickingCollider";
-import {PickingCollision}				from "../pick/PickingCollision";
+import {DisplayObject}				from "../display/DisplayObject";
+import {LightPickerBase}				from "../lightpickers/LightPickerBase";
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-export class Skybox extends DisplayObject implements IEntity, IRenderable, ISurface
+export class Skybox extends DisplayObject implements IEntity, IRenderable, IMaterial
 {
+	public static traverseName:string = TraverserBase.addEntityName("applySkybox");
+	
 	private _textures:Array<TextureBase> = new Array<TextureBase>();
 
 	public static assetType:string = "[asset Skybox]";
@@ -46,6 +47,12 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, ISurf
 
 	private _onTextureInvalidateDelegate:(event:AssetEvent) => void;
 
+
+	public get traverseName():string
+	{
+		return Skybox.traverseName;
+	}
+	
 	/**
 	 * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
 	 * invisible or entirely opaque, often used with textures for foliage, etc.
@@ -245,7 +252,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, ISurf
 	 */
 	public invalidatePasses():void
 	{
-		this.dispatchEvent(new SurfaceEvent(SurfaceEvent.INVALIDATE_PASSES, this));
+		this.dispatchEvent(new MaterialEvent(MaterialEvent.INVALIDATE_PASSES, this));
 	}
 
 	public invalidateElements():void
@@ -286,21 +293,8 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, ISurf
 		this.invalidatePasses();
 	}
 
-	public _acceptTraverser(traverser:ITraverser):void
+	public _acceptTraverser(traverser:TraverserBase):void
 	{
 		traverser.applyRenderable(this);
-	}
-
-	/**
-	 * //TODO
-	 *
-	 * @param shortestCollisionDistance
-	 * @returns {boolean}
-	 *
-	 * @internal
-	 */
-	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
-	{
-		return false;
 	}
 }

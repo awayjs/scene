@@ -1,4 +1,4 @@
-import {BlendMode}					from "@awayjs/core/lib/image/BlendMode";
+import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
 import {Box}							from "@awayjs/core/lib/geom/Box";
 import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
 import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
@@ -11,6 +11,13 @@ import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 import {LoaderInfo}					from "@awayjs/core/lib/library/LoaderInfo";
 import {EventBase}					from "@awayjs/core/lib/events/EventBase";
 
+import {BlendMode}					from "@awayjs/graphics/lib/image/BlendMode";
+import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {Transform}					from "@awayjs/graphics/lib/base/Transform";
+import {TransformEvent}				from "@awayjs/graphics/lib/events/TransformEvent";
+import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+
 import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {BoundsType}					from "../bounds/BoundsType";
@@ -20,14 +27,8 @@ import {ControllerBase}				from "../controllers/ControllerBase";
 import {AlignmentMode}				from "../base/AlignmentMode";
 import {OrientationMode}				from "../base/OrientationMode";
 import {IBitmapDrawable}				from "../base/IBitmapDrawable";
-import {Transform}					from "../base/Transform";
-import {IPickingCollider}				from "../pick/IPickingCollider";
-import {PickingCollision}				from "../pick/PickingCollision";
-import {IEntity}						from "../display/IEntity";
 import {DisplayObjectEvent}			from "../events/DisplayObjectEvent";
-import {TransformEvent}				from "../events/TransformEvent";
 import {PrefabBase}					from "../prefabs/PrefabBase";
-import {ITraverser}				from "../ITraverser";
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -160,6 +161,8 @@ import {ITraverser}				from "../ITraverser";
  */
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
+	public static traverseName:string = "applyEntity";
+	
 	public _iIsRoot:boolean;
 	public _iIsPartition:boolean;
 	public _adapter:IDisplayObjectAdapter;
@@ -200,7 +203,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _explicitMasks:Array<DisplayObject>;
 	public _pImplicitVisibility:boolean = true;
 	public _pImplicitMaskId:number = -1;
-	public _pImplicitMasks:Array<Array<DisplayObject>>;
+	public _pImplicitMasks:Array<Array<IEntity>>;
 	public _pImplicitMaskIds:Array<Array<number>> = new Array<Array<number>>();
 	private _explicitMouseEnabled:boolean = true;
 	public _pImplicitMouseEnabled:boolean = true;
@@ -223,7 +226,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _pivot:Vector3D;
 	private _pivotScale:Vector3D;
 	private _orientationMatrix:Matrix3D = new Matrix3D();
-	private _pickingCollider:IPickingCollider;
 	private _pickingCollision:PickingCollision;
 	private _shaderPickingDetails:boolean;
 
@@ -239,6 +241,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	//temp vector used in global to local
 	private _tempVector3D:Vector3D = new Vector3D();
 
+	public get traverseName():string
+	{
+		return DisplayObject.traverseName;
+	}
+	
 	/**
 	 * adapter is used to provide MovieClip to scripts taken from different platforms
 	 * setter typically managed by factory
@@ -794,12 +801,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 	}
 
-
-	/**
-	 *
-	 */
-	public pickingCollider:IPickingCollider;
-
 	/**
 	 * Defines the local point around which the object rotates.
 	 */
@@ -1112,7 +1113,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get partition():DisplayObject
+	public get partition():IEntity
 	{
 		return this._pPartition;
 	}
@@ -2138,7 +2139,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public _iAssignedMasks():Array<Array<DisplayObject>>
+	public _iAssignedMasks():Array<Array<IEntity>>
 	{
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
 			this._updateMasks();
@@ -2174,7 +2175,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
 	}
 
-	public _acceptTraverser(collector:ITraverser):void
+	public _acceptTraverser(traverser:TraverserBase):void
 	{
 		//nothing to do here
 	}
@@ -2270,10 +2271,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		this._pImplicitMouseEnabled = (this._pParent)? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
 
-		// If there is a parent and this child does not have a picking collider, use its parent's picking collider.
-		if (this._pImplicitMouseEnabled && this._pParent && !this.pickingCollider)
-			this.pickingCollider =  this._pParent.pickingCollider;
-
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
 	}
 
@@ -2300,7 +2297,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._pImplicitMasks && this._pImplicitMasks.length) {
 			var numLayers:number = this._pImplicitMasks.length;
 			var numChildren:number;
-			var implicitChildren:Array<DisplayObject>;
+			var implicitChildren:Array<IEntity>;
 			var implicitChildIds:Array<number>;
 			for (var i:number = 0; i < numLayers; i++) {
 				implicitChildren = this._pImplicitMasks[i];

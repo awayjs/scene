@@ -1,7 +1,7 @@
 import {AssetBase}						from "@awayjs/core/lib/library/AssetBase";
 
 import {IFontTable}						from "../text/IFontTable";
-import {MaterialBase}					from "../materials/MaterialBase";
+import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You

@@ -1,14 +1,19 @@
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+
+import {DisplayObject}						from "../display/DisplayObject";
 import {LightBase}					from "../display/LightBase";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {BoundsType}					from "../bounds/BoundsType";
-import {IEntity}						from "../display/IEntity";
-import {DirectionalShadowMapper}		from "../materials/shadowmappers/DirectionalShadowMapper";
+import {DirectionalShadowMapper}		from "../shadowmappers/DirectionalShadowMapper";
 
 export class DirectionalLight extends LightBase implements IEntity
 {
+	public static traverseName:string = TraverserBase.addEntityName("applyDirectionalLight");
+	
 	public static assetType:string = "[light DirectionalLight]";
 
 	private _direction:Vector3D;
@@ -31,6 +36,11 @@ export class DirectionalLight extends LightBase implements IEntity
 		this._boundsType = BoundsType.NULL;
 	}
 
+	public get traverseName():string
+	{
+		return DirectionalLight.traverseName;
+	}
+	
 	public get assetType():string
 	{
 		return DirectionalLight.assetType;
@@ -80,14 +90,14 @@ export class DirectionalLight extends LightBase implements IEntity
 	}
 
 	//override
-	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
+	public iGetObjectProjectionMatrix(displayObject:DisplayObject, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
 		if (!target)
 			target = new Matrix3D();
 		
 		var m:Matrix3D = Matrix3D.CALCULATION_MATRIX;
 
-		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
+		m.copyFrom(displayObject.getRenderSceneTransform(cameraTransform));
 		m.append(this.inverseSceneTransform);
 
 		if (!this._projAABBPoints)

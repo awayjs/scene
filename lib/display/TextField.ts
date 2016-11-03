@@ -2,20 +2,23 @@ import {AttributesBuffer}			from "@awayjs/core/lib/attributes/AttributesBuffer";
 import {AttributesView}				from "@awayjs/core/lib/attributes/AttributesView";
 import {Float2Attributes}			from "@awayjs/core/lib/attributes/Float2Attributes";
 import {Byte4Attributes}			from "@awayjs/core/lib/attributes/Byte4Attributes";
-import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
 import {Matrix}						from "@awayjs/core/lib/geom/Matrix";
 import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
 import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
-import {Vector3D}					from "@awayjs/core/lib/geom/Vector3D";
-import {Sampler2D}					from "@awayjs/core/lib/image/Sampler2D";
-import {Single2DTexture}				from "../textures/Single2DTexture";
 
-import {BasicMaterial}					from "../materials/BasicMaterial";
-import {MaterialBase}					from "../materials/MaterialBase";
+import {Sampler2D}					from "@awayjs/graphics/lib/image/Sampler2D";
+import {Style}						from "@awayjs/graphics/lib/base/Style";
+import {Graphics}					from "@awayjs/graphics/lib/Graphics";
+import {Graphic}					from "@awayjs/graphics/lib/Graphic";
+import {TriangleElements}			from "@awayjs/graphics/lib/elements/TriangleElements";
+import {DefaultMaterialManager}		from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
 
+import {TesselatedFontChar}			from "../text/TesselatedFontChar";
+import {TextFormatAlign}			from "../text/TextFormatAlign";
+import {TesselatedFontTable}		from "../text/TesselatedFontTable";
+import {BitmapFontTable}			from "../text/BitmapFontTable";
 
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {Style}						from "../base/Style";
 import {DisplayObject}				from "../display/DisplayObject";
 import {AntiAliasType}				from "../text/AntiAliasType";
 import {GridFitType}				from "../text/GridFitType";
@@ -25,17 +28,7 @@ import {TextFormat}					from "../text/TextFormat";
 import {TextInteractionMode}		from "../text/TextInteractionMode";
 import {TextLineMetrics}			from "../text/TextLineMetrics";
 import {Sprite}						from "../display/Sprite";
-import {Graphics}					from "../graphics/Graphics";
-import {Graphic}					from "../graphics/Graphic";
-import {ElementsBase}				from "../graphics/ElementsBase";
-import {TriangleElements}			from "../graphics/TriangleElements";
-import {TesselatedFontChar}			from "../text/TesselatedFontChar";
-import {TextFormatAlign}			from "../text/TextFormatAlign";
-import {TesselatedFontTable}		from "../text/TesselatedFontTable";
-import {BitmapFontTable}			from "../text/BitmapFontTable";
-
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {DefaultMaterialManager}		from "../managers/DefaultMaterialManager";
 
 /**
  * The TextField class is used to create display objects for text display and

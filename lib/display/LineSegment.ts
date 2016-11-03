@@ -1,23 +1,24 @@
 ﻿import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {ITraverser}					from "../ITraverser";
-import {IAnimator}					from "../animators/IAnimator";
+import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
+import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
+import {Style}						from "@awayjs/graphics/lib/base/Style";
+import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
+import {RenderableEvent}				from "@awayjs/graphics/lib/events/RenderableEvent";
+import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+
 import {DisplayObject}				from "../display/DisplayObject";
-import {IRenderable}					from "../base/IRenderable";
 import {BoundsType}					from "../bounds/BoundsType";
-import {RenderableEvent}				from "../events/RenderableEvent";
-import {IEntity}						from "../display/IEntity";
-import {MaterialBase}					from "../materials/MaterialBase";
-import {Style}						from "../base/Style";
-import {StyleEvent}					from "../events/StyleEvent";
-import {IPickingCollider}				from "../pick/IPickingCollider";
-import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * A Line Segment primitive.
  */
 export class LineSegment extends DisplayObject implements IEntity, IRenderable
 {
+	public static traverseName:string = TraverserBase.addRenderableName("applyLineSegment");
+	
 	private _style:Style;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 
@@ -37,7 +38,7 @@ export class LineSegment extends DisplayObject implements IEntity, IRenderable
 	{
 		return this._animator;
 	}
-
+	
 	/**
 	 *
 	 */
@@ -217,22 +218,8 @@ export class LineSegment extends DisplayObject implements IEntity, IRenderable
 		this.invalidateSurface();
 	}
 
-	/**
-	 * //TODO
-	 *
-	 * @param shortestCollisionDistance
-	 * @param findClosest
-	 * @returns {boolean}
-	 *
-	 * @internal
-	 */
-	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
+	public _acceptTraverser(traverser:TraverserBase):void
 	{
-		return false; //TODO: detect line collisions
-	}
-
-	public _acceptTraverser(traverser:ITraverser):void
-	{
-		traverser.applyRenderable(this);
+		traverser[LineSegment.traverseName](this);
 	}
 }

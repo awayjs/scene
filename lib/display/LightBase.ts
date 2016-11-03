@@ -1,11 +1,11 @@
 import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
 import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
 
+import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
+
 import {DisplayObjectContainer}	from "../display/DisplayObjectContainer";
-import {Camera}					from "../display/Camera";
-import {IEntity}					from "../display/IEntity";
 import {LightEvent}				from "../events/LightEvent";
-import {ShadowMapperBase}			from "../materials/shadowmappers/ShadowMapperBase";
+import {ShadowMapperBase}			from "../shadowmappers/ShadowMapperBase";
 
 export class LightBase extends DisplayObjectContainer
 {
@@ -37,6 +37,8 @@ export class LightBase extends DisplayObjectContainer
 	constructor()
 	{
 		super();
+		
+		this.castsShadows = false;
 	}
 
 	public get shadowsEnabled():boolean

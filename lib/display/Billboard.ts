@@ -1,22 +1,21 @@
-import {Sampler2D}					from "@awayjs/core/lib/image/Sampler2D";
-import {Image2D}						from "@awayjs/core/lib/image/Image2D";
 import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 
-import {ITraverser}					from "../ITraverser";
-import {IAnimator}					from "../animators/IAnimator";
+import {Sampler2D}					from "@awayjs/graphics/lib/image/Sampler2D";
+import {Image2D}						from "@awayjs/graphics/lib/image/Image2D";
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
+import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {RenderableEvent}				from "@awayjs/graphics/lib/events/RenderableEvent";
+import {MaterialEvent}					from "@awayjs/graphics/lib/events/MaterialEvent";
+import {DefaultMaterialManager}		from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
+import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+import {TextureBase}					from "@awayjs/graphics/lib/textures/TextureBase";
+import {Style}						from "@awayjs/graphics/lib/base/Style";
+import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
+
 import {DisplayObject}				from "../display/DisplayObject";
-import {IRenderable}					from "../base/IRenderable";
 import {BoundsType}					from "../bounds/BoundsType";
-import {IEntity}						from "../display/IEntity";
-import {RenderableEvent}				from "../events/RenderableEvent";
-import {SurfaceEvent}					from "../events/SurfaceEvent";
-import {DefaultMaterialManager}		from "../managers/DefaultMaterialManager";
-import {MaterialBase}					from "../materials/MaterialBase";
-import {TextureBase}					from "../textures/TextureBase";
-import {Style}						from "../base/Style";
-import {StyleEvent}					from "../events/StyleEvent";
-import {IPickingCollider}				from "../pick/IPickingCollider";
-import {PickingCollision}				from "../pick/PickingCollision";
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -55,6 +54,8 @@ import {PickingCollision}				from "../pick/PickingCollision";
 
 export class Billboard extends DisplayObject implements IEntity, IRenderable
 {
+	public static traverseName:string = TraverserBase.addRenderableName("applyBillboard");
+	
 	public static assetType:string = "[asset Billboard]";
 
 	private _animator:IAnimator;
@@ -65,7 +66,7 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 
 	private _style:Style;
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
-	private onInvalidateTextureDelegate:(event:SurfaceEvent) => void;
+	private onInvalidateTextureDelegate:(event:MaterialEvent) => void;
 
 
 	/**
@@ -123,7 +124,7 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 
 		if (this._material) {
 			this._material.iRemoveOwner(this);
-			this._material.removeEventListener(SurfaceEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+			this._material.removeEventListener(MaterialEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
 		}
 
 
@@ -131,7 +132,7 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 
 		if (this._material) {
 			this._material.iAddOwner(this);
-			this._material.addEventListener(SurfaceEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+			this._material.addEventListener(MaterialEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
 		}
 	}
 
@@ -141,7 +142,7 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 
 		this._pIsEntity = true;
 
-		this.onInvalidateTextureDelegate = (event:SurfaceEvent) => this.onInvalidateTexture(event);
+		this.onInvalidateTextureDelegate = (event:MaterialEvent) => this.onInvalidateTexture(event);
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 
 		this.material = material;
@@ -194,29 +195,16 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 	}
 
 	/**
-	 * //TODO
-	 *
-	 * @param shortestCollisionDistance
-	 * @returns {boolean}
-	 *
-	 * @internal
-	 */
-	public _iTestCollision(pickingCollision:PickingCollision, pickingCollider:IPickingCollider):boolean
-	{
-		return pickingCollider.testBillboardCollision(this, this.material, pickingCollision);
-	}
-
-	/**
 	 * @private
 	 */
-	private onInvalidateTexture(event:SurfaceEvent):void
+	private onInvalidateTexture(event:MaterialEvent):void
 	{
 		this._updateDimensions();
 	}
 
-	public _acceptTraverser(traverser:ITraverser):void
+	public _acceptTraverser(traverser:TraverserBase):void
 	{
-		traverser.applyRenderable(this);
+		traverser[Billboard.traverseName](this);
 	}
 
 	private _updateDimensions():void

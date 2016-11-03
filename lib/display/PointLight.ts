@@ -2,14 +2,18 @@ import {Box}							from "@awayjs/core/lib/geom/Box";
 import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+
+import {DisplayObject}						from "../display/DisplayObject";
 import {LightBase}					from "../display/LightBase";
 import {BoundsType}					from "../bounds/BoundsType";
-import {Camera}						from "../display/Camera";
-import {IEntity}						from "../display/IEntity";
-import {CubeMapShadowMapper}			from "../materials/shadowmappers/CubeMapShadowMapper";
+import {CubeMapShadowMapper}			from "../shadowmappers/CubeMapShadowMapper";
 
 export class PointLight extends LightBase implements IEntity
 {
+	public static traverseName:string = TraverserBase.addEntityName("applyPointLight");
+	
 	public static assetType:string = "[light PointLight]";
 
 	public _pRadius:number = 90000;
@@ -27,8 +31,12 @@ export class PointLight extends LightBase implements IEntity
 		//default bounds type
 		this._boundsType = BoundsType.SPHERE;
 	}
-
-
+	
+	public get traverseName():string
+	{
+		return PointLight.traverseName;
+	}
+	
 	public get assetType():string
 	{
 		return PointLight.assetType;
@@ -88,7 +96,7 @@ export class PointLight extends LightBase implements IEntity
 		this._pSphereBounds.radius = this._pFallOff;
 	}
 
-	public iGetObjectProjectionMatrix(entity:IEntity, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
+	public iGetObjectProjectionMatrix(displayObject:DisplayObject, cameraTransform:Matrix3D, target:Matrix3D = null):Matrix3D
 	{
 		if (!target)
 			target = new Matrix3D();
@@ -96,14 +104,14 @@ export class PointLight extends LightBase implements IEntity
 		var m:Matrix3D = Matrix3D.CALCULATION_MATRIX;
 
 		// todo: do not use lookAt on Light
-		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
+		m.copyFrom(displayObject.getRenderSceneTransform(cameraTransform));
 		m.append(this._pParent.inverseSceneTransform);
 		this.lookAt(m.position);
 
-		m.copyFrom(entity.getRenderSceneTransform(cameraTransform));
+		m.copyFrom(displayObject.getRenderSceneTransform(cameraTransform));
 		m.append(this.inverseSceneTransform);
 
-		var box:Box = entity.getBox();
+		var box:Box = displayObject.getBox();
 		var v1:Vector3D = m.deltaTransformVector(new Vector3D(box.left, box.bottom, box.front));
 		var v2:Vector3D = m.deltaTransformVector(new Vector3D(box.right, box.top, box.back));
 		var d1:number = v1.x*v1.x + v1.y*v1.y + v1.z*v1.z;

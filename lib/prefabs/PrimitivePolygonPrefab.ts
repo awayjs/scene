@@ -1,6 +1,6 @@
 import {IAsset}					from "@awayjs/core/lib/library/IAsset";
 
-import {MaterialBase}				from "../materials/MaterialBase";
+import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
 import {PrimitiveCylinderPrefab}	from "../prefabs/PrimitiveCylinderPrefab";
 
 /**

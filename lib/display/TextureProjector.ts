@@ -1,11 +1,13 @@
 import {ProjectionEvent}				from "@awayjs/core/lib/events/ProjectionEvent";
 import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
-import {Image2D}					from "@awayjs/core/lib/image/Image2D";
 import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
+
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {Image2D}					from "@awayjs/graphics/lib/image/Image2D";
+import {TextureBase}				from "@awayjs/graphics/lib/textures/TextureBase";
 
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {TextureBase}				from "../textures/TextureBase";
 
 /**
  * TextureProjector is an object in the scene that can be used to project textures onto geometry. To do so,
@@ -18,6 +20,8 @@ import {TextureBase}				from "../textures/TextureBase";
  */
 export class TextureProjector extends DisplayObjectContainer
 {
+	public static traverseName:string = TraverserBase.addEntityName("applyTextureProjector");
+
 	public static assetType:string = "[asset TextureProjector]";
 	
 	private _projection:PerspectiveProjection;
@@ -87,6 +91,12 @@ export class TextureProjector extends DisplayObjectContainer
 	public set focalLength(value:number)
 	{
 		this._projection.focalLength = value;
+	}
+
+
+	public get traverseName():string
+	{
+		return TextureProjector.traverseName;
 	}
 	
 	public get assetType():string

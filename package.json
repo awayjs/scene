@@ -32,7 +32,8 @@
   },
   "homepage": "https://github.com/awayjs/display#readme",
   "dependencies": {
-    "@awayjs/core": "^0.6.0"
+    "@awayjs/core": "^0.6.0",
+    "@awayjs/graphics": "^0.1.0"
   },
   "devDependencies": {
     "rimraf": "^2.5.2",

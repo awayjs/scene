@@ -5,16 +5,20 @@ import {ProjectionEvent}				from "@awayjs/core/lib/events/ProjectionEvent";
 import {IProjection}					from "@awayjs/core/lib/projections/IProjection";
 import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
 
+import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {IRenderer}					from "../IRenderer";
 import {BoundsType}					from "../bounds/BoundsType";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {IEntity}						from "../display/IEntity";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
 import {CameraEvent}					from "../events/CameraEvent";
 
 
 export class Camera extends DisplayObjectContainer implements IEntity
 {
+	public static traverseName:string = TraverserBase.addEntityName("applyCamera");
+	
 	public static assetType:string = "[asset Camera]";
 
 	private _viewProjection:Matrix3D = new Matrix3D();

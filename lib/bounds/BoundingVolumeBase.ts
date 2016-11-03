@@ -1,30 +1,31 @@
-import {Box}							from "@awayjs/core/lib/geom/Box";
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
 import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
 
-import {IEntity}						from "../display/IEntity";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+
+import {DisplayObject}						from "../display/DisplayObject";
+
 import {Sprite}						from "../display/Sprite";
 
 export class BoundingVolumeBase
 {
-	public _pEntity:IEntity;
+	public _entity:IEntity;
 	public _pBoundsPrimitive:Sprite;
 	public _pInvalidated:boolean = true;
 
-	constructor(entity)
+	constructor(entity:IEntity)
 	{
-		this._pEntity = entity;
+		this._entity = entity;
 	}
 
 	public dispose():void
 	{
-		this._pEntity = null;
+		this._entity = null;
 		this._pBoundsPrimitive = null;
 	}
 
-	public get boundsPrimitive():IEntity
+	public get boundsPrimitive():DisplayObject
 	{
 		if (this._pBoundsPrimitive == null) {
 			this._pBoundsPrimitive = this._pCreateBoundsPrimitive();

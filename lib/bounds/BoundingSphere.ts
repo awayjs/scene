@@ -4,9 +4,10 @@ import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
 import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {ElementsType}					from "../graphics/ElementsType";
+import {ElementsType}					from "@awayjs/graphics/lib/elements/ElementsType";
+import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+
 import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
-import {IEntity}						from "../display/IEntity";
 import {Sprite}						from "../display/Sprite";
 import {PrimitiveSpherePrefab}		from "../prefabs/PrimitiveSpherePrefab";
 
@@ -82,8 +83,8 @@ export class BoundingSphere extends BoundingVolumeBase
 	{
 		super._pUpdate();
 
-		this._sphere = this._pEntity.getSphere();
-		var matrix:Matrix3D = this._pEntity.sceneTransform;
+		this._sphere = this._entity.getSphere();
+		var matrix:Matrix3D = this._entity.sceneTransform;
 
 		var cx:number = this._sphere.x;
 		var cy:number = this._sphere.y;

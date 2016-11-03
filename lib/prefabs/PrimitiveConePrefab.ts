@@ -1,4 +1,4 @@
-import {MaterialBase}				from "../materials/MaterialBase";
+import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
 import {PrimitiveCylinderPrefab}	from "../prefabs/PrimitiveCylinderPrefab";
 
 /**

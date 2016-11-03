@@ -2,12 +2,12 @@ import {AttributesBuffer}			from "@awayjs/core/lib/attributes/AttributesBuffer";
 import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
 
 import {DisplayObject}			from "../display/DisplayObject";
-import {ElementsType}				from "../graphics/ElementsType";
-import {ElementsBase}				from "../graphics/ElementsBase";
-import {TriangleElements}			from "../graphics/TriangleElements";
-import {LineElements}				from "../graphics/LineElements";
+import {ElementsType}				from "@awayjs/graphics/lib/elements/ElementsType";
+import {ElementsBase}				from "@awayjs/graphics/lib/elements/ElementsBase";
+import {TriangleElements}			from "@awayjs/graphics/lib/elements/TriangleElements";
+import {LineElements}				from "@awayjs/graphics/lib/elements/LineElements";
 import {Sprite}					from "../display/Sprite";
-import {MaterialBase}				from "../materials/MaterialBase";
+import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
 import {PrefabBase}				from "../prefabs/PrefabBase";
 
 /**

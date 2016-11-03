@@ -1,9 +1,9 @@
 import {IEventDispatcher}				from "@awayjs/core/lib/events/IEventDispatcher";
 import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {ImageBase}					from "@awayjs/core/lib/image/ImageBase";
 import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 
-import {ITraverser}					from "./ITraverser";
+import {ImageBase}					from "@awayjs/graphics/lib/image/ImageBase";
+
 import {Camera}						from "./display/Camera";
 import {IView}						from "./IView";
 
@@ -13,7 +13,7 @@ import {IView}						from "./IView";
  *
  * @class away.render.IRenderer
  */
-export interface IRenderer extends ITraverser, IEventDispatcher
+export interface IRenderer extends IEventDispatcher
 {
 	cullPlanes:Array<Plane3D>
 

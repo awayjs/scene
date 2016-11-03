@@ -1,8 +1,8 @@
-﻿import {ElementsType}				from "../graphics/ElementsType";
-import {LineElements}				from "../graphics/LineElements";
-import {ElementsBase}				from "../graphics/ElementsBase";
-import {TriangleElements}			from "../graphics/TriangleElements";
-import {MaterialBase}				from "../materials/MaterialBase";
+﻿import {ElementsType}				from "@awayjs/graphics/lib/elements/ElementsType";
+import {LineElements}				from "@awayjs/graphics/lib/elements/LineElements";
+import {ElementsBase}				from "@awayjs/graphics/lib/elements/ElementsBase";
+import {TriangleElements}			from "@awayjs/graphics/lib/elements/TriangleElements";
+import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
 import {PrimitivePrefabBase}		from "../prefabs/PrimitivePrefabBase";
 
 /**
