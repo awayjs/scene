@@ -33,7 +33,6 @@ export {LineSegment}						from "./lib/display/LineSegment";
 export {LoaderContainer}					from "./lib/display/LoaderContainer";
 export {MovieClip}						from "./lib/display/MovieClip";
 export {PointLight}						from "./lib/display/PointLight";
-export {Scene}							from "./lib/display/Scene";
 export {Shape}							from "./lib/display/Shape";
 export {Skybox}							from "./lib/display/Skybox";
 export {Sprite}							from "./lib/display/Sprite";
@@ -96,3 +95,5 @@ export {TextLineMetrics}				from "./lib/text/TextLineMetrics";
 export {Merge}							from "./lib/tools/Merge";
 
 export {Cast}							from "./lib/utils/Cast";
+
+export {Scene}							from "./lib/Scene";

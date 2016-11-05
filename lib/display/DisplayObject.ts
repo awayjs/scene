@@ -22,13 +22,14 @@ import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
 import {BoundsType}					from "../bounds/BoundsType";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {Scene}						from "../display/Scene";
 import {ControllerBase}				from "../controllers/ControllerBase";
 import {AlignmentMode}				from "../base/AlignmentMode";
 import {OrientationMode}				from "../base/OrientationMode";
 import {IBitmapDrawable}				from "../base/IBitmapDrawable";
 import {DisplayObjectEvent}			from "../events/DisplayObjectEvent";
 import {PrefabBase}					from "../prefabs/PrefabBase";
+
+import {Scene}						from "../Scene";
 
 /**
  * The DisplayObject class is the base class for all objects that can be

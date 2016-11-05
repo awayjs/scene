@@ -1,12 +1,12 @@
 {
-  "name": "@awayjs/display",
+  "name": "@awayjs/scene",
   "version": "0.8.81",
-  "description": "AwayJS displaylist classes",
+  "description": "AwayJS scene classes",
   "url": "http://www.away3d.com",
   "author": "Rob Bateman",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/awayjs/display.git"
+    "url": "git+https://github.com/awayjs/scene.git"
   },
   "scripts": {
     "rimraf": "rimraf",
@@ -28,9 +28,9 @@
   ],
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/awayjs/display/issues"
+    "url": "https://github.com/awayjs/scene/issues"
   },
-  "homepage": "https://github.com/awayjs/display#readme",
+  "homepage": "https://github.com/awayjs/scene#readme",
   "dependencies": {
     "@awayjs/core": "^0.6.0",
     "@awayjs/graphics": "^0.1.0"

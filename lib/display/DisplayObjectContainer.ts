@@ -5,7 +5,8 @@ import {RangeError}					from "@awayjs/core/lib/errors/RangeError";
 
 import {DisplayObject}				from "../display/DisplayObject";
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {Scene}						from "../display/Scene";
+
+import {Scene}						from "../Scene";
 
 /**
  * The DisplayObjectContainer class is the base class for all objects that can

@@ -8,7 +8,6 @@ import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectivePr
 import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
 
 import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {IRenderer}					from "../IRenderer";
 import {BoundsType}					from "../bounds/BoundsType";
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
 import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
@@ -254,16 +253,5 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	public unproject(nX:number, nY:number, sZ:number):Vector3D
 	{
 		return this.sceneTransform.transformVector(this._projection.unproject(nX, nY, sZ));
-	}
-
-	public _applyRenderer(renderer:IRenderer):void
-	{
-		// Since this getter is invoked every iteration of the render loop, and
-		// the prefab construct could affect the sub-sprites, the prefab is
-		// validated here to give it a chance to rebuild.
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-
-		//nothing to do here
 	}
 }
