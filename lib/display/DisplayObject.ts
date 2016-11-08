@@ -192,7 +192,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	private _sceneTransformChanged:DisplayObjectEvent;
 	private _sceneChanged:DisplayObjectEvent;
-	private _partitionChanged:DisplayObjectEvent;
 	private _transform:Transform;
 
 	private _inverseSceneTransform:Matrix3D = new Matrix3D();
@@ -1452,27 +1451,24 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return newInstance;
 	}
 
-	public copyTo(newInstance:DisplayObject):void
+	public copyTo(displayObject:DisplayObject):void
 	{
-		newInstance.isPartition = this._iIsPartition;
-		newInstance.boundsType = this._boundsType;
-		newInstance.pivot = this._pivot;
-		newInstance.name = this._pName;
-		newInstance.mouseEnabled = this._explicitMouseEnabled;
-		newInstance.extra = this.extra;
-		newInstance.maskMode = this._maskMode;
-		newInstance.castsShadows = this.castsShadows;
+		displayObject.isPartition = this._iIsPartition;
+		displayObject.boundsType = this._boundsType;
+		displayObject.pivot = this._pivot;
+		displayObject.name = this._pName;
+		displayObject.mouseEnabled = this._explicitMouseEnabled;
+		displayObject.extra = this.extra;
+		displayObject.maskMode = this._maskMode;
+		displayObject.castsShadows = this.castsShadows;
 
 		if (this._explicitMasks)
-			newInstance.masks = this._explicitMasks;
+			displayObject.masks = this._explicitMasks;
 
 		if (this._adapter)
-			newInstance.adapter = this._adapter.clone(newInstance);
+			displayObject.adapter = this._adapter.clone(displayObject);
 
-		newInstance._transform.matrix3D = this._transform.matrix3D;
-
-		if (this._transform.colorTransform)
-			newInstance.transform.colorTransform = this._transform.colorTransform.clone();
+		displayObject._transform.copyRawDataFrom(this._transform);
 	}
 
 	/**

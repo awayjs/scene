@@ -184,7 +184,7 @@ export class PrimitivePrefabBase extends PrefabBase
 	public _pCreateObject():DisplayObject
 	{
 		var sprite:Sprite = new Sprite(this._material);
-		sprite.graphics.addGraphic(this._elements);
+		sprite.graphics.addShape(this._elements);
 		sprite._iSourcePrefab = this;
 
 		return sprite;

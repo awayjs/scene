@@ -9,7 +9,7 @@ import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 import {Sampler2D}					from "@awayjs/graphics/lib/image/Sampler2D";
 import {Style}						from "@awayjs/graphics/lib/base/Style";
 import {Graphics}					from "@awayjs/graphics/lib/Graphics";
-import {Graphic}					from "@awayjs/graphics/lib/Graphic";
+import {Shape}					from "@awayjs/graphics/lib/base/Shape";
 import {TriangleElements}			from "@awayjs/graphics/lib/elements/TriangleElements";
 import {DefaultMaterialManager}		from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
 
@@ -145,8 +145,8 @@ export class TextField extends Sprite
 	private _textFormat:TextFormat;
 	private _textElements:TriangleElements;
 	private _textElements2:TriangleElements;
-	private _textGraphic:Graphic;
-	private _textGraphic2:Graphic;
+	private _textShape:Shape;
+	private _textShape2:Shape;
 
 	/**
 	 * When set to <code>true</code> and the text field is not in focus, Flash
@@ -833,8 +833,8 @@ export class TextField extends Sprite
 		super.disposeValues();
 
 		this._textFormat = null;
-		this._textGraphic = null;
-		this._textGraphic2 = null;
+		this._textShape = null;
+		this._textShape2 = null;
 
 		if (this._textElements) {
 			this._textElements.dispose();
@@ -857,9 +857,9 @@ export class TextField extends Sprite
 			return;
 
 
-		if (this._textGraphic) {
-			this._textGraphic.dispose();
-			this._textGraphic = null;
+		if (this._textShape) {
+			this._textShape.dispose();
+			this._textShape = null;
 
 			this._textElements.clear();
 			this._textElements.dispose();
@@ -867,9 +867,9 @@ export class TextField extends Sprite
 		}
 
 
-		if (this._textGraphic2) {
-			this._textGraphic2.dispose();
-			this._textGraphic2 = null;
+		if (this._textShape2) {
+			this._textShape2.dispose();
+			this._textShape2 = null;
 
 			this._textElements2.clear();
 			this._textElements2.dispose();
@@ -1156,9 +1156,9 @@ export class TextField extends Sprite
 				this._textElements = new TriangleElements(vertexBuffer);
 				this._textElements.setPositions(new Float2Attributes(vertexBuffer));
 				this._textElements.setUVs(new Float2Attributes(vertexBuffer));
-				this._textGraphic = this._graphics.addGraphic(this._textElements);
+				this._textShape = this._graphics.addShape(this._textElements);
 
-				this._textGraphic.material = bitmap_fontTable.getMaterial();
+				this._textShape.material = bitmap_fontTable.getMaterial();
 			}
 			if(vert_cnt2>0){
 				var attributesView2:AttributesView = new AttributesView(Float32Array, 4);
@@ -1169,9 +1169,9 @@ export class TextField extends Sprite
 				this._textElements2 = new TriangleElements(vertexBuffer2);
 				this._textElements2.setPositions(new Float2Attributes(vertexBuffer2));
 				this._textElements2.setUVs(new Float2Attributes(vertexBuffer2));
-				this._textGraphic2 = this._graphics.addGraphic(this._textElements2);
+				this._textShape2 = this._graphics.addShape(this._textElements2);
 
-				this._textGraphic2.material = (<BitmapFontTable>bitmap_fontTable.fallbackTable).getMaterial();
+				this._textShape2.material = (<BitmapFontTable>bitmap_fontTable.fallbackTable).getMaterial();
 			}
 
 
@@ -1238,35 +1238,35 @@ export class TextField extends Sprite
 				if(tess_fontTable.usesCurves){
 					this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 				}
-				this._textGraphic = this._graphics.addGraphic(this._textElements);
+				this._textShape = this._graphics.addShape(this._textElements);
 
 				var sampler:Sampler2D = new Sampler2D();
-				this._textGraphic.style = new Style();
+				this._textShape.style = new Style();
 				if (this._textFormat.material) {
-					this._textGraphic.material = this._textFormat.material;
-					this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
-					this._textGraphic.material.animateUVs = true;
-					this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+					this._textShape.material = this._textFormat.material;
+					this._textShape.style.addSamplerAt(sampler, this._textShape.material.getTextureAt(0));
+					this._textShape.material.animateUVs = true;
+					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 				}
 				else {
-					this._textGraphic.material = DefaultMaterialManager.getDefaultMaterial();
-					this._textGraphic.material.bothSides = true;
-					//this._textGraphic.material.useColorTransform = true;
+					this._textShape.material = DefaultMaterialManager.getDefaultMaterial();
+					this._textShape.material.bothSides = true;
+					//this._textShape.material.useColorTransform = true;
 					if(tess_fontTable.usesCurves){
-						this._textGraphic.material.curves = true;
+						this._textShape.material.curves = true;
 					}
-					this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+					this._textShape.style.addSamplerAt(sampler, this._textShape.material.getTextureAt(0));
 					//sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
-					this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
-					this._textGraphic.material.animateUVs = true;
+					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
+					this._textShape.material.animateUVs = true;
 					//graphic.material.imageRect = true;
 					var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 					this.transform.colorTransform.color = activeFormat.color;
 					this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 				}
 			}
-			if(this._textGraphic){
-				this.material=this._textGraphic.material;
+			if(this._textShape){
+				this.material=this._textShape.material;
 				if(tess_fontTable.usesCurves) {
 					this.material.curves = true;
 				}
@@ -1476,29 +1476,29 @@ export class TextField extends Sprite
 		 this._textElements.setPositions(new Float2Attributes(vertexBuffer));
 		 this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 
-		 this._textGraphic = this._graphics.addGraphic(this._textElements);
+		 this._textShape = this._graphics.addShape(this._textElements);
 
 		 var sampler:Sampler2D = new Sampler2D();
-		 this._textGraphic.style = new Style();
+		 this._textShape.style = new Style();
 		 if(this._textFormat.material){
-		 this._textGraphic.material = this._textFormat.material;
-		 this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
-		 this._textGraphic.material.animateUVs = true;
-		 this._textGraphic.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
+		 this._textShape.material = this._textFormat.material;
+		 this._textShape.style.addSamplerAt(sampler, this._textShape.material.getTextureAt(0));
+		 this._textShape.material.animateUVs = true;
+		 this._textShape.style.uvMatrix = new Matrix(0,0,0,0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 		 }
 		 else{
 
-		 this._textGraphic.material = DefaultMaterialManager.getDefaultMaterial();
-		 this._textGraphic.material.bothSides = true;
-		 //this._textGraphic.material.useColorTransform = true;
-		 this._textGraphic.material.curves = true;
-		 this._textGraphic.style.addSamplerAt(sampler, this._textGraphic.material.getTextureAt(0));
+		 this._textShape.material = DefaultMaterialManager.getDefaultMaterial();
+		 this._textShape.material.bothSides = true;
+		 //this._textShape.material.useColorTransform = true;
+		 this._textShape.material.curves = true;
+		 this._textShape.style.addSamplerAt(sampler, this._textShape.material.getTextureAt(0));
 		 //sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
-		 this._textGraphic.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
-		 this._textGraphic.material.animateUVs = true;
+		 this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
+		 this._textShape.material.animateUVs = true;
 		 //graphic.material.imageRect = true;
 		 }
-		 this.material=this._textGraphic.material;
+		 this.material=this._textShape.material;
 		 */
 	}
 	/**

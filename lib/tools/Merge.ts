@@ -18,7 +18,7 @@ export class Merge
 	private _objectSpace:boolean;
 	private _keepMaterial:boolean;
 	private _disposeSources:boolean;
-	private _graphicVOs:Array<GraphicVO>;
+	private _shapeVOs:Array<ShapeVO>;
 	private _toDispose:Array<Sprite>;
 
 	/**
@@ -144,7 +144,7 @@ export class Merge
 	private reset():void
 	{
 		this._toDispose  = new Array<Sprite>();
-		this._graphicVOs = new Array<GraphicVO>();
+		this._shapeVOs = new Array<ShapeVO>();
 	}
 
 	private merge(destSprite:Sprite, dispose:boolean):void
@@ -159,14 +159,14 @@ export class Merge
 
 		// Only apply materials directly to sub-sprites if necessary,
 		// i.e. if there is more than one material available.
-		useSubMaterials = (this._graphicVOs.length > 1);
+		useSubMaterials = (this._shapeVOs.length > 1);
 
-		for (i = 0; i < this._graphicVOs.length; i++) {
+		for (i = 0; i < this._shapeVOs.length; i++) {
 			var elements:TriangleElements = new TriangleElements(new AttributesBuffer());
 			elements.autoDeriveNormals = false;
 			elements.autoDeriveTangents = false;
 
-			var data:GraphicVO = this._graphicVOs[i];
+			var data:ShapeVO = this._shapeVOs[i];
 			elements.setIndices(data.indices);
 			elements.setPositions(data.vertices);
 			elements.setNormals(data.normals);
@@ -174,13 +174,13 @@ export class Merge
 			elements.setUVs(data.uvs);
 
 			if (this._keepMaterial && useSubMaterials)
-				destGraphics.addGraphic(elements, data.material);
+				destGraphics.addShape(elements, data.material);
 			else
-				destGraphics.addGraphic(elements);
+				destGraphics.addShape(elements);
 		}
 
-		if (this._keepMaterial && !useSubMaterials && this._graphicVOs.length)
-			destSprite.material = this._graphicVOs[0].material;
+		if (this._keepMaterial && !useSubMaterials && this._shapeVOs.length)
+			destSprite.material = this._shapeVOs[0].material;
 
 		if (dispose) {
 			var len:number = this._toDispose.length;
@@ -201,16 +201,16 @@ export class Merge
 			var iIdx:number, vIdx:number, nIdx:number, tIdx:number, uIdx:number;
 			var indexOffset:number;
 			var elements:TriangleElements;
-			var vo:GraphicVO;
+			var vo:ShapeVO;
 			var vertices:Array<number>;
 			var normals:Array<number>;
 			var tangents:Array<number>;
 			var ind:Uint16Array;
 
-			elements = <TriangleElements> sprite.graphics.getGraphicAt(subIdx).elements;
+			elements = <TriangleElements> sprite.graphics.getShapeAt(subIdx).elements;
 
 			// Get (or create) a VO for this material
-			vo = this.getGraphicData(sprite.graphics.getGraphicAt(subIdx).material);
+			vo = this.getShapeData(sprite.graphics.getShapeAt(subIdx).material);
 
 			// Vertices and normals are copied to temporary vectors, to be transformed
 			// before concatenated onto those of the data. This is unnecessary if no
@@ -276,30 +276,30 @@ export class Merge
 				array[startIndex++] = vertices[i + j];
 	}
 
-	private getGraphicData(material:MaterialBase):GraphicVO
+	private getShapeData(material:MaterialBase):ShapeVO
 	{
-		var data:GraphicVO;
+		var data:ShapeVO;
 
 		if (this._keepMaterial) {
 			var i:number;
 			var len:number;
 
-			len = this._graphicVOs.length;
+			len = this._shapeVOs.length;
 			for (i = 0; i < len; i++) {
-				if (this._graphicVOs[i].material == material) {
-					data = this._graphicVOs[i];
+				if (this._shapeVOs[i].material == material) {
+					data = this._shapeVOs[i];
 					break;
 				}
 			}
-		} else if (this._graphicVOs.length) {
+		} else if (this._shapeVOs.length) {
 			// If materials are not to be kept, all data can be
 			// put into a single VO, so return that one.
-			data = this._graphicVOs[0];
+			data = this._shapeVOs[0];
 		}
 
 		// No data (for this material) found, create new.
 		if (!data) {
-			data = new GraphicVO();
+			data = new ShapeVO();
 			data.vertices = new Array<number>();
 			data.normals = new Array<number>();
 			data.tangents = new Array<number>();
@@ -307,7 +307,7 @@ export class Merge
 			data.indices = new Array<number>();
 			data.material = material;
 
-			this._graphicVOs.push(data);
+			this._shapeVOs.push(data);
 		}
 
 		return data;
@@ -328,7 +328,7 @@ export class Merge
 	}
 }
 
-export class GraphicVO
+export class ShapeVO
 {
 	public uvs:Array<number>;
 	public vertices:Array<number>;

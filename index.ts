@@ -33,7 +33,6 @@ export {LineSegment}						from "./lib/display/LineSegment";
 export {LoaderContainer}					from "./lib/display/LoaderContainer";
 export {MovieClip}						from "./lib/display/MovieClip";
 export {PointLight}						from "./lib/display/PointLight";
-export {Shape}							from "./lib/display/Shape";
 export {Skybox}							from "./lib/display/Skybox";
 export {Sprite}							from "./lib/display/Sprite";
 export {TextField}						from "./lib/display/TextField";
