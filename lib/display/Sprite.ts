@@ -1,14 +1,14 @@
 ﻿import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
 import {Box}							from "@awayjs/core/lib/geom/Box";
 import {Point}						from "@awayjs/core/lib/geom/Point";
+import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
 import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
 import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
 import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
 import {Graphics}						from "@awayjs/graphics/lib/Graphics";
-import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+import {IMaterial}					from "@awayjs/graphics/lib/base/IMaterial";
 import {Style}						from "@awayjs/graphics/lib/base/Style";
-import {Transform}					from "@awayjs/graphics/lib/base/Transform";
 
 import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
 
@@ -66,12 +66,12 @@ export class Sprite extends DisplayObjectContainer
 	/**
 	 * The material with which to render the Sprite.
 	 */
-	public get material():MaterialBase
+	public get material():IMaterial
 	{
 		return this._graphics.material;
 	}
 
-	public set material(value:MaterialBase)
+	public set material(value:IMaterial)
 	{
 		this._graphics.material = value;
 	}
@@ -94,13 +94,13 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @param material    [optional]        The material with which to render the Sprite.
 	 */
-	constructor(material:MaterialBase = null)
+	constructor(material:IMaterial = null)
 	{
 		super();
 
 		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
 
-		this._graphics = new Graphics(this); //unique graphics object for each Sprite
+		this._graphics = Graphics.getGraphics(this); //unique graphics object for each Sprite
 		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 
 		this.material = material;
@@ -246,5 +246,24 @@ export class Sprite extends DisplayObjectContainer
 		super.clear();
 
 		this._graphics.clear();
+	}
+
+	/**
+	 *
+	 */
+	public bakeTransformations():void
+	{
+		this._graphics.applyTransformation(this.transform.matrix3D);
+		this.transform.clearMatrix3D();
+	}
+	
+	public invalidateElements():void
+	{
+		this.graphics.invalidateElements();
+	}
+
+	public invalidateMaterial():void
+	{
+		this.graphics.invalidateMaterials();
 	}
 }

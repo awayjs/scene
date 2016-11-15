@@ -858,6 +858,8 @@ export class TextField extends Sprite
 
 
 		if (this._textShape) {
+			this._graphics.removeShape(this._textShape);
+			Shape.storeShape(this._textShape);
 			this._textShape.dispose();
 			this._textShape = null;
 
@@ -868,6 +870,8 @@ export class TextField extends Sprite
 
 
 		if (this._textShape2) {
+			this._graphics.removeShape(this._textShape2);
+			Shape.storeShape(this._textShape2);
 			this._textShape2.dispose();
 			this._textShape2 = null;
 
@@ -1156,7 +1160,7 @@ export class TextField extends Sprite
 				this._textElements = new TriangleElements(vertexBuffer);
 				this._textElements.setPositions(new Float2Attributes(vertexBuffer));
 				this._textElements.setUVs(new Float2Attributes(vertexBuffer));
-				this._textShape = this._graphics.addShape(this._textElements);
+				this._textShape = this._graphics.addShape(Shape.getShape(this._textElements));
 
 				this._textShape.material = bitmap_fontTable.getMaterial();
 			}
@@ -1169,7 +1173,7 @@ export class TextField extends Sprite
 				this._textElements2 = new TriangleElements(vertexBuffer2);
 				this._textElements2.setPositions(new Float2Attributes(vertexBuffer2));
 				this._textElements2.setUVs(new Float2Attributes(vertexBuffer2));
-				this._textShape2 = this._graphics.addShape(this._textElements2);
+				this._textShape2 = this._graphics.addShape(Shape.getShape(this._textElements2));
 
 				this._textShape2.material = (<BitmapFontTable>bitmap_fontTable.fallbackTable).getMaterial();
 			}
@@ -1238,7 +1242,7 @@ export class TextField extends Sprite
 				if(tess_fontTable.usesCurves){
 					this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 				}
-				this._textShape = this._graphics.addShape(this._textElements);
+				this._textShape = this._graphics.addShape(Shape.getShape(this._textElements));
 
 				var sampler:Sampler2D = new Sampler2D();
 				this._textShape.style = new Style();

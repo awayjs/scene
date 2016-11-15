@@ -4,7 +4,6 @@ import {BlendMode}					from "@awayjs/graphics/lib/image/BlendMode";
 import {ImageCube}					from "@awayjs/graphics/lib/image/ImageCube";
 import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
 import {IAnimationSet}				from "@awayjs/graphics/lib/animators/IAnimationSet";
-import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
 import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
 import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
 import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
@@ -37,16 +36,17 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	private _animationSet:IAnimationSet;
 	public _pLightPicker:LightPickerBase;
 	public _pBlendMode:string = BlendMode.NORMAL;
-	private _owners:Array<IRenderable>;
+	private _owners:Array<IEntity>;
 	private _curves:boolean = false;
 	private _imageRect:boolean = false;
-	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
-	private _style:Style = new Style();
-
-	private _animator:IAnimator;
-
 	private _onTextureInvalidateDelegate:(event:AssetEvent) => void;
 
+	public animateUVs:boolean;
+
+	public get bothSides():boolean
+	{
+		return false;
+	}
 
 	public get traverseName():string
 	{
@@ -164,14 +164,9 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	 *
 	 * @private
 	 */
-	public get iOwners():Array<IRenderable>
+	public get iOwners():Array<IEntity>
 	{
 		return this._owners;
-	}
-
-	public get animator():IAnimator
-	{
-		return this._animator;
 	}
 
 	/**
@@ -209,14 +204,6 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	}
 
 	/**
-	 *
-	 */
-	public get style():Style
-	{
-		return this._style;
-	}
-
-	/**
 	 * Create a new Skybox object.
 	 *
 	 * @param material	The material with which to render the Skybox.
@@ -226,14 +213,13 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		super();
 
 		this._onTextureInvalidateDelegate = (event:AssetEvent) => this.onTextureInvalidate(event);
-		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
-		this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
 		this._pIsEntity = true;
 
-		this._owners = new Array<IRenderable>(this);
+		this._owners = new Array<IEntity>(this);
 
-		this._style.image = image;
+		this.style = new Style();
+		this.style.image = image;
 		this.texture =  new SingleCubeTexture();
 
 		//default bounds type
@@ -260,9 +246,9 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 	
-	public invalidateSurface():void
+	public invalidateMaterial():void
 	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
 
 	public addTexture(texture:TextureBase):void
@@ -288,8 +274,9 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this.invalidate();
 	}
 
-	private _onInvalidateProperties(event:StyleEvent):void
+	public _onInvalidateProperties(event:StyleEvent):void
 	{
+		this.invalidateMaterial();
 		this.invalidatePasses();
 	}
 
@@ -297,4 +284,21 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	{
 		traverser.applyRenderable(this);
 	}
+
+	public iAddOwner(owner:IEntity):void
+	{
+
+	}
+
+	/**
+	 * Removes an IEntity as owner.
+	 * @param owner
+	 *
+	 * @internal
+	 */
+	public iRemoveOwner(owner:IEntity):void
+	{
+
+	}
+
 }

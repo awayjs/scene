@@ -1,6 +1,5 @@
 ﻿import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
 
-import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
 import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
 import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
 import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
@@ -15,29 +14,15 @@ import {BoundsType}					from "../bounds/BoundsType";
 /**
  * A Line Segment primitive.
  */
-export class LineSegment extends DisplayObject implements IEntity, IRenderable
+export class LineSegment extends DisplayObject implements IRenderable
 {
 	public static traverseName:string = TraverserBase.addRenderableName("applyLineSegment");
-	
-	private _style:Style;
-	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 
 	public static assetType:string = "[asset LineSegment]";
-
-	private _animator:IAnimator;
-	private _material:MaterialBase;
 
 	public _startPosition:Vector3D;
 	public _endPosition:Vector3D;
 	public _halfThickness:number;
-
-	/**
-	 * Defines the animator of the line segment. Act on the line segment's geometry. Defaults to null
-	 */
-	public get animator():IAnimator
-	{
-		return this._animator;
-	}
 	
 	/**
 	 *
@@ -86,25 +71,6 @@ export class LineSegment extends DisplayObject implements IEntity, IRenderable
 	/**
 	 *
 	 */
-	public get material():MaterialBase
-	{
-		return this._material;
-	}
-
-	public set material(value:MaterialBase)
-	{
-		if (this.material)
-			this.material.iRemoveOwner(this);
-
-		this._material = value;
-
-		if (this.material)
-			this.material.iAddOwner(this);
-	}
-
-	/**
-	 *
-	 */
 	public get thickness():number
 	{
 		return this._halfThickness*2;
@@ -131,8 +97,6 @@ export class LineSegment extends DisplayObject implements IEntity, IRenderable
 	{
 		super();
 
-		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
-
 		this._pIsEntity = true;
 
 		this.material = material;
@@ -143,30 +107,6 @@ export class LineSegment extends DisplayObject implements IEntity, IRenderable
 
 		//default bounds type
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
-	}
-
-	/**
-	 * The style used to render the current LineSegment. If set to null, the default style of the material will be used instead.
-	 */
-	public get style():Style
-	{
-		return this._style;
-	}
-
-	public set style(value:Style)
-	{
-		if (this._style == value)
-			return;
-
-		if (this._style)
-			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-
-		this._style = value;
-
-		if (this._style)
-			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-
-		this.invalidateSurface();
 	}
 
 
@@ -208,14 +148,9 @@ export class LineSegment extends DisplayObject implements IEntity, IRenderable
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
 	}
 
-	public invalidateSurface():void
+	public invalidateMaterial():void
 	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
-	}
-
-	private _onInvalidateProperties(event:StyleEvent):void
-	{
-		this.invalidateSurface();
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
 
 	public _acceptTraverser(traverser:TraverserBase):void

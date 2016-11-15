@@ -1,4 +1,3 @@
-import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
 import {Box}							from "@awayjs/core/lib/geom/Box";
 import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
 import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
@@ -11,11 +10,15 @@ import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
 import {LoaderInfo}					from "@awayjs/core/lib/library/LoaderInfo";
 import {EventBase}					from "@awayjs/core/lib/events/EventBase";
 
+import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
+import {IMaterial}					from "@awayjs/graphics/lib/base/IMaterial";
+import {Style}						from "@awayjs/graphics/lib/base/Style";
 import {BlendMode}					from "@awayjs/graphics/lib/image/BlendMode";
 import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
 import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
 import {Transform}					from "@awayjs/graphics/lib/base/Transform";
 import {TransformEvent}				from "@awayjs/graphics/lib/events/TransformEvent";
+import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
 import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
 
 import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
@@ -167,6 +170,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _iIsRoot:boolean;
 	public _iIsPartition:boolean;
 	public _adapter:IDisplayObjectAdapter;
+	private _animator:IAnimator;
+	public _material:IMaterial;
+	public _style:Style;
 	private _queuedEvents:Array<EventBase> = new Array<EventBase>();
 	private _loaderInfo:LoaderInfo;
 	private _mouseX:number;
@@ -240,6 +246,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	//temp vector used in global to local
 	private _tempVector3D:Vector3D = new Vector3D();
+
+	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 
 	public get traverseName():string
 	{
@@ -1176,6 +1184,74 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public scrollRect:Rectangle;
 
+
+	/**
+	 * Defines the animator of the display object.  Default value is <code>null</code>.
+	 */
+	public get animator():IAnimator
+	{
+		return this._animator;
+	}
+
+	public set animator(value:IAnimator)
+	{
+		if (this._animator)
+			this._animator.removeOwner(this);
+
+		this._animator = value;
+
+		if (this._animator)
+			this._animator.addOwner(this);
+	}
+
+	/**
+	 *
+	 */
+	public get material():IMaterial
+	{
+		return this._material;
+	}
+
+	public set material(value:IMaterial)
+	{
+		if (this._material == value)
+			return;
+
+		if (this._material)
+			this._material.iRemoveOwner(this);
+		
+		this._material = value;
+
+		if (this._material)
+			this._material.iAddOwner(this);
+
+		this.invalidateMaterial();
+	}
+
+	/**
+	 *
+	 */
+	public get style():Style
+	{
+		return this._style;
+	}
+
+	public set style(value:Style)
+	{
+		if (this._style == value)
+			return;
+
+		if (this._style)
+			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+
+		this._style = value;
+
+		if (this._style)
+			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+
+		this._onInvalidateProperties();
+	}
+	
 	/**
 	 *
 	 */
@@ -1409,7 +1485,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		super();
 		//global debug bounding boxes:
 		//this._debugVisible=true;
-
+		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 
 		//creation of associated transform object
 		this._transform = new Transform();
@@ -2356,5 +2432,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
 		return false;
+	}
+
+	public invalidateMaterial():void
+	{
+		//TODO: herarchical materials and/or Styles?
+	}
+
+	public invalidateElements():void
+	{
+		//TODO: herarchical elements?
+	}
+
+	public _onInvalidateProperties(event:StyleEvent = null):void
+	{
+		this.invalidateMaterial();
 	}
 }

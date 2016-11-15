@@ -2,8 +2,9 @@ import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer
 import {AttributesView} from "@awayjs/core/lib/attributes/AttributesView";
 
 import {Graphics}							from "@awayjs/graphics/lib/Graphics";
+import {Shape}							from "@awayjs/graphics/lib/base/Shape";
 import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
-import {MaterialBase}						from "@awayjs/graphics/lib/materials/MaterialBase";
+import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
 
 import {DisplayObjectContainer}			from "../display/DisplayObjectContainer";
 import {Sprite}							from "../display/Sprite";
@@ -174,9 +175,9 @@ export class Merge
 			elements.setUVs(data.uvs);
 
 			if (this._keepMaterial && useSubMaterials)
-				destGraphics.addShape(elements, data.material);
+				destGraphics.addShape(Shape.getShape(elements, data.material));
 			else
-				destGraphics.addShape(elements);
+				destGraphics.addShape(Shape.getShape(elements));
 		}
 
 		if (this._keepMaterial && !useSubMaterials && this._shapeVOs.length)
@@ -276,7 +277,7 @@ export class Merge
 				array[startIndex++] = vertices[i + j];
 	}
 
-	private getShapeData(material:MaterialBase):ShapeVO
+	private getShapeData(material:IMaterial):ShapeVO
 	{
 		var data:ShapeVO;
 
@@ -335,5 +336,5 @@ export class ShapeVO
 	public normals:Array<number>;
 	public tangents:Array<number>;
 	public indices:Array<number>;
-	public material:MaterialBase;
+	public material:IMaterial;
 }

@@ -1,13 +1,15 @@
 import {AttributesBuffer}			from "@awayjs/core/lib/attributes/AttributesBuffer";
 import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
 
-import {DisplayObject}			from "../display/DisplayObject";
+import {Shape}						from "@awayjs/graphics/lib/base/Shape";
 import {ElementsType}				from "@awayjs/graphics/lib/elements/ElementsType";
 import {ElementsBase}				from "@awayjs/graphics/lib/elements/ElementsBase";
 import {TriangleElements}			from "@awayjs/graphics/lib/elements/TriangleElements";
 import {LineElements}				from "@awayjs/graphics/lib/elements/LineElements";
-import {Sprite}					from "../display/Sprite";
 import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
+
+import {DisplayObject}			from "../display/DisplayObject";
+import {Sprite}					from "../display/Sprite";
 import {PrefabBase}				from "../prefabs/PrefabBase";
 
 /**
@@ -184,7 +186,7 @@ export class PrimitivePrefabBase extends PrefabBase
 	public _pCreateObject():DisplayObject
 	{
 		var sprite:Sprite = new Sprite(this._material);
-		sprite.graphics.addShape(this._elements);
+		sprite.graphics.addShape(Shape.getShape(this._elements));
 		sprite._iSourcePrefab = this;
 
 		return sprite;

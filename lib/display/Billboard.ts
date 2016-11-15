@@ -3,13 +3,12 @@ import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
 import {Sampler2D}					from "@awayjs/graphics/lib/image/Sampler2D";
 import {Image2D}						from "@awayjs/graphics/lib/image/Image2D";
 import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
 import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
 import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
 import {RenderableEvent}				from "@awayjs/graphics/lib/events/RenderableEvent";
 import {MaterialEvent}					from "@awayjs/graphics/lib/events/MaterialEvent";
 import {DefaultMaterialManager}		from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
-import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+import {IMaterial}					from "@awayjs/graphics/lib/base/IMaterial";
 import {TextureBase}					from "@awayjs/graphics/lib/textures/TextureBase";
 import {Style}						from "@awayjs/graphics/lib/base/Style";
 import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
@@ -52,30 +51,17 @@ import {BoundsType}					from "../bounds/BoundsType";
  * contains the Billboard object.</p>
  */
 
-export class Billboard extends DisplayObject implements IEntity, IRenderable
+export class Billboard extends DisplayObject implements IRenderable
 {
 	public static traverseName:string = TraverserBase.addRenderableName("applyBillboard");
 	
 	public static assetType:string = "[asset Billboard]";
 
-	private _animator:IAnimator;
 	private _billboardWidth:number;
 	private _billboardHeight:number;
 	private _billboardRect:Rectangle;
-	private _material:MaterialBase;
 
-	private _style:Style;
-	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
-	private onInvalidateTextureDelegate:(event:MaterialEvent) => void;
-
-
-	/**
-	 * Defines the animator of the sprite. Act on the sprite's geometry. Defaults to null
-	 */
-	public get animator():IAnimator
-	{
-		return this._animator;
-	}
+	private _onInvalidateTextureDelegate:(event:MaterialEvent) => void;
 
 	/**
 	 *
@@ -112,19 +98,19 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 	/**
 	 *
 	 */
-	public get material():MaterialBase
+	public get material():IMaterial
 	{
 		return this._material;
 	}
 
-	public set material(value:MaterialBase)
+	public set material(value:IMaterial)
 	{
 		if (value == this._material)
 			return;
 
 		if (this._material) {
 			this._material.iRemoveOwner(this);
-			this._material.removeEventListener(MaterialEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+			this._material.removeEventListener(MaterialEvent.INVALIDATE_TEXTURE, this._onInvalidateTextureDelegate);
 		}
 
 
@@ -132,18 +118,17 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 
 		if (this._material) {
 			this._material.iAddOwner(this);
-			this._material.addEventListener(MaterialEvent.INVALIDATE_TEXTURE, this.onInvalidateTextureDelegate);
+			this._material.addEventListener(MaterialEvent.INVALIDATE_TEXTURE, this._onInvalidateTextureDelegate);
 		}
 	}
 
-	constructor(material:MaterialBase, pixelSnapping:string = "auto", smoothing:boolean = false)
+	constructor(material:IMaterial, pixelSnapping:string = "auto", smoothing:boolean = false)
 	{
 		super();
 
 		this._pIsEntity = true;
 
-		this.onInvalidateTextureDelegate = (event:MaterialEvent) => this.onInvalidateTexture(event);
-		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
+		this._onInvalidateTextureDelegate = (event:MaterialEvent) => this._onInvalidateTexture(event);
 
 		this.material = material;
 
@@ -168,38 +153,6 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 	{
 		var clone:Billboard = new Billboard(this.material);
 		return clone;
-	}
-
-	/**
-	 * The style used to render the current Billboard. If set to null, the default style of the material will be used instead.
-	 */
-	public get style():Style
-	{
-		return this._style;
-	}
-
-	public set style(value:Style)
-	{
-		if (this._style == value)
-			return;
-
-		if (this._style)
-			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-
-		this._style = value;
-
-		if (this._style)
-			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
-
-		this._onInvalidateProperties();
-	}
-
-	/**
-	 * @private
-	 */
-	private onInvalidateTexture(event:MaterialEvent):void
-	{
-		this._updateDimensions();
 	}
 
 	public _acceptTraverser(traverser:TraverserBase):void
@@ -241,15 +194,23 @@ export class Billboard extends DisplayObject implements IEntity, IRenderable
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 	
-	public invalidateSurface():void
+	public invalidateMaterial():void
 	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_SURFACE, this));
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
 
-	private _onInvalidateProperties(event:StyleEvent = null):void
+	public _onInvalidateProperties(event:StyleEvent = null):void
 	{
-		this.invalidateSurface();
+		this.invalidateMaterial();
 
+		this._updateDimensions();
+	}
+
+	/**
+	 * @private
+	 */
+	private _onInvalidateTexture(event:MaterialEvent):void
+	{
 		this._updateDimensions();
 	}
 }
