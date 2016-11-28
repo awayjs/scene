@@ -1,5 +1,5 @@
-import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
-import {DisplayObject}				from "../display/DisplayObject";
+import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
+import {DisplayObject} from "../display/DisplayObject";
 
 export interface IMovieClipAdapter extends IDisplayObjectAdapter
 {

@@ -1,6 +1,6 @@
-import {Camera}						from "../display/Camera";
+import {Camera} from "../display/Camera";
 
-import {DirectionalShadowMapper}		from "./DirectionalShadowMapper";
+import {DirectionalShadowMapper} from "./DirectionalShadowMapper";
 
 export class NearDirectionalShadowMapper extends DirectionalShadowMapper
 {

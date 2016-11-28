@@ -1,12 +1,10 @@
-import {Box}							from "@awayjs/core/lib/geom/Box";
-import {Point}						from "@awayjs/core/lib/geom/Point";
-import {ArgumentError}				from "@awayjs/core/lib/errors/ArgumentError";
-import {RangeError}					from "@awayjs/core/lib/errors/RangeError";
+import {Box, Point, ArgumentError, RangeError} from "@awayjs/core";
 
-import {DisplayObject}				from "../display/DisplayObject";
-import {HierarchicalProperties}		from "../base/HierarchicalProperties";
+import {HierarchicalProperties} from "../base/HierarchicalProperties";
 
-import {Scene}						from "../Scene";
+import {Scene} from "../Scene";
+
+import {DisplayObject} from "./DisplayObject";
 
 /**
  * The DisplayObjectContainer class is the base class for all objects that can

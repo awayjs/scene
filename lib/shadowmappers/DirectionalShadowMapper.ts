@@ -1,17 +1,14 @@
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {FreeMatrixProjection}			from "@awayjs/core/lib/projections/FreeMatrixProjection";
+import {Matrix3D, Plane3D, Vector3D, FreeMatrixProjection} from "@awayjs/core";
 
-import {Image2D}						from "@awayjs/graphics/lib/image/Image2D";
-import {Single2DTexture}				from "@awayjs/graphics/lib/textures/Single2DTexture";
+import {Image2D, Single2DTexture} from "@awayjs/graphics";
 
-import {IRenderer}					from "../IRenderer";
-import {IView}						from "../IView";
-import {Camera}						from "../display/Camera";
-import {DirectionalLight}				from "../display/DirectionalLight";
+import {Camera} from "../display/Camera";
+import {DirectionalLight} from "../display/DirectionalLight";
 
-import {ShadowMapperBase}				from "./ShadowMapperBase";
+import {IRenderer} from "../IRenderer";
+import {IView} from "../IView";
+
+import {ShadowMapperBase} from "./ShadowMapperBase";
 
 export class DirectionalShadowMapper extends ShadowMapperBase
 {

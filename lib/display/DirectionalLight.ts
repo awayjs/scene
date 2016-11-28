@@ -1,14 +1,13 @@
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Matrix3D, Vector3D} from "@awayjs/core";
 
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {IEntity, TraverserBase} from "@awayjs/graphics";
 
-import {DisplayObject}						from "../display/DisplayObject";
-import {LightBase}					from "../display/LightBase";
-import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {BoundsType}					from "../bounds/BoundsType";
-import {DirectionalShadowMapper}		from "../shadowmappers/DirectionalShadowMapper";
+import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {BoundsType} from "../bounds/BoundsType";
+import {DirectionalShadowMapper} from "../shadowmappers/DirectionalShadowMapper";
+
+import {DisplayObject} from "./DisplayObject";
+import {LightBase} from "./LightBase";
 
 export class DirectionalLight extends LightBase implements IEntity
 {

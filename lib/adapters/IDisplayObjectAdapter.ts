@@ -1,4 +1,4 @@
-import {DisplayObject}				from "../display/DisplayObject";
+import {DisplayObject} from "../display/DisplayObject";
 
 export interface IDisplayObjectAdapter
 {

@@ -1,8 +1,8 @@
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Vector3D} from "@awayjs/core";
 
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {IEntity} from "@awayjs/graphics";
 
-import {AxisAlignedBoundingBox}		from "./AxisAlignedBoundingBox";
+import {AxisAlignedBoundingBox} from "./AxisAlignedBoundingBox";
 
 /**
  * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.

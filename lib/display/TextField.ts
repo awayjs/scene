@@ -1,34 +1,21 @@
-import {AttributesBuffer}			from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {AttributesView}				from "@awayjs/core/lib/attributes/AttributesView";
-import {Float2Attributes}			from "@awayjs/core/lib/attributes/Float2Attributes";
-import {Byte4Attributes}			from "@awayjs/core/lib/attributes/Byte4Attributes";
-import {Matrix}						from "@awayjs/core/lib/geom/Matrix";
-import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
-import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
+import {AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, ColorTransform, Rectangle} from "@awayjs/core";
 
-import {Sampler2D}					from "@awayjs/graphics/lib/image/Sampler2D";
-import {Style}						from "@awayjs/graphics/lib/base/Style";
-import {Graphics}					from "@awayjs/graphics/lib/Graphics";
-import {Shape}					from "@awayjs/graphics/lib/base/Shape";
-import {TriangleElements}			from "@awayjs/graphics/lib/elements/TriangleElements";
-import {DefaultMaterialManager}		from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
+import {Sampler2D, Style, Graphics, Shape, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
 
-import {TesselatedFontChar}			from "../text/TesselatedFontChar";
-import {TextFormatAlign}			from "../text/TextFormatAlign";
-import {TesselatedFontTable}		from "../text/TesselatedFontTable";
-import {BitmapFontTable}			from "../text/BitmapFontTable";
+import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {TesselatedFontChar} from "../text/TesselatedFontChar";
+import {TesselatedFontTable} from "../text/TesselatedFontTable";
+import {BitmapFontTable} from "../text/BitmapFontTable";
+import {AntiAliasType} from "../text/AntiAliasType";
+import {GridFitType} from "../text/GridFitType";
+import {TextFieldAutoSize} from "../text/TextFieldAutoSize";
+import {TextFieldType} from "../text/TextFieldType";
+import {TextFormat} from "../text/TextFormat";
+import {TextInteractionMode} from "../text/TextInteractionMode";
+import {TextLineMetrics} from "../text/TextLineMetrics";
 
-import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {DisplayObject}				from "../display/DisplayObject";
-import {AntiAliasType}				from "../text/AntiAliasType";
-import {GridFitType}				from "../text/GridFitType";
-import {TextFieldAutoSize}			from "../text/TextFieldAutoSize";
-import {TextFieldType}				from "../text/TextFieldType";
-import {TextFormat}					from "../text/TextFormat";
-import {TextInteractionMode}		from "../text/TextInteractionMode";
-import {TextLineMetrics}			from "../text/TextLineMetrics";
-import {Sprite}						from "../display/Sprite";
-import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {Sprite} from "./Sprite";
+import {DisplayObject} from "./DisplayObject";
 
 /**
  * The TextField class is used to create display objects for text display and

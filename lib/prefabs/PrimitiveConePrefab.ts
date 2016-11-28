@@ -1,5 +1,6 @@
-import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
-import {PrimitiveCylinderPrefab}	from "../prefabs/PrimitiveCylinderPrefab";
+import {MaterialBase} from "@awayjs/graphics";
+
+import {PrimitiveCylinderPrefab} from "../prefabs/PrimitiveCylinderPrefab";
 
 /**
  * A UV Cone primitive sprite.

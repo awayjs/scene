@@ -1,5 +1,5 @@
-import {DisplayObject}					from "../display/DisplayObject";
-import {MovieClip}						from "../display/MovieClip";
+import {DisplayObject} from "../display/DisplayObject";
+import {MovieClip} from "../display/MovieClip";
 
 export class FrameScriptManager
 {

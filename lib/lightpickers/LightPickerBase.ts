@@ -1,12 +1,11 @@
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
+import {Vector3D, AssetBase} from "@awayjs/core";
 
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {IEntity} from "@awayjs/graphics";
 
-import {LightBase}					from "../display/LightBase";
-import {DirectionalLight}				from "../display/DirectionalLight";
-import {LightProbe}					from "../display/LightProbe";
-import {PointLight}					from "../display/PointLight";
+import {LightBase} from "../display/LightBase";
+import {DirectionalLight} from "../display/DirectionalLight";
+import {LightProbe} from "../display/LightProbe";
+import {PointLight} from "../display/PointLight";
 
 /**
  * LightPickerBase provides an abstract base clase for light picker classes. These classes are responsible for

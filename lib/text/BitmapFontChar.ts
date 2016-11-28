@@ -1,7 +1,3 @@
-import {TesselatedFontTable}			from "../text/TesselatedFontTable";
-import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
-import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
-
 /**
  * The TextFormat class represents character formatting information. Use the
  * TextFormat class to create specific text formatting for text fields. You

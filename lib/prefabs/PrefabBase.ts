@@ -1,7 +1,6 @@
-import {AssetBase}				from "@awayjs/core/lib/library/AssetBase";
-import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
+import {AssetBase, AbstractMethodError} from "@awayjs/core";
 
-import {DisplayObject}			from "../display/DisplayObject";
+import {DisplayObject} from "../display/DisplayObject";
 
 /**
  * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating

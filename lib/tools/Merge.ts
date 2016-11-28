@@ -1,13 +1,9 @@
-import {AttributesBuffer}					from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {AttributesView} from "@awayjs/core/lib/attributes/AttributesView";
+import {AttributesBuffer, AttributesView} from "@awayjs/core";
 
-import {Graphics}							from "@awayjs/graphics/lib/Graphics";
-import {Shape}							from "@awayjs/graphics/lib/base/Shape";
-import {TriangleElements}					from "@awayjs/graphics/lib/elements/TriangleElements";
-import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
+import {Graphics, Shape, TriangleElements, IMaterial} from "@awayjs/graphics";
 
-import {DisplayObjectContainer}			from "../display/DisplayObjectContainer";
-import {Sprite}							from "../display/Sprite";
+import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
+import {Sprite} from "../display/Sprite";
 
 /**
  *  Class Merge merges two or more static sprites into one.<code>Merge</code>

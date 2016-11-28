@@ -1,11 +1,11 @@
-import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
+import {AssetEvent} from "@awayjs/core";
 
-import {LightBase}					from "../display/LightBase";
-import {DirectionalLight}				from "../display/DirectionalLight";
-import {LightProbe}					from "../display/LightProbe";
-import {PointLight}					from "../display/PointLight";
-import {LightEvent}					from "../events/LightEvent";
-import {LightPickerBase}				from "../lightpickers/LightPickerBase";
+import {LightBase} from "../display/LightBase";
+import {DirectionalLight} from "../display/DirectionalLight";
+import {LightProbe} from "../display/LightProbe";
+import {PointLight} from "../display/PointLight";
+import {LightEvent} from "../events/LightEvent";
+import {LightPickerBase} from "../lightpickers/LightPickerBase";
 
 /**
  * StaticLightPicker is a light picker that provides a static set of lights. The lights can be reassigned, but

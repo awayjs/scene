@@ -1,38 +1,19 @@
-import {Box}							from "@awayjs/core/lib/geom/Box";
-import {ColorTransform}				from "@awayjs/core/lib/geom/ColorTransform";
-import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
-import {MathConsts}					from "@awayjs/core/lib/geom/MathConsts";
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Point}						from "@awayjs/core/lib/geom/Point";
-import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
-import {LoaderInfo}					from "@awayjs/core/lib/library/LoaderInfo";
-import {EventBase}					from "@awayjs/core/lib/events/EventBase";
+import {Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase} from "@awayjs/core";
 
-import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
-import {IMaterial}					from "@awayjs/graphics/lib/base/IMaterial";
-import {Style}						from "@awayjs/graphics/lib/base/Style";
-import {BlendMode}					from "@awayjs/graphics/lib/image/BlendMode";
-import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {Transform}					from "@awayjs/graphics/lib/base/Transform";
-import {TransformEvent}				from "@awayjs/graphics/lib/events/TransformEvent";
-import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
-import {PickingCollision}				from "@awayjs/graphics/lib/pick/PickingCollision";
+import {IAnimator, IMaterial, Style, BlendMode, IEntity, TraverserBase, Transform, TransformEvent, StyleEvent, PickingCollision} from "@awayjs/graphics";
 
-import {IDisplayObjectAdapter}		from "../adapters/IDisplayObjectAdapter";
-import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {BoundsType}					from "../bounds/BoundsType";
-import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {ControllerBase}				from "../controllers/ControllerBase";
-import {AlignmentMode}				from "../base/AlignmentMode";
-import {OrientationMode}				from "../base/OrientationMode";
-import {IBitmapDrawable}				from "../base/IBitmapDrawable";
-import {DisplayObjectEvent}			from "../events/DisplayObjectEvent";
-import {PrefabBase}					from "../prefabs/PrefabBase";
+import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
+import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {BoundsType} from "../bounds/BoundsType";
+import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
+import {ControllerBase} from "../controllers/ControllerBase";
+import {AlignmentMode} from "../base/AlignmentMode";
+import {OrientationMode} from "../base/OrientationMode";
+import {IBitmapDrawable} from "../base/IBitmapDrawable";
+import {DisplayObjectEvent} from "../events/DisplayObjectEvent";
+import {PrefabBase} from "../prefabs/PrefabBase";
 
-import {Scene}						from "../Scene";
+import {Scene} from "../Scene";
 
 /**
  * The DisplayObject class is the base class for all objects that can be

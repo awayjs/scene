@@ -1,5 +1,4 @@
-import {TesselatedFontTable}					from "../text/TesselatedFontTable";
-
+import {TesselatedFontTable} from "../text/TesselatedFontTable";
 
 export class DefaultFontManager
 {

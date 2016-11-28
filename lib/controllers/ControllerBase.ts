@@ -1,6 +1,6 @@
-import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
+import {AbstractMethodError} from "@awayjs/core";
 
-import {DisplayObject}			from "../display/DisplayObject";
+import {DisplayObject} from "../display/DisplayObject";
 
 export class ControllerBase
 {

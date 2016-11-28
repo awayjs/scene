@@ -1,8 +1,8 @@
-import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
+import {AssetBase} from "@awayjs/core";
 
-import {IFontTable}					from "../text/IFontTable";
-import {TesselatedFontTable}		from "../text/TesselatedFontTable";
-import {BitmapFontTable}			from "../text/BitmapFontTable";
+import {IFontTable} from "./IFontTable";
+import {TesselatedFontTable} from "./TesselatedFontTable";
+import {BitmapFontTable} from "./BitmapFontTable";
 
 /**
  * Font is a container for FontTables.

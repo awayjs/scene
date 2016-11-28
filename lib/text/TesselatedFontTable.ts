@@ -1,23 +1,9 @@
-import {AssetBase}						from "@awayjs/core/lib/library/AssetBase";
+import {AssetBase, AttributesBuffer, AttributesView} from "@awayjs/core";
 
-import {ElementsBase}					from "@awayjs/graphics/lib/elements/ElementsBase";
-import {TriangleElements}				from "@awayjs/graphics/lib/elements/TriangleElements";
-import {GraphicsPath}					from "@awayjs/graphics/lib/draw/GraphicsPath";
-import {GraphicsFactoryStrokes}			from "@awayjs/graphics/lib/draw/GraphicsFactoryStrokes";
+import {GraphicsPath, GraphicsFactoryStrokes, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle} from "@awayjs/graphics";
 
-import {JointStyle}						from "@awayjs/graphics/lib/draw/JointStyle";
-import {CapsStyle}						from "@awayjs/graphics/lib/draw/CapsStyle";
-import {DrawMode}						from "@awayjs/graphics/lib/draw/DrawMode";
-import {GraphicsStrokeStyle}			from "@awayjs/graphics/lib/draw/GraphicsStrokeStyle";
-
-import {AttributesBuffer}				from "@awayjs/core/lib/attributes/AttributesBuffer";
-import {AttributesView}					from "@awayjs/core/lib/attributes/AttributesView";
-import {Float3Attributes}				from "@awayjs/core/lib/attributes/Float3Attributes";
-import {Float2Attributes}				from "@awayjs/core/lib/attributes/Float2Attributes";
-import {Byte4Attributes}				from "@awayjs/core/lib/attributes/Byte4Attributes";
-
-import {TesselatedFontChar}				from "../text/TesselatedFontChar";
-import {IFontTable}						from "../text/IFontTable";
+import {TesselatedFontChar} from "./TesselatedFontChar";
+import {IFontTable} from "./IFontTable";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.

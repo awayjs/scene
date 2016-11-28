@@ -1,11 +1,11 @@
-import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
-import {AbstractMethodError}		from "@awayjs/core/lib/errors/AbstractMethodError";
+import {Matrix3D, AbstractMethodError} from "@awayjs/core";
 
-import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
+import {IEntity} from "@awayjs/graphics";
 
-import {DisplayObjectContainer}	from "../display/DisplayObjectContainer";
-import {LightEvent}				from "../events/LightEvent";
-import {ShadowMapperBase}			from "../shadowmappers/ShadowMapperBase";
+import {LightEvent} from "../events/LightEvent";
+import {ShadowMapperBase} from "../shadowmappers/ShadowMapperBase";
+
+import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
 export class LightBase extends DisplayObjectContainer
 {

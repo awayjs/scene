@@ -1,7 +1,7 @@
-import {Vector3D}					from "@awayjs/core/lib/geom/Vector3D";
+import {Vector3D} from "@awayjs/core";
 
-import {DisplayObject}			from "../display/DisplayObject";
-import {LookAtController}			from "../controllers/LookAtController";
+import {DisplayObject} from "../display/DisplayObject";
+import {LookAtController} from "../controllers/LookAtController";
 
 /**
  * Uses spring physics to animate the target object towards a position that is

@@ -1,10 +1,10 @@
-import {TraverserBase}						from "@awayjs/graphics/lib/base/TraverserBase";
+import {TraverserBase} from "@awayjs/graphics";
 
-import {DisplayObject}				from "./display/DisplayObject";
-import {TouchPoint}					from "./base/TouchPoint";
-import {Camera}						from "./display/Camera";
+import {TouchPoint} from "./base/TouchPoint";
+import {DisplayObject} from "./display/DisplayObject";
+import {Camera} from "./display/Camera";
 
-import {Scene}						from "./Scene";
+import {Scene} from "./Scene";
 
 /**
  *

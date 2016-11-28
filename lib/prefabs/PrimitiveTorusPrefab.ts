@@ -1,10 +1,6 @@
-import {IAsset}					from "@awayjs/core/lib/library/IAsset";
+import {ElementsType, ElementsBase, TriangleElements, MaterialBase} from "@awayjs/graphics";
 
-import {ElementsType}				from "@awayjs/graphics/lib/elements/ElementsType";
-import {ElementsBase}				from "@awayjs/graphics/lib/elements/ElementsBase";
-import {TriangleElements}			from "@awayjs/graphics/lib/elements/TriangleElements";
-import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
-import {PrimitivePrefabBase}		from "../prefabs/PrimitivePrefabBase";
+import {PrimitivePrefabBase} from "../prefabs/PrimitivePrefabBase";
 
 /**
  * A UV Cylinder primitive sprite.

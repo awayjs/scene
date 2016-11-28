@@ -1,6 +1,7 @@
-import {DisplayObject}				from "./display/DisplayObject";
-import {DisplayObjectContainer}		from "./display/DisplayObjectContainer";
-import {IView}						from "./IView";
+import {DisplayObject} from "./display/DisplayObject";
+import {DisplayObjectContainer} from "./display/DisplayObjectContainer";
+
+import {IView} from "./IView";
 
 export class Scene extends DisplayObjectContainer
 {

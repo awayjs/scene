@@ -1,6 +1,6 @@
-import {EventBase}				from "@awayjs/core/lib/events/EventBase";
+import {EventBase} from "@awayjs/core";
 
-import {Camera}					from "../display/Camera";
+import {Camera} from "../display/Camera";
 
 /**
  * @class away.events.CameraEvent

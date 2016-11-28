@@ -1,13 +1,12 @@
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
+import {Vector3D, PerspectiveProjection} from "@awayjs/core";
 
-import {ImageCube}					from "@awayjs/graphics/lib/image/ImageCube";
-import {SingleCubeTexture}			from "@awayjs/graphics/lib/textures/SingleCubeTexture";
+import {ImageCube, SingleCubeTexture} from "@awayjs/graphics";
 
-import {IView}						from "../IView";
-import {Camera}						from "../display/Camera";
-import {PointLight}					from "../display/PointLight";
-import {IRenderer}					from "../IRenderer";
+import {Camera} from "../display/Camera";
+import {PointLight} from "../display/PointLight";
+
+import {IRenderer} from "../IRenderer";
+import {IView} from "../IView";
 
 import {ShadowMapperBase}				from "./ShadowMapperBase";
 

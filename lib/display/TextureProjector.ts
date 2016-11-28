@@ -1,13 +1,10 @@
-import {ProjectionEvent}				from "@awayjs/core/lib/events/ProjectionEvent";
-import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
-import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
+import {ProjectionEvent, Matrix3D, PerspectiveProjection} from "@awayjs/core";
 
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {Image2D}					from "@awayjs/graphics/lib/image/Image2D";
-import {TextureBase}				from "@awayjs/graphics/lib/textures/TextureBase";
+import {TraverserBase, Image2D, TextureBase} from "@awayjs/graphics";
 
-import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {HierarchicalProperties} from "../base/HierarchicalProperties";
+
+import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
 /**
  * TextureProjector is an object in the scene that can be used to project textures onto geometry. To do so,

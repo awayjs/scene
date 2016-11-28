@@ -1,14 +1,12 @@
-import {Box}							from "@awayjs/core/lib/geom/Box";
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Box, Matrix3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {IEntity, TraverserBase} from "@awayjs/graphics";
 
-import {DisplayObject}						from "../display/DisplayObject";
-import {LightBase}					from "../display/LightBase";
-import {BoundsType}					from "../bounds/BoundsType";
-import {CubeMapShadowMapper}			from "../shadowmappers/CubeMapShadowMapper";
+import {BoundsType} from "../bounds/BoundsType";
+import {CubeMapShadowMapper} from "../shadowmappers/CubeMapShadowMapper";
+
+import {DisplayObject} from "./DisplayObject";
+import {LightBase} from "./LightBase";
 
 export class PointLight extends LightBase implements IEntity
 {

@@ -1,15 +1,11 @@
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {PlaneClassification}			from "@awayjs/core/lib/geom/PlaneClassification";
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Sphere}						from "@awayjs/core/lib/geom/Sphere";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Matrix3D, PlaneClassification, Plane3D, Sphere, Vector3D} from "@awayjs/core";
 
-import {ElementsType}					from "@awayjs/graphics/lib/elements/ElementsType";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {ElementsType, IEntity} from "@awayjs/graphics";
 
-import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
-import {Sprite}						from "../display/Sprite";
-import {PrimitiveSpherePrefab}		from "../prefabs/PrimitiveSpherePrefab";
+import {Sprite} from "../display/Sprite";
+import {PrimitiveSpherePrefab} from "../prefabs/PrimitiveSpherePrefab";
+
+import {BoundingVolumeBase} from "./BoundingVolumeBase";
 
 export class BoundingSphere extends BoundingVolumeBase
 {

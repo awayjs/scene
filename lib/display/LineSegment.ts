@@ -1,15 +1,10 @@
-﻿import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+﻿import {Vector3D} from "@awayjs/core";
 
-import {TraverserBase}				from "@awayjs/graphics/lib/base/TraverserBase";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
-import {Style}						from "@awayjs/graphics/lib/base/Style";
-import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
-import {RenderableEvent}				from "@awayjs/graphics/lib/events/RenderableEvent";
-import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+import {TraverserBase, IRenderable, RenderableEvent, MaterialBase} from "@awayjs/graphics";
 
-import {DisplayObject}				from "../display/DisplayObject";
-import {BoundsType}					from "../bounds/BoundsType";
+import {BoundsType} from "../bounds/BoundsType";
+
+import {DisplayObject} from "./DisplayObject";
 
 /**
  * A Line Segment primitive.

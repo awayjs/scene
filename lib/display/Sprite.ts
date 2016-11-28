@@ -1,16 +1,8 @@
-﻿import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
-import {Box}							from "@awayjs/core/lib/geom/Box";
-import {Point}						from "@awayjs/core/lib/geom/Point";
-import {Matrix3D}					from "@awayjs/core/lib/geom/Matrix3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+﻿import {AssetEvent, Box, Point, Vector3D} from "@awayjs/core";
 
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {IAnimator}					from "@awayjs/graphics/lib/animators/IAnimator";
-import {Graphics}						from "@awayjs/graphics/lib/Graphics";
-import {IMaterial}					from "@awayjs/graphics/lib/base/IMaterial";
-import {Style}						from "@awayjs/graphics/lib/base/Style";
+import {TraverserBase, IAnimator, Graphics, IMaterial, Style} from "@awayjs/graphics";
 
-import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
+import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation

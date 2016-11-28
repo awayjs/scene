@@ -1,15 +1,7 @@
-import {AssetLibraryBundle}			from "@awayjs/core/lib/library/AssetLibraryBundle";
-import {Loader}						from "@awayjs/core/lib/library/Loader";
-import {LoaderContext}				from "@awayjs/core/lib/library/LoaderContext";
-import {URLRequest}					from "@awayjs/core/lib/net/URLRequest";
-import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
-import {URLLoaderEvent}				from "@awayjs/core/lib/events/URLLoaderEvent";
-import {LoaderEvent}					from "@awayjs/core/lib/events/LoaderEvent";
-import {ParserEvent}					from "@awayjs/core/lib/events/ParserEvent";
-import {ParserBase}					from "@awayjs/core/lib/parsers/ParserBase";
+import {AssetLibraryBundle, Loader, LoaderContext, URLRequest, AssetEvent, URLLoaderEvent, LoaderEvent, ParserEvent, ParserBase} from "@awayjs/core";
 
-import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {DisplayObject}				from "../display/DisplayObject";
+import {DisplayObjectContainer} from "./DisplayObjectContainer";
+import {DisplayObject} from "./DisplayObject";
 
 /**
  * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)

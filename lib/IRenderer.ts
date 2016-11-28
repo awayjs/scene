@@ -1,11 +1,10 @@
-import {IEventDispatcher}				from "@awayjs/core/lib/events/IEventDispatcher";
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
+import {IEventDispatcher, Plane3D, Rectangle} from "@awayjs/core";
 
-import {ImageBase}					from "@awayjs/graphics/lib/image/ImageBase";
+import {ImageBase} from "@awayjs/graphics";
 
-import {Camera}						from "./display/Camera";
-import {IView}						from "./IView";
+import {Camera} from "./display/Camera";
+
+import {IView} from "./IView";
 
 /**
  * IRenderer is an interface for classes that are used in the rendering pipeline to render the

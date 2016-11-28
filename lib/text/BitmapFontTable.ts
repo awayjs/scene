@@ -1,11 +1,9 @@
-import {AssetBase}					from "@awayjs/core/lib/library/AssetBase";
+import {AssetBase} from "@awayjs/core";
 
-import {MaterialBase}					from "@awayjs/graphics/lib/materials/MaterialBase";
+import {MaterialBase} from "@awayjs/graphics";
 
-import {BitmapFontChar}			from "../text/BitmapFontChar";
-import {IFontTable}				from "../text/IFontTable";
-
-
+import {BitmapFontChar} from "./BitmapFontChar";
+import {IFontTable} from "./IFontTable";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.

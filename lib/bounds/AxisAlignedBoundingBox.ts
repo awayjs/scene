@@ -1,16 +1,11 @@
-import {Box}							from "@awayjs/core/lib/geom/Box";
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {PlaneClassification}			from "@awayjs/core/lib/geom/PlaneClassification";
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
+import {Box, Matrix3D, PlaneClassification, Plane3D, Vector3D} from "@awayjs/core";
 
-import {ElementsType}					from "@awayjs/graphics/lib/elements/ElementsType";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {ElementsType, IEntity} from "@awayjs/graphics";
 
-import {BoundingVolumeBase}			from "../bounds/BoundingVolumeBase";
-import {Sprite}						from "../display/Sprite";
-import {PrimitiveCubePrefab}			from "../prefabs/PrimitiveCubePrefab";
+import {Sprite} from "../display/Sprite";
+import {PrimitiveCubePrefab} from "../prefabs/PrimitiveCubePrefab";
 
+import {BoundingVolumeBase} from "./BoundingVolumeBase";
 
 /**
  * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.

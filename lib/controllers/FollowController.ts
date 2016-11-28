@@ -1,5 +1,5 @@
-import {DisplayObject}			from "../display/DisplayObject";
-import {HoverController}			from "../controllers/HoverController";
+import {DisplayObject} from "../display/DisplayObject";
+import {HoverController} from "../controllers/HoverController";
 
 /**
  * Controller used to follow behind an object on the XZ plane, with an optional

@@ -1,20 +1,10 @@
-import {Rectangle}					from "@awayjs/core/lib/geom/Rectangle";
+import {Rectangle} from "@awayjs/core";
 
-import {Sampler2D}					from "@awayjs/graphics/lib/image/Sampler2D";
-import {Image2D}						from "@awayjs/graphics/lib/image/Image2D";
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {RenderableEvent}				from "@awayjs/graphics/lib/events/RenderableEvent";
-import {MaterialEvent}					from "@awayjs/graphics/lib/events/MaterialEvent";
-import {DefaultMaterialManager}		from "@awayjs/graphics/lib/managers/DefaultMaterialManager";
-import {IMaterial}					from "@awayjs/graphics/lib/base/IMaterial";
-import {TextureBase}					from "@awayjs/graphics/lib/textures/TextureBase";
-import {Style}						from "@awayjs/graphics/lib/base/Style";
-import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
+import {Sampler2D, Image2D, TraverserBase, IRenderable, RenderableEvent, MaterialEvent, DefaultMaterialManager, IMaterial, TextureBase, StyleEvent} from "@awayjs/graphics";
 
-import {DisplayObject}				from "../display/DisplayObject";
-import {BoundsType}					from "../bounds/BoundsType";
+import {BoundsType} from "../bounds/BoundsType";
+
+import {DisplayObject} from "./DisplayObject";
 
 /**
  * The Billboard class represents display objects that represent bitmap images.

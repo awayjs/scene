@@ -1,13 +1,12 @@
-import {Style}							from "@awayjs/graphics/lib/base/Style";
+import {ColorTransform, Matrix3D, Matrix} from "@awayjs/core";
 
-import {HierarchicalProperties}			from "../base/HierarchicalProperties";
-import {MovieClip}						from "../display/MovieClip";
-import {DisplayObject}					from "../display/DisplayObject";
-import {ColorTransform}					from "@awayjs/core/lib/geom/ColorTransform";
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Matrix}							from "@awayjs/core/lib/geom/Matrix";
-import {FrameScriptManager}				from "../managers/FrameScriptManager";
-import {Billboard}						from "../display/Billboard";
+import {Style} from "@awayjs/graphics";
+
+import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {Billboard} from "../display/Billboard";
+import {MovieClip} from "../display/MovieClip";
+import {DisplayObject} from "../display/DisplayObject";
+import {FrameScriptManager} from "../managers/FrameScriptManager";
 
 
 export class Timeline

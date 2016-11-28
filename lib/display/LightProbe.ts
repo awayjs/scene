@@ -1,13 +1,10 @@
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {ErrorBase}					from "@awayjs/core/lib/errors/ErrorBase";
+import {Matrix3D, ErrorBase} from "@awayjs/core";
 
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {ImageCube}					from "@awayjs/graphics/lib/image/ImageCube";
-import {SamplerCube}					from "@awayjs/graphics/lib/image/SamplerCube";
-import {IEntity}					from "@awayjs/graphics/lib/base/IEntity";
+import {TraverserBase, ImageCube, SamplerCube, IEntity} from "@awayjs/graphics";
 
-import {LightBase}					from "../display/LightBase";
-import {BoundsType}					from "../bounds/BoundsType";
+import {BoundsType} from "../bounds/BoundsType";
+
+import {LightBase} from "./LightBase";
 
 export class LightProbe extends LightBase implements IEntity
 {

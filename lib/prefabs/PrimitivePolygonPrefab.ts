@@ -1,7 +1,6 @@
-import {IAsset}					from "@awayjs/core/lib/library/IAsset";
+import {MaterialBase} from "@awayjs/graphics";
 
-import {MaterialBase}				from "@awayjs/graphics/lib/materials/MaterialBase";
-import {PrimitiveCylinderPrefab}	from "../prefabs/PrimitiveCylinderPrefab";
+import {PrimitiveCylinderPrefab} from "../prefabs/PrimitiveCylinderPrefab";
 
 /**
  * A UV RegularPolygon primitive sprite.

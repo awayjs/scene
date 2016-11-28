@@ -1,7 +1,7 @@
-import {MathConsts}				from "@awayjs/core/lib/geom/MathConsts";
+import {MathConsts} from "@awayjs/core";
 
-import {ControllerBase}			from "../controllers/ControllerBase";
-import {DisplayObject}			from "../display/DisplayObject";
+import {ControllerBase} from "../controllers/ControllerBase";
+import {DisplayObject} from "../display/DisplayObject";
 
 /**
  * Extended camera used to hover round a specified target object.

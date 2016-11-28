@@ -1,18 +1,12 @@
-import {Matrix3D}						from "@awayjs/core/lib/geom/Matrix3D";
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {ProjectionEvent}				from "@awayjs/core/lib/events/ProjectionEvent";
-import {IProjection}					from "@awayjs/core/lib/projections/IProjection";
-import {PerspectiveProjection}		from "@awayjs/core/lib/projections/PerspectiveProjection";
+import {Matrix3D, Plane3D, Vector3D, ProjectionEvent, IProjection, PerspectiveProjection} from "@awayjs/core";
 
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
+import {IEntity, TraverserBase} from "@awayjs/graphics";
 
-import {HierarchicalProperties}		from "../base/HierarchicalProperties";
-import {BoundsType}					from "../bounds/BoundsType";
-import {DisplayObjectContainer}		from "../display/DisplayObjectContainer";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {CameraEvent}					from "../events/CameraEvent";
+import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {BoundsType} from "../bounds/BoundsType";
+import {CameraEvent} from "../events/CameraEvent";
 
+import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
 export class Camera extends DisplayObjectContainer implements IEntity
 {

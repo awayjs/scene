@@ -1,12 +1,9 @@
-import {Plane3D}						from "@awayjs/core/lib/geom/Plane3D";
-import {Vector3D}						from "@awayjs/core/lib/geom/Vector3D";
-import {AbstractMethodError}			from "@awayjs/core/lib/errors/AbstractMethodError";
+import {Plane3D, Vector3D, AbstractMethodError} from "@awayjs/core";
 
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
+import {IEntity} from "@awayjs/graphics";
 
-import {DisplayObject}						from "../display/DisplayObject";
-
-import {Sprite}						from "../display/Sprite";
+import {DisplayObject} from "../display/DisplayObject";
+import {Sprite} from "../display/Sprite";
 
 export class BoundingVolumeBase
 {

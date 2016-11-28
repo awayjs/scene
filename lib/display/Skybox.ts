@@ -1,22 +1,11 @@
-import {AssetEvent}					from "@awayjs/core/lib/events/AssetEvent";
+import {AssetEvent} from "@awayjs/core";
 
-import {BlendMode}					from "@awayjs/graphics/lib/image/BlendMode";
-import {ImageCube}					from "@awayjs/graphics/lib/image/ImageCube";
-import {TraverserBase}					from "@awayjs/graphics/lib/base/TraverserBase";
-import {IAnimationSet}				from "@awayjs/graphics/lib/animators/IAnimationSet";
-import {IRenderable}					from "@awayjs/graphics/lib/base/IRenderable";
-import {IMaterial}						from "@awayjs/graphics/lib/base/IMaterial";
-import {IEntity}						from "@awayjs/graphics/lib/base/IEntity";
-import {RenderableEvent}				from "@awayjs/graphics/lib/events/RenderableEvent";
-import {MaterialEvent}					from "@awayjs/graphics/lib/events/MaterialEvent";
-import {SingleCubeTexture}			from "@awayjs/graphics/lib/textures/SingleCubeTexture";
-import {TextureBase}					from "@awayjs/graphics/lib/textures/TextureBase";
-import {Style}						from "@awayjs/graphics/lib/base/Style";
-import {StyleEvent}					from "@awayjs/graphics/lib/events/StyleEvent";
+import {BlendMode, ImageCube, TraverserBase, IAnimationSet, IRenderable, IMaterial, IEntity, RenderableEvent, MaterialEvent, SingleCubeTexture, TextureBase, Style, StyleEvent} from "@awayjs/graphics";
 
-import {BoundsType}					from "../bounds/BoundsType";
-import {DisplayObject}				from "../display/DisplayObject";
-import {LightPickerBase}				from "../lightpickers/LightPickerBase";
+import {BoundsType} from "../bounds/BoundsType";
+import {LightPickerBase} from "../lightpickers/LightPickerBase";
+
+import {DisplayObject} from "./DisplayObject";
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
