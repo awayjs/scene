@@ -45,6 +45,7 @@ export {DisplayObjectEvent} from "./lib/events/DisplayObjectEvent";
 export {LightEvent} from "./lib/events/LightEvent";
 export {MouseEvent} from "./lib/events/MouseEvent";
 export {ResizeEvent} from "./lib/events/ResizeEvent";
+export {TextureProjectorEvent} from "./lib/events/TextureProjectorEvent";
 export {TouchEvent} from "./lib/events/TouchEvent";
 
 export {ITimelineSceneGraphFactory} from "./lib/factories/ITimelineSceneGraphFactory";

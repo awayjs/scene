@@ -3,6 +3,7 @@ import {ProjectionEvent, Matrix3D, PerspectiveProjection} from "@awayjs/core";
 import {TraverserBase, Image2D, TextureBase} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {TextureProjectorEvent} from "../events/TextureProjectorEvent";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
@@ -76,6 +77,18 @@ export class TextureProjector extends DisplayObjectContainer
 		this._projection.fieldOfView = value;
 	}
 
+	/**
+	 *
+	 */
+	public get preserveFocalLength():boolean
+	{
+		return this._projection.preserveFocalLength;
+	}
+
+	public set preserveFocalLength(value:boolean)
+	{
+		this._projection.preserveFocalLength = value;
+	}
 
 	/**
 	 * The focal length of the projection, or the distance to the viewing plance from the camera.
@@ -120,6 +133,14 @@ export class TextureProjector extends DisplayObjectContainer
 			return;
 
 		this._texture = value;
+
+		var width:number = (<Image2D> value.getImageAt(0)).width;
+		var height:number = (<Image2D> value.getImageAt(0)).height;
+		this._projection._iAspectRatio = width/height;
+		this._projection._iUpdateScissorRect(0, 0, width, height);
+		this._projection._iUpdateViewport(0, 0, width, height);
+
+		this.dispatchEvent(new TextureProjectorEvent(TextureProjectorEvent.TEXTURE_CHANGE));
 	}
 	
 	/**
