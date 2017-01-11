@@ -652,9 +652,8 @@ export class TextField extends Sprite
 
 			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 			//if(new_ct.color==0xffffff){
-			this.transform.colorTransform.color = this._textFormat.color;
-			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-
+				this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
+				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 			//}
 		}
 
