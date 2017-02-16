@@ -11,5 +11,5 @@ export class AlignmentMode
 	/**
 	 *
 	 */
-	public static PIVOT_POINT:string = "pivot";
+	public static TRANSFORM_POINT:string = "transformPoint";
 }

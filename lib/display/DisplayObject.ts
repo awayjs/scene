@@ -210,8 +210,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _height:number;
 	public _depth:number;
 
-	private _pivot:Vector3D;
-	private _pivotScale:Vector3D;
+	public _registrationMatrix3D:Matrix3D;
 	private _orientationMatrix:Matrix3D = new Matrix3D();
 	private _pickingCollision:PickingCollision;
 	private _shaderPickingDetails:boolean;
@@ -793,31 +792,77 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * Defines the local point around which the object rotates.
 	 */
-	public get pivot():Vector3D
+	public get registrationPoint():Vector3D
 	{
-		return this._pivot;
+		if (this._registrationMatrix3D)
+			return new Vector3D(-this._registrationMatrix3D._rawData[12]*this.scaleX, -this._registrationMatrix3D._rawData[13]*this.scaleY, -this._registrationMatrix3D._rawData[14]*this.scaleZ);
+		
+		return null;
 	}
 
 
-	public set pivot(pivot:Vector3D)
+	public set registrationPoint(value:Vector3D)
 	{
-		if (this._pivot && this._pivot.x == pivot.x && this._pivot.y == pivot.y && this._pivot.z == pivot.z)
-			return;
+		if (!value) {
+			if (!this._registrationMatrix3D)
+				return;
 
-		if (!pivot) {
-			this._pivot = null;
-			this._pivotScale = null;
+			this._registrationMatrix3D._rawData[12] = 0;
+			this._registrationMatrix3D._rawData[13] = 0;
+			this._registrationMatrix3D._rawData[14] = 0;
+
+			if (this._registrationMatrix3D.isIdentity())
+				this._registrationMatrix3D = null;
 		} else {
-			if (!this._pivot)
-				this._pivot = new Vector3D();
+			if (!this._registrationMatrix3D)
+				this._registrationMatrix3D = new Matrix3D();
 
-			this._pivot.x = pivot.x;
-			this._pivot.y = pivot.y;
-			this._pivot.z = pivot.z;
+			this._registrationMatrix3D._rawData[12] = -value.x/this._transform.scale.x;
+			this._registrationMatrix3D._rawData[13] = -value.y/this._transform.scale.y;
+			this._registrationMatrix3D._rawData[14] = -value.z/this._transform.scale.z;
+		}
+
+		this._registrationMatrix3D.invalidatePosition();
+
+		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+	}
+
+	/**
+	 * Defines the local scale.
+	 */
+	public get registrationScale():Vector3D
+	{
+		if (this._registrationMatrix3D)
+			return new Vector3D(this._registrationMatrix3D._rawData[0], this._registrationMatrix3D._rawData[5], this._registrationMatrix3D._rawData[10]);
+
+		return null;
+	}
+
+
+	public set registrationScale(value:Vector3D)
+	{
+		if (!value) {
+			if (!this._registrationMatrix3D)
+				return;
+
+			this._registrationMatrix3D._rawData[0] = 1;
+			this._registrationMatrix3D._rawData[5] = 1;
+			this._registrationMatrix3D._rawData[10] = 1;
+
+			if (this._registrationMatrix3D.isIdentity())
+				this._registrationMatrix3D = null;
+		} else {
+			if (!this._registrationMatrix3D)
+				this._registrationMatrix3D = new Matrix3D();
+
+			this._registrationMatrix3D._rawData[0] = value.x;
+			this._registrationMatrix3D._rawData[5] = value.y;
+			this._registrationMatrix3D._rawData[10] = value.z;
 		}
 
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
+
 
 	/**
 	 * For a display object in a loaded SWF file, the <code>root</code> property
@@ -1121,9 +1166,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get scenePosition():Vector3D
 	{
 		if (this._scenePositionDirty) {
-			if (this._pivot && this.alignmentMode == AlignmentMode.PIVOT_POINT) {
-				this._scenePosition = this.sceneTransform.transformVector(this._pivotScale);
-				//this._scenePosition.decrementBy(new Vector3D(this._pivot.x*this._scaleX, this._pivot.y*this._scaleY, this._pivot.z*this._scaleZ));
+			if (this._registrationMatrix3D && this.alignmentMode == AlignmentMode.REGISTRATION_POINT) {
+				this._scenePosition.x = -this._registrationMatrix3D._rawData[12];
+				this._scenePosition.y = -this._registrationMatrix3D._rawData[13];
+				this._scenePosition.z = -this._registrationMatrix3D._rawData[14];
+				this._scenePosition = this.sceneTransform.transformVector(this._scenePosition, this._scenePosition);
+				//this._scenePosition.decrementBy(new Vector3D(this._registrationPoint.x*this._scaleX, this._registrationPoint.y*this._scaleY, this._registrationPoint.z*this._scaleZ));
 			} else {
 				this.sceneTransform.copyColumnTo(3, this._scenePosition);
 			}
@@ -1512,7 +1560,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		displayObject.isPartition = this._iIsPartition;
 		displayObject.boundsType = this._boundsType;
-		displayObject.pivot = this._pivot;
+
+		if (this._registrationMatrix3D)
+			displayObject._registrationMatrix3D = this._registrationMatrix3D.clone();
+
 		displayObject.name = this._pName;
 		displayObject.mouseEnabled = this._explicitMouseEnabled;
 		displayObject.extra = this.extra;
@@ -1964,9 +2015,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (dx == 0 && dy == 0 && dz == 0)
 			return;
 
-		this._pivot.x += dx;
-		this._pivot.y += dy;
-		this._pivot.z += dz;
+		if (!this._registrationMatrix3D)
+			this._registrationMatrix3D = new Matrix3D();
+
+		this._registrationMatrix3D._rawData[12] -= dx/this._transform.scale.x;
+		this._registrationMatrix3D._rawData[13] -= dy/this._transform.scale.y;
+		this._registrationMatrix3D._rawData[14] -= dz/this._transform.scale.z;
 
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
@@ -1993,16 +2047,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
 			var comps:Array<Vector3D> = cameraTransform.decompose();
-			var scale:Vector3D = comps[3];
 			comps[0].copyFrom(this.scenePosition);
-			scale.x = this.scaleX;
-			scale.y = this.scaleY;
-			scale.z = this.scaleZ;
+			comps[3].copyFrom(this._transform.scale);
 			this._orientationMatrix.recompose(comps);
 
-			//add in case of pivot
-			if (this._pivot && this.alignmentMode == AlignmentMode.PIVOT_POINT)
-				this._orientationMatrix.prependTranslation(-this._pivot.x/this.scaleX, -this._pivot.y/this.scaleY, -this._pivot.z/this.scaleZ);
+			//add in case of registration point
+			if (this._registrationMatrix3D) {
+				this._orientationMatrix.prepend(this._registrationMatrix3D);
+
+				if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
+					this._orientationMatrix.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
+			}
 
 			return this._orientationMatrix;
 		}
@@ -2127,16 +2182,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._pSceneTransform.copyFrom(this._transform.matrix3D);
 
-		if (this._pivot) {
-			if (!this._pivotScale)
-				this._pivotScale = new Vector3D();
+		if (this._registrationMatrix3D) {
 
-			this._pivotScale.x = this._pivot.x/this._transform.scale.x;
-			this._pivotScale.y = this._pivot.y/this._transform.scale.y;
-			this._pivotScale.z = this._pivot.z/this._transform.scale.z;
-			this._pSceneTransform.prependTranslation(-this._pivotScale.x, -this._pivotScale.y, -this._pivotScale.z);
-			if (this.alignmentMode != AlignmentMode.PIVOT_POINT)
-				this._pSceneTransform.appendTranslation(this._pivot.x, this._pivot.y, this._pivot.z);
+			this._pSceneTransform.prepend(this._registrationMatrix3D);
+			if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
+				this._pSceneTransform.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
 		}
 
 
