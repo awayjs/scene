@@ -142,6 +142,14 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	public dispose()
 	{
 
+		var len:number = this._materials.length;
+		for (var i:number = 0; i < len; ++i) {
+			this._materials[i].dispose();
+		}
+		this._materials.length=0;
+		this._font_chars.length=0;
+		this._font_chars_dic=null;
+
 	}
 	
 	public addMaterial(material:MaterialBase)
