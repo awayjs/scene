@@ -170,6 +170,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pScene:Scene;
 	public _pParent:DisplayObjectContainer;
 	public _pSceneTransform:Matrix3D = new Matrix3D();
+	public _tempTransform:Matrix3D;
 	public _pIsEntity:boolean = false;
 	public _pIsContainer:boolean = false;
 	public _sessionID:number = -1;
@@ -409,6 +410,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get depth():number
 	{
+		if (this._registrationMatrix3D)
+			return this.getBox().depth*this.scaleZ*this._registrationMatrix3D[10];
+
 		return this.getBox().depth*this.scaleZ;
 	}
 
@@ -546,6 +550,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get height():number
 	{
+		if (this._registrationMatrix3D)
+			return this.getBox().height*this.scaleY*this._registrationMatrix3D[5];
+
 		return this.getBox().height*this.scaleY;
 	}
 
@@ -1404,6 +1411,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get width():number
 	{
+		if (this._registrationMatrix3D)
+			return this.getBox().width*this.scaleX*this._registrationMatrix3D[0];
+
 		return this.getBox().width*this.scaleX;
 	}
 
@@ -1687,9 +1697,22 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (targetCoordinateSpace == null || targetCoordinateSpace == this)
 			return this._pBoxBounds;
 
-		if (targetCoordinateSpace == this._pParent)
+		if (targetCoordinateSpace == this._pParent) {
+			if (this._registrationMatrix3D) {
+				if (this._tempTransform == null)
+					this._tempTransform = new Matrix3D()
+
+				this._tempTransform.copyFrom(this._transform.matrix3D);
+				this._tempTransform.prepend(this._registrationMatrix3D);
+				if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
+					this._tempTransform.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
+
+				return this._tempTransform.transformBox(this._pBoxBounds);
+			}
+
 			return this._transform.matrix3D.transformBox(this._pBoxBounds);
-		else
+
+		} else
 			return targetCoordinateSpace.inverseSceneTransform.transformBox(this.sceneTransform.transformBox(this._pBoxBounds));
 	}
 
