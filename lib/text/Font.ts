@@ -48,6 +48,11 @@ export class Font extends AssetBase
 	public dispose():void
 	{
 
+		var len:number = this._font_styles.length;
+		for (var i:number = 0; i < len; ++i) {
+			this._font_styles[i].dispose();
+		}
+		this._font_styles.length=0;
 	}
 	/**
 	 *Get a font-table for a specific name, or create one if it does not exists.

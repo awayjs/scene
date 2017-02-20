@@ -892,7 +892,7 @@ export class TextField extends Sprite
 		var char_width:number=0;
 		var numVertices:number = 0;
 		var numVertices2:number = 0;
-		var lastCharIsSpace:boolean = false;
+
 		this._line_indices=[];
 		// sort all chars into final lines
 		for (tl = 0; tl < textlines.length; tl++) {
@@ -908,13 +908,7 @@ export class TextField extends Sprite
 			tl_linebreak[tl_cnt]=true;
 
 			tl_cnt++;
-			// check if the last char is a space, if so we must add it at the end
-			/*
-			lastCharIsSpace=false;
-			if(textlines[tl].length>0){
-				lastCharIsSpace=textlines[tl].charCodeAt(textlines[tl].length-1)==32;
-			}
-			*/
+
 			words = textlines[tl].split(" ");
 			for (w = 0; w < words.length; w++) {
 				if(words[w].length>0){
@@ -937,11 +931,10 @@ export class TextField extends Sprite
 							char_width = activeFormat.font_table.fallbackTable.getCharWidth(words[w].charCodeAt(c).toString());
 							numVertices2 += activeFormat.font_table.fallbackTable.getCharVertCnt(words[w].charCodeAt(c).toString());
 							lineHeight=activeFormat.font_table.fallbackTable.getLineHeight();
-							if(lineHeight>max_word_height)max_word_height=lineHeight;
-
+							if(lineHeight>max_word_height)max_word_height = lineHeight;
 						}
 						else{
-							formatIdx[c]=-1;
+							formatIdx[c] = -1;
 						}
 
 						char_widths[c]=char_width+this._textFormat.letterSpacing;
@@ -1002,14 +995,6 @@ export class TextField extends Sprite
 					}
 				}
 			}
-			/*
-			if(lastCharIsSpace){
-				tl_char_codes[tl_cnt-1].push(32);
-				tl_formatIdx[tl_cnt-1].push(1);
-				tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
-				tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
-			}
-			*/
 		}
 
 		var tl_startx:Array<Array<number> >=[];
@@ -1135,7 +1120,16 @@ export class TextField extends Sprite
 						vertices2[vert_cnt2++] = char_data[1];
 					}
 				}
-				y_offset+= this._textFormat.leading;
+				//todo: this is a hack to fix multiline spacing in icycle. normally the multipliers should not be needed
+				if(this._textFormat.leading==5){
+					y_offset += this._textFormat.leading*1.6;
+				}
+				else if(this._textFormat.leading==11){
+					y_offset += this._textFormat.leading*1.8;
+				}
+				else{
+					y_offset += this._textFormat.leading;
+				}
 			}
 			if(vert_cnt>0){
 				var attributesView:AttributesView = new AttributesView(Float32Array, 4);
