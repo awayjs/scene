@@ -1,6 +1,6 @@
-import {Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase} from "@awayjs/core";
+import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase} from "@awayjs/core";
 
-import {IAnimator, IMaterial, Style, BlendMode, IEntity, TraverserBase, Transform, TransformEvent, StyleEvent, PickingCollision} from "@awayjs/graphics";
+import {IAnimator, IMaterial, Style, BlendMode, IEntity, TraverserBase, StyleEvent, PickingCollision} from "@awayjs/graphics";
 
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
@@ -169,7 +169,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _pScene:Scene;
 	public _pParent:DisplayObjectContainer;
-	public _pSceneTransform:Matrix3D = new Matrix3D();
+	public _concatenatedMatrix3D:Matrix3D = new Matrix3D();
 	public _tempTransform:Matrix3D;
 	public _pIsEntity:boolean = false;
 	public _pIsContainer:boolean = false;
@@ -180,10 +180,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	private _sceneTransformChanged:DisplayObjectEvent;
 	private _sceneChanged:DisplayObjectEvent;
-	private _transform:Transform;
-
-	private _inverseSceneTransform:Matrix3D = new Matrix3D();
-	private _inverseSceneTransformDirty:boolean;
+	protected _transform:Transform;
+	
 	private _scenePosition:Vector3D = new Vector3D();
 	private _scenePositionDirty:boolean;
 	private _explicitVisibility:boolean = true;
@@ -200,10 +198,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _listenToSceneChanged:boolean;
 
 	private _matrix3DDirty:boolean;
-	private _positionDirty:boolean;
-	private _rotationDirty:boolean;
-	private _skewDirty:boolean;
-	private _scaleDirty:boolean;
 
 	private _eulers:Vector3D;
 
@@ -580,19 +574,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			return this._pParent.getChildIndex(this);
 
 		return 0;
-	}
-
-	/**
-	 *
-	 */
-	public get inverseSceneTransform():Matrix3D
-	{
-		if (this._inverseSceneTransformDirty) {
-			this._inverseSceneTransform.copyFrom(this.sceneTransform);
-			this._inverseSceneTransform.invert();
-			this._inverseSceneTransformDirty = false;
-		}
-		return this._inverseSceneTransform;
 	}
 
 	/**
@@ -1177,23 +1158,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				this._scenePosition.x = -this._registrationMatrix3D._rawData[12];
 				this._scenePosition.y = -this._registrationMatrix3D._rawData[13];
 				this._scenePosition.z = -this._registrationMatrix3D._rawData[14];
-				this._scenePosition = this.sceneTransform.transformVector(this._scenePosition, this._scenePosition);
+				this._scenePosition = this._transform.concatenatedMatrix3D.transformVector(this._scenePosition, this._scenePosition);
 				//this._scenePosition.decrementBy(new Vector3D(this._registrationPoint.x*this._scaleX, this._registrationPoint.y*this._scaleY, this._registrationPoint.z*this._scaleZ));
 			} else {
-				this.sceneTransform.copyColumnTo(3, this._scenePosition);
+				this._transform.concatenatedMatrix3D.copyColumnTo(3, this._scenePosition);
 			}
 
 			this._scenePositionDirty = false;
 		}
 		return this._scenePosition;
-	}
-
-	public get sceneTransform():Matrix3D
-	{
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
-			this.pUpdateSceneTransform();
-
-		return this._pSceneTransform;
 	}
 
 	/**
@@ -1527,10 +1500,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 
 		//creation of associated transform object
-		this._transform = new Transform();
+		this._transform = new Transform(null, this._concatenatedMatrix3D);
 
 		//setup transform listeners
 		this._transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, (event:TransformEvent) => this._onInvalidateMatrix3D(event));
+		this._transform.addEventListener(TransformEvent.UPDATE_CONCATENATED_MATRIX3D, (event:TransformEvent) => this._onUpdateConcatenatedMatrix3D(event));
 		this._transform.addEventListener(TransformEvent.INVALIDATE_COLOR_TRANSFORM, (event:TransformEvent) => this._onInvalidateColorTransform(event));
 
 		//default bounds type
@@ -1586,7 +1560,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._adapter)
 			displayObject.adapter = this._adapter.clone(displayObject);
 
-		displayObject._transform.copyRawDataFrom(this._transform);
+		this._transform.copyRawDataTo(displayObject._transform);
 	}
 
 	/**
@@ -1616,7 +1590,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		//this._transform = null;
 		//
 		//this._matrix3D = null;
-		//this._pSceneTransform = null;
+		//this._concatenatedMatrix3D = null;
 		//this._inverseSceneTransform = null;
 
 		this._explicitMasks = null;
@@ -1713,7 +1687,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			return this._transform.matrix3D.transformBox(this._pBoxBounds);
 
 		} else
-			return targetCoordinateSpace.inverseSceneTransform.transformBox(this.sceneTransform.transformBox(this._pBoxBounds));
+			return targetCoordinateSpace.transform.inverseConcatenatedMatrix3D.transformBox(this.transform.concatenatedMatrix3D.transformBox(this._pBoxBounds));
 	}
 
 	public getSphere(targetCoordinateSpace:DisplayObject = null):Sphere
@@ -1747,7 +1721,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public globalToLocal(point:Point, target:Point = null):Point
 	{
 		this._tempVector3D.setTo(point.x, point.y, 0);
-		var pos:Vector3D = this.inverseSceneTransform.transformVector(this._tempVector3D, this._tempVector3D);
+		var pos:Vector3D = this._transform.inverseConcatenatedMatrix3D.transformVector(this._tempVector3D, this._tempVector3D);
 
 		if (!target)
 			target = new Point();
@@ -1778,7 +1752,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public globalToLocal3D(position:Vector3D):Vector3D
 	{
-		return this.inverseSceneTransform.transformVector(position);
+		return this._transform.inverseConcatenatedMatrix3D.transformVector(position);
 	}
 
 	/**
@@ -1985,7 +1959,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public localToGlobal(point:Point, target:Point = null):Point
 	{
 		this._tempVector3D.setTo(point.x, point.y, 0);
-		var pos:Vector3D = this.sceneTransform.transformVector(this._tempVector3D, this._tempVector3D);
+		var pos:Vector3D = this._transform.concatenatedMatrix3D.transformVector(this._tempVector3D, this._tempVector3D);
 
 		if (!target)
 			target = new Point();
@@ -2023,7 +1997,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public localToGlobal3D(position:Vector3D):Vector3D
 	{
-		return this.sceneTransform.transformVector(position);
+		return this._transform.concatenatedMatrix3D.transformVector(position);
 	}
 
 	/**
@@ -2085,7 +2059,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			return this._orientationMatrix;
 		}
 
-		return this.sceneTransform;
+		return this._transform.concatenatedMatrix3D;
 	}
 
 	/**
@@ -2148,7 +2122,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._hierarchicalPropsDirty |= propDirty;
 
 		if (newPropDirty & HierarchicalProperties.SCENE_TRANSFORM) {
-			this._inverseSceneTransformDirty = true;
+			this.transform.invalidateConcatenatedMatrix3D();
+			
 			this._scenePositionDirty = true;
 
 			if (this.isEntity)
@@ -2198,29 +2173,25 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @protected
 	 */
-	public pUpdateSceneTransform():void
+	public _onUpdateConcatenatedMatrix3D(event:TransformEvent):void
 	{
 		if (this._iController)
 			this._iController.updateController();
 
-		this._pSceneTransform.copyFrom(this._transform.matrix3D);
+		this._concatenatedMatrix3D.copyFrom(this._transform.matrix3D);
 
 		if (this._registrationMatrix3D) {
 
-			this._pSceneTransform.prepend(this._registrationMatrix3D);
+			this._concatenatedMatrix3D.prepend(this._registrationMatrix3D);
 			if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
-				this._pSceneTransform.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
+				this._concatenatedMatrix3D.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
 		}
 
 
 		if (this._pParent && !this._pParent._iIsRoot)
-			this._pSceneTransform.append(this._pParent.sceneTransform);
+			this._concatenatedMatrix3D.append(this._pParent._transform.concatenatedMatrix3D);
 
 		this._matrix3DDirty = false;
-		this._positionDirty = false;
-		this._rotationDirty = false;
-		this._skewDirty = false;
-		this._scaleDirty = false;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.SCENE_TRANSFORM;
 	}

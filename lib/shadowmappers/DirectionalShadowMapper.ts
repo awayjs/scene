@@ -58,7 +58,7 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 	//@arcane
 	public get iDepthProjection():Matrix3D
 	{
-		return this._pOverallDepthCamera.viewProjection;
+		return this._pOverallDepthProjection.viewMatrix3D;
 	}
 
 	//@arcane
@@ -97,8 +97,8 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 	//@protected
 	public pUpdateCullPlanes(camera:Camera):void
 	{
-		var lightFrustumPlanes:Array<Plane3D> = this._pOverallDepthCamera.frustumPlanes;
-		var viewFrustumPlanes:Array<Plane3D> = camera.frustumPlanes;
+		var lightFrustumPlanes:Array<Plane3D> = this._pOverallDepthProjection.frustumPlanes;
+		var viewFrustumPlanes:Array<Plane3D> = camera.projection.frustumPlanes;
 		this._pCullPlanes.length = 4;
 
 		this._pCullPlanes[0] = lightFrustumPlanes[0];
@@ -123,7 +123,7 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 	public pUpdateDepthProjection(camera:Camera):void
 	{
 		this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
-		this._pOverallDepthProjection.matrix = this._pMatrix;
+		this._pOverallDepthProjection.frustumMatrix3D = this._pMatrix;
 		this.pUpdateCullPlanes(camera);
 	}
 
@@ -137,7 +137,7 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 
 		var light:DirectionalLight = <DirectionalLight> this._pLight;
 		dir = light.sceneDirection;
-		this._pOverallDepthCamera.transform.matrix3D = this._pLight.sceneTransform;
+		this._pOverallDepthCamera.transform.matrix3D = this._pLight.transform.concatenatedMatrix3D;
 		x = Math.floor((camera.x - dir.x*this._pLightOffset)/this._pSnap)*this._pSnap;
 		y = Math.floor((camera.y - dir.y*this._pLightOffset)/this._pSnap)*this._pSnap;
 		z = Math.floor((camera.z - dir.z*this._pLightOffset)/this._pSnap)*this._pSnap;
@@ -145,8 +145,8 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 		this._pOverallDepthCamera.y = y;
 		this._pOverallDepthCamera.z = z;
 
-		this._pMatrix.copyFrom(this._pOverallDepthCamera.inverseSceneTransform);
-		this._pMatrix.prepend(camera.sceneTransform);
+		this._pMatrix.copyFrom(this._pOverallDepthCamera.transform.inverseConcatenatedMatrix3D);
+		this._pMatrix.prepend(camera.transform.concatenatedMatrix3D);
 		this._pMatrix.transformVectors(corners, this._pLocalFrustum);
 
 		minX = maxX = this._pLocalFrustum[0];

@@ -240,9 +240,9 @@ export class Merge
 			}
 
 			if (!this._objectSpace) {
-				sprite.sceneTransform.transformVectors(vertices, vertices);
-				sprite.sceneTransform.deltaTransformVectors(normals, normals);
-				sprite.sceneTransform.deltaTransformVectors(tangents, tangents);
+				sprite.transform.concatenatedMatrix3D.transformVectors(vertices, vertices);
+				sprite.transform.concatenatedMatrix3D.deltaTransformVectors(normals, normals);
+				sprite.transform.concatenatedMatrix3D.deltaTransformVectors(tangents, tangents);
 
 				// Copy vertex data from temporary (transformed) vectors
 				vIdx = vo.vertices.length;

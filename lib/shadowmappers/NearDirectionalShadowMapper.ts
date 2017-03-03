@@ -24,7 +24,8 @@ export class NearDirectionalShadowMapper extends DirectionalShadowMapper
 	public set coverageRatio(value:number)
 	{
 		if (value > 1)
-			value = 1; else if (value < 0)
+			value = 1;
+		else if (value < 0)
 			value = 0;
 
 		this._coverageRatio = value;
@@ -41,6 +42,6 @@ export class NearDirectionalShadowMapper extends DirectionalShadowMapper
 		}
 
 		this.pUpdateProjectionFromFrustumCorners(camera, this._pLocalFrustum, this._pMatrix);
-		this._pOverallDepthProjection.matrix = this._pMatrix;
+		this._pOverallDepthProjection.frustumMatrix3D = this._pMatrix;
 	}
 }

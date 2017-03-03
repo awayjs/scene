@@ -109,7 +109,7 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 		super._pUpdate();
 
 		this._box = this._entity.getBox();
-		var matrix:Matrix3D = this._entity.sceneTransform;
+		var matrix:Matrix3D = this._entity.transform.concatenatedMatrix3D;
 		var hx:number = this._box.width/2;
 		var hy:number = this._box.height/2;
 		var hz:number = this._box.depth/2;

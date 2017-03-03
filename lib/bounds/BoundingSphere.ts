@@ -80,7 +80,7 @@ export class BoundingSphere extends BoundingVolumeBase
 		super._pUpdate();
 
 		this._sphere = this._entity.getSphere();
-		var matrix:Matrix3D = this._entity.sceneTransform;
+		var matrix:Matrix3D = this._entity.transform.concatenatedMatrix3D;
 
 		var cx:number = this._sphere.x;
 		var cy:number = this._sphere.y;

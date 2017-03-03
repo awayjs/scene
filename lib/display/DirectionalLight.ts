@@ -18,6 +18,7 @@ export class DirectionalLight extends LightBase implements IEntity
 	private _direction:Vector3D;
 	private _tmpLookAt:Vector3D;
 	private _sceneDirection:Vector3D;
+	private _sceneDirectionDirty:boolean;
 	private _pAabbPoints:Array<number> = new Array<number>(24);
 	private _projAABBPoints:Array<number>;
 
@@ -47,8 +48,8 @@ export class DirectionalLight extends LightBase implements IEntity
 
 	public get sceneDirection():Vector3D
 	{
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
-			this.pUpdateSceneTransform();
+		if (this._sceneDirectionDirty)
+			this._updateSceneDirection();
 
 		return this._sceneDirection;
 	}
@@ -72,12 +73,22 @@ export class DirectionalLight extends LightBase implements IEntity
 		this.lookAt(this._tmpLookAt);
 	}
 
-	//@override
-	public pUpdateSceneTransform():void
+	public pInvalidateHierarchicalProperties(propDirty:number):boolean
 	{
-		super.pUpdateSceneTransform();
+		if (super.pInvalidateHierarchicalProperties(propDirty))
+			return true;
 
-		this.sceneTransform.copyColumnTo(2, this._sceneDirection);
+		if (this._hierarchicalPropsDirty & HierarchicalProperties.SCENE_TRANSFORM)
+			this._sceneDirectionDirty = true;
+
+		return false;
+	}
+
+	private _updateSceneDirection():void
+	{
+		this._sceneDirectionDirty = false;
+
+		this.transform.concatenatedMatrix3D.copyColumnTo(2, this._sceneDirection);
 
 		this._sceneDirection.normalize();
 	}
@@ -97,7 +108,7 @@ export class DirectionalLight extends LightBase implements IEntity
 		var m:Matrix3D = Matrix3D.CALCULATION_MATRIX;
 
 		m.copyFrom(displayObject.getRenderSceneTransform(cameraTransform));
-		m.append(this.inverseSceneTransform);
+		m.append(this.transform.inverseConcatenatedMatrix3D);
 
 		if (!this._projAABBPoints)
 			this._projAABBPoints = [];

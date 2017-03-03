@@ -103,11 +103,11 @@ export class PointLight extends LightBase implements IEntity
 
 		// todo: do not use lookAt on Light
 		m.copyFrom(displayObject.getRenderSceneTransform(cameraTransform));
-		m.append(this._pParent.inverseSceneTransform);
+		m.append(this._pParent.transform.inverseConcatenatedMatrix3D);
 		this.lookAt(m.position);
 
 		m.copyFrom(displayObject.getRenderSceneTransform(cameraTransform));
-		m.append(this.inverseSceneTransform);
+		m.append(this.transform.inverseConcatenatedMatrix3D);
 
 		var box:Box = displayObject.getBox();
 		var v1:Vector3D = m.deltaTransformVector(new Vector3D(box.left, box.bottom, box.front));

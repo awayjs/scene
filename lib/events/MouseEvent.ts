@@ -216,7 +216,7 @@ export class MouseEvent extends EventBase
 	 */
 	public get scenePosition():Vector3D
 	{
-		return this.entity.sceneTransform.transformVector(this.position);
+		return this.entity.transform.concatenatedMatrix3D.transformVector(this.position);
 	}
 
 	/**
@@ -224,7 +224,7 @@ export class MouseEvent extends EventBase
 	 */
 	public get sceneNormal():Vector3D
 	{
-		var sceneNormal:Vector3D = this.entity.sceneTransform.deltaTransformVector(this.normal);
+		var sceneNormal:Vector3D = this.entity.transform.concatenatedMatrix3D.deltaTransformVector(this.normal);
 		sceneNormal.normalize();
 
 		return sceneNormal;

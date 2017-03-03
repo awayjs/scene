@@ -23,10 +23,7 @@ export class TextureProjector extends DisplayObjectContainer
 	public static assetType:string = "[asset TextureProjector]";
 	
 	private _projection:PerspectiveProjection;
-	private _viewProjectionInvalid:boolean = true;
-	private _viewProjection:Matrix3D = new Matrix3D();
 	private _texture:TextureBase;
-	private _onProjectionMatrixChangedDelegate:(event:ProjectionEvent) => void;
 	
 	/**
 	 * Creates a new TextureProjector object.
@@ -37,72 +34,25 @@ export class TextureProjector extends DisplayObjectContainer
 	{
 		super();
 		
-		this._onProjectionMatrixChangedDelegate = (event:ProjectionEvent) => this.onProjectionMatrixChanged(event);
-		
 		this._projection = new PerspectiveProjection();
-		//this._projection.preserveFocalLength = true;
-		this._projection.addEventListener(ProjectionEvent.MATRIX_CHANGED, this._onProjectionMatrixChangedDelegate);
+		this._projection.transform = this._transform;
+
 		this._texture = texture;
 
 		var width:number = (<Image2D> texture.getImageAt(0)).width;
 		var height:number = (<Image2D> texture.getImageAt(0)).height;
-		this._projection._iAspectRatio = width/height;
-		this._projection._iUpdateScissorRect(0, 0, width, height);
-		this._projection._iUpdateViewport(0, 0, width, height);
+		this._projection.aspectRatio = width/height;
+		this._projection.setViewRect(0, 0, width, height);
+		this._projection.setStageRect(0, 0, width, height);
 	}
 	
-	/**
-	 * The aspect ratio of the texture or projection. By default this is the same aspect ratio of the texture (width/height)
-	 */
-	public get aspectRatio():number
-	{
-		return this._projection._iAspectRatio;
-	}
-	
-	public set aspectRatio(value:number)
-	{
-		this._projection._iAspectRatio = value;
-	}
-	
-	/**
-	 * The vertical field of view of the projection, or the angle of the cone.
-	 */
-	public get fieldOfView():number
-	{
-		return this._projection.fieldOfView;
-	}
-	
-	public set fieldOfView(value:number)
-	{
-		this._projection.fieldOfView = value;
-	}
-
 	/**
 	 *
 	 */
-	public get preserveFocalLength():boolean
+	public get projection():PerspectiveProjection
 	{
-		return this._projection.preserveFocalLength;
+		return this._projection;
 	}
-
-	public set preserveFocalLength(value:boolean)
-	{
-		this._projection.preserveFocalLength = value;
-	}
-
-	/**
-	 * The focal length of the projection, or the distance to the viewing plance from the camera.
-	 */
-	public get focalLength():number
-	{
-		return this._projection.focalLength;
-	}
-
-	public set focalLength(value:number)
-	{
-		this._projection.focalLength = value;
-	}
-
 
 	public get traverseName():string
 	{
@@ -136,43 +86,10 @@ export class TextureProjector extends DisplayObjectContainer
 
 		var width:number = (<Image2D> value.getImageAt(0)).width;
 		var height:number = (<Image2D> value.getImageAt(0)).height;
-		this._projection._iAspectRatio = width/height;
-		this._projection._iUpdateScissorRect(0, 0, width, height);
-		this._projection._iUpdateViewport(0, 0, width, height);
+		this._projection.aspectRatio = width/height;
+		this._projection.setViewRect(0, 0, width, height);
+		this._projection.setStageRect(0, 0, width, height);
 
 		this.dispatchEvent(new TextureProjectorEvent(TextureProjectorEvent.TEXTURE_CHANGE));
-	}
-	
-	/**
-	 * The matrix that projects a point in scene space into the texture coordinates.
-	 */
-	public get viewProjection():Matrix3D
-	{
-		if (this._viewProjectionInvalid) {
-			this._viewProjection.copyFrom(this.inverseSceneTransform);
-			this._viewProjection.append(this._projection.matrix);
-			this._viewProjectionInvalid = false;
-		}
-		return this._viewProjection;
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	public pInvalidateHierarchicalProperties(propDirty:number):boolean
-	{
-		if (super.pInvalidateHierarchicalProperties(propDirty))
-			return true;
-
-		if (propDirty & HierarchicalProperties.SCENE_TRANSFORM)
-			this._viewProjectionInvalid = true;
-		
-		return false;
-	}
-
-
-	private onProjectionMatrixChanged(event:ProjectionEvent):void
-	{
-		this._viewProjectionInvalid = true;
 	}
 }

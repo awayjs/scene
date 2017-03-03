@@ -55,7 +55,7 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 
 	public getDepthProjections(partition:number /*uint*/):Matrix3D
 	{
-		return this._depthCameras[partition].viewProjection;
+		return this._depthLenses[partition].viewMatrix3D;
 	}
 
 	private init():void
@@ -142,18 +142,18 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 
 		this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
 		this._pMatrix.appendScale(.96, .96, 1);
-		this._pOverallDepthProjection.matrix = this._pMatrix;
+		this._pOverallDepthProjection.frustumMatrix3D = this._pMatrix;
 		this.pUpdateCullPlanes(camera);
 
 		for (var i:number /*int*/ = 0; i < this._numCascades; ++i) {
-			matrix = this._depthLenses[i].matrix;
+			matrix = this._depthLenses[i].frustumMatrix3D;
 
 			this._nearPlaneDistances[i] = projectionNear + this._splitRatios[i]*projectionRange;
 			this._depthCameras[i].transform.matrix3D = this._pOverallDepthCamera.transform.matrix3D;
 
 			this.updateProjectionPartition(matrix, this._splitRatios[i], this._texOffsetsX[i], this._texOffsetsY[i]);
 
-			this._depthLenses[i].matrix = matrix;
+			this._depthLenses[i].frustumMatrix3D = matrix;
 		}
 	}
 
