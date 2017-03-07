@@ -1,4 +1,4 @@
-# AwayJS Display
+# AwayJS Scene
 
 Dependency for AwayJS applications requiring a heirarchical scenegraph: contains data structures for a collection of display object types, as well as geometric prefabs for simple 2D & 3D objects.
 
