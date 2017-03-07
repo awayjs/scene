@@ -1,4 +1,5 @@
 # AwayJS Scene
+[![Build Status](https://travis-ci.org/awayjs/scene.svg?branch=dev)](https://travis-ci.org/awayjs/scene)
 
 Dependency for AwayJS applications requiring a heirarchical scenegraph: contains data structures for a collection of display object types, as well as geometric prefabs for simple 2D & 3D objects.
 
