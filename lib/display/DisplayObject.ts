@@ -162,7 +162,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _bounds:Rectangle;
 	public _pBoxBounds:Box;
 	private _boxBoundsInvalid:boolean = true;
-	public _pSphereBounds:Sphere;
+	public _pSpnpm nhereBounds:Sphere;
 	private _sphereBoundsInvalid:boolean = true;
 	private _debugVisible:boolean;
 	public _pName:string;
