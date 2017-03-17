@@ -1,8 +1,6 @@
-import {Matrix3D, Rectangle, AssetEvent, FreeMatrixProjection, IProjection} from "@awayjs/core";
+import {Matrix3D, Rectangle, AssetEvent, PerspectiveProjection, ProjectionBase} from "@awayjs/core";
 
 import {Single2DTexture} from "@awayjs/graphics";
-
-import {Camera} from "../display/Camera";
 
 import {IRenderer} from "../IRenderer";
 import {IView} from "../IView";
@@ -12,12 +10,11 @@ import {DirectionalShadowMapper} from "./DirectionalShadowMapper";
 export class CascadeShadowMapper extends DirectionalShadowMapper
 {
 	public _pScissorRects:Rectangle[];
-	private _pScissorRectsInvalid:boolean = true;
+	private _scissorRectsInvalid:boolean = true;
 	private _splitRatios:number[];
 
 	private _numCascades:number /*int*/;
-	private _depthCameras:Array<Camera>;
-	private _depthLenses:Array<FreeMatrixProjection>;
+	private _depthProjections:Array<PerspectiveProjection>;
 
 	private _texOffsetsX:Array<number>;
 	private _texOffsetsY:Array<number>;
@@ -55,7 +52,7 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 
 	public getDepthProjections(partition:number /*uint*/):Matrix3D
 	{
-		return this._depthLenses[partition].viewMatrix3D;
+		return this._depthProjections[partition].viewMatrix3D;
 	}
 
 	private init():void
@@ -72,25 +69,22 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 		this._texOffsetsX = Array<number>(-1, 1, -1, 1);
 		this._texOffsetsY = Array<number>(1, 1, -1, -1);
 		this._pScissorRects = new Array<Rectangle>(4);
-		this._depthLenses = new Array<FreeMatrixProjection>();
-		this._depthCameras = new Array<Camera>();
+		this._depthProjections = new Array<PerspectiveProjection>();
 
-		for (i = 0; i < this._numCascades; ++i) {
-			this._depthLenses[i] = new FreeMatrixProjection();
-			this._depthCameras[i] = new Camera(this._depthLenses[i]);
-		}
+		for (i = 0; i < this._numCascades; ++i)
+			this._depthProjections[i] = new PerspectiveProjection();
 	}
 
-	public _pSetDepthMapSize(value:number /*uint*/):void
+	protected _setDepthMapSize(value:number /*uint*/):void
 	{
-		super._pSetDepthMapSize(value);
+		super._setDepthMapSize(value);
 
 		this.invalidateScissorRects();
 	}
 
 	private invalidateScissorRects():void
 	{
-		this._pScissorRectsInvalid = true;
+		this._scissorRectsInvalid = true;
 	}
 
 	public get numCascades():number /*int*/
@@ -112,48 +106,47 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 		this.dispatchEvent(new AssetEvent(AssetEvent.INVALIDATE, this));
 	}
 
-	public pDrawDepthMap(view:IView, target:Single2DTexture, renderer:IRenderer):void
+	protected _drawDepthMap(view:IView, target:Single2DTexture, renderer:IRenderer):void
 	{
-		if (this._pScissorRectsInvalid)
+		if (this._scissorRectsInvalid)
 			this.updateScissorRects();
 
-		renderer.cullPlanes = this._pCullPlanes;
-		renderer._iRenderCascades(this._pOverallDepthCamera, view, target.image2D, this._numCascades, this._pScissorRects, this._depthCameras);
+		renderer.cullPlanes = this._cullPlanes;
+		renderer._iRenderCascades(this._overallDepthProjection, view, target.image2D, this._numCascades, this._pScissorRects, this._depthProjections);
 	}
 
 	private updateScissorRects():void
 	{
-		var half:number = this._pDepthMapSize*.5;
+		var half:number = this._depthMapSize*.5;
 
 		this._pScissorRects[0] = new Rectangle(0, 0, half, half);
 		this._pScissorRects[1] = new Rectangle(half, 0, half, half);
 		this._pScissorRects[2] = new Rectangle(0, half, half, half);
 		this._pScissorRects[3] = new Rectangle(half, half, half, half);
 
-		this._pScissorRectsInvalid = false;
+		this._scissorRectsInvalid = false;
 	}
 
-	public pUpdateDepthProjection(camera:Camera):void
+	protected _updateDepthProjection(projection:ProjectionBase):void
 	{
 		var matrix:Matrix3D;
-		var projection:IProjection = camera.projection;
 		var projectionNear:number = projection.near;
 		var projectionRange:number = projection.far - projectionNear;
 
-		this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
-		this._pMatrix.appendScale(.96, .96, 1);
-		this._pOverallDepthProjection.frustumMatrix3D = this._pMatrix;
-		this.pUpdateCullPlanes(camera);
+		this._updateProjectionFromFrustumCorners(projection, projection.frustumCorners, this._matrix);
+		this._matrix.appendScale(.96, .96, 1);
+		this._overallDepthProjection.frustumMatrix3D = this._matrix;
+		this._updateCullPlanes(projection);
 
 		for (var i:number /*int*/ = 0; i < this._numCascades; ++i) {
-			matrix = this._depthLenses[i].frustumMatrix3D;
+			matrix = this._depthProjections[i].frustumMatrix3D;
 
 			this._nearPlaneDistances[i] = projectionNear + this._splitRatios[i]*projectionRange;
-			this._depthCameras[i].transform.matrix3D = this._pOverallDepthCamera.transform.matrix3D;
+			this._depthProjections[i].transform.matrix3D = this._overallDepthProjection.transform.matrix3D;
 
 			this.updateProjectionPartition(matrix, this._splitRatios[i], this._texOffsetsX[i], this._texOffsetsY[i]);
 
-			this._depthLenses[i].frustumMatrix3D = matrix;
+			this._depthProjections[i].frustumMatrix3D = matrix;
 		}
 	}
 
@@ -166,12 +159,12 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 		var i:number /*uint*/ = 0;
 
 		while (i < 12) {
-			xN = this._pLocalFrustum[i];
-			yN = this._pLocalFrustum[i + 1];
-			zN = this._pLocalFrustum[i + 2];
-			xF = xN + (this._pLocalFrustum[i + 12] - xN)*splitRatio;
-			yF = yN + (this._pLocalFrustum[i + 13] - yN)*splitRatio;
-			zF = zN + (this._pLocalFrustum[i + 14] - zN)*splitRatio;
+			xN = this._localFrustum[i];
+			yN = this._localFrustum[i + 1];
+			zN = this._localFrustum[i + 2];
+			xF = xN + (this._localFrustum[i + 12] - xN)*splitRatio;
+			yF = yN + (this._localFrustum[i + 13] - yN)*splitRatio;
+			zF = zN + (this._localFrustum[i + 14] - zN)*splitRatio;
 			if (xN < minX)
 				minX = xN;
 			if (xN > maxX)
@@ -202,13 +195,13 @@ export class CascadeShadowMapper extends DirectionalShadowMapper
 		var d:number = 1/(maxZ - minZ);
 
 		if (minX < 0)
-			minX -= this._pSnap; // because int() rounds up for < 0
+			minX -= this._snap; // because int() rounds up for < 0
 		if (minY < 0)
-			minY -= this._pSnap;
-		minX = Math.floor(minX/this._pSnap)*this._pSnap;
-		minY = Math.floor(minY/this._pSnap)*this._pSnap;
+			minY -= this._snap;
+		minX = Math.floor(minX/this._snap)*this._snap;
+		minY = Math.floor(minY/this._snap)*this._snap;
 
-		var snap2:number = 2*this._pSnap;
+		var snap2:number = 2*this._snap;
 		w = Math.floor(w/snap2 + 1)*snap2;
 		h = Math.floor(h/snap2 + 1)*snap2;
 

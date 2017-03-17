@@ -1,8 +1,6 @@
-import {IEventDispatcher, Plane3D, Rectangle} from "@awayjs/core";
+import {IEventDispatcher, Plane3D, Rectangle, ProjectionBase} from "@awayjs/core";
 
 import {ImageBase} from "@awayjs/graphics";
-
-import {Camera} from "./display/Camera";
 
 import {IView} from "./IView";
 
@@ -82,7 +80,7 @@ export interface IRenderer extends IEventDispatcher
 	 */
 	_iBackgroundAlpha:number;
 
-	_iRender(camera:Camera, view:IView, target?:ImageBase, scissorRect?:Rectangle, surfaceSelector?:number);
+	_iRender(projection:ProjectionBase, view:IView, target?:ImageBase, scissorRect?:Rectangle, surfaceSelector?:number);
 
-	_iRenderCascades(camera:Camera, view:IView, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, cameras:Array<Camera>);
+	_iRenderCascades(projection:ProjectionBase, view:IView, target:ImageBase, numCascades:number, scissorRects:Array<Rectangle>, projections:Array<ProjectionBase>);
 }

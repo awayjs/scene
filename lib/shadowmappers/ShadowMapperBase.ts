@@ -1,9 +1,8 @@
-import {AbstractMethodError, AssetBase} from "@awayjs/core";
+import {AbstractMethodError, AssetBase, ProjectionBase} from "@awayjs/core";
 
 import {TextureBase} from "@awayjs/graphics";
 
 import {LightBase} from "../display/LightBase";
-import {Camera} from "../display/Camera";
 
 import {IRenderer} from "../IRenderer";
 import {IView} from "../IView";
@@ -11,10 +10,10 @@ import {IView} from "../IView";
 
 export class ShadowMapperBase extends AssetBase
 {
-	public _depthMap:TextureBase;
-	public _pDepthMapSize:number = 2048;
-	public _pLight:LightBase;
-	public _explicitDepthMap:boolean;
+	protected _depthMap:TextureBase;
+	protected _depthMapSize:number = 2048;
+	protected _light:LightBase;
+	protected _explicitDepthMap:boolean;
 	private _autoUpdateShadows:boolean = true;
 	public _iShadowsInvalid:boolean;
 
@@ -43,33 +42,33 @@ export class ShadowMapperBase extends AssetBase
 
 	public get light():LightBase
 	{
-		return this._pLight;
+		return this._light;
 	}
 
 	public set light(value:LightBase)
 	{
-		this._pLight = value;
+		this._light = value;
 	}
 
 	public get depthMap():TextureBase
 	{
 		if (!this._depthMap)
-			this._depthMap = this.pCreateDepthTexture();
+			this._depthMap = this._createDepthTexture();
 
 		return this._depthMap;
 	}
 
 	public get depthMapSize():number
 	{
-		return this._pDepthMapSize;
+		return this._depthMapSize;
 	}
 
 	public set depthMapSize(value:number)
 	{
-		if (value == this._pDepthMapSize)
+		if (value == this._depthMapSize)
 			return;
 
-		this._pSetDepthMapSize(value);
+		this._setDepthMapSize(value);
 	}
 
 	public dispose():void
@@ -80,7 +79,7 @@ export class ShadowMapperBase extends AssetBase
 		this._depthMap = null;
 	}
 
-	public pCreateDepthTexture():TextureBase
+	protected _createDepthTexture():TextureBase
 	{
 		throw new AbstractMethodError();
 	}
@@ -89,27 +88,27 @@ export class ShadowMapperBase extends AssetBase
 	{
 		this._iShadowsInvalid = false;
 
-		this.pUpdateDepthProjection(view.camera);
+		this._updateDepthProjection(view.camera.projection);
 
 		if (!this._depthMap)
-			this._depthMap = this.pCreateDepthTexture();
+			this._depthMap = this._createDepthTexture();
 
-		this.pDrawDepthMap(view, this._depthMap, renderer);
+		this._drawDepthMap(view, this._depthMap, renderer);
 	}
 
-	public pUpdateDepthProjection(camera:Camera):void
+	protected _updateDepthProjection(projection:ProjectionBase):void
 	{
 		throw new AbstractMethodError();
 	}
 
-	public pDrawDepthMap(view:IView, target:TextureBase, renderer:IRenderer):void
+	protected _drawDepthMap(view:IView, target:TextureBase, renderer:IRenderer):void
 	{
 		throw new AbstractMethodError();
 	}
 
-	public _pSetDepthMapSize(value):void
+	protected _setDepthMapSize(value):void
 	{
-		this._pDepthMapSize = value;
+		this._depthMapSize = value;
 
 		if (this._explicitDepthMap) {
 			throw Error("Cannot set depth map size for the current renderer.");

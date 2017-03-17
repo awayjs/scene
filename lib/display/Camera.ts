@@ -1,4 +1,4 @@
-import {Matrix3D, Plane3D, Vector3D, ProjectionEvent, IProjection, PerspectiveProjection} from "@awayjs/core";
+import {Matrix3D, Plane3D, Vector3D, ProjectionEvent, ProjectionBase, PerspectiveProjection} from "@awayjs/core";
 
 import {IEntity, TraverserBase} from "@awayjs/graphics";
 
@@ -14,9 +14,9 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	
 	public static assetType:string = "[asset Camera]";
 
-	private _projection:IProjection;
+	private _projection:ProjectionBase;
 
-	constructor(projection:IProjection = null)
+	constructor(projection:ProjectionBase = null)
 	{
 		super();
 
@@ -40,12 +40,12 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	/**
 	 *
 	 */
-	public get projection():IProjection
+	public get projection():ProjectionBase
 	{
 		return this._projection;
 	}
 
-	public set projection(value:IProjection)
+	public set projection(value:ProjectionBase)
 	{
 		if (this._projection == value)
 			return;

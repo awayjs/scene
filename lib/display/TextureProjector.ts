@@ -41,7 +41,6 @@ export class TextureProjector extends DisplayObjectContainer
 
 		var width:number = (<Image2D> texture.getImageAt(0)).width;
 		var height:number = (<Image2D> texture.getImageAt(0)).height;
-		this._projection.aspectRatio = width/height;
 		this._projection.setViewRect(0, 0, width, height);
 		this._projection.setStageRect(0, 0, width, height);
 	}
@@ -86,7 +85,6 @@ export class TextureProjector extends DisplayObjectContainer
 
 		var width:number = (<Image2D> value.getImageAt(0)).width;
 		var height:number = (<Image2D> value.getImageAt(0)).height;
-		this._projection.aspectRatio = width/height;
 		this._projection.setViewRect(0, 0, width, height);
 		this._projection.setStageRect(0, 0, width, height);
 

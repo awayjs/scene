@@ -1,4 +1,4 @@
-import {Camera} from "../display/Camera";
+import {ProjectionBase} from "@awayjs/core";
 
 import {DirectionalShadowMapper} from "./DirectionalShadowMapper";
 
@@ -31,17 +31,17 @@ export class NearDirectionalShadowMapper extends DirectionalShadowMapper
 		this._coverageRatio = value;
 	}
 
-	public pUpdateDepthProjection(camera:Camera):void
+	protected _updateDepthProjection(projection:ProjectionBase):void
 	{
-		var corners:Array<number> = camera.projection.frustumCorners;
+		var corners:Array<number> = projection.frustumCorners;
 
 		for (var i:number /*int*/ = 0; i < 12; ++i) {
 			var v:number = corners[i];
-			this._pLocalFrustum[i] = v;
-			this._pLocalFrustum[i + 12] = v + (corners[i + 12] - v)*this._coverageRatio;
+			this._localFrustum[i] = v;
+			this._localFrustum[i + 12] = v + (corners[i + 12] - v)*this._coverageRatio;
 		}
 
-		this.pUpdateProjectionFromFrustumCorners(camera, this._pLocalFrustum, this._pMatrix);
-		this._pOverallDepthProjection.frustumMatrix3D = this._pMatrix;
+		this._updateProjectionFromFrustumCorners(projection, this._localFrustum, this._matrix);
+		this._overallDepthProjection.frustumMatrix3D = this._matrix;
 	}
 }

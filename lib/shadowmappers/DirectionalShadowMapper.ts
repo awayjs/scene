@@ -1,8 +1,7 @@
-import {Matrix3D, Plane3D, Vector3D, FreeMatrixProjection} from "@awayjs/core";
+import {Matrix3D, Plane3D, Vector3D, PerspectiveProjection, ProjectionBase, Transform} from "@awayjs/core";
 
 import {Image2D, Single2DTexture} from "@awayjs/graphics";
 
-import {Camera} from "../display/Camera";
 import {DirectionalLight} from "../display/DirectionalLight";
 
 import {IRenderer} from "../IRenderer";
@@ -12,59 +11,58 @@ import {ShadowMapperBase} from "./ShadowMapperBase";
 
 export class DirectionalShadowMapper extends ShadowMapperBase
 {
-	public _pOverallDepthCamera:Camera;
-	public _pLocalFrustum:Array<number>;
+	protected _localFrustum:Array<number>;
 
-	public _pLightOffset:number = 10000;
-	public _pMatrix:Matrix3D;
-	public _pOverallDepthProjection:FreeMatrixProjection;
-	public _pSnap:number = 64;
+	protected _lightOffset:number = 10000;
+	protected _matrix:Matrix3D;
+	protected _overallDepthProjection:PerspectiveProjection;
+	protected _snap:number = 64;
 
-	public _pCullPlanes:Array<Plane3D>;
-	public _pMinZ:number;
-	public _pMaxZ:number;
+	protected _cullPlanes:Array<Plane3D>;
+	protected _minZ:number;
+	protected _maxZ:number;
 
 	constructor()
 	{
 		super();
 
-		this._pCullPlanes = [];
-		this._pOverallDepthProjection = new FreeMatrixProjection();
-		this._pOverallDepthCamera = new Camera(this._pOverallDepthProjection);
-		this._pLocalFrustum = [];
-		this._pMatrix = new Matrix3D();
+		this._cullPlanes = [];
+		this._overallDepthProjection = new PerspectiveProjection();
+		this._overallDepthProjection.transform = new Transform();
+		this._localFrustum = [];
+		this._matrix = new Matrix3D();
 	}
 
 	public get snap():number
 	{
-		return this._pSnap;
+		return this._snap;
 	}
 
 	public set snap(value:number)
 	{
-		this._pSnap = value;
+		this._snap = value;
 	}
 
 	public get lightOffset():number
 	{
-		return this._pLightOffset;
+		return this._lightOffset;
 	}
 
 	public set lightOffset(value:number)
 	{
-		this._pLightOffset = value;
+		this._lightOffset = value;
 	}
 
 	//@arcane
 	public get iDepthProjection():Matrix3D
 	{
-		return this._pOverallDepthProjection.viewMatrix3D;
+		return this._overallDepthProjection.viewMatrix3D;
 	}
 
 	//@arcane
 	public get depth():number
 	{
-		return this._pMaxZ - this._pMinZ;
+		return this._maxZ - this._minZ;
 	}
 
 	public iSetDepthMap(depthMap:Single2DTexture):void
@@ -76,37 +74,41 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 
 		if (this._depthMap) {
 			this._explicitDepthMap = true;
-			this._pDepthMapSize = depthMap.image2D.rect.width;
+			this._depthMapSize = depthMap.image2D.rect.width;
 		} else {
 			this._explicitDepthMap = false;
 		}
 	}
 
-	public pCreateDepthTexture():Single2DTexture
+	protected _createDepthTexture():Single2DTexture
 	{
-		return new Single2DTexture(new Image2D(this._pDepthMapSize, this._pDepthMapSize));
+		return new Single2DTexture(new Image2D(this._depthMapSize, this._depthMapSize));
 	}
 
 	//@override
-	public pDrawDepthMap(view:IView, target:Single2DTexture, renderer:IRenderer):void
+	protected _drawDepthMap(view:IView, target:Single2DTexture, renderer:IRenderer):void
 	{
-		renderer.cullPlanes = this._pCullPlanes;
-		renderer._iRender(this._pOverallDepthCamera, view, target.image2D);
+		renderer.cullPlanes = this._cullPlanes;
+		renderer._iRender(this._overallDepthProjection, view, target.image2D);
 	}
 
-	//@protected
-	public pUpdateCullPlanes(camera:Camera):void
+	/**
+	 *
+	 * @param projection
+	 * @private
+	 */
+	protected _updateCullPlanes(projection:ProjectionBase):void
 	{
-		var lightFrustumPlanes:Array<Plane3D> = this._pOverallDepthProjection.frustumPlanes;
-		var viewFrustumPlanes:Array<Plane3D> = camera.projection.frustumPlanes;
-		this._pCullPlanes.length = 4;
+		var lightFrustumPlanes:Array<Plane3D> = this._overallDepthProjection.frustumPlanes;
+		var viewFrustumPlanes:Array<Plane3D> = projection.frustumPlanes;
+		this._cullPlanes.length = 4;
 
-		this._pCullPlanes[0] = lightFrustumPlanes[0];
-		this._pCullPlanes[1] = lightFrustumPlanes[1];
-		this._pCullPlanes[2] = lightFrustumPlanes[2];
-		this._pCullPlanes[3] = lightFrustumPlanes[3];
+		this._cullPlanes[0] = lightFrustumPlanes[0];
+		this._cullPlanes[1] = lightFrustumPlanes[1];
+		this._cullPlanes[2] = lightFrustumPlanes[2];
+		this._cullPlanes[3] = lightFrustumPlanes[3];
 
-		var light:DirectionalLight = <DirectionalLight> this._pLight;
+		var light:DirectionalLight = <DirectionalLight> this._light;
 		var dir:Vector3D = light.sceneDirection;
 		var dirX:number = dir.x;
 		var dirY:number = dir.y;
@@ -115,19 +117,29 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 		for (var i:number = 0; i < 6; ++i) {
 			var plane:Plane3D = viewFrustumPlanes[i];
 			if (plane.a*dirX + plane.b*dirY + plane.c*dirZ < 0)
-				this._pCullPlanes[j++] = plane;
+				this._cullPlanes[j++] = plane;
 		}
 	}
 
-	//@override
-	public pUpdateDepthProjection(camera:Camera):void
+	/**
+	 *
+	 * @param projection
+	 * @private
+	 */
+	protected _updateDepthProjection(projection:ProjectionBase):void
 	{
-		this.pUpdateProjectionFromFrustumCorners(camera, camera.projection.frustumCorners, this._pMatrix);
-		this._pOverallDepthProjection.frustumMatrix3D = this._pMatrix;
-		this.pUpdateCullPlanes(camera);
+		this._updateProjectionFromFrustumCorners(projection, projection.frustumCorners, this._matrix);
+		this._overallDepthProjection.frustumMatrix3D = this._matrix;
+		this._updateCullPlanes(projection);
 	}
 
-	public pUpdateProjectionFromFrustumCorners(camera:Camera, corners:Array<number>, matrix:Matrix3D):void
+	/**
+	 *
+	 * @param projection
+	 * @param matrix
+	 * @private
+	 */
+	protected _updateProjectionFromFrustumCorners(projection:ProjectionBase, corners:Array<number>, matrix:Matrix3D):void
 	{
 		var dir:Vector3D;
 		var x:number, y:number, z:number;
@@ -135,29 +147,28 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 		var maxX:number, maxY:number;
 		var i:number;
 
-		var light:DirectionalLight = <DirectionalLight> this._pLight;
+		var position:Vector3D = projection.transform.concatenatedMatrix3D.position;
+		var light:DirectionalLight = <DirectionalLight> this._light;
 		dir = light.sceneDirection;
-		this._pOverallDepthCamera.transform.matrix3D = this._pLight.transform.concatenatedMatrix3D;
-		x = Math.floor((camera.x - dir.x*this._pLightOffset)/this._pSnap)*this._pSnap;
-		y = Math.floor((camera.y - dir.y*this._pLightOffset)/this._pSnap)*this._pSnap;
-		z = Math.floor((camera.z - dir.z*this._pLightOffset)/this._pSnap)*this._pSnap;
-		this._pOverallDepthCamera.x = x;
-		this._pOverallDepthCamera.y = y;
-		this._pOverallDepthCamera.z = z;
+		this._overallDepthProjection.transform.matrix3D = this._light.transform.concatenatedMatrix3D;
+		x = Math.floor((position.x - dir.x*this._lightOffset)/this._snap)*this._snap;
+		y = Math.floor((position.y - dir.y*this._lightOffset)/this._snap)*this._snap;
+		z = Math.floor((position.z - dir.z*this._lightOffset)/this._snap)*this._snap;
+		this._overallDepthProjection.transform.moveTo(x, y, z);
 
-		this._pMatrix.copyFrom(this._pOverallDepthCamera.transform.inverseConcatenatedMatrix3D);
-		this._pMatrix.prepend(camera.transform.concatenatedMatrix3D);
-		this._pMatrix.transformVectors(corners, this._pLocalFrustum);
+		this._matrix.copyFrom(this._overallDepthProjection.transform.inverseConcatenatedMatrix3D);
+		this._matrix.prepend(projection.transform.concatenatedMatrix3D);
+		this._matrix.transformVectors(corners, this._localFrustum);
 
-		minX = maxX = this._pLocalFrustum[0];
-		minY = maxY = this._pLocalFrustum[1];
-		this._pMaxZ = this._pLocalFrustum[2];
+		minX = maxX = this._localFrustum[0];
+		minY = maxY = this._localFrustum[1];
+		this._maxZ = this._localFrustum[2];
 
 		i = 3;
 		while (i < 24) {
-			x = this._pLocalFrustum[i];
-			y = this._pLocalFrustum[i + 1];
-			z = this._pLocalFrustum[i + 2];
+			x = this._localFrustum[i];
+			y = this._localFrustum[i + 1];
+			z = this._localFrustum[i + 2];
 			if (x < minX)
 				minX = x;
 			if (x > maxX)
@@ -166,27 +177,27 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 				minY = y;
 			if (y > maxY)
 				maxY = y;
-			if (z > this._pMaxZ)
-				this._pMaxZ = z;
+			if (z > this._maxZ)
+				this._maxZ = z;
 			i += 3;
 		}
 
-		this._pMinZ = 1;
+		this._minZ = 1;
 
 		var w:number = maxX - minX;
 		var h:number = maxY - minY;
-		var d:number = 1/(this._pMaxZ - this._pMinZ);
+		var d:number = 1/(this._maxZ - this._minZ);
 
 		if (minX < 0)
-			minX -= this._pSnap; // because int() rounds up for < 0
+			minX -= this._snap; // because int() rounds up for < 0
 
 		if (minY < 0)
-			minY -= this._pSnap;
+			minY -= this._snap;
 
-		minX = Math.floor(minX/this._pSnap)*this._pSnap;
-		minY = Math.floor(minY/this._pSnap)*this._pSnap;
+		minX = Math.floor(minX/this._snap)*this._snap;
+		minY = Math.floor(minY/this._snap)*this._snap;
 
-		var snap2:number = 2*this._pSnap;
+		var snap2:number = 2*this._snap;
 		w = Math.floor(w/snap2 + 2)*snap2;
 		h = Math.floor(h/snap2 + 2)*snap2;
 
@@ -203,7 +214,7 @@ export class DirectionalShadowMapper extends ShadowMapperBase
 		raw[10] = d;
 		raw[12] = -(maxX + minX)*w;
 		raw[13] = -(maxY + minY)*h;
-		raw[14] = -this._pMinZ*d;
+		raw[14] = -this._minZ*d;
 		raw[15] = 1;
 		raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[11] = 0;
 
