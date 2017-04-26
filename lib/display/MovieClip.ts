@@ -61,22 +61,23 @@ export class MovieClip extends Sprite
 
 		this.inheritColorTransform = true;
 
+		// todo: allow to set cursor-types for movieclip
 		this._onMouseOver = (event:MouseEvent) => {
 			document.body.style.cursor = "pointer";
 			this.currentFrameIndex = 1;
-		}
+		};
 		this._onMouseOut = (event:MouseEvent) => {
 			document.body.style.cursor = "initial";
 			this.currentFrameIndex = 0;
-		}
+		};
 		this._onMouseDown = (event:MouseEvent) => {
-			document.body.style.cursor = "pointer";
+			document.body.style.cursor = "initial";
 			this.currentFrameIndex = 2;
-		}
+		};
 		this._onMouseUp = (event:MouseEvent) => {
-			document.body.style.cursor = "pointer";
+			document.body.style.cursor = "initial";
 			this.currentFrameIndex = this.currentFrameIndex == 0? 0 : 1;
-		}
+		};
 
 		this._timeline = timeline || new Timeline();
 	}
