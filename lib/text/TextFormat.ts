@@ -102,6 +102,7 @@ export class TextFormat extends AssetBase
 	 * A Font object provides a list of Font-table, corresponding to font-table names.
 	 */
 	public font_name:string;
+	public font:string;
 	/**
 	 * The name of the font-style for text in this text format, as a string.
 	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
