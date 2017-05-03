@@ -31,6 +31,13 @@ export class Font extends AssetBase
 		super();
 	}
 
+	// ------------ dummys for as3web:
+	public fontName:string=null;
+
+	public static registerFont(any){
+		
+	}
+	// ------------
 	public get font_styles():Array<IFontTable>
 	{
 		return this._font_styles;
