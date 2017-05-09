@@ -627,6 +627,9 @@ export class TextField extends Sprite
 
 	public get textFormat():TextFormat
 	{
+		if(this._textFormat==null){
+			this._textFormat=new TextFormat();
+		}
 		return this._textFormat;
 	}
 
