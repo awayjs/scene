@@ -3,6 +3,7 @@ import {AssetBase} from "@awayjs/core";
 import {MaterialBase} from "@awayjs/graphics";
 
 import {IFontTable} from "./IFontTable";
+import {TesselatedFontTable} from "./TesselatedFontTable";
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -287,6 +288,8 @@ export class TextFormat extends AssetBase
 		this.rightMargin = rightMargin;
 		this.indent = indent;
 		this.leading = leading;
+		// todo: implement a way to supply a default fonttable / font to formats
+		this.font_table=new TesselatedFontTable();
 	}
 
 	/**
