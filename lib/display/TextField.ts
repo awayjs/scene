@@ -621,7 +621,7 @@ export class TextField extends Sprite
 			return;
 
 		this._text = value;
-
+		this.reConstruct();
 		this._textGraphicsDirty = true;
 	}
 
@@ -792,7 +792,8 @@ export class TextField extends Sprite
 	constructor()
 	{
 		super();
-
+		this.width=300;
+		this.height=50;
 		this.type = TextFieldType.STATIC;
 	}
 
@@ -871,13 +872,21 @@ export class TextField extends Sprite
 		if(this._text == "")
 			return;
 
+
+		this.graphics.clear();
+		this.graphics.beginFill(0x000001, 0.3);
+		this.graphics.lineStyle(4, 0x000001);
+		this.graphics.drawRect(0,0,this.width, this.height);
+		this.graphics.endFill();
+
+
 		var activeFormat:TextFormat=this._textFormat;
 		activeFormat.font_table.initFontSize(activeFormat.size);
 		if(activeFormat.font_table.fallbackTable)
 			activeFormat.font_table.fallbackTable.initFontSize(activeFormat.size);
 		var textlines:Array<string> = this.text.toString().split("\\n");
 
-		var maxlineWidth:number=this.textWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+		var maxlineWidth:number=this.width - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
 
 		var tl_char_codes:Array<Array<number>> = [];
 		var tl_char_widths:Array<Array<number>> = [];
@@ -1004,11 +1013,17 @@ export class TextField extends Sprite
 
 		var tl_startx:Array<Array<number> >=[];
 		// calculate the final positions of the chars
+		this.textWidth=0;
+		this.textHeight=0;
 		for (tl = 0; tl < tl_width.length; tl++) {
 			var indent:number=this._textFormat.indent;
 			if(!tl_linebreak[tl]){
 				indent=0;
 			}
+
+			if(tl_width[tl]>this.textWidth)
+				this.textWidth=tl_width[tl];
+
 			var x_offset:number = 2 + this._textFormat.leftMargin + indent;
 			var justify_addion:number=0;
 			if(this._textFormat.align=="center"){
@@ -1266,7 +1281,7 @@ export class TextField extends Sprite
 					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 				}
 				else {
-					this._textShape.material = Graphics.get_material_for_color(0xff0000);//this._textFormat.color);
+					this._textShape.material = Graphics.get_material_for_color(0x000001);//this.textColor);//this._textFormat.color);
 					this._textShape.material.bothSides = true;
 					//material.alpha=this._textFormat.alpha;
 					/*

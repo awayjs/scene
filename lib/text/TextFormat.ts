@@ -288,6 +288,7 @@ export class TextFormat extends AssetBase
 		this.rightMargin = rightMargin;
 		this.indent = indent;
 		this.leading = leading;
+		this.letterSpacing = 0;
 		// todo: implement a way to supply a default fonttable / font to formats
 		this.font_table=new TesselatedFontTable();
 	}
