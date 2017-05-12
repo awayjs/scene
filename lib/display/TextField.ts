@@ -198,7 +198,7 @@ export class TextField extends Sprite
 	 * @throws ArgumentError The <code>autoSize</code> specified is not a member
 	 *                       of flash.text.TextFieldAutoSize.
 	 */
-	public autoSize:TextFieldAutoSize;
+	public autoSize:string;
 
 	/**
 	 *
@@ -792,9 +792,8 @@ export class TextField extends Sprite
 	constructor()
 	{
 		super();
-		this.width=300;
-		this.height=50;
 		this.type = TextFieldType.STATIC;
+		this.autoSize=TextFieldAutoSize.NONE;
 	}
 
 	public clear():void
@@ -873,11 +872,6 @@ export class TextField extends Sprite
 			return;
 
 
-		this.graphics.clear();
-		this.graphics.beginFill(0x000001, 0.3);
-		this.graphics.lineStyle(4, 0x000001);
-		this.graphics.drawRect(0,0,this.width, this.height);
-		this.graphics.endFill();
 
 
 		var activeFormat:TextFormat=this._textFormat;
@@ -887,6 +881,11 @@ export class TextField extends Sprite
 		var textlines:Array<string> = this.text.toString().split("\\n");
 
 		var maxlineWidth:number=this.width - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+		if(this.autoSize!=TextFieldAutoSize.NONE){
+			maxlineWidth=300;//Number.MAX_VALUE;
+		}
+		//if()
+
 
 		var tl_char_codes:Array<Array<number>> = [];
 		var tl_char_widths:Array<Array<number>> = [];
@@ -1038,12 +1037,12 @@ export class TextField extends Sprite
 				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
 			}
 			tl_startx[tl]=[];
-			this.textHeight=0;
 			if(tl_char_codes[tl].length==0){
 				tl_height[tl]=this._textFormat.font_table.getLineHeight();
 			}
+			this.textHeight+=tl_height[tl];
 			for (var c = 0; c < tl_char_codes[tl].length; c++) {
-				this.textHeight+=tl_height[tl];
+				//this.textHeight+=tl_height[tl];
 				tl_startx[tl][c]=x_offset;
 				x_offset+=tl_char_widths[tl][c];
 				// if this is a whitespace, we add the justify additional spacer
@@ -1055,6 +1054,13 @@ export class TextField extends Sprite
 				}
 			}
 		}
+		//this.width=this.textWidth;
+		//this.height=this.textHeight;
+		/*this.graphics.clear();
+		this.graphics.beginFill(0x000001, 0.3);
+		this.graphics.lineStyle(2, 0x000001);
+		this.graphics.drawRect(0,0,this.textWidth, this.textHeight);
+		this.graphics.endFill();*/
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);
 			var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
