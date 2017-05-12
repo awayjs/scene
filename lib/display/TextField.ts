@@ -1,6 +1,6 @@
 import {AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, ColorTransform, Rectangle} from "@awayjs/core";
 
-import {Sampler2D, Style, Graphics, Shape, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
+import {Sampler2D, Style, Graphics, Shape, MaterialBase, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {TesselatedFontChar} from "../text/TesselatedFontChar";
@@ -1266,6 +1266,10 @@ export class TextField extends Sprite
 					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 				}
 				else {
+					this._textShape.material = Graphics.get_material_for_color(0xff0000);//this._textFormat.color);
+					this._textShape.material.bothSides = true;
+					//material.alpha=this._textFormat.alpha;
+					/*
 					this._textShape.material = DefaultMaterialManager.getDefaultMaterial();
 					this._textShape.material.bothSides = true;
 					//this._textShape.material.useColorTransform = true;
@@ -1280,6 +1284,7 @@ export class TextField extends Sprite
 					var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 					this.transform.colorTransform.color = activeFormat.color;
 					this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+					*/
 				}
 			}
 			if(this._textShape){
