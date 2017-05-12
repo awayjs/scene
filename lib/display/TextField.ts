@@ -1012,8 +1012,8 @@ export class TextField extends Sprite
 
 		var tl_startx:Array<Array<number> >=[];
 		// calculate the final positions of the chars
-		this.textWidth=0;
-		this.textHeight=0;
+		this.textWidth=2;
+		this.textHeight=2;
 		for (tl = 0; tl < tl_width.length; tl++) {
 			var indent:number=this._textFormat.indent;
 			if(!tl_linebreak[tl]){
@@ -1025,6 +1025,7 @@ export class TextField extends Sprite
 
 			var x_offset:number = 2 + this._textFormat.leftMargin + indent;
 			var justify_addion:number=0;
+			/*
 			if(this._textFormat.align=="center"){
 				x_offset = 2 + this._textFormat.leftMargin + indent+(maxlineWidth-tl_width[tl])/2;
 			}
@@ -1036,6 +1037,7 @@ export class TextField extends Sprite
 			else if(this._textFormat.align=="right"){
 				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
 			}
+			*/
 			tl_startx[tl]=[];
 			if(tl_char_codes[tl].length==0){
 				tl_height[tl]=this._textFormat.font_table.getLineHeight();
@@ -1056,11 +1058,13 @@ export class TextField extends Sprite
 		}
 		//this.width=this.textWidth;
 		//this.height=this.textHeight;
-		/*this.graphics.clear();
+		/*
+		this.graphics.clear();
 		this.graphics.beginFill(0x000001, 0.3);
 		this.graphics.lineStyle(2, 0x000001);
 		this.graphics.drawRect(0,0,this.textWidth, this.textHeight);
-		this.graphics.endFill();*/
+		this.graphics.endFill();
+		*/
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);
 			var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
