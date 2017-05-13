@@ -881,6 +881,9 @@ export class TextField extends Sprite
 		var textlines:Array<string> = this.text.toString().split("\\n");
 
 		var maxlineWidth:number=this.width - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
+		if(this.width==0){
+			maxlineWidth=300;
+		}
 		if(this.autoSize!=TextFieldAutoSize.NONE){
 			maxlineWidth=300;//Number.MAX_VALUE;
 		}
@@ -1012,7 +1015,7 @@ export class TextField extends Sprite
 
 		var tl_startx:Array<Array<number> >=[];
 		// calculate the final positions of the chars
-		this.textWidth=2;
+		this.textWidth=4;
 		this.textHeight=2;
 		for (tl = 0; tl < tl_width.length; tl++) {
 			var indent:number=this._textFormat.indent;
@@ -1058,13 +1061,15 @@ export class TextField extends Sprite
 		}
 		//this.width=this.textWidth;
 		//this.height=this.textHeight;
-		/*
+/*
 		this.graphics.clear();
-		this.graphics.beginFill(0x000001, 0.3);
-		this.graphics.lineStyle(2, 0x000001);
+		this.graphics.beginFill(0x000001, 0);
+		if(this.border){
+			this.graphics.lineStyle(2, 0x000001);
+		}
 		this.graphics.drawRect(0,0,this.textWidth, this.textHeight);
-		this.graphics.endFill();
-		*/
+		this.graphics.endFill();*/
+
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);
 			var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
@@ -1291,9 +1296,7 @@ export class TextField extends Sprite
 					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 				}
 				else {
-					this._textShape.material = Graphics.get_material_for_color(0x000001);//this.textColor);//this._textFormat.color);
-					this._textShape.material.bothSides = true;
-					//material.alpha=this._textFormat.alpha;
+					this._textShape.material = Graphics.get_material_for_color(0x000001, 1);//this.textColor);//this._textFormat.color);
 					/*
 					this._textShape.material = DefaultMaterialManager.getDefaultMaterial();
 					this._textShape.material.bothSides = true;
