@@ -191,7 +191,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pImplicitMaskId:number = -1;
 	public _pImplicitMasks:Array<Array<IEntity>>;
 	public _pImplicitMaskIds:Array<Array<number>> = new Array<Array<number>>();
-	private _explicitMouseEnabled:boolean = true;
+	private _explicitMouseEnabled:boolean = false;
 	public _pImplicitMouseEnabled:boolean = true;
 	public _pImplicitColorTransform:ColorTransform;
 	private _listenToSceneTransformChanged:boolean;
@@ -1767,109 +1767,24 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public hitTestObject(obj:DisplayObject):boolean
 	{
-		var objBox:Box = obj.getBox();
+		var objBox:Box = obj.getBox(this.scene);
 		if(!objBox) return false;
-		var topLeft:Point = new Point(objBox.x,objBox.y);
-		var bottomLeft:Point = new Point(objBox.x,objBox.y-objBox.height);
-		var topRight:Point = new Point(objBox.x+objBox.width,objBox.y);
-		var bottomRight:Point = new Point(objBox.x+objBox.width,objBox.y-objBox.height);
-
-		topLeft = this.globalToLocal(obj.localToGlobal(topLeft));
-		bottomLeft = this.globalToLocal(obj.localToGlobal(bottomLeft));
-		topRight = this.globalToLocal(obj.localToGlobal(topRight));
-		bottomRight = this.globalToLocal(obj.localToGlobal(bottomRight));
-
-		var box:Box = this.getBox();
+		var box:Box = this.getBox(this.scene);
 		if(!box) return false;
 
-		//first check all points against targer box
-		if(topLeft.x <= box.left && topLeft.x <= box.left && topLeft.y <= box.top && topLeft.y >= box.bottom) return true;
-		if(bottomLeft.x <= box.left && bottomLeft.x <= box.left && bottomLeft.y <= box.top && bottomLeft.y >= box.bottom) return true;
-		if(topRight.x <= box.left && topRight.x <= box.left && topRight.y <= box.top && topRight.y >= box.bottom) return true;
-		if(bottomRight.x <= box.left && bottomRight.x <= box.left && bottomRight.y <= box.top && bottomRight.y >= box.bottom) return true;
-
-		//now test against obj box
-		var n0x:number = topRight.y - topLeft.y;
-		var n0y:number = -(topRight.x - topLeft.x);
-
-		var n1x:number = bottomRight.y - topRight.y;
-		var n1y:number = -(bottomRight.x - topRight.x);
-
-		var n2x:number = bottomLeft.y - bottomRight.y;
-		var n2y:number = -(bottomLeft.x - bottomRight.x);
-
-		var n3x:number = topLeft.y - bottomLeft.y;
-		var n3y:number = -(topLeft.x - bottomLeft.x);
-
-		var p0x:number = box.left - topLeft.x;
-		var p0y:number = box.top - topLeft.y;
-		var p1x:number = box.left - topRight.x;
-		var p1y:number = box.top - topRight.y;
-		var p2x:number = box.left - bottomRight.x;
-		var p2y:number = box.top - bottomRight.y;
-		var p3x:number = box.left - bottomLeft.x;
-		var p3y:number = box.top - bottomLeft.y;
-
-		var dot0:number = (n0x*p0x)+(n0y*p0y);
-		var dot1:number = (n1x*p1x)+(n1y*p1y);
-		var dot2:number = (n2x*p2x)+(n2y*p2y);
-		var dot3:number = (n3x*p3x)+(n3y*p3y);
-
-		//check if topLeft is contained
-		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
-
-		p0x = box.right - topLeft.x;
-		p0y = box.top - topLeft.y;
-		p1x = box.right - topRight.x;
-		p1y = box.top - topRight.y;
-		p2x = box.right - bottomRight.x;
-		p2y = box.top - bottomRight.y;
-		p3x = box.right - bottomLeft.x;
-		p3y = box.top - bottomLeft.y;
-
-		dot0 = (n0x*p0x)+(n0y*p0y);
-		dot1 = (n1x*p1x)+(n1y*p1y);
-		dot2 = (n2x*p2x)+(n2y*p2y);
-		dot3 = (n3x*p3x)+(n3y*p3y);
-
-		//check if topRight is contained
-		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
-
-		p0x = box.left - topLeft.x;
-		p0y = box.bottom - topLeft.y;
-		p1x = box.left - topRight.x;
-		p1y = box.bottom - topRight.y;
-		p2x = box.left - bottomRight.x;
-		p2y = box.bottom - bottomRight.y;
-		p3x = box.left - bottomLeft.x;
-		p3y = box.bottom - bottomLeft.y;
-
-		dot0 = (n0x*p0x)+(n0y*p0y);
-		dot1 = (n1x*p1x)+(n1y*p1y);
-		dot2 = (n2x*p2x)+(n2y*p2y);
-		dot3 = (n3x*p3x)+(n3y*p3y);
-
-		//check if bottomLeft is contained
-		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
-
-		p0x = box.right - topLeft.x;
-		p0y = box.bottom - topLeft.y;
-		p1x = box.right - topRight.x;
-		p1y = box.bottom - topRight.y;
-		p2x = box.right - bottomRight.x;
-		p2y = box.bottom - bottomRight.y;
-		p3x = box.right - bottomLeft.x;
-		p3y = box.bottom - bottomLeft.y;
-
-		dot0 = (n0x*p0x)+(n0y*p0y);
-		dot1 = (n1x*p1x)+(n1y*p1y);
-		dot2 = (n2x*p2x)+(n2y*p2y);
-		dot3 = (n3x*p3x)+(n3y*p3y);
-
-		//check if bottomRight is contained
-		if(dot0 < 0 && dot1 < 0 && dot2 < 0 && dot3 < 0) return true;
-
-		return false; //TODO
+		if(objBox.x>(box.x+box.width)){
+			return false;
+		}
+		if(box.x>(objBox.x+objBox.width)){
+			return false;
+		}
+		if((objBox.y+objBox.height)<box.y){
+			return false;
+		}
+		if((box.y+box.height)<objBox.y){
+			return false;
+		}
+		return true; //TODO
 	}
 
 	/**
@@ -2260,7 +2175,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.COLOR_TRANSFORM)
 			this._updateColorTransform();
 
-		return this._pImplicitColorTransform;
+		return this._pImplicitColorTransform;// todo: 80pro: returns null for Entity after opening Dialogbox in PoC. ||new ColorTransform();
 	}
 
 

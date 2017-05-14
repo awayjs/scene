@@ -120,6 +120,7 @@ export class DisplayObjectContainer extends DisplayObject
 	constructor()
 	{
 		super();
+		this.mouseEnabled=true;
 	}
 
 	/**
