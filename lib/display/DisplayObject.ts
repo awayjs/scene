@@ -2175,7 +2175,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.COLOR_TRANSFORM)
 			this._updateColorTransform();
 
-		return this._pImplicitColorTransform;// todo: 80pro: returns null for Entity after opening Dialogbox in PoC. ||new ColorTransform();
+		return this._pImplicitColorTransform ||new ColorTransform();
 	}
 
 
