@@ -4,6 +4,7 @@ import {Sampler2D, Image2D, TraverserBase, IRenderable, RenderableEvent, Materia
 
 import {BoundsType} from "../bounds/BoundsType";
 
+import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import {DisplayObject} from "./DisplayObject";
 
 /**
@@ -41,7 +42,9 @@ import {DisplayObject} from "./DisplayObject";
  * contains the Billboard object.</p>
  */
 
-export class Billboard extends DisplayObject implements IRenderable
+	// todo: billboard needed to extend on DisplayObjectContainer in order for as3web/away3d adapters to compile without errors
+// (in away3d Sprite3D extends on ObjectContainer3D)
+export class Billboard extends DisplayObjectContainer implements IRenderable
 {
 	public static traverseName:string = TraverserBase.addRenderableName("applyBillboard");
 	
@@ -139,7 +142,7 @@ export class Billboard extends DisplayObject implements IRenderable
 		this._pBoxBounds.height = this._billboardRect.height;
 	}
 
-	public clone():DisplayObject
+	public clone():DisplayObjectContainer
 	{
 		var clone:Billboard = new Billboard(this.material);
 		return clone;
