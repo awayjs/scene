@@ -1062,13 +1062,13 @@ export class TextField extends Sprite
 		//this.width=this.textWidth;
 		//this.height=this.textHeight;
 /*
-		this.graphics.clear();
 		this.graphics.beginFill(0x000001, 0);
 		if(this.border){
 			this.graphics.lineStyle(2, 0x000001);
 		}
 		this.graphics.drawRect(0,0,this.textWidth, this.textHeight);
-		this.graphics.endFill();*/
+		this.graphics.endFill();
+		*/
 
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);
@@ -1296,11 +1296,15 @@ export class TextField extends Sprite
 					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
 				}
 				else {
-					this._textShape.material = Graphics.get_material_for_color(0x000001, 1);//this.textColor);//this._textFormat.color);
+					this._textShape.material = Graphics.get_material_for_color(0xffffff, 1);//this.textColor);//this._textFormat.color);
+
+					(<any>this._textShape.material).useColorTransform = true;
+					var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+					this.transform.colorTransform.color = this._textFormat.color;
+					this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 					/*
 					this._textShape.material = DefaultMaterialManager.getDefaultMaterial();
 					this._textShape.material.bothSides = true;
-					//this._textShape.material.useColorTransform = true;
 					if(tess_fontTable.usesCurves){
 						this._textShape.material.curves = true;
 					}

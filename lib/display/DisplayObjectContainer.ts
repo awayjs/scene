@@ -120,7 +120,6 @@ export class DisplayObjectContainer extends DisplayObject
 	constructor()
 	{
 		super();
-		this.mouseEnabled=true;
 	}
 
 	/**
@@ -475,8 +474,9 @@ export class DisplayObjectContainer extends DisplayObject
 		if (endIndex > this._children.length)
 			throw new RangeError("endIndex is out of range of the child list");
 
+		var oldChilds:DisplayObject[]=this._children.slice();
 		for(var i:number /*uint*/ = beginIndex; i < endIndex; i++)
-			this.removeChild(this._children[i]);
+			this.removeChild(oldChilds[i]);
 	}
 
 	/**

@@ -191,7 +191,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pImplicitMaskId:number = -1;
 	public _pImplicitMasks:Array<Array<IEntity>>;
 	public _pImplicitMaskIds:Array<Array<number>> = new Array<Array<number>>();
-	private _explicitMouseEnabled:boolean = false;
+	private _explicitMouseEnabled:boolean = true;
 	public _pImplicitMouseEnabled:boolean = true;
 	public _pImplicitColorTransform:ColorTransform;
 	private _listenToSceneTransformChanged:boolean;
@@ -223,6 +223,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _tempVector3D:Vector3D = new Vector3D();
 
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
+
 
 	public get traverseName():string
 	{
@@ -1497,6 +1498,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	constructor()
 	{
 		super();
+
 		//global debug bounding boxes:
 		//this._debugVisible=true;
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
