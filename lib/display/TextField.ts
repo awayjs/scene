@@ -1015,8 +1015,8 @@ export class TextField extends Sprite
 
 		var tl_startx:Array<Array<number> >=[];
 		// calculate the final positions of the chars
-		this.textWidth=4;
-		this.textHeight=2;
+		this.textWidth=0;
+		this.textHeight=0;
 		for (tl = 0; tl < tl_width.length; tl++) {
 			var indent:number=this._textFormat.indent;
 			if(!tl_linebreak[tl]){
@@ -1068,7 +1068,7 @@ export class TextField extends Sprite
 		}
 		this.graphics.drawRect(0,0,this.textWidth, this.textHeight);
 		this.graphics.endFill();
-		*/
+*/
 
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);

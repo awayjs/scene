@@ -1,4 +1,4 @@
-import {Rectangle} from "@awayjs/core";
+import {Rectangle, Matrix} from "@awayjs/core";
 
 import {Sampler2D, Image2D, TraverserBase, IRenderable, RenderableEvent, MaterialEvent, DefaultMaterialManager, IMaterial, TextureBase, StyleEvent} from "@awayjs/graphics";
 
@@ -113,6 +113,7 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 			this._material.iAddOwner(this);
 			this._material.addEventListener(MaterialEvent.INVALIDATE_TEXTURE, this._onInvalidateTextureDelegate);
 		}
+		this._updateDimensions();
 	}
 
 	constructor(material:IMaterial, pixelSnapping:string = "auto", smoothing:boolean = false)
@@ -145,6 +146,8 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 	public clone():DisplayObjectContainer
 	{
 		var clone:Billboard = new Billboard(this.material);
+		if(this.adapter)
+			clone.adapter=this.adapter.clone(clone);
 		return clone;
 	}
 
