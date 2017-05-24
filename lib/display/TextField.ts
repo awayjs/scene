@@ -1,4 +1,4 @@
-import {AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, ColorTransform, Rectangle} from "@awayjs/core";
+import {Box, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, ColorTransform, Rectangle} from "@awayjs/core";
 
 import {Sampler2D, Style, Graphics, Shape, MaterialBase, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
 
@@ -114,9 +114,12 @@ export class TextField extends Sprite
 	private _selectionBeginIndex:number;
 	private _selectionEndIndex:number;
 	private _text:string = "";
-	private _textHeight:number;
 	private _textInteractionMode:TextInteractionMode;
+
 	private _textWidth:number;
+	private _textHeight:number;
+	private _textFieldWidth:number;
+	private _textFieldHeight:number;
 
 	private _charBoundaries:Rectangle;
 	private _charIndexAtPoint:number;
@@ -134,6 +137,7 @@ export class TextField extends Sprite
 	private _textElements2:TriangleElements;
 	private _textShape:Shape;
 	private _textShape2:Shape;
+
 
 	/**
 	 * When set to <code>true</code> and the text field is not in focus, Flash
@@ -198,8 +202,26 @@ export class TextField extends Sprite
 	 * @throws ArgumentError The <code>autoSize</code> specified is not a member
 	 *                       of flash.text.TextFieldAutoSize.
 	 */
-	public autoSize:string;
+	public _autoSize:string;
+	public get autoSize():string
+	{
+		return this._autoSize;
+	}
+	public set autoSize(value:string)
+	{
+		 this._autoSize=value;
+		this._textGraphicsDirty = true;
+		this.reConstruct();
+	}
 
+
+
+	public getBox(targetCoordinateSpace:DisplayObject = null):Box {
+		if(!this.selectable){
+		//	return new Box();
+		}
+		return super.getBox(targetCoordinateSpace);
+	}
 	/**
 	 *
 	 * @returns {string}
@@ -318,8 +340,26 @@ export class TextField extends Sprite
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public defaultTextFormat:TextFormat;
+	public _defaultTextFormat:TextFormat;
 
+	public get defaultTextFormat():TextFormat
+	{
+		if(this._defaultTextFormat==null){
+			this._defaultTextFormat=new TextFormat();
+		}
+		return this._defaultTextFormat;
+	}
+
+	public set defaultTextFormat(value:TextFormat)
+	{
+		if (this._defaultTextFormat == value)
+			return;
+
+		this._defaultTextFormat = value;
+
+		this._textGraphicsDirty = true;
+		this.reConstruct();
+	}
 	/**
 	 * Specifies whether the text field is a password text field. If the value of
 	 * this property is <code>true</code>, the text field is treated as a
@@ -621,8 +661,8 @@ export class TextField extends Sprite
 			return;
 
 		this._text = value;
-		this.reConstruct();
 		this._textGraphicsDirty = true;
+		this.reConstruct();
 	}
 
 	public get textFormat():TextFormat
@@ -641,6 +681,7 @@ export class TextField extends Sprite
 		this._textFormat = value;
 
 		this._textGraphicsDirty = true;
+		this.reConstruct();
 	}
 
 
@@ -710,12 +751,28 @@ export class TextField extends Sprite
 	{
 		return this._textWidth;
 	}
-
-	public set textWidth(value:number)
+	public get textFieldWidth():number
 	{
-		this._textWidth = value;
+		return this._textFieldWidth;
+	}
+	public set textFieldWidth(val:number)
+	{
+		if (this._width == val)
+			return;
+
+		this._textFieldWidth = val;
 	}
 
+
+	public get textFieldHeight():number
+	{
+		return this._textFieldHeight;
+	}
+
+	public set textFieldHeight(val:number)
+	{
+		this._textFieldHeight = val;
+	}
 	/**
 	 * The width of the text in pixels.
 	 */
@@ -724,10 +781,6 @@ export class TextField extends Sprite
 		return this._textHeight;
 	}
 
-	public set textHeight(value:number)
-	{
-		this._textHeight = value;
-	}
 	/**
 	 * The thickness of the glyph edges in this text field. This property applies
 	 * only when <code>AntiAliasType</code> is set to
@@ -770,7 +823,21 @@ export class TextField extends Sprite
 	 * has word wrap; if the value is <code>false</code>, the text field does not
 	 * have word wrap. The default value is <code>false</code>.
 	 */
-	public wordWrap:boolean;
+	public _wordWrap:boolean;
+
+	public set wordWrap(val:boolean)
+	{
+		this._wordWrap = val;
+		this.reConstruct();
+		this._textGraphicsDirty = true;
+	}
+	/**
+	 * The width of the text in pixels.
+	 */
+	public get wordWrap():boolean
+	{
+		return this._wordWrap;
+	}
 
 
 	/**
@@ -792,8 +859,19 @@ export class TextField extends Sprite
 	constructor()
 	{
 		super();
+		this._textFieldWidth=100;
+		this._textFieldHeight=0;
+		this._textWidth=0;
+		this._textHeight=0;
 		this.type = TextFieldType.STATIC;
-		this.autoSize=TextFieldAutoSize.NONE;
+		this._numLines=0;
+		this.selectable=true;
+		this._autoSize=TextFieldAutoSize.NONE;
+		this._wordWrap=false;;
+		this.background=false;
+		this.backgroundColor=0xffffff;
+		this.border=false;
+		this.borderColor=0x000000;
 	}
 
 	public clear():void
@@ -870,26 +948,28 @@ export class TextField extends Sprite
 		}
 		if(this._text == "")
 			return;
-
-
-
+		this._graphics.clearDrawing();
 
 		var activeFormat:TextFormat=this._textFormat;
 		activeFormat.font_table.initFontSize(activeFormat.size);
 		if(activeFormat.font_table.fallbackTable)
 			activeFormat.font_table.fallbackTable.initFontSize(activeFormat.size);
-		var textlines:Array<string> = this.text.toString().split("\\n");
+		var textlines:Array<string> = this.text.toString().match(/[^\r\n]+/g);
+		//console.log("text = ", textlines.toString());
+		var maxlineWidth:number=this._textFieldWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
 
-		var maxlineWidth:number=this.width - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
-		if(this.width==0){
-			maxlineWidth=300;
+		if(this.autoSize!=TextFieldAutoSize.NONE && !this.wordWrap){
+			maxlineWidth=Number.MAX_VALUE;
 		}
-		if(this.autoSize!=TextFieldAutoSize.NONE){
-			maxlineWidth=300;//Number.MAX_VALUE;
+/*
+		if(this.autoSize==TextFieldAutoSize.RIGHT){
+			return;
 		}
-		//if()
 
-
+		if(this.autoSize==TextFieldAutoSize.CENTER){
+			return;
+		}
+		*/
 		var tl_char_codes:Array<Array<number>> = [];
 		var tl_char_widths:Array<Array<number>> = [];
 		var tl_char_heights:Array<Array<number>> = [];
@@ -899,6 +979,7 @@ export class TextField extends Sprite
 		var tl_linebreak:Array<boolean> = [];
 		var tl_width:Array<number> = [];
 		var tl_height:Array<number> = [];
+		var tl_ends_with_space:Array<boolean> = [];
 		var tl_cnt:number=0;
 		var w:number=0;
 		var c:number=0;
@@ -922,6 +1003,7 @@ export class TextField extends Sprite
 			tl_word_cnt[tl_cnt]=0;
 			tl_justify[tl_cnt]=false;
 			tl_linebreak[tl_cnt]=true;
+			tl_ends_with_space[tl_cnt]=textlines[tl].charCodeAt(textlines[tl].length-1)==32;
 
 			tl_cnt++;
 
@@ -1000,6 +1082,7 @@ export class TextField extends Sprite
 						tl_word_cnt[tl_cnt]=0;
 						tl_justify[tl_cnt]=false;
 						tl_linebreak[tl_cnt]=false;
+						tl_ends_with_space[tl_cnt]=textlines[tl].charCodeAt(textlines[tl].length-1)==32;
 						tl_cnt++;
 						for (c = 0; c < words[w].length; c++) {
 							tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
@@ -1013,10 +1096,21 @@ export class TextField extends Sprite
 			}
 		}
 
+		for (tl = 0; tl < tl_width.length; tl++) {
+			if (tl_ends_with_space[tl]) {
+				tl_char_codes[tl].push(32);
+				tl_formatIdx[tl].push(1);
+				tl_char_widths[tl].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
+				tl_width[tl]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
+			}
+		}
+		//console.log("tl_width = ", tl_width);
 		var tl_startx:Array<Array<number> >=[];
 		// calculate the final positions of the chars
-		this.textWidth=0;
-		this.textHeight=0;
+		this._textWidth=0;
+		this._textHeight=0;
+		this._length=0;
+		this._numLines=tl_width.length;
 		for (tl = 0; tl < tl_width.length; tl++) {
 			var indent:number=this._textFormat.indent;
 			if(!tl_linebreak[tl]){
@@ -1024,7 +1118,7 @@ export class TextField extends Sprite
 			}
 
 			if(tl_width[tl]>this.textWidth)
-				this.textWidth=tl_width[tl];
+				this._textWidth=tl_width[tl];
 
 			var x_offset:number = 2 + this._textFormat.leftMargin + indent;
 			var justify_addion:number=0;
@@ -1045,7 +1139,8 @@ export class TextField extends Sprite
 			if(tl_char_codes[tl].length==0){
 				tl_height[tl]=this._textFormat.font_table.getLineHeight();
 			}
-			this.textHeight+=tl_height[tl];
+			this._textHeight+=tl_height[tl]+this._textFormat.leading;
+			this._length+=tl_char_codes[tl].length;
 			for (var c = 0; c < tl_char_codes[tl].length; c++) {
 				//this.textHeight+=tl_height[tl];
 				tl_startx[tl][c]=x_offset;
@@ -1054,21 +1149,34 @@ export class TextField extends Sprite
 				if(tl_char_codes[tl][c]==32){
 					x_offset+=justify_addion;
 				}
-				else{
-					//x_offset+=this._textFormat.letterSpacing;
-				}
 			}
 		}
-		//this.width=this.textWidth;
-		//this.height=this.textHeight;
-/*
-		this.graphics.beginFill(0x000001, 0);
-		if(this.border){
-			this.graphics.lineStyle(2, 0x000001);
-		}
-		this.graphics.drawRect(0,0,this.textWidth, this.textHeight);
-		this.graphics.endFill();
-*/
+		this._textWidth+=this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
+		//this._textWidth+=4;
+		//this._textHeight+=4;
+		//if(this.autoSize!=TextFieldAutoSize.NONE){
+		//	if(this._textFieldWidth<this.textWidth)
+		this._textFieldWidth=this.textWidth+4;
+		//	if(this._textFieldHeight<this.textHeight)
+		this._textFieldHeight=this.textHeight+4;
+		//console.log("textheight", this._textFieldHeight);
+		//}
+
+	/*	if(this.background || this.border){
+
+			if(this.background ){
+				this.graphics.beginFill(this.backgroundColor, 1);
+			}
+			if(this.border){
+				this.graphics.lineStyle(1, this.borderColor);
+			}
+			*/
+		this.graphics.beginFill(0xff0000, 0);
+		//this.graphics.lineStyle(1, 0x000000);
+			this.graphics.drawRect(0,0,this.textWidth+4, this.textHeight+4);
+			this.graphics.endFill();
+		//}
+
 
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);
@@ -1207,9 +1315,8 @@ export class TextField extends Sprite
 			var charGlyph:TesselatedFontChar;
 			var char_vertices:AttributesBuffer;
 			var char_scale:number=tess_fontTable._size_multiply;
-			var y_offset:number=2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
+			var y_offset:number=1+((tess_fontTable.ascent-tess_fontTable.get_font_em_size()))*char_scale;
 			var fallbackfont:TesselatedFontTable = <TesselatedFontTable>this._textFormat.font_table.fallbackTable;
-			x_offset=0;
 			for (tl = 0; tl < tl_width.length; tl++) {
 				for (var c = 0; c < tl_char_codes[tl].length; c++) {
 					if (tl_char_codes[tl][c] == 32) {
@@ -1347,6 +1454,7 @@ export class TextField extends Sprite
 	 */
 	public closeParagraph():void
 	{
+		this._text+="\n";
 		//TODO
 	}
 
@@ -1703,8 +1811,8 @@ export class TextField extends Sprite
 	{
 		super.copyTo(newInstance);
 
-		newInstance.textWidth = this._textWidth;
-		newInstance.textHeight = this._textHeight;
+		//newInstance.textWidth = this._textWidth;
+		//newInstance.textHeight = this._textHeight;
 		newInstance.textFormat = this._textFormat;
 		//newInstance.textColor = this._textColor;
 		newInstance.text = this._text;

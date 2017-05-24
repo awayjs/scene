@@ -548,8 +548,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._registrationMatrix3D)
 			return this.getBox().height*this.scaleY*this._registrationMatrix3D[5];
 
-		var result=this.getBox().height*this.scaleY;//todo remove
-		return result;
+		return this.getBox().height*this.scaleY;
 	}
 
 	public set height(val:number)
@@ -1389,8 +1388,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._registrationMatrix3D)
 			return this.getBox().width*this.scaleX*this._registrationMatrix3D[0];
 
-		var result=this.getBox().width*this.scaleX;//todo remove
-		return result;
+		return this.getBox().width*this.scaleX;
 	}
 
 	public set width(val:number)
