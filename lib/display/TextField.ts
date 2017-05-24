@@ -211,7 +211,6 @@ export class TextField extends Sprite
 	{
 		 this._autoSize=value;
 		this._textGraphicsDirty = true;
-		this.reConstruct();
 	}
 
 
@@ -358,7 +357,6 @@ export class TextField extends Sprite
 		this._defaultTextFormat = value;
 
 		this._textGraphicsDirty = true;
-		this.reConstruct();
 	}
 	/**
 	 * Specifies whether the text field is a password text field. If the value of
@@ -481,6 +479,8 @@ export class TextField extends Sprite
 	 */
 	public get numLines():number /*int*/
 	{
+		if (this._textGraphicsDirty)
+			this.reConstruct();
 		return this._numLines;
 	}
 
@@ -662,7 +662,6 @@ export class TextField extends Sprite
 
 		this._text = value;
 		this._textGraphicsDirty = true;
-		this.reConstruct();
 	}
 
 	public get textFormat():TextFormat
@@ -681,7 +680,6 @@ export class TextField extends Sprite
 		this._textFormat = value;
 
 		this._textGraphicsDirty = true;
-		this.reConstruct();
 	}
 
 
@@ -749,10 +747,14 @@ export class TextField extends Sprite
 	 */
 	public get textWidth():number
 	{
+		if (this._textGraphicsDirty)
+			this.reConstruct();
 		return this._textWidth;
 	}
 	public get textFieldWidth():number
 	{
+		if (this._textGraphicsDirty)
+			this.reConstruct();
 		return this._textFieldWidth;
 	}
 	public set textFieldWidth(val:number)
@@ -766,6 +768,8 @@ export class TextField extends Sprite
 
 	public get textFieldHeight():number
 	{
+		if (this._textGraphicsDirty)
+			this.reConstruct();
 		return this._textFieldHeight;
 	}
 
@@ -778,6 +782,8 @@ export class TextField extends Sprite
 	 */
 	public get textHeight():number
 	{
+		if (this._textGraphicsDirty)
+			this.reConstruct();
 		return this._textHeight;
 	}
 
@@ -828,7 +834,6 @@ export class TextField extends Sprite
 	public set wordWrap(val:boolean)
 	{
 		this._wordWrap = val;
-		this.reConstruct();
 		this._textGraphicsDirty = true;
 	}
 	/**

@@ -313,10 +313,14 @@ export class MovieClip extends Sprite
 	/**
 	 * should be called right before the call to away3d-render.
 	 */
-	public update():void
+	public update(events:any[]=null):void
 	{
-		MovieClip._skipAdvance = true;
+		//if events is null, this is as2, if it is not null, this is as3web
 
+		MovieClip._skipAdvance = true;
+		if(events!=null){
+			(<any>this.adapter).dispatchEvent(events[0]);
+		}
 		this.advanceFrame();
 
 		MovieClip._skipAdvance = false;
@@ -324,8 +328,10 @@ export class MovieClip extends Sprite
 		// after we advanced the scenegraph, we might have some script that needs executing
 		FrameScriptManager.execute_queue();
 
-		// now we want to execute the onEnter
-		this.dispatchEvent(this._enterFrame);
+		if(events==null) {
+			// now we want to execute the onEnter
+			this.dispatchEvent(this._enterFrame);
+		}
 
 		// after we executed the onEnter, we might have some script that needs executing
 		FrameScriptManager.execute_queue();
@@ -338,6 +344,10 @@ export class MovieClip extends Sprite
 
 		//execute any disposes as a result of framescripts
 		FrameScriptManager.execute_dispose();
+
+		if(events!=null){
+			(<any>this.adapter).dispatchEvent(events[1]);
+		}
 	}
 
 	public getPotentialChildInstance(id:number) : DisplayObject
