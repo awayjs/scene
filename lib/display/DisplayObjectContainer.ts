@@ -475,8 +475,9 @@ export class DisplayObjectContainer extends DisplayObject
 			throw new RangeError("endIndex is out of range of the child list");
 
 		//var oldChilds:DisplayObject[]=this._children.slice();
-		for(var i:number /*uint*/ = beginIndex; i < endIndex; i++)
-			this.removeChild(this._children[i]);
+		for(var i:number = endIndex-1;i >= beginIndex; i--)
+			this.removeChildAtInternal(i).iSetParent(null);
+		this._invalidateChildren();
 	}
 
 	/**

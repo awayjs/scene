@@ -921,6 +921,9 @@ export class TextField extends Sprite
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
+	public reConstruct3() {
+		this._textGraphicsDirty = false;
+	}
 	public reConstruct() {
 
 		this._textGraphicsDirty = false;
@@ -951,9 +954,11 @@ export class TextField extends Sprite
 			this._textElements2.dispose();
 			this._textElements2 = null;
 		}
+		this._graphics.clearDrawing();
+
+
 		if(this._text == "")
 			return;
-		this._graphics.clearDrawing();
 
 		var activeFormat:TextFormat=this._textFormat;
 		activeFormat.font_table.initFontSize(activeFormat.size);
@@ -1157,30 +1162,14 @@ export class TextField extends Sprite
 			}
 		}
 		this._textWidth+=this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
-		//this._textWidth+=4;
-		//this._textHeight+=4;
-		//if(this.autoSize!=TextFieldAutoSize.NONE){
-		//	if(this._textFieldWidth<this.textWidth)
+
 		this._textFieldWidth=this.textWidth+4;
-		//	if(this._textFieldHeight<this.textHeight)
 		this._textFieldHeight=this.textHeight+4;
-		//console.log("textheight", this._textFieldHeight);
-		//}
 
-	/*	if(this.background || this.border){
-
-			if(this.background ){
-				this.graphics.beginFill(this.backgroundColor, 1);
-			}
-			if(this.border){
-				this.graphics.lineStyle(1, this.borderColor);
-			}
-			*/
-		this.graphics.beginFill(0xff0000, 0);
-		//this.graphics.lineStyle(1, 0x000000);
-			this.graphics.drawRect(0,0,this.textWidth+4, this.textHeight+4);
-			this.graphics.endFill();
-		//}
+		this.graphics.beginFill(this.backgroundColor, this.background?1:0);
+		this.graphics.lineStyle(1, this.borderColor, this.border?1:0);
+		this.graphics.drawRect(0,0,this.textWidth+4, this.textHeight+4);
+		this.graphics.endFill();
 
 
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
@@ -1432,11 +1421,13 @@ export class TextField extends Sprite
 				}
 			}
 			if(this._textShape){
+
 				this.material=this._textShape.material;
 				if(tess_fontTable.usesCurves) {
 					this.material.curves = true;
 				}
 				//this.material.alphaBlending=true;
+
 			}
 		}
 	}
