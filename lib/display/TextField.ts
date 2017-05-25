@@ -133,8 +133,10 @@ export class TextField extends Sprite
 	private _lineText:string;
 	private _paragraphLength:number;
 	private _textFormat:TextFormat;
+	private _bgElements:TriangleElements;
 	private _textElements:TriangleElements;
 	private _textElements2:TriangleElements;
+	private _bgShape:Shape;
 	private _textShape:Shape;
 	private _textShape2:Shape;
 
@@ -1127,7 +1129,7 @@ export class TextField extends Sprite
 				indent=0;
 			}
 
-			if(tl_width[tl]>this.textWidth)
+			if(tl_width[tl]>this._textWidth)
 				this._textWidth=tl_width[tl];
 
 			var x_offset:number = 2 + this._textFormat.leftMargin + indent;
@@ -1163,11 +1165,11 @@ export class TextField extends Sprite
 		}
 		this._textWidth+=this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
 
-		this._textFieldWidth=this.textWidth+4;
-		this._textFieldHeight=this.textHeight+4;
+		this._textFieldWidth=this._textWidth+4;
+		this._textFieldHeight=this._textHeight+4;
 
 		this.graphics.beginFill(this.backgroundColor, this.background?1:0);
-		this.graphics.lineStyle(1, this.borderColor, this.border?1:0);
+		//this.graphics.lineStyle(1, this.borderColor, this.border?1:0);
 		this.graphics.drawRect(0,0,this.textWidth+4, this.textHeight+4);
 		this.graphics.endFill();
 
