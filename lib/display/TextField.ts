@@ -970,9 +970,9 @@ export class TextField extends Sprite
 		//console.log("text = ", textlines.toString());
 		var maxlineWidth:number=this._textFieldWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
 
-		if(this.autoSize!=TextFieldAutoSize.NONE && !this.wordWrap){
+		//if(this.autoSize!=TextFieldAutoSize.NONE && !this.wordWrap){
 			maxlineWidth=Number.MAX_VALUE;
-		}
+		//}
 /*
 		if(this.autoSize==TextFieldAutoSize.RIGHT){
 			return;
@@ -1134,7 +1134,7 @@ export class TextField extends Sprite
 
 			var x_offset:number = 2 + this._textFormat.leftMargin + indent;
 			var justify_addion:number=0;
-			/*
+/*
 			if(this._textFormat.align=="center"){
 				x_offset = 2 + this._textFormat.leftMargin + indent+(maxlineWidth-tl_width[tl])/2;
 			}
@@ -1146,7 +1146,7 @@ export class TextField extends Sprite
 			else if(this._textFormat.align=="right"){
 				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
 			}
-			*/
+*/
 			tl_startx[tl]=[];
 			if(tl_char_codes[tl].length==0){
 				tl_height[tl]=this._textFormat.font_table.getLineHeight();

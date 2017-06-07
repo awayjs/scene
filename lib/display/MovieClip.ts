@@ -130,6 +130,7 @@ export class MovieClip extends Sprite
 	public set timeline(value:Timeline)
 	{
 		this._timeline = value;
+		this.reset();
 	}
 
 	/**
@@ -328,10 +329,7 @@ export class MovieClip extends Sprite
 		// after we advanced the scenegraph, we might have some script that needs executing
 		FrameScriptManager.execute_queue();
 
-		if(events==null) {
-			// now we want to execute the onEnter
-			this.dispatchEvent(this._enterFrame);
-		}
+		//this.dispatchEvent(this._enterFrame);
 
 		// after we executed the onEnter, we might have some script that needs executing
 		FrameScriptManager.execute_queue();
@@ -406,7 +404,7 @@ export class MovieClip extends Sprite
 			if (child.isAsset(MovieClip))
 				(<MovieClip> child).advanceFrame();
 		}
-
+		this.dispatchEvent(this._enterFrame);
 		this._skipAdvance = false;
 	}
 
