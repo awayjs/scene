@@ -224,6 +224,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 
+	public isSlice9ScaledMC:boolean=false;
+	public isSlice9ScaledSprite:boolean=false;
 
 	public get traverseName():string
 	{
@@ -555,7 +557,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this._height == val)
 			return;
-
+		//if(this.isSlice9ScaledMC){
+		//	return;
+		//}
 		this._height = val;
 
 		this._setScaleY(val/this.getBox().height);
@@ -1396,6 +1400,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._width == val)
 			return;
 
+		//if(this.isSlice9ScaledMC){
+		//	return;
+		//}
 		this._width = val;
 
 		this._setScaleX(val/this.getBox().width);
@@ -1555,7 +1562,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		displayObject.extra = this.extra;
 		displayObject.maskMode = this._maskMode;
 		displayObject.castsShadows = this.castsShadows;
-
+		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		if (this._explicitMasks)
 			displayObject.masks = this._explicitMasks;
 
@@ -1975,7 +1982,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 			return this._orientationMatrix;
 		}
-
 		return this._transform.concatenatedMatrix3D;
 	}
 
@@ -2103,7 +2109,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
 				this._concatenatedMatrix3D.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
 		}
-
 
 		if (this._pParent && !this._pParent._iIsRoot)
 			this._concatenatedMatrix3D.append(this._pParent._transform.concatenatedMatrix3D);

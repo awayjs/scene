@@ -4,7 +4,10 @@ import {GraphicsPath, GraphicsFactoryStrokes, JointStyle, CapsStyle, DrawMode, G
 
 import {TesselatedFontChar} from "./TesselatedFontChar";
 import {IFontTable} from "./IFontTable";
+import {TextFormat} from "./TextFormat";
+import {TextShape} from "./TextShape";
 
+import {TextField} from "../display/TextField";
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
@@ -192,6 +195,67 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	{
 		this._font_em_size=font_em_size;
 	}
+
+
+	public fillTextRun(tf:TextField, format:TextFormat, startWord:number, wordCnt:number) {
+
+		var textShape:TextShape=tf.getTextShapeForIdentifierAndFormat(format.color.toString(), format);
+
+		var charGlyph:TesselatedFontChar;
+		var w:number=0;
+		var w_len:number=startWord + (wordCnt*5);
+		var char_vertices:AttributesBuffer;
+		var c:number=0;
+		var c_len:number=0;
+		var x:number=0;
+		var y:number=0;
+		var startIdx:number=0;
+		var buffer:Float32Array;
+		var v:number;
+		// loop over all the words and create the text data for it
+		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
+		for (w = startWord; w < w_len; w+=5) {
+			startIdx=tf.words[w];
+			x=tf.words[w+1];
+			y=tf.words[w+2];
+			c_len=startIdx + tf.words[w+4];
+			for (c = startIdx; c < c_len; c++) {
+				if(tf.chars_codes[c]!=32){
+					charGlyph=this.getChar(tf.chars_codes[c].toString());
+					if(!charGlyph && this.fallbackTable) {
+						charGlyph = (<TesselatedFontTable>this.fallbackTable).getChar(tf.chars_codes[c].toString());
+					}
+					if(charGlyph){
+						char_vertices = charGlyph.fill_data;
+						buffer = new Float32Array(char_vertices.buffer);
+						if(this.usesCurves) {
+							for (v = 0; v < char_vertices.count; v++) {
+								textShape.verts[textShape.verts.length] = buffer[v * 3] * this._size_multiply + x;
+								textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * this._size_multiply + y;
+								textShape.verts[textShape.verts.length] = buffer[v * 3 + 2];
+							}
+						}
+						else {
+							for (v = 0; v < char_vertices.count; v++) {
+								textShape.verts[textShape.verts.length] = buffer[v * 2] * this._size_multiply + x;
+								textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * this._size_multiply + y;
+							}
+						}
+						x+=charGlyph.char_width * this._size_multiply;
+						// todo: handle kerning
+					}
+					else{
+						console.log("TesselatedFontTable: Error: char not found in fontTable");
+					}
+				}
+			}
+
+		}
+
+
+	}
+
+
 	/**
 	 *
 	 */

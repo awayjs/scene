@@ -4,6 +4,8 @@ import {MaterialBase} from "@awayjs/graphics";
 
 import {BitmapFontChar} from "./BitmapFontChar";
 import {IFontTable} from "./IFontTable";
+import {TextFormat} from "./TextFormat";
+import {TextField} from "../display/TextField";
 
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
@@ -128,6 +130,11 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 		if(this_char)
 			return this._size_multiply*(this_char.x_advance);
 		return 0;
+
+	}
+
+	public fillTextRun(tf:TextField, format:TextFormat, startWord:number, wordCnt:number) {
+
 
 	}
 

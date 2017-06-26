@@ -16,6 +16,7 @@ import {TextLineMetrics} from "../text/TextLineMetrics";
 
 import {Sprite} from "./Sprite";
 import {DisplayObject} from "./DisplayObject";
+import {TextShape} from "../text/TextShape";
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -140,6 +141,30 @@ export class TextField extends Sprite
 	private _textShape:Shape;
 	private _textShape2:Shape;
 
+	public textShapes:any;
+
+	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
+	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
+	public _glyphsDirty:Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
+
+	public chars_codes:number[]=[];	// stores charcode per char
+	public chars_width:number[]=[];	// stores charcode per char
+
+	public words:number[]=[];			// stores offset and length and width for each word
+
+	private _textRuns_formats:TextFormat[]=[];	// stores textFormat for each textrun
+	private _textRuns_words:number[]=[];	// stores words-offset, word-count and width for each textrun
+
+	private _maxWidthLine:number=0;
+
+	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
+		if(this.textShapes.hasOwnProperty(id)){
+			return this.textShapes[id];
+		}
+		this.textShapes[id]=new TextShape();
+		this.textShapes[id].format=format;
+		return this.textShapes[id];
+	}
 
 	/**
 	 * When set to <code>true</code> and the text field is not in focus, Flash
@@ -212,15 +237,33 @@ export class TextField extends Sprite
 	public set autoSize(value:string)
 	{
 		 this._autoSize=value;
-		this._textGraphicsDirty = true;
+		//console.log("set autoSize", value);
+		this._positionsDirty = true;
 	}
 
 
+	public _pUpdateBoxBounds():void
+	{
+		super._pUpdateBoxBounds();
+		this._pBoxBounds.bottom=this._textHeight;
+		this._pBoxBounds.top=0;
+		this._pBoxBounds.right=this._textWidth;
+		this._pBoxBounds.top=0;
+		//this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
+	}
 
 	public getBox(targetCoordinateSpace:DisplayObject = null):Box {
 		if(!this.selectable){
 		//	return new Box();
 		}
+		/*
+		var box:Box=new Box();
+		box.bottom=this._textHeight;
+		box.left=0;
+		box.right=this._textWidth;
+		box.top=0;
+		*/
+
 		return super.getBox(targetCoordinateSpace);
 	}
 	/**
@@ -358,7 +401,7 @@ export class TextField extends Sprite
 
 		this._defaultTextFormat = value;
 
-		this._textGraphicsDirty = true;
+		this._textDirty = true;
 	}
 	/**
 	 * Specifies whether the text field is a password text field. If the value of
@@ -481,8 +524,7 @@ export class TextField extends Sprite
 	 */
 	public get numLines():number /*int*/
 	{
-		if (this._textGraphicsDirty)
-			this.reConstruct();
+		this.reConstruct();
 		return this._numLines;
 	}
 
@@ -663,7 +705,7 @@ export class TextField extends Sprite
 			return;
 
 		this._text = value;
-		this._textGraphicsDirty = true;
+		this._textDirty = true;
 	}
 
 	public get textFormat():TextFormat
@@ -681,7 +723,7 @@ export class TextField extends Sprite
 
 		this._textFormat = value;
 
-		this._textGraphicsDirty = true;
+		this._textDirty = true;
 	}
 
 
@@ -690,8 +732,7 @@ export class TextField extends Sprite
 	 */
 	public get graphics():Graphics
 	{
-		if (this._textGraphicsDirty)
-			this.reConstruct();
+		this.reConstruct(true);
 		if(this._textFormat && !(this._textFormat.font_table.isAsset(TesselatedFontTable) && (this._textFormat.material)) ){
 
 			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
@@ -749,34 +790,35 @@ export class TextField extends Sprite
 	 */
 	public get textWidth():number
 	{
-		if (this._textGraphicsDirty)
-			this.reConstruct();
+		this.reConstruct();
+		//console.log("get textWidth size", this._textWidth);
 		return this._textWidth;
 	}
 	public get textFieldWidth():number
 	{
-		if (this._textGraphicsDirty)
-			this.reConstruct();
+		this.reConstruct();
+		//console.log("get textfiekld size", this._textFieldWidth);
 		return this._textFieldWidth;
 	}
 	public set textFieldWidth(val:number)
 	{
-		if (this._width == val)
+		if (this._textFieldWidth == val)
 			return;
-
+		this._positionsDirty=true;
+		//console.log("set textfiekld size", val);
 		this._textFieldWidth = val;
 	}
 
 
 	public get textFieldHeight():number
 	{
-		if (this._textGraphicsDirty)
-			this.reConstruct();
+		this.reConstruct();
 		return this._textFieldHeight;
 	}
 
 	public set textFieldHeight(val:number)
 	{
+		this._positionsDirty=true;
 		this._textFieldHeight = val;
 	}
 	/**
@@ -784,8 +826,7 @@ export class TextField extends Sprite
 	 */
 	public get textHeight():number
 	{
-		if (this._textGraphicsDirty)
-			this.reConstruct();
+		this.reConstruct();
 		return this._textHeight;
 	}
 
@@ -836,7 +877,7 @@ export class TextField extends Sprite
 	public set wordWrap(val:boolean)
 	{
 		this._wordWrap = val;
-		this._textGraphicsDirty = true;
+		this._positionsDirty = true;
 	}
 	/**
 	 * The width of the text in pixels.
@@ -866,15 +907,17 @@ export class TextField extends Sprite
 	constructor()
 	{
 		super();
+		this.textShapes={};
 		this._textFieldWidth=100;
-		this._textFieldHeight=0;
+		this._textFieldHeight=100;
 		this._textWidth=0;
 		this._textHeight=0;
 		this.type = TextFieldType.STATIC;
 		this._numLines=0;
+		this.multiline = false;
 		this.selectable=true;
 		this._autoSize=TextFieldAutoSize.NONE;
-		this._wordWrap=false;;
+		this._wordWrap=false;
 		this.background=false;
 		this.backgroundColor=0xffffff;
 		this.border=false;
@@ -920,13 +963,416 @@ export class TextField extends Sprite
 		}
 	}
 
+
+
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
-	public reConstruct3() {
-		this._textGraphicsDirty = false;
+	public reConstruct(buildGraphics:boolean=false) {
+
+		if(!this._textDirty && !this._positionsDirty && !this._glyphsDirty)
+			return;
+		// Step1: init text-data
+
+		// this step splits the text into textRuns
+		// each textRun spans a range of words that share the same text-format
+		// a textRun can not be shared between paragraphs
+
+		// for each word, 5 numbers are stored:
+		// 		char-index,
+		// 		x-pos,
+		// 		y-pos,
+		// 		word-width,
+		// 		char-count,
+		// a whitespace is considered as a word
+
+		if(this._textDirty){
+			this._positionsDirty=true;
+
+
+			this.chars_codes.length=0;
+			this.chars_width.length=0;
+			this.words.length=0;
+			this._textRuns_words.length=0;
+			this._textRuns_formats.length=0;
+
+			this._maxWidthLine=0;
+
+			if(this._textFormat == null)
+				return;
+			if(this._text == "")
+				return;
+
+			//console.log("TextField buildParagraph", this.id, this._text);
+			//console.log("TextField buildParagraph", this.id, this._autoSize);
+			//console.log("TextField buildParagraph", this.id, this._wordWrap);
+			//console.log("TextField buildParagraph", this.id, this.multiline);
+
+			if(this.multiline){
+				var paragraphs:string[] = (<string[]>this.text.toString().match(/[^\r\n]+/g));
+				var tl=0;
+				var tl_len=paragraphs.length;
+				for (tl = 0; tl < tl_len; tl++) {
+					this.buildParagraph(paragraphs[tl]);
+				}
+			}
+			else{
+				this.buildParagraph(this._text);
+			}
+		}
+
+
+		// 	Step 2: positioning the words
+
+		// 	if position is dirty, the text formatting has changed.
+		// 	this step will modify the word-data stored in previous step.
+		//	for each word, it adjusts the x-pos and y-pos position.
+
+		//	this step also takes care of adjusting the textWidth and textHeight,
+		//	if we have AUTOSIZE!=None
+
+		if(this._positionsDirty){
+			this._glyphsDirty=true;
+			//console.log("TextField getWordPositions", this.id, this.words);
+			this.getWordPositions();
+		}
+
+		this._textDirty=false;
+		this._positionsDirty=false;
+		if(!buildGraphics)
+			return;
+
+		// 	Step 3: building the glyphs
+
+		// 	this step is only done if this function was called when renderer collects the graphics.
+		//	only than should the reconstruct function be called with "buildGraphics=true".
+
+		// 	in this step, the text-shapes are cleared,
+		//	the data for new text-shapes is collected from the font-tables
+		//	and the new text-shapes are created and assigned to the graphics
+
+		if(this._glyphsDirty){
+			//console.log("TextField buildGlyphs", this.id, this.words);
+			this.buildGlyphs();
+		}
+		this._glyphsDirty=false;
+
 	}
-	public reConstruct() {
+
+
+	private buildParagraph(paragraphText:string) {
+
+		// todo: support multiple textFormat per paragraph (multiple textRuns)
+
+		this._textRuns_formats[this._textRuns_formats.length]=this._textFormat;
+		this._textRuns_words[this._textRuns_words.length]=this.words.length;
+
+		var c:number=0;
+		var c_len:number=paragraphText.length;
+		var char_code:number=0;
+		var char_width:number=0;
+		var word_cnt:number=0;
+		var startNewWord:boolean = true;
+		this._textFormat.font_table.initFontSize(this._textFormat.size);
+
+		// splits the text into words and create the textRuns along the way.
+		var linewidh:number=0;
+		var whitespace_cnt:number=0;
+		for (c = 0; c < c_len; c++) {
+			char_code=this.text.charCodeAt(c);
+			this.chars_codes[this.chars_codes.length]=char_code;
+
+			char_width=this._textFormat.font_table.getCharWidth(char_code.toString());
+
+			if(char_width<=0){
+				char_width=this._textFormat.font_table.getCharWidth("32");
+				//console.log("ERROR in TextField.buildTextRuns(): char is not provided by FontTable", char_code, this.text[c]);
+			}
+
+			// if this is a letter, and next symbol is a letter, we add the letterSpacing to the letter-width
+			if(char_code!=32 && c<c_len-1){
+				char_width+=(this.text.charCodeAt(c+1)==32)?0:this._textFormat.letterSpacing;
+			}
+			linewidh+=char_width;
+			this.chars_width[this.chars_width.length]=char_width;
+
+			if(char_code==32){
+				whitespace_cnt++;
+				// if this is a whitespace, we add a new word,
+				this.words[this.words.length]=this.chars_codes.length-1;	//offset into chars
+				this.words[this.words.length]=0;	//x-position
+				this.words[this.words.length]=0;	//y-position
+				this.words[this.words.length]=char_width;
+				this.words[this.words.length]=1;
+				word_cnt++;
+				// we also make sure to begin a new word for next char (could be whitespace again)
+				startNewWord=true;
+			}
+			else{
+				// no whitespace
+				if(startNewWord){
+					// create new word (either this is the first char, or the last char was whitespace)
+					this.words[this.words.length]=this.chars_codes.length-1;
+					this.words[this.words.length]=0;	//x-position
+					this.words[this.words.length]=0;	//y-position
+					this.words[this.words.length]=char_width;
+					this.words[this.words.length]=1;
+					word_cnt++;
+				}
+				else{
+					// update-char length and width of active word.
+					this.words[this.words.length-2]+=char_width;
+					this.words[this.words.length-1]++;
+				}
+				startNewWord=false;
+			}
+
+		}
+		this._textRuns_words[this._textRuns_words.length]=word_cnt;
+		this._textRuns_words[this._textRuns_words.length]=linewidh;
+		this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
+		if(this._maxWidthLine<linewidh){
+			this._maxWidthLine=linewidh;
+		}
+	}
+
+	private getWordPositions() {
+
+		var tr:number=0;
+		var tr_len:number=this._textRuns_formats.length;
+
+		var w:number=0;
+		var w_len:number=0;
+		var tr_length:number=0;
+		var additionalWhiteSpace:number=0;
+		var format:TextFormat;
+		var text_width:number=0;
+		var text_height:number=0;
+		var indent:number=0;
+		this._numLines=0;
+		var linecnt:number=0;
+		var linelength:number=0;
+		var word_width:number=0;
+		var lineWordStartIndices:number[]=[];
+		var lineWordEndIndices:number[]=[];
+		var lineLength:number[]=[];
+		var numSpacesPerline:number[]=[];
+
+		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
+
+		if(this._autoSize!=TextFieldAutoSize.NONE && !this._wordWrap){
+			var oldSize:number=this._textFieldWidth;
+			this._textFieldWidth=4+this._maxWidthLine+this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
+			if (this._autoSize==TextFieldAutoSize.RIGHT){
+				this.x-=this._textFieldWidth-oldSize;
+			}
+			if (this._autoSize==TextFieldAutoSize.CENTER){
+				this.x-=(this._textFieldWidth-oldSize)/2;
+			}
+			//console.log("set textfieldsize", this._textFieldWidth);
+		}
+		var maxLineWidth:number = this._textFieldWidth-(4+this._textFormat.indent+this._textFormat.leftMargin+this._textFormat.rightMargin);
+		for (tr = 0; tr < tr_len; tr++) {
+			format=this._textRuns_formats[tr];
+			format.font_table.initFontSize(format.size);
+			indent=this._textFormat.indent;
+
+			lineWordStartIndices.length=1;
+			lineWordEndIndices.length=1;
+			lineLength.length=1;
+			numSpacesPerline.length=1;
+
+			w_len=this._textRuns_words[(tr*4)] + (this._textRuns_words[(tr*4)+1]*5);
+			tr_length=this._textRuns_words[(tr*4)+2];
+			//console.log(this._textFieldWidth, tr_length, maxLineWidth);
+			if(!this.multiline || tr_length<maxLineWidth || !this.wordWrap){
+				// this must be a single textline
+				//console.log("one line");
+				lineWordStartIndices[0]=this._textRuns_words[(tr*4)];
+				lineWordEndIndices[0]=w_len;
+				lineLength[0]=tr_length;
+				numSpacesPerline[0]=0;
+			}
+			else{
+				//console.log("split lines");
+				linecnt=0;
+				linelength=0;
+				word_width=0;
+				indent=0;
+				lineWordStartIndices[0]=this._textRuns_words[(tr*4)];
+				lineWordEndIndices[0]=0;
+				lineLength[0]=0;
+				numSpacesPerline[0]=0;
+				for (w = this._textRuns_words[(tr*4)]; w < w_len; w+=5) {
+					word_width=this.words[w+3];
+					linelength+=word_width;
+					if(linelength<=(maxLineWidth-indent) || lineLength[linecnt]==0){
+						lineWordEndIndices[linecnt]=w+5;
+						lineLength[linecnt]+=word_width;
+					}
+					else{
+						linelength=word_width;
+						linecnt++;
+						lineWordStartIndices[linecnt]=w;
+						lineWordEndIndices[linecnt]=w+5;
+						lineLength[linecnt]=word_width;
+						numSpacesPerline[linecnt]=0;
+						indent=this._textFormat.indent;
+					}
+					if(this.chars_codes[this.words[w]]==32){
+						numSpacesPerline[linecnt]+=1;
+					}
+				}
+				//console.log("split lines",linecnt );
+			}
+			var offsetx:number=0;
+			var offsety:number=1;
+			var start_idx:number;
+			var start_idx:number;
+			var numSpaces:number;
+			var end_idx:number;
+			var lineSpaceLeft:number;
+			var l:number;
+			var l_cnt:number=lineWordStartIndices.length;
+
+			this._numLines=l_cnt;
+			for (l = 0; l < l_cnt; l++) {
+
+				linelength=lineLength[l];
+				start_idx=lineWordStartIndices[l];
+				end_idx=lineWordEndIndices[l];
+				numSpaces = numSpacesPerline[l];
+
+				lineSpaceLeft = maxLineWidth - linelength;
+
+				additionalWhiteSpace=0;
+				offsetx=2 + format.leftMargin + format.indent;
+
+				if(format.align=="justify"){
+					if((l!=l_cnt-1) && lineSpaceLeft>0 && numSpaces>0){
+						// this is a textline that should be justified
+						additionalWhiteSpace=lineSpaceLeft/numSpacesPerline[l];
+					}
+					if(l!=0){
+						// only first line has indent
+						offsetx -= format.indent;
+					}
+				}
+				else if(format.align=="center"){
+					offsetx+=lineSpaceLeft/2;
+				}
+				else if(format.align=="right"){
+					offsetx+=lineSpaceLeft;
+				}
+
+
+				for (w = start_idx; w < end_idx; w+=5) {
+					this.words[w+1]=offsetx;
+					this.words[w+2]=offsety;
+					offsetx+=this.words[w+3];
+					if(format.align=="justify" && this.chars_codes[this.words[w]]==32){
+						// this is whitepace, we need to add extra space for justified text
+						offsetx+=additionalWhiteSpace;
+					}
+				}
+				offsety+=format.font_table.getLineHeight()+format.leading;
+
+				if(offsetx>text_width){
+					text_width=offsetx;
+				}
+			}
+
+			//}
+		}
+		// -2 so this values do not include the left and top border
+		this._textWidth=text_width-2;
+		this._textHeight=offsety-1;
+		if(this._autoSize==TextFieldAutoSize.NONE || this._wordWrap){
+
+			this._textWidth=this._textFieldWidth-4;
+			//console.log("set _textWidth", this._textWidth);
+		}
+		//console.log(this._textWidth, "/", this._textHeight);
+		//this._textWidth+=this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
+
+
+
+		// if autosize is enabled, we adjust the textFieldHeight
+		if(this.autoSize!=TextFieldAutoSize.NONE){
+			this._textFieldHeight=this._textHeight+4;
+		}
+	}
+
+	private buildGlyphs() {
+
+
+		var textShape:TextShape;
+		for(var key in this.textShapes) {
+			textShape = this.textShapes[key];
+			this._graphics.removeShape(textShape.shape);
+			Shape.storeShape(textShape.shape);
+			textShape.shape.dispose();
+			textShape.shape = null;
+			textShape.elements.clear();
+			textShape.elements.dispose();
+			textShape.elements = null;
+			textShape.verts.length=0;
+		}
+/*
+		this._graphics.clearDrawing();
+		this._graphics.beginFill(this.backgroundColor, this.background?1:0);
+		//this.graphics.lineStyle(1, this.borderColor, this.border?1:0);
+		this._graphics.drawRect(0,0,this._textWidth+4, this._textHeight+4);
+		this._graphics.endFill();
+*/
+		var textShape:TextShape;
+		// process all textRuns
+		var tr:number=0;
+		var tr_len:number=this._textRuns_formats.length;
+		for (tr = 0; tr < tr_len; tr++) {
+			this._textRuns_formats[tr].font_table.initFontSize(this._textRuns_formats[tr].size);
+			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*3)], this._textRuns_words[(tr*3)+1]);
+		}
+
+		for(var key in this.textShapes) {
+			textShape = this.textShapes[key];
+
+			var attr_length:number = 2;//(tess_fontTable.usesCurves)?3:2;
+			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
+			attributesView.set(textShape.verts);
+			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+			attributesView.dispose();
+
+			textShape.elements = new TriangleElements(vertexBuffer);
+			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
+			//if(tess_fontTable.usesCurves){
+			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+			//}
+			textShape.shape = this._graphics.addShape(Shape.getShape(textShape.elements));
+
+			var sampler:Sampler2D = new Sampler2D();
+			textShape.shape.style = new Style();
+			if (textShape.format.material) {
+				textShape.shape.material = this._textFormat.material;
+				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
+				textShape.shape.material.animateUVs = true;
+				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
+			}
+			else {
+				textShape.shape.material = Graphics.get_material_for_color(0xffffff, 1);//this.textColor);//this._textFormat.color);
+
+				(<any>textShape.shape.material).useColorTransform = true;
+				var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+				this.transform.colorTransform.color = textShape.format.color;
+				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+
+			}
+		}
+	}
+
+	
+	
+	public reConstruct_old(buildGraphics:boolean=false) {
 
 		this._textGraphicsDirty = false;
 
@@ -1167,12 +1613,13 @@ export class TextField extends Sprite
 
 		this._textFieldWidth=this._textWidth+4;
 		this._textFieldHeight=this._textHeight+4;
-
-		this.graphics.beginFill(this.backgroundColor, this.background?1:0);
+/*
+		this._graphics.clearDrawing();
+		this._graphics.beginFill(this.backgroundColor, this.background?1:0);
 		//this.graphics.lineStyle(1, this.borderColor, this.border?1:0);
-		this.graphics.drawRect(0,0,this.textWidth+4, this.textHeight+4);
-		this.graphics.endFill();
-
+		this._graphics.drawRect(0,0,this._textWidth+4, this._textHeight+4);
+		this._graphics.endFill();
+*/
 
 		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
 			//console.log("contruct bitmap text = "+this._text);
@@ -1327,7 +1774,7 @@ export class TextField extends Sprite
 							char_scale=tess_fontTable._size_multiply;
 							//y_offset=2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
 							x_offset=tl_startx[tl][c];
-							//char_scale = final_lines_char_scale[i][t];
+							//char_scale = final_lines_char_scale[i][t] ;
 							char_vertices = charGlyph.fill_data;
 							if (char_vertices != null) {
 								var buffer:Float32Array = new Float32Array(char_vertices.buffer);
@@ -1815,4 +2262,5 @@ export class TextField extends Sprite
 		//newInstance.textColor = this._textColor;
 		newInstance.text = this._text;
 	}
+	
 }

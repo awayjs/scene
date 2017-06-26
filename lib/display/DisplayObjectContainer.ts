@@ -5,6 +5,7 @@ import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {Scene} from "../Scene";
 
 import {DisplayObject} from "./DisplayObject";
+//import {Sprite} from "./Sprite";
 
 /**
  * The DisplayObjectContainer class is the base class for all objects that can
@@ -166,6 +167,10 @@ export class DisplayObjectContainer extends DisplayObject
 		if (child._pParent)
 			child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
 
+
+		if(this.isSlice9ScaledMC && child.assetType=="[asset Sprite]"){
+			child.isSlice9ScaledSprite=true;
+		}
 
 		var index = this.getDepthIndexInternal(depth);
 

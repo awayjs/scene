@@ -1,4 +1,4 @@
-﻿import {AssetEvent, Box, Point, Vector3D} from "@awayjs/core";
+﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D} from "@awayjs/core";
 
 import {TraverserBase, IAnimator, Graphics, IMaterial, Style} from "@awayjs/graphics";
 
@@ -19,6 +19,7 @@ export class Sprite extends DisplayObjectContainer
 	public _graphics:Graphics;
 	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
 
+	private _slice9Matrix:Matrix3D;
 	//temp point used in hit testing
 	private _tempPoint:Point = new Point();
 
@@ -38,6 +39,11 @@ export class Sprite extends DisplayObjectContainer
 	{
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
+
+		if(this.isSlice9ScaledSprite){
+
+			this._graphics.updateSlice9(this.parent.width, this.parent.height);
+		}
 
 		return this._graphics;
 	}
@@ -81,6 +87,38 @@ export class Sprite extends DisplayObjectContainer
 		this._graphics.style = value;
 	}
 
+	public get slice9Matrix():Matrix3D
+	{
+		if (!this._slice9Matrix){
+			this._slice9Matrix=new Matrix3D();
+		}
+		return this._slice9Matrix;
+	}
+	public getRenderSceneTransform(cameraTransform:Matrix3D):Matrix3D
+	{
+		var sceneMtx:Matrix3D=super.getRenderSceneTransform(cameraTransform);
+		if(this.isSlice9ScaledSprite){
+			// for slice9, we do not want the graphic to be scaled.
+			// we just hand a mtx to the renderer that has only translation part.
+
+			this.slice9Matrix.identity();
+			
+			// if width or height of the slice9 is smaller than its minimal size, we need to scale it after all
+			if(this.parent.width<=this._graphics.minSlice9Width){
+				//this._slice9Matrix.appendScale(this.parent.width/this._graphics.minSlice9Width, 1, 1);
+			}
+			if(this.parent.height<=this._graphics.minSlice9Height){
+				//this._slice9Matrix.appendScale(1, this.parent.height/this._graphics.minSlice9Height, 1);
+			}
+			
+			this._slice9Matrix.appendTranslation(this._transform.concatenatedMatrix3D.position.x, this._transform.concatenatedMatrix3D.position.y, this._transform.concatenatedMatrix3D.position.z)
+
+			// todo: get the rotation part ? skew can not supported...
+
+			return this._slice9Matrix;
+		}
+		return sceneMtx;
+	}
 	/**
 	 * Create a new Sprite object.
 	 *
@@ -258,4 +296,6 @@ export class Sprite extends DisplayObjectContainer
 	{
 		this.graphics.invalidateMaterials();
 	}
+
+
 }
