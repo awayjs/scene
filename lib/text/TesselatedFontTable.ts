@@ -212,6 +212,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var startIdx:number=0;
 		var buffer:Float32Array;
 		var v:number;
+		var hack_x_mirror:boolean=false;
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (w = startWord; w < w_len; w+=5) {
@@ -220,6 +221,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			y=tf.words[w+2];
 			c_len=startIdx + tf.words[w+4];
 			for (c = startIdx; c < c_len; c++) {
+				hack_x_mirror=false;
+				if(tf.chars_codes[c]==40){
+					tf.chars_codes[c]=41;
+					hack_x_mirror=true;
+				}
 				if(tf.chars_codes[c]!=32){
 					charGlyph=this.getChar(tf.chars_codes[c].toString());
 					if(!charGlyph && this.fallbackTable) {
@@ -236,9 +242,17 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 							}
 						}
 						else {
-							for (v = 0; v < char_vertices.count; v++) {
-								textShape.verts[textShape.verts.length] = buffer[v * 2] * this._size_multiply + x;
-								textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * this._size_multiply + y;
+							if(hack_x_mirror){
+								for (v = 0; v < char_vertices.count; v++) {
+									textShape.verts[textShape.verts.length] = (charGlyph.char_width-buffer[v * 2]) * this._size_multiply + x;
+									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * this._size_multiply + y;
+								}
+							}
+							else{
+								for (v = 0; v < char_vertices.count; v++) {
+									textShape.verts[textShape.verts.length] = buffer[v * 2] * this._size_multiply + x;
+									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * this._size_multiply + y;
+								}
 							}
 						}
 						x+=charGlyph.char_width * this._size_multiply;

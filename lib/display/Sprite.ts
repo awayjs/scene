@@ -94,6 +94,7 @@ export class Sprite extends DisplayObjectContainer
 		}
 		return this._slice9Matrix;
 	}
+
 	public getRenderSceneTransform(cameraTransform:Matrix3D):Matrix3D
 	{
 		var sceneMtx:Matrix3D=super.getRenderSceneTransform(cameraTransform);
@@ -119,6 +120,7 @@ export class Sprite extends DisplayObjectContainer
 		}
 		return sceneMtx;
 	}
+	
 	/**
 	 * Create a new Sprite object.
 	 *
