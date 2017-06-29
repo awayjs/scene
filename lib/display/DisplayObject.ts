@@ -408,7 +408,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get depth():number
 	{
 		if (this._registrationMatrix3D)
-			return this.getBox().depth*this.scaleZ*this._registrationMatrix3D[10];
+			return this.getBox().depth*this.scaleZ*this._registrationMatrix3D._rawData[10];
 
 		return this.getBox().depth*this.scaleZ;
 	}
@@ -548,7 +548,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get height():number
 	{
 		if (this._registrationMatrix3D)
-			return this.getBox().height*this.scaleY*this._registrationMatrix3D[5];
+			return this.getBox().height*this.scaleY*this._registrationMatrix3D._rawData[5];
 
 		return this.getBox().height*this.scaleY;
 	}
@@ -1390,7 +1390,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get width():number
 	{
 		if (this._registrationMatrix3D)
-			return this.getBox().width*this.scaleX*this._registrationMatrix3D[0];
+			return this.getBox().width*this.scaleX*this._registrationMatrix3D._rawData[0];
 
 		return this.getBox().width*this.scaleX;
 	}
