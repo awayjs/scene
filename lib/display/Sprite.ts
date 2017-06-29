@@ -19,7 +19,6 @@ export class Sprite extends DisplayObjectContainer
 	public _graphics:Graphics;
 	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
 
-	private _slice9Matrix:Matrix3D;
 	//temp point used in hit testing
 	private _tempPoint:Point = new Point();
 
@@ -41,8 +40,9 @@ export class Sprite extends DisplayObjectContainer
 			this._iSourcePrefab._iValidate();
 
 		if(this.isSlice9ScaledSprite){
+			var comps:Array<Vector3D> = this.transform.concatenatedMatrix3D.decompose();
 
-			this._graphics.updateSlice9(this.parent.width, this.parent.height);
+			this._graphics.updateSlice9(comps[3].x, comps[3].y);
 		}
 
 		return this._graphics;
@@ -85,40 +85,6 @@ export class Sprite extends DisplayObjectContainer
 	public set style(value:Style)
 	{
 		this._graphics.style = value;
-	}
-
-	public get slice9Matrix():Matrix3D
-	{
-		if (!this._slice9Matrix){
-			this._slice9Matrix=new Matrix3D();
-		}
-		return this._slice9Matrix;
-	}
-
-	public getRenderSceneTransform(cameraTransform:Matrix3D):Matrix3D
-	{
-		var sceneMtx:Matrix3D=super.getRenderSceneTransform(cameraTransform);
-		if(this.isSlice9ScaledSprite){
-			// for slice9, we do not want the graphic to be scaled.
-			// we just hand a mtx to the renderer that has only translation part.
-
-			this.slice9Matrix.identity();
-			
-			// if width or height of the slice9 is smaller than its minimal size, we need to scale it after all
-			if(this.parent.width<=this._graphics.minSlice9Width){
-				//this._slice9Matrix.appendScale(this.parent.width/this._graphics.minSlice9Width, 1, 1);
-			}
-			if(this.parent.height<=this._graphics.minSlice9Height){
-				//this._slice9Matrix.appendScale(1, this.parent.height/this._graphics.minSlice9Height, 1);
-			}
-			
-			this._slice9Matrix.appendTranslation(this._transform.concatenatedMatrix3D.position.x, this._transform.concatenatedMatrix3D.position.y, this._transform.concatenatedMatrix3D.position.z)
-
-			// todo: get the rotation part ? skew can not supported...
-
-			return this._slice9Matrix;
-		}
-		return sceneMtx;
 	}
 	
 	/**
