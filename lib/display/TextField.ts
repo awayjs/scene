@@ -1336,7 +1336,7 @@ export class TextField extends Sprite
 		var tr_len:number=this._textRuns_formats.length;
 		for (tr = 0; tr < tr_len; tr++) {
 			this._textRuns_formats[tr].font_table.initFontSize(this._textRuns_formats[tr].size);
-			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*3)], this._textRuns_words[(tr*3)+1]);
+			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
 
 		for(var key in this.textShapes) {
