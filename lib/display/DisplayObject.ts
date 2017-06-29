@@ -283,6 +283,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._transform.colorTransform = new ColorTransform();
 
         this._transform.colorTransform.alphaMultiplier = value;
+
+		this._transform.invalidateColorTransform();
     }
 
 	/**
@@ -2180,7 +2182,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.COLOR_TRANSFORM)
 			this._updateColorTransform();
 
-		return this._pImplicitColorTransform ||new ColorTransform();
+		return this._pImplicitColorTransform || (this._pImplicitColorTransform = new ColorTransform());
 	}
 
 
