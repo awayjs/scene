@@ -139,8 +139,12 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 	{
 		super._pUpdateBoxBounds();
 
+		this._pBoxBounds.x = 0;
+		this._pBoxBounds.y = 0;
+		this._pBoxBounds.z = 0;
 		this._pBoxBounds.width = this._billboardRect.width;
 		this._pBoxBounds.height = this._billboardRect.height;
+		this._pBoxBounds.depth = 0;
 	}
 
 	public clone():DisplayObjectContainer
