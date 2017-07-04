@@ -100,6 +100,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		if(this._current_size==font_size) return;
 		this._current_size = font_size;
 		this._size_multiply= font_size/this._font_em_size;
+		//console.log("text-font-table: ",this._ascent, this._descent, this._font_em_size)
 	}
 
 	public getCharVertCnt(char_code:string):number
@@ -131,7 +132,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 	public getLineHeight():number
 	{
-		return this._current_size;
+		return this._current_size * (this._font_em_size/this._ascent);//(this._ascent+this._descent)*this._size_multiply;
 	}
 
 	public get assetType():string
@@ -218,7 +219,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		for (w = startWord; w < w_len; w+=5) {
 			startIdx=tf.words[w];
 			x=tf.words[w+1];
-			y=tf.words[w+2];
+			y=tf.words[w+2];//-this._descent*this._size_multiply;
 			c_len=startIdx + tf.words[w+4];
 			for (c = startIdx; c < c_len; c++) {
 				hack_x_mirror=false;

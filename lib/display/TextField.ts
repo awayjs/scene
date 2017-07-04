@@ -247,10 +247,11 @@ export class TextField extends Sprite
 	{
 		super._pUpdateBoxBounds();
 
+		this.reConstruct();
 		this._pBoxBounds.top=0;
 		this._pBoxBounds.left=0;
-		this._pBoxBounds.bottom=this._textFieldHeight+4;
-		this._pBoxBounds.right=this._textFieldWidth+4;
+		this._pBoxBounds.bottom=this._textFieldHeight;
+		this._pBoxBounds.right=this._textFieldWidth;
 		//this._pBoxBounds.width=this._textWidth;
 		//this._pBoxBounds.height=this._textHeight;
 		//this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
@@ -1002,27 +1003,25 @@ export class TextField extends Sprite
 
 			this._maxWidthLine=0;
 
-			if(this._textFormat == null)
-				return;
-			if(this._text == "")
-				return;
+			if(this._text != "" && this._textFormat != null) {
+				if (this.multiline) {
+					var paragraphs:string[] = (<string[]>this.text.toString().match(/[^\r\n]+/g));
+					var tl = 0;
+					var tl_len = paragraphs.length;
+					for (tl = 0; tl < tl_len; tl++) {
+						this.buildParagraph(paragraphs[tl]);
+					}
+				}
+				else {
+					this.buildParagraph(this._text);
+				}
+			}
 
 			//console.log("TextField buildParagraph", this.id, this._text);
 			//console.log("TextField buildParagraph", this.id, this._autoSize);
 			//console.log("TextField buildParagraph", this.id, this._wordWrap);
 			//console.log("TextField buildParagraph", this.id, this.multiline);
 
-			if(this.multiline){
-				var paragraphs:string[] = (<string[]>this.text.toString().match(/[^\r\n]+/g));
-				var tl=0;
-				var tl_len=paragraphs.length;
-				for (tl = 0; tl < tl_len; tl++) {
-					this.buildParagraph(paragraphs[tl]);
-				}
-			}
-			else{
-				this.buildParagraph(this._text);
-			}
 		}
 
 
@@ -1037,8 +1036,19 @@ export class TextField extends Sprite
 
 		if(this._positionsDirty){
 			this._glyphsDirty=true;
-			//console.log("TextField getWordPositions", this.id, this.words);
-			this.getWordPositions();
+			if(this._text != "" && this._textFormat != null) {
+				//console.log("TextField getWordPositions", this.id, this.words);
+				this.getWordPositions();
+			}
+			else{
+				// this is empty text, we need to reset the text-size
+				this._textWidth=0;
+				this._textHeight=0;
+				if(this._autoSize!=TextFieldAutoSize.NONE ){
+					this._textFieldWidth=4;
+					this._textFieldHeight=4;
+				}
+			}
 		}
 
 		this._textDirty=false;
@@ -1230,7 +1240,7 @@ export class TextField extends Sprite
 				//console.log("split lines",linecnt );
 			}
 			var offsetx:number=0;
-			var offsety:number=1;
+			var offsety:number=2;
 			var start_idx:number;
 			var start_idx:number;
 			var numSpaces:number;
@@ -1291,7 +1301,7 @@ export class TextField extends Sprite
 		}
 		// -2 so this values do not include the left and top border
 		this._textWidth=text_width;
-		this._textHeight=offsety-1;
+		this._textHeight=offsety-2;
 		if(this._autoSize==TextFieldAutoSize.NONE || this._wordWrap){
 
 			this._textWidth=this._textFieldWidth-4;
