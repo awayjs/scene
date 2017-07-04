@@ -559,12 +559,16 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this._height == val)
 			return;
-		//if(this.isSlice9ScaledMC){
-		//	return;
-		//}
+
+		var boxHeight:number = this.getBox().height;
+
+		//return if box is empty ie setting height for no content is impossible
+		if (!boxHeight)
+			return;
+
 		this._height = val;
 
-		this._setScaleY(val/this.getBox().height);
+		this._setScaleY(val/boxHeight);
 	}
 
 	/**
@@ -1402,12 +1406,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._width == val)
 			return;
 
-		//if(this.isSlice9ScaledMC){
-		//	return;
-		//}
+		var boxWidth:number = this.getBox().width;
+
+		//return if box is empty ie setting width for no content is impossible
+		if (!boxWidth)
+			return;
+
 		this._width = val;
 
-		this._setScaleX(val/this.getBox().width);
+		this._setScaleX(val/boxWidth);
 	}
 
 	/**
