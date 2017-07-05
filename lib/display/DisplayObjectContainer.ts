@@ -561,48 +561,26 @@ export class DisplayObjectContainer extends DisplayObject
 	{
 		super._pUpdateBoxBounds();
 
-		var box:Box;
 		var numChildren:number = this._children.length;
 
 		if (numChildren > 0) {
-			var min:number;
-			var max:number;
-			var minX:number, minY:number, minZ:number;
-			var maxX:number, maxY:number, maxZ:number;
-
+			var childBox:Box;
+			var first:boolean = true;
 			for (var i:number = 0; i < numChildren; ++i) {
-				box = this._children[i].getBox(this);
+				childBox = this._children[i].getBox();
 
-				if (i == 0) {
-					maxX = box.width + (minX = box.x);
-					maxY = box.height + (minY = box.y);
-					maxZ = box.depth + (minZ = box.z);
+				if (childBox.isEmpty())
+					continue;
+
+				childBox = this._children[i].getBox(this);
+
+				if (first) {
+					first = false;
+					this._pBoxBounds.copyFrom(childBox);
 				} else {
-					max = box.width + (min = box.x);
-					if (min < minX)
-						minX = min;
-					if (max > maxX)
-						maxX = max;
-
-					max = box.height + (min = box.y);
-					if (min < minY)
-						minY = min;
-					if (max > maxY)
-						maxY = max;
-
-					max = box.depth + (min = box.z);
-					if (min < minZ)
-						minZ = min;
-					if (max > maxZ)
-						maxZ = max;
+					this._pBoxBounds = this._pBoxBounds.union(childBox, this._pBoxBounds);
 				}
 			}
-
-			this._pBoxBounds.width = maxX - (this._pBoxBounds.x = minX);
-			this._pBoxBounds.height = maxY - (this._pBoxBounds.y = minY);
-			this._pBoxBounds.depth = maxZ - (this._pBoxBounds.z = minZ);
-		} else {
-			this._pBoxBounds.setBoundIdentity();
 		}
 	}
 

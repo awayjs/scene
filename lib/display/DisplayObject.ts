@@ -2250,6 +2250,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		if (this._pBoxBounds == null)
 			this._pBoxBounds = new Box();
+
+		this._pBoxBounds.setEmpty();
 	}
 
 	public _pUpdateSphereBounds():void
