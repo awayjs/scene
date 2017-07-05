@@ -1,8 +1,9 @@
-import {Box, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, ColorTransform, Rectangle} from "@awayjs/core";
+import {Box, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, Matrix3D, ColorTransform, Rectangle} from "@awayjs/core";
 
-import {Sampler2D, Style, Graphics, Shape, MaterialBase, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
+import {TraverserBase, Sampler2D, Style, Graphics, Shape, MaterialBase, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {AlignmentMode} from "../base/AlignmentMode";
 import {TesselatedFontChar} from "../text/TesselatedFontChar";
 import {TesselatedFontTable} from "../text/TesselatedFontTable";
 import {BitmapFontTable} from "../text/BitmapFontTable";
@@ -14,7 +15,6 @@ import {TextFormat} from "../text/TextFormat";
 import {TextInteractionMode} from "../text/TextInteractionMode";
 import {TextLineMetrics} from "../text/TextLineMetrics";
 
-import {Sprite} from "./Sprite";
 import {DisplayObject} from "./DisplayObject";
 import {TextShape} from "../text/TextShape";
 
@@ -97,7 +97,7 @@ import {TextShape} from "../text/TextShape";
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-export class TextField extends Sprite
+export class TextField extends DisplayObject
 {
 	private static _textFields:Array<TextField> = [];
 
@@ -105,6 +105,7 @@ export class TextField extends Sprite
 
 	private _line_indices:number[] = [];
 
+	private _graphics:Graphics;
 	private _textGraphicsDirty:boolean;
 	private _bottomScrollV:number;
 	private _caretIndex:number;
@@ -119,8 +120,6 @@ export class TextField extends Sprite
 
 	private _textWidth:number;
 	private _textHeight:number;
-	private _textFieldWidth:number;
-	private _textFieldHeight:number;
 
 	private _charBoundaries:Rectangle;
 	private _charIndexAtPoint:number;
@@ -229,17 +228,24 @@ export class TextField extends Sprite
 	 * @throws ArgumentError The <code>autoSize</code> specified is not a member
 	 *                       of flash.text.TextFieldAutoSize.
 	 */
-	public _autoSize:string;
+	private _autoSize:string;
+
 	public get autoSize():string
 	{
 		return this._autoSize;
 	}
+
 	public set autoSize(value:string)
 	{
-		 this._autoSize=value;
-		//console.log("set autoSize", value);
+		if (this._autoSize == value)
+			return;
+
+		 this._autoSize = value;
+
 		this._positionsDirty = true;
-	//	this.reConstruct();
+
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._pInvalidateBounds();
 	}
 
 
@@ -248,28 +254,41 @@ export class TextField extends Sprite
 		super._pUpdateBoxBounds();
 
 		this.reConstruct();
-		this._pBoxBounds.top=0;
-		this._pBoxBounds.left=0;
-		this._pBoxBounds.bottom=this._textFieldHeight;
-		this._pBoxBounds.right=this._textFieldWidth;
-		//this._pBoxBounds.width=this._textWidth;
-		//this._pBoxBounds.height=this._textHeight;
-		//this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
+
+		this._pBoxBounds.x = 0;
+		this._pBoxBounds.y = 0;
+		this._pBoxBounds.width = this._width;
+		this._pBoxBounds.height = this._height;
 	}
 
-	public getBox(targetCoordinateSpace:DisplayObject = null):Box {
-		if(!this.selectable){
-		//	return new Box();
-		}
-		/*
-		var box:Box=new Box();
-		box.bottom=this._textHeight;
-		box.left=0;
-		box.right=this._textWidth;
-		box.top=0;
-		*/
+	public getBox(targetCoordinateSpace:DisplayObject = null):Box
+	{
+		//TODO targetCoordinateSpace
+		if (this._boxBoundsInvalid)
+			this._pUpdateBoxBounds();
 
-		return super.getBox(targetCoordinateSpace);
+
+		if (targetCoordinateSpace == null || targetCoordinateSpace == this)
+			return this._pBoxBounds;
+
+		if (targetCoordinateSpace == this._pParent) {
+			if (this._registrationMatrix3D) {
+				if (this._tempTransform == null)
+					this._tempTransform = new Matrix3D()
+
+				this._tempTransform.copyFrom(this._transform.matrix3D);
+				this._tempTransform.prepend(this._registrationMatrix3D);
+				if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
+					this._tempTransform.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
+
+				return this._tempTransform.transformBox(this._pBoxBounds);
+			}
+
+			return this._transform.matrix3D.transformBox(this._pBoxBounds);
+
+		} else
+			return targetCoordinateSpace.transform.inverseConcatenatedMatrix3D.transformBox(this.transform.concatenatedMatrix3D.transformBox(this._pBoxBounds));
+
 	}
 	/**
 	 *
@@ -452,6 +471,32 @@ export class TextField extends Sprite
 	 * @default pixel
 	 */
 	public gridFitType:GridFitType;
+
+	/**
+	 *
+	 */
+	public get height():number
+	{
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this.reConstruct();
+
+		return this._height;
+	}
+
+	public set height(val:number)
+	{
+		if (this._height == val)
+			return;
+
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			return;
+
+		this._height = val;
+
+		this._positionsDirty = true;
+
+		this._pInvalidateBounds();
+	}
 
 	/**
 	 * Contains the HTML representation of the text field contents.
@@ -710,7 +755,11 @@ export class TextField extends Sprite
 			return;
 
 		this._text = value;
+
 		this._textDirty = true;
+
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._pInvalidateBounds();
 	}
 
 	public get textFormat():TextFormat
@@ -726,26 +775,70 @@ export class TextField extends Sprite
 		this._textFormat = value;
 
 		this._textDirty = true;
+
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._pInvalidateBounds();
 	}
 
 
+
 	/**
-	 * The graphics used by the sprite that provides it with its shape.
+	 *
+	 * @param renderer
+	 *
+	 * @internal
 	 */
-	public get graphics():Graphics
+	public _acceptTraverser(traverser:TraverserBase):void
 	{
 		this.reConstruct(true);
 		if(this._textFormat && !(this._textFormat.font_table.isAsset(TesselatedFontTable) && (this._textFormat.material)) ){
 
 			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 			//if(new_ct.color==0xffffff){
-				this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
-				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
+			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 			//}
 
 		}
 
-		return this._graphics;
+		this._graphics.acceptTraverser(traverser);
+	}
+
+
+	/**
+	 * Indicates the horizontal scale(percentage) of the object as applied from
+	 * the registration point. The default registration point is(0,0). 1.0
+	 * equals 100% scale.
+	 *
+	 * <p>Scaling the local coordinate system changes the <code>x</code> and
+	 * <code>y</code> property values, which are defined in whole pixels. </p>
+	 */
+	public get scaleX():number
+	{
+		return this._transform.scale.x;
+	}
+
+	public set scaleX(val:number)
+	{
+		this._setScaleX(val);
+	}
+
+	/**
+	 * Indicates the vertical scale(percentage) of an object as applied from the
+	 * registration point of the object. The default registration point is(0,0).
+	 * 1.0 is 100% scale.
+	 *
+	 * <p>Scaling the local coordinate system changes the <code>x</code> and
+	 * <code>y</code> property values, which are defined in whole pixels. </p>
+	 */
+	public get scaleY():number
+	{
+		return this._transform.scale.y;
+	}
+
+	public set scaleY(val:number)
+	{
+		this._setScaleY(val);
 	}
 
 	/**
@@ -796,42 +889,17 @@ export class TextField extends Sprite
 	public get textWidth():number
 	{
 		this.reConstruct();
-		//console.log("get textWidth size", this._textWidth);
+
 		return this._textWidth;
 	}
-	public get textFieldWidth():number
-	{
-		this.reConstruct();
-		//console.log("get textfiekld size", this._textFieldWidth);
-		return this._textFieldWidth;
-	}
-	public set textFieldWidth(val:number)
-	{
-		if (this._textFieldWidth == val)
-			return;
-		this._positionsDirty=true;
-		//console.log("set textfiekld size", val);
-		this._textFieldWidth = val;
-	}
 
-
-	public get textFieldHeight():number
-	{
-		this.reConstruct();
-		return this._textFieldHeight;
-	}
-
-	public set textFieldHeight(val:number)
-	{
-		this._positionsDirty=true;
-		this._textFieldHeight = val;
-	}
 	/**
 	 * The width of the text in pixels.
 	 */
 	public get textHeight():number
 	{
 		this.reConstruct();
+
 		return this._textHeight;
 	}
 
@@ -879,10 +947,64 @@ export class TextField extends Sprite
 	 */
 	public _wordWrap:boolean;
 
+	public get x():number
+	{
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
+			this.reConstruct();
+
+		return this._transform.position.x;
+	}
+
+	public set x(val:number)
+	{
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
+			this.reConstruct();
+
+		if (this._transform.position.x == val)
+			return;
+
+		this._transform.matrix3D._rawData[12] = val;
+
+		this._transform.invalidatePosition();
+	}
+
+	/**
+	 *
+	 */
+	public get width():number
+	{
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
+			this.reConstruct();
+
+		return this._width;
+	}
+
+	public set width(val:number)
+	{
+		if (this._width == val)
+			return;
+
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
+			return;
+
+		this._width = val;
+
+		this._positionsDirty = true;
+
+		this._pInvalidateBounds();
+	}
+
 	public set wordWrap(val:boolean)
 	{
+		if (this._wordWrap == val)
+			return;
+
 		this._wordWrap = val;
+
 		this._positionsDirty = true;
+
+		if (!val)
+			this._pInvalidateBounds();
 	}
 	/**
 	 * The width of the text in pixels.
@@ -913,8 +1035,8 @@ export class TextField extends Sprite
 	{
 		super();
 		this.textShapes={};
-		this._textFieldWidth=100;
-		this._textFieldHeight=100;
+		this._width=100;
+		this._height=100;
 		this._textWidth=0;
 		this._textHeight=0;
 		this.type = TextFieldType.STATIC;
@@ -927,6 +1049,8 @@ export class TextField extends Sprite
 		this.backgroundColor=0xffffff;
 		this.border=false;
 		this.borderColor=0x000000;
+
+		this._graphics = Graphics.getGraphics(this); //unique graphics object for each TextField
 	}
 
 	public clear():void
@@ -973,7 +1097,7 @@ export class TextField extends Sprite
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
-	public reConstruct(buildGraphics:boolean=false) {
+	private reConstruct(buildGraphics:boolean=false) {
 
 		if(!this._textDirty && !this._positionsDirty && !this._glyphsDirty)
 			return;
@@ -1042,11 +1166,13 @@ export class TextField extends Sprite
 			}
 			else{
 				// this is empty text, we need to reset the text-size
-				this._textWidth=0;
-				this._textHeight=0;
+				this._textWidth = 0;
+				this._textHeight = 0;
 				if(this._autoSize!=TextFieldAutoSize.NONE ){
-					this._textFieldWidth=4;
-					this._textFieldHeight=4;
+					this._width = 4;
+					this._height = 4;
+
+					this._pInvalidateBounds();
 				}
 			}
 		}
@@ -1174,18 +1300,20 @@ export class TextField extends Sprite
 
 		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
 
-		if(this._autoSize!=TextFieldAutoSize.NONE && !this._wordWrap){
-			var oldSize:number=this._textFieldWidth;
-			this._textFieldWidth=4+this._maxWidthLine+this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
+		if(this._autoSize!=TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty){
+			var oldSize:number=this._width;
+			this._width=4+this._maxWidthLine+this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
+			this._pInvalidateBounds();
 			if (this._autoSize==TextFieldAutoSize.RIGHT){
-				this.x-=this._textFieldWidth-oldSize;
+				this._transform.matrix3D._rawData[12] -= this._width-oldSize;
+				this._transform.invalidatePosition();
+			} else if (this._autoSize==TextFieldAutoSize.CENTER){
+				this._transform.matrix3D._rawData[12] -= (this._width-oldSize)/2;
+				this._transform.invalidatePosition();
 			}
-			if (this._autoSize==TextFieldAutoSize.CENTER){
-				this.x-=(this._textFieldWidth-oldSize)/2;
-			}
-			//console.log("set textfieldsize", this._textFieldWidth);
 		}
-		var maxLineWidth:number = this._textFieldWidth-(4+this._textFormat.indent+this._textFormat.leftMargin+this._textFormat.rightMargin);
+
+		var maxLineWidth:number = this._width-(4+this._textFormat.indent+this._textFormat.leftMargin+this._textFormat.rightMargin);
 		for (tr = 0; tr < tr_len; tr++) {
 			format=this._textRuns_formats[tr];
 			format.font_table.initFontSize(format.size);
@@ -1311,7 +1439,8 @@ export class TextField extends Sprite
 
 		// if autosize is enabled, we adjust the textFieldHeight
 		if(this.autoSize!=TextFieldAutoSize.NONE){
-			this._textFieldHeight=this._textHeight+4;
+			this._height=this._textHeight+4;
+			this._pInvalidateBounds();
 		}
 	}
 
@@ -1401,7 +1530,12 @@ export class TextField extends Sprite
 	 * @param newText The string to append to the existing text.
 	 */
 	public appendText(newText:string) {
-		this._text+=newText;
+		this._text += newText;
+
+		this._textDirty = true;
+
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._pInvalidateBounds();
 	}
 
 	/**
@@ -1411,7 +1545,11 @@ export class TextField extends Sprite
 	public closeParagraph():void
 	{
 		this._text+="\n";
+
+		this._textDirty = true;
 		//TODO
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._pInvalidateBounds();
 	}
 
 	/**

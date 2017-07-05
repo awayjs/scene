@@ -161,7 +161,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _root:DisplayObjectContainer;
 	private _bounds:Rectangle;
 	public _pBoxBounds:Box;
-	private _boxBoundsInvalid:boolean = true;
+	protected _boxBoundsInvalid:boolean = true;
 	public _pSphereBounds:Sphere;
 	private _sphereBoundsInvalid:boolean = true;
 	private _debugVisible:boolean;
@@ -2268,7 +2268,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._queuedEvents.push(event);
 	}
 
-	private _setScaleX(val:number):void
+	protected _setScaleX(val:number):void
 	{
 		if (this.scaleX == val)
 			return;
@@ -2278,7 +2278,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._transform.invalidateMatrix3D();
 	}
 
-	private _setScaleY(val:number):void
+	protected _setScaleY(val:number):void
 	{
 		if (this.scaleY == val)
 			return;
@@ -2288,7 +2288,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._transform.invalidateMatrix3D();
 	}
 
-	private _setScaleZ(val:number):void
+	protected _setScaleZ(val:number):void
 	{
 		if (this.scaleZ == val)
 			return;
