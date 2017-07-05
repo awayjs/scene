@@ -186,8 +186,13 @@ export class TextFormat extends AssetBase
 	 * The size in pixels of text in this text format. The default value is
 	 * <code>null</code>, which means that a size of 12 is used.
 	 */
-	public size:number;
-
+	private _size:number;
+	public get size():number{
+		return this._size;
+	}
+	public set size(value:number){
+		this._size=value;
+	}
 	/**
 	 * Specifies custom tab stops as an array of non-negative integers. Each tab
 	 * stop is specified in pixels. If custom tab stops are not specified

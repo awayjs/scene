@@ -239,7 +239,7 @@ export class TextField extends Sprite
 		 this._autoSize=value;
 		//console.log("set autoSize", value);
 		this._positionsDirty = true;
-		this.reConstruct();
+	//	this.reConstruct();
 	}
 
 
@@ -723,9 +723,6 @@ export class TextField extends Sprite
 
 	public set textFormat(value:TextFormat)
 	{
-		if (this._textFormat == value)
-			return;
-
 		this._textFormat = value;
 
 		this._textDirty = true;
@@ -745,6 +742,7 @@ export class TextField extends Sprite
 				this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
 				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 			//}
+
 		}
 
 		return this._graphics;
@@ -770,11 +768,13 @@ export class TextField extends Sprite
 	{
 		this._textColor = value;
 		this._textFormat.color=value;
+
 		if(!this.transform.colorTransform)
 			this.transform.colorTransform = new ColorTransform();
 
 		this.transform.colorTransform.color = value;
 		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+
 	}
 
 	/**
@@ -1302,11 +1302,8 @@ export class TextField extends Sprite
 		// -2 so this values do not include the left and top border
 		this._textWidth=text_width;
 		this._textHeight=offsety-2;
-		if(this._autoSize==TextFieldAutoSize.NONE || this._wordWrap){
 
-			this._textWidth=this._textFieldWidth-4;
-			//console.log("set _textWidth", this._textWidth);
-		}
+
 		//console.log(this._textWidth, "/", this._textHeight);
 		//this._textWidth+=this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
 
@@ -1374,527 +1371,26 @@ export class TextField extends Sprite
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			}
 			else {
-				textShape.shape.material = Graphics.get_material_for_color(0xffffff, 1);//this.textColor);//this._textFormat.color);
-
+				var obj=Graphics.get_material_for_color(textShape.format.color, 1);
+				textShape.shape.material = obj.material;
+				if(obj.colorPos){
+					textShape.shape.material = obj.material;
+					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
+					textShape.shape.material.animateUVs=true;
+					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+				}
+				/*
 				(<any>textShape.shape.material).useColorTransform = true;
 				var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 				this.transform.colorTransform.color = textShape.format.color;
 				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+				*/
 
 			}
 		}
 	}
 
-	
-	
-	public reConstruct_old(buildGraphics:boolean=false) {
 
-		this._textGraphicsDirty = false;
-
-		if(this._textFormat == null)
-			return;
-
-
-		if (this._textShape) {
-			this._graphics.removeShape(this._textShape);
-			Shape.storeShape(this._textShape);
-			this._textShape.dispose();
-			this._textShape = null;
-
-			this._textElements.clear();
-			this._textElements.dispose();
-			this._textElements = null;
-		}
-
-
-		if (this._textShape2) {
-			this._graphics.removeShape(this._textShape2);
-			Shape.storeShape(this._textShape2);
-			this._textShape2.dispose();
-			this._textShape2 = null;
-
-			this._textElements2.clear();
-			this._textElements2.dispose();
-			this._textElements2 = null;
-		}
-		this._graphics.clearDrawing();
-
-
-		if(this._text == "")
-			return;
-
-		var activeFormat:TextFormat=this._textFormat;
-		activeFormat.font_table.initFontSize(activeFormat.size);
-		if(activeFormat.font_table.fallbackTable)
-			activeFormat.font_table.fallbackTable.initFontSize(activeFormat.size);
-		var textlines:Array<string> = this.text.toString().match(/[^\r\n]+/g);
-		//console.log("text = ", textlines.toString());
-		var maxlineWidth:number=this._textFieldWidth - (4 + this._textFormat.leftMargin + this._textFormat.rightMargin + this._textFormat.indent);
-
-		//if(this.autoSize!=TextFieldAutoSize.NONE && !this.wordWrap){
-			maxlineWidth=Number.MAX_VALUE;
-		//}
-/*
-		if(this.autoSize==TextFieldAutoSize.RIGHT){
-			return;
-		}
-
-		if(this.autoSize==TextFieldAutoSize.CENTER){
-			return;
-		}
-		*/
-		var tl_char_codes:Array<Array<number>> = [];
-		var tl_char_widths:Array<Array<number>> = [];
-		var tl_char_heights:Array<Array<number>> = [];
-		var tl_formatIdx:Array<Array<number>> = [];
-		var tl_word_cnt:Array<number> = [];
-		var tl_justify:Array<boolean> = [];
-		var tl_linebreak:Array<boolean> = [];
-		var tl_width:Array<number> = [];
-		var tl_height:Array<number> = [];
-		var tl_ends_with_space:Array<boolean> = [];
-		var tl_cnt:number=0;
-		var w:number=0;
-		var c:number=0;
-		var tl:number=0;
-		var words:Array<string>;
-		var char_cnt:number=0;
-		var char_width:number=0;
-		var numVertices:number = 0;
-		var numVertices2:number = 0;
-
-		this._line_indices=[];
-		// sort all chars into final lines
-		for (tl = 0; tl < textlines.length; tl++) {
-			this._line_indices[tl_cnt]=char_cnt;
-			tl_char_codes[tl_cnt]=[];
-			tl_char_widths[tl_cnt]=[];
-			tl_char_heights[tl_cnt]=[];
-			tl_formatIdx[tl_cnt]=[];
-			tl_width[tl_cnt]=0;
-			tl_height[tl_cnt]=0;
-			tl_word_cnt[tl_cnt]=0;
-			tl_justify[tl_cnt]=false;
-			tl_linebreak[tl_cnt]=true;
-			tl_ends_with_space[tl_cnt]=textlines[tl].charCodeAt(textlines[tl].length-1)==32;
-
-			tl_cnt++;
-
-			words = textlines[tl].split(" ");
-			for (w = 0; w < words.length; w++) {
-				if(words[w].length>0){
-					var word_width:number=0;
-					var char_widths:Array<number>=[];
-					var char_heights:Array<number>=[];
-					var formatIdx:Array<number>=[];
-					var max_word_height:number=0;
-					for (c = 0; c < words[w].length; c++) {
-						var lineHeight:number=activeFormat.font_table.getLineHeight();
-						if(lineHeight>max_word_height)max_word_height=lineHeight;
-						char_width=0;
-						if(activeFormat.font_table.hasChar(words[w].charCodeAt(c).toString())){
-							char_width = activeFormat.font_table.getCharWidth(words[w].charCodeAt(c).toString());
-							formatIdx[c]=0;
-							numVertices += activeFormat.font_table.getCharVertCnt(words[w].charCodeAt(c).toString());
-						}
-						else if(activeFormat.font_table.fallbackTable && activeFormat.font_table.fallbackTable.hasChar(words[w].charCodeAt(c).toString())){
-							formatIdx[c]=1;
-							char_width = activeFormat.font_table.fallbackTable.getCharWidth(words[w].charCodeAt(c).toString());
-							numVertices2 += activeFormat.font_table.fallbackTable.getCharVertCnt(words[w].charCodeAt(c).toString());
-							lineHeight=activeFormat.font_table.fallbackTable.getLineHeight();
-							if(lineHeight>max_word_height)max_word_height = lineHeight;
-						}
-						else{
-							formatIdx[c] = -1;
-						}
-
-						char_widths[c]=char_width+this._textFormat.letterSpacing;
-						char_heights[c]=lineHeight;
-						word_width += char_width+this._textFormat.letterSpacing;
-						char_cnt++;
-					}
-
-					// word fits into line, just add it to the last line
-					if((tl_width[tl_cnt-1]+word_width+activeFormat.font_table.getCharWidth("32")) <= maxlineWidth){
-						if(tl_width[tl_cnt-1]!=0){
-							// there is already a word in this line. we want to add a space
-							tl_char_codes[tl_cnt-1].push(32);
-							tl_formatIdx[tl_cnt-1].push(1);
-							tl_char_widths[tl_cnt-1].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
-							tl_width[tl_cnt-1]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
-						}
-						for (c = 0; c < words[w].length; c++) {
-							tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
-							tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
-							tl_char_widths[tl_cnt-1].push(char_widths[c]);
-						}
-						tl_width[tl_cnt-1]+=word_width;
-						tl_word_cnt[tl_cnt-1]+=1;
-						if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
-					}
-					// word does not fit into line, but it is first word added to line, so we add it anyway.
-					// todo: respect auto--wrap / multiline settings + optional include 3rd party tool for splitting into sylibils
-					else if(tl_width[tl_cnt-1]==0){
-						for (c = 0; c < words[w].length; c++) {
-							tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
-							tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
-							tl_char_widths[tl_cnt-1].push(char_widths[c]);
-						}
-						tl_word_cnt[tl_cnt-1]+=1;
-						tl_width[tl_cnt-1]+=word_width;
-						if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
-					}
-					// word does not fit, and there are already words on this line
-					else{
-						tl_justify[tl_cnt-1]=true;
-						tl_char_codes[tl_cnt]=[];
-						tl_char_widths[tl_cnt]=[];
-						tl_formatIdx[tl_cnt]=[];
-						tl_width[tl_cnt]=0;
-						tl_height[tl_cnt]=0;
-						tl_word_cnt[tl_cnt]=0;
-						tl_justify[tl_cnt]=false;
-						tl_linebreak[tl_cnt]=false;
-						tl_ends_with_space[tl_cnt]=textlines[tl].charCodeAt(textlines[tl].length-1)==32;
-						tl_cnt++;
-						for (c = 0; c < words[w].length; c++) {
-							tl_char_codes[tl_cnt-1].push(words[w].charCodeAt(c));
-							tl_char_widths[tl_cnt-1].push(char_widths[c]);
-							tl_formatIdx[tl_cnt-1].push(formatIdx[c]);
-						}
-						tl_width[tl_cnt-1]+=word_width;
-						if(tl_height[tl_cnt-1]<max_word_height)tl_height[tl_cnt-1]=max_word_height;
-					}
-				}
-			}
-		}
-
-		for (tl = 0; tl < tl_width.length; tl++) {
-			if (tl_ends_with_space[tl]) {
-				tl_char_codes[tl].push(32);
-				tl_formatIdx[tl].push(1);
-				tl_char_widths[tl].push(activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing);
-				tl_width[tl]+=activeFormat.font_table.getCharWidth("32")+this._textFormat.letterSpacing;
-			}
-		}
-		//console.log("tl_width = ", tl_width);
-		var tl_startx:Array<Array<number> >=[];
-		// calculate the final positions of the chars
-		this._textWidth=0;
-		this._textHeight=0;
-		this._length=0;
-		this._numLines=tl_width.length;
-		for (tl = 0; tl < tl_width.length; tl++) {
-			var indent:number=this._textFormat.indent;
-			if(!tl_linebreak[tl]){
-				indent=0;
-			}
-
-			if(tl_width[tl]>this._textWidth)
-				this._textWidth=tl_width[tl];
-
-			var x_offset:number = 2 + this._textFormat.leftMargin + indent;
-			var justify_addion:number=0;
-/*
-			if(this._textFormat.align=="center"){
-				x_offset = 2 + this._textFormat.leftMargin + indent+(maxlineWidth-tl_width[tl])/2;
-			}
-			else if(this._textFormat.align=="justify"){
-				if(tl_justify[tl]){
-					justify_addion=((maxlineWidth)-tl_width[tl])/tl_word_cnt[tl];
-				}
-			}
-			else if(this._textFormat.align=="right"){
-				x_offset=(this._textWidth-tl_width[tl])-(2 + this._textFormat.rightMargin);
-			}
-*/
-			tl_startx[tl]=[];
-			if(tl_char_codes[tl].length==0){
-				tl_height[tl]=this._textFormat.font_table.getLineHeight();
-			}
-			this._textHeight+=tl_height[tl]+this._textFormat.leading;
-			this._length+=tl_char_codes[tl].length;
-			for (var c = 0; c < tl_char_codes[tl].length; c++) {
-				//this.textHeight+=tl_height[tl];
-				tl_startx[tl][c]=x_offset;
-				x_offset+=tl_char_widths[tl][c];
-				// if this is a whitespace, we add the justify additional spacer
-				if(tl_char_codes[tl][c]==32){
-					x_offset+=justify_addion;
-				}
-			}
-		}
-		this._textWidth+=this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
-
-		this._textFieldWidth=this._textWidth+4;
-		this._textFieldHeight=this._textHeight+4;
-/*
-		this._graphics.clearDrawing();
-		this._graphics.beginFill(this.backgroundColor, this.background?1:0);
-		//this.graphics.lineStyle(1, this.borderColor, this.border?1:0);
-		this._graphics.drawRect(0,0,this._textWidth+4, this._textHeight+4);
-		this._graphics.endFill();
-*/
-
-		if(this._textFormat.font_table.assetType==BitmapFontTable.assetType){
-			//console.log("contruct bitmap text = "+this._text);
-			var bitmap_fontTable:BitmapFontTable = <BitmapFontTable>this._textFormat.font_table;
-			var vertices:Float32Array = new Float32Array(numVertices);
-			var vertices2:Float32Array = new Float32Array(numVertices2);
-			var vert_cnt:number=0;
-			var vert_cnt2:number=0;
-
-			var y_offset:number=2;//2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
-
-			for (tl = 0; tl < tl_width.length; tl++) {
-				y_offset+=tl_height[tl];
-				for (var c = 0; c < tl_char_codes[tl].length; c++) {
-					if(tl_char_codes[tl][c]==32){
-						continue;
-					}
-					if(tl_formatIdx[tl][c]<0){
-						continue;
-					}
-					var char_data:Array<number>;
-					if(tl_formatIdx[tl][c]==0) {
-						char_data = bitmap_fontTable.getCharData(tl_char_codes[tl][c].toString());
-						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
-						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5];
-						vertices[vert_cnt++] = char_data[0];
-						vertices[vert_cnt++] = char_data[1];
-
-						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4] + char_data[7];
-						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5];
-						vertices[vert_cnt++] = char_data[0] + char_data[2];
-						vertices[vert_cnt++] = char_data[1];
-
-						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4] + char_data[7];
-						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5]+ char_data[6];
-						vertices[vert_cnt++] = char_data[0] + char_data[2];
-						vertices[vert_cnt++] = char_data[1] + char_data[3];
-
-						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4] + char_data[7];
-						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5]+ char_data[6];
-						vertices[vert_cnt++] = char_data[0] + char_data[2];
-						vertices[vert_cnt++] = char_data[1] + char_data[3];
-
-						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
-						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5]+ char_data[6];
-						vertices[vert_cnt++] = char_data[0];
-						vertices[vert_cnt++] = char_data[1] + char_data[3];
-
-						vertices[vert_cnt++] = tl_startx[tl][c] + char_data[4];
-						vertices[vert_cnt++] = y_offset - activeFormat.font_table.getLineHeight() + char_data[5];
-						vertices[vert_cnt++] = char_data[0];
-						vertices[vert_cnt++] = char_data[1];
-					}
-					if(tl_formatIdx[tl][c]==1) {
-						char_data = (<BitmapFontTable>bitmap_fontTable.fallbackTable).getCharData(tl_char_codes[tl][c].toString());
-						vertices2[vert_cnt2++] = tl_startx[tl][c] + char_data[4];
-						vertices2[vert_cnt2++] = y_offset - activeFormat.font_table.fallbackTable.getLineHeight() + char_data[5];
-						vertices2[vert_cnt2++] = char_data[0];
-						vertices2[vert_cnt2++] = char_data[1];
-
-						vertices2[vert_cnt2++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-						vertices2[vert_cnt2++] = y_offset - activeFormat.font_table.fallbackTable.getLineHeight() + char_data[5];
-						vertices2[vert_cnt2++] = char_data[0] + char_data[2];
-						vertices2[vert_cnt2++] = char_data[1];
-
-						vertices2[vert_cnt2++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-						vertices2[vert_cnt2++] = y_offset;
-						vertices2[vert_cnt2++] = char_data[0] + char_data[2];
-						vertices2[vert_cnt2++] = char_data[1] + char_data[3];
-
-						vertices2[vert_cnt2++] = tl_startx[tl][c] + tl_char_widths[tl][c] + char_data[4];
-						vertices2[vert_cnt2++] = y_offset;
-						vertices2[vert_cnt2++] = char_data[0] + char_data[2];
-						vertices2[vert_cnt2++] = char_data[1] + char_data[3];
-
-						vertices2[vert_cnt2++] = tl_startx[tl][c] + char_data[4];
-						vertices2[vert_cnt2++] = y_offset;
-						vertices2[vert_cnt2++] = char_data[0];
-						vertices2[vert_cnt2++] = char_data[1] + char_data[3];
-
-						vertices2[vert_cnt2++] = tl_startx[tl][c] + char_data[4];
-						vertices2[vert_cnt2++] = y_offset - activeFormat.font_table.fallbackTable.getLineHeight() + char_data[5];
-						vertices2[vert_cnt2++] = char_data[0];
-						vertices2[vert_cnt2++] = char_data[1];
-					}
-				}
-				//todo: this is a hack to fix multiline spacing in icycle. normally the multipliers should not be needed
-				if(this._textFormat.leading==5){
-					y_offset += this._textFormat.leading*1.6;
-				}
-				else if(this._textFormat.leading==11){
-					y_offset += this._textFormat.leading*1.8;
-				}
-				else{
-					y_offset += this._textFormat.leading;
-				}
-			}
-			if(vert_cnt>0){
-				var attributesView:AttributesView = new AttributesView(Float32Array, 4);
-				attributesView.set(vertices);
-				var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
-				attributesView.dispose();
-
-				this._textElements = new TriangleElements(vertexBuffer);
-				this._textElements.setPositions(new Float2Attributes(vertexBuffer));
-				this._textElements.setUVs(new Float2Attributes(vertexBuffer));
-				this._textShape = this._graphics.addShape(Shape.getShape(this._textElements));
-
-				this._textShape.material = bitmap_fontTable.getMaterial();
-			}
-			if(vert_cnt2>0){
-				var attributesView2:AttributesView = new AttributesView(Float32Array, 4);
-				attributesView2.set(vertices2);
-				var vertexBuffer2:AttributesBuffer = attributesView2.attributesBuffer;
-				attributesView2.dispose();
-
-				this._textElements2 = new TriangleElements(vertexBuffer2);
-				this._textElements2.setPositions(new Float2Attributes(vertexBuffer2));
-				this._textElements2.setUVs(new Float2Attributes(vertexBuffer2));
-				this._textShape2 = this._graphics.addShape(Shape.getShape(this._textElements2));
-
-				this._textShape2.material = (<BitmapFontTable>bitmap_fontTable.fallbackTable).getMaterial();
-			}
-
-
-			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-			this.transform.colorTransform.color = activeFormat.color;
-			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-
-		}
-		else if(this._textFormat.font_table.assetType==TesselatedFontTable.assetType){
-
-			var tess_fontTable:TesselatedFontTable = <TesselatedFontTable>this._textFormat.font_table;
-			var vertices:Float32Array = new Float32Array(numVertices+numVertices2);
-			var vert_cnt:number=0;
-			var charGlyph:TesselatedFontChar;
-			var char_vertices:AttributesBuffer;
-			var char_scale:number=tess_fontTable._size_multiply;
-			var y_offset:number=1+((tess_fontTable.ascent-tess_fontTable.get_font_em_size()))*char_scale;
-			var fallbackfont:TesselatedFontTable = <TesselatedFontTable>this._textFormat.font_table.fallbackTable;
-			for (tl = 0; tl < tl_width.length; tl++) {
-				for (var c = 0; c < tl_char_codes[tl].length; c++) {
-					if (tl_char_codes[tl][c] == 32) {
-						continue;
-					}
-					if (tl_formatIdx[tl][c] < 0) {
-						continue;
-					}
-					if (tl_formatIdx[tl][c] == 0) {
-						charGlyph = tess_fontTable.getChar(tl_char_codes[tl][c].toString());
-						if (charGlyph) {
-							char_scale=tess_fontTable._size_multiply;
-							//y_offset=2+(tess_fontTable.ascent-tess_fontTable.get_font_em_size())*char_scale;
-							x_offset=tl_startx[tl][c];
-							//char_scale = final_lines_char_scale[i][t] ;
-							char_vertices = charGlyph.fill_data;
-							if (char_vertices != null) {
-								var buffer:Float32Array = new Float32Array(char_vertices.buffer);
-								if(tess_fontTable.usesCurves) {
-									for (var v:number = 0; v < char_vertices.count; v++) {
-										vertices[vert_cnt++] = buffer[v * 3] * char_scale + x_offset;
-										vertices[vert_cnt++] = buffer[v * 3 + 1] * char_scale + y_offset;
-										vertices[vert_cnt++] = buffer[v * 3 + 2];
-									}
-								}
-								else {
-									for (var v:number = 0; v < char_vertices.count; v++) {
-										vertices[vert_cnt++] = buffer[v * 2] * char_scale + x_offset;
-										vertices[vert_cnt++] = buffer[v * 2 + 1] * char_scale + y_offset;
-									}
-								}
-							}
-						}
-					}
-					else if (tl_formatIdx[tl][c] == 1) {
-						charGlyph =(<TesselatedFontTable>tess_fontTable.fallbackTable).getChar(tl_char_codes[tl][c].toString());
-						if (charGlyph) {
-							x_offset=tl_startx[tl][c];
-							char_scale=fallbackfont._size_multiply;
-							//y_offset=2+(fallbackfont.ascent-fallbackfont.get_font_em_size())*char_scale;
-							char_vertices = charGlyph.fill_data;
-							if (char_vertices != null) {
-								var buffer:Float32Array = new Float32Array(char_vertices.buffer);
-								if(tess_fontTable.usesCurves) {
-									for (var v:number = 0; v < char_vertices.count; v++) {
-										vertices[vert_cnt++] = buffer[v * 3] * char_scale + x_offset;
-										vertices[vert_cnt++] = buffer[v * 3 + 1] * char_scale + y_offset;
-										vertices[vert_cnt++] = buffer[v * 3 + 2];
-									}
-								}
-								else {
-									for (var v:number = 0; v < char_vertices.count; v++) {
-										vertices[vert_cnt++] = buffer[v * 2] * char_scale + x_offset;
-										vertices[vert_cnt++] = buffer[v * 2 + 1] * char_scale + y_offset;
-									}
-								}
-							}
-						}
-					}
-				}
-				y_offset += (tess_fontTable.ascent + tess_fontTable.descent)*char_scale;
-				y_offset += this._textFormat.leading;
-			}
-			if(vert_cnt>0) {
-				var attr_length:number=(tess_fontTable.usesCurves)?3:2;
-				var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
-				attributesView.set(vertices);
-				var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
-				attributesView.dispose();
-
-				this._textElements = new TriangleElements(vertexBuffer);
-				this._textElements.setPositions(new Float2Attributes(vertexBuffer));
-				if(tess_fontTable.usesCurves){
-					this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
-				}
-				this._textShape = this._graphics.addShape(Shape.getShape(this._textElements));
-
-				var sampler:Sampler2D = new Sampler2D();
-				this._textShape.style = new Style();
-				if (this._textFormat.material) {
-					this._textShape.material = this._textFormat.material;
-					this._textShape.style.addSamplerAt(sampler, this._textShape.material.getTextureAt(0));
-					this._textShape.material.animateUVs = true;
-					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, this._textFormat.uv_values[0], this._textFormat.uv_values[1]);
-				}
-				else {
-					this._textShape.material = Graphics.get_material_for_color(0xffffff, 1);//this.textColor);//this._textFormat.color);
-
-					(<any>this._textShape.material).useColorTransform = true;
-					var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-					this.transform.colorTransform.color = this._textFormat.color;
-					this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-					/*
-					this._textShape.material = DefaultMaterialManager.getDefaultMaterial();
-					this._textShape.material.bothSides = true;
-					if(tess_fontTable.usesCurves){
-						this._textShape.material.curves = true;
-					}
-					this._textShape.style.addSamplerAt(sampler, this._textShape.material.getTextureAt(0));
-					//sampler.imageRect = new Rectangle(0, 0, 0.5, 0.5);
-					this._textShape.style.uvMatrix = new Matrix(0, 0, 0, 0, 0.126, 0);
-					this._textShape.material.animateUVs = true;
-					//graphic.material.imageRect = true;
-					var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-					this.transform.colorTransform.color = activeFormat.color;
-					this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-					*/
-				}
-			}
-			if(this._textShape){
-
-				this.material=this._textShape.material;
-				if(tess_fontTable.usesCurves) {
-					this.material.curves = true;
-				}
-				//this.material.alphaBlending=true;
-
-			}
-		}
-	}
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
 	 * end of the text of the text field. This method is more efficient than an
