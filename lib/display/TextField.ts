@@ -1278,6 +1278,9 @@ export class TextField extends DisplayObject
 
 	private getWordPositions() {
 
+		/*console.log("this._text", this._text);
+		console.log("this._width", this._width);
+		console.log("this._height", this._height);*/
 		var tr:number=0;
 		var tr_len:number=this._textRuns_formats.length;
 
@@ -1386,6 +1389,9 @@ export class TextField extends DisplayObject
 
 				lineSpaceLeft = maxLineWidth - linelength;
 
+				/*console.log("lineSpaceLeft", lineSpaceLeft);
+				console.log("maxLineWidth", maxLineWidth);
+				console.log("linelength", linelength);*/
 				additionalWhiteSpace=0;
 				offsetx=2 + format.leftMargin + format.indent;
 
@@ -1905,8 +1911,8 @@ export class TextField extends DisplayObject
 	{
 		super.copyTo(newInstance);
 
-		//newInstance.textWidth = this._textWidth;
-		//newInstance.textHeight = this._textHeight;
+		newInstance.width = this._width;
+		newInstance.height = this._height;
 		newInstance.textFormat = this._textFormat;
 		//newInstance.textColor = this._textColor;
 		newInstance.text = this._text;

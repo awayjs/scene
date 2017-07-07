@@ -1405,7 +1405,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this._width == val)
 			return;
-
+		
 		var boxWidth:number = this.getBox().width;
 
 		//return if box is empty ie setting width for no content is impossible
