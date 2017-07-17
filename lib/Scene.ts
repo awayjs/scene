@@ -5,6 +5,8 @@ import {IView} from "./IView";
 
 export class Scene extends DisplayObjectContainer
 {
+	public static assetType:string = "[asset Scene]";
+
 	private _objects:Array<DisplayObject> = new Array<DisplayObject>();
 	private _views:Array<IView> = new Array<IView>();
 	public _iCollectionMark = 0;
@@ -12,6 +14,15 @@ export class Scene extends DisplayObjectContainer
 	public get objects():Array<DisplayObject>
 	{
 		return this._objects;
+	}
+
+
+	/**
+	 *
+	 */
+	public get assetType():string
+	{
+		return Scene.assetType;
 	}
 
 	constructor()
