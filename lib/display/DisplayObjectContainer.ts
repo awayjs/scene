@@ -671,13 +671,22 @@ export class DisplayObjectContainer extends DisplayObject
 		super._updateMaskMode();
 	}
 
-	private _invalidateChildren():void
+	protected _isEntityInternal():boolean
 	{
-		if (this._pIsContainer != Boolean(this._children.length)) {
+		return Boolean(this._children.length);
+	}
+
+	protected _invalidateChildren():void
+	{
+		var isContainer:boolean = Boolean(this._children.length);
+		var isEntity:boolean = this._isEntityInternal();
+
+		if (this._pIsContainer != isContainer || this._pIsEntity != isEntity) {
 			if (this._pScene)
 				this._pScene._iUnregisterObject(this);
 
-			this._pIsContainer = Boolean(this._children.length);
+			this._pIsContainer = isContainer;
+			this._pIsEntity = isEntity;
 
 			if (this._pScene)
 				this._pScene._iRegisterObject(this);

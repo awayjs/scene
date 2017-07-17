@@ -185,6 +185,11 @@ export class Sprite extends DisplayObjectContainer
 		this._pSphereBounds = this._graphics.getSphereBounds(this._center, this._pSphereBounds);
 	}
 
+	protected _isEntityInternal():boolean
+	{
+		return Boolean(this._graphics.count) || Boolean(this._children.length);
+	}
+
 	/**
 	 * //TODO
 	 *
@@ -192,17 +197,7 @@ export class Sprite extends DisplayObjectContainer
 	 */
 	private _onGraphicsInvalidate(event:AssetEvent):void
 	{
-		if (this._pIsEntity != Boolean(this._graphics.count)) {
-			if (this._pScene)
-				this._pScene._iUnregisterObject(this);
-
-			this._pIsEntity = Boolean(this._graphics.count);
-
-			if (this._pScene)
-				this._pScene._iRegisterObject(this);
-		}
-
-		this._pInvalidateBounds();
+		this._invalidateChildren();
 	}
 
 	/**
