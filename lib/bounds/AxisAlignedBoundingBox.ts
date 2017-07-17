@@ -134,6 +134,9 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 			this._prefab.width = this._box.width;
 			this._prefab.height = this._box.height;
 			this._prefab.depth = this._box.depth;
+
+			this._pBoundsPrimitive.registrationPoint = new Vector3D(-cx, -cy, -cz);
+
 			this._pBoundsPrimitive.transform.matrix3D = matrix;
 		}
 
