@@ -260,9 +260,6 @@ export class MovieClip extends Sprite
 
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
-		//this should be implemented for all display objects
-		child.inheritColorTransform = true;
-
 		child.reset();// this takes care of transform and visibility
 
 		return super.addChildAtDepth(child, depth, replace);

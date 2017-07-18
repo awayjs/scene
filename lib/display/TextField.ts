@@ -791,7 +791,7 @@ export class TextField extends DisplayObject
 	public _acceptTraverser(traverser:TraverserBase):void
 	{
 		this.reConstruct(true);
-		if(this._textFormat && !(this._textFormat.font_table.isAsset(TesselatedFontTable) && (this._textFormat.material)) ){
+		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material ){
 
 			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 			//if(new_ct.color==0xffffff){
@@ -862,12 +862,15 @@ export class TextField extends DisplayObject
 		this._textColor = value;
 		this._textFormat.color=value;
 
-		if(!this.transform.colorTransform)
-			this.transform.colorTransform = new ColorTransform();
+		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material){
+			if(!this.transform.colorTransform)
+				this.transform.colorTransform = new ColorTransform();
 
-		this.transform.colorTransform.color = value;
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-
+			this.transform.colorTransform.color = value;
+			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+		} else {
+			this._glyphsDirty = true;
+		}
 	}
 
 	/**

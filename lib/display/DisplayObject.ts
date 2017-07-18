@@ -214,7 +214,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _iSourcePrefab:PrefabBase;
 
-    private _inheritColorTransform:boolean = false;
+    private _inheritColorTransform:boolean = true;
 	private _maskMode:boolean = false;
 
 	public _hierarchicalPropsDirty:number;
@@ -274,14 +274,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get alpha():number
     {
-        return this._transform.colorTransform? this._transform.colorTransform.alphaMultiplier : 1;
+        return this._transform.colorTransform.alphaMultiplier;
     }
 
     public set alpha(value:number)
     {
-		if (!this._transform.colorTransform)
-			this._transform.colorTransform = new ColorTransform();
-
         this._transform.colorTransform.alphaMultiplier = value;
 
 		this._transform.invalidateColorTransform();
@@ -1959,11 +1956,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		this.visible = true;
 
-		if(this._transform.matrix3D)
-			this._transform.clearMatrix3D();
+		this._transform.clearMatrix3D();
 
-		if(this._transform.colorTransform)
-			this._transform.clearColorTransform();
+		this._transform.clearColorTransform();
 
 		//this.name="";
 		this.masks = null;
@@ -2352,13 +2347,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._inheritColorTransform && this._pParent && this._pParent._iAssignedColorTransform()) {
 			this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
 			
-			if (this._transform.colorTransform)
-				this._pImplicitColorTransform.prepend(this._transform.colorTransform);
+			this._pImplicitColorTransform.prepend(this._transform.colorTransform);
 		} else {
-			if (this._transform.colorTransform)
-				this._pImplicitColorTransform.copyFrom(this._transform.colorTransform);
-			else
-				this._pImplicitColorTransform.clear();
+			this._pImplicitColorTransform.copyFrom(this._transform.colorTransform);
 		}
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
