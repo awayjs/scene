@@ -1,4 +1,4 @@
-import {Box, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, Matrix3D, ColorTransform, Rectangle} from "@awayjs/core";
+import {Box, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
 
 import {TraverserBase, Sampler2D, Style, Graphics, Shape, MaterialBase, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
 
@@ -104,6 +104,9 @@ export class TextField extends DisplayObject
 	public static assetType:string = "[asset TextField]";
 
 	private _line_indices:number[] = [];
+
+	//temp point used in hit testing
+	private _tempPoint:Point = new Point();
 
 	private _graphics:Graphics;
 	private _textGraphicsDirty:boolean;
@@ -780,7 +783,28 @@ export class TextField extends DisplayObject
 			this._pInvalidateBounds();
 	}
 
+	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
+	{
+		if(this._graphics.count) {
+			this._tempPoint.setTo(x,y);
+			var local:Point = this.globalToLocal(this._tempPoint, this._tempPoint);
+			var box:Box;
 
+			//early out for box test
+			if(!(box = this.getBox()).contains(local.x, local.y, 0))
+				return false;
+
+			//early out for non-shape tests
+			if (!shapeFlag)
+				return true;
+
+			//ok do the graphics thing
+			if (this._graphics._hitTestPointInternal(local.x, local.y))
+				return true;
+		}
+
+		return false;
+	}
 
 	/**
 	 *
