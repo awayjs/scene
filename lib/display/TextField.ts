@@ -517,7 +517,7 @@ export class TextField extends DisplayObject
 	 */
 	public get length():number /*int*/
 	{
-		return this._length;
+		return this._text.length;
 	}
 
 	/**
