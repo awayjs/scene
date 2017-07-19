@@ -105,9 +105,6 @@ export class TextField extends DisplayObject
 
 	private _line_indices:number[] = [];
 
-	//temp point used in hit testing
-	private _tempPoint:Point = new Point();
-
 	private _graphics:Graphics;
 	private _textGraphicsDirty:boolean;
 	private _bottomScrollV:number;
@@ -786,20 +783,7 @@ export class TextField extends DisplayObject
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
 		if(this._graphics.count) {
-			this._tempPoint.setTo(x,y);
-			var local:Point = this.globalToLocal(this._tempPoint, this._tempPoint);
-			var box:Box;
-
-			//early out for box test
-			if(!(box = this.getBox()).contains(local.x, local.y, 0))
-				return false;
-
-			//early out for non-shape tests
-			if (!shapeFlag)
-				return true;
-
-			//ok do the graphics thing
-			if (this._graphics._hitTestPointInternal(local.x, local.y))
+			if (this._graphics._hitTestPointInternal(this._tempPoint.x, this._tempPoint.y))
 				return true;
 		}
 

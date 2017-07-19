@@ -147,7 +147,10 @@ import {Scene} from "../Scene";
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
 	public static traverseName:string = "applyEntity";
-	
+
+	//temp point used in hit testing
+	protected _tempPoint:Point = new Point();
+
 	public _iIsRoot:boolean;
 	public _iIsPartition:boolean;
 	public _adapter:IDisplayObjectAdapter;
@@ -1821,10 +1824,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag = false):boolean
 	{
 		if(!this._pImplicitVisibility)
-			return;
+			return false;
 
 		if(this._pImplicitMaskId != -1 && !masksFlag)
-			return;
+			return false;
+
+		//set local tempPoint for later reference
+		this._tempPoint.setTo(x,y);
+		this.globalToLocal(this._tempPoint, this._tempPoint);
+
+		//early out for box test
+		if(!this.getBox().contains(this._tempPoint.x, this._tempPoint.y, 0))
+			return false;
 
 		if (this._explicitMasks) {
 			var numMasks:number = this._explicitMasks.length;
@@ -1839,6 +1850,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			if (!maskHit)
 				return false;
 		}
+
+		//early out for non-shape tests
+		if (!shapeFlag)
+			return true;
 
 		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
