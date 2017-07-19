@@ -775,9 +775,10 @@ export class TextField extends DisplayObject
 
 	public set textFormat(value:TextFormat)
 	{
-		this._textFormat = value;
-
 		this._textDirty = true;
+
+		this._textFormat = value;
+		//this.reConstruct();
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._pInvalidateBounds();
@@ -1128,6 +1129,8 @@ export class TextField extends DisplayObject
 
 		if(!this._textDirty && !this._positionsDirty && !this._glyphsDirty)
 			return;
+
+
 		// Step1: init text-data
 
 		// this step splits the text into textRuns
@@ -1492,6 +1495,7 @@ export class TextField extends DisplayObject
 			textShape.elements = null;
 			textShape.verts.length=0;
 		}
+		this.textShapes={};
 /*
 		this._graphics.clearDrawing();
 		this._graphics.beginFill(this.backgroundColor, this.background?1:0);
@@ -1541,12 +1545,12 @@ export class TextField extends DisplayObject
 					textShape.shape.material.animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
-				/*
+/*
 				(<any>textShape.shape.material).useColorTransform = true;
 				var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 				this.transform.colorTransform.color = textShape.format.color;
 				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-				*/
+*/
 
 			}
 		}
