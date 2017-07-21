@@ -29,6 +29,7 @@ export class Scene extends DisplayObjectContainer
 	{
 		super();
 
+		this.mouseEnabled = false;
 		this._iIsRoot = true;
 		this._iIsPartition = true;
 
