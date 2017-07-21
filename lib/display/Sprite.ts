@@ -167,7 +167,9 @@ export class Sprite extends DisplayObjectContainer
 	{
 		super._pUpdateBoxBounds();
 
-		this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
+		var graphicsBox:Box=this._graphics.getBoxBounds();
+		if(!graphicsBox.isEmpty())
+			this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
 	}
 
 

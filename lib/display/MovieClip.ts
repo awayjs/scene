@@ -130,6 +130,7 @@ export class MovieClip extends Sprite
 	public set timeline(value:Timeline)
 	{
 		this._timeline = value;
+
 		this.reset();
 	}
 
