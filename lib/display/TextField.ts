@@ -1495,13 +1495,14 @@ export class TextField extends DisplayObject
 			textShape.verts.length=0;
 		}
 		this.textShapes={};
-
+/*
 		this._graphics.clearDrawing();
 		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
 		this._graphics.lineStyle(1, 0x00ff00, 1);//this.borderColor, this.border?1:0);
 		this._graphics.drawRect(0,0,this._width, this._height);
 		this._graphics.endFill();
-
+*/
+		
 		var textShape:TextShape;
 		// process all textRuns
 		var tr:number=0;
