@@ -122,6 +122,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		if(tesselated_font_char){
 			return tesselated_font_char.char_width*this._size_multiply;
 		}
+		if(this.fallbackTable)
+			return this.fallbackTable.getCharWidth(char_code);
+
 		return 0;
 	}
 
@@ -133,10 +136,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public getLineHeight():number
 	{
 		var thisLineheighttest:number=this._current_size *(this._font_em_size/this._ascent);
-		/*console.log("getLineHeight", thisLineheighttest);
-		console.log("_font_em_size", this._font_em_size);
-		console.log("_ascent", this._ascent);
-		console.log("_descent", this._descent);*/
+
 		return thisLineheighttest;// ;//(this._ascent+this._descent)*this._size_multiply;
 	}
 
@@ -218,13 +218,15 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var startIdx:number=0;
 		var buffer:Float32Array;
 		var v:number;
+		var size_multiply:number;
 		var hack_x_mirror:boolean=false;
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (w = startWord; w < w_len; w+=5) {
 			startIdx=tf.words[w];
 			x=tf.words[w+1];
-			y=tf.words[w+2];//-this.getLineHeight()+(this._ascent*this._size_multiply);
+			y=tf.words[w+2]; // sunflower
+			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // icycle
 			c_len=startIdx + tf.words[w+4];
 			for (c = startIdx; c < c_len; c++) {
 				hack_x_mirror=false;
@@ -234,34 +236,36 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 				}
 				if(tf.chars_codes[c]!=32){
 					charGlyph=this.getChar(tf.chars_codes[c].toString());
+					size_multiply=this._size_multiply;
 					if(!charGlyph && this.fallbackTable) {
 						charGlyph = (<TesselatedFontTable>this.fallbackTable).getChar(tf.chars_codes[c].toString());
+						size_multiply=(<TesselatedFontTable>this.fallbackTable)._size_multiply;
 					}
 					if(charGlyph){
 						char_vertices = charGlyph.fill_data;
 						buffer = new Float32Array(char_vertices.buffer);
 						if(this.usesCurves) {
 							for (v = 0; v < char_vertices.count; v++) {
-								textShape.verts[textShape.verts.length] = buffer[v * 3] * this._size_multiply + x;
-								textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * this._size_multiply + y;
+								textShape.verts[textShape.verts.length] = buffer[v * 3] * size_multiply + x;
+								textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
 								textShape.verts[textShape.verts.length] = buffer[v * 3 + 2];
 							}
 						}
 						else {
 							if(hack_x_mirror){
 								for (v = 0; v < char_vertices.count; v++) {
-									textShape.verts[textShape.verts.length] = (charGlyph.char_width-buffer[v * 2]) * this._size_multiply + x;
-									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * this._size_multiply + y;
+									textShape.verts[textShape.verts.length] = (charGlyph.char_width-buffer[v * 2]) * size_multiply + x;
+									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
 								}
 							}
 							else{
 								for (v = 0; v < char_vertices.count; v++) {
-									textShape.verts[textShape.verts.length] = buffer[v * 2] * this._size_multiply + x;
-									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * this._size_multiply + y;
+									textShape.verts[textShape.verts.length] = buffer[v * 2] * size_multiply + x;
+									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
 								}
 							}
 						}
-						x+=charGlyph.char_width * this._size_multiply;
+						x+=charGlyph.char_width * size_multiply;
 						// todo: handle kerning
 					}
 					else{

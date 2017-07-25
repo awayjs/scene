@@ -869,7 +869,7 @@ export class TextField extends DisplayObject
 	public set textColor(value:number)
 	{
 		this._textColor = value;
-		this._textFormat.color=value;
+		//this._textFormat.color=value;
 
 		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material){
 			if(!this.transform.colorTransform)
@@ -1047,6 +1047,7 @@ export class TextField extends DisplayObject
 	{
 		super();
 		this.textShapes={};
+		this._textColor=-1;
 		this._width=100;
 		this._height=100;
 		this._textWidth=0;
@@ -1143,15 +1144,27 @@ export class TextField extends DisplayObject
 
 			if(this._text != "" && this._textFormat != null) {
 				if (this.multiline) {
-					var paragraphs:string[] = (<string[]>this.text.toString().match(/[^\r\n]+/g));
+					var paragraphs:string[] = this.text.toString().split("\\n");
+					var tl = 0;
+					var tl_len = paragraphs.length;
+					var extra_split:string[];
+					var tl_extra = 0;
+					var tl_extra_len = paragraphs.length;
+					for (tl = 0; tl < tl_len; tl++) {
+						extra_split=  (<string[]>paragraphs[tl].match(/[^\r\n]+/g));
+						tl_extra_len=extra_split.length;
+						for (tl_extra = 0; tl_extra < tl_extra_len; tl_extra++) {
+							this.buildParagraph(extra_split[tl_extra]);
+						}
+					}
+				}
+				else {
+					var paragraphs:string[] = this.text.toString().split("\\n");
 					var tl = 0;
 					var tl_len = paragraphs.length;
 					for (tl = 0; tl < tl_len; tl++) {
 						this.buildParagraph(paragraphs[tl]);
 					}
-				}
-				else {
-					this.buildParagraph(this._text);
 				}
 			}
 
@@ -1233,7 +1246,7 @@ export class TextField extends DisplayObject
 		var linewidh:number=0;
 		var whitespace_cnt:number=0;
 		for (c = 0; c < c_len; c++) {
-			char_code=this.text.charCodeAt(c);
+			char_code=paragraphText.charCodeAt(c);
 			this.chars_codes[this.chars_codes.length]=char_code;
 
 			char_width=this._textFormat.font_table.getCharWidth(char_code.toString());
@@ -1245,7 +1258,7 @@ export class TextField extends DisplayObject
 
 			// if this is a letter, and next symbol is a letter, we add the letterSpacing to the letter-width
 			if(char_code!=32 && c<c_len-1){
-				char_width+=(this.text.charCodeAt(c+1)==32)?0:this._textFormat.letterSpacing;
+				char_width+=(paragraphText.charCodeAt(c+1)==32)?0:this._textFormat.letterSpacing;
 			}
 			linewidh+=char_width;
 			this.chars_width[this.chars_width.length]=char_width;
@@ -1315,6 +1328,7 @@ export class TextField extends DisplayObject
 		var lineLength:number[]=[];
 		var numSpacesPerline:number[]=[];
 
+		var offsety:number=2;
 		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
 
 		if(this._autoSize!=TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty){
@@ -1344,7 +1358,9 @@ export class TextField extends DisplayObject
 			w_len=this._textRuns_words[(tr*4)] + (this._textRuns_words[(tr*4)+1]*5);
 			tr_length=this._textRuns_words[(tr*4)+2];
 			//console.log(this._textFieldWidth, tr_length, maxLineWidth);
-			if(!this.multiline || tr_length<maxLineWidth || !this.wordWrap){
+			//80pro: change for icycle:
+			if(!this.multiline || tr_length<=maxLineWidth || !this.wordWrap){
+			//if(tr_length<maxLineWidth || !this.wordWrap){
 				// this must be a single textline
 				//console.log("one line");
 				lineWordStartIndices[0]=this._textRuns_words[(tr*4)];
@@ -1385,7 +1401,6 @@ export class TextField extends DisplayObject
 				//console.log("split lines",linecnt );
 			}
 			var offsetx:number=0;
-			var offsety:number=2;
 			var start_idx:number;
 			var start_idx:number;
 			var numSpaces:number;
@@ -1480,13 +1495,13 @@ export class TextField extends DisplayObject
 			textShape.verts.length=0;
 		}
 		this.textShapes={};
-/*
+
 		this._graphics.clearDrawing();
-		this._graphics.beginFill(this.backgroundColor, this.background?1:0);
-		//this.graphics.lineStyle(1, this.borderColor, this.border?1:0);
-		this._graphics.drawRect(0,0,this._textWidth+4, this._textHeight+4);
+		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
+		this._graphics.lineStyle(1, 0x00ff00, 1);//this.borderColor, this.border?1:0);
+		this._graphics.drawRect(0,0,this._width, this._height);
 		this._graphics.endFill();
-*/
+
 		var textShape:TextShape;
 		// process all textRuns
 		var tr:number=0;
@@ -1514,17 +1529,18 @@ export class TextField extends DisplayObject
 
 			var sampler:Sampler2D = new Sampler2D();
 			textShape.shape.style = new Style();
-			if (textShape.format.material) {
+			if (textShape.format.material && this._textColor==-1) {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				textShape.shape.material.animateUVs = true;
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			}
 			else {
-				var obj=Graphics.get_material_for_color(textShape.format.color, 1);
+
+				var obj=Graphics.get_material_for_color(this._textColor==-1?textShape.format.color:this._textColor, 1);
+
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
-					textShape.shape.material = obj.material;
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 					textShape.shape.material.animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
