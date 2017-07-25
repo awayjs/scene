@@ -567,21 +567,26 @@ export class DisplayObjectContainer extends DisplayObject
 			var childBox:Box;
 			var first:boolean = true;
 			for (var i:number = 0; i < numChildren; ++i) {
-				childBox = this._children[i].getBox();
 
-				if (childBox.isEmpty())
-					continue;
+				// ignore bounds of childs that are masked
+				if(this._children[i].masks==null){
 
-				childBox = this._children[i].getBox(this);
+					childBox = this._children[i].getBox();
 
-				if (first) {
-					first = false;
-					this._pBoxBounds.copyFrom(childBox);
-				} else {
-					this._pBoxBounds = this._pBoxBounds.union(childBox, this._pBoxBounds);
+					if (childBox.isEmpty())
+						continue;
+
+					childBox = this._children[i].getBox(this);
+
+					if (first) {
+						first = false;
+						this._pBoxBounds.copyFrom(childBox);
+					} else {
+						this._pBoxBounds = this._pBoxBounds.union(childBox, this._pBoxBounds);
+					}
 				}
 			}
-		}
+		}  
 	}
 
 	/**
