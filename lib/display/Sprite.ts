@@ -234,7 +234,7 @@ export class Sprite extends DisplayObjectContainer
 	{
 		super.clear();
 
-		this._graphics.clear();
+		this._graphics.clearInternal();
 	}
 
 	/**
