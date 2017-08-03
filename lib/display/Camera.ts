@@ -81,8 +81,8 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	 * @param sZ The z coordinate in screen space, representing the distance into the screen.
 	 * @return The scene position of the given screen coordinates.
 	 */
-	public unproject(nX:number, nY:number, sZ:number):Vector3D
+	public unproject(nX:number, nY:number, sZ:number, target:Vector3D = null):Vector3D
 	{
-		return this._projection.unproject(nX, nY, sZ);
+		return this._projection.unproject(nX, nY, sZ, target);
 	}
 }
