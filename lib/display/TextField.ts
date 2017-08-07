@@ -308,7 +308,14 @@ export class TextField extends DisplayObject
 	 *
 	 * @default false
 	 */
-	public background:boolean;
+	private _background:boolean;
+	public get background():boolean{
+		return this._background;
+	}
+	public set background(value:boolean):void{
+		this._background=value;
+		this._glyphsDirty=true;
+	}
 
 	/**
 	 * The color of the text field background. The default value is
@@ -317,7 +324,14 @@ export class TextField extends DisplayObject
 	 * text field has the <code>background</code> property set to
 	 * <code>true</code>.
 	 */
-	public backgroundColor:number /*int*/;
+	private _backgroundColor:number /*int*/;
+	public get backgroundColor():number{
+		return this._backgroundColor;
+	}
+	public set backgroundColor(value:number):void{
+		this._backgroundColor=value;
+		this._glyphsDirty=true;
+	}
 
 	/**
 	 * Specifies whether the text field has a border. If <code>true</code>, the
@@ -326,7 +340,14 @@ export class TextField extends DisplayObject
 	 *
 	 * @default false
 	 */
-	public border:boolean;
+	private _border:boolean;
+	public get border():boolean{
+		return this._border;
+	}
+	public set border(value:boolean):void{
+		this._border=value;
+		this._glyphsDirty=true;
+	}
 
 	/**
 	 * The color of the text field border. The default value is
@@ -334,7 +355,14 @@ export class TextField extends DisplayObject
 	 * if there currently is no border, but the color is visible only if the text
 	 * field has the <code>border</code> property set to <code>true</code>.
 	 */
-	public borderColor:number /*int*/;
+	private _borderColor:number /*int*/;
+	public get borderColor():number{
+		return this._borderColor;
+	}
+	public set borderColor(value:number):void{
+		this._borderColor=value;
+		this._glyphsDirty=true;
+	}
 
 	/**
 	 * An integer(1-based index) that indicates the bottommost line that is
@@ -1058,10 +1086,10 @@ export class TextField extends DisplayObject
 		this.selectable=true;
 		this._autoSize=TextFieldAutoSize.NONE;
 		this._wordWrap=false;
-		this.background=false;
-		this.backgroundColor=0xffffff;
-		this.border=false;
-		this.borderColor=0x000000;
+		this._background=false;
+		this._backgroundColor=0xffffff;
+		this._border=false;
+		this._borderColor=0x000000;
 
 		this._graphics = Graphics.getGraphics(this); //unique graphics object for each TextField
 	}
@@ -1464,7 +1492,7 @@ export class TextField extends DisplayObject
 		}
 		// -2 so this values do not include the left and top border
 		this._textWidth=text_width;
-		this._textHeight=offsety-2;
+		this._textHeight=offsety;
 
 
 		//console.log(this._textWidth, "/", this._textHeight);
@@ -1495,13 +1523,17 @@ export class TextField extends DisplayObject
 			textShape.verts.length=0;
 		}
 		this.textShapes={};
-/*
-		this._graphics.clearDrawing();
-		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
-		this._graphics.lineStyle(1, 0x00ff00, 1);//this.borderColor, this.border?1:0);
-		this._graphics.drawRect(0,0,this._width, this._height);
-		this._graphics.endFill();
-*/
+
+		this._graphics.clear();
+		if(this._background || this._border){
+			if(this._background)
+				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
+			if(this._border)
+				this._graphics.lineStyle(1, this._borderColor, 1);//this.borderColor, this.border?1:0);
+			this._graphics.drawRect(0,0,this._width, this._height);
+			this._graphics.endFill();
+		}
+
 		
 		var textShape:TextShape;
 		// process all textRuns

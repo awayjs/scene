@@ -137,6 +137,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	{
 		var thisLineheighttest:number=this._current_size *(this._font_em_size/this._ascent);
 
+		if(this.name=="BoldStyle"){
+			thisLineheighttest=this._current_size;
+		}
 		return thisLineheighttest;// ;//(this._ascent+this._descent)*this._size_multiply;
 	}
 
@@ -225,7 +228,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		for (w = startWord; w < w_len; w+=5) {
 			startIdx=tf.words[w];
 			x=tf.words[w+1];
-			y=tf.words[w+2]; // sunflower
+			y=tf.words[w+2];//-this.getLineHeight())+(this._size_multiply*this.ascent); // sunflower
+			if(this.name=="BoldStyle"){
+				y-=0.2*this.getLineHeight();
+			}
+			else{
+				//y-=0.03*this._current_size;
+			}
 			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // icycle
 			c_len=startIdx + tf.words[w+4];
 			for (c = startIdx; c < c_len; c++) {
