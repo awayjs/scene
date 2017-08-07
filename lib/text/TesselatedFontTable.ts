@@ -230,7 +230,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			x=tf.words[w+1];
 			y=tf.words[w+2];//-this.getLineHeight())+(this._size_multiply*this.ascent); // sunflower
 			if(this.name=="BoldStyle"){
-				y-=0.2*this.getLineHeight();
+				y-=0.18*this.getLineHeight();
 			}
 			else{
 				//y-=0.03*this._current_size;

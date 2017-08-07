@@ -1492,7 +1492,7 @@ export class TextField extends DisplayObject
 		}
 		// -2 so this values do not include the left and top border
 		this._textWidth=text_width;
-		this._textHeight=offsety;
+		this._textHeight=offsety-2;
 
 
 		//console.log(this._textWidth, "/", this._textHeight);
