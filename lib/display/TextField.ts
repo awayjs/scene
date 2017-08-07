@@ -312,7 +312,7 @@ export class TextField extends DisplayObject
 	public get background():boolean{
 		return this._background;
 	}
-	public set background(value:boolean):void{
+	public set background(value:boolean){
 		this._background=value;
 		this._glyphsDirty=true;
 	}
@@ -328,7 +328,7 @@ export class TextField extends DisplayObject
 	public get backgroundColor():number{
 		return this._backgroundColor;
 	}
-	public set backgroundColor(value:number):void{
+	public set backgroundColor(value:number){
 		this._backgroundColor=value;
 		this._glyphsDirty=true;
 	}
@@ -344,7 +344,7 @@ export class TextField extends DisplayObject
 	public get border():boolean{
 		return this._border;
 	}
-	public set border(value:boolean):void{
+	public set border(value:boolean){
 		this._border=value;
 		this._glyphsDirty=true;
 	}
@@ -359,7 +359,7 @@ export class TextField extends DisplayObject
 	public get borderColor():number{
 		return this._borderColor;
 	}
-	public set borderColor(value:number):void{
+	public set borderColor(value:number){
 		this._borderColor=value;
 		this._glyphsDirty=true;
 	}
