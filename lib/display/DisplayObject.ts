@@ -816,9 +816,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			if (!this._registrationMatrix3D)
 				this._registrationMatrix3D = new Matrix3D();
 
-			this._registrationMatrix3D._rawData[12] = -value.x/this._transform.scale.x;
-			this._registrationMatrix3D._rawData[13] = -value.y/this._transform.scale.y;
-			this._registrationMatrix3D._rawData[14] = -value.z/this._transform.scale.z;
+			this._registrationMatrix3D._rawData[12] = -value.x; // /this._transform.scale.x;
+			this._registrationMatrix3D._rawData[13] = -value.y; // /this._transform.scale.y;
+			this._registrationMatrix3D._rawData[14] = -value.z; // /this._transform.scale.z;
 		}
 
 		this._registrationMatrix3D.invalidatePosition();
