@@ -1,16 +1,14 @@
+import {IAssetAdapter} from "@awayjs/core";
+
 import {DisplayObject} from "../display/DisplayObject";
 
-export interface IDisplayObjectAdapter
+export interface IDisplayObjectAdapter extends IAssetAdapter
 {
-	adaptee:DisplayObject;
-
 	isBlockedByScript():boolean;
 
 	isVisibilityByScript():boolean;
 
 	freeFromScript():void;
 
-	clone(newAdaptee:DisplayObject):IDisplayObjectAdapter;
-
-	dispose();
+	clone();
 }

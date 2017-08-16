@@ -153,7 +153,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _iIsRoot:boolean;
 	public _iIsPartition:boolean;
-	public _adapter:IDisplayObjectAdapter;
 	private _animator:IAnimator;
 	public _material:IMaterial;
 	public _style:Style;
@@ -233,20 +232,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get traverseName():string
 	{
 		return DisplayObject.traverseName;
-	}
-	
-	/**
-	 * adapter is used to provide MovieClip to scripts taken from different platforms
-	 * setter typically managed by factory
-	 */
-	public get adapter():IDisplayObjectAdapter
-	{
-		return this._adapter;
-	}
-
-	public set adapter(value:IDisplayObjectAdapter)
-	{
-		this._adapter = value;
 	}
 
     public get inheritColorTransform():boolean
@@ -1575,9 +1560,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		if (this._explicitMasks)
 			displayObject.masks = this._explicitMasks;
-
-		if (this._adapter)
-			displayObject.adapter = this._adapter.clone(displayObject);
 
 		this._transform.copyRawDataTo(displayObject._transform);
 	}

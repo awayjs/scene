@@ -2,6 +2,8 @@ import {ColorTransform, Matrix3D, Matrix} from "@awayjs/core";
 
 import {Style} from "@awayjs/graphics";
 
+import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
+import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {Billboard} from "../display/Billboard";
 import {MovieClip} from "../display/MovieClip";
@@ -147,7 +149,7 @@ export class Timeline
 	{
 		if(this._framescripts[keyframe_idx]!=null){
 			if(this._framescripts_translated[keyframe_idx]==null){
-				this._framescripts[keyframe_idx] = target_mc.adapter.evalScript(this._framescripts[keyframe_idx]);
+				this._framescripts[keyframe_idx] = (<IMovieClipAdapter> target_mc.adapter).evalScript(this._framescripts[keyframe_idx]);
 				this._framescripts_translated[keyframe_idx]=true;
 			}
 			if(scriptPass1)
@@ -181,7 +183,7 @@ export class Timeline
 
 	public getPotentialChildInstance(id:number) : DisplayObject
 	{
-		var this_clone:DisplayObject = this._potentialPrototypes[id].clone();
+		var this_clone:DisplayObject = <DisplayObject> (<IDisplayObjectAdapter> this._potentialPrototypes[id].adapter).clone().adaptee;
 		this_clone.name = "";
 		if (this_clone.isAsset(Billboard)){
 			var billboard:Billboard=(<Billboard>this_clone);
@@ -258,15 +260,15 @@ export class Timeline
 				if (depth_sessionIDs[child._depthID] != child._sessionID) {
 					target_mc.removeChildAt(i);
 				} else if (!jump_forward) {
-					if(child.adapter) {
-						if (!child.adapter.isBlockedByScript()) {
+					if(child._adapter) {
+						if (!(<IDisplayObjectAdapter> child.adapter).isBlockedByScript()) {
 							child.transform.clearMatrix3D();
 							child.transform.clearColorTransform();
 							//this.name="";
 							child.masks = null;
 							child.maskMode = false;
 						}
-						if (!child.adapter.isVisibilityByScript()) {
+						if (!(<IDisplayObjectAdapter> child.adapter).isVisibilityByScript()) {
 							child.visible = true;
 						}
 					}
@@ -403,7 +405,7 @@ export class Timeline
 			child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
 			if (child) {
 				// check if the child is active + not blocked by script
-				this._blocked = Boolean(child.adapter && child.adapter.isBlockedByScript());
+				this._blocked = Boolean(child._adapter && (<IDisplayObjectAdapter> child.adapter).isBlockedByScript());
 
 				props_start_idx = this.update_child_props_indices_stream[i];
 				props_end_index = props_start_idx + this.update_child_props_length_stream[i];
@@ -471,7 +473,7 @@ export class Timeline
 	public update_name(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		child.name = this.properties_stream_strings[i];
-		target_mc.adapter.registerScriptObject(child);
+		(<IMovieClipAdapter> target_mc.adapter).registerScriptObject(child);
 	}
 
 	public update_button_name(target:DisplayObject, sourceMovieClip:MovieClip, i:number):void
@@ -479,12 +481,12 @@ export class Timeline
 		target.name = this.properties_stream_strings[i];
 		// todo: creating the buttonlistenrs later should also be done, but for icycle i dont think this will cause problems
 		(<MovieClip> target).addButtonListeners();
-		sourceMovieClip.adapter.registerScriptObject(target);
+		(<IMovieClipAdapter> sourceMovieClip.adapter).registerScriptObject(target);
 	}
 
 	public update_visibility(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
-		if (!child.adapter || !child.adapter.isVisibilityByScript())
+		if (!child._adapter || !(<IDisplayObjectAdapter> child.adapter).isVisibilityByScript())
 			child.visible = Boolean(i);
 	}
 

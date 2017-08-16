@@ -87,9 +87,8 @@ export class FrameScriptManager
 			// during the loop we might add more scripts to the queue
 			mc=this._queued_mcs[i];
 			if(mc.scene!=null) {
-				var caller = mc.adapter ? mc.adapter : mc;
 			//	try {
-				this._queued_scripts[i].call(caller);
+				this._queued_scripts[i].call(mc.adapter);
 			//	}
 			/*	catch (err) {
 					console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);

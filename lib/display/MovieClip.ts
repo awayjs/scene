@@ -1,4 +1,4 @@
-import {AssetEvent} from "@awayjs/core";
+import {AssetEvent, IAssetAdapter} from "@awayjs/core";
 
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {Timeline} from "../base/Timeline";
@@ -16,6 +16,11 @@ export class MovieClip extends Sprite
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
 
 	public static assetType:string = "[asset MovieClip]";
+
+	public static getNewMovieClip(timeline:Timeline = null):MovieClip
+	{
+		return (MovieClip._movieClips.length)? MovieClip._movieClips.pop() : new MovieClip(timeline)
+	}
 
 	private _timeline:Timeline;
 
@@ -38,20 +43,6 @@ export class MovieClip extends Sprite
 	private _potentialInstances:Array<DisplayObject> = [];
 	private _depth_sessionIDs:Object = {};
 	private _sessionID_childs:Object = {};
-
-	/**
-	 * adapter is used to provide MovieClip to scripts taken from different platforms
-	 * setter typically managed by factory
-	 */
-	public get adapter():IMovieClipAdapter
-	{
-		return <IMovieClipAdapter> this._adapter;
-	}
-
-	public set adapter(value:IMovieClipAdapter)
-	{
-		this._adapter = value;
-	}
 
 	constructor(timeline:Timeline = null)
 	{
@@ -162,8 +153,8 @@ export class MovieClip extends Sprite
 		// time only is relevant for the root mc, as it is the only one that executes the update function
 		this._time = 0;
 
-		if(this.adapter)
-			this.adapter.freeFromScript();
+		if(this._adapter)
+			(<IMovieClipAdapter> this.adapter).freeFromScript();
 
 		this.constructedKeyFrameIndex = -1;
 		for (var i:number = this.numChildren - 1; i >= 0; i--)
@@ -279,10 +270,10 @@ export class MovieClip extends Sprite
 	{
 		var child:DisplayObject = this._children[index];
 
-		if(child.adapter)
-			child.adapter.freeFromScript();
+		if(child._adapter)
+			(<IMovieClipAdapter> child.adapter).freeFromScript();
 
-		this.adapter.unregisterScriptObject(child);
+		(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
 
 		//check to make sure _depth_sessionIDs wasn't modified with a new child
 		if (this._depth_sessionIDs[child._depthID] == child._sessionID)
@@ -365,7 +356,7 @@ export class MovieClip extends Sprite
 
 	public clone():MovieClip
 	{
-		var newInstance:MovieClip = (MovieClip._movieClips.length)? MovieClip._movieClips.pop() : new MovieClip(this._timeline);
+		var newInstance:MovieClip = MovieClip.getNewMovieClip(this._timeline);
 
 		this.copyTo(newInstance);
 

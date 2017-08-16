@@ -103,6 +103,11 @@ export class TextField extends DisplayObject
 
 	public static assetType:string = "[asset TextField]";
 
+	public static getNewTextField():TextField
+	{
+		return (TextField._textFields.length)? TextField._textFields.pop() : new TextField()
+	}
+
 	private _line_indices:number[] = [];
 
 	private _graphics:Graphics;
@@ -1963,7 +1968,7 @@ export class TextField extends DisplayObject
 
 	public clone():TextField
 	{
-		var newInstance:TextField = (TextField._textFields.length)? TextField._textFields.pop() : new TextField();
+		var newInstance:TextField = TextField.getNewTextField();
 
 		this.copyTo(newInstance);
 

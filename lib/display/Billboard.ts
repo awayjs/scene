@@ -147,12 +147,13 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		this._pBoxBounds.depth = 0;
 	}
 
-	public clone():DisplayObjectContainer
+	public clone():Billboard
 	{
-		var clone:Billboard = new Billboard(this.material);
-		if(this.adapter)
-			clone.adapter=this.adapter.clone(clone);
-		return clone;
+		var newInstance:Billboard = new Billboard(this.material);
+
+		this.copyTo(newInstance);
+
+		return newInstance;
 	}
 
 	public _acceptTraverser(traverser:TraverserBase):void
