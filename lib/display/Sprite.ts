@@ -15,6 +15,11 @@ export class Sprite extends DisplayObjectContainer
 
 	public static assetType:string = "[asset Sprite]";
 
+	public static getNewSprite(material:IMaterial = null):Sprite
+	{
+		return (Sprite._sprites.length)? Sprite._sprites.pop() : new Sprite(material)
+	}
+
 	private _center:Vector3D;
 	public _graphics:Graphics;
 	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
