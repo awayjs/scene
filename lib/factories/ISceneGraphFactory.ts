@@ -1,4 +1,4 @@
-import {MaterialBase} from "@awayjs/graphics";
+import {MaterialBase, Image2D} from "@awayjs/graphics";
 
 import {Timeline} from "../base/Timeline";
 import {Billboard} from "../display/Billboard";
@@ -10,8 +10,15 @@ import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 export interface ISceneGraphFactory
 {
 	createMovieClip(timelime?:Timeline):MovieClip;
+
 	createTextField():TextField;
+
 	createDisplayObjectContainer():DisplayObjectContainer;
+
 	createSprite():Sprite;
+
 	createBillboard(material?:MaterialBase):Billboard;
+
+	createMaterial(image?:Image2D, alpha?:number):MaterialBase;
+	createMaterial(color?:number, alpha?:number):MaterialBase;
 }

@@ -48,7 +48,6 @@ export {ResizeEvent} from "./lib/events/ResizeEvent";
 export {TextureProjectorEvent} from "./lib/events/TextureProjectorEvent";
 export {TouchEvent} from "./lib/events/TouchEvent";
 
-export {DefaultSceneGraphFactory} from "./lib/factories/DefaultSceneGraphFactory";
 export {ISceneGraphFactory} from "./lib/factories/ISceneGraphFactory";
 
 export {IRenderer} from "./lib/IRenderer";

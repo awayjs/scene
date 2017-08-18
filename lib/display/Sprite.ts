@@ -156,11 +156,11 @@ export class Sprite extends DisplayObjectContainer
 		return newInstance;
 	}
 
-	public copyTo(sprite:Sprite):void
+	public copyTo(sprite:Sprite, cloneShapes:boolean = false):void
 	{
 		super.copyTo(sprite);
 
-		this._graphics.copyTo(sprite.graphics);
+		this._graphics.copyTo(sprite.graphics, cloneShapes);
     }
 
 	/**
