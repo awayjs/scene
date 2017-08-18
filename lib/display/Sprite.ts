@@ -17,7 +17,13 @@ export class Sprite extends DisplayObjectContainer
 
 	public static getNewSprite(material:IMaterial = null):Sprite
 	{
-		return (Sprite._sprites.length)? Sprite._sprites.pop() : new Sprite(material)
+		if (Sprite._sprites.length) {
+			var sprite:Sprite = Sprite._sprites.pop();
+			sprite.material = material;
+			return sprite;
+		}
+
+		return new Sprite(material);
 	}
 
 	private _center:Vector3D;
