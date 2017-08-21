@@ -65,7 +65,7 @@ export class PrimitivePrefabBase extends PrefabBase
 
 	public set scaleU(value:number)
 	{
-		if (this._scaleU = value)
+		if (this._scaleU == value)
 			return;
 
 		this._scaleU = value;
@@ -81,7 +81,7 @@ export class PrimitivePrefabBase extends PrefabBase
 
 	public set scaleV(value:number)
 	{
-		if (this._scaleV = value)
+		if (this._scaleV == value)
 			return;
 
 		this._scaleV = value;
