@@ -1551,6 +1551,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._registrationMatrix3D)
 			displayObject._registrationMatrix3D = this._registrationMatrix3D.clone();
 
+		displayObject._iSourcePrefab = this._iSourcePrefab;
 		displayObject.debugVisible = this._debugVisible;
 		displayObject.name = this._pName;
 		displayObject.mouseEnabled = this._explicitMouseEnabled;
