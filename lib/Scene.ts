@@ -7,14 +7,9 @@ export class Scene extends DisplayObjectContainer
 {
 	public static assetType:string = "[asset Scene]";
 
-	private _objects:Array<DisplayObject> = new Array<DisplayObject>();
+	private _objects:Object = new Object();
 	private _views:Array<IView> = new Array<IView>();
 	public _iCollectionMark = 0;
-
-	public get objects():Array<DisplayObject>
-	{
-		return this._objects;
-	}
 
 
 	/**
@@ -42,7 +37,7 @@ export class Scene extends DisplayObjectContainer
 	 */
 	public _iRegisterObject(displayObject:DisplayObject):void
 	{
-		this._objects.push(displayObject);
+		this._objects[displayObject.id] = displayObject;
 
 		var len:number = this._views.length;
 		for (var i:number = 0; i < len; i++)
@@ -54,7 +49,7 @@ export class Scene extends DisplayObjectContainer
 	 */
 	public _iUnregisterObject(displayObject:DisplayObject):void
 	{
-		this._objects.splice(this._objects.indexOf(displayObject), 1);
+		delete this._objects[displayObject.id];
 
 		var len:number = this._views.length;
 		for (var i:number = 0; i < len; i++)
@@ -68,9 +63,8 @@ export class Scene extends DisplayObjectContainer
 	{
 		this._views.push(view);
 
-		var len:number = this._objects.length;
-		for (var i:number = 0; i < len; i++)
-			view.registerObject(this._objects[i]);
+		for (var key in this._objects)
+			view.registerObject(this._objects[key]);
 	}
 
 	/**
@@ -80,8 +74,7 @@ export class Scene extends DisplayObjectContainer
 	{
 		this._views.splice(this._views.indexOf(view), 1);
 
-		var len:number = this._objects.length;
-		for (var i:number = 0; i < len; i++)
-			view.unRegisterObject(this._objects[i]);
+		for (var key in this._objects)
+			view.unRegisterObject(this._objects[key]);
 	}
 }

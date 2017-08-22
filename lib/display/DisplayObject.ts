@@ -2228,6 +2228,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _pInvalidateBounds():void
 	{
+		if (this._boxBoundsInvalid && this._sphereBoundsInvalid)
+			return;
+
 		this._boxBoundsInvalid = true;
 		this._sphereBoundsInvalid = true;
 
