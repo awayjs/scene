@@ -5,6 +5,7 @@ import {Billboard} from "../display/Billboard";
 import {TextField} from "../display/TextField";
 import {MovieClip} from "../display/MovieClip";
 import {Sprite} from "../display/Sprite";
+import {PrefabBase} from "../prefabs/PrefabBase";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 
 export interface ISceneGraphFactory
@@ -15,7 +16,7 @@ export interface ISceneGraphFactory
 
 	createDisplayObjectContainer():DisplayObjectContainer;
 
-	createSprite():Sprite;
+	createSprite(prefab?:PrefabBase):Sprite;
 
 	createBillboard(material?:MaterialBase):Billboard;
 
