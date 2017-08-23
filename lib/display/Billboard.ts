@@ -187,6 +187,12 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		this._pInvalidateBounds();
 
 		this.invalidateElements();
+
+		if (this._width != null)
+			this._setScaleX(this._width/this._billboardRect.width);
+
+		if (this._height != null)
+			this._setScaleY(this._height/this._billboardRect.height);
 	}
 
 
