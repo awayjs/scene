@@ -1,4 +1,4 @@
-import {MaterialBase, Image2D} from "@awayjs/graphics";
+import {MaterialBase, Image2D, IGraphicsFactory} from "@awayjs/graphics";
 
 import {Timeline} from "../base/Timeline";
 import {Billboard} from "../display/Billboard";
@@ -8,7 +8,7 @@ import {Sprite} from "../display/Sprite";
 import {PrefabBase} from "../prefabs/PrefabBase";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 
-export interface ISceneGraphFactory
+export interface ISceneGraphFactory extends IGraphicsFactory
 {
 	createMovieClip(timelime?:Timeline):MovieClip;
 
