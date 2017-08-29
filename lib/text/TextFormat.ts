@@ -283,6 +283,7 @@ export class TextFormat extends AssetBase
 		super();
 		this.font_name = font;
 		this.size = size;
+		this.color = color;
 		this.bold = bold;
 		this.italic = italic;
 		this.underline = underline;
