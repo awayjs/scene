@@ -569,8 +569,10 @@ export class DisplayObjectContainer extends DisplayObject
 			for (var i:number = 0; i < numChildren; ++i) {
 
 				// ignore bounds of childs that are masked
-				if(this._children[i].masks==null){
+				// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
+				//if(this._children[i].masks==null){
 
+				
 					childBox = this._children[i].getBox();
 
 					if (childBox.isEmpty())
@@ -584,7 +586,7 @@ export class DisplayObjectContainer extends DisplayObject
 					} else {
 						this._pBoxBounds = this._pBoxBounds.union(childBox, this._pBoxBounds);
 					}
-				}
+			//	}
 			}
 		}  
 	}
