@@ -235,6 +235,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			else{
 				//y-=0.03*this._current_size;
 			}
+			//todo: this is a temporary fix for sunflower `si` VoltMeter text vertical align
+			if(format.font_name=="DJB Get Digital"){
+				y-=2;
+			}
 			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // icycle
 			c_len=startIdx + tf.words[w+4];
 			for (c = startIdx; c < c_len; c++) {
