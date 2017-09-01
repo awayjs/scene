@@ -1184,10 +1184,15 @@ export class TextField extends DisplayObject
 					var tl_extra = 0;
 					var tl_extra_len = paragraphs.length;
 					for (tl = 0; tl < tl_len; tl++) {
-						extra_split=  (<string[]>paragraphs[tl].match(/[^\r\n]+/g));
-						tl_extra_len=extra_split.length;
-						for (tl_extra = 0; tl_extra < tl_extra_len; tl_extra++) {
-							this.buildParagraph(extra_split[tl_extra]);
+						extra_split=  (<string[]>paragraphs[tl].split("\n"));//match(/[^\r\n]+/g));
+						if(extra_split){
+							tl_extra_len=extra_split.length;
+							for (tl_extra = 0; tl_extra < tl_extra_len; tl_extra++) {
+								this.buildParagraph(extra_split[tl_extra]);
+							}
+						}
+						else{
+							this.buildParagraph(paragraphs[tl]);
 						}
 					}
 				}
