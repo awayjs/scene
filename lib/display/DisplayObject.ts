@@ -1836,7 +1836,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		//early out for non-shape tests
-		if (!shapeFlag)
+		if (!shapeFlag || this.assetType=="[asset TextField]" ||  this.assetType=="[asset Billboard]")
 			return true;
 
 		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
