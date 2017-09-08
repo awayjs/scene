@@ -236,10 +236,15 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 
 			// need to initialize raw arrays or can be reused?
 			if (this._numVertices == triangleGraphics.numVertices) {
-				triangleGraphics.invalidateIndices();
+				/*triangleGraphics.invalidateIndices();
 				triangleGraphics.invalidateVertices(triangleGraphics.positions);
 				triangleGraphics.invalidateVertices(triangleGraphics.normals);
-				triangleGraphics.invalidateVertices(triangleGraphics.tangents);
+				triangleGraphics.invalidateVertices(triangleGraphics.tangents);*/
+
+				triangleGraphics.positions.invalidate();
+				triangleGraphics.normals.invalidate();
+				triangleGraphics.tangents.invalidate();
+				triangleGraphics.indices.invalidate();
 			} else {
 				triangleGraphics.setIndices(new Uint16Array(numIndices));
 				triangleGraphics.setPositions(new Float32Array(this._numVertices*3));
@@ -506,7 +511,6 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 					}
 				}
 			}
-
 		} else if (elementsType == ElementsType.LINE) {
 			var lineGraphics:LineElements = <LineElements> target;
 
