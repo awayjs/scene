@@ -1493,6 +1493,12 @@ export class TextField extends DisplayObject
 				}
 				offsety+=format.font_table.getLineHeight()+format.leading;
 
+				/* enable for icycle:
+				if(format.leading==11 && format.font_name=="DayPosterBlack"){
+					offsety+=1.5;
+				}
+				*/
+				
 				if(line_width>text_width){
 					text_width=line_width;
 				}

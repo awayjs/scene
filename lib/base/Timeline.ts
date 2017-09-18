@@ -184,7 +184,7 @@ export class Timeline
 	public getPotentialChildInstance(id:number) : DisplayObject
 	{
 		var this_clone:DisplayObject = <DisplayObject> (<IDisplayObjectAdapter> this._potentialPrototypes[id].adapter).clone().adaptee;
-		this_clone.name = "";
+		//this_clone.name = "";
 		//if (this_clone.isAsset(Billboard)){
 			//var billboard:Billboard=(<Billboard>this_clone);
 			//billboard.style=new Style();
