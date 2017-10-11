@@ -140,8 +140,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		if(this.name=="BoldStyle"){
 			thisLineheighttest=this._current_size;
 		}
-		return thisLineheighttest; // sf
-		//return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
+		//return thisLineheighttest; // sf
+		return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
 	}
 
 	public get assetType():string
@@ -240,7 +240,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			if(format.font_name=="DJB Get Digital"){
 				y-=2;
 			}
-			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // enable for icycle
+			y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // enable for icycle
 			c_len=startIdx + tf.words[w+4];
 			for (c = startIdx; c < c_len; c++) {
 				hack_x_mirror=false;

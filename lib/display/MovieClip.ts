@@ -1,5 +1,5 @@
-import {AssetEvent, IAssetAdapter} from "@awayjs/core";
-
+import {AssetEvent,IAsset, IAssetAdapter} from "@awayjs/core";
+import {Graphics} from "@awayjs/graphics";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {Timeline} from "../base/Timeline";
 import {MouseEvent} from "../events/MouseEvent";
@@ -40,7 +40,7 @@ export class MovieClip extends Sprite
 	private _skipAdvance : boolean;
 	private _isInit:boolean = true;
 
-	private _potentialInstances:Array<DisplayObject> = [];
+	private _potentialInstances:Array<IAsset> = [];
 	private _depth_sessionIDs:Object = {};
 	private _sessionID_childs:Object = {};
 
@@ -73,6 +73,13 @@ export class MovieClip extends Sprite
 		this._timeline = timeline || new Timeline();
 	}
 
+	public unregisterScriptObject(child:DisplayObject):void
+	{
+		delete this[child.name];
+
+		if(child.isAsset(MovieClip))
+			(<MovieClip>child).removeButtonListeners();
+	}
 	public dispose():void
 	{
 		this.disposeValues();
@@ -337,7 +344,7 @@ export class MovieClip extends Sprite
 		}
 	}
 
-	public getPotentialChildInstance(id:number) : DisplayObject
+	public getPotentialChildInstance(id:number) : IAsset
 	{
 		if (!this._potentialInstances[id])
 			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
@@ -429,11 +436,14 @@ export class MovieClip extends Sprite
 		//clear out potential instances
 		var len:number = this._potentialInstances.length;
 		for (var i:number = 0; i < len; i++) {
-			var instance:DisplayObject = this._potentialInstances[i];
+			var instance:IAsset = this._potentialInstances[i];
 
 			//only dispose instances that are not used in script ie. do not have an instance name
 			if (instance && instance.name == "") {
-				FrameScriptManager.add_child_to_dispose(instance);
+				if(!instance.isAsset(Graphics)){
+					FrameScriptManager.add_child_to_dispose(<DisplayObject>instance);
+
+				}
 				delete this._potentialInstances[i];
 			}
 		}

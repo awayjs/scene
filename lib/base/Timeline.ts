@@ -1,6 +1,6 @@
-import {ColorTransform, Matrix3D, Matrix} from "@awayjs/core";
+import {ColorTransform, IAsset, Matrix3D, Matrix} from "@awayjs/core";
 
-import {Style} from "@awayjs/graphics";
+import {Style, Graphics} from "@awayjs/graphics";
 
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
@@ -53,7 +53,7 @@ export class Timeline
 	public properties_stream_f32_ct:ArrayBufferView;	// list of floats
 	public properties_stream_strings:Array<string>;
 
-	private _potentialPrototypes:Array<DisplayObject>;
+	private _potentialPrototypes:Array<IAsset>;
 
 	public numKeyFrames:number=0;
 
@@ -165,13 +165,13 @@ export class Timeline
 		return this.keyframe_indices.length;
 	}
 
-	public get potentialPrototypes():Array<DisplayObject>
+	public get potentialPrototypes():Array<IAsset>
 	{
 		return this._potentialPrototypes;
 
 	}
 
-	public getPotentialChildPrototype(id:number):DisplayObject
+	public getPotentialChildPrototype(id:number):IAsset
 	{
 		return this._potentialPrototypes[id];
 
@@ -181,21 +181,19 @@ export class Timeline
 		return this.keyframe_indices[frame_index];
 	}
 
-	public getPotentialChildInstance(id:number) : DisplayObject
+	public getPotentialChildInstance(id:number) : IAsset
 	{
-		var this_clone:DisplayObject = <DisplayObject> (<IDisplayObjectAdapter> this._potentialPrototypes[id].adapter).clone().adaptee;
-		//this_clone.name = "";
-		//if (this_clone.isAsset(Billboard)){
-			//var billboard:Billboard=(<Billboard>this_clone);
-			//billboard.style=new Style();
-			//billboard.style.uvMatrix=new Matrix(1,0,0,-1,0,0);
-			//billboard.style.uvMatrix.scale(1,1);
-			//billboard.material.animateUVs=true;
-		//}
-		return this_clone;
+		var asset:IAsset=this._potentialPrototypes[id];
+		if(asset.isAsset(Graphics)){
+			(<Graphics>asset).endFill();
+			return asset;
+		}
+		else{
+			return <DisplayObject> (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
+		}
 	}
 
-	public registerPotentialChild(prototype:DisplayObject) : void
+	public registerPotentialChild(prototype:IAsset) : void
 	{
 		var id = this._potentialPrototypes.length;
 		this._potentialPrototypes[id] = prototype;
@@ -276,13 +274,23 @@ export class Timeline
 			}
 		}
 
+		var child1:IAsset;
 		// now we need to addchild the objects that were added before targetframe first
 		// than we can add the script of the targetframe
 		// than we can addchild objects added on targetframe
 		for (var key in depth_sessionIDs) {
-			child = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
-			if (child._sessionID == -1)
-				target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
+			child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
+
+			if(child1.isAsset(Graphics)){
+				target_mc.graphics.clear();
+				target_mc.graphics.copyFrom(<Graphics>child1);
+			}
+			else{
+				child=<DisplayObject>child1;
+				if (child._sessionID == -1)
+					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
+
+			}
 		}
 
 		if (!skip_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
@@ -389,7 +397,15 @@ export class Timeline
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		for (var i:number = end_index - 1; i >= start_index; i--) {
 			idx = i*2;
-			sourceMovieClip._addTimelineChildAt(sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]), this.add_child_stream[idx + 1] - 16383, i);
+			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
+			if(childAsset.isAsset(Graphics)){
+				sourceMovieClip.graphics.clear();
+				sourceMovieClip.graphics.copyFrom(<Graphics>childAsset);
+			}
+			else{
+				sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);
+
+			}
 		}
 	}
 
