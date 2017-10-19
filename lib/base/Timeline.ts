@@ -7,6 +7,8 @@ import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {Billboard} from "../display/Billboard";
 import {MovieClip} from "../display/MovieClip";
+import {Sprite} from "../display/Sprite";
+import {MorphSprite} from "../display/MorphSprite";
 import {DisplayObject} from "../display/DisplayObject";
 import {FrameScriptManager} from "../managers/FrameScriptManager";
 
@@ -54,6 +56,8 @@ export class Timeline
 	public properties_stream_strings:Array<string>;
 
 	private _potentialPrototypes:Array<IAsset>;
+	public graphicsPool:any;
+	public audioPool:any;
 
 	public numKeyFrames:number=0;
 
@@ -61,6 +65,9 @@ export class Timeline
 	{
 
 		this.keyframe_indices = [];
+
+		this.graphicsPool={};
+		this.audioPool={};
 
 		this._potentialPrototypes = [];
 		this._labels = {};
@@ -80,6 +87,9 @@ export class Timeline
 		this._functions[12] = this.update_mtx_pos;
 		this._functions[200] = this.enable_maskmode;
 		this._functions[201] = this.remove_masks;
+		this._functions[202] = this.swap_graphics;
+		this._functions[203] = this.set_ratio;
+		this._functions[204] = this.start_audio;
 
 	}
 
@@ -185,7 +195,7 @@ export class Timeline
 	{
 		var asset:IAsset=this._potentialPrototypes[id];
 		if(asset.isAsset(Graphics)){
-			(<Graphics>asset).endFill();
+			//(<Graphics>asset).endFill();
 			return asset;
 		}
 		else{
@@ -282,13 +292,13 @@ export class Timeline
 			child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
 
 			if(child1.isAsset(Graphics)){
-				target_mc.graphics.clear();
-				target_mc.graphics.copyFrom(<Graphics>child1);
+				//target_mc.graphics.clear();
+				//target_mc.graphics.copyFrom(<Graphics>child1);
 			}
 			else{
 				child=<DisplayObject>child1;
 				if (child._sessionID == -1)
-					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
+					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]*2);
 
 			}
 		}
@@ -399,11 +409,11 @@ export class Timeline
 			idx = i*2;
 			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
 			if(childAsset.isAsset(Graphics)){
-				sourceMovieClip.graphics.clear();
-				sourceMovieClip.graphics.copyFrom(<Graphics>childAsset);
+				//sourceMovieClip.graphics.clear();
+				//sourceMovieClip.graphics.copyFrom(<Graphics>childAsset);
 			}
 			else{
-				sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);
+				sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, this.add_child_stream[idx]);
 
 			}
 		}
@@ -547,6 +557,21 @@ export class Timeline
 	{
 		child.masks = null;
 	}
+	public swap_graphics(child:DisplayObject, target_mc:MovieClip, i:number):void
+	{
+		var myGraphics:Graphics=<Graphics>this.graphicsPool[this.properties_stream_int[i]];
+		(<Sprite>child).graphics.clear();
+		(<Sprite>child).graphics.copyFrom(myGraphics);
+	}
+
+	public start_audio(child:DisplayObject, target_mc:MovieClip, i:number):void
+	{
+	}
+	public set_ratio(child:DisplayObject, target_mc:MovieClip, i:number):void
+	{
+		(<MorphSprite>child).setRatio(this.properties_stream_int[i]/0xffff);
+	}
+
 	public update_blendmode(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		console.log("update blendmode "+i);

@@ -31,6 +31,7 @@ export {LightBase} from "./lib/display/LightBase";
 export {LightProbe} from "./lib/display/LightProbe";
 export {LineSegment} from "./lib/display/LineSegment";
 export {LoaderContainer} from "./lib/display/LoaderContainer";
+export {MorphSprite} from "./lib/display/MorphSprite";
 export {MovieClip} from "./lib/display/MovieClip";
 export {PointLight} from "./lib/display/PointLight";
 export {Skybox} from "./lib/display/Skybox";

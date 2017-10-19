@@ -9,6 +9,7 @@ import {DisplayObject} from "./DisplayObject";
 import {Sprite} from "./Sprite";
 import {TextField} from "./TextField";
 
+
 export class MovieClip extends Sprite
 {
 	private static _skipAdvance:boolean;

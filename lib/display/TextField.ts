@@ -1396,7 +1396,7 @@ export class TextField extends DisplayObject
 			w_len=this._textRuns_words[(tr*4)] + (this._textRuns_words[(tr*4)+1]*5);
 			tr_length=this._textRuns_words[(tr*4)+2];
 			//console.log(this._textFieldWidth, tr_length, maxLineWidth);
-			//80pro: change for icycle:
+
 			if(!this.multiline || tr_length<=maxLineWidth || !this.wordWrap){
 			//if(tr_length<maxLineWidth || !this.wordWrap){
 				// this must be a single textline
@@ -1493,10 +1493,10 @@ export class TextField extends DisplayObject
 				}
 				offsety+=format.font_table.getLineHeight()+format.leading;
 
-				/* enable for icycle:*/
+				/* enable for icycle:
 				if(format.leading==11 && format.font_name=="DayPosterBlack"){
 					offsety+=1.5;
-				}
+				}*/
 
 				
 				if(line_width>text_width){
