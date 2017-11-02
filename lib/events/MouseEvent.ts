@@ -1,8 +1,6 @@
 import {Point, Vector3D, EventBase} from "@awayjs/core";
 
-import {IEntity, IRenderable, MaterialBase} from "@awayjs/graphics";
-
-import {IView} from "../IView";
+import {IEntity, IRenderable, MaterialBase, IView} from "@awayjs/graphics";
 
 /**
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.

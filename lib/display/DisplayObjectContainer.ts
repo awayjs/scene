@@ -690,13 +690,13 @@ export class DisplayObjectContainer extends DisplayObject
 
 		if (this._pIsContainer != isContainer || this._pIsEntity != isEntity) {
 			if (this._pScene)
-				this._pScene._iUnregisterObject(this);
+				this._pScene._clearEntity(this);
 
 			this._pIsContainer = isContainer;
 			this._pIsEntity = isEntity;
 
 			if (this._pScene)
-				this._pScene._iRegisterObject(this);
+				this._pScene._invalidateEntity(this);
 		}
 
 		this._pInvalidateBounds();

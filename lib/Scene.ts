@@ -1,7 +1,6 @@
-import {DisplayObject} from "./display/DisplayObject";
-import {DisplayObjectContainer} from "./display/DisplayObjectContainer";
+import {IEntity, IView} from "@awayjs/graphics";
 
-import {IView} from "./IView";
+import {DisplayObjectContainer} from "./display/DisplayObjectContainer";
 
 export class Scene extends DisplayObjectContainer
 {
@@ -35,46 +34,46 @@ export class Scene extends DisplayObjectContainer
 	/**
 	 * @internal
 	 */
-	public _iRegisterObject(displayObject:DisplayObject):void
+	public _invalidateEntity(entity:IEntity):void
 	{
-		this._objects[displayObject.id] = displayObject;
+		this._objects[entity.id] = entity;
 
 		var len:number = this._views.length;
 		for (var i:number = 0; i < len; i++)
-			this._views[i].registerObject(displayObject);
+			this._views[i].invalidateEntity(entity);
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iUnregisterObject(displayObject:DisplayObject):void
+	public _clearEntity(entity:IEntity):void
 	{
-		delete this._objects[displayObject.id];
+		delete this._objects[entity.id];
 
 		var len:number = this._views.length;
 		for (var i:number = 0; i < len; i++)
-			this._views[i].unRegisterObject(displayObject);
+			this._views[i].clearEntity(entity);
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iRegisterView(view:IView):void
+	public _addView(view:IView):void
 	{
 		this._views.push(view);
 
 		for (var key in this._objects)
-			view.registerObject(this._objects[key]);
+			view.invalidateEntity(this._objects[key]);
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iUnregisterView(view:IView):void
+	public _removeView(view:IView):void
 	{
 		this._views.splice(this._views.indexOf(view), 1);
 
 		for (var key in this._objects)
-			view.unRegisterObject(this._objects[key]);
+			view.clearEntity(this._objects[key]);
 	}
 }

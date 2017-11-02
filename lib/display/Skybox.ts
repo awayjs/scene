@@ -1,9 +1,10 @@
 import {AssetEvent} from "@awayjs/core";
 
+import {LightPickerBase} from "@awayjs/graphics";
+
 import {BlendMode, ImageCube, TraverserBase, IAnimationSet, IRenderable, IMaterial, IEntity, RenderableEvent, MaterialEvent, SingleCubeTexture, TextureBase, Style, StyleEvent} from "@awayjs/graphics";
 
 import {BoundsType} from "../bounds/BoundsType";
-import {LightPickerBase} from "../lightpickers/LightPickerBase";
 
 import {DisplayObject} from "./DisplayObject";
 

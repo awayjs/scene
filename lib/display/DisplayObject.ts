@@ -1850,16 +1850,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public lookAt(scenePosition:Vector3D, upAxis:Vector3D = null):void
 	{
-		if (upAxis == null)
-			upAxis = Vector3D.Y_AXIS;
-
-		var m:Matrix3D = Matrix3D.getPointAtMatrix(new Vector3D(), scenePosition.subtract(this._transform.position), upAxis, Matrix3D.CALCULATION_MATRIX);
-
-		var vec:Vector3D = m.decompose()[1];
-
-		this.rotationX = vec.x*MathConsts.RADIANS_TO_DEGREES;
-		this.rotationY = vec.y*MathConsts.RADIANS_TO_DEGREES;
-		this.rotationZ = vec.z*MathConsts.RADIANS_TO_DEGREES;
+		this.transform.lookAt(scenePosition, upAxis);
 	}
 
 	/**
@@ -2074,7 +2065,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		if (this._pScene) {
 			//unregister object from current scene
-			this._pScene._iUnregisterObject(this);
+			this._pScene._clearEntity(this);
 
 			//gc abstraction objects
 			this.clear();
@@ -2089,7 +2080,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		if (this._pScene) {
 			//register object with scene
-			this._pScene._iRegisterObject(this);
+			this._pScene._invalidateEntity(this);
 		}
 
 		if (sceneChanged && this._listenToSceneChanged)
