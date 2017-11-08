@@ -298,7 +298,7 @@ export class Timeline
 			else{
 				child=<DisplayObject>child1;
 				if (child._sessionID == -1)
-					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]*2);
+					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
 
 			}
 		}
@@ -413,7 +413,7 @@ export class Timeline
 				//sourceMovieClip.graphics.copyFrom(<Graphics>childAsset);
 			}
 			else{
-				sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, this.add_child_stream[idx]);
+				sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);//this.add_child_stream[idx]);
 
 			}
 		}
@@ -437,6 +437,9 @@ export class Timeline
 				props_end_index = props_start_idx + this.update_child_props_length_stream[i];
 				for(p = props_start_idx; p < props_end_index; p++)
 					this._functions[this.property_type_stream[p]].call(this, child, target_mc, this.property_index_stream[p]);
+			}
+			else{
+				console.log("timeline: child not found");
 			}
 		}
 	}
@@ -560,6 +563,7 @@ export class Timeline
 	public swap_graphics(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		var myGraphics:Graphics=<Graphics>this.graphicsPool[this.properties_stream_int[i]];
+		console.log("frame:", target_mc.currentFrameIndex ,"swap graphics: ", target_mc.id, i, myGraphics.id);
 		(<Sprite>child).graphics.clear();
 		(<Sprite>child).graphics.copyFrom(myGraphics);
 	}
