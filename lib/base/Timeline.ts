@@ -435,7 +435,7 @@ export class Timeline
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		for(var i:number = start_index; i < end_index; i++) {
 			var child:WaveAudio = this.audioPool[this.add_sounds_stream[i]];
-			child.play(0,0);
+			child.play(0,false);
 			//console.log("start sound:", child);
 		}
 
