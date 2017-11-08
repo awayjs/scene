@@ -1,4 +1,4 @@
-import {ColorTransform, IAsset, Matrix3D, Matrix} from "@awayjs/core";
+import {WaveAudio, ColorTransform, IAsset, Matrix3D, Matrix} from "@awayjs/core";
 
 import {Style, Graphics} from "@awayjs/graphics";
 
@@ -37,6 +37,7 @@ export class Timeline
 	public command_length_stream:ArrayBufferView;
 
 	public add_child_stream:ArrayBufferView;
+	public add_sounds_stream:ArrayBufferView;
 	public remove_child_stream:ArrayBufferView;
 	public update_child_stream:ArrayBufferView;
 
@@ -345,6 +346,12 @@ export class Timeline
 
 			if (frame_recipe & 8)
 				this._update_indices[update_cnt++] = frame_command_idx;// execute update command later
+
+			if (frame_recipe & 16) {
+				start_index = this.command_index_stream[frame_command_idx];
+				end_index = start_index + this.command_length_stream[frame_command_idx++];
+			}
+
 		}
 	}
 
@@ -383,6 +390,9 @@ export class Timeline
 
 			if(frame_recipe & 8)
 				this.update_childs(target_mc, frame_command_idx++);
+
+			if(frame_recipe & 16)
+				this.start_sounds(target_mc, frame_command_idx++);
 		}
 	}
 
@@ -419,6 +429,17 @@ export class Timeline
 		}
 	}
 
+	public start_sounds(target_mc:MovieClip, frame_command_idx:number):void
+	{
+		var start_index:number = this.command_index_stream[frame_command_idx];
+		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
+		for(var i:number = start_index; i < end_index; i++) {
+			var child:WaveAudio = this.audioPool[this.add_sounds_stream[i]];
+			child.play(0,0);
+			//console.log("start sound:", child);
+		}
+
+	}
 	public update_childs(target_mc:MovieClip, frame_command_idx:number):void
 	{
 		var p:number;
