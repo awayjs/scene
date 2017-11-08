@@ -115,6 +115,8 @@ export class MorphSprite extends Sprite
 			var endLastX=0;
 			var endLastY=0;
 			var len_contours=startPath._commands.length;
+			startPath=this.start[0];
+			endPath=this.end[0];
 			if(endPath._commands.length!=len_contours) {
 				throw("Error in morph data - different number of contour");
 			}
