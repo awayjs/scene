@@ -143,7 +143,7 @@ export class MorphSprite extends Sprite
 							startLastY=startData[startDataCnt++];
 							endLastX=endData[endDataCnt++];
 							endLastY=endData[endDataCnt++];
-							newPath.moveTo(ratioStart * startLastX + ratioEnd * endLastX,ratioStart * startLastY + ratioEnd * endLastY,);
+							newPath.moveTo(ratioStart * startLastX + ratioEnd * endLastX,ratioStart * startLastY + ratioEnd * endLastY);
 							break;
 						case GraphicsPathCommand.LINE_TO:
 							if(endCmds[c2]==GraphicsPathCommand.LINE_TO){
@@ -151,7 +151,7 @@ export class MorphSprite extends Sprite
 								startLastY=startData[startDataCnt++];
 								endLastX=endData[endDataCnt++];
 								endLastY=endData[endDataCnt++];
-								newPath.lineTo(ratioStart * startLastX + ratioEnd * endLastX,ratioStart * startLastY + ratioEnd * endLastY,);
+								newPath.lineTo(ratioStart * startLastX + ratioEnd * endLastX,ratioStart * startLastY + ratioEnd * endLastY);
 							}
 							else if(endCmds[c2]==GraphicsPathCommand.CURVE_TO){
 								var ctrX=startLastX+(startData[startDataCnt++]-startLastX)/2;
