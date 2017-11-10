@@ -1545,8 +1545,8 @@ export class TextField extends DisplayObject
 			if(this._background)
 				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
 			if(this._border)
-				this._graphics.lineStyle(1, this._borderColor, 1);//this.borderColor, this.border?1:0);
-			this._graphics.drawRect(0,0,this._width, this._height);
+				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
+			this._graphics.drawRect(-1,-1,this._width, this._height);
 			this._graphics.endFill();
 		}
 

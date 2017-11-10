@@ -229,7 +229,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		for (w = startWord; w < w_len; w+=5) {
 			startIdx=tf.words[w];
 			x=tf.words[w+1];
-			y=tf.words[w+2];
+			y=tf.words[w+2]-2;// -2 for swf adjusting
 			if(this.name=="BoldStyle"){
 				y-=0.2*this.getLineHeight();
 			}
