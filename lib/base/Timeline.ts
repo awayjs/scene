@@ -22,6 +22,9 @@ export class Timeline
 	public _framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public _framescripts_translated:Object;    // dictionary to store keyframeindex => bool that keeps track of already converted scripts
 
+	public avm1framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
+	public avm1framescripts_translated:Object;    // dictionary to store keyframeindex => bool that keeps track of already converted scripts
+
 	public keyframe_indices:Array<number>;     		//stores 1 keyframeindex per frameindex
 	public keyframe_firstframes:Array<number>;     	//stores the firstframe of each keyframe
 	public keyframe_constructframes:Array<number>;    //stores the previous fullConstruct keyframeindex
@@ -74,6 +77,8 @@ export class Timeline
 		this._labels = {};
 		this._framescripts = {};
 		this._framescripts_translated = {};
+		this.avm1framescripts = {};
+		this.avm1framescripts_translated = {};
 
 		//cache functions
 		this._functions[1] = this.update_mtx_all;
@@ -168,6 +173,10 @@ export class Timeline
 			else
 				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
 
+		}
+		if(this.avm1framescripts[keyframe_idx]!=null){
+			MovieClip.avm1ScriptQueue.push(target_mc);
+			
 		}
 	}
 

@@ -12,6 +12,7 @@ import {TextField} from "./TextField";
 
 export class MovieClip extends Sprite
 {
+	public static avm1ScriptQueue:MovieClip[]=[];
 	private static _skipAdvance:boolean;
 
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
