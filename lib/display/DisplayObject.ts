@@ -229,6 +229,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public isSlice9ScaledMC:boolean=false;
 	public isSlice9ScaledSprite:boolean=false;
 
+	public dispatchFrameEvents(events:any[]) {
+		this.dispatchEvent(events[0]);//ENTER_FRAME
+		this.dispatchEvent(events[1]);//EXIT_FRAME
+
+	}
+
 	public get traverseName():string
 	{
 		return DisplayObject.traverseName;
@@ -1559,6 +1565,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		displayObject.maskMode = this._maskMode;
 		displayObject.castsShadows = this.castsShadows;
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
+		displayObject._symbol = this._symbol;
 		if (this._explicitMasks)
 			displayObject.masks = this._explicitMasks;
 

@@ -75,6 +75,13 @@ export class MovieClip extends Sprite
 		this._timeline = timeline || new Timeline();
 	}
 
+	public registerScriptObject(child:DisplayObject):void
+	{
+		this[child.name]=child;
+
+		if(child.isAsset(MovieClip))
+			(<MovieClip>child).removeButtonListeners();
+	}
 	public unregisterScriptObject(child:DisplayObject):void
 	{
 		delete this[child.name];
@@ -113,6 +120,14 @@ export class MovieClip extends Sprite
 		}
 	}
 
+	public get buttonMode():boolean
+	{
+		return this._isButton;
+	}
+	public set buttonMode(value:boolean)
+	{
+		this._isButton = value;
+	}
 	public get isInit():boolean
 	{
 		return this._isInit;
@@ -402,7 +417,7 @@ export class MovieClip extends Sprite
 			if (child.isAsset(MovieClip))
 				(<MovieClip> child).advanceFrame();
 		}
-		this.dispatchEvent(this._enterFrame);
+		//80pro temp this.dispatchEvent(this._enterFrame);
 		this._skipAdvance = false;
 	}
 

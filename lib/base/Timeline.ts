@@ -60,6 +60,7 @@ export class Timeline
 	public properties_stream_strings:Array<string>;
 
 	private _potentialPrototypes:Array<IAsset>;
+	public potentialPrototypesInitEventsMap:any;
 	public graphicsPool:any;
 	public audioPool:any;
 
@@ -72,7 +73,7 @@ export class Timeline
 
 		this.graphicsPool={};
 		this.audioPool={};
-
+		this.potentialPrototypesInitEventsMap={};
 		this._potentialPrototypes = [];
 		this._labels = {};
 		this._framescripts = {};
@@ -174,7 +175,7 @@ export class Timeline
 				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
 
 		}
-		if(this.avm1framescripts[keyframe_idx]!=null){
+		if(this.avm1framescripts[target_mc.currentFrameIndex]!=null){
 			MovieClip.avm1ScriptQueue.push(target_mc);
 			
 		}
@@ -209,7 +210,11 @@ export class Timeline
 			return asset;
 		}
 		else{
-			return <DisplayObject> (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
+			var clonedInstance:DisplayObject=<DisplayObject> (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
+			if(this.potentialPrototypesInitEventsMap[id]){
+				(<any>clonedInstance.adapter).initEvents=this.potentialPrototypesInitEventsMap[id];
+			}
+			return clonedInstance;
 		}
 	}
 
