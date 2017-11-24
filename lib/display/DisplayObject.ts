@@ -214,6 +214,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _boundsType:string;
 
+	public cursorType:string;
+
 	public _iSourcePrefab:PrefabBase;
 
     private _inheritColorTransform:boolean = true;
@@ -1504,6 +1506,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		super();
 
+		this.cursorType="";
 		//global debug bounding boxes:
 		//this._debugVisible=true;
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);

@@ -29,6 +29,7 @@ export {LineSegment} from "./lib/display/LineSegment";
 export {LoaderContainer} from "./lib/display/LoaderContainer";
 export {MorphSprite} from "./lib/display/MorphSprite";
 export {MovieClip} from "./lib/display/MovieClip";
+export {SimpleButton} from "./lib/display/SimpleButton";
 export {Skybox} from "./lib/display/Skybox";
 export {Sprite} from "./lib/display/Sprite";
 export {TextField} from "./lib/display/TextField";

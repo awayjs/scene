@@ -50,6 +50,7 @@ export class MovieClip extends Sprite
 	{
 		super();
 
+		this.cursorType="pointer";
 		this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
 
 		this.inheritColorTransform = true;
