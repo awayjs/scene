@@ -1,4 +1,4 @@
-import {AssetBase, AttributesBuffer, AttributesView} from "@awayjs/core";
+import {AssetBase, AttributesBuffer, AttributesView, Point} from "@awayjs/core";
 
 import {GraphicsPath, GraphicsFactoryStrokes, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle} from "@awayjs/graphics";
 
@@ -33,6 +33,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	private _charDictDirty:Boolean;
 	private _usesCurves:boolean;
 	private _opentype_font:any;
+	private _glyphIdxToChar:any;
 	
 	public fallbackTable:IFontTable;
 
@@ -58,6 +59,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		this._ascent=0;
 		this._descent=0;
 		this._usesCurves=false;
+		this._glyphIdxToChar={};
 
 		if(opentype_font){
 			this._opentype_font=opentype_font;
@@ -206,6 +208,63 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		this._font_em_size=font_em_size;
 	}
 
+	public buildTextLineFromIndices(tf:TextField, format:TextFormat, x:number, y:number, indices:number[], advance:number[]):Point {
+
+		var textShape:TextShape=tf.getTextShapeForIdentifierAndFormat(format.color.toString(), format);
+
+		var origin_x=x;
+		var origin_y=y;
+		y-=this.getLineHeight();
+		var charGlyph:TesselatedFontChar;
+		var char_vertices:AttributesBuffer;
+		var c:number=0;
+		var c_len:number=0;
+		var startIdx:number=0;
+		var buffer:Float32Array;
+		var v:number;
+		var size_multiply:number;
+		var hack_x_mirror:boolean=false;
+		
+		var idx:number=0;
+		var i:number=0;
+		var i_len:number=indices.length;
+		// loop over all the words and create the text data for it
+		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
+		for (i = 0; i < i_len; i++) {
+			idx=indices[i];
+
+			charGlyph=this._glyphIdxToChar[idx];
+			size_multiply=this._size_multiply;
+
+			if(!charGlyph) {
+				//console.log("no glyph found at idx", idx, "todo: support fallback fonts");
+			}
+			else{
+				char_vertices = charGlyph.fill_data;
+				buffer = new Float32Array(char_vertices.buffer);
+				if(this.usesCurves) {
+					for (v = 0; v < char_vertices.count; v++) {
+						textShape.verts[textShape.verts.length] = buffer[v * 3] * size_multiply + x;
+						textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
+						textShape.verts[textShape.verts.length] = buffer[v * 3 + 2];
+					}
+				}
+				else {
+					for (v = 0; v < char_vertices.count; v++) {
+						textShape.verts[textShape.verts.length] = buffer[v * 2] * size_multiply + x;
+						textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
+					}
+
+				}
+			}
+			x+=advance[i];// * size_multiply;
+
+
+		}
+		return new Point(x-origin_x, this.getLineHeight());
+
+
+	}
 
 	public fillTextRun(tf:TextField, format:TextFormat, startWord:number, wordCnt:number) {
 
@@ -229,7 +288,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		for (w = startWord; w < w_len; w+=5) {
 			startIdx=tf.words[w];
 			x=tf.words[w+1];
-			y=tf.words[w+2]-2;// -2 for swf adjusting
+			y=tf.words[w+2];// -2 for swf adjusting
 			if(this.name=="BoldStyle"){
 				y-=0.2*this.getLineHeight();
 			}
@@ -362,7 +421,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	/**
 	 *
 	 */
-	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false):void
+
+	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0):void
 	{
 		if((fills_data==null)&&(stroke_data==null))
 			throw("TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data and stroke_data is null)");
@@ -376,6 +436,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		}
 		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data);
 		tesselated_font_char.char_width=char_width;
+		tesselated_font_char.glyph_idx=glyph_idx;
+		this._glyphIdxToChar[glyph_idx] = tesselated_font_char;
+
 		this._font_chars.push(tesselated_font_char);
 		this._font_chars_dic[name]=tesselated_font_char;
 	}

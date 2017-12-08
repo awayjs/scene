@@ -13,6 +13,7 @@ import {TextField} from "./TextField";
 export class MovieClip extends Sprite
 {
 	public static avm1ScriptQueue:MovieClip[]=[];
+	public static avm1ScriptQueueScripts:any[]=[];
 	private static _skipAdvance:boolean;
 
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
@@ -147,7 +148,7 @@ export class MovieClip extends Sprite
 	{
 		this._timeline = value;
 
-		this.reset();
+		this.reset(false);
 	}
 
 	/**
@@ -171,7 +172,7 @@ export class MovieClip extends Sprite
 	 */
 	public constructedKeyFrameIndex:number = -1;
 
-	public reset():void
+	public reset(fireScripts:boolean=true):void
 	{
 		super.reset();
 
@@ -186,12 +187,12 @@ export class MovieClip extends Sprite
 			this.removeChildAt(i);
 
 		this._skipAdvance = MovieClip._skipAdvance;
-
+		this._skipAdvance=true;
 		var numFrames:number = this._timeline.keyframe_indices.length;
 		this._isPlaying = Boolean(numFrames > 1);
 		if (numFrames) {
 			this._currentFrameIndex = 0;
-			this._timeline.constructNextFrame(this, true, true);
+			this._timeline.constructNextFrame(this, fireScripts, true);
 		} else {
 			this._currentFrameIndex = -1;
 		}

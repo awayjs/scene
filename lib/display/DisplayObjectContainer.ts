@@ -269,7 +269,7 @@ export class DisplayObjectContainer extends DisplayObject
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			newInstance.addChild(this._children[i].clone());
+			newInstance.addChild((<any>this._children[i].adapter).clone().adaptee);
 	}
 
 	/**

@@ -18,12 +18,18 @@ export class Timeline
 	private _functions:Array<(child:DisplayObject, target_mc:MovieClip, i:number) => void> = [];
 	private _blocked:boolean;
 	public _update_indices:Array<number> = [];
+	public isButton:boolean = false;
 	public _labels:Object;			// dictionary to store label => keyframeindex
 	public _framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public _framescripts_translated:Object;    // dictionary to store keyframeindex => bool that keeps track of already converted scripts
 
 	public avm1framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public avm1framescripts_translated:Object;    // dictionary to store keyframeindex => bool that keeps track of already converted scripts
+
+	public avm1InitActions:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
+	public avm1ButtonActions:any[];    // dictionary to store keyframeindex => ExecuteScriptCommand
+	public avm1Exports:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
+
 
 	public keyframe_indices:Array<number>;     		//stores 1 keyframeindex per frameindex
 	public keyframe_firstframes:Array<number>;     	//stores the firstframe of each keyframe
@@ -71,6 +77,9 @@ export class Timeline
 
 		this.keyframe_indices = [];
 
+		this.avm1Exports={};
+		this.avm1InitActions={};
+		this.avm1ButtonActions=[];
 		this.graphicsPool={};
 		this.audioPool={};
 		this.potentialPrototypesInitEventsMap={};
@@ -177,6 +186,7 @@ export class Timeline
 		}
 		if(this.avm1framescripts[target_mc.currentFrameIndex]!=null){
 			MovieClip.avm1ScriptQueue.push(target_mc);
+			MovieClip.avm1ScriptQueueScripts.push(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
 			
 		}
 	}

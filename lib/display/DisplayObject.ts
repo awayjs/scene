@@ -24,7 +24,7 @@ import {Scene} from "../Scene";
  * TextField objects, are "leaf" nodes that have only parents and siblings, no
  * children.
  *
- * <p>The DisplayObject class supports basic functionality like the <i>x</i>
+ * <p>The DisplayObject class supports fbasic functionality like the <i>x</i>
  * and <i>y</i> position of an object, as well as more advanced properties of
  * the object such as its transformation matrix. </p>
  *

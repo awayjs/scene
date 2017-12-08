@@ -4,6 +4,7 @@ import {TraverserBase, Sampler2D, Style, Graphics, Shape, MaterialBase, Triangle
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {AlignmentMode} from "../base/AlignmentMode";
+import {Font} from "../text/Font";
 import {TesselatedFontChar} from "../text/TesselatedFontChar";
 import {TesselatedFontTable} from "../text/TesselatedFontTable";
 import {BitmapFontTable} from "../text/BitmapFontTable";
@@ -110,6 +111,8 @@ export class TextField extends DisplayObject
 
 	private _line_indices:number[] = [];
 
+	public textOffsetX:number=0;
+	public textOffsetY:number=0;
 	private _graphics:Graphics;
 	private _textGraphicsDirty:boolean;
 	private _bottomScrollV:number;
@@ -160,6 +163,8 @@ export class TextField extends DisplayObject
 	private _textRuns_words:number[]=[];	// stores words-offset, word-count and width for each textrun
 
 	private _maxWidthLine:number=0;
+
+	private _labelData:any=null;
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
 		if(this.textShapes.hasOwnProperty(id)){
@@ -539,7 +544,78 @@ export class TextField extends DisplayObject
 	 * <p>Flash Player and AIR also support explicit character codes, such as
 	 * &#38;(ASCII ampersand) and &#x20AC;(Unicode € symbol). </p>
 	 */
-	public htmlText:string;
+	private _htmlText:string;
+	public get htmlText():string{
+		return this._htmlText;
+	};
+	public set htmlText(value:string){
+		this._htmlText=value;
+
+		var text:string="";
+		var textProps:any= {
+			text:"",
+			/*size:this.textFormat.size,
+			color:this.textFormat.color,
+			indent:this.le,
+			leftMargin:symbol.tag.leftMargin/20,
+			rightMargin:symbol.tag.rightMargin/20,
+			variableName:symbol.tag.variableName,
+			align:symbol.tag.align,
+			multiline:false*/
+		}
+
+		text=value;
+		var parser = new DOMParser();
+		var doc = parser.parseFromString("<p>"+text+"</p>", "application/xml");
+		if(doc && doc.firstChild){
+			text="";
+			textProps.multiline=doc.firstChild.childNodes.length>0;
+			this.readTextPropertiesRecursive(doc, textProps);
+		}
+
+		this.text=textProps.text;
+	};
+
+	private readTextPropertiesRecursive(myChild, textProps:any){
+
+		//console.log("textfied content xml node:",myChild);
+		//console.log(myChild.tagName);
+		if(myChild.tagName=="p"){
+			if(textProps.text!=""){
+				textProps.text+="\\n";
+
+			}
+		}
+		if(myChild.attributes){
+			if((<any>myChild.attributes).size)
+				textProps.size =  (<any>myChild.attributes).size.nodeValue;
+			/*if((<any>myChild.attributes).color)
+				textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);*/
+			if((<any>myChild.attributes).indent)
+				textProps.indent =  (<any>myChild.attributes).indent.nodeValue;
+			if((<any>myChild.attributes).leftMargin)
+				textProps.leftMargin =  (<any>myChild.attributes).leftMargin.nodeValue;
+			if((<any>myChild.attributes).rightMargin)
+				textProps.rightMargin =  (<any>myChild.attributes).rightMargin.nodeValue;
+			if((<any>myChild.attributes).align){
+
+				//console.log("align",myChild);
+				//textProps.align = this.textFormatAlignMapStringToInt[(<any>myChild.attributes).align.nodeValue];
+			}
+		}
+		if(!myChild.childNodes || myChild.childNodes.length==0){
+
+			if((<any>myChild).nodeValue){
+				textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
+
+			}
+		}
+		else{
+			for(var k=0; k<myChild.childNodes.length;k++){
+				this.readTextPropertiesRecursive(myChild.childNodes[k], textProps);
+			}
+		}
+	}
 
 	/**
 	 * The number of characters in a text field. A character such as tab
@@ -786,13 +862,28 @@ export class TextField extends DisplayObject
 
 		if (this._text == value)
 			return;
-
+		this._labelData=null;
 		this._text = value;
 
 		this._textDirty = true;
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._pInvalidateBounds();
+	}
+
+	public setLabelData(labelData:any)
+	{
+		this._labelData=labelData;
+
+		this._text = "";
+
+		this._textDirty = false;
+		this._positionsDirty = false;
+		this._glyphsDirty = true;
+
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._pInvalidateBounds();
+
 	}
 
 	public get textFormat():TextFormat
@@ -1079,6 +1170,8 @@ export class TextField extends DisplayObject
 	constructor()
 	{
 		super();
+		this.textOffsetX=0;
+		this.textOffsetY=0;
 		this.textShapes={};
 		this._textColor=-1;
 		this._width=100;
@@ -1176,7 +1269,7 @@ export class TextField extends DisplayObject
 			this._maxWidthLine=0;
 
 			if(this._text != "" && this._textFormat != null) {
-				if (this.multiline) {
+				//if (this.multiline) {
 					var paragraphs:string[] = this.text.toString().split("\\n");
 					var tl = 0;
 					var tl_len = paragraphs.length;
@@ -1195,6 +1288,7 @@ export class TextField extends DisplayObject
 							this.buildParagraph(paragraphs[tl]);
 						}
 					}
+					/*
 				}
 				else {
 					var paragraphs:string[] = this.text.toString().split("\\n");
@@ -1204,6 +1298,7 @@ export class TextField extends DisplayObject
 						this.buildParagraph(paragraphs[tl]);
 					}
 				}
+				*/
 			}
 
 			//console.log("TextField buildParagraph", this.id, this._text);
@@ -1258,10 +1353,14 @@ export class TextField extends DisplayObject
 
 		if(this._glyphsDirty){
 			//console.log("TextField buildGlyphs", this.id, this.words);
-			this.buildGlyphs();
+			if(this._labelData){
+				this.buildGlyphsForLabelData();
+			}
+			else{
+				this.buildGlyphs();
+			}
 		}
 		this._glyphsDirty=false;
-
 	}
 
 
@@ -1366,9 +1465,13 @@ export class TextField extends DisplayObject
 		var lineLength:number[]=[];
 		var numSpacesPerline:number[]=[];
 
-		var offsety:number=2;
+		var offsety:number=this.textOffsetY+2;
 		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
 
+		//console.log("text old_width", this._width);
+		//console.log("text old_x", this._transform.matrix3D._rawData[12]);
+		//console.log("this._autoSize", this._autoSize);
+		//console.log("this._wordWrap", this._wordWrap);
 		if(this._autoSize!=TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty){
 			var oldSize:number=this._width;
 			this._width=4+this._maxWidthLine+this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
@@ -1377,9 +1480,11 @@ export class TextField extends DisplayObject
 				this._transform.matrix3D._rawData[12] -= this._width-oldSize;
 				this._transform.invalidatePosition();
 			} else if (this._autoSize==TextFieldAutoSize.CENTER){
-				this._transform.matrix3D._rawData[12] -= (this._width-oldSize)/2;
+				this._transform.matrix3D._rawData[12] = -this._width/2;//-= (this._width-oldSize)/2;
 				this._transform.invalidatePosition();
 			}
+			//console.log("text width", this._width);
+			//console.log("text x", this._transform.matrix3D._rawData[12]);
 		}
 
 		var maxLineWidth:number = this._width-(4+this._textFormat.indent+this._textFormat.leftMargin+this._textFormat.rightMargin);
@@ -1438,7 +1543,7 @@ export class TextField extends DisplayObject
 				}
 				//console.log("split lines",linecnt );
 			}
-			var offsetx:number=0;
+			var offsetx:number=this.textOffsetX;
 			var start_idx:number;
 			var start_idx:number;
 			var numSpaces:number;
@@ -1460,7 +1565,7 @@ export class TextField extends DisplayObject
 				console.log("maxLineWidth", maxLineWidth);
 				console.log("linelength", linelength);*/
 				additionalWhiteSpace=0;
-				offsetx=2 + format.leftMargin + format.indent;
+				offsetx=this.textOffsetX + 2 + format.leftMargin + format.indent;
 
 				if(format.align=="justify"){
 					if((l!=l_cnt-1) && lineSpaceLeft>0 && numSpaces>0){
@@ -1523,6 +1628,143 @@ export class TextField extends DisplayObject
 		}
 	}
 
+	private buildGlyphsForLabelData() {
+
+
+		var textShape:TextShape;
+		for(var key in this.textShapes) {
+			textShape = this.textShapes[key];
+			this._graphics.removeShape(textShape.shape);
+			Shape.storeShape(textShape.shape);
+			textShape.shape.dispose();
+			textShape.shape = null;
+			textShape.elements.clear();
+			textShape.elements.dispose();
+			textShape.elements = null;
+			textShape.verts.length=0;
+		}
+		this.textShapes={};
+
+
+
+		var height:number=null;
+		var formats:TextFormat[]=[];
+		var glyphdata:number[][]=[];
+		var advance:number[][]=[];
+		var positions:number[]=[];
+		var moveY:number=0;
+		for(var r=0; r<this._labelData.records.length;r++){
+			formats[r]=new TextFormat()
+			glyphdata[r]=[];
+			advance[r]=[];
+			var record=this._labelData.records[r];
+			if(record.font_table){
+				formats[r].font_table=record.font_table;
+			}
+			else if (r>0){
+				formats[r].font_table=formats[r-1].font_table;
+			}
+			else{
+				console.log("error - no font for label");
+			}
+			if(record.fontHeight){
+				formats[r].size=record.fontHeight/20;
+			}
+			else if (r>0){
+				formats[r].size=formats[r-1].size;
+			}
+			positions.push(this.textOffsetX+(record.moveX? record.moveX/20:0));
+			positions.push(this.textOffsetY+(record.moveY? record.moveY/20:0));
+			moveY=(record.moveY? record.moveY/20:0)-moveY;
+			for(var e=0; e<record.entries.length;e++){
+				glyphdata[r][e]=record.entries[e].glyphIndex;
+				advance[r][e]=record.entries[e].advance/20;
+				//text+=String.fromCharCode(parseInt((<TesselatedFontTable>awayText.textFormat.font_table).getStringForIdx(record.entries[e].glyphIndex)));
+			}
+			//text+="\\n";
+
+		}
+
+
+		var textShape:TextShape;
+		// process all textRuns
+		var tr:number=0;
+		var tr_len:number=formats.length;
+		var lineSize:Point;
+		var text_width:number=0;
+		var text_height:number=0;
+		for (tr = 0; tr < tr_len; tr++) {
+			formats[tr].font_table.initFontSize(formats[tr].size);
+			lineSize=(<TesselatedFontTable>formats[tr].font_table).buildTextLineFromIndices(this, formats[tr], positions[tr*2], positions[tr*2+1], glyphdata[tr], advance[tr],);
+			text_height+=lineSize.y;
+			text_width=(lineSize.x>text_width)?lineSize.x:text_width;
+		}
+
+		this._textWidth=text_width;
+		this._textHeight=text_height;
+		//this._width=text_width+4;
+		//this._height=text_height+4;
+		this._graphics.clear();
+		if(this._background || this._border){
+			if(this._background)
+				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
+			if(this._border)
+				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
+			this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
+			this._graphics.endFill();
+		}
+		/*
+		this._graphics.clear();
+		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
+		this._graphics.drawRect(-1,-1,this._width, this._height);
+		this._graphics.endFill();
+		*/
+
+
+		for(var key in this.textShapes) {
+			textShape = this.textShapes[key];
+
+			var attr_length:number = 2;//(tess_fontTable.usesCurves)?3:2;
+			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
+			attributesView.set(textShape.verts);
+			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+			attributesView.dispose();
+
+			textShape.elements = new TriangleElements(vertexBuffer);
+			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
+			//if(tess_fontTable.usesCurves){
+			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
+			//}
+			textShape.shape = this._graphics.addShape(Shape.getShape(textShape.elements));
+
+			var sampler:Sampler2D = new Sampler2D();
+			textShape.shape.style = new Style();
+			if (textShape.format.material && this._textColor==-1) {
+				textShape.shape.material = this._textFormat.material;
+				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
+				textShape.shape.material.animateUVs = true;
+				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
+			}
+			else {
+
+				var obj=Graphics.get_material_for_color(this._textColor==-1?textShape.format.color:this._textColor, 1);
+
+				textShape.shape.material = obj.material;
+				if(obj.colorPos){
+					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
+					textShape.shape.material.animateUVs=true;
+					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+				}
+				/*
+								(<any>textShape.shape.material).useColorTransform = true;
+								var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+								this.transform.colorTransform.color = textShape.format.color;
+								this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+				*/
+
+			}
+		}
+	}
 	private buildGlyphs() {
 
 
@@ -1546,9 +1788,16 @@ export class TextField extends DisplayObject
 				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
 			if(this._border)
 				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
-			this._graphics.drawRect(-1,-1,this._width, this._height);
+			this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
 			this._graphics.endFill();
 		}
+
+		/*
+		this._graphics.clear();
+		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
+		this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
+		this._graphics.endFill();
+		*/
 
 		
 		var textShape:TextShape;
@@ -1617,9 +1866,7 @@ export class TextField extends DisplayObject
 	 */
 	public appendText(newText:string) {
 		this._text += newText;
-
 		this._textDirty = true;
-
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._pInvalidateBounds();
 	}
@@ -1631,7 +1878,6 @@ export class TextField extends DisplayObject
 	public closeParagraph():void
 	{
 		this._text+="\n";
-
 		this._textDirty = true;
 		//TODO
 		if (this._autoSize != TextFieldAutoSize.NONE)
@@ -1996,6 +2242,12 @@ export class TextField extends DisplayObject
 		newInstance.textFormat = this._textFormat;
 		//newInstance.textColor = this._textColor;
 		newInstance.text = this._text;
+		newInstance.textOffsetX = this.textOffsetX;
+		newInstance.textOffsetY = this.textOffsetY;
+		if(this._labelData){
+			newInstance.setLabelData(this._labelData);
+
+		}
 	}
 	
 }
