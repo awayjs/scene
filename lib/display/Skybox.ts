@@ -1,8 +1,10 @@
 import {AssetEvent} from "@awayjs/core";
 
-import {LightPickerBase} from "@awayjs/graphics";
+import {BlendMode, ImageCube} from "@awayjs/stage";
 
-import {BlendMode, ImageCube, TraverserBase, IAnimationSet, IRenderable, IMaterial, IEntity, RenderableEvent, MaterialEvent, SingleCubeTexture, TextureBase, Style, StyleEvent} from "@awayjs/graphics";
+import {TraverserBase, IAnimationSet, IRenderable, IMaterial, IEntity, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent} from "@awayjs/renderer";
+
+import {ImageTextureCube} from "@awayjs/materials";
 
 import {BoundsType} from "../bounds/BoundsType";
 
@@ -17,14 +19,13 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 {
 	public static traverseName:string = TraverserBase.addEntityName("applySkybox");
 	
-	private _textures:Array<TextureBase> = new Array<TextureBase>();
+	private _textures:Array<ITexture> = new Array<ITexture>();
 
 	public static assetType:string = "[asset Skybox]";
 
-	private _texture:SingleCubeTexture;
+	private _texture:ImageTextureCube;
 	public _pAlphaThreshold:number = 0;
 	private _animationSet:IAnimationSet;
-	public _pLightPicker:LightPickerBase;
 	public _pBlendMode:string = BlendMode.NORMAL;
 	private _owners:Array<IEntity>;
 	private _curves:boolean = false;
@@ -103,17 +104,6 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 
 		this.invalidatePasses();
 	}
-	
-	/**
-	 * The light picker used by the material to provide lights to the material if it supports lighting.
-	 *
-	 * @see LightPickerBase
-	 * @see StaticLightPicker
-	 */
-	public get lightPicker():LightPickerBase
-	{
-		return this._pLightPicker;
-	}
 
 	/**
 	 *
@@ -162,12 +152,12 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	/**
 	* The cube texture to use as the skybox.
 	*/
-	public get texture():SingleCubeTexture
+	public get texture():ImageTextureCube
 	{
 		return this._texture;
 	}
 
-	public set texture(value:SingleCubeTexture)
+	public set texture(value:ImageTextureCube)
 	{
 		if (this._texture == value)
 			return;
@@ -183,12 +173,20 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this.invalidatePasses();
 	}
 
+	public getRenderableIndex(renderable:IRenderable):number
+	{
+		if (renderable == this)
+			return 0;
+
+		return -1;
+	}
+
 	public getNumTextures():number
 	{
 		return this._textures.length;
 	}
 
-	public getTextureAt(index:number):TextureBase
+	public getTextureAt(index:number):ITexture
 	{
 		return this._textures[index];
 	}
@@ -198,7 +196,9 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	 *
 	 * @param material	The material with which to render the Skybox.
 	 */
-	constructor(image:ImageCube = null)
+    constructor(image?:ImageCube, alpha?:number);
+    constructor(color?:number, alpha?:number);
+    constructor(imageColor:any = 0xFFFFFF, alpha:number = 1)
 	{
 		super();
 
@@ -209,8 +209,12 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this._owners = new Array<IEntity>(this);
 
 		this.style = new Style();
-		this.style.image = image;
-		this.texture =  new SingleCubeTexture();
+        if (imageColor instanceof ImageCube) {
+            this._style.image = <ImageCube> imageColor;
+            this.texture = new ImageTextureCube();
+        } else {
+            this._style.color = Number(imageColor);
+        }
 
 		//default bounds type
 		this._boundsType = BoundsType.NULL;
@@ -241,7 +245,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
 
-	public addTexture(texture:TextureBase):void
+	public addTexture(texture:ITexture):void
 	{
 		this._textures.push(texture);
 
@@ -250,7 +254,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this.onTextureInvalidate();
 	}
 
-	public removeTexture(texture:TextureBase):void
+	public removeTexture(texture:ITexture):void
 	{
 		this._textures.splice(this._textures.indexOf(texture), 1);
 
@@ -292,3 +296,9 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	}
 
 }
+
+import {DefaultRenderer} from "@awayjs/renderer";
+
+import {GL_SkyboxMaterial} from "../materials/GL_SkyboxMaterial";
+
+DefaultRenderer.registerMaterial(GL_SkyboxMaterial, Skybox);

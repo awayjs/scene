@@ -1,6 +1,6 @@
 import {Point, Vector3D, EventBase} from "@awayjs/core";
 
-import {IEntity, IRenderable, MaterialBase, IView} from "@awayjs/graphics";
+import {IEntity, IRenderable, IMaterial, IView} from "@awayjs/renderer";
 
 /**
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
@@ -90,7 +90,7 @@ export class MouseEvent extends EventBase
 	/**
 	 * The material of the 3d element inside which the event took place.
 	 */
-	public material:MaterialBase;
+	public material:IMaterial;
 
 	/**
 	 * The uv coordinate inside the draw primitive where the event took place.

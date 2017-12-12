@@ -1,4 +1,4 @@
-import {AttributesBuffer} from "@awayjs/core";
+import {AttributesBuffer} from "@awayjs/stage";
 
 /**
  * The TextFormat class represents character formatting information. Use the

@@ -1,4 +1,6 @@
-import {ElementsType, LineElements, ElementsBase, TriangleElements, MaterialBase} from "@awayjs/graphics";
+import {ElementsType, LineElements, ElementsBase, TriangleElements} from "@awayjs/graphics";
+
+import {IMaterial} from "@awayjs/renderer";
 
 import {PrimitivePrefabBase} from "../prefabs/PrimitivePrefabBase";
 
@@ -82,7 +84,7 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase
 	 * @param segmentsH Defines the number of vertical segments that make up the sphere.
 	 * @param yUp Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material:MaterialBase = null, elementsType:string = "triangle", radius:number = 50, segmentsW:number = 16, segmentsH:number = 12, yUp:boolean = true)
+	constructor(material:IMaterial = null, elementsType:string = "triangle", radius:number = 50, segmentsW:number = 16, segmentsH:number = 12, yUp:boolean = true)
 	{
 		super(material, elementsType);
 

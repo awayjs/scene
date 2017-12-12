@@ -1,6 +1,6 @@
 import {Plane3D, Vector3D, AbstractMethodError} from "@awayjs/core";
 
-import {IEntity} from "@awayjs/graphics";
+import {IEntity} from "@awayjs/renderer";
 
 import {DisplayObject} from "../display/DisplayObject";
 import {Sprite} from "../display/Sprite";

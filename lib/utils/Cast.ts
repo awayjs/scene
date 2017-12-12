@@ -1,6 +1,8 @@
 import {ByteArray} from "@awayjs/core";
 
-import {Image2D, Single2DTexture} from "@awayjs/graphics";
+import {Image2D} from "@awayjs/stage";
+
+import {ImageTexture2D} from "@awayjs/materials";
 
 import {CastError} from "../errors/CastError";
 
@@ -274,13 +276,13 @@ export class Cast
 		if (data instanceof Image2D)
 			return data;
 
-		if (data instanceof Single2DTexture)
-			data = (<Single2DTexture> data).image2D;
+		if (data instanceof ImageTexture2D)
+			data = (<ImageTexture2D> data).image;
 
 		throw new CastError("Can't cast to BitmapImage2D: " + data);
 	}
 
-	public static bitmapTexture(data:any):Single2DTexture
+	public static bitmapTexture(data:any):ImageTexture2D
 	{
 		if (data == null)
 			return null;
@@ -296,15 +298,15 @@ export class Cast
 			}
 		}
 
-		if (data instanceof Single2DTexture)
+		if (data instanceof ImageTexture2D)
 			return data;
 
 		try {
 			var bmd:Image2D = Cast.image2D(data);
-			return new Single2DTexture(bmd);
+			return new ImageTexture2D(bmd);
 		} catch (e /*CastError*/) {
 		}
 
-		throw new CastError("Can't cast to Single2DTexture: " + data);
+		throw new CastError("Can't cast to ImageTexture2D: " + data);
 	}
 }

@@ -1,6 +1,6 @@
 /*import {IRenderable} from "../base/IRenderable";
 import {LineElements} from "../elements/LineElements";
-import {Sampler2D} from "../image/Sampler2D";
+import {ImageSampler} from "../image/ImageSampler";
 import {BitmapImageCube} from "../image/BitmapImageCube";
 import {MaterialBase} from "../materials/MaterialBase";
 import {BasicMaterial} from "../materials/BasicMaterial";

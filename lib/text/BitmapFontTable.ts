@@ -1,6 +1,6 @@
 import {AssetBase} from "@awayjs/core";
 
-import {MaterialBase} from "@awayjs/graphics";
+import {IMaterial} from "@awayjs/renderer";
 
 import {BitmapFontChar} from "./BitmapFontChar";
 import {IFontTable} from "./IFontTable";
@@ -23,7 +23,7 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	public _init_size:number;
 	public _current_size:number;
 	public _size_multiply:number;
-	private _materials:Array<MaterialBase>;
+	private _materials:Array<IMaterial>;
 	public _font_chars_dic:Object;
 	private _font_em_size:number;
 	private _whitespace_width:number;
@@ -159,12 +159,12 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 
 	}
 	
-	public addMaterial(material:MaterialBase)
+	public addMaterial(material:IMaterial)
 	{
 		this._materials.push(material);
 	}
 	
-	public getMaterial(idx:number=0):MaterialBase
+	public getMaterial(idx:number=0):IMaterial
 	{
 		return this._materials[idx];
 	}

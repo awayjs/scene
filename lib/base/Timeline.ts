@@ -1,6 +1,8 @@
 import {WaveAudio, ColorTransform, IAsset, Matrix3D, Matrix} from "@awayjs/core";
 
-import {Style, Graphics} from "@awayjs/graphics";
+import {Style} from "@awayjs/renderer";
+
+import {Graphics} from "@awayjs/graphics";
 
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";

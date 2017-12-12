@@ -1,4 +1,6 @@
-import {MaterialBase, Image2D, IGraphicsFactory} from "@awayjs/graphics";
+import {Image2D, IGraphicsFactory} from "@awayjs/stage";
+
+import {IMaterial} from "@awayjs/renderer";
 
 import {Timeline} from "../base/Timeline";
 import {Billboard} from "../display/Billboard";
@@ -18,8 +20,8 @@ export interface ISceneGraphFactory extends IGraphicsFactory
 
 	createSprite(prefab?:PrefabBase):Sprite;
 
-	createBillboard(material?:MaterialBase):Billboard;
+	createBillboard(material?:IMaterial):Billboard;
 
-	createMaterial(image?:Image2D, alpha?:number):MaterialBase;
-	createMaterial(color?:number, alpha?:number):MaterialBase;
+	createMaterial(image?:Image2D, alpha?:number):IMaterial;
+	createMaterial(color?:number, alpha?:number):IMaterial;
 }

@@ -1,6 +1,8 @@
-import {AttributesBuffer, AttributesView} from "@awayjs/core";
+import {AttributesBuffer, AttributesView} from "@awayjs/stage";
 
-import {Graphics, Shape, TriangleElements, IMaterial} from "@awayjs/graphics";
+import {IMaterial} from "@awayjs/renderer";
+
+import {Graphics, Shape, TriangleElements} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import {Sprite} from "../display/Sprite";

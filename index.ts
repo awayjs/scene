@@ -41,6 +41,8 @@ export {DisplayObjectEvent} from "./lib/events/DisplayObjectEvent";
 export {MouseEvent} from "./lib/events/MouseEvent";
 export {ResizeEvent} from "./lib/events/ResizeEvent";
 
+export {GL_SkyboxElements}				from "./lib/elements/GL_SkyboxElements";
+
 export {ISceneGraphFactory} from "./lib/factories/ISceneGraphFactory";
 
 export {FrameScriptManager} from "./lib/managers/FrameScriptManager";
@@ -55,6 +57,12 @@ export {PrimitivePolygonPrefab} from "./lib/prefabs/PrimitivePolygonPrefab";
 export {PrimitivePrefabBase} from "./lib/prefabs/PrimitivePrefabBase";
 export {PrimitiveSpherePrefab} from "./lib/prefabs/PrimitiveSpherePrefab";
 export {PrimitiveTorusPrefab} from "./lib/prefabs/PrimitiveTorusPrefab";
+
+export {GL_BillboardRenderable}			from "./lib/renderables/GL_BillboardRenderable";
+export {GL_LineSegmentRenderable}		from "./lib/renderables/GL_LineSegmentRenderable";
+export {GL_SkyboxRenderable}				from "./lib/renderables/GL_SkyboxRenderable";
+
+export {GL_SkyboxMaterial}				from "./lib/materials/GL_SkyboxMaterial";
 
 export {AntiAliasType} from "./lib/text/AntiAliasType";
 export {Font} from "./lib/text/Font";

@@ -1,4 +1,6 @@
-import {ElementsType, LineElements, ElementsBase, TriangleElements, MaterialBase} from "@awayjs/graphics";
+import {ElementsType, LineElements, ElementsBase, TriangleElements} from "@awayjs/graphics";
+
+import {IMaterial} from "@awayjs/renderer";
 
 import {PrimitivePrefabBase} from "../prefabs/PrimitivePrefabBase";
 
@@ -23,7 +25,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase
 	 * @param yUp Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false).
 	 * @param doubleSided Defines whether the plane will be visible from both sides, with correct vertex normals.
 	 */
-	constructor(material:MaterialBase = null, elementsType:string = "triangle", width:number = 100, height:number = 100, segmentsW:number = 1, segmentsH:number = 1, yUp:boolean = true, doubleSided:boolean = false)
+	constructor(material:IMaterial = null, elementsType:string = "triangle", width:number = 100, height:number = 100, segmentsW:number = 1, segmentsH:number = 1, yUp:boolean = true, doubleSided:boolean = false)
 	{
 
 		super(material, elementsType);

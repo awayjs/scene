@@ -1,6 +1,6 @@
 import {Matrix3D, Plane3D, Vector3D, ProjectionEvent, ProjectionBase, PerspectiveProjection} from "@awayjs/core";
 
-import {IEntity, TraverserBase} from "@awayjs/graphics";
+import {IEntity, TraverserBase} from "@awayjs/renderer";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {BoundsType} from "../bounds/BoundsType";

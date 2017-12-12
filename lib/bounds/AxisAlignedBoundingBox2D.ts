@@ -1,6 +1,6 @@
 import {Vector3D} from "@awayjs/core";
 
-import {IEntity} from "@awayjs/graphics";
+import {IEntity} from "@awayjs/renderer";
 
 import {AxisAlignedBoundingBox} from "./AxisAlignedBoundingBox";
 

@@ -1,6 +1,8 @@
 ﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D} from "@awayjs/core";
 
-import {TraverserBase, IAnimator, Graphics, IMaterial, Style} from "@awayjs/graphics";
+import {TraverserBase, IAnimator, IMaterial, Style, IRenderable} from "@awayjs/renderer";
+
+import {Graphics, Shape} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
@@ -37,6 +39,11 @@ export class Sprite extends DisplayObjectContainer
 	{
 		return Sprite.assetType;
 	}
+
+    public getRenderableIndex(renderable:IRenderable):number
+    {
+        return this._graphics.getShapeIndex(<Shape> renderable);
+    }
 
 	/**
 	 * Specifies the Graphics object belonging to this Sprite object, where

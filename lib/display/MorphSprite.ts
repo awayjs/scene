@@ -1,6 +1,8 @@
 ﻿import {AssetEvent, Box, Point, Matrix3D, Matrix, Vector3D} from "@awayjs/core";
 
-import {TraverserBase, GraphicsPathCommand, GraphicsFillStyle, GradientFillStyle, BitmapFillStyle, GraphicsStrokeStyle, IAnimator, Graphics, GraphicsPath, IMaterial, Style} from "@awayjs/graphics";
+import {IAnimator, TraverserBase, IMaterial, Style} from "@awayjs/renderer";
+
+import {GraphicsPathCommand, GraphicsFillStyle, GradientFillStyle, BitmapFillStyle, GraphicsStrokeStyle, Graphics, GraphicsPath} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 

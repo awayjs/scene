@@ -1,4 +1,4 @@
-import {IEntity, IView} from "@awayjs/graphics";
+import {IEntity, IView} from "@awayjs/renderer";
 
 import {DisplayObjectContainer} from "./display/DisplayObjectContainer";
 

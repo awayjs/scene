@@ -1,4 +1,6 @@
-import {ElementsType, LineElements, ElementsBase, TriangleElements, MaterialBase} from "@awayjs/graphics";
+import {ElementsType, LineElements, ElementsBase, TriangleElements} from "@awayjs/graphics";
+
+import {IMaterial} from "@awayjs/renderer";
 
 import {PrimitivePrefabBase} from "../prefabs/PrimitivePrefabBase";
 
@@ -158,7 +160,7 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	 * @param bottomClosed Defines whether the bottom end of the cylinder is closed (true) or open.
 	 * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material:MaterialBase = null, elementsType:string = "triangle", topRadius:number = 50, bottomRadius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 1, topClosed:boolean = true, bottomClosed:boolean = true, surfaceClosed:boolean = true, yUp:boolean = true)
+	constructor(material:IMaterial = null, elementsType:string = "triangle", topRadius:number = 50, bottomRadius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 1, topClosed:boolean = true, bottomClosed:boolean = true, surfaceClosed:boolean = true, yUp:boolean = true)
 	{
 		super(material, elementsType);
 

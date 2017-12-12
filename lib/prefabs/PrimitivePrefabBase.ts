@@ -1,6 +1,10 @@
-import {AttributesBuffer, AbstractMethodError} from "@awayjs/core";
+import {AbstractMethodError} from "@awayjs/core";
 
-import {Shape, ElementsType, ElementsBase, TriangleElements, LineElements, MaterialBase} from "@awayjs/graphics";
+import {AttributesBuffer} from "@awayjs/stage";
+
+import {Shape, ElementsType, ElementsBase, TriangleElements, LineElements} from "@awayjs/graphics";
+
+import {IMaterial} from "@awayjs/renderer";
 
 import {DisplayObject} from "../display/DisplayObject";
 import {Sprite} from "../display/Sprite";
@@ -18,7 +22,7 @@ export class PrimitivePrefabBase extends PrefabBase
 	public _scaleU:number = 1;
 	public _scaleV:number = 1;
 
-	private _material:MaterialBase;
+	private _material:IMaterial;
 	private _elements:ElementsBase;
 	private _elementsType:string;
 
@@ -41,12 +45,12 @@ export class PrimitivePrefabBase extends PrefabBase
 	/**
 	 * The material with which to render the primitive.
 	 */
-	public get material():MaterialBase
+	public get material():IMaterial
 	{
 		return this._material;
 	}
 
-	public set material(value:MaterialBase)
+	public set material(value:IMaterial)
 	{
 		if (value == this._material)
 			return;
@@ -95,7 +99,7 @@ export class PrimitivePrefabBase extends PrefabBase
 	 *
 	 * @param material The material with which to render the object
 	 */
-	constructor(material:MaterialBase = null, elementsType:string = "triangle")
+	constructor(material:IMaterial = null, elementsType:string = "triangle")
 	{
 		super();
 		

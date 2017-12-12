@@ -1,6 +1,8 @@
 import {Rectangle, Matrix} from "@awayjs/core";
 
-import {Sampler2D, Image2D, TraverserBase, IRenderable, RenderableEvent, MaterialEvent, DefaultMaterialManager, IMaterial, TextureBase, StyleEvent} from "@awayjs/graphics";
+import {ImageSampler, Image2D, ImageUtils} from "@awayjs/stage";
+
+import {TraverserBase, IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent} from "@awayjs/renderer";
 
 import {BoundsType} from "../bounds/BoundsType";
 
@@ -164,12 +166,12 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 
 	private _updateDimensions():void
 	{
-		var texture:TextureBase = this.material.getTextureAt(0);
+		var texture:ITexture = this.material.getTextureAt(0);
 
 		var image:Image2D = texture? <Image2D> ((this._style? this._style.getImageAt(texture) : null) || (this.material.style? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
 
 		if (image) {
-			var sampler:Sampler2D = <Sampler2D> ((this._style? this._style.getSamplerAt(texture) : null) || (this.material.style? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || DefaultMaterialManager.getDefaultSampler());
+			var sampler:ImageSampler = <ImageSampler> ((this._style? this._style.getSamplerAt(texture) : null) || (this.material.style? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || ImageUtils.getDefaultSampler());
 			if (sampler.imageRect) {
 				this._billboardWidth = sampler.imageRect.width*image.width;
 				this._billboardHeight = sampler.imageRect.height*image.height;

@@ -1,6 +1,6 @@
 ﻿import {Vector3D} from "@awayjs/core";
 
-import {TraverserBase, IRenderable, RenderableEvent, MaterialBase} from "@awayjs/graphics";
+import {TraverserBase, IRenderable, RenderableEvent, IMaterial} from "@awayjs/renderer";
 
 import {BoundsType} from "../bounds/BoundsType";
 
@@ -88,7 +88,7 @@ export class LineSegment extends DisplayObject implements IRenderable
 	 * @param endPosition Ending position of the line segment
 	 * @param thickness Thickness of the line
 	 */
-	constructor(material:MaterialBase, startPosition:Vector3D, endPosition:Vector3D, thickness:number = 1)
+	constructor(material:IMaterial, startPosition:Vector3D, endPosition:Vector3D, thickness:number = 1)
 	{
 		super();
 

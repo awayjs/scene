@@ -5,14 +5,20 @@ module.exports = {
 	sourceMap: true,
 	format: 'umd',
 	moduleName: 'AwayjsScene',
-	external: [
-		'@awayjs/core',
-		'@awayjs/graphics'
-	],
-	globals: {
-		'@awayjs/core': 'AwayjsCore',
-		'@awayjs/graphics': 'AwayjsGraphics'
-	},
+    external: [
+        '@awayjs/core',
+        '@awayjs/graphics',
+        '@awayjs/stage',
+        '@awayjs/renderer',
+        '@awayjs/materials'
+    ],
+    globals: {
+        '@awayjs/core': 'AwayjsCore',
+        '@awayjs/graphics': 'AwayjsGraphics',
+        '@awayjs/stage': 'AwayjsStage',
+        '@awayjs/renderer': 'AwayjsRenderer',
+        '@awayjs/materials': 'AwayjsMaterials'
+    },
 	targets: [
 		{ dest: './bundle/awayjs-scene.umd.js'}
 	],

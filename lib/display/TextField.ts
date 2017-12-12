@@ -1,6 +1,10 @@
-import {Box, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
+import {Box, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
 
-import {TraverserBase, Sampler2D, Style, Graphics, Shape, MaterialBase, TriangleElements, DefaultMaterialManager} from "@awayjs/graphics";
+import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
+
+import {TraverserBase, Style, IMaterial, MaterialUtils} from "@awayjs/renderer";
+
+import {Graphics, Shape, TriangleElements} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {AlignmentMode} from "../base/AlignmentMode";
@@ -1737,7 +1741,7 @@ export class TextField extends DisplayObject
 			//}
 			textShape.shape = this._graphics.addShape(Shape.getShape(textShape.elements));
 
-			var sampler:Sampler2D = new Sampler2D();
+			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
 			if (textShape.format.material && this._textColor==-1) {
 				textShape.shape.material = this._textFormat.material;
@@ -1825,7 +1829,7 @@ export class TextField extends DisplayObject
 			//}
 			textShape.shape = this._graphics.addShape(Shape.getShape(textShape.elements));
 
-			var sampler:Sampler2D = new Sampler2D();
+			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
 			if (textShape.format.material && this._textColor==-1) {
 				textShape.shape.material = this._textFormat.material;

@@ -1,6 +1,8 @@
 import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase} from "@awayjs/core";
 
-import {IAnimator, IMaterial, Style, BlendMode, IEntity, TraverserBase, StyleEvent, PickingCollision} from "@awayjs/graphics";
+import {BlendMode} from "@awayjs/stage";
+
+import {IRenderable, IAnimator, IMaterial, Style, IEntity, TraverserBase, StyleEvent, PickingCollision} from "@awayjs/renderer";
 
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
@@ -1522,6 +1524,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		//default bounds type
 		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
+
+
+    public getRenderableIndex(renderable:IRenderable):number
+    {
+        return -1;
+    }
 
 	/**
 	 *

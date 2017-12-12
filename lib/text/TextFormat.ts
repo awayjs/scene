@@ -1,6 +1,6 @@
 import {AssetBase} from "@awayjs/core";
 
-import {MaterialBase} from "@awayjs/graphics";
+import {IMaterial} from "@awayjs/renderer";
 
 import {IFontTable} from "./IFontTable";
 import {TesselatedFontTable} from "./TesselatedFontTable";
@@ -88,7 +88,7 @@ export class TextFormat extends AssetBase
 	/**
 	 * The material to use for texturing geometry generated for this text-format. this material will be used by the  TextField
 	 */
-	public material:MaterialBase;
+	public material:IMaterial;
 
 	/**
 	 * The uv-values of the colors in textureatlas.

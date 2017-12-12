@@ -1,4 +1,6 @@
-import {ElementsType, ElementsBase, TriangleElements, MaterialBase} from "@awayjs/graphics";
+import {ElementsType, ElementsBase, TriangleElements} from "@awayjs/graphics";
+
+import {IMaterial} from "@awayjs/renderer";
 
 import {PrimitivePrefabBase} from "../prefabs/PrimitivePrefabBase";
 
@@ -94,7 +96,7 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase
 	 * @param segmentsT Defines the number of vertical segments that make up the torus.
 	 * @param yUp Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material:MaterialBase = null, elementsType:string = "triangle", radius:number = 50, tubeRadius:number = 50, segmentsR:number = 16, segmentsT:number = 8, yUp:boolean = true)
+	constructor(material:IMaterial = null, elementsType:string = "triangle", radius:number = 50, tubeRadius:number = 50, segmentsR:number = 16, segmentsT:number = 8, yUp:boolean = true)
 	{
 		super(material, elementsType);
 

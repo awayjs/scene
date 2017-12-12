@@ -1,6 +1,8 @@
 import {Box, Matrix3D, PlaneClassification, Plane3D, Vector3D} from "@awayjs/core";
 
-import {ElementsType, IEntity} from "@awayjs/graphics";
+import {IEntity} from "@awayjs/renderer";
+
+import {ElementsType} from "@awayjs/graphics";
 
 import {Sprite} from "../display/Sprite";
 import {PrimitiveCubePrefab} from "../prefabs/PrimitiveCubePrefab";

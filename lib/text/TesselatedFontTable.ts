@@ -1,4 +1,6 @@
-import {AssetBase, AttributesBuffer, AttributesView, Point} from "@awayjs/core";
+import {AssetBase, Point} from "@awayjs/core";
+
+import {AttributesBuffer, AttributesView} from "@awayjs/stage";
 
 import {GraphicsPath, GraphicsFactoryStrokes, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle} from "@awayjs/graphics";
 
@@ -34,7 +36,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	private _usesCurves:boolean;
 	private _opentype_font:any;
 	private _glyphIdxToChar:any;
-	
+
 	public fallbackTable:IFontTable;
 
 	//TODO test shader picking
@@ -224,7 +226,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var v:number;
 		var size_multiply:number;
 		var hack_x_mirror:boolean=false;
-		
+
 		var idx:number=0;
 		var i:number=0;
 		var i_len:number=indices.length;
