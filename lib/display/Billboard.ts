@@ -224,3 +224,90 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		this._updateDimensions();
 	}
 }
+
+import {AssetEvent} from "@awayjs/core";
+
+import {AttributesBuffer} from "@awayjs/stage";
+
+import {IEntity, MaterialUtils, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity} from "@awayjs/renderer";
+
+import {TriangleElements} from "@awayjs/graphics";
+
+/**
+ * @class away.pool.RenderableListItem
+ */
+export class _Render_Billboard extends _Render_RenderableBase
+{
+    private static _samplerElements:Object = new Object();
+
+    /**
+     *
+     */
+    private _billboard:Billboard;
+
+    public _id:string;
+
+    /**
+     * //TODO
+     *
+     * @param pool
+     * @param billboard
+     */
+    constructor(billboard:Billboard, renderEntity:RenderEntity)
+    {
+        super(billboard, renderEntity);
+
+        this._billboard = billboard;
+    }
+
+    public onClear(event:AssetEvent):void
+    {
+        super.onClear(event);
+
+        this._billboard = null;
+    }
+
+    /**
+     * //TODO
+     *
+     * @returns {away.base.TriangleElements}
+     */
+    protected _getStageElements():_Stage_ElementsBase
+    {
+        var texture:ITexture = this._billboard.material.getTextureAt(0);
+
+        var width:number = this._billboard.billboardWidth;
+        var height:number = this._billboard.billboardHeight;
+        var billboardRect:Rectangle = this._billboard.billboardRect;
+
+        var id:string = width.toString() + height.toString() + billboardRect.toString();
+
+        this._id = id;
+
+        var elements:TriangleElements = _Render_Billboard._samplerElements[id];
+
+
+        if (!elements) {
+            elements = _Render_Billboard._samplerElements[id] = new TriangleElements(new AttributesBuffer(11, 4));
+            elements.autoDeriveNormals = false;
+            elements.autoDeriveTangents = false;
+            elements.setIndices(Array<number>(0, 1, 2, 0, 2, 3));
+            elements.setPositions(Array<number>(-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
+            elements.setNormals(Array<number>(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0));
+            elements.setTangents(Array<number>(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1));
+            elements.setUVs(Array<number>(0, 1, 1, 1, 1, 0, 0, 0));
+        } else {
+            elements.setPositions(Array<number>(-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
+        }
+
+        return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
+    }
+
+    protected _getRenderMaterial():_Render_MaterialBase
+    {
+        return this._renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._billboard.material || MaterialUtils.getDefaultColorMaterial());
+    }
+
+}
+
+RenderEntity.registerRenderable(_Render_Billboard, Billboard);

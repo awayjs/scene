@@ -21,16 +21,16 @@ export {HoverController} from "./lib/controllers/HoverController";
 export {LookAtController} from "./lib/controllers/LookAtController";
 export {SpringController} from "./lib/controllers/SpringController";
 
-export {Billboard} from "./lib/display/Billboard";
+export {Billboard, _Render_Billboard} from "./lib/display/Billboard";
 export {Camera} from "./lib/display/Camera";
 export {DisplayObject} from "./lib/display/DisplayObject";
 export {DisplayObjectContainer} from "./lib/display/DisplayObjectContainer";
-export {LineSegment} from "./lib/display/LineSegment";
+export {LineSegment, _Render_LineSegment} from "./lib/display/LineSegment";
 export {LoaderContainer} from "./lib/display/LoaderContainer";
 export {MorphSprite} from "./lib/display/MorphSprite";
 export {MovieClip} from "./lib/display/MovieClip";
 export {SimpleButton} from "./lib/display/SimpleButton";
-export {Skybox} from "./lib/display/Skybox";
+export {Skybox, _Render_Skybox, _Render_SkyboxMaterial} from "./lib/display/Skybox";
 export {Sprite} from "./lib/display/Sprite";
 export {TextField} from "./lib/display/TextField";
 
@@ -41,7 +41,7 @@ export {DisplayObjectEvent} from "./lib/events/DisplayObjectEvent";
 export {MouseEvent} from "./lib/events/MouseEvent";
 export {ResizeEvent} from "./lib/events/ResizeEvent";
 
-export {GL_SkyboxElements}				from "./lib/elements/GL_SkyboxElements";
+export {SkyboxElements, _Render_SkyboxElements, _Stage_SkyboxElements} from "./lib/elements/SkyboxElements";
 
 export {ISceneGraphFactory} from "./lib/factories/ISceneGraphFactory";
 
@@ -57,12 +57,6 @@ export {PrimitivePolygonPrefab} from "./lib/prefabs/PrimitivePolygonPrefab";
 export {PrimitivePrefabBase} from "./lib/prefabs/PrimitivePrefabBase";
 export {PrimitiveSpherePrefab} from "./lib/prefabs/PrimitiveSpherePrefab";
 export {PrimitiveTorusPrefab} from "./lib/prefabs/PrimitiveTorusPrefab";
-
-export {GL_BillboardRenderable}			from "./lib/renderables/GL_BillboardRenderable";
-export {GL_LineSegmentRenderable}		from "./lib/renderables/GL_LineSegmentRenderable";
-export {GL_SkyboxRenderable}				from "./lib/renderables/GL_SkyboxRenderable";
-
-export {GL_SkyboxMaterial}				from "./lib/materials/GL_SkyboxMaterial";
 
 export {AntiAliasType} from "./lib/text/AntiAliasType";
 export {Font} from "./lib/text/Font";

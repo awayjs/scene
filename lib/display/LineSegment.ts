@@ -153,3 +153,82 @@ export class LineSegment extends DisplayObject implements IRenderable
 		traverser[LineSegment.traverseName](this);
 	}
 }
+
+import {AssetEvent} from "@awayjs/core";
+
+import {LineElements} from "@awayjs/graphics";
+
+import {IEntity, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, MaterialUtils, RendererBase} from "@awayjs/renderer";
+
+
+/**
+ * @class away.pool._Render_LineSegment
+ */
+export class _Render_LineSegment extends _Render_RenderableBase
+{
+    private static _lineGraphics:Object = new Object();
+
+    /**
+     *
+     */
+    private _lineSegment:LineSegment;
+
+    /**
+     * //TODO
+     *
+     * @param pool
+     * @param graphic
+     * @param level
+     * @param dataOffset
+     */
+    constructor(lineSegment:LineSegment, renderStatePool:RenderEntity)
+    {
+        super(lineSegment, renderStatePool);
+
+        this._lineSegment = lineSegment;
+    }
+
+    public onClear(event:AssetEvent):void
+    {
+        super.onClear(event);
+
+        this._lineSegment = null;
+    }
+
+    /**
+     * //TODO
+     *
+     * @returns {base.LineElements}
+     * @protected
+     */
+    protected _getStageElements():_Stage_ElementsBase
+    {
+        var elements:LineElements = _Render_LineSegment._lineGraphics[this._lineSegment.id] || (_Render_LineSegment._lineGraphics[this._lineSegment.id] = new LineElements());
+
+        var start:Vector3D = this._lineSegment.startPostion;
+        var end:Vector3D = this._lineSegment.endPosition;
+
+        var positions:Float32Array = new Float32Array(6);
+        var thickness:Float32Array = new Float32Array(1);
+
+        positions[0] = start.x;
+        positions[1] = start.y;
+        positions[2] = start.z;
+        positions[3] = end.x;
+        positions[4] = end.y;
+        positions[5] = end.z;
+        thickness[0] = this._lineSegment.thickness;
+
+        elements.setPositions(positions);
+        elements.setThickness(thickness);
+
+        return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
+    }
+
+    protected _getRenderMaterial():_Render_MaterialBase
+    {
+        return this._renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._lineSegment.material || MaterialUtils.getDefaultColorMaterial());
+    }
+}
+
+RenderEntity.registerRenderable(_Render_LineSegment, LineSegment);

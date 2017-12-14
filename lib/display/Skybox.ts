@@ -24,85 +24,22 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	public static assetType:string = "[asset Skybox]";
 
 	private _texture:ImageTextureCube;
-	public _pAlphaThreshold:number = 0;
 	private _animationSet:IAnimationSet;
 	public _pBlendMode:string = BlendMode.NORMAL;
 	private _owners:Array<IEntity>;
-	private _curves:boolean = false;
-	private _imageRect:boolean = false;
 	private _onTextureInvalidateDelegate:(event:AssetEvent) => void;
 
-	public animateUVs:boolean;
+	public animateUVs:boolean = false;
 
-	public get bothSides():boolean
-	{
-		return false;
-	}
+	public bothSides:boolean = false;
+
+    public curves:boolean = false;
+
+    public imageRect:boolean = false;
 
 	public get traverseName():string
 	{
 		return Skybox.traverseName;
-	}
-	
-	/**
-	 * The minimum alpha value for which pixels should be drawn. This is used for transparency that is either
-	 * invisible or entirely opaque, often used with textures for foliage, etc.
-	 * Recommended values are 0 to disable alpha, or 0.5 to create smooth edges. Default value is 0 (disabled).
-	 */
-	public get alphaThreshold():number
-	{
-		return this._pAlphaThreshold;
-	}
-
-	public set alphaThreshold(value:number)
-	{
-		if (value < 0)
-			value = 0;
-		else if (value > 1)
-			value = 1;
-
-		if (this._pAlphaThreshold == value)
-			return;
-
-		this._pAlphaThreshold = value;
-
-		this.invalidatePasses();
-	}
-
-	/**
-	 * Indicates whether skybox should use curves. Defaults to false.
-	 */
-	public get curves():boolean
-	{
-		return this._curves;
-	}
-
-	public set curves(value:boolean)
-	{
-		if (this._curves == value)
-			return;
-
-		this._curves = value;
-
-		this.invalidatePasses();
-	}
-
-	/**
-	 * Indicates whether or not the Skybox texture should use imageRects. Defaults to false.
-	 */
-	public get imageRect():boolean
-	{
-		return this._imageRect;
-	}
-
-	public set imageRect(value:boolean)
-	{
-		if (this._imageRect == value)
-			return;
-
-		this._imageRect = value;
-
-		this.invalidatePasses();
 	}
 
 	/**
@@ -297,8 +234,149 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 
 }
 
-import {DefaultRenderer} from "@awayjs/renderer";
+import {Matrix3D, ProjectionBase} from "@awayjs/core";
 
-import {GL_SkyboxMaterial} from "../materials/GL_SkyboxMaterial";
+import {DefaultRenderer, _Render_RenderableBase, _Shader_TextureBase, ShaderBase, _Render_ElementsBase, RenderEntity} from "@awayjs/renderer";
 
-DefaultRenderer.registerMaterial(GL_SkyboxMaterial, Skybox);
+import {ContextGLCompareMode, ShaderRegisterCache, ShaderRegisterData, AttributesBuffer} from "@awayjs/stage";
+
+import {_Render_MaterialPassBase} from "@awayjs/materials";
+
+import {SkyboxElements, _Stage_SkyboxElements} from "../elements/SkyboxElements";
+
+/**
+ * _Render_SkyboxMaterial forms an abstract base class for the default shaded materials provided by Stage,
+ * using material methods to define their appearance.
+ */
+export class _Render_SkyboxMaterial extends _Render_MaterialPassBase
+{
+    public _skybox:Skybox;
+    public _texture:_Shader_TextureBase;
+
+    constructor(skybox:Skybox, renderElements:_Render_ElementsBase)
+    {
+        super(skybox, renderElements);
+
+        this._skybox = skybox;
+
+        this._shader = new ShaderBase(renderElements, this, this, this._stage);
+
+        this._texture = <_Shader_TextureBase> this._shader.getAbstraction(this._skybox.texture);
+
+        this._pAddPass(this);
+    }
+
+    public onClear(event:AssetEvent):void
+    {
+        super.onClear(event);
+
+        this._texture.onClear(new AssetEvent(AssetEvent.CLEAR, this._skybox.texture));
+        this._texture = null;
+
+        this._skybox = null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public _pUpdateRender():void
+    {
+        super._pUpdateRender();
+
+        this.requiresBlending = (this._material.blendMode != BlendMode.NORMAL);
+
+        this.shader.setBlendMode((this._material.blendMode == BlendMode.NORMAL && this.requiresBlending)? BlendMode.LAYER : this._material.blendMode);
+    }
+
+    public _includeDependencies(shader:ShaderBase):void
+    {
+        super._includeDependencies(shader);
+
+        shader.usesPositionFragment = true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public _getFragmentCode(registerCache:ShaderRegisterCache, sharedRegisters:ShaderRegisterData):string
+    {
+        return this._texture._getFragmentCode(sharedRegisters.shadedTarget, registerCache, sharedRegisters, sharedRegisters.positionVarying);
+    }
+
+
+    public _setRenderState(renderable:_Render_RenderableBase, projection:ProjectionBase):void
+    {
+        super._setRenderState(renderable, projection);
+
+        this._texture._setRenderState(renderable);
+    }
+    /**
+     * @inheritDoc
+     */
+    public _activate(projection:ProjectionBase):void
+    {
+        super._activate(projection);
+
+        this._stage.context.setDepthTest(false, ContextGLCompareMode.LESS);
+
+        this._texture.activate();
+    }
+}
+
+/**
+ * @class away.pool._Render_Skybox
+ */
+export class _Render_Skybox extends _Render_RenderableBase
+{
+    /**
+     *
+     */
+    private static _elements:SkyboxElements;
+
+    /**
+     *
+     */
+    private _skybox:Skybox;
+
+    /**
+     * //TODO
+     *
+     * @param pool
+     * @param skybox
+     */
+    constructor(skybox:Skybox, renderEntity:RenderEntity)
+    {
+        super(skybox, renderEntity);
+
+        this._skybox = skybox;
+    }
+
+    /**
+     * //TODO
+     *
+     * @returns {away.base.TriangleElements}
+     * @private
+     */
+    protected _getStageElements():_Stage_SkyboxElements
+    {
+        var elements:SkyboxElements = _Render_Skybox._elements;
+
+        if (!elements) {
+            elements = new SkyboxElements(new AttributesBuffer(11, 4));
+            elements.autoDeriveNormals = false;
+            elements.autoDeriveTangents = false;
+            elements.setIndices(Array<number>(0, 1, 2, 2, 3, 0, 6, 5, 4, 4, 7, 6, 2, 6, 7, 7, 3, 2, 4, 5, 1, 1, 0, 4, 4, 0, 3, 3, 7, 4, 2, 1, 5, 5, 6, 2));
+            elements.setPositions(Array<number>(-1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1));
+        }
+
+        return <_Stage_SkyboxElements> this._stage.getAbstraction(elements);
+    }
+
+    protected _getRenderMaterial():_Render_SkyboxMaterial
+    {
+        return <_Render_SkyboxMaterial> this._renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._skybox);
+    }
+}
+
+DefaultRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
+RenderEntity.registerRenderable(_Render_Skybox, Skybox);

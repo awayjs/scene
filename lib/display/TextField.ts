@@ -4,6 +4,8 @@ import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Byte4A
 
 import {TraverserBase, Style, IMaterial, MaterialUtils} from "@awayjs/renderer";
 
+import {MaterialBase} from "@awayjs/materials";
+
 import {Graphics, Shape, TriangleElements} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
@@ -1746,7 +1748,7 @@ export class TextField extends DisplayObject
 			if (textShape.format.material && this._textColor==-1) {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-				textShape.shape.material.animateUVs = true;
+				(<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			}
 			else {
@@ -1756,7 +1758,7 @@ export class TextField extends DisplayObject
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-					textShape.shape.material.animateUVs=true;
+                    (<MaterialBase> textShape.shape.material).animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
 				/*
@@ -1834,7 +1836,7 @@ export class TextField extends DisplayObject
 			if (textShape.format.material && this._textColor==-1) {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-				textShape.shape.material.animateUVs = true;
+                (<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			}
 			else {
@@ -1844,7 +1846,7 @@ export class TextField extends DisplayObject
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-					textShape.shape.material.animateUVs=true;
+                    (<MaterialBase> textShape.shape.material).animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
 /*
