@@ -271,6 +271,16 @@ export class TextField extends DisplayObject
 
 		this.reConstruct();
 
+		if(this._labelData || !this.selectable){
+
+			this._pBoxBounds.x = 0;
+			this._pBoxBounds.y = 0;
+			this._pBoxBounds.width = 0;
+			this._pBoxBounds.height = 0;
+			return;
+		}
+
+
 		this._pBoxBounds.x = 0;
 		this._pBoxBounds.y = 0;
 		this._pBoxBounds.width = this._width;

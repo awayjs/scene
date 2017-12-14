@@ -486,7 +486,7 @@ export class Timeline
 					this._functions[this.property_type_stream[p]].call(this, child, target_mc, this.property_index_stream[p]);
 			}
 			else{
-				console.log("timeline: child not found");
+				//console.log("timeline: child not found");
 			}
 		}
 	}
