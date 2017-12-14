@@ -120,7 +120,8 @@ export class MorphSprite extends Sprite
 			startPath=this.start[0];
 			endPath=this.end[0];
 			if(endPath._commands.length!=len_contours) {
-				throw("Error in morph data - different number of contour");
+				len_contours=Math.min(endPath._commands.length, len_contours);
+				//throw("Error in morph data - different number of contour");
 			}
 			for(var c:number=0; c < len_contours; c++){
 				var startCmds=startPath._commands[c];
@@ -129,7 +130,8 @@ export class MorphSprite extends Sprite
 				var endData=endPath._data[c];
 				var len_cmds=startCmds.length;
 				if(endCmds.length!=len_cmds){
-					throw("Error in morph data - different number of commands in contour");
+					len_cmds=Math.min(endCmds.length, len_cmds);
+					//throw("Error in morph data - different number of commands in contour");
 				}
 				//console.log("start", startData);
 				//console.log("end", endData);
