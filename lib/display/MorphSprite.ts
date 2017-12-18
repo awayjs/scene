@@ -95,7 +95,15 @@ export class MorphSprite extends Sprite
 					}
 					//todo: interpolate uvtransform
 					var transform:Matrix=startStyle.matrix;
-					newPath.style=new GradientFillStyle(startStyle.type, newColors, newAlphas, newRatios, transform, startStyle.spreadMethod, startStyle.interpolationMethod, startStyle.focalPointRatio);
+					var transformb:Matrix=endStyle.matrix;
+					var transformnew:Matrix=new Matrix();
+					transformnew.a=transform.a*ratioStart + transformb.a*ratioEnd;
+					transformnew.b=transform.b*ratioStart + transformb.b*ratioEnd;
+					transformnew.c=transform.c*ratioStart + transformb.c*ratioEnd;
+					transformnew.d=transform.d*ratioStart + transformb.d*ratioEnd;
+					transformnew.tx=transform.tx*ratioStart + transformb.tx*ratioEnd;
+					transformnew.ty=transform.ty*ratioStart + transformb.ty*ratioEnd;
+					newPath.style=new GradientFillStyle(startStyle.type, newColors, newAlphas, newRatios, transformnew, startStyle.spreadMethod, startStyle.interpolationMethod, startStyle.focalPointRatio);
 					break;
 				case BitmapFillStyle.data_type:
 					//newPath.style=new BitmapFillStyle();
@@ -233,6 +241,8 @@ export class MorphSprite extends Sprite
 
 		this.copyTo(newInstance);
 
+		newInstance.ratioCache=this.ratioCache;
+
 		return newInstance;
 	}
 
@@ -240,7 +250,7 @@ export class MorphSprite extends Sprite
 	{
 		super.copyTo(sprite, cloneShapes);
 
-		(<MorphSprite>sprite).start=this.start.splice(0);
-		(<MorphSprite>sprite).end=this.end.splice(0);
+		(<MorphSprite>sprite).start=this.start;
+		(<MorphSprite>sprite).end=this.end;
 	}
 }
