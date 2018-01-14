@@ -38,6 +38,7 @@ export {CastError} from "./lib/errors/CastError";
 
 export {CameraEvent} from "./lib/events/CameraEvent";
 export {DisplayObjectEvent} from "./lib/events/DisplayObjectEvent";
+export {KeyboardEvent} from "./lib/events/KeyboardEvent";
 export {MouseEvent} from "./lib/events/MouseEvent";
 export {ResizeEvent} from "./lib/events/ResizeEvent";
 

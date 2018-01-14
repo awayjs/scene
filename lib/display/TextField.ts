@@ -21,6 +21,8 @@ import {TextFieldType} from "../text/TextFieldType";
 import {TextFormat} from "../text/TextFormat";
 import {TextInteractionMode} from "../text/TextInteractionMode";
 import {TextLineMetrics} from "../text/TextLineMetrics";
+import {KeyboardEvent} from "../events/KeyboardEvent";
+import {MouseEvent} from "../events/MouseEvent";
 
 import {DisplayObject} from "./DisplayObject";
 import {TextShape} from "../text/TextShape";
@@ -171,6 +173,8 @@ export class TextField extends DisplayObject
 	private _maxWidthLine:number=0;
 
 	private _labelData:any=null;
+
+	public isInput:boolean=false;
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
 		if(this.textShapes.hasOwnProperty(id)){
@@ -883,6 +887,7 @@ export class TextField extends DisplayObject
 
 		this._textDirty = true;
 
+		console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._pInvalidateBounds();
 	}
@@ -1205,6 +1210,12 @@ export class TextField extends DisplayObject
 		this._border=false;
 		this._borderColor=0x000000;
 
+		this.onKeyDelegate = (event:any) => this.onKey(event);
+		this.onMouseDownDelegate = (event:any) => this.onMouseDown(event);
+		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
+		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
+
+
 		this._graphics = Graphics.getGraphics(this); //unique graphics object for each TextField
 	}
 
@@ -1400,6 +1411,7 @@ export class TextField extends DisplayObject
 		var whitespace_cnt:number=0;
 		for (c = 0; c < c_len; c++) {
 			char_code=paragraphText.charCodeAt(c);
+			//console.log("charcode:", char_code, "char", paragraphText[c]);
 			this.chars_codes[this.chars_codes.length]=char_code;
 
 			char_width=this._textFormat.font_table.getCharWidth(char_code.toString());
@@ -1499,7 +1511,7 @@ export class TextField extends DisplayObject
 				this._transform.matrix3D._rawData[12] = -this._width/2;//-= (this._width-oldSize)/2;
 				this._transform.invalidatePosition();
 			}
-			//console.log("text width", this._width);
+			console.log("text width", this._width);
 			//console.log("text x", this._transform.matrix3D._rawData[12]);
 		}
 
@@ -2238,7 +2250,25 @@ export class TextField extends DisplayObject
 	{
 		return false;
 	}
-
+	public onKeyDelegate:(e:any) => void;
+	public onKey(e:any){
+		var keyEvent:KeyboardEvent=<KeyboardEvent>e;
+		console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
+		this.text = this._text+keyEvent.char;
+		console.log("textfield.onKey this.text", this.text);
+	}
+	public onMouseDownDelegate:(e:any) => void;
+	public onMouseDown(e:any){
+		console.log("textfield.onMouseDown", e);
+	}
+	public onMouseMoveDelegate:(e:any) => void;
+	public onMouseMove(e:any){
+		document.body.style.cursor="text";
+	}
+	public onMouseOutDelegate:(e:any) => void;
+	public onMouseOut(e:any){
+		document.body.style.cursor="auto";
+	}
 	public clone():TextField
 	{
 		var newInstance:TextField = TextField.getNewTextField();
@@ -2264,6 +2294,17 @@ export class TextField extends DisplayObject
 			newInstance.setLabelData(this._labelData);
 
 		}
+		newInstance.isInput = this.isInput;
+		if(this.isInput){
+			newInstance.addEventListener(KeyboardEvent.KEYDOWN, newInstance.onKeyDelegate);
+			newInstance.addEventListener(MouseEvent.MOUSE_DOWN, newInstance.onMouseDownDelegate);
+		}
+		if(this.selectable){
+			newInstance.addEventListener(MouseEvent.MOUSE_MOVE, newInstance.onMouseMoveDelegate);
+			newInstance.addEventListener(MouseEvent.MOUSE_OUT, newInstance.onMouseOutDelegate);
+
+		}
+		newInstance.selectable = this.selectable;
 	}
 	
 }
