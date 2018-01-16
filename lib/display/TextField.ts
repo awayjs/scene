@@ -596,6 +596,16 @@ export class TextField extends DisplayObject
 		this.text=textProps.text;
 	};
 
+	// todo: use ColorUtils instead
+	public rgbaToArgb(float32Color:number):number
+	{
+		var r:number = ( float32Color & 0xff000000 ) >>> 24;
+		var g:number = ( float32Color & 0xff0000 ) >>> 16;
+		var b:number = ( float32Color & 0xff00 ) >>> 8;
+		var a:number = float32Color & 0xff;
+		return (a << 24) | (r << 16) |
+			(g << 8) | b;
+	}
 	private readTextPropertiesRecursive(myChild, textProps:any){
 
 		//console.log("textfied content xml node:",myChild);
@@ -609,8 +619,8 @@ export class TextField extends DisplayObject
 		if(myChild.attributes){
 			if((<any>myChild.attributes).size)
 				textProps.size =  (<any>myChild.attributes).size.nodeValue;
-			/*if((<any>myChild.attributes).color)
-				textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);*/
+			if((<any>myChild.attributes).color)
+				textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);
 			if((<any>myChild.attributes).indent)
 				textProps.indent =  (<any>myChild.attributes).indent.nodeValue;
 			if((<any>myChild.attributes).leftMargin)
@@ -1700,6 +1710,13 @@ export class TextField extends DisplayObject
 			}
 			else if (r>0){
 				formats[r].size=formats[r-1].size;
+			}
+			if(record.color){
+				//textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);
+				formats[r].color=this.rgbaToArgb(record.color);
+			}
+			else if (r>0){
+				formats[r].color=formats[r-1].color;
 			}
 			positions.push(this.textOffsetX+(record.moveX? record.moveX/20:0));
 			positions.push(this.textOffsetY+(record.moveY? record.moveY/20:0));
