@@ -163,18 +163,22 @@ export class TextField extends DisplayObject
 	public _glyphsDirty:Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
 
 	public chars_codes:number[]=[];	// stores charcode per char
-	public chars_width:number[]=[];	// stores charcode per char
+	public chars_width:number[]=[];
 
 	public words:number[]=[];			// stores offset and length and width for each word
 
 	private _textRuns_formats:TextFormat[]=[];	// stores textFormat for each textrun
 	private _textRuns_words:number[]=[];	// stores words-offset, word-count and width for each textrun
 
+
 	private _maxWidthLine:number=0;
 
 	private _labelData:any=null;
 
-	public isInput:boolean=false;
+	public getMouseCursor():string
+	{
+		return "text";
+	}
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
 		if(this.textShapes.hasOwnProperty(id)){
@@ -275,7 +279,7 @@ export class TextField extends DisplayObject
 
 		this.reConstruct();
 
-		if(this._labelData || !this.selectable){
+		if(!this._selectable){
 
 			this._pBoxBounds.x = 0;
 			this._pBoxBounds.y = 0;
@@ -590,8 +594,9 @@ export class TextField extends DisplayObject
 		if(doc && doc.firstChild){
 			text="";
 			textProps.multiline=doc.firstChild.childNodes.length>0;
-			this.readTextPropertiesRecursive(doc, textProps);
+			this.readHTMLTextPropertiesRecursive(doc, textProps);
 		}
+
 
 		this.text=textProps.text;
 	};
@@ -606,16 +611,10 @@ export class TextField extends DisplayObject
 		return (a << 24) | (r << 16) |
 			(g << 8) | b;
 	}
-	private readTextPropertiesRecursive(myChild, textProps:any){
+	private readHTMLTextPropertiesRecursive(myChild, textProps:any, parentChild=null){
 
 		//console.log("textfied content xml node:",myChild);
 		//console.log(myChild.tagName);
-		if(myChild.tagName=="p"){
-			if(textProps.text!=""){
-				textProps.text+="\\n";
-
-			}
-		}
 		if(myChild.attributes){
 			if((<any>myChild.attributes).size)
 				textProps.size =  (<any>myChild.attributes).size.nodeValue;
@@ -636,13 +635,19 @@ export class TextField extends DisplayObject
 		if(!myChild.childNodes || myChild.childNodes.length==0){
 
 			if((<any>myChild).nodeValue){
+				if(parentChild){
+					if(parentChild.tagName=="p"){
+						if(textProps.text!=""){
+							textProps.text+="\\n";
+						}
+					}
+				}
 				textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
-
 			}
 		}
 		else{
 			for(var k=0; k<myChild.childNodes.length;k++){
-				this.readTextPropertiesRecursive(myChild.childNodes[k], textProps);
+				this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps);
 			}
 		}
 	}
@@ -817,7 +822,14 @@ export class TextField extends DisplayObject
 	 *
 	 * @default true
 	 */
-	public selectable:boolean;
+	private _selectable:boolean;
+	public get selectable():boolean	{
+		return this._selectable;
+	}
+	public set selectable(value:boolean){
+		this._selectable=value;
+	}
+
 
 	/**
 	 * The zero-based character index value of the first character in the current
@@ -897,7 +909,7 @@ export class TextField extends DisplayObject
 
 		this._textDirty = true;
 
-		console.log("set text", value, "on" , this);
+		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._pInvalidateBounds();
 	}
@@ -1094,7 +1106,24 @@ export class TextField extends DisplayObject
 	 * @throws ArgumentError The <code>type</code> specified is not a member of
 	 *                       flash.text.TextFieldType.
 	 */
-	public type:TextFieldType;
+	public _type:TextFieldType;
+
+	public get type():TextFieldType{
+		return this._type;
+	}
+	public set type(value:TextFieldType){
+		if(this._type==value){
+			return;
+		}
+		this._type=value;
+		if(value==TextFieldType.INPUT){
+			this._selectable=true;
+			this.addEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
+		}
+		else{
+			this.removeEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
+		}
+	}
 
 	/**
 	 * Specifies whether to copy and paste the text formatting along with the
@@ -1201,6 +1230,11 @@ export class TextField extends DisplayObject
 	constructor()
 	{
 		super();
+		this.onKeyDelegate = (event:any) => this.onKey(event);
+		this.onMouseDownDelegate = (event:any) => this.onMouseDown(event);
+		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
+		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
+
 		this.textOffsetX=0;
 		this.textOffsetY=0;
 		this.textShapes={};
@@ -1209,10 +1243,10 @@ export class TextField extends DisplayObject
 		this._height=100;
 		this._textWidth=0;
 		this._textHeight=0;
-		this.type = TextFieldType.STATIC;
+		this._type = TextFieldType.DYNAMIC;
+		this._selectable=false;
 		this._numLines=0;
 		this.multiline = false;
-		this.selectable=true;
 		this._autoSize=TextFieldAutoSize.NONE;
 		this._wordWrap=false;
 		this._background=false;
@@ -1220,10 +1254,6 @@ export class TextField extends DisplayObject
 		this._border=false;
 		this._borderColor=0x000000;
 
-		this.onKeyDelegate = (event:any) => this.onKey(event);
-		this.onMouseDownDelegate = (event:any) => this.onMouseDown(event);
-		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
-		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
 
 
 		this._graphics = Graphics.getGraphics(this); //unique graphics object for each TextField
@@ -1366,6 +1396,8 @@ export class TextField extends DisplayObject
 				this._textWidth = 0;
 				this._textHeight = 0;
 				if(this._autoSize!=TextFieldAutoSize.NONE ){
+
+					this.adjustPositionForAutoSize(0);
 					this._width = 4;
 					this._height = 4;
 
@@ -1477,6 +1509,19 @@ export class TextField extends DisplayObject
 			this._maxWidthLine=linewidh;
 		}
 	}
+	private adjustPositionForAutoSize(newWidth:number){
+
+		var oldSize:number=this._width;
+		this._width=4+newWidth;
+		this._pInvalidateBounds();
+		if (this._autoSize==TextFieldAutoSize.RIGHT){
+			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
+			this._transform.invalidatePosition();
+		} else if (this._autoSize==TextFieldAutoSize.CENTER){
+			this._transform.matrix3D._rawData[12] -= (this._width-oldSize)/2; //-this._width/2;
+			this._transform.invalidatePosition();
+		}
+	}
 
 	private getWordPositions() {
 
@@ -1511,17 +1556,8 @@ export class TextField extends DisplayObject
 		//console.log("this._autoSize", this._autoSize);
 		//console.log("this._wordWrap", this._wordWrap);
 		if(this._autoSize!=TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty){
-			var oldSize:number=this._width;
-			this._width=4+this._maxWidthLine+this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
-			this._pInvalidateBounds();
-			if (this._autoSize==TextFieldAutoSize.RIGHT){
-				this._transform.matrix3D._rawData[12] -= this._width-oldSize;
-				this._transform.invalidatePosition();
-			} else if (this._autoSize==TextFieldAutoSize.CENTER){
-				this._transform.matrix3D._rawData[12] = -this._width/2;//-= (this._width-oldSize)/2;
-				this._transform.invalidatePosition();
-			}
-			console.log("text width", this._width);
+			this.adjustPositionForAutoSize(this._maxWidthLine+this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin);
+			//console.log("text width", this._width);
 			//console.log("text x", this._transform.matrix3D._rawData[12]);
 		}
 
@@ -1833,7 +1869,8 @@ export class TextField extends DisplayObject
 				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
 			if(this._border)
 				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
-			this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
+			//this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
+			this._graphics.drawRect(-2,-2,this._width, this._height);
 			this._graphics.endFill();
 		}
 
@@ -2302,8 +2339,13 @@ export class TextField extends DisplayObject
 
 		newInstance.width = this._width;
 		newInstance.height = this._height;
-		newInstance.textFormat = this._textFormat;
-		//newInstance.textColor = this._textColor;
+		if(this._textFormat)
+			newInstance.textFormat = this._textFormat.clone();
+		newInstance.textColor = this._textColor;
+		newInstance.border = this._border;
+		newInstance.borderColor = this._borderColor;
+		newInstance.background = this._background;
+		newInstance.backgroundColor = this._backgroundColor;
 		newInstance.text = this._text;
 		newInstance.textOffsetX = this.textOffsetX;
 		newInstance.textOffsetY = this.textOffsetY;
@@ -2311,17 +2353,8 @@ export class TextField extends DisplayObject
 			newInstance.setLabelData(this._labelData);
 
 		}
-		newInstance.isInput = this.isInput;
-		if(this.isInput){
-			newInstance.addEventListener(KeyboardEvent.KEYDOWN, newInstance.onKeyDelegate);
-			newInstance.addEventListener(MouseEvent.MOUSE_DOWN, newInstance.onMouseDownDelegate);
-		}
-		if(this.selectable){
-			newInstance.addEventListener(MouseEvent.MOUSE_MOVE, newInstance.onMouseMoveDelegate);
-			newInstance.addEventListener(MouseEvent.MOUSE_OUT, newInstance.onMouseOutDelegate);
-
-		}
-		newInstance.selectable = this.selectable;
+		newInstance.type = this._type;
+		newInstance.selectable = this._selectable;
 	}
 	
 }

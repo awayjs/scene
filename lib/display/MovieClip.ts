@@ -1,4 +1,4 @@
-import {AssetEvent,IAsset, IAssetAdapter} from "@awayjs/core";
+import {AssetEvent,IAsset, EventBase, IAssetAdapter} from "@awayjs/core";
 import {Graphics} from "@awayjs/graphics";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {Timeline} from "../base/Timeline";
@@ -14,6 +14,7 @@ export class MovieClip extends Sprite
 {
 	public static avm1ScriptQueue:MovieClip[]=[];
 	public static avm1ScriptQueueScripts:any[]=[];
+	public static avm1LoadedActions:any[]=[];
 	private static _skipAdvance:boolean;
 
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
@@ -47,10 +48,15 @@ export class MovieClip extends Sprite
 	private _depth_sessionIDs:Object = {};
 	private _sessionID_childs:Object = {};
 
+	public useHandCursor:boolean;
+	private mouseListenerCount:number;
+
 	constructor(timeline:Timeline = null)
 	{
 		super();
 
+		this.useHandCursor=true;
+		this.mouseListenerCount=0;
 		this.cursorType="pointer";
 		this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
 
@@ -58,25 +64,46 @@ export class MovieClip extends Sprite
 
 		// todo: allow to set cursor-types for movieclip
 		this._onMouseOver = (event:MouseEvent) => {
-			document.body.style.cursor = "pointer";
+			//document.body.style.cursor = "pointer";
 			this.currentFrameIndex = 1;
 		};
 		this._onMouseOut = (event:MouseEvent) => {
-			document.body.style.cursor = "initial";
+			//document.body.style.cursor = "initial";
 			this.currentFrameIndex = 0;
 		};
 		this._onMouseDown = (event:MouseEvent) => {
-			document.body.style.cursor = "initial";
+			//document.body.style.cursor = "initial";
 			this.currentFrameIndex = 2;
 		};
 		this._onMouseUp = (event:MouseEvent) => {
-			document.body.style.cursor = "initial";
+			//document.body.style.cursor = "initial";
 			this.currentFrameIndex = this.currentFrameIndex == 0? 0 : 1;
 		};
 
 		this._timeline = timeline || new Timeline();
 	}
 
+	public getMouseCursor():string
+	{
+		if(this.useHandCursor && (this.mouseListenerCount>0)){
+			return this.cursorType;
+		}
+		var cursorName:string;
+		var parent:DisplayObject=this.parent;
+		while(parent){
+			if(parent.isAsset(MovieClip)){
+				cursorName=(<MovieClip>parent).getMouseCursor();
+				if(cursorName!="initial"){
+					return cursorName;
+				}
+			}
+			parent=parent.parent;
+			if(parent && parent.name=="scene"){
+				return "initial";
+			}
+		}
+		return "initial";
+	}
 	public registerScriptObject(child:DisplayObject):void
 	{
 		this[child.name]=child;
@@ -186,13 +213,17 @@ export class MovieClip extends Sprite
 		for (var i:number = this.numChildren - 1; i >= 0; i--)
 			this.removeChildAt(i);
 
+
+
 		this._skipAdvance = MovieClip._skipAdvance;
 		this._skipAdvance=true;
 		var numFrames:number = this._timeline.keyframe_indices.length;
 		this._isPlaying = Boolean(numFrames > 1);
 		if (numFrames) {
 			this._currentFrameIndex = 0;
-			this._timeline.constructNextFrame(this, fireScripts, true);
+			//if(fireScripts)
+			//	this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
+			this._timeline.constructNextFrame(this, false, true);
 		} else {
 			this._currentFrameIndex = -1;
 		}
@@ -245,6 +276,38 @@ export class MovieClip extends Sprite
 		this._timeline.gotoFrame(this, value, skip_script);
 	}
 
+	public addEventListener(type:string, listener:(event:EventBase) => void):void
+	{
+
+		super.addEventListener(type, listener);
+
+		switch (type) {
+			case MouseEvent.MOUSE_OUT:
+			case MouseEvent.MOUSE_MOVE:
+			case MouseEvent.MOUSE_DOWN:
+			case MouseEvent.MOUSE_OVER:
+			case MouseEvent.MOUSE_UP_OUTSIDE:
+			case MouseEvent.MOUSE_WHEEL:
+				this.mouseListenerCount++;
+				break;
+		}
+	}
+	public removeEventListener(type:string, listener:(event:EventBase) => void):void
+	{
+
+		super.removeEventListener(type, listener);
+
+		switch (type) {
+			case MouseEvent.MOUSE_OUT:
+			case MouseEvent.MOUSE_MOVE:
+			case MouseEvent.MOUSE_DOWN:
+			case MouseEvent.MOUSE_OVER:
+			case MouseEvent.MOUSE_UP_OUTSIDE:
+			case MouseEvent.MOUSE_WHEEL:
+				this.mouseListenerCount--;
+				break;
+		}
+	}
 	public addButtonListeners():void
 	{
 		this._isButton = true;
@@ -397,8 +460,25 @@ export class MovieClip extends Sprite
 		newInstance.loop = this.loop;
 	}
 
+	public getScriptsForFrameConstruct():void
+	{
+
+		if(this._skipAdvance){
+			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
+		}
+		var len:number = this._children.length;
+		var child:DisplayObject;
+		for (var i:number = len-1; i >=  0; --i) {
+			child = this._children[i];
+
+			if (child.isAsset(MovieClip))
+				(<MovieClip> child).getScriptsForFrameConstruct();
+		}
+		this._skipAdvance = false;
+	}
 	public advanceFrame():void
 	{
+		//console.log("advanceFrame ", this.name, this.id);
 		if (this._isPlaying && !this._skipAdvance) {
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
 				if (this.loop) // end of loop - jump to first frame.
@@ -410,10 +490,14 @@ export class MovieClip extends Sprite
 				this._timeline.constructNextFrame(this);
 			}
 		}
+		if(this._skipAdvance){
+			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
+		}
+		//this.adapter.callScript
 
 		var len:number = this._children.length;
 		var child:DisplayObject;
-		for (var i:number = 0; i <  len; ++i) {
+		for (var i:number = len-1; i >=  0; --i) {
 			child = this._children[i];
 
 			if (child.isAsset(MovieClip))

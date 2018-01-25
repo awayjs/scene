@@ -187,6 +187,7 @@ export class Timeline
 
 		}
 		if(this.avm1framescripts[target_mc.currentFrameIndex]!=null){
+			//(<IMovieClipAdapter>target_mc.adapter).callFrameScript(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
 			MovieClip.avm1ScriptQueue.push(target_mc);
 			MovieClip.avm1ScriptQueueScripts.push(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
 			

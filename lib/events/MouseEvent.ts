@@ -26,6 +26,10 @@ export class MouseEvent extends EventBase
 	 * Defines the value of the type property of a mouseUp3d event object.
 	 */
 	public static MOUSE_UP:string = "mouseUp3d";
+	/**
+	 * Defines the value of the type property of a mouseUp3d event object.
+	 */
+	public static MOUSE_UP_OUTSIDE:string = "mouseUpOutside3d";
 
 	/**
 	 * Defines the value of the type property of a mouseDown3d event object.

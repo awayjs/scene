@@ -298,6 +298,56 @@ export class TextFormat extends AssetBase
 		// todo: implement a way to supply a default fonttable / font to formats
 		this.font_table=new TesselatedFontTable();
 	}
+	public clone():TextFormat{
+		var clonedFormat:TextFormat=new TextFormat();
+		clonedFormat.font_name = this.font;
+		clonedFormat.size = this.size;
+		clonedFormat.color = this.color;
+		clonedFormat.bold = this.bold;
+		clonedFormat.italic = this.italic;
+		clonedFormat.underline = this.underline;
+		clonedFormat.url = this.url;
+		clonedFormat.link_target = this.link_target;
+		clonedFormat.align = this.align;
+		clonedFormat.leftMargin = this.leftMargin;
+		clonedFormat.rightMargin = this.rightMargin;
+		clonedFormat.indent = this.indent;
+		clonedFormat.leading = this.leading;
+		clonedFormat.letterSpacing = 0;;
+		clonedFormat.font_table = this.font_table;
+		return clonedFormat;
+
+	}
+
+	public applyFormat(format:TextFormat){
+		if(format.size!=null)
+			this.size=format.size;
+		if(format.color!=null)
+			this.color=format.color;
+		if(format.bold!=null)
+			this.bold=format.bold;
+		if(format.italic!=null)
+			this.italic=format.italic;
+		if(format.underline!=null)
+			this.underline=format.underline;
+		if(format.url!=null)
+			this.url=format.url;
+		if(format.align!=null)
+			this.align=format.align;
+		if(format.leftMargin!=null)
+			this.leftMargin=format.leftMargin;
+		if(format.rightMargin!=null)
+			this.rightMargin=format.rightMargin;
+		if(format.indent!=null)
+			this.indent=format.indent;
+		if(format.leading!=null)
+			this.leading=format.leading;
+		if(format.letterSpacing!=null)
+			this.letterSpacing=format.letterSpacing;
+		if(format.link_target!=null)
+			this.link_target=format.link_target;
+
+	}
 
 	/**
 	 *
