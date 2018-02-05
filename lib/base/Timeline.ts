@@ -12,6 +12,7 @@ import {MovieClip} from "../display/MovieClip";
 import {Sprite} from "../display/Sprite";
 import {MorphSprite} from "../display/MorphSprite";
 import {DisplayObject} from "../display/DisplayObject";
+import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import {FrameScriptManager} from "../managers/FrameScriptManager";
 
 
@@ -235,6 +236,30 @@ export class Timeline
 	{
 		var id = this._potentialPrototypes.length;
 		this._potentialPrototypes[id] = prototype;
+	}
+
+	public extractHitArea(target_mc:MovieClip):DisplayObjectContainer{
+		target_mc.reset();
+		this.gotoFrame(target_mc, this.numFrames-1, true);
+		var i:number=target_mc.numChildren;
+		var hitArea:DisplayObjectContainer=new DisplayObjectContainer();
+		var child:DisplayObject;
+		var originalChild:DisplayObject;
+		while(i>0){
+			i--;
+			originalChild=target_mc.getChildAt(i);
+			child=originalChild.clone();
+			child.reset();
+
+			child.x = originalChild.x;
+			child.scaleX = originalChild.scaleX;
+			child.y = originalChild.y;
+			child.scaleY = originalChild.scaleY;
+			child.rotationZ = originalChild.rotationZ;
+			hitArea.addChild(child);
+		}
+		target_mc.reset();
+		return hitArea;
 	}
 
 	public jumpToLabel(target_mc:MovieClip, label:string) : void

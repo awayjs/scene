@@ -25,6 +25,7 @@ import {KeyboardEvent} from "../events/KeyboardEvent";
 import {MouseEvent} from "../events/MouseEvent";
 
 import {DisplayObject} from "./DisplayObject";
+import {MovieClip} from "./MovieClip";
 import {TextShape} from "../text/TextShape";
 
 /**
@@ -177,7 +178,33 @@ export class TextField extends DisplayObject
 
 	public getMouseCursor():string
 	{
-		return "text";
+		// check if any parent is a button, otherwise return the cursor type set for this text
+		var cursorName:string;
+		var parent:DisplayObject=this.parent;
+		while(parent){
+			if(parent.isAsset(MovieClip)){
+				cursorName=(<MovieClip>parent).getMouseCursor();
+				if(cursorName!="initial"){
+					return cursorName;
+				}
+			}
+			parent=parent.parent;
+			if(parent && parent.name=="scene"){
+				parent=null;
+			}
+		}
+		return this.cursorType;
+	}
+
+	public get isInFocus():boolean
+	{
+		return this._isInFocus;
+	}
+	public set isInFocus(value:boolean)
+	{
+		this._isInFocus=value;
+		this._positionsDirty = true;
+		this._glyphsDirty=true;
 	}
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
@@ -1235,6 +1262,8 @@ export class TextField extends DisplayObject
 		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
 		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
 
+		this._isTabEnabled=true;
+		this.cursorType="text";
 		this.textOffsetX=0;
 		this.textOffsetY=0;
 		this.textShapes={};
@@ -1864,10 +1893,12 @@ export class TextField extends DisplayObject
 		this.textShapes={};
 
 		this._graphics.clear();
-		if(this._background || this._border){
+		if(this._background || this._border || this._isInFocus){
 			if(this._background)
 				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
-			if(this._border)
+			if(this._isInFocus)
+				this._graphics.lineStyle(0.1, 0xff0000, 1);//this.borderColor, this.border?1:0);
+			if(!this._isInFocus && this._border)
 				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
 			//this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
 			this._graphics.drawRect(-2,-2,this._width, this._height);
@@ -2308,7 +2339,25 @@ export class TextField extends DisplayObject
 	public onKey(e:any){
 		var keyEvent:KeyboardEvent=<KeyboardEvent>e;
 		console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
-		this.text = this._text+keyEvent.char;
+		// todo: correctly implement text-cursor, and delete / add from its position
+		if(keyEvent.char=="Backspace"){
+			if(this.text.length>0){
+				this.text=this._text.slice(0, this._text.length-1);
+			}
+
+		}
+		else if(keyEvent.char=="Delete"){
+			if(this.text.length>1){
+				this.text=this._text.slice(1, this._text.length-1);
+			}
+			else{
+				this.text="";
+			}
+
+		}
+		else{
+			this.text = this._text+keyEvent.char;
+		}
 		console.log("textfield.onKey this.text", this.text);
 	}
 	public onMouseDownDelegate:(e:any) => void;

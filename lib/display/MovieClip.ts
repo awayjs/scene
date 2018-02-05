@@ -1,4 +1,4 @@
-import {AssetEvent,IAsset, EventBase, IAssetAdapter} from "@awayjs/core";
+import {AssetEvent,IAsset, Matrix3D, EventBase, IAssetAdapter} from "@awayjs/core";
 import {Graphics} from "@awayjs/graphics";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {Timeline} from "../base/Timeline";
@@ -49,7 +49,9 @@ export class MovieClip extends Sprite
 	private _sessionID_childs:Object = {};
 
 	public useHandCursor:boolean;
-	private mouseListenerCount:number;
+	public mouseListenerCount:number;
+
+	private _hitArea:DisplayObject
 
 	constructor(timeline:Timeline = null)
 	{
@@ -58,6 +60,7 @@ export class MovieClip extends Sprite
 		this.useHandCursor=true;
 		this.mouseListenerCount=0;
 		this.cursorType="pointer";
+		//this.debugVisible=true;
 		this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
 
 		this.inheritColorTransform = true;
@@ -81,6 +84,31 @@ export class MovieClip extends Sprite
 		};
 
 		this._timeline = timeline || new Timeline();
+	}
+;
+
+	public _pUpdateBoxBounds():void
+	{
+		if(this._hitArea){
+			this._boxBoundsInvalid = false;
+			//this._hitArea.
+
+			/*var new_matrix:Matrix3D = this._hitArea.transform.matrix3D;
+			this.transform.matrix3D.copyTo(new_matrix);
+
+			this._hitArea.transform.invalidateComponents();*/
+			this._pBoxBounds = this._hitArea.getBox();
+			return;
+		}
+		super._pUpdateBoxBounds();
+	}
+	public get hitArea():DisplayObject
+	{
+		return this._hitArea;
+	}
+	public set hitArea(value:DisplayObject)
+	{
+		this._hitArea=value;
 	}
 
 	public getMouseCursor():string
@@ -304,7 +332,8 @@ export class MovieClip extends Sprite
 			case MouseEvent.MOUSE_OVER:
 			case MouseEvent.MOUSE_UP_OUTSIDE:
 			case MouseEvent.MOUSE_WHEEL:
-				this.mouseListenerCount--;
+				if(this.mouseListenerCount>0)
+					this.mouseListenerCount--;
 				break;
 		}
 	}
@@ -456,6 +485,7 @@ export class MovieClip extends Sprite
 	{
 		super.copyTo(newInstance);
 
+		newInstance.hitArea = this._hitArea;
 		newInstance.timeline = this._timeline;
 		newInstance.loop = this.loop;
 	}

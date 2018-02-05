@@ -218,6 +218,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public cursorType:string;
 
+	protected _isInFocus:boolean;
+	protected _isTabEnabled:boolean;
+	protected _tabIndex:number;
+
 	public _iSourcePrefab:PrefabBase;
 
     private _inheritColorTransform:boolean = true;
@@ -233,6 +237,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public isSlice9ScaledMC:boolean=false;
 	public isSlice9ScaledSprite:boolean=false;
 
+
 	public dispatchFrameEvents(events:any[]) {
 		this.dispatchEvent(events[0]);//ENTER_FRAME
 		this.dispatchEvent(events[1]);//EXIT_FRAME
@@ -241,6 +246,31 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public getMouseCursor():string
 	{
 		return "initial";
+	}
+
+	public get isTabEnabled():boolean
+	{
+		return this._isTabEnabled;
+	}
+	public set isTabEnabled(value:boolean)
+	{
+		this._isTabEnabled=value;
+	}
+	public get tabIndex():number
+	{
+		return this._tabIndex;
+	}
+	public set tabIndex(value:number)
+	{
+		this._tabIndex=value;
+	}
+	public get isInFocus():boolean
+	{
+		return this._isInFocus;
+	}
+	public set isInFocus(value:boolean)
+	{
+		this._isInFocus=value;
 	}
 
 	public get traverseName():string
@@ -1513,6 +1543,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		super();
 
 		this.cursorType="";
+		this._isInFocus=false;
+		this._isTabEnabled=false;
+		this._tabIndex=-1;
 		//global debug bounding boxes:
 		//this._debugVisible=true;
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
@@ -1745,8 +1778,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public globalToLocal(point:Point, target:Point = null):Point
 	{
 		this._tempVector3D.setTo(point.x, point.y, 0);
+		console.log("this._tempVector3D", this._tempVector3D);
+		console.log("this._transform.inverseConcatenatedMatrix3D", this._transform.inverseConcatenatedMatrix3D);
 		var pos:Vector3D = this._transform.inverseConcatenatedMatrix3D.transformVector(this._tempVector3D, this._tempVector3D);
 
+		console.log("pos", pos);
 		if (!target)
 			target = new Point();
 
