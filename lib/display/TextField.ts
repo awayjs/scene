@@ -1,4 +1,4 @@
-import {Box, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
+import {BuildMode, Box, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
 
 import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
 
@@ -316,15 +316,13 @@ export class TextField extends DisplayObject
 
 		this.reConstruct();
 
-		//AVM1:
-		/*if(!this._selectable){
-
+		if(BuildMode.mode==BuildMode.AVM1 && !this._selectable){
 			this._pBoxBounds.x = 0;
 			this._pBoxBounds.y = 0;
 			this._pBoxBounds.width = 0;
 			this._pBoxBounds.height = 0;
 			return;
-		}*/
+		}
 
 
 		this._pBoxBounds.x = 0;
