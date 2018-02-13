@@ -1778,11 +1778,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public globalToLocal(point:Point, target:Point = null):Point
 	{
 		this._tempVector3D.setTo(point.x, point.y, 0);
-		console.log("this._tempVector3D", this._tempVector3D);
-		console.log("this._transform.inverseConcatenatedMatrix3D", this._transform.inverseConcatenatedMatrix3D);
+		//console.log("this._tempVector3D", this._tempVector3D);
+		//console.log("this._transform.inverseConcatenatedMatrix3D", this._transform.inverseConcatenatedMatrix3D);
 		var pos:Vector3D = this._transform.inverseConcatenatedMatrix3D.transformVector(this._tempVector3D, this._tempVector3D);
 
-		console.log("pos", pos);
+		//console.log("pos", pos);
 		if (!target)
 			target = new Point();
 

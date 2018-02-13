@@ -171,6 +171,7 @@ export class TextField extends DisplayObject
 	private _textRuns_formats:TextFormat[]=[];	// stores textFormat for each textrun
 	private _textRuns_words:number[]=[];	// stores words-offset, word-count and width for each textrun
 
+	private _onChanged:Function;
 
 	private _maxWidthLine:number=0;
 
@@ -194,6 +195,15 @@ export class TextField extends DisplayObject
 			}
 		}
 		return this.cursorType;
+	}
+
+	public get onChanged():Function
+	{
+		return this._onChanged;
+	}
+	public set onChanged(value:Function)
+	{
+		this._onChanged=value;
 	}
 
 	public get isInFocus():boolean
@@ -306,14 +316,15 @@ export class TextField extends DisplayObject
 
 		this.reConstruct();
 
-		if(!this._selectable){
+		//AVM1:
+		/*if(!this._selectable){
 
 			this._pBoxBounds.x = 0;
 			this._pBoxBounds.y = 0;
 			this._pBoxBounds.width = 0;
 			this._pBoxBounds.height = 0;
 			return;
-		}
+		}*/
 
 
 		this._pBoxBounds.x = 0;
@@ -1547,7 +1558,7 @@ export class TextField extends DisplayObject
 			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
 			this._transform.invalidatePosition();
 		} else if (this._autoSize==TextFieldAutoSize.CENTER){
-			this._transform.matrix3D._rawData[12] -= (this._width-oldSize)/2; //-this._width/2;
+			this._transform.matrix3D._rawData[12] -= (this._width-oldSize)/2;
 			this._transform.invalidatePosition();
 		}
 	}
@@ -2338,6 +2349,7 @@ export class TextField extends DisplayObject
 	public onKeyDelegate:(e:any) => void;
 	public onKey(e:any){
 		var keyEvent:KeyboardEvent=<KeyboardEvent>e;
+		var oldText=this._text;
 		console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
 		// todo: correctly implement text-cursor, and delete / add from its position
 		if(keyEvent.char=="Backspace"){
@@ -2353,11 +2365,14 @@ export class TextField extends DisplayObject
 			else{
 				this.text="";
 			}
-
 		}
 		else{
 			this.text = this._text+keyEvent.char;
 		}
+
+		if(this._onChanged && oldText!=this._text)
+			this._onChanged();
+
 		console.log("textfield.onKey this.text", this.text);
 	}
 	public onMouseDownDelegate:(e:any) => void;

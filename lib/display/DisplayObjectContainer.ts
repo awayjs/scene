@@ -131,6 +131,7 @@ export class DisplayObjectContainer extends DisplayObject
 	constructor()
 	{
 		super();
+		this.tabChildren=false;
 	}
 
 	/**
