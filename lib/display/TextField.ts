@@ -1905,9 +1905,9 @@ export class TextField extends DisplayObject
 		if(this._background || this._border || this._isInFocus){
 			if(this._background)
 				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
-			if(this._isInFocus)
-				this._graphics.lineStyle(0.1, 0xff0000, 1);//this.borderColor, this.border?1:0);
-			if(!this._isInFocus && this._border)
+			//if(this._isInFocus)
+			//	this._graphics.lineStyle(0.1, 0xff0000, 1);//this.borderColor, this.border?1:0);
+			if(this._border)
 				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
 			//this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
 			this._graphics.drawRect(-2,-2,this._width, this._height);
