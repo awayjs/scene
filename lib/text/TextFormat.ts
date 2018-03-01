@@ -3,7 +3,9 @@ import {AssetBase} from "@awayjs/core";
 import {IMaterial} from "@awayjs/renderer";
 
 import {IFontTable} from "./IFontTable";
+import {Font} from "./Font";
 import {TesselatedFontTable} from "./TesselatedFontTable";
+import {DefaultFontManager} from "../managers/DefaultFontManager";
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -102,8 +104,38 @@ export class TextFormat extends AssetBase
 	 * The font-name can be used to get a Font-object from the AssetLibrary.
 	 * A Font object provides a list of Font-table, corresponding to font-table names.
 	 */
-	public font_name:string;
-	public font:string;
+	public _font_name:string;
+	public _font:Font;
+	public get font_name():string{
+		return this._font_name;
+	}
+	public set font_name(value:string){
+		var newFont=DefaultFontManager.getFont(value);
+		if(newFont){
+			this._font=newFont;
+			this.font_table=<TesselatedFontTable>newFont.get_font_table("regular", TesselatedFontTable.assetType);
+			if(!this.font_table){
+				console.log("could not find font-table on font", value, this._font);
+			}
+			this._font_name=value;
+
+		}
+		else{
+
+			console.log("could not find font for name ", value);
+		}
+
+
+	}
+	public get font():Font{
+		return this._font;
+	}
+	public set font(value:Font){
+		this._font_name=value.name;
+		this._font=value;
+
+	}
+
 	/**
 	 * The name of the font-style for text in this text format, as a string.
 	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
@@ -296,11 +328,12 @@ export class TextFormat extends AssetBase
 		this.leading = leading;
 		this.letterSpacing = 0;
 		// todo: implement a way to supply a default fonttable / font to formats
-		this.font_table=new TesselatedFontTable();
+		this.font_table=DefaultFontManager.getDefaultFontTable();
 	}
 	public clone():TextFormat{
 		var clonedFormat:TextFormat=new TextFormat();
-		clonedFormat.font_name = this.font;
+		clonedFormat.font_name = this.font_name;
+		clonedFormat.font = this.font;
 		clonedFormat.size = this.size;
 		clonedFormat.color = this.color;
 		clonedFormat.bold = this.bold;
@@ -317,6 +350,15 @@ export class TextFormat extends AssetBase
 		clonedFormat.font_table = this.font_table;
 		return clonedFormat;
 
+	}
+	public getBoldVersion():TextFormat{
+		if(this.bold){
+			return this;
+		}
+		var clonedFormat:TextFormat=this.clone();
+		clonedFormat.bold=true;
+		clonedFormat.font_table=clonedFormat.font.get_font_table("bold", TesselatedFontTable.assetType);
+		return clonedFormat;
 	}
 
 	public applyFormat(format:TextFormat){

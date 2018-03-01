@@ -47,6 +47,7 @@ export {SkyboxElements, _Render_SkyboxElements, _Stage_SkyboxElements} from "./l
 export {ISceneGraphFactory} from "./lib/factories/ISceneGraphFactory";
 
 export {FrameScriptManager} from "./lib/managers/FrameScriptManager";
+export {DefaultFontManager} from "./lib/managers/DefaultFontManager";
 
 export {PrefabBase}	from "./lib/prefabs/PrefabBase";
 export {PrimitiveCapsulePrefab} from "./lib/prefabs/PrimitiveCapsulePrefab";

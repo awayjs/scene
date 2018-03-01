@@ -52,6 +52,7 @@ export class MovieClip extends Sprite
 	public mouseListenerCount:number;
 
 	private _hitArea:DisplayObject
+	public _onLoadedActions:any=null;
 
 	constructor(timeline:Timeline = null)
 	{

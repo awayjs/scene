@@ -1,8 +1,9 @@
 import {TesselatedFontTable} from "../text/TesselatedFontTable";
-
+import {Font} from "../text/Font";
 export class DefaultFontManager
 {
 	private static _default_font_table:TesselatedFontTable;
+	private static _registered_fonts:any={};
 
 	public static getDefaultFontTable():TesselatedFontTable
 	{
@@ -10,6 +11,17 @@ export class DefaultFontManager
 			DefaultFontManager.createDefaultFontTable();
 		}
 		return DefaultFontManager._default_font_table;
+	}
+
+	public static getFont(fontName:string):Font{
+		if(DefaultFontManager._registered_fonts[fontName]){
+			return DefaultFontManager._registered_fonts[fontName];
+		}
+		var newFont:Font=new Font();
+		newFont.name=fontName.toString();
+		DefaultFontManager._registered_fonts[fontName.toString().split(" ")[0].toLowerCase()]=newFont;
+		DefaultFontManager._registered_fonts[fontName]=newFont;
+		return newFont;
 	}
 
 

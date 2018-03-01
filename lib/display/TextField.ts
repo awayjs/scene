@@ -149,6 +149,10 @@ export class TextField extends DisplayObject
 	private _lineOffset:number;
 	private _lineText:string;
 	private _paragraphLength:number;
+
+	private _textFormats:TextFormat[];
+	private _textFormatsIdx:number[];
+
 	private _textFormat:TextFormat;
 	private _bgElements:TriangleElements;
 	private _textElements:TriangleElements;
@@ -170,6 +174,7 @@ export class TextField extends DisplayObject
 
 	private _textRuns_formats:TextFormat[]=[];	// stores textFormat for each textrun
 	private _textRuns_words:number[]=[];	// stores words-offset, word-count and width for each textrun
+	private _paragraph_textRuns_indices:number[]=[];	// stores textFormat for each textrun
 
 	private _onChanged:Function;
 
@@ -613,7 +618,7 @@ export class TextField extends DisplayObject
 
 		var text:string="";
 		var textProps:any= {
-			text:"",
+			text:""
 			/*size:this.textFormat.size,
 			color:this.textFormat.color,
 			indent:this.le,
@@ -624,13 +629,15 @@ export class TextField extends DisplayObject
 			multiline:false*/
 		}
 
+		this._textFormats=[this._textFormat];
+		this._textFormatsIdx=[0];
 		text=value;
 		var parser = new DOMParser();
 		var doc = parser.parseFromString("<p>"+text+"</p>", "application/xml");
 		if(doc && doc.firstChild){
 			text="";
 			textProps.multiline=doc.firstChild.childNodes.length>0;
-			this.readHTMLTextPropertiesRecursive(doc, textProps);
+			this.readHTMLTextPropertiesRecursive(doc, textProps, null, this._textFormat);
 		}
 
 
@@ -647,7 +654,7 @@ export class TextField extends DisplayObject
 		return (a << 24) | (r << 16) |
 			(g << 8) | b;
 	}
-	private readHTMLTextPropertiesRecursive(myChild, textProps:any, parentChild=null){
+	private readHTMLTextPropertiesRecursive(myChild, textProps:any, parentChild=null, currentFormat:TextFormat){
 
 		//console.log("textfied content xml node:",myChild);
 		//console.log(myChild.tagName);
@@ -668,14 +675,27 @@ export class TextField extends DisplayObject
 				//textProps.align = this.textFormatAlignMapStringToInt[(<any>myChild.attributes).align.nodeValue];
 			}
 		}
+		if(this._textFormats[this._textFormats.length-1]!=currentFormat){
+			this._textFormats.push(currentFormat);
+			this._textFormatsIdx.push(textProps.text.length);
+
+		}
 		if(!myChild.childNodes || myChild.childNodes.length==0){
 
 			if((<any>myChild).nodeValue){
 				if(parentChild){
 					if(parentChild.tagName=="p"){
 						if(textProps.text!=""){
-							textProps.text+="\\n";
+							//textProps.text+="\\n";
 						}
+					}
+					else if(parentChild.tagName=="b"){
+						if(!this._textFormats[this._textFormats.length-1].bold){
+							this._textFormats.push(currentFormat.getBoldVersion());
+							this._textFormatsIdx.push(textProps.text.length);
+
+						}
+						//textProps.text+="argh";
 					}
 				}
 				textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
@@ -683,7 +703,7 @@ export class TextField extends DisplayObject
 		}
 		else{
 			for(var k=0; k<myChild.childNodes.length;k++){
-				this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps);
+				this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps, myChild, currentFormat);
 			}
 		}
 	}
@@ -1349,7 +1369,7 @@ export class TextField extends DisplayObject
 
 		// Step1: init text-data
 
-		// this step splits the text into textRuns
+		// this step splits the text into textRuns and sort them into paragraphs
 		// each textRun spans a range of words that share the same text-format
 		// a textRun can not be shared between paragraphs
 
@@ -1370,40 +1390,13 @@ export class TextField extends DisplayObject
 			this.words.length=0;
 			this._textRuns_words.length=0;
 			this._textRuns_formats.length=0;
+			this._paragraph_textRuns_indices.length=0;
 
 			this._maxWidthLine=0;
 
 			if(this._text != "" && this._textFormat != null) {
-				//if (this.multiline) {
-					var paragraphs:string[] = this.text.toString().split("\\n");
-					var tl = 0;
-					var tl_len = paragraphs.length;
-					var extra_split:string[];
-					var tl_extra = 0;
-					var tl_extra_len = paragraphs.length;
-					for (tl = 0; tl < tl_len; tl++) {
-						extra_split=  (<string[]>paragraphs[tl].split("\n"));//match(/[^\r\n]+/g));
-						if(extra_split){
-							tl_extra_len=extra_split.length;
-							for (tl_extra = 0; tl_extra < tl_extra_len; tl_extra++) {
-								this.buildParagraph(extra_split[tl_extra]);
-							}
-						}
-						else{
-							this.buildParagraph(paragraphs[tl]);
-						}
-					}
-					/*
-				}
-				else {
-					var paragraphs:string[] = this.text.toString().split("\\n");
-					var tl = 0;
-					var tl_len = paragraphs.length;
-					for (tl = 0; tl < tl_len; tl++) {
-						this.buildParagraph(paragraphs[tl]);
-					}
-				}
-				*/
+					//console.log("textlength", this.text.toString().length, this.text.toString());
+					this.buildParagraphs();
 			}
 
 			//console.log("TextField buildParagraph", this.id, this._text);
@@ -1471,82 +1464,135 @@ export class TextField extends DisplayObject
 	}
 
 
-	private buildParagraph(paragraphText:string) {
+	private buildParagraphs() {
+		var thisText:string=this._text.toString();
+		if(!this._textFormats || !this._textFormatsIdx || this._textFormats.length==0 || (this._textFormats.length != this._textFormatsIdx.length)){
+			this._textFormats=[this._textFormat];
+			this._textFormatsIdx=[0];
+		}
 
-		// todo: support multiple textFormat per paragraph (multiple textRuns)
-
-		this._textRuns_formats[this._textRuns_formats.length]=this._textFormat;
-		this._textRuns_words[this._textRuns_words.length]=this.words.length;
-
+		var tf:TextFormat;
+		var f:number=0;
+		var f_len:number=this._textFormatsIdx.length;
 		var c:number=0;
-		var c_len:number=paragraphText.length;
+		var c_len:number=0;
 		var char_code:number=0;
 		var char_width:number=0;
-		var word_cnt:number=0;
+		var next_char_code:number=0;
 		var startNewWord:boolean = true;
-		this._textFormat.font_table.initFontSize(this._textFormat.size);
-
-		// splits the text into words and create the textRuns along the way.
-		var linewidh:number=0;
+		var word_cnt:number = 0;
+		var linewidth:number=0;
 		var whitespace_cnt:number=0;
-		for (c = 0; c < c_len; c++) {
-			char_code=paragraphText.charCodeAt(c);
-			//console.log("charcode:", char_code, "char", paragraphText[c]);
-			this.chars_codes[this.chars_codes.length]=char_code;
+		this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
+		linewidth=0;
+		// loop over all textFormats
+		for(f=0; f<f_len; f++ ){
+			word_cnt=0;
+			whitespace_cnt=0;
+			tf=this._textFormats[f];
+			tf.font_table.initFontSize(tf.size);
+			c_len=(f==f_len-1)?thisText.length : this._textFormatsIdx[f+1];
+			// create a new textrun
+			this._textRuns_formats[this._textRuns_formats.length]=tf;
+			this._textRuns_words[this._textRuns_words.length]=this.words.length;
+			// loop over all chars for this format
+			for (c = this._textFormatsIdx[f]; c < c_len; c++) {
+				char_code=thisText.charCodeAt(c);
+				//console.log("process char", c, thisText[c], char_code, tf.id);
+				if(char_code==92 || char_code == 10) {
+					// this is a backslash. if it is last char, we do not handle it special
+					// if it is followed by a "n", we add a new paragraph
+					// if it is followed by a "\n" we add a paragraph too (legacy for icycle and sunflower - needs cleanup)
+					if (char_code == 10 || c < thisText.length - 1) {
+						next_char_code = thisText.charCodeAt(c + 1);
+						if (char_code == 10 || (next_char_code == 10)||(next_char_code == 110) || (next_char_code == 92 && (c < thisText.length - 2) && thisText.charCodeAt(c + 2) == 110)) {
+							// next chars are "n" or "\n". we create a new paragraph
+							//console.log("create new paragraph");
+							//finish textrun:
+							this._textRuns_words[this._textRuns_words.length]=word_cnt;
+							this._textRuns_words[this._textRuns_words.length]=linewidth;
+							this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
 
-			char_width=this._textFormat.font_table.getCharWidth(char_code.toString());
+							this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
+							// create a new textrun
+							this._textRuns_formats[this._textRuns_formats.length]=tf;
+							this._textRuns_words[this._textRuns_words.length]=this.words.length;
+							c+=(char_code == 10)?0:(next_char_code == 110)?1:2;
+							startNewWord=true;
+							whitespace_cnt=0;
+							word_cnt=0;
 
-			if(char_width<=0){
-				char_width=this._textFormat.font_table.getCharWidth("32");
-				//console.log("ERROR in TextField.buildTextRuns(): char is not provided by FontTable", char_code, this.text[c]);
-			}
+							if(this._maxWidthLine<linewidth){
+								this._maxWidthLine=linewidth;
+							}
+							linewidth=0;
+							continue;
+						}
+					}
+				}
 
-			// if this is a letter, and next symbol is a letter, we add the letterSpacing to the letter-width
-			if(char_code!=32 && c<c_len-1){
-				char_width+=(paragraphText.charCodeAt(c+1)==32)?0:this._textFormat.letterSpacing;
-			}
-			linewidh+=char_width;
-			this.chars_width[this.chars_width.length]=char_width;
+				this.chars_codes[this.chars_codes.length]=char_code;
+				char_width=tf.font_table.getCharWidth(char_code.toString());
+				if(char_width<=0){
+					char_width=tf.font_table.getCharWidth("32");
+					//console.log("ERROR in TextField.buildTextRuns(): char is not provided by FontTable", char_code, this.text[c]);
+				}
 
-			if(char_code==32){
-				whitespace_cnt++;
-				// if this is a whitespace, we add a new word,
-				this.words[this.words.length]=this.chars_codes.length-1;	//offset into chars
-				this.words[this.words.length]=0;	//x-position
-				this.words[this.words.length]=0;	//y-position
-				this.words[this.words.length]=char_width;
-				this.words[this.words.length]=1;
-				word_cnt++;
-				// we also make sure to begin a new word for next char (could be whitespace again)
-				startNewWord=true;
-			}
-			else{
-				// no whitespace
-				if(startNewWord){
-					// create new word (either this is the first char, or the last char was whitespace)
-					this.words[this.words.length]=this.chars_codes.length-1;
-					this.words[this.words.length]=0;	//x-position
-					this.words[this.words.length]=0;	//y-position
-					this.words[this.words.length]=char_width;
-					this.words[this.words.length]=1;
+				// if this is a letter, and next char is no whitespace, we add the letterSpacing to the letter-width
+				// todo: we might need to add the letterspacing also if next char is a linebreak ?
+				if(char_code!=32 && c<c_len-1){
+					char_width+=(thisText.charCodeAt(c+1)==32)?0:tf.letterSpacing;
+				}
+				linewidth+=char_width;
+				this.chars_width[this.chars_width.length]=char_width;
+
+				// we create a new word if the char is either:
+				// 	- first char of paragraph
+				//	- is a whitespace
+				//  - follows a whitespace
+				if(char_code==32){
+					//console.log("add WhiteSpace");
+					whitespace_cnt++;
+					this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
+					this.words[this.words.length]=0;							// 	x-position
+					this.words[this.words.length]=0;							// 	y-position
+					this.words[this.words.length]=char_width;					// 	word width
+					this.words[this.words.length]=1;							// 	char count
 					word_cnt++;
+					// we also make sure to begin a new word for next char (could be whitespace again)
+					startNewWord=true;
 				}
 				else{
-					// update-char length and width of active word.
-					this.words[this.words.length-2]+=char_width;
-					this.words[this.words.length-1]++;
+					// no whitespace
+					if(startNewWord){
+						//console.log("startNewWord");
+						// create new word (either this is the first char, or the last char was whitespace)
+						this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
+						this.words[this.words.length]=0;							//	x-position
+						this.words[this.words.length]=0;							//	y-position
+						this.words[this.words.length]=char_width;					// 	word width
+						this.words[this.words.length]=1;							// 	char count
+						word_cnt++;
+					}
+					else{
+						// update-char length and width of active word.
+						this.words[this.words.length-2]+=char_width;
+						this.words[this.words.length-1]++;
+					}
+					startNewWord=false;
 				}
-				startNewWord=false;
 			}
+			this._textRuns_words[this._textRuns_words.length]=word_cnt;
+			this._textRuns_words[this._textRuns_words.length]=linewidth;
+			this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
 
+			if(this._maxWidthLine<linewidth){
+				this._maxWidthLine=linewidth;
+			}
 		}
-		this._textRuns_words[this._textRuns_words.length]=word_cnt;
-		this._textRuns_words[this._textRuns_words.length]=linewidh;
-		this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
-		if(this._maxWidthLine<linewidh){
-			this._maxWidthLine=linewidh;
-		}
+
 	}
+ 
 	private adjustPositionForAutoSize(newWidth:number){
 
 		var oldSize:number=this._width;
@@ -1561,176 +1607,208 @@ export class TextField extends DisplayObject
 		}
 	}
 
+	private lines_wordStartIndices:number[] = [];
+	private lines_wordEndIndices:number[] = [];
+	private lines_start_y:number[] = [];
+	private lines_start_x:number[] = [];
+	private lines_width:number[] = [];
+	private lines_numSpacesPerline:number[] = [];
 	private getWordPositions() {
 
 		/*console.log("this._text", this._text);
 		console.log("this._width", this._width);
 		console.log("this._height", this._height);*/
-		var tr:number=0;
-		var tr_len:number=this._textRuns_formats.length;
+		var tr: number = 0;
+		var tr_len: number = this._textRuns_formats.length;
 
-		var w:number=0;
-		var w_len:number=0;
-		var tr_length:number=0;
-		var additionalWhiteSpace:number=0;
-		var format:TextFormat;
-		var text_width:number=0;
-		var text_height:number=0;
-		var indent:number=0;
-		this._numLines=0;
-		var linecnt:number=0;
-		var linelength:number=0;
-		var word_width:number=0;
-		var lineWordStartIndices:number[]=[];
-		var lineWordEndIndices:number[]=[];
-		var lineLength:number[]=[];
-		var numSpacesPerline:number[]=[];
+		var w: number = 0;
+		var w_len: number = 0;
+		var tr_length: number = 0;
+		var additionalWhiteSpace: number = 0;
+		var format: TextFormat;
+		var text_width: number = 0;
+		var text_height: number = 0;
+		var indent: number = 0;
+		this._numLines = 0;
+		var linecnt: number = 0;
+		var linelength: number = 0;
+		var word_width: number = 0;
 
-		var offsety:number=this.textOffsetY+2;
-		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
+		var offsety: number = this.textOffsetY + 2;
 
 		//console.log("text old_width", this._width);
 		//console.log("text old_x", this._transform.matrix3D._rawData[12]);
 		//console.log("this._autoSize", this._autoSize);
 		//console.log("this._wordWrap", this._wordWrap);
-		if(this._autoSize!=TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty){
-			this.adjustPositionForAutoSize(this._maxWidthLine+this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin);
-			//console.log("text width", this._width);
-			//console.log("text x", this._transform.matrix3D._rawData[12]);
+
+		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty) {
+			this.adjustPositionForAutoSize(this._maxWidthLine + this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
+		} 
+
+		var maxLineWidth: number = this._width - (this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
+
+
+		var p:number=0;
+		var p_len:number=this._paragraph_textRuns_indices.length;
+		linecnt = 0;
+		this.lines_wordStartIndices.length = 0;
+		this.lines_wordEndIndices.length = 0;
+		this.lines_start_y.length = 0;
+		this.lines_start_x.length = 0;
+		this.lines_width.length = 0;
+		this.lines_numSpacesPerline.length = 0;
+		var lines_heights:number[]=[];
+		// loop over all paragraphs
+		for (p = 0; p < p_len; p++) {
+			tr_len=(p==(p_len-1))? this._textRuns_formats.length : this._paragraph_textRuns_indices[p+1];
+			//console.log("process word positions for paragraph", p, "textruns", this._paragraph_textRuns_indices[p], tr_len);
+			tr_length=0;
+			lines_heights[lines_heights.length]=0;
+			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
+				format = this._textRuns_formats[tr];
+				format.font_table.initFontSize(format.size);
+				if(lines_heights[lines_heights.length-1]<format.font_table.getLineHeight()){
+					lines_heights[lines_heights.length-1]=format.font_table.getLineHeight();
+				}
+
+				//console.log("process word positions for textrun", tr, "textruns",  this._textRuns_words);
+				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1] * 5);
+				tr_length += this._textRuns_words[(tr * 4) + 2];
+				//console.log(this._textFieldWidth, tr_length, maxLineWidth);
+			}
+
+			this.lines_wordStartIndices[this.lines_wordStartIndices.length] = this._textRuns_words[(this._paragraph_textRuns_indices[p] * 4)];
+			this.lines_wordEndIndices[this.lines_wordEndIndices.length] = w_len;
+			this.lines_width[this.lines_width.length] = 0;
+			this.lines_numSpacesPerline[this.lines_numSpacesPerline.length] = 0;
+
+			var line_width: number = 0;
+			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
+				format = this._textRuns_formats[tr];
+				format.font_table.initFontSize(format.size);
+				indent = format.indent;
+				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1] * 5);
+				if (!this.multiline || tr_length <= maxLineWidth || !this.wordWrap) {
+					//if(tr_length<maxLineWidth || !this.wordWrap){
+					// this must be a single textline
+					//console.log("just add to line",(tr * 4) , w_len, this.words, this._textRuns_words);
+					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
+						word_width = this.words[w + 3];
+						//console.log("add word to line", this.words[w + 3], word_width, String.fromCharCode(this.chars_codes[this.words[w]]));
+						linelength += word_width;
+						this.lines_wordEndIndices[linecnt] = w + 5;
+						this.lines_width[linecnt] += word_width;
+
+						if (this.chars_codes[this.words[w]] == 32) {
+							this.lines_numSpacesPerline[linecnt] += 1;
+						}
+					}
+				}
+				else {
+					//console.log("split lines");
+					linelength = 0;
+					word_width = 0;
+					indent = 0;
+					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
+						word_width = this.words[w + 3];
+						linelength += word_width;
+						if (linelength <= (maxLineWidth - indent) || this.lines_width[linecnt] == 0) {
+							this.lines_wordEndIndices[linecnt] = w + 5;
+							this.lines_width[linecnt] += word_width;
+						}
+						else {
+							linelength = word_width;
+							linecnt++;
+							this.lines_wordStartIndices[linecnt] = w;
+							this.lines_wordEndIndices[linecnt] = w + 5;
+							this.lines_width[linecnt] = word_width;
+							this.lines_numSpacesPerline[linecnt] = 0;
+							lines_heights[lines_heights.length]=0;
+							indent = format.indent;
+						}
+						if (this.chars_codes[this.words[w]] == 32) {
+							this.lines_numSpacesPerline[linecnt] += 1;
+						}
+					}
+					//console.log("split lines",linecnt );
+				}
+				//}
+			}
+			linecnt++;
+		}
+		var offsetx: number = this.textOffsetX;
+		var start_idx: number;
+		var numSpaces: number;
+		var lineHeight: number;
+		var end_idx: number;
+		var lineSpaceLeft: number;
+		var l: number;
+		var l_cnt: number = this.lines_wordStartIndices.length;
+
+		this._numLines = l_cnt;
+		for (l = 0; l < l_cnt; l++) {
+			linelength = this.lines_width[l];
+			lineHeight = lines_heights[l];
+			start_idx = this.lines_wordStartIndices[l];
+			end_idx = this.lines_wordEndIndices[l];
+			numSpaces = this.lines_numSpacesPerline[l];
+			//console.log("numLine:", l,linelength,start_idx,end_idx,numSpaces);
+
+			lineSpaceLeft = maxLineWidth - linelength;
+
+			/*console.log("lineSpaceLeft", lineSpaceLeft);
+			console.log("maxLineWidth", maxLineWidth);
+			console.log("linelength", linelength);*/
+			additionalWhiteSpace = 0;
+			offsetx = this.textOffsetX;// + 2 + format.leftMargin + format.indent;
+
+			if (format.align == "justify") {
+				if ((l != l_cnt - 1) && lineSpaceLeft > 0 && numSpaces > 0) {
+					// this is a textline that should be justified
+					additionalWhiteSpace = lineSpaceLeft / numSpaces;
+				}
+				if (l != 0) {
+					// only first line has indent
+					offsetx -= format.indent;
+				}
+			}
+			else if (format.align == "center") {
+				offsetx += lineSpaceLeft / 2;
+			}
+			else if (format.align == "right") {
+				offsetx += lineSpaceLeft;
+			}
+
+			line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
+			for (w = start_idx; w < end_idx; w += 5) {
+				this.words[w + 1] = offsetx;
+				this.words[w + 2] = offsety;
+				offsetx += this.words[w + 3];
+				line_width += this.words[w + 3];
+				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
+				if (format.align == "justify" && this.chars_codes[this.words[w]] == 32) {
+					// this is whitepace, we need to add extra space for justified text
+					offsetx += additionalWhiteSpace;
+					line_width += additionalWhiteSpace;
+				}
+			}
+			//console.log("line_width",line_width);
+			offsety += format.font_table.getLineHeight() + format.leading;
+
+			/* enable for icycle:
+			if(format.leading==11 && format.font_name=="DayPosterBlack"){
+				offsety+=1.5;
+			}*/
+
+
+			if (line_width > text_width) {
+				text_width = line_width;
+			}
 		}
 
-		var maxLineWidth:number = this._width-(4+this._textFormat.indent+this._textFormat.leftMargin+this._textFormat.rightMargin);
-		for (tr = 0; tr < tr_len; tr++) {
-			format=this._textRuns_formats[tr];
-			format.font_table.initFontSize(format.size);
-			indent=this._textFormat.indent;
-
-			lineWordStartIndices.length=1;
-			lineWordEndIndices.length=1;
-			lineLength.length=1;
-			numSpacesPerline.length=1;
-			var line_width:number=0;
-			w_len=this._textRuns_words[(tr*4)] + (this._textRuns_words[(tr*4)+1]*5);
-			tr_length=this._textRuns_words[(tr*4)+2];
-			//console.log(this._textFieldWidth, tr_length, maxLineWidth);
-
-			if(!this.multiline || tr_length<=maxLineWidth || !this.wordWrap){
-			//if(tr_length<maxLineWidth || !this.wordWrap){
-				// this must be a single textline
-				//console.log("one line");
-				lineWordStartIndices[0]=this._textRuns_words[(tr*4)];
-				lineWordEndIndices[0]=w_len;
-				lineLength[0]=tr_length;
-				numSpacesPerline[0]=0;
-			}
-			else{
-				//console.log("split lines");
-				linecnt=0;
-				linelength=0;
-				word_width=0;
-				indent=0;
-				lineWordStartIndices[0]=this._textRuns_words[(tr*4)];
-				lineWordEndIndices[0]=0;
-				lineLength[0]=0;
-				numSpacesPerline[0]=0;
-				for (w = this._textRuns_words[(tr*4)]; w < w_len; w+=5) {
-					word_width=this.words[w+3];
-					linelength+=word_width;
-					if(linelength<=(maxLineWidth-indent) || lineLength[linecnt]==0){
-						lineWordEndIndices[linecnt]=w+5;
-						lineLength[linecnt]+=word_width;
-					}
-					else{
-						linelength=word_width;
-						linecnt++;
-						lineWordStartIndices[linecnt]=w;
-						lineWordEndIndices[linecnt]=w+5;
-						lineLength[linecnt]=word_width;
-						numSpacesPerline[linecnt]=0;
-						indent=this._textFormat.indent;
-					}
-					if(this.chars_codes[this.words[w]]==32){
-						numSpacesPerline[linecnt]+=1;
-					}
-				}
-				//console.log("split lines",linecnt );
-			}
-			var offsetx:number=this.textOffsetX;
-			var start_idx:number;
-			var start_idx:number;
-			var numSpaces:number;
-			var end_idx:number;
-			var lineSpaceLeft:number;
-			var l:number;
-			var l_cnt:number=lineWordStartIndices.length;
-
-			this._numLines=l_cnt;
-			for (l = 0; l < l_cnt; l++) {
-				linelength=lineLength[l];
-				start_idx=lineWordStartIndices[l];
-				end_idx=lineWordEndIndices[l];
-				numSpaces = numSpacesPerline[l];
-
-				lineSpaceLeft = maxLineWidth - linelength;
-
-				/*console.log("lineSpaceLeft", lineSpaceLeft);
-				console.log("maxLineWidth", maxLineWidth);
-				console.log("linelength", linelength);*/
-				additionalWhiteSpace=0;
-				offsetx=this.textOffsetX + 2 + format.leftMargin + format.indent;
-
-				if(format.align=="justify"){
-					if((l!=l_cnt-1) && lineSpaceLeft>0 && numSpaces>0){
-						// this is a textline that should be justified
-						additionalWhiteSpace=lineSpaceLeft/numSpacesPerline[l];
-					}
-					if(l!=0){
-						// only first line has indent
-						offsetx -= format.indent;
-					}
-				}
-				else if(format.align=="center"){
-					offsetx+=lineSpaceLeft/2;
-				}
-				else if(format.align=="right"){
-					offsetx+=lineSpaceLeft;
-				}
-
-				line_width=0;
-				line_width+=format.leftMargin + format.indent+format.rightMargin;
-				for (w = start_idx; w < end_idx; w+=5) {
-					this.words[w+1]=offsetx;
-					this.words[w+2]=offsety;
-					offsetx+=this.words[w+3];
-					line_width+=this.words[w+3];
-					if(format.align=="justify" && this.chars_codes[this.words[w]]==32){
-						// this is whitepace, we need to add extra space for justified text
-						offsetx+=additionalWhiteSpace;
-					}
-				}
-				offsety+=format.font_table.getLineHeight()+format.leading;
-
-				/* enable for icycle:
-				if(format.leading==11 && format.font_name=="DayPosterBlack"){
-					offsety+=1.5;
-				}*/
-
-				
-				if(line_width>text_width){
-					text_width=line_width;
-				}
-			}
-
-			//}
-		}
-		// -2 so this values do not include the left and top border
 		this._textWidth=text_width;
 		this._textHeight=offsety;
-
-
-		//console.log(this._textWidth, "/", this._textHeight);
-		//this._textWidth+=this._textFormat.indent+ this._textFormat.leftMargin+ this._textFormat.rightMargin;
-
 
 
 		// if autosize is enabled, we adjust the textFieldHeight
