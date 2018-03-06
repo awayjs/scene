@@ -2,18 +2,20 @@ import {TesselatedFontTable} from "../text/TesselatedFontTable";
 import {Font} from "../text/Font";
 export class DefaultFontManager
 {
-	private static _default_font_table:TesselatedFontTable;
+	private static _default_font:Font;
 	private static _registered_fonts:any={};
 
-	public static getDefaultFontTable():TesselatedFontTable
+	public static getDefaultFont():Font
 	{
-		if(DefaultFontManager._default_font_table==null){
-			DefaultFontManager.createDefaultFontTable();
+		if(DefaultFontManager._default_font==null){
+			DefaultFontManager.setDefaultFont();
 		}
-		return DefaultFontManager._default_font_table;
+		return DefaultFontManager._default_font;
 	}
 
 	public static getFont(fontName:string):Font{
+		if(!fontName)
+			return DefaultFontManager.getDefaultFont();
 		if(DefaultFontManager._registered_fonts[fontName]){
 			return DefaultFontManager._registered_fonts[fontName];
 		}
@@ -25,8 +27,11 @@ export class DefaultFontManager
 	}
 
 
-	private static createDefaultFontTable():void
+	private static setDefaultFont(font:Font=null):void
 	{
+		if(!font)
+			font=new Font();
+		DefaultFontManager._default_font=font;
 		/*
 		var allchars=[];
 		//allchars[cnt1++] = ['33',[0,0,226,67,0,192,11,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,212,67,0,192,204,68,127,127,0,0,0,0,212,67,0,192,204,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,129,67,0,192,204,68,127,127,0,0,0,0,129,67,0,192,204,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,100,67,0,192,11,68,127,127,0,0,0,0,100,67,0,192,11,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,226,67,0,192,11,68,127,127,0,0,0,0,221,67,0,0,0,69,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,110,67,0,0,0,69,127,127,0,0,0,0,110,67,0,0,0,69,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,110,67,0,160,229,68,127,127,0,0,0,0,110,67,0,160,229,68,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,221,67,0,160,229,68,127,127,0,0,0,0,221,67,0,160,229,68,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,221,67,0,0,0,69,127,127]]

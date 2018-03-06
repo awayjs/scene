@@ -1789,8 +1789,8 @@ export class TextField extends DisplayObject
 				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
 				if (format.align == "justify" && this.chars_codes[this.words[w]] == 32) {
 					// this is whitepace, we need to add extra space for justified text
-					offsetx += additionalWhiteSpace;
-					line_width += additionalWhiteSpace;
+					//offsetx += additionalWhiteSpace;
+					//line_width += additionalWhiteSpace;
 				}
 			}
 			//console.log("line_width",line_width);

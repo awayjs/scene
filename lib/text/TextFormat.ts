@@ -328,7 +328,9 @@ export class TextFormat extends AssetBase
 		this.leading = leading;
 		this.letterSpacing = 0;
 		// todo: implement a way to supply a default fonttable / font to formats
-		this.font_table=DefaultFontManager.getDefaultFontTable();
+		this._font=DefaultFontManager.getFont(font);
+		this.font_table=<TesselatedFontTable>this._font.get_font_table("regular", TesselatedFontTable.assetType);
+		//this.font_table=this._font.getFont;
 	}
 	public clone():TextFormat{
 		var clonedFormat:TextFormat=new TextFormat();
