@@ -122,6 +122,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		if(char_code=="32"){
 			return this._whitespace_width*this._size_multiply;
 		}
+		if(char_code=="9"){
+			return this._whitespace_width*this._size_multiply*8;
+		}
 		var tesselated_font_char:TesselatedFontChar = this._font_chars_dic[char_code];
 		if(tesselated_font_char){
 			return tesselated_font_char.char_width*this._size_multiply;
@@ -310,7 +313,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 					tf.chars_codes[c]=41;
 					hack_x_mirror=true;
 				}
-				if(tf.chars_codes[c]!=32){
+				if(tf.chars_codes[c]!=32 && tf.chars_codes[c]!=9){
 					charGlyph=this.getChar(tf.chars_codes[c].toString());
 					size_multiply=this._size_multiply;
 					if(!charGlyph && this.fallbackTable) {
@@ -345,7 +348,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						// todo: handle kerning
 					}
 					else{
-						console.log("TesselatedFontTable: Error: char not found in fontTable");
+						//console.log("TesselatedFontTable: Error: char not found in fontTable", tf.chars_codes[c], tf.chars_codes[c].toString());
 					}
 				}
 			}

@@ -21,7 +21,7 @@ export class DefaultFontManager
 		}
 		var newFont:Font=new Font();
 		newFont.name=fontName.toString();
-		DefaultFontManager._registered_fonts[fontName.toString().split(" ")[0].toLowerCase()]=newFont;
+		//DefaultFontManager._registered_fonts[fontName.toString().split(" ")[0].toLowerCase()]=newFont;
 		DefaultFontManager._registered_fonts[fontName]=newFont;
 		return newFont;
 	}

@@ -117,6 +117,12 @@ export class TextFormat extends AssetBase
 			if(!this.font_table){
 				console.log("could not find font-table on font", value, this._font);
 			}
+			if((<TesselatedFontTable>this.font_table).get_font_chars().length==0){
+				this.font_table=<TesselatedFontTable>newFont.get_font_table("default", TesselatedFontTable.assetType);
+				if(!this.font_table){
+					console.log("could not find font-table on font", value, this._font);
+				}
+			}
 			this._font_name=value;
 
 		}

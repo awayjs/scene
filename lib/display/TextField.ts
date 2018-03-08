@@ -1540,8 +1540,8 @@ export class TextField extends DisplayObject
 
 				// if this is a letter, and next char is no whitespace, we add the letterSpacing to the letter-width
 				// todo: we might need to add the letterspacing also if next char is a linebreak ?
-				if(char_code!=32 && c<c_len-1){
-					char_width+=(thisText.charCodeAt(c+1)==32)?0:tf.letterSpacing;
+				if(char_code!=32 && char_code!=9 && c<c_len-1){
+					char_width+=(thisText.charCodeAt(c+1)==32 || thisText.charCodeAt(c+1)==9)?0:tf.letterSpacing;
 				}
 				linewidth+=char_width;
 				this.chars_width[this.chars_width.length]=char_width;
@@ -1550,7 +1550,7 @@ export class TextField extends DisplayObject
 				// 	- first char of paragraph
 				//	- is a whitespace
 				//  - follows a whitespace
-				if(char_code==32){
+				if(char_code==32 || char_code==9){
 					//console.log("add WhiteSpace");
 					whitespace_cnt++;
 					this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
@@ -1700,7 +1700,7 @@ export class TextField extends DisplayObject
 						this.lines_wordEndIndices[linecnt] = w + 5;
 						this.lines_width[linecnt] += word_width;
 
-						if (this.chars_codes[this.words[w]] == 32) {
+						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 						}
 					}
@@ -1727,7 +1727,7 @@ export class TextField extends DisplayObject
 							lines_heights[lines_heights.length]=0;
 							indent = format.indent;
 						}
-						if (this.chars_codes[this.words[w]] == 32) {
+						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 						}
 					}
@@ -1780,14 +1780,14 @@ export class TextField extends DisplayObject
 				offsetx += lineSpaceLeft;
 			}
 
-			line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
+			var line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
 			for (w = start_idx; w < end_idx; w += 5) {
 				this.words[w + 1] = offsetx;
 				this.words[w + 2] = offsety;
 				offsetx += this.words[w + 3];
 				line_width += this.words[w + 3];
 				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
-				if (format.align == "justify" && this.chars_codes[this.words[w]] == 32) {
+				if (format.align == "justify" && (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9)) {
 					// this is whitepace, we need to add extra space for justified text
 					//offsetx += additionalWhiteSpace;
 					//line_width += additionalWhiteSpace;
@@ -2426,7 +2426,7 @@ export class TextField extends DisplayObject
 	public onKey(e:any){
 		var keyEvent:KeyboardEvent=<KeyboardEvent>e;
 		var oldText=this._text;
-		console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
+		//console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
 		// todo: correctly implement text-cursor, and delete / add from its position
 		if(keyEvent.char=="Backspace"){
 			if(this.text.length>0){
@@ -2449,7 +2449,7 @@ export class TextField extends DisplayObject
 		if(this._onChanged && oldText!=this._text)
 			this._onChanged();
 
-		console.log("textfield.onKey this.text", this.text);
+		//console.log("textfield.onKey this.text", this.text);
 	}
 	public onMouseDownDelegate:(e:any) => void;
 	public onMouseDown(e:any){
@@ -2495,6 +2495,8 @@ export class TextField extends DisplayObject
 		}
 		newInstance.type = this._type;
 		newInstance.selectable = this._selectable;
+		newInstance.multiline = this.multiline;
+		newInstance.wordWrap = this.wordWrap;
 	}
 	
 }
