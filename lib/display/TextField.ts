@@ -6,7 +6,7 @@ import {TraverserBase, Style, IMaterial, MaterialUtils} from "@awayjs/renderer";
 
 import {MaterialBase} from "@awayjs/materials";
 
-import {Graphics, Shape, TriangleElements} from "@awayjs/graphics";
+import {Graphics, Shape, TriangleElements, GraphicsFactoryHelper} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {AlignmentMode} from "../base/AlignmentMode";
@@ -130,8 +130,8 @@ export class TextField extends DisplayObject
 	private _maxScrollH:number;
 	private _maxScrollV:number;
 	private _numLines:number;
-	private _selectionBeginIndex:number;
-	private _selectionEndIndex:number;
+	private _selectionBeginIndex:number=0;
+	private _selectionEndIndex:number=0;
 	private _text:string = "";
 	private _textInteractionMode:TextInteractionMode;
 
@@ -162,6 +162,10 @@ export class TextField extends DisplayObject
 	private _textShape2:Shape;
 
 	public textShapes:any;
+
+
+	private cursorIntervalID:number=0;
+	private cursorBlinking:boolean=false;
 
 	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
 	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
@@ -217,9 +221,52 @@ export class TextField extends DisplayObject
 	}
 	public set isInFocus(value:boolean)
 	{
+		if(this._isInFocus==value){
+			return;
+		}
 		this._isInFocus=value;
-		this._positionsDirty = true;
-		this._glyphsDirty=true;
+		this.enableInput(value);
+		//this._positionsDirty = true;
+		//this._glyphsDirty=true;
+	}
+
+	private enableInput(enable:boolean=true){
+
+		if(enable && this._isInFocus){
+			this.drawCursor();
+			var myThis=this;
+			this.cursorIntervalID=window.setInterval(function(){
+				myThis.cursorBlinking=!myThis.cursorBlinking;
+				myThis.cursorShape.invalidate();
+			}, 500);
+		}
+		else{
+			window.clearInterval(this.cursorIntervalID)
+		}
+		if(this.cursorShape)
+			this.cursorShape.invalidate();
+	}
+	private drawCursor(){
+
+		var x:number=(this._width/2)+this._textWidth/2;
+		if (this._textFormat.align == "justify") {
+		}
+		else if (this._textFormat.align == "center") {
+		}
+		else if (this._textFormat.align == "right") {
+			x = this._width;
+		}
+		else if (this._textFormat.align == "left") {
+			x = 4+this._textWidth;
+		}
+		this._textFormat.font_table.initFontSize(this._textFormat.size);
+		var height:number= this._textFormat.font_table.getLineHeight();
+		if(!this.cursorShape){
+			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x,0,1,height],this._textFormat.color,1);
+		}
+		else{
+			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,0,1,height]);
+		}
 	}
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
@@ -824,7 +871,17 @@ export class TextField extends DisplayObject
 	 *
 	 * @default null
 	 */
-	public restrict:string;
+	public _restrict:string;
+	public get restrict():string{
+		return this._restrict;
+	}
+	public set restrict(value:string){
+		this._restrict=value;
+		if(this._restrict="0-9"){
+			this._restrict="0123456789";
+		}
+		// todo: implement this with regex
+	};
 
 	/**
 	 * The current horizontal scrolling position. If the <code>scrollH</code>
@@ -1014,6 +1071,7 @@ export class TextField extends DisplayObject
 		return false;
 	}
 
+	private cursorShape:Shape;
 	/**
 	 *
 	 * @param renderer
@@ -1034,6 +1092,9 @@ export class TextField extends DisplayObject
 		}
 
 		this._graphics.acceptTraverser(traverser);
+		if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
+			traverser[this.cursorShape.elements.traverseName](this.cursorShape);
+		}
 	}
 
 
@@ -1174,9 +1235,11 @@ export class TextField extends DisplayObject
 		this._type=value;
 		if(value==TextFieldType.INPUT){
 			this._selectable=true;
+			this.enableInput(true);
 			this.addEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
 		}
 		else{
+			this.enableInput(false);
 			this.removeEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
 		}
 	}
@@ -1459,6 +1522,8 @@ export class TextField extends DisplayObject
 			else{
 				this.buildGlyphs();
 			}
+			if(this._type==TextFieldType.INPUT)
+				this.drawCursor();
 		}
 		this._glyphsDirty=false;
 	}
@@ -1611,6 +1676,8 @@ export class TextField extends DisplayObject
 	private lines_wordEndIndices:number[] = [];
 	private lines_start_y:number[] = [];
 	private lines_start_x:number[] = [];
+	private lines_charIdx_start:number[] = [];
+	private lines_charIdx_end:number[] = [];
 	private lines_width:number[] = [];
 	private lines_numSpacesPerline:number[] = [];
 	private getWordPositions() {
@@ -2443,7 +2510,18 @@ export class TextField extends DisplayObject
 			}
 		}
 		else{
-			this.text = this._text+keyEvent.char;
+			if(this.maxChars>0 && this._text.length>=this.maxChars){
+
+			}
+			else{
+				if(this._restrict && this._restrict!=""){
+					if(this._restrict.indexOf(keyEvent.char)!=-1)
+						this.text = this._text+keyEvent.char;
+				}
+				else{
+					this.text = this._text+keyEvent.char;
+				}
+			}
 		}
 
 		if(this._onChanged && oldText!=this._text)

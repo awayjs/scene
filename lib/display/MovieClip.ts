@@ -86,7 +86,7 @@ export class MovieClip extends Sprite
 
 		this._timeline = timeline || new Timeline();
 	}
-;
+
 
 	public _pUpdateBoxBounds():void
 	{
@@ -367,6 +367,22 @@ export class MovieClip extends Sprite
 	public getSessionIDDepths():Object
 	{
 		return this._depth_sessionIDs;
+	}
+
+	public swapDepths(child:DisplayObject, depth:number){
+
+		var existingChild:DisplayObject=this.getChildAtDepth(depth);
+		var currentDepth:number=child._depthID;
+		if(currentDepth==depth){
+			return;
+		}
+		this.removeChildAtDepth(currentDepth);
+		if(existingChild){
+			this.removeChildAtDepth(depth);
+			super.addChildAtDepth(existingChild, currentDepth);
+		}
+		super.addChildAtDepth(child, depth);
+
 	}
 
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
