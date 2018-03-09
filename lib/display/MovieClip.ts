@@ -515,7 +515,7 @@ export class MovieClip extends Sprite
 		}
 		var len:number = this._children.length;
 		var child:DisplayObject;
-		for (var i:number = len-1; i >=  0; --i) {
+		for (var i:number = 0; i < len; ++i) {
 			child = this._children[i];
 
 			if (child.isAsset(MovieClip))

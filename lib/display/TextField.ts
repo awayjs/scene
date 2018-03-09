@@ -2454,6 +2454,7 @@ export class TextField extends DisplayObject
 	public setTextFormat(format:TextFormat, beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):void
 	{
 
+
 	}
 
 	/**
