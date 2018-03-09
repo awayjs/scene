@@ -59,6 +59,7 @@ export class Timeline
 	public property_index_stream:ArrayBufferView;
 	public property_type_stream:ArrayBufferView;
 
+
 	public properties_stream_int:ArrayBufferView;		// lists of ints used for property values. for now, only mask_ids are using ints
 
 	// propertiy_values_stream:
@@ -413,6 +414,15 @@ export class Timeline
 		var len:number = this._update_indices.length;
 		for (k = 0; k < len; k++)
 			this.update_childs(target_mc, this._update_indices[k]);
+		var frameIndex:number = target_mc.currentFrameIndex;
+		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
+		if(target_mc.constructedKeyFrameIndex != new_keyFrameIndex) {
+			var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
+			var frame_recipe = this.frame_recipe[new_keyFrameIndex];
+			if(frame_recipe & 16)
+				this.start_sounds(target_mc, frame_command_idx++);
+
+		}
 	}
 
 	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean = true, scriptPass1:Boolean = false):void
@@ -486,9 +496,19 @@ export class Timeline
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		for(var i:number = start_index; i < end_index; i++) {
-			var child:WaveAudio = this.audioPool[this.add_sounds_stream[i]];
-			child.play(0,false);
-			//console.log("start sound:", child);
+			var audioProps:any = this.audioPool[this.add_sounds_stream[i]];
+			if(audioProps){
+
+				var child:WaveAudio =audioProps.sound;
+				if(audioProps.props.loopCount>0){
+					child.loopsToPlay=audioProps.props.loopCount;
+				}
+				else{
+					child.loopsToPlay=0;
+				}
+				child.play(0,false);
+				//console.log("start sound:", child);
+			}
 		}
 
 	}
