@@ -72,7 +72,13 @@ export class Sprite extends DisplayObjectContainer
 
 		return this._graphics;
 	}
-
+/*
+	public set graphics(value:Graphics){
+		value._entity=this;
+		this._graphics=value;
+		this.invalidateElements();
+	}
+	*/
 	/**
 	 * Defines the animator of the graphics object.  Default value is <code>null</code>.
 	 */

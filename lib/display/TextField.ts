@@ -367,7 +367,7 @@ export class TextField extends DisplayObject
 		super._pUpdateBoxBounds();
 
 		this.reConstruct();
-
+/*
 		if(BuildMode.mode==BuildMode.AVM1 && !this._selectable){
 			this._pBoxBounds.x = 0;
 			this._pBoxBounds.y = 0;
@@ -375,7 +375,7 @@ export class TextField extends DisplayObject
 			this._pBoxBounds.height = 0;
 			return;
 		}
-
+		*/
 
 		this._pBoxBounds.x = 0;
 		this._pBoxBounds.y = 0;
@@ -661,8 +661,10 @@ export class TextField extends DisplayObject
 		return this._htmlText;
 	};
 	public set htmlText(value:string){
+		value=value.replace(new RegExp("&nbsp;", 'g'), " ");
+		value=value.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
+		value=value.replace(new RegExp("Ã", 'g'), String.fromCharCode(215));
 		this._htmlText=value;
-
 		var text:string="";
 		var textProps:any= {
 			text:""
@@ -733,14 +735,32 @@ export class TextField extends DisplayObject
 				if(parentChild){
 					if(parentChild.tagName=="p"){
 						if(textProps.text!=""){
-							//textProps.text+="\\n";
+							textProps.text+="\\n";
 						}
 					}
 					else if(parentChild.tagName=="b"){
+
 						if(!this._textFormats[this._textFormats.length-1].bold){
 							this._textFormats.push(currentFormat.getBoldVersion());
 							this._textFormatsIdx.push(textProps.text.length);
 
+						}
+
+						//textProps.text+="argh";
+					}
+					else if(parentChild.tagName=="font"){
+						if((<any>parentChild.attributes).color){
+							var newFormat:TextFormat=currentFormat.clone();
+							var colorString:string=(<any>parentChild.attributes).color.nodeValue;
+							if(colorString=="#ff0000"){
+								newFormat.color =  0xff0000;
+							}
+							else if(colorString=="#0000ff"){
+								newFormat.color =  0x0000ff;
+							}
+
+							this._textFormats.push(newFormat);
+							this._textFormatsIdx.push(textProps.text.length);
 						}
 						//textProps.text+="argh";
 					}
@@ -750,7 +770,7 @@ export class TextField extends DisplayObject
 		}
 		else{
 			for(var k=0; k<myChild.childNodes.length;k++){
-				this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps, myChild, currentFormat);
+				this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps, k==0?myChild:null, currentFormat);
 			}
 		}
 	}
@@ -1535,6 +1555,7 @@ export class TextField extends DisplayObject
 			this._textFormats=[this._textFormat];
 			this._textFormatsIdx=[0];
 		}
+		//console.log("thisText", thisText, this._textFormats, this._textFormatsIdx);
 
 		var tf:TextFormat;
 		var f:number=0;
@@ -2453,7 +2474,79 @@ export class TextField extends DisplayObject
 	 */
 	public setTextFormat(format:TextFormat, beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):void
 	{
+		if(!this._textFormat)
+			this._textFormat=format;
+		if(!this._textFormats || !this._textFormatsIdx || this._textFormats.length==0 || (this._textFormats.length != this._textFormatsIdx.length)){
+			this._textFormats=[this._textFormat];
+			this._textFormatsIdx=[0];
+		}
+		var i=0;
+		var newFormatsTextFormats:TextFormat[]=[];
+		var newFormatsTextFormatsIdx:number[]=[];
+		/*if (beginIndex<=0){
+			this._textFormat=format;
+			newFormatsTextFormats.push(format);
+			newFormatsTextFormatsIdx.push(0);
+			if(endIndex>=0){
 
+				newFormatsTextFormats.push(this._textFormats[0]);
+				newFormatsTextFormatsIdx.push(endIndex)
+			}
+			for(var i=1; i<newFormatsTextFormats.length;i++){
+				newFormatsTextFormats.push(this._textFormats[i]);
+				newFormatsTextFormatsIdx.push(this._textFormatsIdx[i]);
+			}
+
+		}
+		else{*/
+		for(i=0; i<this._textFormats.length;i++){
+			var newStartIdx:number=this._textFormatsIdx[i];
+			var oldFormat:TextFormat=this._textFormats[i];
+			var newEndIdx:number=-1;
+			var newFormat:TextFormat;
+			if(i<this._textFormats.length-1){
+				newEndIdx=this._textFormatsIdx[i+1];
+
+			}
+
+			if(newStartIdx>=beginIndex && (newEndIdx<=endIndex)){
+
+				// old format and new format range overlaps
+
+				var newFormat:TextFormat=oldFormat.clone();
+				newFormat.applyFormat(format);
+				if(newStartIdx==beginIndex){
+					// range is exactly the same. merge formats and add it
+					newFormatsTextFormats.push(newFormat);
+					newFormatsTextFormatsIdx.push(beginIndex);
+				}
+				if(newStartIdx>beginIndex ){
+					// merge format and add the new format from
+
+					newFormatsTextFormats.push(newFormat);
+					newFormatsTextFormatsIdx.push(beginIndex);
+					newFormatsTextFormats.push(oldFormat);
+					newFormatsTextFormatsIdx.push(newStartIdx);
+
+				}
+
+			}
+			else{
+				// outside of new range. just add it
+				newFormatsTextFormats.push(this._textFormats[i]);
+				newFormatsTextFormatsIdx.push(this._textFormatsIdx[i]);
+
+			}
+		}
+
+
+		this._textFormats.length=0;
+		this._textFormatsIdx.length=0;
+		for(i=0; i<newFormatsTextFormats.length;i++){
+			this._textFormats[i]=newFormatsTextFormats[i];
+			this._textFormatsIdx[i]=newFormatsTextFormatsIdx[i];
+		}
+		this._textDirty=true;
 
 	}
 

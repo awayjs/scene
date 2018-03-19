@@ -64,7 +64,7 @@ export class MorphSprite extends Sprite
 		var len=this.start.length;
 		var ratioStart=1-ratio;
 		var ratioEnd=ratio;
-		var newGraphics:Graphics=new Graphics();
+		var newGraphics:Graphics=Graphics.getGraphics(null);
 		var newPath:GraphicsPath;
 		var startPath:GraphicsPath;
 		var endPath:GraphicsPath;
@@ -241,7 +241,6 @@ export class MorphSprite extends Sprite
 
 		this.copyTo(newInstance);
 
-		newInstance.ratioCache=this.ratioCache;
 
 		return newInstance;
 	}
@@ -250,6 +249,9 @@ export class MorphSprite extends Sprite
 	{
 		super.copyTo(sprite, cloneShapes);
 
+		if(!this.ratioCache)
+			this.ratioCache={};
+		(<MorphSprite>sprite).ratioCache=this.ratioCache;
 		(<MorphSprite>sprite).start=this.start;
 		(<MorphSprite>sprite).end=this.end;
 	}
