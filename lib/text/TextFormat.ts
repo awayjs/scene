@@ -66,7 +66,7 @@ export class TextFormat extends AssetBase
 	 * <code>true</code>, then the text is boldface.
 	 */
 	//todo: this is not used when working with tesselated-font-table, because this is property need a own  tesselated-font-table.
-	public bold:boolean;
+	public _bold:boolean;
 
 	/**
 	 * Indicates that the text is part of a bulleted list. In a bulleted list,
@@ -359,6 +359,15 @@ export class TextFormat extends AssetBase
 		return clonedFormat;
 
 	}
+	public set bold(value:boolean){
+		this._bold=value;
+		this.font_table=this.font.get_font_table("bold", TesselatedFontTable.assetType);
+
+	}
+	public get bold():boolean{
+		return this._bold;
+	}
+
 	public getBoldVersion():TextFormat{
 		if(this.bold){
 			return this;

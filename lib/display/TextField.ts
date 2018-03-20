@@ -1,4 +1,4 @@
-import {BuildMode, Box, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
+import {BuildMode, Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
 
 import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
 
@@ -377,6 +377,7 @@ export class TextField extends DisplayObject
 		}
 		*/
 
+
 		this._pBoxBounds.x = 0;
 		this._pBoxBounds.y = 0;
 		this._pBoxBounds.width = this._width;
@@ -735,7 +736,13 @@ export class TextField extends DisplayObject
 				if(parentChild){
 					if(parentChild.tagName=="p"){
 						if(textProps.text!=""){
-							textProps.text+="\\n";
+							if(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\"){
+								// there is already a linebreak
+								}
+								else{
+								textProps.text+="\\n";
+
+							}
 						}
 					}
 					else if(parentChild.tagName=="b"){
@@ -1575,6 +1582,7 @@ export class TextField extends DisplayObject
 		for(f=0; f<f_len; f++ ){
 			word_cnt=0;
 			whitespace_cnt=0;
+			startNewWord=true;
 			tf=this._textFormats[f];
 			tf.font_table.initFontSize(tf.size);
 			c_len=(f==f_len-1)?thisText.length : this._textFormatsIdx[f+1];
@@ -1582,8 +1590,10 @@ export class TextField extends DisplayObject
 			this._textRuns_formats[this._textRuns_formats.length]=tf;
 			this._textRuns_words[this._textRuns_words.length]=this.words.length;
 			// loop over all chars for this format
+			//console.log("textrun tf = ", tf);
 			for (c = this._textFormatsIdx[f]; c < c_len; c++) {
 				char_code=thisText.charCodeAt(c);
+				//console.log("char = ", char_code);
 				//console.log("process char", c, thisText[c], char_code, tf.id);
 				if(char_code==92 || char_code == 10) {
 					// this is a backslash. if it is last char, we do not handle it special
@@ -2094,6 +2104,8 @@ export class TextField extends DisplayObject
 		var tr_len:number=this._textRuns_formats.length;
 		for (tr = 0; tr < tr_len; tr++) {
 			this._textRuns_formats[tr].font_table.initFontSize(this._textRuns_formats[tr].size);
+		//	console.log("this._textRuns_words", this._textRuns_words);
+		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
 			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
 
@@ -2123,7 +2135,14 @@ export class TextField extends DisplayObject
 			}
 			else {
 
-				var obj=Graphics.get_material_for_color(this._textColor==-1?textShape.format.color:this._textColor, 1);
+			//	var obj=Graphics.get_material_for_color(this._textColor==-1?textShape.format.color:this._textColor, 1);
+				var alpha=this._textColor==-1?ColorUtils.float32ColorToARGB(textShape.format.color)[0]:ColorUtils.float32ColorToARGB(this._textColor)[0];
+				if(alpha==0){
+					alpha=255;
+				}
+				var obj=Graphics.get_material_for_color(this._textColor==-1?textShape.format.color:this._textColor, alpha/255);
+				//console.log("textShape.format.color", ColorUtils.float32ColorToARGB(textShape.format.color));
+
 
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
@@ -2480,7 +2499,73 @@ export class TextField extends DisplayObject
 			this._textFormats=[this._textFormat];
 			this._textFormatsIdx=[0];
 		}
+
+		var newFormat:TextFormat;
+
 		var i=0;
+		newFormat=this._textFormat.clone();
+		if(format.color>=0){
+			newFormat.color=format.color;
+		}
+		else{
+			newFormat.color=this._textFormat.color;
+		}
+		if(beginIndex==-1 && endIndex==-1){
+
+			this._textFormats.length=0;
+			this._textFormatsIdx.length=0;
+			this._textFormats[0]=newFormat;
+			this._textFormatsIdx[0]=0;
+			this._textDirty=true;
+			return;
+		}
+		if(beginIndex==0 && endIndex==-1){
+			this._textFormats.length=0;
+			this._textFormatsIdx.length=0;
+			this._textFormats[0]=newFormat;
+			this._textFormatsIdx[0]=0;
+			this._textDirty=true;
+			return;
+
+		}
+		if(beginIndex>0 && endIndex==-1){
+			this._textFormats.length=0;
+			this._textFormatsIdx.length=0;
+			this._textFormats[0]=this._textFormat;
+			this._textFormatsIdx[0]=0;
+			this._textFormats[1]=newFormat;
+			this._textFormatsIdx[1]=beginIndex;
+			this._textDirty=true;
+			return;
+		}
+		if(beginIndex>0 && endIndex>=0){
+			this._textFormats.length=0;
+			this._textFormatsIdx.length=0;
+			this._textFormats[0]=this._textFormat;
+			this._textFormatsIdx[0]=0;
+			this._textFormats[1]=newFormat;
+			this._textFormatsIdx[1]=beginIndex;
+			this._textFormats[2]=this._textFormat;
+			this._textFormatsIdx[2]=endIndex+1;
+			this._textDirty=true;
+			return;
+		}
+		if(beginIndex==0 && endIndex>=0){
+			this._textFormats.length=0;
+			this._textFormatsIdx.length=0;
+			this._textFormats[0]=newFormat;
+			this._textFormatsIdx[0]=beginIndex;
+			this._textFormats[1]=this._textFormat;
+			this._textFormatsIdx[1]=endIndex+1;
+			this._textDirty=true;
+			return;
+		}
+
+		// todo: the above conditions are a hack to get it working for a AVM1 lesson.
+		// below is the code that should actually do the job more, but could not get it to work 100% yet
+
+		console.log("\nadd format", this.id, beginIndex, endIndex, format.color);
+		console.log("this._textFormats", this._textFormats, this._textFormatsIdx);
 		var newFormatsTextFormats:TextFormat[]=[];
 		var newFormatsTextFormatsIdx:number[]=[];
 		/*if (beginIndex<=0){
@@ -2499,39 +2584,63 @@ export class TextField extends DisplayObject
 
 		}
 		else{*/
+		var oldStartIdx:number;
+		var oldEndIdx:number=-1;
+		var oldFormat:TextFormat;
 		for(i=0; i<this._textFormats.length;i++){
-			var newStartIdx:number=this._textFormatsIdx[i];
-			var oldFormat:TextFormat=this._textFormats[i];
-			var newEndIdx:number=-1;
-			var newFormat:TextFormat;
+			oldStartIdx=this._textFormatsIdx[i];
+			oldFormat=this._textFormats[i];
+			oldEndIdx=-1;
 			if(i<this._textFormats.length-1){
-				newEndIdx=this._textFormatsIdx[i+1];
+				oldEndIdx=this._textFormatsIdx[i+1];
 
 			}
+			console.log("oldFormat", oldStartIdx, oldEndIdx);
 
-			if(newStartIdx>=beginIndex && (newEndIdx<=endIndex)){
+			if(oldStartIdx>=beginIndex && (oldEndIdx<=endIndex)){
 
 				// old format and new format range overlaps
 
-				var newFormat:TextFormat=oldFormat.clone();
-				newFormat.applyFormat(format);
-				if(newStartIdx==beginIndex){
+				console.log("old format and new format range overlaps");
+				newFormat=oldFormat.clone();
+				if(format.color>=0){
+					newFormat.color=format.color;
+				}
+				else{
+					newFormat.color=this._textFormat.color;
+				}
+				if(oldStartIdx==beginIndex){
 					// range is exactly the same. merge formats and add it
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(beginIndex);
 				}
-				if(newStartIdx>beginIndex ){
+				if(oldStartIdx>beginIndex ){
 					// merge format and add the new format from
 
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(beginIndex);
 					newFormatsTextFormats.push(oldFormat);
-					newFormatsTextFormatsIdx.push(newStartIdx);
+					newFormatsTextFormatsIdx.push(oldStartIdx);
 
 				}
 
 			}
+			else if(oldStartIdx<beginIndex && (oldEndIdx==endIndex)){
+
+				newFormat=oldFormat.clone();
+				if(format.color>=0){
+					newFormat.color=format.color;
+				}
+				else{
+					newFormat.color=this._textFormat.color;
+				}
+				newFormatsTextFormats.push(oldFormat);
+				newFormatsTextFormatsIdx.push(oldStartIdx);
+				newFormatsTextFormats.push(newFormat);
+				newFormatsTextFormatsIdx.push(beginIndex);
+			}
 			else{
+				console.log("outside of new range. just add it");
 				// outside of new range. just add it
 				newFormatsTextFormats.push(this._textFormats[i]);
 				newFormatsTextFormatsIdx.push(this._textFormatsIdx[i]);
@@ -2540,9 +2649,11 @@ export class TextField extends DisplayObject
 		}
 
 
+		console.log("new formats");
 		this._textFormats.length=0;
 		this._textFormatsIdx.length=0;
 		for(i=0; i<newFormatsTextFormats.length;i++){
+			console.log("new formats ", newFormatsTextFormatsIdx[i], newFormatsTextFormats[i]);
 			this._textFormats[i]=newFormatsTextFormats[i];
 			this._textFormatsIdx[i]=newFormatsTextFormatsIdx[i];
 		}
