@@ -2022,7 +2022,7 @@ export class TextField extends DisplayObject
 			var attr_length:number = 2;//(tess_fontTable.usesCurves)?3:2;
 			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
 			attributesView.set(textShape.verts);
-			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 			attributesView.dispose();
 
 			textShape.elements = new TriangleElements(vertexBuffer);
@@ -2115,7 +2115,7 @@ export class TextField extends DisplayObject
 			var attr_length:number = 2;//(tess_fontTable.usesCurves)?3:2;
 			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
 			attributesView.set(textShape.verts);
-			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer;
+			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 			attributesView.dispose();
 
 			textShape.elements = new TriangleElements(vertexBuffer);

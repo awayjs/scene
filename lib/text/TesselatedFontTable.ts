@@ -410,7 +410,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						//GraphicsFactoryStrokes.draw_pathes([awayPath], final_vert_list, false);
 						var attributesView:AttributesView = new AttributesView(Float32Array, 3);
 						attributesView.set(final_vert_list);
-						var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer;
+						var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 						attributesView.dispose();
 
 						var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(attributesBuffer, null);
