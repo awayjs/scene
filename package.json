@@ -3,6 +3,7 @@
   "version": "0.9.34",
   "description": "AwayJS scene classes",
   "main": "bundle/awayjs-scene.umd.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "url": "http://www.away3d.com",
   "author": "Rob Bateman",
