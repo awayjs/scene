@@ -1448,6 +1448,14 @@ export class TextField extends DisplayObject
 
 
 
+	private lines_wordStartIndices:number[] = [];
+	private lines_wordEndIndices:number[] = [];
+	private lines_start_y:number[] = [];
+	private lines_start_x:number[] = [];
+	private lines_charIdx_start:number[] = [];
+	private lines_charIdx_end:number[] = [];
+	private lines_width:number[] = [];
+	private lines_numSpacesPerline:number[] = [];
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
@@ -1481,6 +1489,14 @@ export class TextField extends DisplayObject
 			this._textRuns_words.length=0;
 			this._textRuns_formats.length=0;
 			this._paragraph_textRuns_indices.length=0;
+			this.lines_wordStartIndices.length=0;
+			this.lines_wordEndIndices.length=0;
+			this.lines_start_y.length=0;
+			this.lines_start_x.length=0;
+			this.lines_charIdx_start.length=0;
+			this.lines_charIdx_end.length=0;
+			this.lines_width.length=0;
+			this.lines_numSpacesPerline.length=0;
 
 			this._maxWidthLine=0;
 
@@ -1703,14 +1719,7 @@ export class TextField extends DisplayObject
 		}
 	}
 
-	private lines_wordStartIndices:number[] = [];
-	private lines_wordEndIndices:number[] = [];
-	private lines_start_y:number[] = [];
-	private lines_start_x:number[] = [];
-	private lines_charIdx_start:number[] = [];
-	private lines_charIdx_end:number[] = [];
-	private lines_width:number[] = [];
-	private lines_numSpacesPerline:number[] = [];
+
 	private getWordPositions() {
 
 		/*console.log("this._text", this._text);
@@ -1859,7 +1868,7 @@ export class TextField extends DisplayObject
 			console.log("maxLineWidth", maxLineWidth);
 			console.log("linelength", linelength);*/
 			additionalWhiteSpace = 0;
-			offsetx = this.textOffsetX;// + 2 + format.leftMargin + format.indent;
+			offsetx = this.textOffsetX + format.leftMargin + format.indent;
 
 			if (format.align == "justify") {
 				if ((l != l_cnt - 1) && lineSpaceLeft > 0 && numSpaces > 0) {
@@ -1941,11 +1950,12 @@ export class TextField extends DisplayObject
 		var advance:number[][]=[];
 		var positions:number[]=[];
 		var moveY:number=0;
+		var record:any;
 		for(var r=0; r<this._labelData.records.length;r++){
 			formats[r]=new TextFormat()
 			glyphdata[r]=[];
 			advance[r]=[];
-			var record=this._labelData.records[r];
+			record=this._labelData.records[r];
 			if(record.font_table){
 				formats[r].font_table=record.font_table;
 			}
@@ -1968,14 +1978,19 @@ export class TextField extends DisplayObject
 			else if (r>0){
 				formats[r].color=formats[r-1].color;
 			}
-			positions.push(this.textOffsetX+(record.moveX? record.moveX/20:0));
-			positions.push(this.textOffsetY+(record.moveY? record.moveY/20:0));
-			moveY=(record.moveY? record.moveY/20:0)-moveY;
+			positions.push(-2+this.textOffsetX+((record.moveX? record.moveX/20:0)));//*(<TesselatedFontTable>formats[r].font_table).getRatio(formats[r].size)));
+			positions.push(((record.moveY? record.moveY/20:0)));//*(<TesselatedFontTable>formats[r].font_table).getRatio(formats[r].size)));
+			//console.log(-3+this.textOffsetX+((record.moveX? record.moveX/20:0)));
+			//console.log(-7+this.textOffsetY+((record.moveY? record.moveY/20:0)));
+			//var text="";
+			//moveY=(record.moveY? record.moveY/20:0)-moveY;
 			for(var e=0; e<record.entries.length;e++){
 				glyphdata[r][e]=record.entries[e].glyphIndex;
 				advance[r][e]=record.entries[e].advance/20;
-				//text+=String.fromCharCode(parseInt((<TesselatedFontTable>awayText.textFormat.font_table).getStringForIdx(record.entries[e].glyphIndex)));
+				//text+=String.fromCharCode(parseInt((<TesselatedFontTable>formats[r].font_table).getStringForIdx(record.entries[e].glyphIndex)));
 			}
+			//console.log("record.entries.length: ", <TesselatedFontTable>formats[r].font_table, record, record.entries.length, this.textOffsetX, this.textOffsetY, record.moveX, record.moveY);
+			//console.log("record.entries.length: ", record, record.entries.length, this.textOffsetX, this.textOffsetY, record.moveX/20, record.moveY/20);
 			//text+="\\n";
 
 		}
@@ -1990,7 +2005,7 @@ export class TextField extends DisplayObject
 		var text_height:number=0;
 		for (tr = 0; tr < tr_len; tr++) {
 			formats[tr].font_table.initFontSize(formats[tr].size);
-			lineSize=(<TesselatedFontTable>formats[tr].font_table).buildTextLineFromIndices(this, formats[tr], positions[tr*2], positions[tr*2+1], glyphdata[tr], advance[tr],);
+			lineSize=(<TesselatedFontTable>formats[tr].font_table).buildTextLineFromIndices(this, formats[tr], positions[tr*2], positions[tr*2+1], glyphdata[tr], advance[tr]);
 			text_height+=lineSize.y;
 			text_width=(lineSize.x>text_width)?lineSize.x:text_width;
 		}
@@ -2068,7 +2083,7 @@ export class TextField extends DisplayObject
 			textShape = this.textShapes[key];
 			this._graphics.removeShape(textShape.shape);
 			Shape.storeShape(textShape.shape);
-			textShape.shape.dispose();
+			/*textShape.shape.dispose();*/
 			textShape.shape = null;
 			textShape.elements.clear();
 			textShape.elements.dispose();
