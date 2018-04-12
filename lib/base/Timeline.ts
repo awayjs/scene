@@ -655,10 +655,12 @@ export class Timeline
 	}
 	public swap_graphics(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
-		var myGraphics:Graphics=<Graphics>this.graphicsPool[this.properties_stream_int[i]];
-		//console.log("frame:", target_mc.currentFrameIndex ,"swap graphics: ", target_mc.id, i, myGraphics.id);
-		(<Sprite>child).graphics.clear();
-		(<Sprite>child).graphics.copyFrom(myGraphics);
+		if(child.isAsset(Sprite)){
+			var myGraphics:Graphics=<Graphics>this.graphicsPool[this.properties_stream_int[i]];
+			//console.log("frame:", target_mc.currentFrameIndex ,"swap graphics: ", target_mc.id, i, myGraphics.id);
+			(<Sprite>child).graphics.clear();
+			(<Sprite>child).graphics.copyFrom(myGraphics);
+		}
 	}
 
 	public start_audio(child:DisplayObject, target_mc:MovieClip, i:number):void
