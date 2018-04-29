@@ -2,7 +2,7 @@ import {AssetBase, Point} from "@awayjs/core";
 
 import {AttributesBuffer, AttributesView} from "@awayjs/stage";
 
-import {GraphicsPath, GraphicsFactoryStrokes, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle} from "@awayjs/graphics";
+import {GraphicsPath, GraphicsFactoryStrokes, GraphicsFactoryFills, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle} from "@awayjs/graphics";
 
 import {TesselatedFontChar} from "./TesselatedFontChar";
 import {IFontTable} from "./IFontTable";
@@ -146,11 +146,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 	public getLineHeight():number
 	{
-		var thisLineheighttest:number=this._current_size *(this._font_em_size/this._ascent);
-
-		//if(this.name=="BoldStyle"){
-		//	thisLineheighttest=this._current_size;
-		//}
+		var thisLineheighttest:number=this._size_multiply*(this._ascent-this.descent);
+		//var thisLineheighttest:number=this._current_size *(this._font_em_size/this._ascent);
+		/*if(this.name=="BoldStyle"){
+			thisLineheighttest=this._current_size;
+		}*/
 		return thisLineheighttest; // sf
 		//return this._size_multiply*this._font_em_size;
 	//	return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
@@ -224,7 +224,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 		var origin_x=x;
 		var origin_y=y;
-		y-=this.getLineHeight();
+		y -= this._ascent*this._size_multiply;//this.getLineHeight();
 		var charGlyph:TesselatedFontChar;
 		var char_vertices:AttributesBuffer;
 		var c:number=0;
@@ -250,21 +250,25 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 				//console.log("no glyph found at idx", idx, "todo: support fallback fonts");
 			}
 			else{
+				if(charGlyph.fill_data==null)
+					charGlyph.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
 				char_vertices = charGlyph.fill_data;
-				buffer = new Float32Array(char_vertices.buffer);
-				if(this.usesCurves) {
-					for (v = 0; v < char_vertices.count; v++) {
-						textShape.verts[textShape.verts.length] = buffer[v * 3] * size_multiply + x;
-						textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
-						textShape.verts[textShape.verts.length] = buffer[v * 3 + 2];
+				if(char_vertices){
+					buffer = new Float32Array(char_vertices.buffer);
+					if(this.usesCurves) {
+						for (v = 0; v < char_vertices.count; v++) {
+							textShape.verts[textShape.verts.length] = buffer[v * 3] * size_multiply + x;
+							textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
+							textShape.verts[textShape.verts.length] = buffer[v * 3 + 2];
+						}
 					}
-				}
-				else {
-					for (v = 0; v < char_vertices.count; v++) {
-						textShape.verts[textShape.verts.length] = buffer[v * 2] * size_multiply + x;
-						textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
-					}
+					else {
+						for (v = 0; v < char_vertices.count; v++) {
+							textShape.verts[textShape.verts.length] = buffer[v * 2] * size_multiply + x;
+							textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
+						}
 
+					}
 				}
 			}
 			x+=advance[i];// * size_multiply;
@@ -298,7 +302,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		for (w = startWord; w < w_len; w+=5) {
 			startIdx=tf.words[w];
 			x=tf.words[w+1];
-			y=tf.words[w+2];// -2 for swf adjusting
+			y=tf.words[w+2];
 			if(this.name=="BoldStyle"){
 				y-=0.2*this.getLineHeight();
 			}
@@ -369,7 +373,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	 */
 	public getChar(name:string):TesselatedFontChar
 	{
-		if(this._font_chars_dic[name]==null){
+		var tesselated_font_char:TesselatedFontChar=this._font_chars_dic[name];
+		if(tesselated_font_char==null){
 			if(this._opentype_font){
 				//console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
 				var thisGlyph=this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
@@ -427,16 +432,22 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 				}
 			}
 		}
-		return this._font_chars_dic[name];
+		else if(tesselated_font_char.fill_data==null && tesselated_font_char.stroke_data==null && tesselated_font_char.fill_data_path!=null){
+			tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(tesselated_font_char.fill_data_path, true);
+			if(!tesselated_font_char.fill_data){
+				console.log("error tesselating glyph");
+			}
+		}
+		return tesselated_font_char;
 	}
 	/**
 	 *
 	 */
 
-	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0):void
+	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0, fill_data_path:GraphicsPath=null):void
 	{
-		if((fills_data==null)&&(stroke_data==null))
-			throw("TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data and stroke_data is null)");
+		if((fills_data==null)&&(stroke_data==null)&&(fill_data_path==null))
+			throw("TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data, stroke_data and fill_data_path is null)");
 		if(this._font_chars.length>0){
 			if(uses_curves!=this._usesCurves){
 				throw("TesselatedFontTable: Can not set different types of graphic-glyphs (curves vs non-cuves) on the same FontTable!");
@@ -445,7 +456,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		else{
 			this._usesCurves=uses_curves;
 		}
-		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data);
+		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data, fill_data_path);
 		tesselated_font_char.char_width=char_width;
 		tesselated_font_char.glyph_idx=glyph_idx;
 		this._glyphIdxToChar[glyph_idx] = tesselated_font_char;

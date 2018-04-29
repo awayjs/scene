@@ -16,11 +16,12 @@ export class DefaultFontManager
 	public static getFont(fontName:string):Font{
 		if(!fontName)
 			return DefaultFontManager.getDefaultFont();
+		fontName=fontName.toString().toLowerCase();
 		if(DefaultFontManager._registered_fonts[fontName]){
 			return DefaultFontManager._registered_fonts[fontName];
 		}
 		var newFont:Font=new Font();
-		newFont.name=fontName.toString();
+		newFont.name=fontName;
 		//DefaultFontManager._registered_fonts[fontName.toString().split(" ")[0].toLowerCase()]=newFont;
 		DefaultFontManager._registered_fonts[fontName]=newFont;
 		return newFont;

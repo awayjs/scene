@@ -1,4 +1,5 @@
 import {AttributesBuffer} from "@awayjs/stage";
+import {GraphicsPath, GraphicsFactoryFills} from "@awayjs/graphics"
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -40,6 +41,7 @@ export class TesselatedFontChar
 	 */
 	public stroke_data:AttributesBuffer;
 	public fill_data:AttributesBuffer;
+	public fill_data_path:GraphicsPath;
 
 	/**
 	 * the char_codes that this geom has kerning set for
@@ -51,10 +53,11 @@ export class TesselatedFontChar
 	public kerningValues:Array<number>=[];
 
 
-	constructor(fill_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null)
+	constructor(fill_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, fill_data_path:GraphicsPath=null)
 	{
 		this.fill_data = fill_data;
 		this.stroke_data = stroke_data;
+		this.fill_data_path = fill_data_path;
 	}
 
 }

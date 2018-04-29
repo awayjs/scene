@@ -904,10 +904,13 @@ export class TextField extends DisplayObject
 	}
 	public set restrict(value:string){
 		this._restrict=value;
-		if(this._restrict="0-9"){
+		// todo: implement this with regex
+		if(this._restrict=="0-9"){
 			this._restrict="0123456789";
 		}
-		// todo: implement this with regex
+		if(this._restrict=="a-zA-Z"){
+			this._restrict="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		}
 	};
 
 	/**
@@ -1708,7 +1711,7 @@ export class TextField extends DisplayObject
 	private adjustPositionForAutoSize(newWidth:number){
 
 		var oldSize:number=this._width;
-		this._width=4+newWidth;
+		this._width = 4 + this.textOffsetX + newWidth;
 		this._pInvalidateBounds();
 		if (this._autoSize==TextFieldAutoSize.RIGHT){
 			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
@@ -1820,7 +1823,7 @@ export class TextField extends DisplayObject
 					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
 						word_width = this.words[w + 3];
 						linelength += word_width;
-						if (linelength <= (maxLineWidth - indent) || this.lines_width[linecnt] == 0) {
+						if (linelength <= (maxLineWidth - indent-10) || this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;
 						}
@@ -1886,6 +1889,9 @@ export class TextField extends DisplayObject
 			else if (format.align == "right") {
 				offsetx += lineSpaceLeft;
 			}
+			else if (format.align == "left") {
+				offsetx += 2;
+			}
 
 			var line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
 			for (w = start_idx; w < end_idx; w += 5) {
@@ -1920,11 +1926,11 @@ export class TextField extends DisplayObject
 
 		// if autosize is enabled, we adjust the textFieldHeight
 		if(this.autoSize!=TextFieldAutoSize.NONE){
-			this._height=this._textHeight+4;
+			this._height=this._textHeight+3;
 			this._pInvalidateBounds();
 		}
 	}
-
+	public staticMatrix:any;
 	private buildGlyphsForLabelData() {
 
 
@@ -1949,8 +1955,11 @@ export class TextField extends DisplayObject
 		var glyphdata:number[][]=[];
 		var advance:number[][]=[];
 		var positions:number[]=[];
-		var moveY:number=0;
+		var xpos = (this.staticMatrix.tx/20);
+		var ypos = (this.staticMatrix.ty/20);
 		var record:any;
+		var lastMoveY=0;
+
 		for(var r=0; r<this._labelData.records.length;r++){
 			formats[r]=new TextFormat()
 			glyphdata[r]=[];
@@ -1978,8 +1987,23 @@ export class TextField extends DisplayObject
 			else if (r>0){
 				formats[r].color=formats[r-1].color;
 			}
-			positions.push(-2+this.textOffsetX+((record.moveX? record.moveX/20:0)));//*(<TesselatedFontTable>formats[r].font_table).getRatio(formats[r].size)));
-			positions.push(((record.moveY? record.moveY/20:0)));//*(<TesselatedFontTable>formats[r].font_table).getRatio(formats[r].size)));
+			//positions.push(this.textOffsetX+(record.moveX? record.moveX/20:0));
+			//positions.push(this.textOffsetY+(record.moveY? record.moveY/20:0));
+			//moveY=(record.moveY? record.moveY/20:0)-moveY;
+			if(record.moveY!=null){
+                ypos += (record.moveY / 20) - lastMoveY;
+                lastMoveY=ypos;
+			}
+			else{
+				//ypos+=this.staticMatrix.ty/20;
+			}
+			//ypos=this.textOffsetY+(record.moveY? record.moveY/20:0);
+			if(record.moveX!=null) {
+				xpos = (this.staticMatrix.tx / 20) + (record.moveX / 20);
+			}
+			positions.push(xpos);
+			positions.push(ypos);
+			
 			//console.log(-3+this.textOffsetX+((record.moveX? record.moveX/20:0)));
 			//console.log(-7+this.textOffsetY+((record.moveY? record.moveY/20:0)));
 			//var text="";
@@ -1987,11 +2011,12 @@ export class TextField extends DisplayObject
 			for(var e=0; e<record.entries.length;e++){
 				glyphdata[r][e]=record.entries[e].glyphIndex;
 				advance[r][e]=record.entries[e].advance/20;
+				xpos+=record.entries[e].advance/20;
 				//text+=String.fromCharCode(parseInt((<TesselatedFontTable>formats[r].font_table).getStringForIdx(record.entries[e].glyphIndex)));
 			}
-			//console.log("record.entries.length: ", <TesselatedFontTable>formats[r].font_table, record, record.entries.length, this.textOffsetX, this.textOffsetY, record.moveX, record.moveY);
-			//console.log("record.entries.length: ", record, record.entries.length, this.textOffsetX, this.textOffsetY, record.moveX/20, record.moveY/20);
-			//text+="\\n";
+			//console.log("\nrecord.entries.length: ", formats[r].font_table, record, record.entries.length);
+			//console.log("textOffsetX ", this.textOffsetX, "textOffsetY ", this.textOffsetY, "moveX ", record.moveX, "moveY ", record.moveY, " staticMtx", this.staticMatrix);
+
 
 		}
 
@@ -2101,7 +2126,7 @@ export class TextField extends DisplayObject
 			if(this._border)
 				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
 			//this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
-			this._graphics.drawRect(-2,-2,this._width, this._height);
+			this._graphics.drawRect(this.textOffsetX,this.textOffsetY,this._width, this._height);
 			this._graphics.endFill();
 		}
 
@@ -2664,7 +2689,7 @@ export class TextField extends DisplayObject
 		}
 
 
-		console.log("new formats");
+		//console.log("new formats");
 		this._textFormats.length=0;
 		this._textFormatsIdx.length=0;
 		for(i=0; i<newFormatsTextFormats.length;i++){
@@ -2787,6 +2812,7 @@ export class TextField extends DisplayObject
 		newInstance.text = this._text;
 		newInstance.textOffsetX = this.textOffsetX;
 		newInstance.textOffsetY = this.textOffsetY;
+		newInstance.staticMatrix = this.staticMatrix;
 		if(this._labelData){
 			newInstance.setLabelData(this._labelData);
 
@@ -2795,6 +2821,7 @@ export class TextField extends DisplayObject
 		newInstance.selectable = this._selectable;
 		newInstance.multiline = this.multiline;
 		newInstance.wordWrap = this.wordWrap;
+		newInstance.maxChars = this.maxChars;
 	}
 	
 }
