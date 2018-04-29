@@ -10,6 +10,8 @@ import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {Billboard} from "../display/Billboard";
 import {MovieClip} from "../display/MovieClip";
 import {Sprite} from "../display/Sprite";
+import {TextField} from "../display/TextField";
+import {TextFieldType} from "../text/TextFieldType";
 import {MorphSprite} from "../display/MorphSprite";
 import {DisplayObject} from "../display/DisplayObject";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
@@ -270,6 +272,7 @@ export class Timeline
 			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
 	}
 
+
 	public gotoFrame(target_mc:MovieClip, value:number, skip_script:boolean = false):void
 	{
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
@@ -278,8 +281,31 @@ export class Timeline
 		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
 			return;
 
+
+		var i:number;
+		var k:number;
+		var inputTextTexts:any={};
+		var hasInputTextMap:boolean=false;
+		var child:DisplayObject;
+		for (i = target_mc.numChildren - 1; i >= 0; i--) {
+			child = target_mc._children[i];
+			if(child.isAsset(TextField) && (<TextField>child).type!=TextFieldType.STATIC){
+				hasInputTextMap=true;
+				inputTextTexts[child.name]=(<TextField>child).text;
+			}
+		}
+
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
 			this.constructNextFrame(target_mc, !skip_script, true);
+			if(hasInputTextMap){
+				for (i = target_mc.numChildren - 1; i >= 0; i--) {
+					child = target_mc._children[i];
+					if(child.isAsset(TextField) && (<TextField>child).type!=TextFieldType.STATIC){
+						if(inputTextTexts[child.name])
+							(<TextField>child).text=inputTextTexts[child.name];
+					}
+				}
+			}
 			return;
 		}
 
@@ -294,8 +320,6 @@ export class Timeline
 		// in case we jump back or we jump a gap, we want to start constructing at BreakFrame
 		var start_construct_idx:number = (jump_forward && !jump_gap)? current_keyframe_idx + 1 : break_frame_idx;
 
-		var i:number;
-		var k:number;
 
 		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
 			for (i = target_mc.numChildren - 1; i >= 0; i--)
@@ -315,7 +339,6 @@ export class Timeline
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
 		// childs that are alive on both frames have their properties reset if we are jumping back
-		var child:DisplayObject;
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
 			child = target_mc._children[i];
 			if (child._depthID < 0) {
@@ -363,6 +386,17 @@ export class Timeline
 
 		//pass2: apply update commands for objects on stage (only if they are not blocked by script)
 		this.pass2(target_mc);
+
+		if(hasInputTextMap){
+
+			for (i = target_mc.numChildren - 1; i >= 0; i--) {
+				child = target_mc._children[i];
+				if(child.isAsset(TextField) && (<TextField>child).type!=TextFieldType.STATIC){
+					if(inputTextTexts[child.name])
+						(<TextField>child).text=inputTextTexts[child.name];
+				}
+			}
+		}
 
 		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 	}
@@ -440,6 +474,7 @@ export class Timeline
 			var frame_recipe = this.frame_recipe[new_keyFrameIndex];
 
 			if(frame_recipe & 1) {
+				target_mc.swappedDepthsMap={};
 				for (var i:number = target_mc.numChildren - 1; i >= 0; i--)
 					if (target_mc._children[i]._depthID < 0)
 						target_mc.removeChildAt(i);
@@ -464,8 +499,16 @@ export class Timeline
 	{
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
-		for(var i:number = start_index; i < end_index; i++)
-			sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(this.remove_child_stream[i] - 16383));
+		var depth:number;
+		var depth2:number;
+		for(var i:number = start_index; i < end_index; i++){
+			depth2=depth=this.remove_child_stream[i] - 16383;
+			if(sourceMovieClip.swappedDepthsMap[depth]!=null){
+				depth2=sourceMovieClip.swappedDepthsMap[depth];
+				sourceMovieClip.swappedDepthsMap[depth]=null;
+			}
+			sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(depth2));
+		}
 	}
 
 

@@ -17,6 +17,8 @@ export class MovieClip extends Sprite
 	public static avm1LoadedActions:any[]=[];
 	private static _skipAdvance:boolean;
 
+	public swappedDepthsMap:any={};
+
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
 
 	public static assetType:string = "[asset MovieClip]";
@@ -234,6 +236,7 @@ export class MovieClip extends Sprite
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
 		this._time = 0;
+		this.swappedDepthsMap={};
 
 		if(this._adapter)
 			(<IMovieClipAdapter> this.adapter).freeFromScript();
@@ -376,8 +379,10 @@ export class MovieClip extends Sprite
 		if(currentDepth==depth){
 			return;
 		}
+		this.swappedDepthsMap[currentDepth]=depth;
 		this.removeChildAtDepth(currentDepth);
 		if(existingChild){
+			this.swappedDepthsMap[depth]=currentDepth;
 			this.removeChildAtDepth(depth);
 			super.addChildAtDepth(existingChild, currentDepth);
 		}
