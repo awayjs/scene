@@ -913,14 +913,28 @@ export class TextField extends DisplayObject
 		return this._restrict;
 	}
 	public set restrict(value:string){
-		this._restrict=value;
+		this._restrict="";
 		// todo: implement this with regex
-		if(this._restrict=="0-9"){
-			this._restrict="0123456789";
+        if(value.indexOf(".")>=0){
+            this._restrict+=".";
+            value=value.replace(".", "");
+        }
+        if(value.indexOf("0-9")>=0){
+            this._restrict+="0123456789";
+            value=value.replace("0-9", "");
+        }
+        if(value.indexOf("a-z")>=0){
+            this._restrict+="abcdefghijklmnopqrstuvwxyz";
+            value=value.replace("a-z", "");
+        }
+        if(value.indexOf("A-Z")>=0){
+            this._restrict+="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            value=value.replace("A-Z", "");
+        }
+        if (this._restrict == "" && value!="") {
+            console.log("WARNING: Unsupported set of restriction chars in TextField.restrict");
 		}
-		if(this._restrict=="a-zA-Z"){
-			this._restrict="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		}
+		this._restrict+=value;
 	};
 
 	/**
