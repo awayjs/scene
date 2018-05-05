@@ -667,6 +667,7 @@ export class TextField extends DisplayObject
 		value=value.replace(new RegExp("&nbsp;", 'g'), " ");
 		value=value.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
 		value=value.replace(new RegExp("Ã", 'g'), String.fromCharCode(215));
+		value = value.replace(new RegExp("<br>", 'g'), "<br/>");
 		this._htmlText=value;
 		var text:string="";
 		var textProps:any= {
