@@ -186,6 +186,8 @@ export class TextField extends DisplayObject
 
 	private _labelData:any=null;
 
+	public html:boolean;
+
 	public getMouseCursor():string
 	{
 		// check if any parent is a button, otherwise return the cursor type set for this text
@@ -690,8 +692,15 @@ export class TextField extends DisplayObject
 			this.readHTMLTextPropertiesRecursive(doc, textProps, null, this._textFormat);
 		}
 
+		if (this._text == textProps.text)
+		return;
+		this._labelData = null;
+		this._text = textProps.text;
+		this._textDirty = true;
+		//console.log("set text", value, "on" , this);
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._pInvalidateBounds();
 
-		this.text=textProps.text;
 	};
 
 	// todo: use ColorUtils instead
@@ -1045,6 +1054,10 @@ export class TextField extends DisplayObject
 	{
 		value = value.toString();
 
+		if(this.html){
+			this.htmlText=value;
+			return;
+		}
 		if (this._text == value)
 			return;
 		this._labelData=null;
@@ -1404,6 +1417,7 @@ export class TextField extends DisplayObject
 		this._backgroundColor=0xffffff;
 		this._border=false;
 		this._borderColor=0x000000;
+		this.html=false;
 
 
 
@@ -2809,19 +2823,20 @@ export class TextField extends DisplayObject
 		newInstance.borderColor = this._borderColor;
 		newInstance.background = this._background;
 		newInstance.backgroundColor = this._backgroundColor;
-		newInstance.text = this._text;
 		newInstance.textOffsetX = this.textOffsetX;
 		newInstance.textOffsetY = this.textOffsetY;
 		newInstance.staticMatrix = this.staticMatrix;
-		if(this._labelData){
-			newInstance.setLabelData(this._labelData);
-
-		}
 		newInstance.type = this._type;
 		newInstance.selectable = this._selectable;
 		newInstance.multiline = this.multiline;
 		newInstance.wordWrap = this.wordWrap;
 		newInstance.maxChars = this.maxChars;
+		newInstance.html = this.html;
+
+		newInstance.text = this._text;
+		if(this._labelData){
+			newInstance.setLabelData(this._labelData);
+		}
 	}
 	
 }
