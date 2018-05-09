@@ -228,6 +228,12 @@ export class TextField extends DisplayObject
 		}
 		this._isInFocus=value;
 		this.enableInput(value);
+
+		// check if a adapter exists
+		if(this.adapter != this){
+			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
+			(<any>this.adapter).selectTextField();
+		}
 		//this._positionsDirty = true;
 		//this._glyphsDirty=true;
 	}
@@ -690,7 +696,14 @@ export class TextField extends DisplayObject
 		if(doc && doc.firstChild){
 			text="";
 			textProps.multiline=doc.firstChild.childNodes.length>0;
-			this.readHTMLTextPropertiesRecursive(doc, textProps, null, this._textFormat);
+            this.readHTMLTextPropertiesRecursive(doc, textProps, null, this._textFormat);
+            var startNode:any=doc;
+            if(doc.firstChild.childNodes.length>0){
+                if(doc.firstChild.childNodes[0].localName=="parsererror"){
+                    startNode=doc.firstChild.childNodes[1];
+                }
+            }
+            this.readHTMLTextPropertiesRecursive(startNode, textProps, null, this._textFormat);
 		}
 
 		if (this._text == textProps.text)
@@ -909,32 +922,34 @@ export class TextField extends DisplayObject
 	 * @default null
 	 */
 	public _restrict:string;
+	public _restrictInternal:string;
 	public get restrict():string{
 		return this._restrict;
 	}
 	public set restrict(value:string){
-		this._restrict="";
+		this._restrict=value;
+		this._restrictInternal="";
 		// todo: implement this with regex
         if(value.indexOf(".")>=0){
-            this._restrict+=".";
+            this._restrictInternal+=".";
             value=value.replace(".", "");
         }
         if(value.indexOf("0-9")>=0){
-            this._restrict+="0123456789";
+            this._restrictInternal+="0123456789";
             value=value.replace("0-9", "");
         }
         if(value.indexOf("a-z")>=0){
-            this._restrict+="abcdefghijklmnopqrstuvwxyz";
+            this._restrictInternal+="abcdefghijklmnopqrstuvwxyz";
             value=value.replace("a-z", "");
         }
         if(value.indexOf("A-Z")>=0){
-            this._restrict+="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            this._restrictInternal+="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             value=value.replace("A-Z", "");
         }
-        if (this._restrict == "" && value!="") {
+        if (this._restrictInternal == "" && value!="") {
             console.log("WARNING: Unsupported set of restriction chars in TextField.restrict");
 		}
-		this._restrict+=value;
+		this._restrictInternal+=value;
 	};
 
 	/**
@@ -2766,16 +2781,26 @@ export class TextField extends DisplayObject
 	public onKeyDelegate:(e:any) => void;
 	public onKey(e:any){
 		var keyEvent:KeyboardEvent=<KeyboardEvent>e;
+		this.addChar(keyEvent.char);
+
+		//console.log("textfield.onKey this.text", this.text);
+	}
+	public addCharCode(charCode:number){
+		this.addChar(String.fromCharCode(charCode));
+		
+	}
+	public addChar(char:string){
+
 		var oldText=this._text;
 		//console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
 		// todo: correctly implement text-cursor, and delete / add from its position
-		if(keyEvent.char=="Backspace"){
+		if(char=="Backspace"){
 			if(this.text.length>0){
 				this.text=this._text.slice(0, this._text.length-1);
 			}
 
 		}
-		else if(keyEvent.char=="Delete"){
+		else if(char=="Delete"){
 			if(this.text.length>1){
 				this.text=this._text.slice(1, this._text.length-1);
 			}
@@ -2788,20 +2813,18 @@ export class TextField extends DisplayObject
 
 			}
 			else{
-				if(this._restrict && this._restrict!=""){
-					if(this._restrict.indexOf(keyEvent.char)!=-1)
-						this.text = this._text+keyEvent.char;
+				if(this._restrictInternal && this._restrictInternal!=""){
+					if(this._restrictInternal.indexOf(char)!=-1)
+						this.text = this._text+char;
 				}
 				else{
-					this.text = this._text+keyEvent.char;
+					this.text = this._text+char;
 				}
 			}
 		}
 
 		if(this._onChanged && oldText!=this._text)
 			this._onChanged();
-
-		//console.log("textfield.onKey this.text", this.text);
 	}
 	public onMouseDownDelegate:(e:any) => void;
 	public onMouseDown(e:any){
