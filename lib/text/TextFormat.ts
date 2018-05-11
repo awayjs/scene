@@ -3,6 +3,7 @@ import {AssetBase} from "@awayjs/core";
 import {IMaterial} from "@awayjs/renderer";
 
 import {IFontTable} from "./IFontTable";
+import {FontStyleName} from "./FontStyleName";
 import {Font} from "./Font";
 import {TesselatedFontTable} from "./TesselatedFontTable";
 import {DefaultFontManager} from "../managers/DefaultFontManager";
@@ -106,6 +107,10 @@ export class TextFormat extends AssetBase
 	 */
 	public _font_name:string;
 	public _font:Font;
+
+
+	private _style_name:FontStyleName;
+
 	public get font_name():string{
 		return this._font_name;
 	}
@@ -171,7 +176,7 @@ export class TextFormat extends AssetBase
 	 * value is <code>null</code>, which means no italics are used.
 	 */
 	//todo: this is not used when working with tesselated-font-table, because this is property need a own tesselated-font-table.
-	public italic:boolean;
+	public _italic:boolean;
 
 	/**
 	 * A Boolean value that indicates whether kerning is enabled
@@ -323,7 +328,7 @@ export class TextFormat extends AssetBase
 		this.size = size;
 		this.color = color;
 		this.bold = bold;
-		this.italic = italic;
+		this._italic = italic;
 		this.underline = underline;
 		this.url = url;
 		this.link_target = link_target;
@@ -361,20 +366,50 @@ export class TextFormat extends AssetBase
 	}
 	public set bold(value:boolean){
 		this._bold=value;
-		this.font_table=this.font.get_font_table("bold", TesselatedFontTable.assetType);
+		
+		this._style_name=FontStyleName.STANDART;
+		if(this._bold)
+			this._style_name=FontStyleName.BOLD;
+		if(this._italic)
+			this._style_name=FontStyleName.BOLDITALIC;
+		
+		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 
 	}
 	public get bold():boolean{
 		return this._bold;
 	}
+	public set italic(value:boolean){
+		this._italic=value;
+		this._style_name=FontStyleName.STANDART;
+		if(this._italic)
+			this._style_name=FontStyleName.ITALIC;
+		if(this._bold)
+			this._style_name=FontStyleName.BOLDITALIC;
+		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 
-	public getBoldVersion():TextFormat{
-		if(this.bold){
+	}
+	public get italic():boolean{
+		return this._italic;
+	}
+	public get style_name():FontStyleName{
+		return this._style_name;
+	}
+	public set style_name(value:FontStyleName){
+		this._style_name=value;
+		if(this._style_name==FontStyleName.BOLD || this._style_name==FontStyleName.BOLDITALIC)
+			this._bold=true;
+		if(this._style_name==FontStyleName.ITALIC || this._style_name==FontStyleName.BOLDITALIC)
+			this._italic=true;
+		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+	}
+
+	public cloneForStyle(style_name:FontStyleName):TextFormat{
+		if(this._style_name==style_name){
 			return this;
 		}
 		var clonedFormat:TextFormat=this.clone();
-		clonedFormat.bold=true;
-		clonedFormat.font_table=clonedFormat.font.get_font_table("bold", TesselatedFontTable.assetType);
+		clonedFormat.style_name=style_name;
 		return clonedFormat;
 	}
 

@@ -27,6 +27,7 @@ import {MouseEvent} from "../events/MouseEvent";
 import {DisplayObject} from "./DisplayObject";
 import {MovieClip} from "./MovieClip";
 import {TextShape} from "../text/TextShape";
+import { FontStyleName } from '../text/FontStyleName';
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -689,6 +690,8 @@ export class TextField extends DisplayObject
 		}
 
 		this._textFormats=[this._textFormat];
+		this._textFormat.italic=false;
+		this._textFormat.bold=false;
 		this._textFormatsIdx=[0];
 		text=value;
 		var parser = new DOMParser();
@@ -696,7 +699,6 @@ export class TextField extends DisplayObject
 		if(doc && doc.firstChild){
 			text="";
 			textProps.multiline=doc.firstChild.childNodes.length>0;
-            this.readHTMLTextPropertiesRecursive(doc, textProps, null, this._textFormat);
             var startNode:any=doc;
             if(doc.firstChild.childNodes.length>0){
                 if(doc.firstChild.childNodes[0].localName=="parsererror"){
@@ -748,59 +750,80 @@ export class TextField extends DisplayObject
 				//textProps.align = this.textFormatAlignMapStringToInt[(<any>myChild.attributes).align.nodeValue];
 			}
 		}
-		if(this._textFormats[this._textFormats.length-1]!=currentFormat){
+		/*if(this._textFormats[this._textFormats.length-1]!=currentFormat){
 			this._textFormats.push(currentFormat);
 			this._textFormatsIdx.push(textProps.text.length);
 
-		}
-		if(!myChild.childNodes || myChild.childNodes.length==0){
+		}*/
+		var childFormat:TextFormat=null;
 
-			if((<any>myChild).nodeValue){
-				if(parentChild){
-					if(parentChild.tagName=="p"){
-						if(textProps.text!=""){
-							if(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\"){
-								// there is already a linebreak
-								}
-								else{
-								textProps.text+="\\n";
-
-							}
-						}
-					}
-					else if(parentChild.tagName=="b"){
-
-						if(!this._textFormats[this._textFormats.length-1].bold){
-							this._textFormats.push(currentFormat.getBoldVersion());
-							this._textFormatsIdx.push(textProps.text.length);
-
-						}
-
-						//textProps.text+="argh";
-					}
-					else if(parentChild.tagName=="font"){
-						if((<any>parentChild.attributes).color){
-							var newFormat:TextFormat=currentFormat.clone();
-							var colorString:string=(<any>parentChild.attributes).color.nodeValue;
-							if(colorString=="#ff0000"){
-								newFormat.color =  0xff0000;
-							}
-							else if(colorString=="#0000ff"){
-								newFormat.color =  0x0000ff;
-							}
-
-							this._textFormats.push(newFormat);
-							this._textFormatsIdx.push(textProps.text.length);
-						}
-						//textProps.text+="argh";
-					}
+		// check if this is a paragraph. if it is, we want to add a linebreak in case there is text already present
+		// we also check if there is already a linebreak in the text, and do not add another if there is
+		if(myChild.tagName=="p"){
+			if(textProps.text!=""){
+				if(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\"){
+					// there is already a linebreak
 				}
-				textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
+				else{
+					textProps.text+="\\n";
+				}
+			}
+		}
+
+		// if this is a bold-tag, we create a new textformat if the current format is not bold
+		else if(myChild.tagName=="b"){			
+			if(!currentFormat.bold){
+				childFormat=currentFormat.clone();//(FontStyleName.BOLD);
+				childFormat.bold=true;
+				this._textFormats.push(childFormat);
+				this._textFormatsIdx.push(textProps.text.length);
+			}
+		}
+		// if this is a italic-tag, we create a new textformat if the current format is not italic
+		else if(myChild.tagName=="i"){			
+			if(!currentFormat.italic){
+				childFormat=currentFormat.clone();
+				childFormat.italic=true;
+				this._textFormats.push(childFormat);
+				this._textFormatsIdx.push(textProps.text.length);
+			}
+		}
+		else if(myChild.tagName=="font"){
+			// todo add more options than just color
+			if((<any>myChild.attributes).color){
+				childFormat=currentFormat.clone();
+				var colorString:string=(<any>myChild.attributes).color.nodeValue;
+				if(colorString=="#ff0000"){
+					childFormat.color =  0xff0000;
+				}
+				else if(colorString=="#0000ff"){
+					childFormat.color =  0x0000ff;
+				}
+				this._textFormats.push(childFormat);
+				this._textFormatsIdx.push(textProps.text.length);
+			}
+			//textProps.text+="argh";
+		}
+
+		if(childFormat==null){
+			childFormat=currentFormat;
+		}
+		
+		// if the node has children, we just traverse children, and do not consider adding the nodeValue as text
+		// todo: double check if above behavior is true for html text
+		if(myChild.childNodes && myChild.childNodes.length>0){
+			for(var k=0; k<myChild.childNodes.length;k++){
+				if(this._textFormats[this._textFormats.length-1]!=childFormat){					
+					this._textFormats.push(childFormat);
+					this._textFormatsIdx.push(textProps.text.length);
+				}
+				this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps, k==0?myChild:null, childFormat);
 			}
 		}
 		else{
-			for(var k=0; k<myChild.childNodes.length;k++){
-				this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps, k==0?myChild:null, currentFormat);
+			// if nodeValue exists, we add it to the text
+			if((<any>myChild).nodeValue){
+				textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
 			}
 		}
 	}

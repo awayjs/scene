@@ -3,6 +3,7 @@ import {AssetBase} from "@awayjs/core";
 import {IFontTable} from "./IFontTable";
 import {TesselatedFontTable} from "./TesselatedFontTable";
 import {BitmapFontTable} from "./BitmapFontTable";
+import { FontStyleName } from './FontStyleName';
 
 /**
  * Font is a container for FontTables.
@@ -64,7 +65,7 @@ export class Font extends AssetBase
 	/**
 	 *Get a font-table for a specific name, or create one if it does not exists.
 	 */
-	public get_font_table(style_name:string, assetType:string=TesselatedFontTable.assetType, openTypeFont:any=null):IFontTable
+	public get_font_table(style_name:FontStyleName, assetType:string=TesselatedFontTable.assetType, openTypeFont:any=null):IFontTable
 	{
 		var len:number = this._font_styles.length;
 
@@ -82,7 +83,7 @@ export class Font extends AssetBase
 		else if(assetType==BitmapFontTable.assetType){
 			font_style = new BitmapFontTable();
 		}
-		font_style.name=style_name;
+		font_style.name=<string>style_name;
 		this._font_styles.push(font_style);
 		return font_style;
 	}

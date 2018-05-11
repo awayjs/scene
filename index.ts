@@ -62,6 +62,7 @@ export {PrimitiveTorusPrefab} from "./lib/prefabs/PrimitiveTorusPrefab";
 
 export {AntiAliasType} from "./lib/text/AntiAliasType";
 export {Font} from "./lib/text/Font";
+export {FontStyleName} from "./lib/text/FontStyleName";
 export {GridFitType} from "./lib/text/GridFitType";
 export {IFontTable} from "./lib/text/IFontTable";
 export {TesselatedFontTable} from "./lib/text/TesselatedFontTable";
