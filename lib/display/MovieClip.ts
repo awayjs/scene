@@ -88,7 +88,14 @@ export class MovieClip extends Sprite
 
 		this._timeline = timeline || new Timeline();
 	}
+	public buttonEnabled:boolean=true;
 
+	public buttonReset(){
+		if(this._isButton && !this.buttonEnabled){
+			this.currentFrameIndex = 0;
+
+		}
+	}
 
 	public _pUpdateBoxBounds():void
 	{
