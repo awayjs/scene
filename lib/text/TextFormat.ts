@@ -118,12 +118,12 @@ export class TextFormat extends AssetBase
 		var newFont=DefaultFontManager.getFont(value);
 		if(newFont){
 			this._font=newFont;
-			this.font_table=<TesselatedFontTable>newFont.get_font_table("regular", TesselatedFontTable.assetType);
+			this.font_table=<TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 			if(!this.font_table){
 				console.log("could not find font-table on font", value, this._font);
 			}
 			if((<TesselatedFontTable>this.font_table).get_font_chars().length==0){
-				this.font_table=<TesselatedFontTable>newFont.get_font_table("default", TesselatedFontTable.assetType);
+				this.font_table=<TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 				if(!this.font_table){
 					console.log("could not find font-table on font", value, this._font);
 				}
@@ -340,7 +340,7 @@ export class TextFormat extends AssetBase
 		this.letterSpacing = 0;
 		// todo: implement a way to supply a default fonttable / font to formats
 		this._font=DefaultFontManager.getFont(font);
-		this.font_table=<TesselatedFontTable>this._font.get_font_table("regular", TesselatedFontTable.assetType);
+		this.font_table=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 		//this.font_table=this._font.getFont;
 	}
 	public clone():TextFormat{

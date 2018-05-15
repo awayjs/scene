@@ -438,6 +438,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 				console.log("error tesselating glyph");
 			}
 		}
+		if(!tesselated_font_char){
+			console.log("getChar: could nto find glyph: ", name);
+		}
 		return tesselated_font_char;
 	}
 	/**
@@ -446,6 +449,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0, fill_data_path:GraphicsPath=null):void
 	{
+		//console.log("adding char", name, String.fromCharCode(parseInt(name)));
 		if((fills_data==null)&&(stroke_data==null)&&(fill_data_path==null))
 			throw("TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data, stroke_data and fill_data_path is null)");
 		if(this._font_chars.length>0){

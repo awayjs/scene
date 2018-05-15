@@ -72,7 +72,6 @@ export class Font extends AssetBase
 		//console.log("font name", this.name, style_name);
 		for (var i:number = 0; i < len; ++i) {
 			if((this._font_styles[i].assetType==assetType)&&(this._font_styles[i].name==style_name)){
-				// mak
 				return this._font_styles[i];
 			}
 		}
