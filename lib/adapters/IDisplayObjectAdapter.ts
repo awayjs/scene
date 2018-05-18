@@ -7,6 +7,8 @@ export interface IDisplayObjectAdapter extends IAssetAdapter
 	isBlockedByScript():boolean;
 
 	isVisibilityByScript():boolean;
+	
+	isColorTransformByScript():boolean;
 
 	freeFromScript():void;
 

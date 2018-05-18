@@ -346,9 +346,11 @@ export class Timeline
 					target_mc.removeChildAt(i);
 				} else if (!jump_forward) {
 					if(child._adapter) {
+						if (!(<IDisplayObjectAdapter> child.adapter).isColorTransformByScript()) {
+							child.transform.clearColorTransform();
+						}
 						if (!(<IDisplayObjectAdapter> child.adapter).isBlockedByScript()) {
 							child.transform.clearMatrix3D();
-							child.transform.clearColorTransform();
 							//this.name="";
 							child.masks = null;
 							child.maskMode = false;
@@ -512,7 +514,6 @@ export class Timeline
 	}
 
 
-	// used to add childs when jumping between frames
 	public add_childs_continous(sourceMovieClip:MovieClip, frame_command_idx:number):void
 	{
 		// apply add commands in reversed order to have script exeucted in correct order.
@@ -599,7 +600,7 @@ export class Timeline
 
 	public update_colortransform(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
-		if (this._blocked)
+		if (Boolean(child._adapter && (<IDisplayObjectAdapter> child.adapter).isColorTransformByScript()))	
 			return;
 
 		i *= 8;
