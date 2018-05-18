@@ -243,6 +243,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.dispatchEvent(events[1]);//EXIT_FRAME
 
 	}
+	public dispatchEnterFrame(event:any) {
+		this.dispatchEvent(event);//ENTER_FRAME
+	}
+	public dispatchExitFrame(event:any) {
+		this.dispatchEvent(event);//Exit
+	}
 	public getMouseCursor():string
 	{
 		return "initial";

@@ -56,6 +56,22 @@ export class DisplayObjectContainer extends DisplayObject
 		this.dispatchEvent(events[1]);//EXIT_FRAME
 
 	}
+	public dispatchEnterFrame(event:any) {
+		this.dispatchEvent(event);//ENTER_FRAME
+		var i:number=this._children.length;
+		while(i>0){
+			i--;
+			this._children[i].dispatchEnterFrame(event);
+		}
+	}
+	public dispatchExitFrame(event:any) {
+		var i:number=this._children.length;
+		while(i>0){
+			i--;
+			this._children[i].dispatchExitFrame(event);
+		}
+		this.dispatchEvent(event);//Exit
+	}
 	/**
 	 * Determines whether or not the children of the object are mouse, or user
 	 * input device, enabled. If an object is enabled, a user can interact with
