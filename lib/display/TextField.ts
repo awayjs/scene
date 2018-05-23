@@ -224,6 +224,10 @@ export class TextField extends DisplayObject
 	}
 	public set isInFocus(value:boolean)
 	{
+	}
+	
+	public setFocus(value:boolean, fromMouseDown:boolean=false){
+		
 		if(this._isInFocus==value){
 			return;
 		}
@@ -233,7 +237,7 @@ export class TextField extends DisplayObject
 		// check if a adapter exists
 		if(this.adapter != this){
 			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
-			(<any>this.adapter).selectTextField();
+			(<any>this.adapter).selectTextField(fromMouseDown);
 		}
 		//this._positionsDirty = true;
 		//this._glyphsDirty=true;
