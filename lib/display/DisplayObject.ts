@@ -278,6 +278,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		this._isInFocus=value;
 	}
+	public setFocus(value:boolean, fromMouseDown:boolean=false){
+		
+		this._isInFocus=value;
+	}
 
 	public get traverseName():string
 	{
