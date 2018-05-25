@@ -60,14 +60,7 @@ export class Sprite extends DisplayObjectContainer
 			this._graphics.updateSlice9(this.parent.scaleX, this.parent.scaleY);
 		}
 		if(this.parent){
-			var scaleX:number=this.scaleX;
-			var parent:DisplayObjectContainer=this.parent;
-			while(parent){
-				scaleX*=parent.scaleX;
-				parent=parent.parent;
-			}
-			this._graphics.updateScale(scaleX, this.parent.scaleY*this.scaleY);
-
+			this._graphics.updateScale();
 		}
 
 		return this._graphics;
