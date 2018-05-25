@@ -238,12 +238,16 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var idx:number=0;
 		var i:number=0;
 		var i_len:number=indices.length;
+		if(this._glyphIdxToChar[tf["fileurl"]]==null){
+			console.log("no glyphIdx-map for textfield");
+			return;
+		}
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (i = 0; i < i_len; i++) {
 			idx=indices[i];
 
-			charGlyph=this._glyphIdxToChar[idx];
+			charGlyph=this._glyphIdxToChar[tf["fileurl"]][idx];
 			size_multiply=this._size_multiply;
 
 			if(!charGlyph) {
@@ -447,7 +451,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	 *
 	 */
 
-	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0, fill_data_path:GraphicsPath=null):void
+	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0, fill_data_path:GraphicsPath=null, fileURL:string=""):void
 	{
 		//console.log("adding char", name, String.fromCharCode(parseInt(name)));
 		if((fills_data==null)&&(stroke_data==null)&&(fill_data_path==null))
@@ -463,7 +467,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data, fill_data_path);
 		tesselated_font_char.char_width=char_width;
 		tesselated_font_char.glyph_idx=glyph_idx;
-		this._glyphIdxToChar[glyph_idx] = tesselated_font_char;
+		if(this._glyphIdxToChar[fileURL]==null){
+			this._glyphIdxToChar[fileURL]={};
+		}
+		this._glyphIdxToChar[fileURL][glyph_idx] = tesselated_font_char;
 
 		this._font_chars.push(tesselated_font_char);
 		this._font_chars_dic[name]=tesselated_font_char;
