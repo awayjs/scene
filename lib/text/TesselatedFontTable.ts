@@ -287,7 +287,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public fillTextRun(tf:TextField, format:TextFormat, startWord:number, wordCnt:number) {
 
 		var textShape:TextShape=tf.getTextShapeForIdentifierAndFormat(format.color.toString(), format);
-
+		var newFormat:TextFormat=format.clone();
+		newFormat.color=0xffffff;
+		var textShapeSelected:TextShape=tf.getTextShapeForIdentifierAndFormat(newFormat.color.toString(), newFormat);
+		var currentTextShape:TextShape=null;
 		var charGlyph:TesselatedFontChar;
 		var w:number=0;
 		var w_len:number=startWord + (wordCnt*5);
@@ -301,6 +304,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var v:number;
 		var size_multiply:number;
 		var hack_x_mirror:boolean=false;
+		var select_start:number=tf.selectionBeginIndex;
+		var select_end:number=tf.selectionEndIndex;
+		if(tf.selectionEndIndex<tf.selectionBeginIndex){
+			select_start=tf.selectionEndIndex;
+			select_end=tf.selectionBeginIndex;
+		}
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (w = startWord; w < w_len; w+=5) {
@@ -325,6 +334,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 					tf.chars_codes[c]=41;
 					hack_x_mirror=true;
 				}
+				currentTextShape=(tf.isInFocus && c>=select_start && c<select_end )?textShapeSelected:textShape;
 				if(tf.chars_codes[c]!=32 && tf.chars_codes[c]!=9){
 					charGlyph=this.getChar(tf.chars_codes[c].toString());
 					size_multiply=this._size_multiply;
@@ -337,22 +347,22 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						buffer = new Float32Array(char_vertices.buffer);
 						if(this.usesCurves) {
 							for (v = 0; v < char_vertices.count; v++) {
-								textShape.verts[textShape.verts.length] = buffer[v * 3] * size_multiply + x;
-								textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
-								textShape.verts[textShape.verts.length] = buffer[v * 3 + 2];
+								currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3] * size_multiply + x;
+								currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
+								currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3 + 2];
 							}
 						}
 						else {
 							if(hack_x_mirror){
 								for (v = 0; v < char_vertices.count; v++) {
-									textShape.verts[textShape.verts.length] = (charGlyph.char_width-buffer[v * 2]) * size_multiply + x;
-									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
+									currentTextShape.verts[currentTextShape.verts.length] = (charGlyph.char_width-buffer[v * 2]) * size_multiply + x;
+									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
 								}
 							}
 							else{
 								for (v = 0; v < char_vertices.count; v++) {
-									textShape.verts[textShape.verts.length] = buffer[v * 2] * size_multiply + x;
-									textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
+									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 2] * size_multiply + x;
+									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
 								}
 							}
 						}

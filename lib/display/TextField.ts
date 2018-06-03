@@ -167,13 +167,15 @@ export class TextField extends DisplayObject
 
 	private cursorIntervalID:number=0;
 	private cursorBlinking:boolean=false;
-
+	private showSelection:boolean=false;
+	
 	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
 	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
 	public _glyphsDirty:Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
 
 	public chars_codes:number[]=[];	// stores charcode per char
 	public chars_width:number[]=[];
+	public tf_per_char:TextFormat[]=[];
 
 	public words:number[]=[];			// stores offset and length and width for each word
 
@@ -188,6 +190,18 @@ export class TextField extends DisplayObject
 	private _labelData:any=null;
 
 	public html:boolean;
+
+	private lines_wordStartIndices:number[] = [];
+	private lines_wordEndIndices:number[] = [];
+	private lines_start_y:number[] = [];
+	private lines_start_x:number[] = [];
+	private lines_charIdx_start:number[] = [];
+	private lines_charIdx_end:number[] = [];
+	private lines_width:number[] = [];
+	private lines_height:number[] = [];
+	private lines_numSpacesPerline:number[] = [];
+	private char_positions_x:number[] = [];
+	private char_positions_y:number[] = [];
 
 	public getMouseCursor():string
 	{
@@ -239,14 +253,12 @@ export class TextField extends DisplayObject
 			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
 			(<any>this.adapter).selectTextField(fromMouseDown);
 		}
-		//this._positionsDirty = true;
-		//this._glyphsDirty=true;
 	}
 
 	private enableInput(enable:boolean=true){
 
 		if(enable && this._isInFocus){
-			this.drawCursor();
+			this.drawSelectionGraphics();
 			var myThis=this;
 			this.cursorIntervalID=window.setInterval(function(){
 				myThis.cursorBlinking=!myThis.cursorBlinking;
@@ -259,27 +271,169 @@ export class TextField extends DisplayObject
 		if(this.cursorShape)
 			this.cursorShape.invalidate();
 	}
-	private drawCursor(){
+	public findCharIdxForMouse(event):number{
+		
+		var myPoint:Point=this.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		var lineIdx:number=this.getLineIndexAtPoint(myPoint.x, myPoint.y);
+		var charIdx:number=this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
+			
+		if(lineIdx>=0 && charIdx<0){
+			if(myPoint.x<=this.lines_start_x[lineIdx])
+				charIdx=this.lines_charIdx_start[lineIdx];
+			else
+				charIdx=this.lines_charIdx_end[lineIdx];				
+		}
+		//console.log("lineIdx", lineIdx, "charIdx", charIdx);
+		return charIdx;
 
-		var x:number=(this._width/2)+this._textWidth/2;
-		if (this._textFormat.align == "justify") {
-		}
-		else if (this._textFormat.align == "center") {
-		}
-		else if (this._textFormat.align == "right") {
-			x = this._width;
-		}
-		else if (this._textFormat.align == "left") {
-			x = 4+this._textWidth;
-		}
-		this._textFormat.font_table.initFontSize(this._textFormat.size);
-		var height:number= this._textFormat.font_table.getLineHeight();
-		if(!this.cursorShape){
-			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x,0,1,height],this._textFormat.color,1);
+	}
+	public startSelectionByMouse(event){
+		this._selectionBeginIndex=this.findCharIdxForMouse(event);	
+		this._selectionEndIndex=this._selectionBeginIndex;
+		//console.log("startSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);	
+		this._glyphsDirty=true;
+		this.reConstruct();
+		this.drawSelectionGraphics();
+	}
+	public stopSelectionByMouse(event){
+		this._selectionEndIndex=this.findCharIdxForMouse(event);
+		//console.log("stopSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
+		this._glyphsDirty=true;
+		this.reConstruct();
+		this.drawSelectionGraphics();
+
+	}
+	public updateSelectionByMouse(event){
+		this._selectionEndIndex=this.findCharIdxForMouse(event);
+		//console.log("updateSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
+		this._glyphsDirty=true;
+		this.reConstruct();
+		this.drawSelectionGraphics();
+
+	}
+	private drawSelectionGraphics(){
+		if(this._selectionBeginIndex<0){
+			this._selectionBeginIndex=0;
+		}	
+		if(this._selectionBeginIndex>this.char_positions_x.length){
+			this._selectionBeginIndex=this.char_positions_x.length;
+		}	
+
+		if(this._selectionBeginIndex==this._selectionEndIndex){			
+			if(this.bgShape){
+				this.showSelection=false;
+				GraphicsFactoryHelper.updateRectanglesShape(this.bgShape,[]);
+				this.bgShape.invalidate();
+			}
+			this.drawCursor();
 		}
 		else{
-			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,0,1,height]);
+			this.showSelection=true;	
+			this.drawSelectedBG();			
 		}
+	}
+
+	private drawCursor(){
+		/*if(this._selectionBeginIndex!=this._selectionEndIndex)
+			return;*/
+		var x:number=0;
+		var y:number=0;
+		var tf:TextFormat=this._textFormat;
+		
+		if(this.char_positions_x.length==0){
+			x=this.textOffsetX+(this._width/2)+this._textWidth/2;
+			if (this._textFormat.align == "justify") {
+			}
+			else if (this._textFormat.align == "center") {
+			}
+			else if (this._textFormat.align == "right") {
+				x = this.textOffsetX+this._width;
+			}
+			else if (this._textFormat.align == "left") {
+				x = this.textOffsetX+4+this._textWidth;
+			}
+		}
+		else if(this._selectionBeginIndex==this.char_positions_x.length){
+			x=this.char_positions_x[this._selectionBeginIndex-1]+this.chars_width[this._selectionBeginIndex-1];
+			y=this.char_positions_y[this._selectionBeginIndex-1];
+			tf=this.tf_per_char[this._selectionBeginIndex-1];
+		}
+		else{
+			x=this.char_positions_x[this._selectionBeginIndex];
+			y=this.char_positions_y[this._selectionBeginIndex];
+			tf=this.tf_per_char[this._selectionBeginIndex];
+		}
+		tf.font_table.initFontSize(tf.size);
+		var height:number= tf.font_table.getLineHeight();
+		if(!this.cursorShape){
+			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x,y,0.5,height],tf.color,1);
+		}
+		else{
+			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5,height]);
+		}
+	}
+	private drawSelectedBG(){
+
+		if(this._selectionBeginIndex<0){
+			this._selectionBeginIndex=0;
+		}	
+		if(this._selectionBeginIndex>this.char_positions_x.length){
+			this._selectionBeginIndex=this.char_positions_x.length;
+		}	
+		var select_start:number=this._selectionBeginIndex;
+		var select_end:number=this._selectionEndIndex;
+		if(this._selectionEndIndex<this._selectionBeginIndex){
+			select_start=this._selectionEndIndex;
+			select_end=this._selectionBeginIndex;
+		}
+		var x:number=0;
+		var y:number=0;
+		var oldy:number=-1;
+		var tf:TextFormat=null;
+		var startx:number=-1;
+		var width:number=0;
+		var height:number=0;
+		var rectangles:number[]=[];
+		if(this.char_positions_x.length!=0){
+			var len:number=(select_end>this.char_positions_x.length)?this.char_positions_x.length:select_end;
+			console.log(select_start, select_end);
+			for(var i:number=select_start; i<len; i++){
+
+				if(i==this.char_positions_x.length){
+					x=this.char_positions_x[i-1]+this.chars_width[i-1];
+					y=this.char_positions_y[i-1];
+					tf=this.tf_per_char[i-1];
+				}
+				else{
+					x=this.char_positions_x[i];
+					y=this.char_positions_y[i];
+					tf=this.tf_per_char[i];
+				}
+				if(startx<0){
+					startx=x;
+				}
+				if(oldy>=0 && oldy!=y){
+					// new line
+					rectangles.push(startx, oldy, width, height);		
+					width=0;			
+					startx=x;
+				}
+				width+=this.chars_width[i];
+				oldy=y;			
+				tf.font_table.initFontSize(tf.size);
+				height = tf.font_table.getLineHeight();
+			}
+		}
+		if(width>0){
+			rectangles.push(startx, oldy, width, height);
+		}
+		//if(!this.bgShape){
+			this.bgShape=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
+		/*}
+		else{
+			GraphicsFactoryHelper.updateRectanglesShape(this.bgShape, rectangles);
+		}*/
+
 	}
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
@@ -1173,6 +1327,7 @@ export class TextField extends DisplayObject
 	}
 
 	private cursorShape:Shape;
+	private bgShape:Shape;
 	/**
 	 *
 	 * @param renderer
@@ -1193,6 +1348,9 @@ export class TextField extends DisplayObject
 		}
 
 		this._graphics.acceptTraverser(traverser);
+		if(this.showSelection && this._isInFocus && this.bgShape){
+			traverser[this.bgShape.elements.traverseName](this.bgShape);
+		}
 		if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
 			traverser[this.cursorShape.elements.traverseName](this.cursorShape);
 		}
@@ -1522,15 +1680,6 @@ export class TextField extends DisplayObject
 	}
 
 
-
-	private lines_wordStartIndices:number[] = [];
-	private lines_wordEndIndices:number[] = [];
-	private lines_start_y:number[] = [];
-	private lines_start_x:number[] = [];
-	private lines_charIdx_start:number[] = [];
-	private lines_charIdx_end:number[] = [];
-	private lines_width:number[] = [];
-	private lines_numSpacesPerline:number[] = [];
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
@@ -1560,6 +1709,9 @@ export class TextField extends DisplayObject
 
 			this.chars_codes.length=0;
 			this.chars_width.length=0;
+			this.char_positions_x.length = 0;
+			this.char_positions_y.length = 0;
+			this.tf_per_char.length=0;
 			this.words.length=0;
 			this._textRuns_words.length=0;
 			this._textRuns_formats.length=0;
@@ -1571,6 +1723,7 @@ export class TextField extends DisplayObject
 			this.lines_charIdx_start.length=0;
 			this.lines_charIdx_end.length=0;
 			this.lines_width.length=0;
+			this.lines_height.length=0;
 			this.lines_numSpacesPerline.length=0;
 
 			this._maxWidthLine=0;
@@ -1641,7 +1794,7 @@ export class TextField extends DisplayObject
 				this.buildGlyphs();
 			}
 			if(this._type==TextFieldType.INPUT)
-				this.drawCursor();
+				this.drawSelectionGraphics();
 		}
 		this._glyphsDirty=false;
 	}
@@ -1696,6 +1849,13 @@ export class TextField extends DisplayObject
 							// next chars are "n" or "\n". we create a new paragraph
 							//console.log("create new paragraph");
 							//finish textrun:
+							
+							/*this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
+							this.words[this.words.length]=0;							// 	x-position
+							this.words[this.words.length]=0;							// 	y-position
+							this.words[this.words.length]=0;					// 	word width
+							this.words[this.words.length]=(char_code == 10)?1:(next_char_code == 110)?2:3;	*/
+
 							this._textRuns_words[this._textRuns_words.length]=word_cnt;
 							this._textRuns_words[this._textRuns_words.length]=linewidth;
 							this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
@@ -1705,6 +1865,16 @@ export class TextField extends DisplayObject
 							this._textRuns_formats[this._textRuns_formats.length]=tf;
 							this._textRuns_words[this._textRuns_words.length]=this.words.length;
 							c+=(char_code == 10)?0:(next_char_code == 110)?1:2;
+							/*
+							this.chars_codes[this.chars_codes.length]=55;
+							this.chars_width[this.chars_width.length]=0;
+							this.tf_per_char[this.tf_per_char.length]=tf;
+							if(next_char_code != 110){
+								this.chars_codes[this.chars_codes.length]=55;
+								this.chars_width[this.chars_width.length]=0;
+								this.tf_per_char[this.tf_per_char.length]=tf;
+
+							}*/
 							startNewWord=true;
 							whitespace_cnt=0;
 							word_cnt=0;
@@ -1732,7 +1902,8 @@ export class TextField extends DisplayObject
 				}
 				linewidth+=char_width;
 				this.chars_width[this.chars_width.length]=char_width;
-
+				this.tf_per_char[this.tf_per_char.length]=tf;
+				
 				// we create a new word if the char is either:
 				// 	- first char of paragraph
 				//	- is a whitespace
@@ -1761,7 +1932,7 @@ export class TextField extends DisplayObject
 						this.words[this.words.length]=1;							// 	char count
 						word_cnt++;
 					}
-					else{
+					else{ 
 						// update-char length and width of active word.
 						this.words[this.words.length-2]+=char_width;
 						this.words[this.words.length-1]++;
@@ -1839,7 +2010,10 @@ export class TextField extends DisplayObject
 		this.lines_start_y.length = 0;
 		this.lines_start_x.length = 0;
 		this.lines_width.length = 0;
+		this.lines_height.length = 0;
 		this.lines_numSpacesPerline.length = 0;
+		this.lines_charIdx_start.length = 0;
+		this.lines_charIdx_end.length = 0;
 		var lines_heights:number[]=[];
 		// loop over all paragraphs
 		for (p = 0; p < p_len; p++) {
@@ -1850,8 +2024,8 @@ export class TextField extends DisplayObject
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
 				format = this._textRuns_formats[tr];
 				format.font_table.initFontSize(format.size);
-				if(lines_heights[lines_heights.length-1]<format.font_table.getLineHeight()){
-					lines_heights[lines_heights.length-1]=format.font_table.getLineHeight();
+				if(lines_heights[lines_heights.length-1]<(format.font_table.getLineHeight()+format.leading)){
+					lines_heights[lines_heights.length-1]=format.font_table.getLineHeight()+format.leading;
 				}
 
 				//console.log("process word positions for textrun", tr, "textruns",  this._textRuns_words);
@@ -1864,6 +2038,8 @@ export class TextField extends DisplayObject
 			this.lines_wordEndIndices[this.lines_wordEndIndices.length] = w_len;
 			this.lines_width[this.lines_width.length] = 0;
 			this.lines_numSpacesPerline[this.lines_numSpacesPerline.length] = 0;
+			var lineHeightCnt:number=0;
+			this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt++];
 
 			var line_width: number = 0;
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
@@ -1881,7 +2057,6 @@ export class TextField extends DisplayObject
 						linelength += word_width;
 						this.lines_wordEndIndices[linecnt] = w + 5;
 						this.lines_width[linecnt] += word_width;
-
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 						}
@@ -1906,7 +2081,7 @@ export class TextField extends DisplayObject
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] = word_width;
 							this.lines_numSpacesPerline[linecnt] = 0;
-							lines_heights[lines_heights.length]=0;
+							this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt++];
 							indent = format.indent;
 						}
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
@@ -1928,10 +2103,11 @@ export class TextField extends DisplayObject
 		var l: number;
 		var l_cnt: number = this.lines_wordStartIndices.length;
 
+		var charCnt:number=0;
 		this._numLines = l_cnt;
 		for (l = 0; l < l_cnt; l++) {
 			linelength = this.lines_width[l];
-			lineHeight = lines_heights[l];
+			lineHeight = this.lines_height[l];
 			start_idx = this.lines_wordStartIndices[l];
 			end_idx = this.lines_wordEndIndices[l];
 			numSpaces = this.lines_numSpacesPerline[l];
@@ -1964,22 +2140,37 @@ export class TextField extends DisplayObject
 			else if (format.align == "left") {
 				offsetx += 2;
 			}
-
+			
+			var c_len:number=0;
+			var c:number=0;
+			var char_pos:number=offsetx;
+			this.lines_start_x[l]=offsetx;
+			this.lines_start_y[l]=offsety;
+			this.lines_charIdx_start[l] = charCnt;
 			var line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
 			for (w = start_idx; w < end_idx; w += 5) {
 				this.words[w + 1] = offsetx;
 				this.words[w + 2] = offsety;
+				
+				c_len=start_idx + this.words[w+4];
+				for (c = start_idx; c < c_len; c++) {
+					this.char_positions_x[this.char_positions_x.length]=char_pos;
+					this.char_positions_y[this.char_positions_y.length]=offsety;
+					char_pos+=this.chars_width[c];
+					charCnt++;
+				}
 				offsetx += this.words[w + 3];
 				line_width += this.words[w + 3];
 				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
-				if (format.align == "justify" && (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9)) {
+				//if (format.align == "justify" && (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9)) {
 					// this is whitepace, we need to add extra space for justified text
 					//offsetx += additionalWhiteSpace;
 					//line_width += additionalWhiteSpace;
-				}
+				//}
 			}
+			this.lines_charIdx_end[l]=charCnt;
 			//console.log("line_width",line_width);
-			offsety += format.font_table.getLineHeight() + format.leading;
+			offsety += lineHeight;
 
 			/* enable for icycle:
 			if(format.leading==11 && format.font_name=="DayPosterBlack"){
@@ -2262,12 +2453,12 @@ export class TextField extends DisplayObject
                     (<MaterialBase> textShape.shape.material).animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
-/*
+				/*
 				(<any>textShape.shape.material).useColorTransform = true;
 				var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 				this.transform.colorTransform.color = textShape.format.color;
 				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-*/
+				*/
 
 			}
 		}
@@ -2298,7 +2489,6 @@ export class TextField extends DisplayObject
 	{
 		this._text+="\n";
 		this._textDirty = true;
-		//TODO
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._pInvalidateBounds();
 	}
@@ -2314,6 +2504,8 @@ export class TextField extends DisplayObject
 	 */
 	public getCharBoundaries(charIndex:number):Rectangle
 	{
+
+		console.log("Textfield.getCharBoundaries() not implemented");
 		return this._charBoundaries;
 	}
 
@@ -2327,9 +2519,23 @@ export class TextField extends DisplayObject
 	 *         first position is 0, the second position is 1, and so on). Returns
 	 *         -1 if the point is not over any character.
 	 */
-	public getCharIndexAtPoint(x:number, y:number):number /*int*/
+	public getCharIndexAtPoint(x:number, y:number, lineIdx:number=-1):number /*int*/
 	{
-		return this._charIndexAtPoint;
+		if(lineIdx<0)
+			lineIdx=this.getLineIndexAtPoint(x, y);
+		var startIdx:number=this.lines_charIdx_start[lineIdx];
+		var endIdx:number=this.lines_charIdx_end[lineIdx];
+		for(var i:number=startIdx; i<endIdx; i++){
+			if(x>=this.char_positions_x[i]){
+				if(x<=this.char_positions_x[i]+this.chars_width[i]/2){
+					return i;
+				}
+				else if(x<=this.char_positions_x[i]+this.chars_width[i]){
+					return i+1;
+				}
+			} 
+		}
+		return -1;
 	}
 
 	/**
@@ -2345,6 +2551,7 @@ export class TextField extends DisplayObject
 	 */
 	public getFirstCharInParagraph(charIndex:number /*int*/):number /*int*/
 	{
+		console.log("Textfield.getFirstCharInParagraph() not implemented");
 		return this._firstCharInParagraph;
 	}
 
@@ -2370,6 +2577,7 @@ export class TextField extends DisplayObject
 	 */
 	public getImageReference(id:string):DisplayObject
 	{
+		console.log("TextField.getImageReference() not implemented");
 		return this._imageReference;
 	}
 
@@ -2385,7 +2593,15 @@ export class TextField extends DisplayObject
 	 */
 	public getLineIndexAtPoint(x:number, y:number):number /*int*/
 	{
-		return this._lineIndexAtPoint;
+		var len:number=this.lines_start_y.length;
+		for(var i:number=0;i<len-1; i++){
+			if(y>=this.lines_start_y[i] && y<=this.lines_start_y[i+1])
+				return i;
+		}
+		// no line found. it must be the last
+		if(y>=this.lines_start_y[len-1])
+			return len-1;
+		return 0;
 	}
 
 	/**
@@ -2400,7 +2616,14 @@ export class TextField extends DisplayObject
 	 */
 	public getLineIndexOfChar(charIndex:number /*int*/):number /*int*/
 	{
-		return this._lineIndexOfChar;
+		
+		var len:number=this.lines_charIdx_start.length-1;
+		for(var i:number;i<len; i++){
+			if(charIndex>=this.lines_charIdx_start[i] && charIndex<=this.lines_charIdx_end[i+1])
+				return i;
+		}
+		// no line found. it must be the last
+		return len;
 	}
 
 	/**
@@ -2412,7 +2635,12 @@ export class TextField extends DisplayObject
 	 */
 	public getLineLength(lineIndex:number /*int*/):number /*int*/
 	{
-		return this._lineLength;
+		if(this.lines_width.length==0){
+			return 0;
+		}
+		if(lineIndex>=this.lines_width.length)
+			return this.lines_width[this.lines_width.length-1];
+		return this.lines_width[lineIndex];
 	}
 
 	/**
@@ -2424,6 +2652,19 @@ export class TextField extends DisplayObject
 	 */
 	public getLineMetrics(lineIndex:number /*int*/):TextLineMetrics
 	{
+		var newLineMetrics:TextLineMetrics=new TextLineMetrics();
+		if(this.lines_width.length==0){
+			return newLineMetrics;
+		}
+		if(lineIndex>=this.lines_width.length)
+			lineIndex=this.lines_width.length-1;
+
+		newLineMetrics.x=this.lines_start_x[lineIndex];
+		newLineMetrics.width=this.lines_width[lineIndex];
+		//newLineMetrics.ascent=
+		//newLineMetrics.descent
+		//newLineMetrics.height
+		//newLineMetrics.leading
 		return this._lineMetrics;
 	}
 
@@ -2438,7 +2679,12 @@ export class TextField extends DisplayObject
 	 */
 	public getLineOffset(lineIndex:number /*int*/):number /*int*/
 	{
-		return this._lineOffset;
+		if(this.lines_charIdx_start.length==0){
+			return 0;
+		}
+		if(lineIndex>=this.lines_charIdx_start.length)
+			return this.lines_charIdx_start[this.lines_charIdx_start.length-1];
+		return this.lines_charIdx_start[lineIndex];
 	}
 
 	/**
@@ -2452,7 +2698,13 @@ export class TextField extends DisplayObject
 	 */
 	public getLineText(lineIndex:number /*int*/):string
 	{
-		return this._lineText;
+		if(this.lines_charIdx_start.length==0){
+			return "";
+		}
+		if(lineIndex>=this.lines_width.length)
+			lineIndex=this.lines_width.length-1;
+		
+		return this._text.slice(this.lines_charIdx_start[lineIndex], this.lines_charIdx_end[lineIndex]);	
 	}
 
 	/**
@@ -2492,6 +2744,7 @@ export class TextField extends DisplayObject
 	 */
 	public getTextFormat(beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):TextFormat
 	{
+		console.log("Textfield.getTextFormat() not correctly implemented for multi-formatted text");
 		return this._textFormat;
 	}
 
@@ -2514,7 +2767,10 @@ export class TextField extends DisplayObject
 	 */
 	public replaceSelectedText(value:string):void
 	{
-
+		var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex-1);
+		var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+		this.text = textBeforeCursor + value + textAfterCursor;
+		this._selectionEndIndex=this._selectionBeginIndex+value.length;
 	}
 
 	/**
@@ -2538,6 +2794,10 @@ export class TextField extends DisplayObject
 	public replaceText(beginIndex:number /*int*/, endIndex:number /*int*/, newText:string):void
 	{
 
+		var textBeforeCursor:string=this._text.slice(0, beginIndex-1);
+		var textAfterCursor:string=this._text.slice(endIndex, this._text.length);
+		this.text = textBeforeCursor + newText + textAfterCursor;
+		this._selectionEndIndex=this._selectionBeginIndex+newText.length;
 	}
 
 	/**
@@ -2555,6 +2815,14 @@ export class TextField extends DisplayObject
 	 */
 	public setSelection(beginIndex:number /*int*/, endIndex:number /*int*/):void
 	{
+		if(this._selectionBeginIndex==beginIndex && this._selectionBeginIndex==endIndex)
+			return;
+		this._selectionBeginIndex=beginIndex;
+		this._selectionEndIndex=endIndex;
+		this._glyphsDirty=true;
+		this.reConstruct();
+		this.drawSelectionGraphics();
+
 
 	}
 
@@ -2809,7 +3077,7 @@ export class TextField extends DisplayObject
 	public onKeyDelegate:(e:any) => void;
 	public onKey(e:any){
 		var keyEvent:KeyboardEvent=<KeyboardEvent>e;
-		this.addChar(keyEvent.char);
+		this.addChar(keyEvent.char, keyEvent.isShift, keyEvent.isCTRL, keyEvent.isAlt);
 
 		//console.log("textfield.onKey this.text", this.text);
 	}
@@ -2817,40 +3085,118 @@ export class TextField extends DisplayObject
 		this.addChar(String.fromCharCode(charCode));
 		
 	}
-	public addChar(char:string){
+	private deleteSelectedText(deleteMode:string="Backspace"){
+		
+		if(this.text.length==0)
+			return;
+		
+		if(this._selectionBeginIndex!=this._selectionEndIndex){
+			var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex-1);
+			var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+			this.text = textBeforeCursor + textAfterCursor;
+			this._selectionEndIndex=this._selectionBeginIndex;
+			return;
+		}
+		if(deleteMode=="Backspace"){
+			var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex-1);
+			var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+			this.text = textBeforeCursor + textAfterCursor;
+			this._selectionBeginIndex-=1;
+			this._selectionEndIndex=this._selectionBeginIndex;
+		}
+		else if(deleteMode=="Delete"){
+			var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
+			var textAfterCursor:string=this._text.slice(this._selectionEndIndex+1, this._text.length);
+			this.text = textBeforeCursor + textAfterCursor;
+			this._selectionEndIndex=this._selectionBeginIndex;
+		}
+
+
+	}
+	public addChar(char:string, isShift:boolean=false, isCTRL:boolean=false, isAlt:boolean=false){
 
 		var oldText=this._text;
 		//console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
 		// todo: correctly implement text-cursor, and delete / add from its position
-		if(char=="Backspace"){
-			if(this.text.length>0){
-				this.text=this._text.slice(0, this._text.length-1);
-			}
-
+		if(char=="Backspace" || char=="Delete"){
+			this.deleteSelectedText(char);
 		}
-		else if(char=="Delete"){
-			if(this.text.length>1){
-				this.text=this._text.slice(1, this._text.length-1);
+		else if(char=="ArrowRight"){
+			if(!isShift && this._selectionEndIndex!=this._selectionBeginIndex){
+				if(this._selectionEndIndex>this._selectionBeginIndex)
+					this._selectionBeginIndex=this._selectionEndIndex;
+				else
+					this._selectionEndIndex=this._selectionBeginIndex;
 			}
 			else{
-				this.text="";
+				if(this._selectionEndIndex>this._selectionBeginIndex){
+					this._selectionEndIndex+=1;
+					if(!isShift)
+						this._selectionBeginIndex=this._selectionEndIndex;
+				}
+				else {
+					this._selectionBeginIndex+=1;
+					if(!isShift)
+						this._selectionEndIndex=this._selectionBeginIndex;
+
+				}
 			}
+			//this._selectionEndIndex=this._selectionBeginIndex;
 		}
-		else{
+		else if(char=="ArrowLeft"){
+			if(!isShift && this._selectionEndIndex!=this._selectionBeginIndex){
+				if(this._selectionEndIndex>this._selectionBeginIndex)
+					this._selectionEndIndex=this._selectionBeginIndex;
+				else
+					this._selectionBeginIndex=this._selectionEndIndex;
+			}
+			else{
+				if(this._selectionEndIndex>this._selectionBeginIndex){
+					this._selectionBeginIndex-=1;
+					if(!isShift)
+						this._selectionEndIndex=this._selectionBeginIndex;
+				}
+				else {
+					this._selectionEndIndex-=1;
+					if(!isShift)
+						this._selectionBeginIndex=this._selectionEndIndex;
+
+				}
+			}
+			//this._selectionEndIndex=this._selectionBeginIndex;
+		}
+		
+		else if (char.length==1){
 			if(this.maxChars>0 && this._text.length>=this.maxChars){
 
 			}
 			else{
 				if(this._restrictInternal && this._restrictInternal!=""){
-					if(this._restrictInternal.indexOf(char)!=-1)
-						this.text = this._text+char;
+					if(this._restrictInternal.indexOf(char)!=-1){
+						var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
+						var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+						this.text = textBeforeCursor + char + textAfterCursor;
+						this._selectionBeginIndex+=1;
+						this._selectionEndIndex=this._selectionBeginIndex;
+					}
 				}
 				else{
-					this.text = this._text+char;
+					var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
+					var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+					this.text = textBeforeCursor+char+textAfterCursor;
+					this._selectionBeginIndex+=1;
+					this._selectionEndIndex=this._selectionBeginIndex;
 				}
 			}
 		}
+		else if (char.length>1){
+			console.log("invalid keyboard input: ", char);
+		}
 
+		this._glyphsDirty=true;
+		this.reConstruct();
+		this.drawSelectionGraphics();
+		
 		if(this._onChanged && oldText!=this._text)
 			this._onChanged();
 	}

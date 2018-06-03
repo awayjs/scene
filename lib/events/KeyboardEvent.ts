@@ -11,13 +11,20 @@ export class KeyboardEvent extends EventBase
 
 	private _charCode:number;
 	private _char:string;
+	public isShift:boolean;
+	public isCTRL:boolean;
+	public isAlt:boolean;
 
+	
 	constructor(type:string, char:string, charCode:number=0)
 	{
 		super(type);
 
 		this._char = char;
 		this._charCode = charCode;
+		this.isShift = false;
+		this.isCTRL = false;
+		this.isAlt = false;
 	}
 
 	public get char():string
