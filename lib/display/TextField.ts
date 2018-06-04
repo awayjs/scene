@@ -318,6 +318,12 @@ export class TextField extends DisplayObject
 		if(this._selectionBeginIndex>this.char_positions_x.length){
 			this._selectionBeginIndex=this.char_positions_x.length;
 		}	
+		if(this._selectionEndIndex<0){
+			this._selectionEndIndex=0;
+		}	
+		if(this._selectionEndIndex>this.char_positions_x.length){
+			this._selectionEndIndex=this.char_positions_x.length;
+		}	
 
 		if(this._selectionBeginIndex==this._selectionEndIndex){			
 			if(this.bgShape){
@@ -396,7 +402,7 @@ export class TextField extends DisplayObject
 		var rectangles:number[]=[];
 		if(this.char_positions_x.length!=0){
 			var len:number=(select_end>this.char_positions_x.length)?this.char_positions_x.length:select_end;
-			console.log(select_start, select_end);
+			//console.log(select_start, select_end);
 			for(var i:number=select_start; i<len; i++){
 
 				if(i==this.char_positions_x.length){
@@ -418,6 +424,7 @@ export class TextField extends DisplayObject
 					width=0;			
 					startx=x;
 				}
+				
 				width+=this.chars_width[i];
 				oldy=y;			
 				tf.font_table.initFontSize(tf.size);
@@ -1768,6 +1775,8 @@ export class TextField extends DisplayObject
 
 					this._pInvalidateBounds();
 				}
+				if(this._type==TextFieldType.INPUT)
+					this.drawSelectionGraphics();
 			}
 		}
 
@@ -2767,9 +2776,16 @@ export class TextField extends DisplayObject
 	 */
 	public replaceSelectedText(value:string):void
 	{
-		var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex-1);
-		var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+		var selectionStart:number=this._selectionBeginIndex;
+		var selectionEnd:number=this._selectionEndIndex;
+		if(selectionEnd<selectionStart){
+			selectionStart=this._selectionEndIndex;
+			selectionEnd=this._selectionBeginIndex;
+		}
+		var textBeforeCursor:string=this._text.slice(0, selectionStart-1);
+		var textAfterCursor:string=this._text.slice(selectionEnd, this._text.length);
 		this.text = textBeforeCursor + value + textAfterCursor;
+		this._selectionBeginIndex=selectionStart;
 		this._selectionEndIndex=this._selectionBeginIndex+value.length;
 	}
 
@@ -3098,6 +3114,9 @@ export class TextField extends DisplayObject
 			return;
 		}
 		if(deleteMode=="Backspace"){
+			if(this._selectionBeginIndex==0){
+				return;
+			}
 			var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex-1);
 			var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
 			this.text = textBeforeCursor + textAfterCursor;
@@ -3116,6 +3135,11 @@ export class TextField extends DisplayObject
 	public addChar(char:string, isShift:boolean=false, isCTRL:boolean=false, isAlt:boolean=false){
 
 		var oldText=this._text;
+		if(this._selectionEndIndex<this._selectionBeginIndex){
+			var tmpStart:number=this._selectionEndIndex;
+			this._selectionEndIndex=this._selectionBeginIndex;
+			this._selectionBeginIndex=tmpStart;
+		}
 		//console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
 		// todo: correctly implement text-cursor, and delete / add from its position
 		if(char=="Backspace" || char=="Delete"){

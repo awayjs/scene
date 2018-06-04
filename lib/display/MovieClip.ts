@@ -123,6 +123,8 @@ export class MovieClip extends Sprite
 
 	public getMouseCursor():string
 	{
+		if(this.name=="scene")
+			return "initial";
 		if(this.useHandCursor && (this.mouseListenerCount>0)){
 			return this.cursorType;
 		}
