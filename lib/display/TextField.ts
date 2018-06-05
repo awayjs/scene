@@ -240,7 +240,7 @@ export class TextField extends DisplayObject
 	{
 	}
 	
-	public setFocus(value:boolean, fromMouseDown:boolean=false){
+	public setFocus(value:boolean, fromMouseDown:boolean=false, sendSoftKeyEvent:boolean=true){
 		
 		if(this._isInFocus==value){
 			return;
@@ -249,7 +249,7 @@ export class TextField extends DisplayObject
 		this.enableInput(value);
 
 		// check if a adapter exists
-		if(this.adapter != this){
+		if(value && sendSoftKeyEvent && this.adapter != this){
 			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
 			(<any>this.adapter).selectTextField(fromMouseDown);
 		}
@@ -552,8 +552,8 @@ export class TextField extends DisplayObject
 		*/
 
 
-		this._pBoxBounds.x = 0;
-		this._pBoxBounds.y = 0;
+		this._pBoxBounds.x = this.textOffsetX;
+		this._pBoxBounds.y = this.textOffsetY;
 		this._pBoxBounds.width = this._width;
 		this._pBoxBounds.height = this._height;
 	}
@@ -1136,8 +1136,29 @@ export class TextField extends DisplayObject
             value=value.replace("A-Z", "");
         }
         if (this._restrictInternal == "" && value!="") {
-            console.log("WARNING: Unsupported set of restriction chars in TextField.restrict");
-		}
+			var checkForRange=value.split("-");
+			var foundValidRange:boolean=false;
+			if(checkForRange.length==2){
+				var startInt:number=parseInt(checkForRange[0]);
+				var endInt:number=parseInt(checkForRange[1]);
+				if(startInt!=null && endInt!=null ){
+					foundValidRange=true;
+					var start:number=startInt;
+					var end:number=endInt;
+					if(start>end){
+						start=endInt;
+						end=startInt;
+					}
+					for(var i:number=start; i<=end; i++){
+						this._restrictInternal+=i.toString();
+					}
+
+				}
+			}
+			if(!foundValidRange){
+				console.log("WARNING: Unsupported set of restriction chars in TextField.restrict");
+			}
+        }
 		this._restrictInternal+=value;
 	};
 
@@ -3135,6 +3156,12 @@ export class TextField extends DisplayObject
 	public addChar(char:string, isShift:boolean=false, isCTRL:boolean=false, isAlt:boolean=false){
 
 		var oldText=this._text;
+		if(!this._selectionBeginIndex){
+			this._selectionBeginIndex=0;
+		}
+		if(!this._selectionEndIndex){
+			this._selectionEndIndex=0;
+		}
 		if(this._selectionEndIndex<this._selectionBeginIndex){
 			var tmpStart:number=this._selectionEndIndex;
 			this._selectionEndIndex=this._selectionBeginIndex;
@@ -3191,6 +3218,19 @@ export class TextField extends DisplayObject
 		}
 		
 		else if (char.length==1){
+			if(this._selectionBeginIndex!=this._selectionEndIndex){
+				var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
+				var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+				if(this.maxChars>0 && (textBeforeCursor.length+textAfterCursor.length+char.length)>this.maxChars){
+					var maxNewChars:number=this.maxChars-textBeforeCursor.length+textAfterCursor.length;
+					if(maxNewChars>0){
+						char=char.slice(0, maxNewChars);
+					}
+				}
+				this.text = textBeforeCursor + char + textAfterCursor;
+				this._selectionBeginIndex+=1;
+				this._selectionEndIndex=this._selectionBeginIndex;
+			}
 			if(this.maxChars>0 && this._text.length>=this.maxChars){
 
 			}

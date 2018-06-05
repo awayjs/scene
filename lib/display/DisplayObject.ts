@@ -278,7 +278,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		this._isInFocus=value;
 	}
-	public setFocus(value:boolean, fromMouseDown:boolean=false){
+	public setFocus(value:boolean, fromMouseDown:boolean=false, sendSoftKeyEvent:boolean=true ){
 		
 		this._isInFocus=value;
 	}
