@@ -2069,7 +2069,7 @@ export class TextField extends DisplayObject
 			this.lines_width[this.lines_width.length] = 0;
 			this.lines_numSpacesPerline[this.lines_numSpacesPerline.length] = 0;
 			var lineHeightCnt:number=0;
-			this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt++];
+			this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt];
 
 			var line_width: number = 0;
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
@@ -2111,7 +2111,7 @@ export class TextField extends DisplayObject
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] = word_width;
 							this.lines_numSpacesPerline[linecnt] = 0;
-							this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt++];
+							this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt];
 							indent = format.indent;
 						}
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
@@ -2122,6 +2122,7 @@ export class TextField extends DisplayObject
 				}
 				//}
 			}
+			lineHeightCnt++;
 			linecnt++;
 		}
 		var offsetx: number = this.textOffsetX;

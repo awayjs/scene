@@ -62,6 +62,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		this._descent=0;
 		this._usesCurves=false;
 		this._glyphIdxToChar={};
+		this._whitespace_width=0;
 
 		if(opentype_font){
 			this._opentype_font=opentype_font;
