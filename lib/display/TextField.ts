@@ -266,6 +266,7 @@ export class TextField extends DisplayObject
 			}, 500);
 		}
 		else{
+			this._glyphsDirty=true;
 			window.clearInterval(this.cursorIntervalID)
 		}
 		if(this.cursorShape)
