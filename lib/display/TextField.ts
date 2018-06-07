@@ -1836,7 +1836,7 @@ export class TextField extends DisplayObject
 
 	public reset(){
 		super.reset();
-		console.log("reset textfield:", this.name);
+		//console.log("reset textfield:", this.name);
 		if(this.name && typeof this.name !== "number"){
 			// if the textfield has a valid name, it might have been changed by scripts. 
 			// in that case we want to reset it to its original state
