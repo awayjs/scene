@@ -203,6 +203,9 @@ export class TextField extends DisplayObject
 	private char_positions_x:number[] = [];
 	private char_positions_y:number[] = [];
 
+	// keeping track of the original textfield that was used for cloning this one.
+	public sourceTextField:TextField=null;
+
 	public getMouseCursor():string
 	{
 		// check if any parent is a button, otherwise return the cursor type set for this text
@@ -1663,6 +1666,7 @@ export class TextField extends DisplayObject
 		this._border=false;
 		this._borderColor=0x000000;
 		this.html=false;
+		this.maxChars=0;
 
 
 
@@ -1830,6 +1834,21 @@ export class TextField extends DisplayObject
 		this._glyphsDirty=false;
 	}
 
+	public reset(){
+		super.reset();
+		console.log("reset textfield:", this.name);
+		if(this.name && typeof this.name !== "number"){
+			// if the textfield has a valid name, it might have been changed by scripts. 
+			// in that case we want to reset it to its original state
+			if(this.sourceTextField){
+				this.sourceTextField.copyTo(this);
+			}
+		}
+		/*if(this.adapter != this){
+			(<any>this.adapter).syncTextFieldValue();
+		}*/
+
+	}
 
 	private buildParagraphs() {
 		var thisText:string=this._text.toString();
@@ -3288,10 +3307,10 @@ export class TextField extends DisplayObject
 	}
 
 
+
 	public copyTo(newInstance:TextField):void
 	{
 		super.copyTo(newInstance);
-
 		newInstance.width = this._width;
 		newInstance.height = this._height;
 		if(this._textFormat)
@@ -3310,6 +3329,7 @@ export class TextField extends DisplayObject
 		newInstance.wordWrap = this.wordWrap;
 		newInstance.maxChars = this.maxChars;
 		newInstance.html = this.html;
+		newInstance.sourceTextField=this;
 		newInstance["fileurl"] = this["fileurl"];
 
 		newInstance.text = this._text;
