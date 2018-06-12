@@ -6,7 +6,7 @@ import {TraverserBase, IAnimationSet, IRenderable, IMaterial, IEntity, ITexture,
 
 import {ImageTextureCube} from "@awayjs/materials";
 
-import {BoundsType} from "../bounds/BoundsType";
+import {BoundingVolumeType} from "../bounds/BoundingVolumeType";
 
 import {DisplayObject} from "./DisplayObject";
 
@@ -152,9 +152,6 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
         } else {
             this._style.color = Number(imageColor);
         }
-
-		//default bounds type
-		this._boundsType = BoundsType.NULL;
 	}
 
 	public get assetType():string
@@ -232,6 +229,10 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 
 	}
 
+	protected _getDefaultBoundingVolume():BoundingVolumeType
+	{
+		return BoundingVolumeType.NULL;
+	}
 }
 
 import {Matrix3D, ProjectionBase} from "@awayjs/core";

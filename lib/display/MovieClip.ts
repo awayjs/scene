@@ -1,4 +1,4 @@
-import {AssetEvent,IAsset, Matrix3D, EventBase, IAssetAdapter} from "@awayjs/core";
+import {AssetEvent,IAsset, Matrix3D, EventBase, IAssetAdapter, Box} from "@awayjs/core";
 import {Graphics} from "@awayjs/graphics";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {Timeline} from "../base/Timeline";
@@ -97,21 +97,26 @@ export class MovieClip extends Sprite
 		}
 	}
 
-	public _pUpdateBoxBounds():void
+		/**
+	 * //TODO
+	 *
+	 * @protected
+	 */
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
 	{
-		if(this._hitArea){
-			this._boxBoundsInvalid = false;
+		if(this._hitArea) {
 			//this._hitArea.
 
 			/*var new_matrix:Matrix3D = this._hitArea.transform.matrix3D;
 			this.transform.matrix3D.copyTo(new_matrix);
 
 			this._hitArea.transform.invalidateComponents();*/
-			this._pBoxBounds = this._hitArea.getBox();
-			return;
+			return this._hitArea._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);	
 		}
-		super._pUpdateBoxBounds();
+
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
 	}
+	
 	public get hitArea():DisplayObject
 	{
 		return this._hitArea;

@@ -1,4 +1,4 @@
-import {Box, Point, ArgumentError, RangeError} from "@awayjs/core";
+import {Box, Point, ArgumentError, RangeError, Matrix3D} from "@awayjs/core";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 
@@ -108,7 +108,7 @@ export class DisplayObjectContainer extends DisplayObject
 
 		this._mouseChildren = value;
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MOUSE_ENABLED);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.MOUSE_ENABLED);
 	}
 
 	/**
@@ -584,51 +584,37 @@ export class DisplayObjectContainer extends DisplayObject
 	 *
 	 * @protected
 	 */
-	public _pUpdateBoxBounds():void
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
 	{
-		super._pUpdateBoxBounds();
-
 		var numChildren:number = this._children.length;
 
 		if (numChildren > 0) {
-			var childBox:Box;
+			var box:Box;
 			var first:boolean = true;
 			for (var i:number = 0; i < numChildren; ++i) {
 
 				// ignore bounds of childs that are masked
 				// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
 				//if(this._children[i].masks==null){
-
-				
-					childBox = this._children[i].getBox();
-
-					if (childBox.isEmpty())
-						continue;
-
-					childBox = this._children[i].getBox(this);
-
-					if (first) {
-						first = false;
-						this._pBoxBounds.copyFrom(childBox);
-					} else {
-						this._pBoxBounds = this._pBoxBounds.union(childBox, this._pBoxBounds);
-					}
+					target = this._children[i]._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
 			//	}
 			}
-		}  
+		}
+
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
 	}
 
 	/**
 	 * @protected
 	 */
-	public pInvalidateHierarchicalProperties(propDirty:number):boolean
+	public _invalidateHierarchicalProperties(propDirty:number):boolean
 	{
-		if (super.pInvalidateHierarchicalProperties(propDirty))
+		if (super._invalidateHierarchicalProperties(propDirty))
 			return true;
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i].pInvalidateHierarchicalProperties(propDirty);
+			this._children[i]._invalidateHierarchicalProperties(propDirty);
 
 		return false;
 	}
@@ -726,6 +712,6 @@ export class DisplayObjectContainer extends DisplayObject
 				this._pScene._invalidateEntity(this);
 		}
 
-		this._pInvalidateBounds();
+		this._invalidateBounds();
 	}
 }

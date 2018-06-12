@@ -5,17 +5,20 @@ import {IEntity} from "@awayjs/renderer";
 import {ElementsType} from "@awayjs/graphics";
 
 import {Sprite} from "../display/Sprite";
+import { DisplayObject } from '../display/DisplayObject';
 import {PrimitiveCubePrefab} from "../prefabs/PrimitiveCubePrefab";
 
 import {BoundingVolumeBase} from "./BoundingVolumeBase";
+import { BoundingVolumePool } from './BoundingVolumePool';
 
 /**
- * AxisAlignedBoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
+ * BoundingBox represents a bounding box volume that has its planes aligned to the local coordinate axes of the bounded object.
  * This is useful for most sprites.
  */
-export class AxisAlignedBoundingBox extends BoundingVolumeBase
+export class BoundingBox extends BoundingVolumeBase
 {
-	public _box:Box;
+	private _matrix3D:Matrix3D;
+	private _box:Box;
 	private _x:number = 0;
 	private _y:number = 0;
 	private _z:number = 0;
@@ -31,11 +34,11 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 	private _prefab:PrimitiveCubePrefab;
 
 	/**
-	 * Creates a new <code>AxisAlignedBoundingBox</code> object.
+	 * Creates a new <code>BoundingBox</code> object.
 	 */
-	constructor(entity:IEntity)
+	constructor(asset:DisplayObject, pool:BoundingVolumePool)
 	{
-		super(entity);
+		super(asset, pool);
 	}
 
 	/**
@@ -54,8 +57,11 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 	 */
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if(this._pInvalidated)
-			this._pUpdate();
+		if(this._invalid)
+			this._update();
+
+		if (this._box == null)
+			return;
 
 		for (var i:number = 0; i < numPlanes; ++i) {
 
@@ -77,12 +83,22 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 
 	public rayIntersection(position:Vector3D, direction:Vector3D, targetNormal:Vector3D):number
 	{
-		if(this._pInvalidated)
-			this._pUpdate();
+		if(this._invalid)
+			this._update();
+
+		if (this._box == null)
+			return -1;
 
 		return this._box.rayIntersection(position, direction, targetNormal);
 	}
 
+	public getBox():Box
+	{
+		if(this._invalid)
+			this._update();
+
+		return this._box;
+	}
 
 
 	public classifyToPlane(plane:Plane3D):number
@@ -106,12 +122,27 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 		return centerDistance > boundOffset? PlaneClassification.FRONT : centerDistance < -boundOffset? PlaneClassification.BACK : PlaneClassification.INTERSECT;
 	}
 
-	public _pUpdate():void
+	public _update():void
 	{
-		super._pUpdate();
+		super._update();
 
-		this._box = this._entity.getBox();
-		var matrix:Matrix3D = this._entity.transform.concatenatedMatrix3D;
+		if (this._targetCoordinateSpace) {
+			if (this._matrix3D == null)
+				this._matrix3D = new Matrix3D();
+			else
+				this._matrix3D.identity();
+			if (this._targetCoordinateSpace.parent)
+				this._matrix3D.copyFrom(this._targetCoordinateSpace.parent.transform.inverseConcatenatedMatrix3D);
+			this._matrix3D.prepend(this._boundingObject.transform.concatenatedMatrix3D);
+			this._box = this._boundingObject._getBoxBoundsInternal(this._matrix3D, this._strokeFlag, this._box);
+		} else {
+			this._box = this._boundingObject._getBoxBoundsInternal(null, this._strokeFlag, this._box);
+		}
+
+		if (this._box == null)
+			return;
+
+		var matrix:Matrix3D = this._boundingObject.transform.concatenatedMatrix3D;
 		var hx:number = this._box.width/2;
 		var hy:number = this._box.height/2;
 		var hz:number = this._box.depth/2;
@@ -137,9 +168,9 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 			this._prefab.height = this._box.height;
 			this._prefab.depth = this._box.depth;
 
-			this._pBoundsPrimitive.transform.matrix3D = matrix;
+			this._boundsPrimitive.transform.matrix3D = matrix;
 
-			this._pBoundsPrimitive.registrationPoint = new Vector3D(-cx*this._pBoundsPrimitive.transform.scale.x, -cy*this._pBoundsPrimitive.transform.scale.y, -cz*this._pBoundsPrimitive.transform.scale.z);
+			this._boundsPrimitive.registrationPoint = new Vector3D(-cx*this._boundsPrimitive.transform.scale.x, -cy*this._boundsPrimitive.transform.scale.y, -cz*this._boundsPrimitive.transform.scale.z);
 		}
 
 		this._width = this._halfExtentsX*2;
@@ -151,7 +182,7 @@ export class AxisAlignedBoundingBox extends BoundingVolumeBase
 		this._z = this._centerZ - this._halfExtentsZ;
 	}
 
-	public _pCreateBoundsPrimitive():Sprite
+	public _createBoundsPrimitive():Sprite
 	{
 		this._prefab = new PrimitiveCubePrefab(null, ElementsType.LINE);
 

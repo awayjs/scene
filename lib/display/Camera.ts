@@ -3,7 +3,7 @@ import {Matrix3D, Plane3D, Vector3D, ProjectionEvent, ProjectionBase, Perspectiv
 import {IEntity, TraverserBase} from "@awayjs/renderer";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
-import {BoundsType} from "../bounds/BoundsType";
+import {BoundingVolumeType} from "../bounds/BoundingVolumeType";
 import {CameraEvent} from "../events/CameraEvent";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
@@ -26,9 +26,6 @@ export class Camera extends DisplayObjectContainer implements IEntity
 		this._projection.transform = this._transform;
 
 		this.z = -1000;
-
-		//default bounds type
-		this._boundsType = BoundsType.NULL;
 	}
 
 	//@override
@@ -84,5 +81,10 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	public unproject(nX:number, nY:number, sZ:number, target:Vector3D = null):Vector3D
 	{
 		return this._projection.unproject(nX, nY, sZ, target);
+	}
+
+	protected _getDefaultBoundingVolume():BoundingVolumeType
+	{
+		return BoundingVolumeType.NULL;
 	}
 }

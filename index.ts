@@ -9,11 +9,10 @@ export {IBitmapDrawable} from "./lib/base/IBitmapDrawable";
 export {OrientationMode} from "./lib/base/OrientationMode";
 export {Timeline} from "./lib/base/Timeline";
 
-export {AxisAlignedBoundingBox} from "./lib/bounds/AxisAlignedBoundingBox";
-export {AxisAlignedBoundingBox2D} from "./lib/bounds/AxisAlignedBoundingBox2D";
+export {BoundingBox} from "./lib/bounds/BoundingBox";
 export {BoundingSphere} from "./lib/bounds/BoundingSphere";
 export {BoundingVolumeBase} from "./lib/bounds/BoundingVolumeBase";
-export {BoundsType} from "./lib/bounds/BoundsType";
+export {BoundingVolumeType} from "./lib/bounds/BoundingVolumeType";
 export {NullBounds} from "./lib/bounds/NullBounds";
 
 export {ControllerBase} from "./lib/controllers/ControllerBase";

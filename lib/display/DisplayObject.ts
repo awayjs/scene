@@ -1,4 +1,4 @@
-import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase} from "@awayjs/core";
+import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase, IAbstractionPool} from "@awayjs/core";
 
 import {BlendMode} from "@awayjs/stage";
 
@@ -6,7 +6,6 @@ import {IRenderable, IAnimator, IMaterial, Style, IEntity, TraverserBase, StyleE
 
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
-import {BoundsType} from "../bounds/BoundsType";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import {ControllerBase} from "../controllers/ControllerBase";
 import {AlignmentMode} from "../base/AlignmentMode";
@@ -16,6 +15,11 @@ import {DisplayObjectEvent} from "../events/DisplayObjectEvent";
 import {PrefabBase} from "../prefabs/PrefabBase";
 
 import {Scene} from "../Scene";
+import { BoundingVolumeBase } from "../bounds/BoundingVolumeBase";
+import { BoundingBox } from "../bounds/BoundingBox";
+import { BoundingSphere } from "../bounds/BoundingSphere";
+import { BoundingVolumePool } from '../bounds/BoundingVolumePool';
+import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -164,10 +168,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _mouseY:number;
 	private _root:DisplayObjectContainer;
 	private _bounds:Rectangle;
-	public _pBoxBounds:Box;
-	protected _boxBoundsInvalid:boolean = true;
-	public _pSphereBounds:Sphere;
-	private _sphereBoundsInvalid:boolean = true;
+	private _boundingVolumePools:Object = new Object();
+	private _boundingVolumeDict:Object = new Object();
 	private _debugVisible:boolean;
 	public _pName:string;
 
@@ -214,7 +216,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _pickingCollision:PickingCollision;
 	private _shaderPickingDetails:boolean;
 
-	public _boundsType:string;
+	private _defaultBoundingVolume:BoundingVolumeType;
 
 	public cursorType:string;
 
@@ -300,7 +302,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
         this._inheritColorTransform = value;
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
     }
 
 	/**
@@ -355,21 +357,21 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get boundsType():string
+	public get defaultBoundingVolume():BoundingVolumeType
 	{
-		return this._boundsType;
+		return this._defaultBoundingVolume;
 	}
 
-	public set boundsType(value:string)
+	public set defaultBoundingVolume(value:BoundingVolumeType)
 	{
-		if (this._boundsType == value)
+		if (this._defaultBoundingVolume == value)
 			return;
 
-		this._boundsType = value;
+		this._defaultBoundingVolume = value;
 
 		this.invalidate();
 		
-		this._pInvalidateBounds();
+		this._invalidateBounds();
 	}
 
 	/**
@@ -449,9 +451,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get depth():number
 	{
 		if (this._registrationMatrix3D)
-			return this.getBox().depth*this.scaleZ*this._registrationMatrix3D._rawData[10];
+			return this.getBoxBounds().depth*this.scaleZ*this._registrationMatrix3D._rawData[10];
 
-		return this.getBox().depth*this.scaleZ;
+		return this.getBoxBounds().depth*this.scaleZ;
 	}
 
 	public set depth(val:number)
@@ -461,7 +463,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._depth = val;
 
-		this._setScaleZ(val/this.getBox().depth);
+		this._setScaleZ(val/this.getBoxBounds().depth);
 	}
 
 	/**
@@ -589,9 +591,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get height():number
 	{
 		if (this._registrationMatrix3D)
-			return this.getBox().height*this.scaleY*this._registrationMatrix3D._rawData[5];
+			return this.getBoxBounds().height*this.scaleY*this._registrationMatrix3D._rawData[5];
 
-		return this.getBox().height*this.scaleY;
+		return this.getBoxBounds().height*this.scaleY;
 	}
 
 	public set height(val:number)
@@ -599,7 +601,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._height == val)
 			return;
 
-		var boxHeight:number = this.getBox().height;
+		var boxHeight:number = this.getBoxBounds().height;
 
 		//return if box is empty ie setting height for no content is impossible
 		if (!boxHeight)
@@ -862,7 +864,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._registrationMatrix3D.invalidatePosition();
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 	/**
@@ -898,7 +900,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._registrationMatrix3D._rawData[10] = value.z;
 		}
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 
@@ -1397,7 +1399,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitVisibility = value;
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.VISIBLE);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.VISIBLE);
 	}
 
 	public get masks():Array<DisplayObject>
@@ -1419,7 +1421,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				value[i].maskMode = true;
 		}
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASKS);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.MASKS);
 	}
 
 	/**
@@ -1435,9 +1437,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public get width():number
 	{
 		if (this._registrationMatrix3D)
-			return this.getBox().width*this.scaleX*this._registrationMatrix3D._rawData[0];
+			return this.getBoxBounds().width*this.scaleX*this._registrationMatrix3D._rawData[0];
 
-		return this.getBox().width*this.scaleX;
+		return this.getBoxBounds().width*this.scaleX;
 	}
 
 	public set width(val:number)
@@ -1445,7 +1447,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._width == val)
 			return;
 		
-		var boxWidth:number = this.getBox().width;
+		var boxWidth:number = this.getBoxBounds().width;
 
 		//return if box is empty ie setting width for no content is impossible
 		if (!boxWidth)
@@ -1568,8 +1570,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._transform.addEventListener(TransformEvent.UPDATE_CONCATENATED_MATRIX3D, (event:TransformEvent) => this._onUpdateConcatenatedMatrix3D(event));
 		this._transform.addEventListener(TransformEvent.INVALIDATE_COLOR_TRANSFORM, (event:TransformEvent) => this._onInvalidateColorTransform(event));
 
+		//bounding volume dictonary
+
 		//default bounds type
-		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
+		this._defaultBoundingVolume = this._getDefaultBoundingVolume();
 	}
 
 
@@ -1610,7 +1614,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public copyTo(displayObject:DisplayObject):void
 	{
 		displayObject.isPartition = this._iIsPartition;
-		displayObject.boundsType = this._boundsType;
+		displayObject.defaultBoundingVolume = this._defaultBoundingVolume;
 
 		if (this._registrationMatrix3D)
 			displayObject._registrationMatrix3D = this._registrationMatrix3D.clone();
@@ -1715,58 +1719,32 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._bounds; //TODO
 	}
 
-	public getBox(targetCoordinateSpace:DisplayObject = null):Box
+	public getBoundingVolume(targetCoordinateSpace:DisplayObject = null, boundingVolumeType:BoundingVolumeType = null):BoundingVolumeBase
+	{
+		if (boundingVolumeType == null)
+			boundingVolumeType = this._defaultBoundingVolume;
+
+			
+		var pool:BoundingVolumePool = (this._boundingVolumePools[boundingVolumeType] || (this._boundingVolumePools[boundingVolumeType] = new BoundingVolumePool(this, boundingVolumeType)));
+	
+		return <BoundingVolumeBase> pool.getAbstraction(targetCoordinateSpace);
+	}
+
+	public getBoxBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false):Box
 	{
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
 
-		//TODO targetCoordinateSpace
-		if (this._boxBoundsInvalid) {
-			this._pUpdateBoxBounds();
+		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? BoundingVolumeType.BOX_BOUNDS : BoundingVolumeType.BOX)).getBox();
+	}
 
-			//scale updates if absolute dimensions are detected
-			if (this._width != null)
-				this._setScaleX(this._width/this._pBoxBounds.width);
+	public getSphereBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false):Sphere
+	{
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
 
-			if (this._height != null)
-				this._setScaleY(this._height/this._pBoxBounds.height);
-
-			if (this._depth != null)
-				this._setScaleZ(this._depth/this._pBoxBounds.depth);
+			return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? BoundingVolumeType.SPHERE_BOUNDS : BoundingVolumeType.SPHERE)).getSphere();
 		}
-
-		if (targetCoordinateSpace == null || targetCoordinateSpace == this)
-			return this._pBoxBounds;
-
-		if (targetCoordinateSpace == this._pParent) {
-			if (this._registrationMatrix3D) {
-				if (this._tempTransform == null)
-					this._tempTransform = new Matrix3D()
-
-				this._tempTransform.copyFrom(this._transform.matrix3D);
-				this._tempTransform.prepend(this._registrationMatrix3D);
-				if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
-					this._tempTransform.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
-
-				return this._tempTransform.transformBox(this._pBoxBounds);
-			}
-
-			return this._transform.matrix3D.transformBox(this._pBoxBounds);
-
-		} else
-			return targetCoordinateSpace.transform.inverseConcatenatedMatrix3D.transformBox(this.transform.concatenatedMatrix3D.transformBox(this._pBoxBounds));
-	}
-
-	public getSphere(targetCoordinateSpace:DisplayObject = null):Sphere
-	{
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-
-		if (this._sphereBoundsInvalid)
-			this._pUpdateSphereBounds();
-
-		return this._pSphereBounds;
-	}
 
 	/**
 	 * Converts the <code>point</code> object from the Scene(global) coordinates
@@ -1835,9 +1813,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public hitTestObject(obj:DisplayObject):boolean
 	{
-		var objBox:Box = obj.getBox(this.scene);
+		var objBox:Box = obj.getBoxBounds(this.scene);
 		if(!objBox) return false;
-		var box:Box = this.getBox(this.scene);
+		var box:Box = this.getBoxBounds(this.scene);
 		if(!box) return false;
 
 		if(objBox.x>(box.x+box.width)){
@@ -1886,7 +1864,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.globalToLocal(this._tempPoint, this._tempPoint);
 
 		//early out for box test
-		if(!this.getBox().contains(this._tempPoint.x, this._tempPoint.y, 0))
+		if(!this.getBoxBounds().contains(this._tempPoint.x, this._tempPoint.y, 0))
 			return false;
 
 		if (this._explicitMasks) {
@@ -2007,7 +1985,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._registrationMatrix3D._rawData[13] -= dy/this._transform.scale.y;
 		this._registrationMatrix3D._rawData[14] -= dz/this._transform.scale.z;
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 	public reset():void
@@ -2095,10 +2073,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		else
 			this._iSetScene(null, null);
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.ALL);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.ALL);
 	}
 
-	public pInvalidateHierarchicalProperties(propDirty:number):boolean
+	public _invalidateHierarchicalProperties(propDirty:number):boolean
 	{
 		var newPropDirty:number = (this._hierarchicalPropsDirty ^ propDirty) & propDirty;
 		if (!newPropDirty)
@@ -2111,11 +2089,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			
 			this._scenePositionDirty = true;
 
-			if (this.isEntity)
-				this.invalidatePartitionBounds();
-
-			if (this._pParent)
-				this._pParent._pInvalidateBounds();
+			this._invalidateBounds();
 
 			if (this._listenToSceneTransformChanged)
 				this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
@@ -2274,7 +2248,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._matrix3DDirty = true;
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 	/**
@@ -2282,40 +2256,38 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	private _onInvalidateColorTransform(event:TransformEvent):void
 	{
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 	}
 
-	public _pInvalidateBounds():void
+	public _invalidateBounds():void
 	{
-		if (this._boxBoundsInvalid && this._sphereBoundsInvalid)
-			return;
-
-		this._boxBoundsInvalid = true;
-		this._sphereBoundsInvalid = true;
-
 		if (this.isEntity)
 			this.invalidatePartitionBounds();
 
 		if (this._pParent)
-			this._pParent._pInvalidateBounds();
+			this._pParent._invalidateBounds();
 	}
 
-	public _pUpdateBoxBounds():void
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
 	{
-		this._boxBoundsInvalid = false;
+		if (matrix3D != null && target != null) {
+			//scale updates if absolute dimensions are detected
+			if (this._width != null)
+				this._setScaleX(this._width/target.width);
 
-		if (this._pBoxBounds == null)
-			this._pBoxBounds = new Box();
+			if (this._height != null)
+				this._setScaleY(this._height/target.height);
 
-		this._pBoxBounds.setEmpty();
+			if (this._depth != null)
+				this._setScaleZ(this._depth/target.depth);
+		}
+
+		return target;
 	}
 
-	public _pUpdateSphereBounds():void
+	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
 	{
-		this._sphereBoundsInvalid = false;
-
-		if (this._pSphereBounds == null)
-			this._pSphereBounds = new Sphere();
+		return target;
 	}
 
 	private queueDispatch(event:EventBase):void
@@ -2421,7 +2393,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this.maskMode)
 			this.mouseEnabled = false;
 
-		this.pInvalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
+		this._invalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
 
 	public clear():void
@@ -2457,5 +2429,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _onInvalidateProperties(event:StyleEvent = null):void
 	{
 		this.invalidateMaterial();
+	}
+
+	protected _getDefaultBoundingVolume():BoundingVolumeType
+	{
+		return BoundingVolumeType.BOX;
 	}
 }

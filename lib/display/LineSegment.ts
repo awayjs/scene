@@ -1,8 +1,6 @@
-﻿import {Vector3D} from "@awayjs/core";
+﻿import {Vector3D, Matrix3D, Box, Sphere} from "@awayjs/core";
 
 import {TraverserBase, IRenderable, RenderableEvent, IMaterial} from "@awayjs/renderer";
-
-import {BoundsType} from "../bounds/BoundsType";
 
 import {DisplayObject} from "./DisplayObject";
 
@@ -99,40 +97,57 @@ export class LineSegment extends DisplayObject implements IRenderable
 		this._startPosition = startPosition;
 		this._endPosition = endPosition;
 		this._halfThickness = thickness*0.5;
-
-		//default bounds type
-		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
 
-	/**
-	 * @protected
-	 */
-	public _pUpdateBoxBounds():void
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
 	{
-		super._pUpdateBoxBounds();
+		if (target == null)
+			target = cache || new Box();
 
-		this._pBoxBounds.x = Math.min(this._startPosition.x, this._endPosition.x);
-		this._pBoxBounds.y = Math.min(this._startPosition.y, this._endPosition.y);
-		this._pBoxBounds.z = Math.min(this._startPosition.z, this._endPosition.z);
-		this._pBoxBounds.width = Math.abs(this._startPosition.x - this._endPosition.x);
-		this._pBoxBounds.height = Math.abs(this._startPosition.y - this._endPosition.y);
-		this._pBoxBounds.depth = Math.abs(this._startPosition.z - this._endPosition.z);
+		var box:Box = new Box(Math.min(this._startPosition.x, this._endPosition.x), 
+							Math.min(this._startPosition.y, this._endPosition.y),
+							Math.min(this._startPosition.z, this._endPosition.z),
+							Math.abs(this._startPosition.x - this._endPosition.x),
+							Math.abs(this._startPosition.y - this._endPosition.y),
+							Math.abs(this._startPosition.z - this._endPosition.z));
+
+		if (matrix3D)
+			box = matrix3D.transformBox(box);
+
+		if (target == null) {
+			target = cache || new Box();
+			target.copyFrom(box);
+		} else {
+			target = target.union(box, target);
+		}
+
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
 	}
 
-	public _pUpdateSphereBounds():void
+	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
 	{
-		super._pUpdateSphereBounds();
-
-		this._pUpdateBoxBounds();
-
+		if (target == null)
+			target = cache || new Sphere();
+		
 		var halfWidth:number = (this._endPosition.x - this._startPosition.x)/2;
 		var halfHeight:number = (this._endPosition.y - this._startPosition.y)/2;
 		var halfDepth:number = (this._endPosition.z - this._startPosition.z)/2;
-		this._pSphereBounds.x = this._startPosition.x + halfWidth;
-		this._pSphereBounds.y = this._startPosition.y + halfHeight;
-		this._pSphereBounds.z = this._startPosition.z + halfDepth;
-		this._pSphereBounds.radius = Math.sqrt(halfWidth*halfWidth + halfHeight*halfHeight + halfDepth*halfDepth);
+
+		var sphere:Sphere = new Sphere(this._startPosition.x + halfWidth, 
+								this._startPosition.y + halfHeight,
+								this._startPosition.z + halfDepth,
+								Math.sqrt(halfWidth*halfWidth + halfHeight*halfHeight + halfDepth*halfDepth));
+		// if (matrix3D) {
+		// 	matrix3D.transformSphere(sphere, target);
+		// } else {
+			target.x = sphere.x;
+			target.y = sphere.y;
+			target.z = sphere.z;
+			target.radius = sphere.radius;	
+		// }
+		
+		return target;
 	}
 
 	/**

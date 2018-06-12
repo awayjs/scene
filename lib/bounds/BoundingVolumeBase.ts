@@ -1,39 +1,61 @@
-import {Plane3D, Vector3D, AbstractMethodError} from "@awayjs/core";
+import {Plane3D, Vector3D, AbstractMethodError, AbstractionBase, AssetEvent} from "@awayjs/core";
 
 import {IEntity} from "@awayjs/renderer";
 
 import {DisplayObject} from "../display/DisplayObject";
 import {Sprite} from "../display/Sprite";
+import { DisplayObjectEvent } from '../events/DisplayObjectEvent';
 
-export class BoundingVolumeBase
+import { BoundingVolumePool } from './BoundingVolumePool';
+
+export class BoundingVolumeBase extends AbstractionBase
 {
-	public _entity:IEntity;
-	public _pBoundsPrimitive:Sprite;
-	public _pInvalidated:boolean = true;
+	private _onInvalidatePartitionBoundsDelegate:(event:DisplayObjectEvent) => void;
 
-	constructor(entity:IEntity)
+	protected _targetCoordinateSpace:DisplayObject;
+	protected _boundingObject:DisplayObject;
+	protected _strokeFlag:boolean;
+	protected _boundsPrimitive:Sprite;
+
+	constructor(asset:DisplayObject, pool:BoundingVolumePool)
 	{
-		this._entity = entity;
+		super(asset, pool);
+
+		this._targetCoordinateSpace = asset;
+		this._boundingObject = pool.boundingObject;
+		this._strokeFlag = pool.strokeFlag;
+
+		this._onInvalidatePartitionBoundsDelegate = (event:DisplayObjectEvent) => this._onInvalidatePartitionBounds(event);
+
+		this._boundingObject.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
 	}
 
-	public dispose():void
+	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
 	{
-		this._entity = null;
-		this._pBoundsPrimitive = null;
+		this._invalid = true;
+	}
+	
+	public onClear(event:AssetEvent):void
+	{
+		super.onClear(event);
+
+		this._targetCoordinateSpace = null;
+		this._boundingObject = null;
+		this._boundsPrimitive = null;
 	}
 
 	public get boundsPrimitive():DisplayObject
 	{
-		if (this._pBoundsPrimitive == null) {
-			this._pBoundsPrimitive = this._pCreateBoundsPrimitive();
+		if (this._boundsPrimitive == null) {
+			this._boundsPrimitive = this._createBoundsPrimitive();
 
-			this._pInvalidated = true;
+			this._invalid = true;
 		}
 
-		if(this._pInvalidated)
-			this._pUpdate();
+		if(this._invalid)
+			this._update();
 
-		return this._pBoundsPrimitive;
+		return this._boundsPrimitive;
 	}
 
 	public nullify():void
@@ -61,17 +83,12 @@ export class BoundingVolumeBase
 		throw new AbstractMethodError();
 	}
 
-	public _pUpdate():void
+	public _update():void
 	{
-		this._pInvalidated = false;
+		this._invalid = false;
 	}
 
-	public invalidate():void
-	{
-		this._pInvalidated = true;
-	}
-
-	public _pCreateBoundsPrimitive():Sprite
+	public _createBoundsPrimitive():Sprite
 	{
 		throw new AbstractMethodError();
 	}

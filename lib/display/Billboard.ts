@@ -1,10 +1,8 @@
-import {Rectangle, Matrix} from "@awayjs/core";
+import {Rectangle, Matrix, Matrix3D, Box} from "@awayjs/core";
 
 import {ImageSampler, Image2D, ImageUtils} from "@awayjs/stage";
 
 import {TraverserBase, IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent} from "@awayjs/renderer";
-
-import {BoundsType} from "../bounds/BoundsType";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import {DisplayObject} from "./DisplayObject";
@@ -55,6 +53,7 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 	private _billboardWidth:number;
 	private _billboardHeight:number;
 	private _billboardRect:Rectangle;
+	private _billboardBox:Box;
 
 	private _onInvalidateTextureDelegate:(event:MaterialEvent) => void;
 
@@ -129,24 +128,29 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		this.material = material;
 
 		this._updateDimensions();
-
-		//default bounds type
-		this._boundsType = BoundsType.AXIS_ALIGNED_BOX;
 	}
 
 	/**
 	 * @protected
 	 */
-	public _pUpdateBoxBounds():void
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
 	{
-		super._pUpdateBoxBounds();
+		var box:Box;
 
-		this._pBoxBounds.x = 0;
-		this._pBoxBounds.y = 0;
-		this._pBoxBounds.z = 0;
-		this._pBoxBounds.width = this._billboardRect.width;
-		this._pBoxBounds.height = this._billboardRect.height;
-		this._pBoxBounds.depth = 0;
+		if (matrix3D) {
+			box = matrix3D.transformBox(this._billboardBox);
+		} else {
+			box = this._billboardBox;
+		}
+		
+		if (target == null) {
+			target = cache || new Box();
+			target.copyFrom(box);
+		} else {
+			target = target.union(box, target);
+		}
+
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
 	}
 
 	
@@ -187,7 +191,9 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 			this._billboardRect = new Rectangle(0, 0, 1, 1);
 		}
 
-		this._pInvalidateBounds();
+		this._billboardBox = new Box(this._billboardRect.x, this._billboardRect.y, 0, this._billboardRect.width, this._billboardRect.height, 0);
+
+		this._invalidateBounds();
 
 		this.invalidateElements();
 

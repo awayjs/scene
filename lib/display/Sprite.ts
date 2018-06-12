@@ -1,10 +1,11 @@
-﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D} from "@awayjs/core";
+﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D, Sphere} from "@awayjs/core";
 
 import {TraverserBase, IAnimator, IMaterial, Style, IRenderable} from "@awayjs/renderer";
 
 import {Graphics, Shape} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
+import { DisplayObject } from './DisplayObject';
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -185,21 +186,17 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @protected
 	 */
-	public _pUpdateBoxBounds():void
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
 	{
-		super._pUpdateBoxBounds();
+		target = this._graphics.getBoxBounds(matrix3D, strokeFlag, cache, target);
 
-		var graphicsBox:Box=this._graphics.getBoxBounds();
-		if(!graphicsBox.isEmpty())
-			this._pBoxBounds.union(this._graphics.getBoxBounds(), this._pBoxBounds);
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
 	}
 
 
-	public _pUpdateSphereBounds():void
+	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
 	{
-		super._pUpdateSphereBounds();
-
-		var box:Box = this.getBox();
+		var box:Box = this.getBoxBounds();
 
 		if (!this._center)
 			this._center = new Vector3D();
@@ -208,7 +205,7 @@ export class Sprite extends DisplayObjectContainer
 		this._center.y = box.y + box.height/2;
 		this._center.z = box.z + box.depth/2;
 
-		this._pSphereBounds = this._graphics.getSphereBounds(this._center, this._pSphereBounds);
+		return this._graphics.getSphereBounds(this._center, matrix3D, strokeFlag, cache, target);
 	}
 
 	protected _isEntityInternal():boolean

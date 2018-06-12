@@ -1,28 +1,20 @@
 import {PlaneClassification, Plane3D} from "@awayjs/core";
 
 import {BoundingVolumeBase} from "../bounds/BoundingVolumeBase";
+import { DisplayObject } from '../display/DisplayObject';
+import { BoundingVolumePool } from './BoundingVolumePool';
 
 export class NullBounds extends BoundingVolumeBase
 {
-	private _alwaysIn:boolean;
-
-	constructor(alwaysIn:boolean = true)
+	constructor(asset:DisplayObject, pool:BoundingVolumePool)
 	{
-		super(null);
-
-		this._alwaysIn = alwaysIn;
-	}
-
-	//@override
-	public clone():BoundingVolumeBase
-	{
-		return new NullBounds(this._alwaysIn);
+		super(asset, pool);
 	}
 
 	//@override
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		return this._alwaysIn;
+		return true;
 	}
 
 	public classifyToPlane(plane:Plane3D):number

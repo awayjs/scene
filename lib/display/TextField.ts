@@ -536,14 +536,12 @@ export class TextField extends DisplayObject
 		this._positionsDirty = true;
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 	}
 
 
-	public _pUpdateBoxBounds():void
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
 	{
-		super._pUpdateBoxBounds();
-
 		this.reConstruct();
 /*
 		if(BuildMode.mode==BuildMode.AVM1 && !this._selectable){
@@ -555,42 +553,24 @@ export class TextField extends DisplayObject
 		}
 		*/
 
+		if (target == null)
+			target = cache || new Box();
 
-		this._pBoxBounds.x = this.textOffsetX;
-		this._pBoxBounds.y = this.textOffsetY;
-		this._pBoxBounds.width = this._width;
-		this._pBoxBounds.height = this._height;
+		var box:Box = new Box(this.textOffsetX, this.textOffsetY, 0, this._width, this._height);
+
+		if (matrix3D)
+			box = matrix3D.transformBox(box);
+
+		if (target == null) {
+			target = cache || new Box();
+			target.copyFrom(box);
+		} else {
+			target = target.union(box, target);
+		}
+
+		return target;
 	}
 
-	public getBox(targetCoordinateSpace:DisplayObject = null):Box
-	{
-		//TODO targetCoordinateSpace
-		if (this._boxBoundsInvalid)
-			this._pUpdateBoxBounds();
-
-
-		if (targetCoordinateSpace == null || targetCoordinateSpace == this)
-			return this._pBoxBounds;
-
-		if (targetCoordinateSpace == this._pParent) {
-			if (this._registrationMatrix3D) {
-				if (this._tempTransform == null)
-					this._tempTransform = new Matrix3D()
-
-				this._tempTransform.copyFrom(this._transform.matrix3D);
-				this._tempTransform.prepend(this._registrationMatrix3D);
-				if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
-					this._tempTransform.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
-
-				return this._tempTransform.transformBox(this._pBoxBounds);
-			}
-
-			return this._transform.matrix3D.transformBox(this._pBoxBounds);
-
-		} else
-			return targetCoordinateSpace.transform.inverseConcatenatedMatrix3D.transformBox(this.transform.concatenatedMatrix3D.transformBox(this._pBoxBounds));
-
-	}
 	/**
 	 *
 	 * @returns {string}
@@ -824,7 +804,7 @@ export class TextField extends DisplayObject
 
 		this._positionsDirty = true;
 
-		this._pInvalidateBounds();
+		this._invalidateBounds();
 	}
 
 	/**
@@ -881,7 +861,7 @@ export class TextField extends DisplayObject
 				this._textDirty = true;
 				//console.log("set text", value, "on" , this);
 				if (this._autoSize != TextFieldAutoSize.NONE)
-					this._pInvalidateBounds();
+					this._invalidateBounds();
 		
 			};
 		
@@ -1311,7 +1291,7 @@ export class TextField extends DisplayObject
 
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 	}
 
 	public setLabelData(labelData:any)
@@ -1325,7 +1305,7 @@ export class TextField extends DisplayObject
 		this._glyphsDirty = true;
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 
 	}
 
@@ -1345,7 +1325,7 @@ export class TextField extends DisplayObject
 		//this.reConstruct();
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 	}
 
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
@@ -1374,7 +1354,7 @@ export class TextField extends DisplayObject
 			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 			//if(new_ct.color==0xffffff){
 			this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
-			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 			//}
 
 		}
@@ -1451,7 +1431,7 @@ export class TextField extends DisplayObject
 				this.transform.colorTransform = new ColorTransform();
 
 			this.transform.colorTransform.color = value;
-			this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 		} else {
 			this._glyphsDirty = true;
 		}
@@ -1597,7 +1577,7 @@ export class TextField extends DisplayObject
 
 		this._positionsDirty = true;
 
-		this._pInvalidateBounds();
+		this._invalidateBounds();
 	}
 
 	public set wordWrap(val:boolean)
@@ -1610,7 +1590,7 @@ export class TextField extends DisplayObject
 		this._positionsDirty = true;
 
 		if (!val)
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 	}
 	/**
 	 * The width of the text in pixels.
@@ -1799,7 +1779,7 @@ export class TextField extends DisplayObject
 					this._width = 4;
 					this._height = 4;
 
-					this._pInvalidateBounds();
+					this._invalidateBounds();
 				}
 				if(this._type==TextFieldType.INPUT)
 					this.drawSelectionGraphics();
@@ -2005,7 +1985,7 @@ export class TextField extends DisplayObject
 
 		var oldSize:number=this._width;
 		this._width = 4 + this.textOffsetX + newWidth;
-		this._pInvalidateBounds();
+		this._invalidateBounds();
 		if (this._autoSize==TextFieldAutoSize.RIGHT){
 			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
 			this._transform.invalidatePosition();
@@ -2241,7 +2221,7 @@ export class TextField extends DisplayObject
 		// if autosize is enabled, we adjust the textFieldHeight
 		if(this.autoSize!=TextFieldAutoSize.NONE){
 			this._height=this._textHeight+3;
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 		}
 	}
 	public staticMatrix:any;
@@ -2408,7 +2388,7 @@ export class TextField extends DisplayObject
 								(<any>textShape.shape.material).useColorTransform = true;
 								var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 								this.transform.colorTransform.color = textShape.format.color;
-								this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+								this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 				*/
 
 			}
@@ -2529,7 +2509,7 @@ export class TextField extends DisplayObject
 		this._text += newText;
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 	}
 
 	/**
@@ -2541,7 +2521,7 @@ export class TextField extends DisplayObject
 		this._text+="\n";
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._pInvalidateBounds();
+			this._invalidateBounds();
 	}
 
 	/**

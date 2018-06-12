@@ -671,7 +671,7 @@ export class Timeline
 
 		child.transform.invalidateComponents();
 
-		child.pInvalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		child._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 	public update_mtx_pos(child:DisplayObject, target_mc:MovieClip, i:number):void

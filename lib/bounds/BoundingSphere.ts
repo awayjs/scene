@@ -5,12 +5,15 @@ import {IEntity} from "@awayjs/renderer";
 import {ElementsType} from "@awayjs/graphics";
 
 import {Sprite} from "../display/Sprite";
+import { DisplayObject } from '../display/DisplayObject';
 import {PrimitiveSpherePrefab} from "../prefabs/PrimitiveSpherePrefab";
 
 import {BoundingVolumeBase} from "./BoundingVolumeBase";
+import { BoundingVolumePool } from './BoundingVolumePool';
 
 export class BoundingSphere extends BoundingVolumeBase
 {
+	private _matrix3D:Matrix3D;
 	private _sphere:Sphere;
 	private _radius:number = 0;
 	private _centerX:number = 0;
@@ -18,9 +21,9 @@ export class BoundingSphere extends BoundingVolumeBase
 	private _centerZ:number = 0;
 	private _prefab:PrimitiveSpherePrefab;
 
-	constructor(entity:IEntity)
+	constructor(asset:DisplayObject, pool:BoundingVolumePool)
 	{
-		super(entity);
+		super(asset, pool);
 	}
 
 	public nullify():void
@@ -31,8 +34,8 @@ export class BoundingSphere extends BoundingVolumeBase
 
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if(this._pInvalidated)
-			this._pUpdate();
+		if(this._invalid)
+			this._update();
 
 		for (var i:number = 0; i < numPlanes; ++i) {
 			var plane:Plane3D = planes[i];
@@ -49,11 +52,20 @@ export class BoundingSphere extends BoundingVolumeBase
 
 	public rayIntersection(position:Vector3D, direction:Vector3D, targetNormal:Vector3D):number
 	{
-		if(this._pInvalidated)
-			this._pUpdate();
+		if(this._invalid)
+			this._update();
 
 		return this._sphere.rayIntersection(position, direction, targetNormal);
 	}
+	
+	public getSphere():Sphere
+	{
+		if(this._invalid)
+			this._update();
+
+		return this._sphere;
+	}
+
 
 	//@override
 	public classifyToPlane(plane:Plane3D):number
@@ -77,12 +89,21 @@ export class BoundingSphere extends BoundingVolumeBase
 		return dd > rr? PlaneClassification.FRONT : dd < -rr? PlaneClassification.BACK : PlaneClassification.INTERSECT;
 	}
 
-	public _pUpdate():void
+	public _update():void
 	{
-		super._pUpdate();
+		super._update();
 
-		this._sphere = this._entity.getSphere();
-		var matrix:Matrix3D = this._entity.transform.concatenatedMatrix3D;
+		if (this._targetCoordinateSpace) {
+			if (this._matrix3D == null)
+				this._matrix3D = new Matrix3D();
+			this._matrix3D.copyFrom(this._targetCoordinateSpace.transform.inverseConcatenatedMatrix3D);
+			this._matrix3D.prepend(this._boundingObject.transform.concatenatedMatrix3D);
+			this._sphere = this._boundingObject._getSphereBoundsInternal(this._matrix3D, this._strokeFlag, this._sphere);
+		} else {
+			this._sphere = this._boundingObject._getSphereBoundsInternal(null, this._strokeFlag, this._sphere);
+		}
+
+		var matrix:Matrix3D = this._boundingObject.transform.concatenatedMatrix3D;
 
 		var cx:number = this._sphere.x;
 		var cy:number = this._sphere.y;
@@ -106,10 +127,10 @@ export class BoundingSphere extends BoundingVolumeBase
 
 		if (this._prefab) {
 			this._prefab.radius = r;
-			this._pBoundsPrimitive.x = cx;
-			this._pBoundsPrimitive.y = cy;
-			this._pBoundsPrimitive.z = cz;
-			this._pBoundsPrimitive.transform.matrix3D = matrix;
+			this._boundsPrimitive.x = cx;
+			this._boundsPrimitive.y = cy;
+			this._boundsPrimitive.z = cz;
+			this._boundsPrimitive.transform.matrix3D = matrix;
 		}
 	}
 
