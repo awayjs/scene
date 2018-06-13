@@ -213,7 +213,7 @@ export class Sprite extends DisplayObjectContainer
 
 	protected _isEntityInternal():boolean
 	{
-		return Boolean(this._graphics.count) || Boolean(this._children.length);
+		return Boolean(this._graphics.count) || super._isEntityInternal();
 	}
 
 	/**

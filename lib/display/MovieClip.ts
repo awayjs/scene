@@ -124,6 +124,8 @@ export class MovieClip extends Sprite
 	public set hitArea(value:DisplayObject)
 	{
 		this._hitArea=value;
+
+		this._invalidateChildren();
 	}
 
 	public getMouseCursor():string
@@ -618,6 +620,11 @@ export class MovieClip extends Sprite
 		}
 
 		super.clear();
+	}
+
+	protected _isEntityInternal():boolean
+	{
+		return Boolean(this._hitArea != null) || super._isEntityInternal();
 	}
 }
 export default MovieClip;
