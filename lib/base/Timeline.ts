@@ -242,11 +242,12 @@ export class Timeline
 		return id;
 	}
 
-	public extractHitArea(target_mc:MovieClip):DisplayObjectContainer{
+	public extractHitArea(target_mc:MovieClip){
 		target_mc.reset();
 		this.gotoFrame(target_mc, this.numFrames-1, true);
 		var i:number=target_mc.numChildren;
 		var hitArea:DisplayObjectContainer=new DisplayObjectContainer();
+		hitArea.name="AwayJSHitArea";
 		var child:DisplayObject;
 		var originalChild:DisplayObject;
 		while(i>0){
@@ -254,17 +255,18 @@ export class Timeline
 			originalChild=target_mc.getChildAt(i);
 			child=originalChild.clone();
 			child.reset();
-
 			child.x = originalChild.x;
 			child.scaleX = originalChild.scaleX;
 			child.y = originalChild.y;
 			child.scaleY = originalChild.scaleY;
 			child.rotationZ = originalChild.rotationZ;
+			var new_ct:ColorTransform = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
+			new_ct.alphaMultiplier=0;
+			child.transform.invalidateColorTransform();
 			hitArea.addChild(child);
 		}
 		target_mc.hitArea=hitArea;
 		target_mc.reset();
-		return hitArea;
 	}
 
 	public jumpToLabel(target_mc:MovieClip, label:string) : void
