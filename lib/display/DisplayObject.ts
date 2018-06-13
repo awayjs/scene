@@ -450,10 +450,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get depth():number
 	{
-		if (this._registrationMatrix3D)
-			return this.getBoxBounds().depth*this.scaleZ*this._registrationMatrix3D._rawData[10];
+		var box:Box = this.getBoxBounds();
 
-		return this.getBoxBounds().depth*this.scaleZ;
+		if (box == null)
+			return 0;
+
+		if (this._registrationMatrix3D)
+			return  box.depth*this.scaleZ*this._registrationMatrix3D._rawData[10];
+
+		return box.depth*this.scaleZ;
 	}
 
 	public set depth(val:number)
@@ -461,9 +466,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._depth == val)
 			return;
 
+		var box:Box = this.getBoxBounds();
+
+		//return if box is empty ie setting depth for no content is impossible
+		if (box == null || box.depth == 0)
+			return;
+
 		this._depth = val;
 
-		this._setScaleZ(val/this.getBoxBounds().depth);
+		this._setScaleZ(val/box.depth);
 	}
 
 	/**
@@ -590,10 +601,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get height():number
 	{
-		if (this._registrationMatrix3D)
-			return this.getBoxBounds().height*this.scaleY*this._registrationMatrix3D._rawData[5];
+		var box:Box = this.getBoxBounds();
 
-		return this.getBoxBounds().height*this.scaleY;
+		if (box == null)
+			return 0;
+
+		if (this._registrationMatrix3D)
+			return box.height*this.scaleY*this._registrationMatrix3D._rawData[5];
+
+		return box.height*this.scaleY;
 	}
 
 	public set height(val:number)
@@ -601,15 +617,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._height == val)
 			return;
 
-		var boxHeight:number = this.getBoxBounds().height;
+		var box:Box = this.getBoxBounds();
 
 		//return if box is empty ie setting height for no content is impossible
-		if (!boxHeight)
+		if (box == null || box.height == 0)
 			return;
 
 		this._height = val;
 
-		this._setScaleY(val/boxHeight);
+		this._setScaleY(val/box.height);
 	}
 
 	/**
@@ -1436,10 +1452,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get width():number
 	{
-		if (this._registrationMatrix3D)
-			return this.getBoxBounds().width*this.scaleX*this._registrationMatrix3D._rawData[0];
+		var box:Box = this.getBoxBounds();
 
-		return this.getBoxBounds().width*this.scaleX;
+		if (box == null)
+			return 0;
+
+		if (this._registrationMatrix3D)
+			return box.width*this.scaleX*this._registrationMatrix3D._rawData[0];
+
+		return box.width*this.scaleX;
 	}
 
 	public set width(val:number)
@@ -1447,15 +1468,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._width == val)
 			return;
 		
-		var boxWidth:number = this.getBoxBounds().width;
+		var box:Box = this.getBoxBounds();
 
 		//return if box is empty ie setting width for no content is impossible
-		if (!boxWidth)
+		if (box == null || box.width == 0)
 			return;
 
 		this._width = val;
 
-		this._setScaleX(val/boxWidth);
+		this._setScaleX(val/box.width);
 	}
 
 	/**
@@ -1814,23 +1835,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public hitTestObject(obj:DisplayObject):boolean
 	{
 		var objBox:Box = obj.getBoxBounds(this.scene);
-		if(!objBox) return false;
-		var box:Box = this.getBoxBounds(this.scene);
-		if(!box) return false;
 
-		if(objBox.x>(box.x+box.width)){
+		if(objBox == null)
 			return false;
-		}
-		if(box.x>(objBox.x+objBox.width)){
+		
+		var box:Box = this.getBoxBounds(this.scene);
+
+		if(box == null)
 			return false;
-		}
-		if((objBox.y+objBox.height)<box.y){
-			return false;
-		}
-		if((box.y+box.height)<objBox.y){
-			return false;
-		}
-		return true; //TODO
+
+		if (objBox.intersects(box))
+			return true;
+		
+		return false;
 	}
 
 	/**
@@ -1864,7 +1881,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.globalToLocal(this._tempPoint, this._tempPoint);
 
 		//early out for box test
-		if(!this.getBoxBounds().contains(this._tempPoint.x, this._tempPoint.y, 0))
+		var box:Box = this.getBoxBounds();
+
+		if(box == null || !box.contains(this._tempPoint.x, this._tempPoint.y, 0))
 			return false;
 
 		if (this._explicitMasks) {

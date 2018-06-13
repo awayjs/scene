@@ -198,6 +198,9 @@ export class Sprite extends DisplayObjectContainer
 	{
 		var box:Box = this.getBoxBounds();
 
+		if (box == null)
+			return;
+
 		if (!this._center)
 			this._center = new Vector3D();
 
