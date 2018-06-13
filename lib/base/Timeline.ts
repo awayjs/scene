@@ -235,10 +235,11 @@ export class Timeline
 		}
 	}
 
-	public registerPotentialChild(prototype:IAsset) : void
+	public registerPotentialChild(prototype:IAsset) : number
 	{
 		var id = this._potentialPrototypes.length;
 		this._potentialPrototypes[id] = prototype;
+		return id;
 	}
 
 	public extractHitArea(target_mc:MovieClip):DisplayObjectContainer{
@@ -261,6 +262,7 @@ export class Timeline
 			child.rotationZ = originalChild.rotationZ;
 			hitArea.addChild(child);
 		}
+		target_mc.hitArea=hitArea;
 		target_mc.reset();
 		return hitArea;
 	}
