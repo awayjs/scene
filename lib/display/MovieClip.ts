@@ -53,8 +53,7 @@ export class MovieClip extends Sprite
 	public useHandCursor:boolean;
 	public mouseListenerCount:number;
 
-	private _hitArea:DisplayObject;
-	private _hitAreaChildInternal:DisplayObject;
+	private _hitArea:DisplayObject
 	public _onLoadedActions:any=null;
 
 	constructor(timeline:Timeline = null)
@@ -194,24 +193,7 @@ export class MovieClip extends Sprite
 			}
 		}
 	}
-	
-	public removeHitArea()
-	{
-		if(this._isButton && this.hitArea && this._children.length==1){
-			var myChild=this.getChildByName("AwayJSHitArea");
-			if(myChild){
-				this.removeChild(myChild);
-			}
-		}
-	}
-	public insertHitAreaInEmptyFrame()
-	{
-		if(this._isButton && this.hitArea && this._children.length==0){
-			if(!this._hitAreaChildInternal)
-				this._hitAreaChildInternal=this.hitArea.clone();
-			this.addChild(this._hitAreaChildInternal);
-		}
-	}
+
 	public get buttonMode():boolean
 	{
 		return this._isButton;
@@ -288,7 +270,6 @@ export class MovieClip extends Sprite
 			//if(fireScripts)
 			//	this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
 			this._timeline.constructNextFrame(this, false, true);
-			this.insertHitAreaInEmptyFrame();
 		} else {
 			this._currentFrameIndex = -1;
 		}
@@ -337,9 +318,8 @@ export class MovieClip extends Sprite
 		//update's advanceFrame function, unless advanceFrame has
 		//already been executed
 		this._skipAdvance = MovieClip._skipAdvance;
-		this.removeHitArea();
+
 		this._timeline.gotoFrame(this, value, skip_script);
-		this.insertHitAreaInEmptyFrame();
 	}
 
 	public addEventListener(type:string, listener:(event:EventBase) => void):void
@@ -378,7 +358,6 @@ export class MovieClip extends Sprite
 	public addButtonListeners():void
 	{
 		this._isButton = true;
-		this.insertHitAreaInEmptyFrame();
 
 		this.stop();
 
@@ -574,9 +553,7 @@ export class MovieClip extends Sprite
 					this._isPlaying = false;
 			} else { // not end - construct next frame
 				this._currentFrameIndex++;
-				this.removeHitArea();
 				this._timeline.constructNextFrame(this);
-				this.insertHitAreaInEmptyFrame();
 			}
 		}
 		if(this._skipAdvance){
