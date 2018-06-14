@@ -1,4 +1,4 @@
-﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D, Sphere} from "@awayjs/core";
+﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D, Sphere, ProjectionBase} from "@awayjs/core";
 
 import {TraverserBase, IAnimator, IMaterial, Style, IRenderable} from "@awayjs/renderer";
 
@@ -59,9 +59,6 @@ export class Sprite extends DisplayObjectContainer
 			//var comps:Array<Vector3D> = this.transform.concatenatedMatrix3D.decompose();
 
 			this._graphics.updateSlice9(this.parent.scaleX, this.parent.scaleY);
-		}
-		if(this.parent){
-			this._graphics.updateScale();
 		}
 
 		return this._graphics;
@@ -209,6 +206,17 @@ export class Sprite extends DisplayObjectContainer
 		this._center.z = box.z + box.depth/2;
 
 		return this._graphics.getSphereBounds(this._center, matrix3D, strokeFlag, cache, target);
+	}
+
+	/**
+	 *
+	 */
+	public _iInternalUpdate(projection:ProjectionBase):void
+	{
+		super._iInternalUpdate(projection);
+
+		if(this.parent)
+			this._graphics.updateScale(projection);
 	}
 
 	protected _isEntityInternal():boolean

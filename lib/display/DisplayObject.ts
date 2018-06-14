@@ -1,4 +1,4 @@
-import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase, IAbstractionPool} from "@awayjs/core";
+import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase, IAbstractionPool, ProjectionBase} from "@awayjs/core";
 
 import {BlendMode} from "@awayjs/stage";
 
@@ -2176,7 +2176,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public _iInternalUpdate():void
+	public _iInternalUpdate(projection:ProjectionBase):void
 	{
 		if (this._iController)
 			this._iController.update();
