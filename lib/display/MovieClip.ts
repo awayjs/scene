@@ -15,7 +15,7 @@ export class MovieClip extends Sprite
 	public static avm1ScriptQueue:MovieClip[]=[];
 	public static avm1ScriptQueueScripts:any[]=[];
 	public static avm1LoadedActions:any[]=[];
-	private static _skipAdvance:boolean;
+	public static _skipAdvance:boolean;
 
 	public swappedDepthsMap:any={};
 
@@ -271,6 +271,7 @@ export class MovieClip extends Sprite
 			this._currentFrameIndex = 0;
 			//if(fireScripts)
 			//	this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
+			//console.log("_currentFrameIndex ", this.name, this._currentFrameIndex);
 			this._timeline.constructNextFrame(this, false, true);
 		} else {
 			this._currentFrameIndex = -1;
@@ -316,10 +317,12 @@ export class MovieClip extends Sprite
 
 		this._currentFrameIndex = value;
 
+		//console.log("_currentFrameIndex ", this.name, this._currentFrameIndex);
 		//changing current frame will ignore advance command for that
 		//update's advanceFrame function, unless advanceFrame has
 		//already been executed
 		this._skipAdvance = MovieClip._skipAdvance;
+		
 
 		this._timeline.gotoFrame(this, value, skip_script);
 	}
@@ -546,7 +549,6 @@ export class MovieClip extends Sprite
 	}
 	public advanceFrame():void
 	{
-		//console.log("advanceFrame ", this.name, this.id);
 		if (this._isPlaying && !this._skipAdvance) {
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
 				if (this.loop) // end of loop - jump to first frame.
@@ -557,8 +559,10 @@ export class MovieClip extends Sprite
 				this._currentFrameIndex++;
 				this._timeline.constructNextFrame(this);
 			}
+			//console.log("advancedFrame ", this.name, this._currentFrameIndex);
 		}
 		if(this._skipAdvance){
+			//console.log("added script ", this.name, this._currentFrameIndex);
 			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
 		}
 		//this.adapter.callScript

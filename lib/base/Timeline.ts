@@ -28,9 +28,6 @@ export class Timeline
 	public _framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public _framescripts_translated:Object;    // dictionary to store keyframeindex => bool that keeps track of already converted scripts
 
-	public avm1framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
-	public avm1framescripts_translated:Object;    // dictionary to store keyframeindex => bool that keeps track of already converted scripts
-
 	public avm1InitActions:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public avm1ButtonActions:any[];    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public avm1Exports:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
@@ -93,8 +90,6 @@ export class Timeline
 		this._labels = {};
 		this._framescripts = {};
 		this._framescripts_translated = {};
-		this.avm1framescripts = {};
-		this.avm1framescripts_translated = {};
 
 		//cache functions
 		this._functions[1] = this.update_mtx_all;
@@ -152,9 +147,10 @@ export class Timeline
 			throw new Error("Framescript is already translated to Function!!!");
 		}
 	}
-	public add_framescript(value:string, keyframe_index:number):void
+	public add_framescript(value:any, keyframe_index:number):void
 	{
 		if(FrameScriptManager.frameScriptDebug){
+			// todo: this is only for as2_as_js scripts
 			// if we are in debug mode, we try to extract the function name from the first line of framescript code,
 			// and check if this function is available on the object that is set as frameScriptDebug
 			// try to get the functions name (it should be the first line as comment)
@@ -177,11 +173,21 @@ export class Timeline
 	}
 
 
+	public get_deferred_script(target_mc:MovieClip, frame_idx:number) : void
+	{
+	/*	if(this.avm1framescripts[frame_idx]!=null){
+			//(<IMovieClipAdapter>target_mc.adapter).callFrameScript(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
+			MovieClip.avm1ScriptQueue.push(target_mc);
+			MovieClip.avm1ScriptQueueScripts.push(this.avm1framescripts_translated[frame_idx]);
+			
+		}*/
+	}
+
 	public add_script_for_postcontruct(target_mc:MovieClip, keyframe_idx:number, scriptPass1:Boolean=false) : void
 	{
 		if(this._framescripts[keyframe_idx]!=null){
 			if(this._framescripts_translated[keyframe_idx]==null){
-				this._framescripts[keyframe_idx] = (<IMovieClipAdapter> target_mc.adapter).evalScript(this._framescripts[keyframe_idx]);
+				this._framescripts[keyframe_idx] = (<IMovieClipAdapter> target_mc.adapter).addScript(this._framescripts[keyframe_idx], keyframe_idx);
 				this._framescripts_translated[keyframe_idx]=true;
 			}
 			if(scriptPass1)
@@ -189,12 +195,6 @@ export class Timeline
 			else
 				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
 
-		}
-		if(this.avm1framescripts[target_mc.currentFrameIndex]!=null){
-			//(<IMovieClipAdapter>target_mc.adapter).callFrameScript(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
-			MovieClip.avm1ScriptQueue.push(target_mc);
-			MovieClip.avm1ScriptQueueScripts.push(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
-			
 		}
 	}
 
@@ -228,7 +228,9 @@ export class Timeline
 		}
 		else{
 			var clonedInstance:DisplayObject=<DisplayObject> (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
-			if(this.potentialPrototypesInitEventsMap[id]){
+			var placeObjectTag:any=this.potentialPrototypesInitEventsMap[id]
+			if(placeObjectTag && ((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0))){
+				(<any>clonedInstance.adapter).placeObjectTag=placeObjectTag;
 				(<any>clonedInstance.adapter).initEvents=this.potentialPrototypesInitEventsMap[id];
 			}
 			return clonedInstance;

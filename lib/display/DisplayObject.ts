@@ -239,7 +239,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public isSlice9ScaledMC:boolean=false;
 	public isSlice9ScaledSprite:boolean=false;
 
-
+	// this is needed for AVM1 - todo: maybe do this on adapters ?
+	public placeObjectTag:any=null;
+	public getScriptPrecedence(): number[] {
+      if (!this._pParent) {
+        return [];
+      }
+      var result = this._pParent.getScriptPrecedence();
+      if (this.placeObjectTag) {
+        result.push(this.placeObjectTag.actionBlocksPrecedence);
+      }
+      return result;
+    }
 	public dispatchFrameEvents(events:any[]) {
 		this.dispatchEvent(events[0]);//ENTER_FRAME
 		this.dispatchEvent(events[1]);//EXIT_FRAME

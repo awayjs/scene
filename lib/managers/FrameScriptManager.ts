@@ -1,5 +1,7 @@
 import {DisplayObject} from "../display/DisplayObject";
 import {MovieClip} from "../display/MovieClip";
+import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
+import { BuildMode } from '@awayjs/core';
 
 export class FrameScriptManager
 {
@@ -12,15 +14,15 @@ export class FrameScriptManager
 	public static frameScriptDebug:Object = undefined;
 
 	//queue of objects for disposal
-	private static _queued_dispose:Array<DisplayObject> = new Array<DisplayObject>();
+	private static _queued_dispose:DisplayObject[] = [];
 
 	// queues pass1 of scripts.
-	private static _queued_mcs:Array<MovieClip> = [];
-	private static _queued_scripts:Array<Function> = [];
+	private static _queued_mcs:MovieClip[] = [];
+	private static _queued_scripts:any[] = [];
 
 	// queues pass2 of scripts. this will be inserted in reversed order into pass1 queue right before something should be added to pass1
-	private static _queued_mcs_pass2:Array<MovieClip> = [];
-	private static _queued_scripts_pass2:Array<Function> = [];
+	private static _queued_mcs_pass2:MovieClip[] = [];
+	private static _queued_scripts_pass2:any[] = [];
 
 	private static _active_intervals:Object = new Object(); // maps id to function
 
@@ -49,7 +51,7 @@ export class FrameScriptManager
 		this._queued_dispose.push(child);
 	}
 
-	public static add_script_to_queue(mc:MovieClip, script:Function):void
+	public static add_script_to_queue(mc:MovieClip, script:any):void
 	{
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
 		var i=this._queued_mcs_pass2.length;
@@ -63,7 +65,7 @@ export class FrameScriptManager
 		this._queued_scripts.push(script);
 	}
 
-	public static add_script_to_queue_pass2(mc:MovieClip, script:Function):void
+	public static add_script_to_queue_pass2(mc:MovieClip, script:any):void
 	{
 		this._queued_mcs_pass2.push(mc);
 		this._queued_scripts_pass2.push(script);
@@ -74,33 +76,45 @@ export class FrameScriptManager
 		if(this._queued_mcs.length==0 && this._queued_mcs_pass2.length==0)
 			return;
 
-		var i=this._queued_mcs_pass2.length;
-		while(i--){
-			this._queued_mcs.push(this._queued_mcs_pass2[i]);
-			this._queued_scripts.push(this._queued_scripts_pass2[i]);
-		}
-		this._queued_mcs_pass2.length = 0;
-		this._queued_scripts_pass2.length = 0;
+		while(this._queued_mcs.length){
 
-		var mc:MovieClip;
-		for (i = 0; i <this._queued_mcs.length; i++) {
-			// during the loop we might add more scripts to the queue
-			mc=this._queued_mcs[i];
-			if(mc.scene!=null) {
-			//	try {
-				this._queued_scripts[i].call(mc.adapter);
-			//	}
-			/*	catch (err) {
-					console.log("Script error in " + mc.name + "\n", this._queued_scripts[i]);
-					console.log(err.message);
-					throw err;
-				}*/
+			var queues_tmp:any[]=this._queued_mcs;
+			var queues_scripts_tmp:any[]=this._queued_scripts;
+			var i=this._queued_mcs_pass2.length;
+			while(i--){
+				queues_tmp.push(this._queued_mcs_pass2[i]);
+				queues_scripts_tmp.push(this._queued_scripts_pass2[i]);
 			}
+			this._queued_mcs_pass2.length = 0;
+			this._queued_scripts_pass2.length = 0;
+			this._queued_mcs=[];
+			this._queued_scripts=[];
+
+			//console.log("execute queue",this._queued_scripts);
+			
+			var mc:MovieClip;
+			for (i = 0; i <queues_tmp.length; i++) {
+				// during the loop we might add more scripts to the queue
+				mc=queues_tmp[i];
+				if(mc.scene!=null) {
+					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
+					(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+				}
+			}
+			/*
+			var loadedActions: any[] = MovieClip.avm1LoadedActions;
+						
+			MovieClip.avm1LoadedActions=[];
+			for (var la = 0; la < loadedActions.length; la++) {
+				//console.log("execute action for loaded events", i);
+				if(loadedActions[la].onLoadedAction){
+					loadedActions[la].onLoadedAction();
+					loadedActions[la].onLoadedAction=null;
+				}			
+			}*/
 		}
-		// all scripts executed. clear all
-		this._queued_mcs.length = 0;
-		this._queued_scripts.length = 0;
 	}
+
 
 	public static execute_dispose():void
 	{
