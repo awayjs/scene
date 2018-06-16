@@ -1745,27 +1745,24 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (boundingVolumeType == null)
 			boundingVolumeType = this._defaultBoundingVolume;
 
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
+		
 			
 		var pool:BoundingVolumePool = (this._boundingVolumePools[boundingVolumeType] || (this._boundingVolumePools[boundingVolumeType] = new BoundingVolumePool(this, boundingVolumeType)));
 	
 		return <BoundingVolumeBase> pool.getAbstraction(targetCoordinateSpace);
 	}
 
-	public getBoxBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false):Box
+	public getBoxBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false, fastFlag:boolean = false):Box
 	{
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-
-		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? BoundingVolumeType.BOX_BOUNDS : BoundingVolumeType.BOX)).getBox();
+		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? (fastFlag? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS) : (fastFlag? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))).getBox();
 	}
 
-	public getSphereBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false):Sphere
+	public getSphereBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false, fastFlag:boolean = false):Sphere
 	{
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-
-			return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? BoundingVolumeType.SPHERE_BOUNDS : BoundingVolumeType.SPHERE)).getSphere();
-		}
+		return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? (fastFlag? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS) : (fastFlag? BoundingVolumeType.SPHERE_FAST :BoundingVolumeType.SPHERE))).getSphere();
+	}
 
 	/**
 	 * Converts the <code>point</code> object from the Scene(global) coordinates
@@ -1834,12 +1831,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public hitTestObject(obj:DisplayObject):boolean
 	{
-		var objBox:Box = obj.getBoxBounds(this.scene);
+		var objBox:Box = obj.getBoxBounds(this.scene, false, true);
 
 		if(objBox == null)
 			return false;
 		
-		var box:Box = this.getBoxBounds(this.scene);
+		var box:Box = this.getBoxBounds(this.scene, false, true);
 
 		if(box == null)
 			return false;
@@ -1881,7 +1878,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this.globalToLocal(this._tempPoint, this._tempPoint);
 
 		//early out for box test
-		var box:Box = this.getBoxBounds();
+		var box:Box = this.getBoxBounds(null, false, true);
 
 		if(box == null || !box.contains(this._tempPoint.x, this._tempPoint.y, 0))
 			return false;
@@ -2287,7 +2284,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._pParent._invalidateBounds();
 	}
 
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
 		if (matrix3D != null && target != null) {
 			//scale updates if absolute dimensions are detected

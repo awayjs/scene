@@ -102,7 +102,7 @@ export class MovieClip extends Sprite
 	 *
 	 * @protected
 	 */
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
 		if(this._hitArea) {
 			//this._hitArea.
@@ -111,10 +111,10 @@ export class MovieClip extends Sprite
 			this.transform.matrix3D.copyTo(new_matrix);
 
 			this._hitArea.transform.invalidateComponents();*/
-			return this._hitArea._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);	
+			return this._hitArea._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);	
 		}
 
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
 	}
 	
 	public get hitArea():DisplayObject

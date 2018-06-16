@@ -540,7 +540,7 @@ export class TextField extends DisplayObject
 	}
 
 
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
 		this.reConstruct();
 /*

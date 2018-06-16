@@ -584,24 +584,60 @@ export class DisplayObjectContainer extends DisplayObject
 	 *
 	 * @protected
 	 */
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Box, target:Box = null):Box
+	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
 		var numChildren:number = this._children.length;
 
 		if (numChildren > 0) {
-			var box:Box;
-			var first:boolean = true;
-			for (var i:number = 0; i < numChildren; ++i) {
+			var m:Matrix3D = new Matrix3D();
+			if (fastFlag) {
+				var box:Box;
+				for (var i:number = 0; i < numChildren; ++i) {
 
-				// ignore bounds of childs that are masked
-				// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
-				//if(this._children[i].masks==null){
-					target = this._children[i]._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
-			//	}
+					// ignore bounds of childs that are masked
+					// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
+					//if(this._children[i].masks==null){
+						box = this._children[i]._getBoxBoundsInternal(null, strokeFlag, fastFlag);
+						
+						if (box) {
+							m.copyFrom(this._children[i].transform.matrix3D);
+							
+							if (this._children[i]._registrationMatrix3D)
+								m.prepend(this._children[i]._registrationMatrix3D);
+
+							box = m.transformBox(box);
+						}
+							
+						if (target && box) {
+							target.union(box, target);
+						} else if (box) {
+							target = box;
+						}
+				//	}
+				}
+			} else {
+				for (var i:number = 0; i < numChildren; ++i) {
+
+					// ignore bounds of childs that are masked
+					// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
+					//if(this._children[i].masks==null){
+						if (matrix3D)
+							m.copyFrom(matrix3D);
+						else
+							m.identity();
+						
+						m.prepend(this._children[i].transform.matrix3D);
+
+						if (this._children[i]._registrationMatrix3D)
+							m.prepend(this._children[i]._registrationMatrix3D);
+
+						target = this._children[i]._getBoxBoundsInternal(m, strokeFlag, fastFlag, cache, target);
+				//	}
+				}
 			}
 		}
 
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, cache, target);
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
 	}
 
 	/**

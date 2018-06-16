@@ -15,6 +15,7 @@ export class BoundingVolumeBase extends AbstractionBase
 	protected _targetCoordinateSpace:DisplayObject;
 	protected _boundingObject:DisplayObject;
 	protected _strokeFlag:boolean;
+	protected _fastFlag:boolean;
 	protected _boundsPrimitive:Sprite;
 
 	constructor(asset:DisplayObject, pool:BoundingVolumePool)
@@ -24,6 +25,7 @@ export class BoundingVolumeBase extends AbstractionBase
 		this._targetCoordinateSpace = asset;
 		this._boundingObject = pool.boundingObject;
 		this._strokeFlag = pool.strokeFlag;
+		this._fastFlag = pool.fastFlag;
 
 		this._onInvalidatePartitionBoundsDelegate = (event:DisplayObjectEvent) => this._onInvalidatePartitionBounds(event);
 
