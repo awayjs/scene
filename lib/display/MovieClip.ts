@@ -18,6 +18,7 @@ export class MovieClip extends Sprite
 	public static _skipAdvance:boolean;
 
 	public swappedDepthsMap:any={};
+	public doingSwap:boolean=false;
 
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
 
@@ -44,7 +45,6 @@ export class MovieClip extends Sprite
 	// not sure if needed
 	private _enterFrame:AssetEvent;
 	private _skipAdvance : boolean;
-	private _scriptInitPending : boolean;
 	private _isInit:boolean = true;
 
 	private _potentialInstances:Array<IAsset> = [];
@@ -61,6 +61,7 @@ export class MovieClip extends Sprite
 	{
 		super();
 
+		this.doingSwap=false;
 		this.useHandCursor=true;
 		this.mouseListenerCount=0;
 		this.cursorType="pointer";
@@ -262,20 +263,22 @@ export class MovieClip extends Sprite
 		for (var i:number = this.numChildren - 1; i >= 0; i--)
 			this.removeChildAt(i);
 
-		// prevents the playhead to get moved in the advance frame again:	
-		this._skipAdvance=true;
 
-		var numFrames:number = this._timeline.keyframe_indices.length;
-		this._isPlaying = Boolean(numFrames > 1);
-		this._scriptInitPending=true;
-		if (numFrames) {
-			this._currentFrameIndex = 0;
-			// construct the frame, but do not execute any script
-			// scripts of child mcs must be executed in bottom up order
-			// thats why we need to stick to collecting scripts in advanceFrame
-			this._timeline.constructNextFrame(this, false, true);
-		} else {
-			this._currentFrameIndex = -1;
+		if(fireScripts){
+			
+			// prevents the playhead to get moved in the advance frame again:	
+			this._skipAdvance=true;
+	
+			var numFrames:number = this._timeline.keyframe_indices.length;
+			this._isPlaying = Boolean(numFrames > 1);
+			if (numFrames) {
+				this._currentFrameIndex = 0;
+				// contruct the timeline and queue the script.
+				this._timeline.constructNextFrame(this, fireScripts, true);
+			} else {
+				this._currentFrameIndex = -1;
+			}
+
 		}
 	}
 
@@ -316,7 +319,6 @@ export class MovieClip extends Sprite
 		if (this._currentFrameIndex == value)
 			return;
 
-		this.forceScriptInit();
 		this._currentFrameIndex = value;
 
 		//console.log("_currentFrameIndex ", this.name, this._currentFrameIndex);
@@ -324,8 +326,7 @@ export class MovieClip extends Sprite
 		//update's advanceFrame function, unless advanceFrame has
 		//already been executed
 
-		//this._skipAdvance = true;
-		//this._scriptInitPending=false;
+		//this._skipAdvance = MovieClip._skipAdvance;
 		
 		this._timeline.gotoFrame(this, value, queue_script);
 	}
@@ -401,22 +402,34 @@ export class MovieClip extends Sprite
 		if(currentDepth==depth){
 			return;
 		}
+		this.doingSwap=true;
 		this.swappedDepthsMap[currentDepth]=depth;
-		this.removeChildAtDepth(currentDepth);
+		super.removeChildAtDepth(currentDepth);
 		if(existingChild){
 			this.swappedDepthsMap[depth]=currentDepth;
-			this.removeChildAtDepth(depth);
+			super.removeChildAtDepth(depth);
 			super.addChildAtDepth(existingChild, currentDepth);
 		}
 		super.addChildAtDepth(child, depth);
+		this.doingSwap=false;
 
 	}
 
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
 		child.reset();// this takes care of transform and visibility
+		super.addChildAtDepth(child, depth, replace);
+		
+		if(!this.doingSwap){
+			if(this.adapter!=this && child.isAsset(MovieClip)){
+				(<IMovieClipAdapter> child.adapter).doInitEvents();
+				if((<MovieClip>child).onLoadedAction){
+					FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);
 
-		return super.addChildAtDepth(child, depth, replace);
+				}
+			}
+		}
+		return 
 	}
 
 	public _addTimelineChildAt(child:DisplayObject, depth:number, sessionID:number):DisplayObject
@@ -432,10 +445,12 @@ export class MovieClip extends Sprite
 	{
 		var child:DisplayObject = this._children[index];
 
-		if(child._adapter)
-			(<IMovieClipAdapter> child.adapter).freeFromScript();
-
-		(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
+		if(!this.doingSwap){
+			if(child._adapter)
+				(<IMovieClipAdapter> child.adapter).freeFromScript();
+	
+			(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
+		}
 
 		//check to make sure _depth_sessionIDs wasn't modified with a new child
 		if (this._depth_sessionIDs[child._depthID] == child._sessionID)
@@ -467,6 +482,10 @@ export class MovieClip extends Sprite
 	 */
 	public update(events:any[]=null):void
 	{
+
+		// Not used for AVM1 !!!
+		// in AVM1 this in done in the onEnter of AVMAwayStage, because we have multiple roots
+
 		//if events is null, this is as2, if it is not null, this is as3web
 
 		MovieClip._skipAdvance = true;
@@ -550,18 +569,6 @@ export class MovieClip extends Sprite
 		}
 		this._skipAdvance = false;
 	}
-	public forceScriptInit(){
-		
-		if(this._scriptInitPending){
-			if(this.onLoadedAction!=null){
-				FrameScriptManager.add_loaded_action_to_queue(this);
-			}
-			//console.log("added script ", this.name, this._currentFrameIndex);
-			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
-		}
-		this._scriptInitPending=false;
-
-	}
 	public advanceFrame():void
 	{
 
@@ -584,10 +591,6 @@ export class MovieClip extends Sprite
 			}
 			//console.log("advancedFrame ", this.name, this._currentFrameIndex);
 		}
-
-		// flash processes the framescripts for a new frame with parents first:
-		// the script is added to script-queue-pass1
-		this.forceScriptInit();
 
 		// than come the children from bottom up:
 

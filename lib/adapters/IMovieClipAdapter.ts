@@ -12,6 +12,8 @@ export interface IMovieClipAdapter extends IDisplayObjectAdapter
 	executeScript(script:any):void;
 
 	registerScriptObject(child:DisplayObject):void;
+	
+	doInitEvents():void;
 
 	unregisterScriptObject(child:DisplayObject):void;
 }

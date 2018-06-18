@@ -190,6 +190,7 @@ export class Timeline
 				this._framescripts[keyframe_idx] = (<IMovieClipAdapter> target_mc.adapter).addScript(this._framescripts[keyframe_idx], keyframe_idx);
 				this._framescripts_translated[keyframe_idx]=true;
 			}
+			//console.log("add framescript", target_mc, target_mc.name, keyframe_idx, scriptPass1 );
 			if(scriptPass1)
 				FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[keyframe_idx]);
 			else
@@ -255,7 +256,7 @@ export class Timeline
 			i--;
 			originalChild=target_mc.getChildAt(i);
 			child=originalChild.clone();
-			child.reset();
+			//child.reset();
 
 			child.x = originalChild.x;
 			child.scaleX = originalChild.scaleX;
@@ -300,7 +301,7 @@ export class Timeline
 		}
 
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
-			this.constructNextFrame(target_mc, queue_script, true);
+			this.constructNextFrame(target_mc, queue_script, false);
 			if(hasInputTextMap){
 				for (i = target_mc.numChildren - 1; i >= 0; i--) {
 					child = target_mc._children[i];
@@ -369,35 +370,29 @@ export class Timeline
 		}
 
 		var child1:IAsset;
-		// now we need to addchild the objects that were added before targetframe first
-		// than we can add the script of the targetframe
-		// than we can addchild objects added on targetframe
-		for (var key in depth_sessionIDs) {
-			child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
 
-			if(child1.isAsset(Graphics)){
-				//target_mc.graphics.clear();
-				//target_mc.graphics.copyFrom(<Graphics>child1);
-			}
-			else{
+		// scripts for children added in previous frames must be queued before the script of the target_mc, 
+		for (var key in depth_sessionIDs) {
+			if(!new_depth_sessionIDs[key]){
+				child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
 				child=<DisplayObject>child1;
 				if (child._sessionID == -1)
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
-
-
-			}
+			}			
 		}
-		// for children that was added in previous frames, script must be called before target_mc-script
-		// for children added in this frame, script must be called after target_mc-script
-		for (i = target_mc.numChildren - 1; i >= 0; i--) {
-			child = target_mc._children[i];
-			if(child.isAsset(MovieClip) && new_depth_sessionIDs[child._sessionID]==null){
-				(<MovieClip>child).forceScriptInit();
-			}
-		}
-
+		
 		if (queue_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
+
+		// add children that was constructed on this frame
+		for (var key in depth_sessionIDs) {
+			if(new_depth_sessionIDs[key]){
+				child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
+				child=<DisplayObject>child1;
+				if (child._sessionID == -1)
+					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
+			}			
+		}
 
 
 		//pass2: apply update commands for objects on stage (only if they are not blocked by script)
@@ -443,11 +438,13 @@ export class Timeline
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
 				// apply add commands in reversed order to have script exeucted in correct order.
 				// this could be changed in exporter
-				for (i = end_index - 1; i >= start_index; i--)
+				//for (i = end_index - 1; i >= start_index; i--)
+				for (i =start_index; i < end_index; i++)
 					depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
 				if(k==target_keyframe_idx){
-					for (i = end_index - 1; i >= start_index; i--){
-						new_depth_sessionIDs[i] = true;
+					//for (i = end_index - 1; i >= start_index; i--){
+					for (i =start_index; i < end_index; i++){
+						new_depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = true;
 					}
 				}
 				
@@ -544,17 +541,11 @@ export class Timeline
 		var idx:number;
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
-		for (var i:number = end_index - 1; i >= start_index; i--) {
+		//for (var i:number = end_index - 1; i >= start_index; i--) {
+		for (var i:number = start_index; i < end_index; i++) {
 			idx = i*2;
 			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
-			if(childAsset.isAsset(Graphics)){
-				//sourceMovieClip.graphics.clear();
-				//sourceMovieClip.graphics.copyFrom(<Graphics>childAsset);
-			}
-			else{
-				sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);//this.add_child_stream[idx]);
-
-			}
+			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);//this.add_child_stream[idx]);
 		}
 	}
 
