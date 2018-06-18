@@ -64,6 +64,22 @@ export class FrameScriptManager
 		this._queued_mcs.push(mc);
 		this._queued_scripts.push(script);
 	}
+	public static add_loaded_action_to_queue(mc:MovieClip):void
+	{
+		// whenever we queue scripts of new objects, we first inject the lists of pass2
+		var i=this._queued_mcs_pass2.length;
+		while(i--){
+			this._queued_mcs.push(this._queued_mcs_pass2[i]);
+			this._queued_scripts.push(this._queued_scripts_pass2[i]);
+		}
+		this._queued_mcs_pass2.length = 0;
+		this._queued_scripts_pass2.length = 0;
+		if(this._queued_mcs[this._queued_mcs.length-1]==mc){
+			return;
+		}
+		this._queued_mcs.push(mc);
+		this._queued_scripts.push(null);
+	}
 
 	public static add_script_to_queue_pass2(mc:MovieClip, script:any):void
 	{
@@ -76,42 +92,35 @@ export class FrameScriptManager
 		if(this._queued_mcs.length==0 && this._queued_mcs_pass2.length==0)
 			return;
 
-		while(this._queued_mcs.length){
+		var queues_tmp:any[]=this._queued_mcs;
+		var queues_scripts_tmp:any[]=this._queued_scripts;
+		var i=this._queued_mcs_pass2.length;
+		while(i--){
+			queues_tmp.push(this._queued_mcs_pass2[i]);
+			queues_scripts_tmp.push(this._queued_scripts_pass2[i]);
+		}
+		this._queued_mcs_pass2.length = 0;
+		this._queued_scripts_pass2.length = 0;
+		this._queued_mcs=[];
+		this._queued_scripts=[];
 
-			var queues_tmp:any[]=this._queued_mcs;
-			var queues_scripts_tmp:any[]=this._queued_scripts;
-			var i=this._queued_mcs_pass2.length;
-			while(i--){
-				queues_tmp.push(this._queued_mcs_pass2[i]);
-				queues_scripts_tmp.push(this._queued_scripts_pass2[i]);
-			}
-			this._queued_mcs_pass2.length = 0;
-			this._queued_scripts_pass2.length = 0;
-			this._queued_mcs=[];
-			this._queued_scripts=[];
-
-			//console.log("execute queue",this._queued_scripts);
-			
-			var mc:MovieClip;
-			for (i = 0; i <queues_tmp.length; i++) {
-				// during the loop we might add more scripts to the queue
-				mc=queues_tmp[i];
-				if(mc.scene!=null) {
+		//console.log("execute queue",this._queued_scripts);
+		
+		var mc:MovieClip;
+		for (i = 0; i <queues_tmp.length; i++) {
+			// during the loop we might add more scripts to the queue
+			mc=queues_tmp[i];
+			if(mc.scene!=null) {
+				// first we execute any pending loadedAction for this MC
+				if((<any>mc).onLoadedAction){
+					(<any>mc).onLoadedAction();
+					(<any>mc).onLoadedAction=null;	
+				}
+				if(queues_scripts_tmp[i]!=null){
 					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
 					(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
 				}
 			}
-			/*
-			var loadedActions: any[] = MovieClip.avm1LoadedActions;
-						
-			MovieClip.avm1LoadedActions=[];
-			for (var la = 0; la < loadedActions.length; la++) {
-				//console.log("execute action for loaded events", i);
-				if(loadedActions[la].onLoadedAction){
-					loadedActions[la].onLoadedAction();
-					loadedActions[la].onLoadedAction=null;
-				}			
-			}*/
 		}
 	}
 

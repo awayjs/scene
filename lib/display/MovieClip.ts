@@ -44,6 +44,7 @@ export class MovieClip extends Sprite
 	// not sure if needed
 	private _enterFrame:AssetEvent;
 	private _skipAdvance : boolean;
+	private _scriptInitPending : boolean;
 	private _isInit:boolean = true;
 
 	private _potentialInstances:Array<IAsset> = [];
@@ -54,7 +55,7 @@ export class MovieClip extends Sprite
 	public mouseListenerCount:number;
 
 	private _hitArea:DisplayObject
-	public _onLoadedActions:any=null;
+	public onLoadedAction:any=null;
 
 	constructor(timeline:Timeline = null)
 	{
@@ -261,17 +262,17 @@ export class MovieClip extends Sprite
 		for (var i:number = this.numChildren - 1; i >= 0; i--)
 			this.removeChildAt(i);
 
-
-
-		this._skipAdvance = MovieClip._skipAdvance;
+		// prevents the playhead to get moved in the advance frame again:	
 		this._skipAdvance=true;
+
 		var numFrames:number = this._timeline.keyframe_indices.length;
 		this._isPlaying = Boolean(numFrames > 1);
+		this._scriptInitPending=true;
 		if (numFrames) {
 			this._currentFrameIndex = 0;
-			//if(fireScripts)
-			//	this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
-			//console.log("_currentFrameIndex ", this.name, this._currentFrameIndex);
+			// construct the frame, but do not execute any script
+			// scripts of child mcs must be executed in bottom up order
+			// thats why we need to stick to collecting scripts in advanceFrame
 			this._timeline.constructNextFrame(this, false, true);
 		} else {
 			this._currentFrameIndex = -1;
@@ -294,11 +295,7 @@ export class MovieClip extends Sprite
 
 	public set currentFrameIndex(value:number)
 	{
-		//if currentFrame is set greater than the available number of
-		//frames, the playhead is moved to the last frame in the timeline.
-		//But because the frame specified was not a keyframe, no scripts are
-		//executed, even if they exist on the last frame.
-		var skip_script:boolean = false;
+		var queue_script:boolean = true;
 
 		var numFrames:number = this._timeline.keyframe_indices.length;
 
@@ -308,23 +305,29 @@ export class MovieClip extends Sprite
 		if (value < 0) {
 			value = 0;
 		} else if (value >= numFrames) {
+			// if value is greater than the available number of
+			// frames, the playhead is moved to the last frame in the timeline.
+			// In this case the frame specified is not considered a keyframe, 
+			// no scripts should be executed in this case
 			value = numFrames - 1;
-			skip_script = true;
+			queue_script = false;
 		}
 
 		if (this._currentFrameIndex == value)
 			return;
 
+		this.forceScriptInit();
 		this._currentFrameIndex = value;
 
 		//console.log("_currentFrameIndex ", this.name, this._currentFrameIndex);
 		//changing current frame will ignore advance command for that
 		//update's advanceFrame function, unless advanceFrame has
 		//already been executed
-		this._skipAdvance = MovieClip._skipAdvance;
-		
 
-		this._timeline.gotoFrame(this, value, skip_script);
+		//this._skipAdvance = true;
+		//this._scriptInitPending=false;
+		
+		this._timeline.gotoFrame(this, value, queue_script);
 	}
 
 	public addEventListener(type:string, listener:(event:EventBase) => void):void
@@ -547,12 +550,32 @@ export class MovieClip extends Sprite
 		}
 		this._skipAdvance = false;
 	}
+	public forceScriptInit(){
+		
+		if(this._scriptInitPending){
+			if(this.onLoadedAction!=null){
+				FrameScriptManager.add_loaded_action_to_queue(this);
+			}
+			//console.log("added script ", this.name, this._currentFrameIndex);
+			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
+		}
+		this._scriptInitPending=false;
+
+	}
 	public advanceFrame():void
 	{
+
+		// if this._skipadvance is true, the mc has already been moving on its timeline this frame
+		// this happens for objects that have been newly added to parent
+		// they still need to queue their scripts
+
 		if (this._isPlaying && !this._skipAdvance) {
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
-				if (this.loop) // end of loop - jump to first frame.
+				if (this.loop){
+					 // end of loop - jump to first frame.
+					 // todo: dont use currentframe here. use a specific funtion for going to frame
 					this.currentFrameIndex = 0;
+				}	
 				else //end of timeline, stop playing
 					this._isPlaying = false;
 			} else { // not end - construct next frame
@@ -561,19 +584,21 @@ export class MovieClip extends Sprite
 			}
 			//console.log("advancedFrame ", this.name, this._currentFrameIndex);
 		}
-		if(this._skipAdvance){
-			//console.log("added script ", this.name, this._currentFrameIndex);
-			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
-		}
-		//this.adapter.callScript
+
+		// flash processes the framescripts for a new frame with parents first:
+		// the script is added to script-queue-pass1
+		this.forceScriptInit();
+
+		// than come the children from bottom up:
 
 		var len:number = this._children.length;
 		var child:DisplayObject;
 		for (var i:number = len-1; i >=  0; --i) {
 			child = this._children[i];
 
-			if (child.isAsset(MovieClip))
+			if (child.isAsset(MovieClip)){
 				(<MovieClip> child).advanceFrame();
+			}
 		}
 		//80pro temp this.dispatchEvent(this._enterFrame);
 		this._skipAdvance = false;

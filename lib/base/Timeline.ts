@@ -245,8 +245,8 @@ export class Timeline
 	}
 
 	public extractHitArea(target_mc:MovieClip):DisplayObjectContainer{
-		target_mc.reset();
-		this.gotoFrame(target_mc, this.numFrames-1, true);
+		target_mc.reset(false);
+		this.gotoFrame(target_mc, this.numFrames-1, false);
 		var i:number=target_mc.numChildren;
 		var hitArea:DisplayObjectContainer=new DisplayObjectContainer();
 		var child:DisplayObject;
@@ -265,7 +265,7 @@ export class Timeline
 			hitArea.addChild(child);
 		}
 		target_mc.hitArea=hitArea;
-		target_mc.reset();
+		target_mc.reset(false);
 		return hitArea;
 	}
 
@@ -277,7 +277,7 @@ export class Timeline
 	}
 
 
-	public gotoFrame(target_mc:MovieClip, value:number, skip_script:boolean = false):void
+	public gotoFrame(target_mc:MovieClip, value:number, queue_script:boolean = true):void
 	{
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
 		var target_keyframe_idx:number = this.keyframe_indices[value];
@@ -300,7 +300,7 @@ export class Timeline
 		}
 
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
-			this.constructNextFrame(target_mc, !skip_script, true);
+			this.constructNextFrame(target_mc, queue_script, true);
 			if(hasInputTextMap){
 				for (i = target_mc.numChildren - 1; i >= 0; i--) {
 					child = target_mc._children[i];
@@ -336,9 +336,10 @@ export class Timeline
 
 		// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
 		var depth_sessionIDs:Object = target_mc.getSessionIDDepths();
+		var new_depth_sessionIDs:Object={};
 
 		//pass1: only apply add/remove commands into depth_sessionIDs.
-		this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs);
+		this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs, new_depth_sessionIDs);
 
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
@@ -383,10 +384,19 @@ export class Timeline
 				if (child._sessionID == -1)
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
 
+
+			}
+		}
+		// for children that was added in previous frames, script must be called before target_mc-script
+		// for children added in this frame, script must be called after target_mc-script
+		for (i = target_mc.numChildren - 1; i >= 0; i--) {
+			child = target_mc._children[i];
+			if(child.isAsset(MovieClip) && new_depth_sessionIDs[child._sessionID]==null){
+				(<MovieClip>child).forceScriptInit();
 			}
 		}
 
-		if (!skip_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
+		if (queue_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
 
 
@@ -407,7 +417,7 @@ export class Timeline
 		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 	}
 
-	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object):void
+	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object):void
 	{
 		var i:number;
 		var k:number;
@@ -435,6 +445,12 @@ export class Timeline
 				// this could be changed in exporter
 				for (i = end_index - 1; i >= start_index; i--)
 					depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
+				if(k==target_keyframe_idx){
+					for (i = end_index - 1; i >= start_index; i--){
+						new_depth_sessionIDs[i] = true;
+					}
+				}
+				
 			}
 
 			if (frame_recipe & 8)
@@ -465,6 +481,9 @@ export class Timeline
 		}
 	}
 
+	/* constructs the next frame of a mc.
+		the function expects the currentFrameIndex already to be incremented
+	*/
 	public constructNextFrame(target_mc:MovieClip, queueScript:Boolean = true, scriptPass1:Boolean = false):void
 	{
 		var frameIndex:number = target_mc.currentFrameIndex;
