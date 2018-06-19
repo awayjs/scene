@@ -198,6 +198,20 @@ export class Timeline
 
 		}
 	}
+	public get_script_for_frame(target_mc:MovieClip, frame_index:number):any{
+
+		var keyframe_idx:number=this.keyframe_firstframes[frame_index];
+		if(this._framescripts[keyframe_idx]!=null){
+			if(frame_index==0 || this.keyframe_firstframes[frame_index-1]!=keyframe_idx){
+			
+				if(this._framescripts_translated[keyframe_idx]==null){
+					this._framescripts[keyframe_idx] = (<IMovieClipAdapter> target_mc.adapter).addScript(this._framescripts[keyframe_idx], keyframe_idx);
+					this._framescripts_translated[keyframe_idx]=true;
+				}	
+				return this._framescripts[keyframe_idx];
+			}
+		}
+	}
 
 	public get numFrames():number
 	{
@@ -277,6 +291,19 @@ export class Timeline
 			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index];
 	}
 
+	public getScriptForLabel(target_mc:MovieClip, label:string):any
+	{
+		var key_frame_index:number = this._labels[label];
+		if(key_frame_index < 0)
+			return null;
+		if(key_frame_index >= 0 && this._framescripts[key_frame_index]!=null){
+			if(this._framescripts_translated[key_frame_index]==null){
+				this._framescripts[key_frame_index] = (<IMovieClipAdapter> target_mc.adapter).addScript(this._framescripts[key_frame_index], key_frame_index);
+				this._framescripts_translated[key_frame_index]=true;
+			}
+			return this._framescripts[key_frame_index];
+		}
+	}
 
 	public gotoFrame(target_mc:MovieClip, value:number, queue_script:boolean = true):void
 	{
