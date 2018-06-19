@@ -264,22 +264,23 @@ export class MovieClip extends Sprite
 			this.removeChildAt(i);
 
 
-		if(fireScripts){
 			
-			// prevents the playhead to get moved in the advance frame again:	
-			this._skipAdvance=true;
+		// prevents the playhead to get moved in the advance frame again:	
+		this._skipAdvance=true;
 	
-			var numFrames:number = this._timeline.keyframe_indices.length;
-			this._isPlaying = Boolean(numFrames > 1);
-			if (numFrames) {
-				this._currentFrameIndex = 0;
-				// contruct the timeline and queue the script.
-				this._timeline.constructNextFrame(this, fireScripts, true);
-			} else {
-				this._currentFrameIndex = -1;
-			}
-
+		var numFrames:number = this._timeline.keyframe_indices.length;
+		this._isPlaying = Boolean(numFrames > 1);
+		if (numFrames) {
+			this._currentFrameIndex = 0;
+			// contruct the timeline and queue the script.
+			//if(fireScripts){
+			this._timeline.constructNextFrame(this, fireScripts, true);
+			//}
+		} else {
+			this._currentFrameIndex = -1;
 		}
+
+		
 	}
 
 
