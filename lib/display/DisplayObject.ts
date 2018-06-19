@@ -2297,7 +2297,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
-		if (matrix3D != null && target != null) {
+		if (matrix3D == null && target != null) {
 			//scale updates if absolute dimensions are detected
 			if (this._width != null)
 				this._setScaleX(this._width/target.width);

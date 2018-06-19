@@ -552,10 +552,7 @@ export class TextField extends DisplayObject
 			return;
 		}
 		*/
-
-		if (target == null)
-			target = cache || new Box();
-
+		
 		var box:Box = new Box(this.textOffsetX, this.textOffsetY, 0, this._width, this._height);
 
 		if (matrix3D)
