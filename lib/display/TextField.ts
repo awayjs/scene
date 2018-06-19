@@ -3153,6 +3153,30 @@ export class TextField extends DisplayObject
 	}
 	public addChar(char:string, isShift:boolean=false, isCTRL:boolean=false, isAlt:boolean=false){
 
+		if (char && char.length>0 && this.adapter!=this){
+            var charCode:number;
+            switch(char){
+                case "Backspace":
+					charCode = 8;
+					break;
+				case "Delete":
+					charCode = 46;
+					break;
+				case "ArrowRight":
+					charCode = 39;
+					break;
+				case "ArrowLeft":
+					charCode = 37;
+					break;
+				case ".":
+					charCode = 189;
+					break;
+				default:
+					charCode = char.charCodeAt(0);
+					break;
+            }
+			(<any>this.adapter).dispatchAVM1KeyEvent(charCode);
+		}
 		var oldText=this._text;
 		if(!this._selectionBeginIndex){
 			this._selectionBeginIndex=0;
