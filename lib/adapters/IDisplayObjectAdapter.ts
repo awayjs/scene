@@ -10,6 +10,8 @@ export interface IDisplayObjectAdapter extends IAssetAdapter
 	
 	isColorTransformByScript():boolean;
 
+	doInitEvents():void;
+	
 	freeFromScript():void;
 
 	clone();

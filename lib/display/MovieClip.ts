@@ -1,6 +1,7 @@
 import {AssetEvent,IAsset, Matrix3D, EventBase, IAssetAdapter, Box} from "@awayjs/core";
 import {Graphics} from "@awayjs/graphics";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
+import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
 import {Timeline} from "../base/Timeline";
 import {MouseEvent} from "../events/MouseEvent";
 import {FrameScriptManager} from "../managers/FrameScriptManager";
@@ -422,12 +423,15 @@ export class MovieClip extends Sprite
 		super.addChildAtDepth(child, depth, replace);
 		
 		if(!this.doingSwap){
-			if(this.adapter!=this && child.isAsset(MovieClip)){
-				(<IMovieClipAdapter> child.adapter).doInitEvents();
-				if((<MovieClip>child).onLoadedAction){
-					FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);
+			if(child.adapter!=child){
+				(<IDisplayObjectAdapter>child.adapter).doInitEvents();
+				if(child.isAsset(MovieClip)){
+					   if((<MovieClip>child).onLoadedAction){
+						   FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);
+	   
+					   }
+				   }
 
-				}
 			}
 		}
 		return 

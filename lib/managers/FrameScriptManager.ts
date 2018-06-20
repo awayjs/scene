@@ -92,33 +92,37 @@ export class FrameScriptManager
 		if(this._queued_mcs.length==0 && this._queued_mcs_pass2.length==0)
 			return;
 
-		var queues_tmp:any[]=this._queued_mcs;
-		var queues_scripts_tmp:any[]=this._queued_scripts;
-		var i=this._queued_mcs_pass2.length;
-		while(i--){
-			queues_tmp.push(this._queued_mcs_pass2[i]);
-			queues_scripts_tmp.push(this._queued_scripts_pass2[i]);
-		}
-		this._queued_mcs_pass2.length = 0;
-		this._queued_scripts_pass2.length = 0;
-		this._queued_mcs=[];
-		this._queued_scripts=[];
+		while(this._queued_mcs.length>0 || this._queued_mcs_pass2.length>0){
 
-		//console.log("execute queue",this._queued_scripts);
-		
-		var mc:MovieClip;
-		for (i = 0; i <queues_tmp.length; i++) {
-			// during the loop we might add more scripts to the queue
-			mc=queues_tmp[i];
-			if(mc.scene!=null) {
-				// first we execute any pending loadedAction for this MC
-				if((<any>mc).onLoadedAction){
-					(<any>mc).onLoadedAction();
-					(<any>mc).onLoadedAction=null;	
-				}
-				if(queues_scripts_tmp[i]!=null){
-					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
-					(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+			var queues_tmp:any[]=this._queued_mcs.concat();
+			var queues_scripts_tmp:any[]=this._queued_scripts.concat();		
+			this._queued_mcs.length = 0;
+			this._queued_scripts.length = 0;
+	
+			var i=this._queued_mcs_pass2.length;
+			while(i--){
+				queues_tmp.push(this._queued_mcs_pass2[i]);
+				queues_scripts_tmp.push(this._queued_scripts_pass2[i]);
+			}
+			this._queued_mcs_pass2.length = 0;
+			this._queued_scripts_pass2.length = 0;
+	
+			//console.log("execute queue",this._queued_scripts);
+			
+			var mc:MovieClip;
+			for (i = 0; i <queues_tmp.length; i++) {
+				// during the loop we might add more scripts to the queue
+				mc=queues_tmp[i];
+				if(mc.scene!=null) {
+					// first we execute any pending loadedAction for this MC
+					if((<any>mc).onLoadedAction){
+						(<any>mc).onLoadedAction();
+						(<any>mc).onLoadedAction=null;	
+					}
+					if(queues_scripts_tmp[i]!=null){
+						//console.log("execute script", mc.name, queues_scripts_tmp[i]);
+						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+					}
 				}
 			}
 		}
