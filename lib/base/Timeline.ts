@@ -478,11 +478,25 @@ export class Timeline
 			}
 
 			if (frame_recipe & 8)
-				this._update_indices[update_cnt++] = frame_command_idx;// execute update command later
+				this._update_indices[update_cnt++] = frame_command_idx++;// execute update command later
 
-			if (frame_recipe & 16) {
+			if (frame_recipe & 16 && k==target_keyframe_idx) {
 				start_index = this.command_index_stream[frame_command_idx];
-				end_index = start_index + this.command_length_stream[frame_command_idx++];
+				end_index = start_index + this.command_length_stream[frame_command_idx];
+				for(i = start_index; i < end_index; i++) {
+					var audioProps:any = this.audioPool[this.add_sounds_stream[i]];
+					if(audioProps){		
+						var child:WaveAudio =audioProps.sound;
+						if(audioProps.props.loopCount>0){
+							child.loopsToPlay=audioProps.props.loopCount;
+						}
+						else{
+							child.loopsToPlay=0;
+						}
+						child.play(0,false);
+						//console.log("start sound:", child);
+					}
+				}
 			}
 
 		}
@@ -494,15 +508,6 @@ export class Timeline
 		var len:number = this._update_indices.length;
 		for (k = 0; k < len; k++)
 			this.update_childs(target_mc, this._update_indices[k]);
-		var frameIndex:number = target_mc.currentFrameIndex;
-		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
-		if(target_mc.constructedKeyFrameIndex != new_keyFrameIndex) {
-			var frame_command_idx = this.frame_command_indices[new_keyFrameIndex];
-			var frame_recipe = this.frame_recipe[new_keyFrameIndex];
-			if(frame_recipe & 16)
-				this.start_sounds(target_mc, frame_command_idx++);
-
-		}
 	}
 
 	/* constructs the next frame of a mc.
