@@ -397,6 +397,16 @@ export class MovieClip extends Sprite
 		return this._depth_sessionIDs;
 	}
 
+	public swapChildrenAt(index1:number, index2:number):void
+	{
+		var depth:number = this._children[index2]._depthID;
+		var child:DisplayObject = this._children[index1];
+
+		this.doingSwap=true;
+		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
+		this.addChildAtDepth(child, depth);
+		this.doingSwap=false;
+	}
 	public swapDepths(child:DisplayObject, depth:number){
 
 		var existingChild:DisplayObject=this.getChildAtDepth(depth);
@@ -419,7 +429,8 @@ export class MovieClip extends Sprite
 
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
-		child.reset();// this takes care of transform and visibility
+		if(!this.doingSwap)
+			child.reset();// this takes care of transform and visibility
 		super.addChildAtDepth(child, depth, replace);
 		
 		if(!this.doingSwap){
