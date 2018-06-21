@@ -27,7 +27,7 @@ export class DisplayObjectEvent extends EventBase
 	/**
 	 *
 	 */
-	public static INVALIDATE_PARTITION_BOUNDS:string = "invalidatePartitionBounds";
+	public static INVALIDATE_BOUNDS:string = "invalidatePartitionBounds";
 
 	private _object:DisplayObject;
 

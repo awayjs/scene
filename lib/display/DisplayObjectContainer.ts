@@ -597,21 +597,15 @@ export class DisplayObjectContainer extends DisplayObject
 					// ignore bounds of childs that are masked
 					// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
 					//if(this._children[i].masks==null){
-						box = this._children[i]._getBoxBoundsInternal(null, strokeFlag, fastFlag);
+						box = this._children[i]._getBoxBoundsInternal(null, strokeFlag, fastFlag, box);
 						
-						if (box) {
+						if (box != null) {
 							m.copyFrom(this._children[i].transform.matrix3D);
 							
 							if (this._children[i]._registrationMatrix3D)
 								m.prepend(this._children[i]._registrationMatrix3D);
 
-							box = m.transformBox(box);
-						}
-							
-						if (target && box) {
-							target.union(box, target);
-						} else if (box) {
-							target = box;
+							target = m.transformBox(box).union(target, target || cache);
 						}
 				//	}
 				}
@@ -637,7 +631,7 @@ export class DisplayObjectContainer extends DisplayObject
 			}
 		}
 
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
+		return target;
 	}
 
 	/**

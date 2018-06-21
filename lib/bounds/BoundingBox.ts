@@ -144,44 +144,46 @@ export class BoundingBox extends BoundingVolumeBase
 		if (this._box == null)
 			return;
 
-		var matrix:Matrix3D = this._boundingObject.transform.concatenatedMatrix3D;
+		//TODO: Warning - isInFrustum will be inactive until below commented code is resolved
+		//---------------------------------------------------------------------------------
+		// var matrix:Matrix3D = this._boundingObject.transform.concatenatedMatrix3D;
 		var hx:number = this._box.width/2;
 		var hy:number = this._box.height/2;
 		var hz:number = this._box.depth/2;
 		var cx:number = this._box.x + hx;
 		var cy:number = this._box.y + hy;
 		var cz:number = this._box.z + hz;
-		var raw:Float32Array = matrix._rawData;
+		// var raw:Float32Array = matrix._rawData;
 
-		var m11:number = raw[0], m12:number = raw[4], m13:number = raw[8], m14:number = raw[12];
-		var m21:number = raw[1], m22:number = raw[5], m23:number = raw[9], m24:number = raw[13];
-		var m31:number = raw[2], m32:number = raw[6], m33:number = raw[10], m34:number = raw[14];
+		// var m11:number = raw[0], m12:number = raw[4], m13:number = raw[8], m14:number = raw[12];
+		// var m21:number = raw[1], m22:number = raw[5], m23:number = raw[9], m24:number = raw[13];
+		// var m31:number = raw[2], m32:number = raw[6], m33:number = raw[10], m34:number = raw[14];
 
-		this._centerX = cx*m11 + cy*m12 + cz*m13 + m14;
-		this._centerY = cx*m21 + cy*m22 + cz*m23 + m24;
-		this._centerZ = cx*m31 + cy*m32 + cz*m33 + m34;
+		// this._centerX = cx*m11 + cy*m12 + cz*m13 + m14;
+		// this._centerY = cx*m21 + cy*m22 + cz*m23 + m24;
+		// this._centerZ = cx*m31 + cy*m32 + cz*m33 + m34;
 
-		this._halfExtentsX = Math.abs(hx*m11 + hy*m12 + hz*m13);
-		this._halfExtentsY = Math.abs(hx*m21 + hy*m22 + hz*m23);
-		this._halfExtentsZ = Math.abs(hx*m31 + hy*m32 + hz*m33);
+		// this._halfExtentsX = Math.abs(hx*m11 + hy*m12 + hz*m13);
+		// this._halfExtentsY = Math.abs(hx*m21 + hy*m22 + hz*m23);
+		// this._halfExtentsZ = Math.abs(hx*m31 + hy*m32 + hz*m33);
 
 		if (this._prefab) {
 			this._prefab.width = this._box.width;
 			this._prefab.height = this._box.height;
 			this._prefab.depth = this._box.depth;
 
-			this._boundsPrimitive.transform.matrix3D = matrix;
+			// this._boundsPrimitive.transform.matrix3D = matrix;
 
 			this._boundsPrimitive.registrationPoint = new Vector3D(-cx*this._boundsPrimitive.transform.scale.x, -cy*this._boundsPrimitive.transform.scale.y, -cz*this._boundsPrimitive.transform.scale.z);
 		}
 
-		this._width = this._halfExtentsX*2;
-		this._height = this._halfExtentsY*2;
-		this._depth = this._halfExtentsZ*2;
+		// this._width = this._halfExtentsX*2;
+		// this._height = this._halfExtentsY*2;
+		// this._depth = this._halfExtentsZ*2;
 
-		this._x = this._centerX - this._halfExtentsX;
-		this._y = this._centerY - this._halfExtentsY;
-		this._z = this._centerZ - this._halfExtentsZ;
+		// this._x = this._centerX - this._halfExtentsX;
+		// this._y = this._centerY - this._halfExtentsY;
+		// this._z = this._centerZ - this._halfExtentsZ;
 	}
 
 	public _createBoundsPrimitive():Sprite

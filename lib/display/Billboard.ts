@@ -135,22 +135,9 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 	 */
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
-		var box:Box;
-
-		if (matrix3D) {
-			box = matrix3D.transformBox(this._billboardBox);
-		} else {
-			box = this._billboardBox;
-		}
+		var box:Box = matrix3D? matrix3D.transformBox(this._billboardBox) : this._billboardBox;
 		
-		if (target == null) {
-			target = cache || new Box();
-			target.copyFrom(box);
-		} else {
-			target = target.union(box, target);
-		}
-
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, box.union(target, target || cache));
 	}
 
 	

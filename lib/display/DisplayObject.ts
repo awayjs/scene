@@ -1,4 +1,4 @@
-import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase, IAbstractionPool, ProjectionBase} from "@awayjs/core";
+import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase, IAbstractionPool, ProjectionBase, AbstractMethodError} from "@awayjs/core";
 
 import {BlendMode} from "@awayjs/stage";
 
@@ -169,7 +169,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _root:DisplayObjectContainer;
 	private _bounds:Rectangle;
 	private _boundingVolumePools:Object = new Object();
-	private _boundingVolumeDict:Object = new Object();
 	private _debugVisible:boolean;
 	public _pName:string;
 
@@ -203,6 +202,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _listenToSceneTransformChanged:boolean;
 	private _listenToSceneChanged:boolean;
 
+	private _boundsDirty:boolean;
 	private _matrix3DDirty:boolean;
 
 	private _eulers:Vector3D;
@@ -210,6 +210,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _width:number;
 	public _height:number;
 	public _depth:number;
+	public _absoluteDimension:boolean;
 
 	public _registrationMatrix3D:Matrix3D;
 	private _orientationMatrix:Matrix3D = new Matrix3D();
@@ -485,6 +486,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._depth = val;
 
+		this._updateAbsoluteDimension();
+		
 		this._setScaleZ(val/box.depth);
 	}
 
@@ -635,6 +638,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			return;
 
 		this._height = val;
+
+		this._updateAbsoluteDimension();
 
 		this._setScaleY(val/box.height);
 	}
@@ -1108,6 +1113,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		//remove absolute width
 		this._width = null;
 
+		this._updateAbsoluteDimension();
+
 		this._setScaleX(val);
 	}
 
@@ -1128,6 +1135,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		//remove absolute height
 		this._height = null;
+
+		this._updateAbsoluteDimension();
 
 		this._setScaleY(val);
 	}
@@ -1151,6 +1160,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		//remove absolute depth
 		this._depth = null;
 
+		this._updateAbsoluteDimension();
+		
 		this._setScaleZ(val);
 	}
 
@@ -1487,6 +1498,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._width = val;
 
+		this._updateAbsoluteDimension();
+
 		this._setScaleX(val/box.width);
 	}
 
@@ -1697,6 +1710,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		//this._inverseSceneTransform = null;
 
 		this._explicitMasks = null;
+
+		for (var key in this._boundingVolumePools) {
+			this._boundingVolumePools[key].dispose();
+			delete this._boundingVolumePools[key];
+		}
 	}
 
 	/**
@@ -1753,6 +1771,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public getBoundingVolume(targetCoordinateSpace:DisplayObject = null, boundingVolumeType:BoundingVolumeType = null):BoundingVolumeBase
 	{
+		this._boundsDirty = false;
+
 		if (boundingVolumeType == null)
 			boundingVolumeType = this._defaultBoundingVolume;
 
@@ -2116,7 +2136,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			
 			this._scenePositionDirty = true;
 
-			this._invalidateBounds();
+			if (this._pScene)
+				this._pScene._invalidateEntity(this);
 
 			if (this._listenToSceneTransformChanged)
 				this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
@@ -2147,10 +2168,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (sceneChanged)
 			this._pScene = scene;
 
-		if (this._pScene) {
-			//register object with scene
+		//register object with scene
+		if (this._pScene)
 			this._pScene._invalidateEntity(this);
-		}
 
 		if (sceneChanged && this._listenToSceneChanged)
 			this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
@@ -2163,6 +2183,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this._iController)
 			this._iController.updateController();
+
+		// call getBoxBounds() if absolute size need to update transform
+		if (this._absoluteDimension) {
+			var box:Box = this.getBoxBounds();
+
+			if (this._width != null)
+				this._setScaleX(this._width/box.width);
+
+			if (this._height != null)
+				this._setScaleY(this._height/box.height);
+
+			if (this._depth != null)
+				this._setScaleZ(this._depth/box.depth);
+		}
 
 		this._concatenatedMatrix3D.copyFrom(this._transform.matrix3D);
 
@@ -2276,6 +2310,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._matrix3DDirty = true;
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+
+		if (this._pParent)
+			this._pParent._invalidateBounds();
 	}
 
 	/**
@@ -2288,8 +2325,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _invalidateBounds():void
 	{
-		if (this.isEntity)
-			this.invalidatePartitionBounds();
+		if (this._boundsDirty)
+			return;
+		
+		this._boundsDirty = true;
+
+		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_BOUNDS, this));
+
+		if (this._absoluteDimension)
+			this.transform.invalidateMatrix3D();
 
 		if (this._pParent)
 			this._pParent._invalidateBounds();
@@ -2297,19 +2341,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
-		if (matrix3D == null && target != null) {
-			//scale updates if absolute dimensions are detected
-			if (this._width != null)
-				this._setScaleX(this._width/target.width);
-
-			if (this._height != null)
-				this._setScaleY(this._height/target.height);
-
-			if (this._depth != null)
-				this._setScaleZ(this._depth/target.depth);
-		}
-
-		return target;
+		throw new AbstractMethodError();
 	}
 
 	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
@@ -2433,11 +2465,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._pImplicitMasks = null;
 	}
 
-	public invalidatePartitionBounds():void
-	{
-		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this));
-	}
-
 	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
 	{
 		return false;
@@ -2461,5 +2488,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	protected _getDefaultBoundingVolume():BoundingVolumeType
 	{
 		return BoundingVolumeType.BOX;
+	}
+
+	private _updateAbsoluteDimension():void
+	{
+		this._absoluteDimension = Boolean(this._width != null || this._height != null || this._depth != null);
 	}
 }

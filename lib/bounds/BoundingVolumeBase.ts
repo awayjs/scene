@@ -1,4 +1,4 @@
-import {Plane3D, Vector3D, AbstractMethodError, AbstractionBase, AssetEvent} from "@awayjs/core";
+import {Plane3D, Vector3D, AbstractMethodError, AbstractionBase, AssetEvent, TransformEvent} from "@awayjs/core";
 
 import {IEntity} from "@awayjs/renderer";
 
@@ -10,7 +10,8 @@ import { BoundingVolumePool } from './BoundingVolumePool';
 
 export class BoundingVolumeBase extends AbstractionBase
 {
-	private _onInvalidatePartitionBoundsDelegate:(event:DisplayObjectEvent) => void;
+	private _onInvalidateBoundsDelegate:(event:DisplayObjectEvent) => void;
+	private _onInvalidateMatrix3DDelegate:(event:TransformEvent) => void;
 
 	protected _targetCoordinateSpace:DisplayObject;
 	protected _boundingObject:DisplayObject;
@@ -27,12 +28,21 @@ export class BoundingVolumeBase extends AbstractionBase
 		this._strokeFlag = pool.strokeFlag;
 		this._fastFlag = pool.fastFlag;
 
-		this._onInvalidatePartitionBoundsDelegate = (event:DisplayObjectEvent) => this._onInvalidatePartitionBounds(event);
+		this._onInvalidateBoundsDelegate = (event:DisplayObjectEvent) => this._onInvalidateBounds(event);
+		this._onInvalidateMatrix3DDelegate = (event:TransformEvent) => this._onInvalidateMatrix3D(event);
 
-		this._boundingObject.addEventListener(DisplayObjectEvent.INVALIDATE_PARTITION_BOUNDS, this._onInvalidatePartitionBoundsDelegate);
+		this._boundingObject.addEventListener(DisplayObjectEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
+
+		if (this._targetCoordinateSpace)
+			this._targetCoordinateSpace.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
 	}
 
-	public _onInvalidatePartitionBounds(event:DisplayObjectEvent):void
+	public _onInvalidateBounds(event:DisplayObjectEvent):void
+	{
+		this._invalid = true;
+	}
+	
+	public _onInvalidateMatrix3D(event:TransformEvent):void
 	{
 		this._invalid = true;
 	}
@@ -41,6 +51,11 @@ export class BoundingVolumeBase extends AbstractionBase
 	{
 		super.onClear(event);
 
+		this._boundingObject.removeEventListener(DisplayObjectEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
+		
+		if (this._targetCoordinateSpace)
+			this._targetCoordinateSpace.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+		
 		this._targetCoordinateSpace = null;
 		this._boundingObject = null;
 		this._boundsPrimitive = null;
@@ -57,6 +72,8 @@ export class BoundingVolumeBase extends AbstractionBase
 		if(this._invalid)
 			this._update();
 
+		this._boundsPrimitive.transform.matrix3D = this._boundingObject.transform.concatenatedMatrix3D;
+		
 		return this._boundsPrimitive;
 	}
 

@@ -1,6 +1,7 @@
 import {AbstractMethodError} from "@awayjs/core";
 
 import {DisplayObject} from "../display/DisplayObject";
+import { HierarchicalProperties } from '../base/HierarchicalProperties';
 
 export class ControllerBase
 {
@@ -16,7 +17,7 @@ export class ControllerBase
 	public pNotifyUpdate():void
 	{
 		if (this._pTargetObject)
-			this._pTargetObject.invalidatePartitionBounds();
+			this._pTargetObject._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
 	public get targetObject():DisplayObject

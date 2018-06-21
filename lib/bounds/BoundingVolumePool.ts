@@ -83,5 +83,11 @@ export class BoundingVolumePool implements IAbstractionPool
 	public clearAbstraction(displayObject:DisplayObject):void
 	{
 		delete this._boundingVolumePool[displayObject? displayObject.id : -1];
-	}	
+	}
+
+	public dispose():void
+	{
+		for (var key in this._boundingVolumePool)
+			this._boundingVolumePool[key].onClear(null);
+	}
 }

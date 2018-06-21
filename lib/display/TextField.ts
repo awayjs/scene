@@ -558,14 +558,7 @@ export class TextField extends DisplayObject
 		if (matrix3D)
 			box = matrix3D.transformBox(box);
 
-		if (target == null) {
-			target = cache || new Box();
-			target.copyFrom(box);
-		} else {
-			target = target.union(box, target);
-		}
-
-		return target;
+		return box.union(target, target || cache);
 	}
 
 	/**

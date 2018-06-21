@@ -102,9 +102,6 @@ export class LineSegment extends DisplayObject implements IRenderable
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
-		if (target == null)
-			target = cache || new Box();
-
 		var box:Box = new Box(Math.min(this._startPosition.x, this._endPosition.x), 
 							Math.min(this._startPosition.y, this._endPosition.y),
 							Math.min(this._startPosition.z, this._endPosition.z),
@@ -115,14 +112,7 @@ export class LineSegment extends DisplayObject implements IRenderable
 		if (matrix3D)
 			box = matrix3D.transformBox(box);
 
-		if (target == null) {
-			target = cache || new Box();
-			target.copyFrom(box);
-		} else {
-			target = target.union(box, target);
-		}
-
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
+		return box.union(target, target || cache);
 	}
 
 	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere

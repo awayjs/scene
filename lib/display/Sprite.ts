@@ -185,9 +185,7 @@ export class Sprite extends DisplayObjectContainer
 	 */
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
-		target = this._graphics.getBoxBounds(matrix3D, strokeFlag, cache, target);
-
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, this._graphics.getBoxBounds(matrix3D, strokeFlag, cache, target));
 	}
 
 
