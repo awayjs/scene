@@ -280,13 +280,18 @@ export class TextField extends DisplayObject
 		var myPoint:Point=this.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
 		var lineIdx:number=this.getLineIndexAtPoint(myPoint.x, myPoint.y);
 		var charIdx:number=this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
-			
-		if(lineIdx>=0 && charIdx<0){
+		
+		if(lineIdx>=this.lines_start_x.length)
+			lineIdx=this.lines_start_x.length-1;
+
+		if(lineIdx>=0 && charIdx<0 && this.lines_start_x[lineIdx]){
 			if(myPoint.x<=this.lines_start_x[lineIdx])
 				charIdx=this.lines_charIdx_start[lineIdx];
 			else
 				charIdx=this.lines_charIdx_end[lineIdx];				
 		}
+		if(lineIdx<0 || charIdx<0)
+			charIdx=0;
 		//console.log("lineIdx", lineIdx, "charIdx", charIdx);
 		return charIdx;
 
@@ -1637,6 +1642,8 @@ export class TextField extends DisplayObject
 		this._borderColor=0x000000;
 		this.html=false;
 		this.maxChars=0;
+		this._selectionBeginIndex=0;
+		this._selectionEndIndex=0;
 
 
 
@@ -3146,6 +3153,30 @@ export class TextField extends DisplayObject
 	}
 	public addChar(char:string, isShift:boolean=false, isCTRL:boolean=false, isAlt:boolean=false){
 
+		if (char && char.length>0 && this.adapter!=this){
+            var charCode:number;
+            switch(char){
+                case "Backspace":
+					charCode = 8;
+					break;
+				case "Delete":
+					charCode = 46;
+					break;
+				case "ArrowRight":
+					charCode = 39;
+					break;
+				case "ArrowLeft":
+					charCode = 37;
+					break;
+				case ".":
+					charCode = 189;
+					break;
+				default:
+					charCode = char.charCodeAt(0);
+					break;
+            }
+			(<any>this.adapter).dispatchAVM1KeyEvent(charCode);
+		}
 		var oldText=this._text;
 		if(!this._selectionBeginIndex){
 			this._selectionBeginIndex=0;
@@ -3251,6 +3282,7 @@ export class TextField extends DisplayObject
 		this._glyphsDirty=true;
 		this.reConstruct();
 		this.drawSelectionGraphics();
+		this.invalidate();
 		
 		if(this._onChanged && oldText!=this._text)
 			this._onChanged();
