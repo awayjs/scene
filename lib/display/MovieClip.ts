@@ -294,7 +294,7 @@ export class MovieClip extends Sprite
 				this._currentFrameIndex = 0;
 				// contruct the timeline and queue the script.
 				//if(fireScripts){
-				this._timeline.constructNextFrame(this, fireScripts&&!this.doingSwap&&!preventScript, true);
+				this._timeline.constructNextFrame(this, fireScripts&&!this.doingSwap&&!this.preventScript, true);
 				//}
 			} else {
 				this._currentFrameIndex = -1;
