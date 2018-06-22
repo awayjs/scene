@@ -398,7 +398,8 @@ export class Timeline
 
 		var child1:IAsset;
 
-		// scripts for children added in previous frames must be queued before the script of the target_mc, 
+		// onClipevents for children added in previous frames must be queued before the script of the target_mc, 
+		target_mc.preventScript=true;
 		for (var key in depth_sessionIDs) {
 			if(!new_depth_sessionIDs[key]){
 				child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
@@ -407,6 +408,7 @@ export class Timeline
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
 			}			
 		}
+		target_mc.preventScript=false;
 		
 		if (queue_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
 			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
@@ -573,8 +575,8 @@ export class Timeline
 		var idx:number;
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
-		//for (var i:number = end_index - 1; i >= start_index; i--) {
-		for (var i:number = start_index; i < end_index; i++) {
+		for (var i:number = end_index - 1; i >= start_index; i--) {
+		//for (var i:number = start_index; i < end_index; i++) {
 			idx = i*2;
 			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
 			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);//this.add_child_stream[idx]);
