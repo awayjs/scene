@@ -20,6 +20,7 @@ export class MovieClip extends Sprite
 
 	public swappedDepthsMap:any={};
 	public doingSwap:boolean=false;
+	public preventScript:boolean=false;
 
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
 
@@ -32,7 +33,13 @@ export class MovieClip extends Sprite
 
 	private _timeline:Timeline;
 
+	// buttonMode specifies if the mc has any mouse-listeners attached that should trigger showing the hand-cursor
+	// if this is set once to true; it will never get set back to false again.
+	private _buttonMode:boolean = false;
+
+	// isButton specifies if the mc-timeline is actually considered a button-timeline
 	private _isButton:boolean = false;
+
 	private _onMouseOver:(event:MouseEvent) => void;
 	private _onMouseOut:(event:MouseEvent) => void;
 	private _onMouseDown:(event:MouseEvent) => void;
@@ -52,7 +59,7 @@ export class MovieClip extends Sprite
 	private _depth_sessionIDs:Object = {};
 	private _sessionID_childs:Object = {};
 
-	public useHandCursor:boolean;
+	public _useHandCursor:boolean;
 	public mouseListenerCount:number;
 
 	private _hitArea:DisplayObject
@@ -63,7 +70,10 @@ export class MovieClip extends Sprite
 		super();
 
 		this.doingSwap=false;
-		this.useHandCursor=true;
+
+		this._isButton=false;
+		this._buttonMode=false;
+		this._useHandCursor=true;
 		this.mouseListenerCount=0;
 		this.cursorType="pointer";
 		//this.debugVisible=true;
@@ -135,7 +145,7 @@ export class MovieClip extends Sprite
 	{
 		if(this.name=="scene")
 			return "initial";
-		if(this.useHandCursor && (this.mouseListenerCount>0)){
+		if(this._useHandCursor && (this.buttonMode)){
 			return this.cursorType;
 		}
 		var cursorName:string;
@@ -199,13 +209,21 @@ export class MovieClip extends Sprite
 		}
 	}
 
+	public get useHandCursor():boolean
+	{
+		return this._useHandCursor;
+	}
+	public set useHandCursor(value:boolean)
+	{
+		this._useHandCursor = value;
+	}
 	public get buttonMode():boolean
 	{
-		return this._isButton;
+		return this._buttonMode;
 	}
 	public set buttonMode(value:boolean)
 	{
-		this._isButton = value;
+		this._buttonMode = value;
 	}
 	public get isInit():boolean
 	{
@@ -269,16 +287,18 @@ export class MovieClip extends Sprite
 		// prevents the playhead to get moved in the advance frame again:	
 		this._skipAdvance=true;
 	
-		var numFrames:number = this._timeline.keyframe_indices.length;
-		this._isPlaying = Boolean(numFrames > 1);
-		if (numFrames) {
-			this._currentFrameIndex = 0;
-			// contruct the timeline and queue the script.
-			//if(fireScripts){
-			this._timeline.constructNextFrame(this, fireScripts, true);
-			//}
-		} else {
-			this._currentFrameIndex = -1;
+		if(fireScripts){
+			var numFrames:number = this._timeline.keyframe_indices.length;
+			this._isPlaying = Boolean(numFrames > 1);
+			if (numFrames) {
+				this._currentFrameIndex = 0;
+				// contruct the timeline and queue the script.
+				//if(fireScripts){
+				this._timeline.constructNextFrame(this, fireScripts&&!this.doingSwap&&!this.preventScript, true);
+				//}
+			} else {
+				this._currentFrameIndex = -1;
+			}
 		}
 
 		
