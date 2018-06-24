@@ -28,6 +28,7 @@ import {DisplayObject} from "./DisplayObject";
 import {MovieClip} from "./MovieClip";
 import {TextShape} from "../text/TextShape";
 import { FontStyleName } from '../text/FontStyleName';
+import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -1103,7 +1104,7 @@ export class TextField extends DisplayObject
             value=value.replace(".", "");
         }
         if(value.indexOf("0-9")>=0){
-            this._restrictInternal+="0123456789";
+            this._restrictInternal+=" 0123456789";
             value=value.replace("0-9", "");
         }
         if(value.indexOf("a-z")>=0){
@@ -1814,13 +1815,13 @@ export class TextField extends DisplayObject
 	public reset(){
 		super.reset();
 		//console.log("reset textfield:", this.name);
-		if(this.name && typeof this.name !== "number"){
+		//if(this.name && typeof this.name !== "number"){
 			// if the textfield has a valid name, it might have been changed by scripts. 
 			// in that case we want to reset it to its original state
 			if(this.sourceTextField){
 				this.sourceTextField.copyTo(this);
 			}
-		}
+		//}
 		/*if(this.adapter != this){
 			(<any>this.adapter).syncTextFieldValue();
 		}*/
@@ -2797,15 +2798,24 @@ export class TextField extends DisplayObject
 	{
 		var selectionStart:number=this._selectionBeginIndex;
 		var selectionEnd:number=this._selectionEndIndex;
-		if(selectionEnd<selectionStart){
-			selectionStart=this._selectionEndIndex;
-			selectionEnd=this._selectionBeginIndex;
+		if(selectionEnd!=selectionStart){
+			if(selectionEnd<selectionStart){
+				selectionStart=this._selectionEndIndex;
+				selectionEnd=this._selectionBeginIndex;
+			}
+			var textBeforeCursor:string=this._text.slice(0, selectionStart-1);
+			var textAfterCursor:string=this._text.slice(selectionEnd, this._text.length);
+			this.text = textBeforeCursor + value + textAfterCursor;
+			this._selectionBeginIndex=selectionStart;
+			this._selectionEndIndex=this._selectionBeginIndex+value.length;
+			return;
 		}
-		var textBeforeCursor:string=this._text.slice(0, selectionStart-1);
+		var textBeforeCursor:string=this._text.slice(0, selectionStart);
 		var textAfterCursor:string=this._text.slice(selectionEnd, this._text.length);
 		this.text = textBeforeCursor + value + textAfterCursor;
-		this._selectionBeginIndex=selectionStart;
-		this._selectionEndIndex=this._selectionBeginIndex+value.length;
+		this._selectionBeginIndex=selectionStart+1;
+		this._selectionEndIndex=this._selectionBeginIndex;
+
 	}
 
 	/**
@@ -3175,7 +3185,7 @@ export class TextField extends DisplayObject
 					charCode = char.charCodeAt(0);
 					break;
             }
-			(<any>this.adapter).dispatchAVM1KeyEvent(charCode);
+			(<ITextfieldAdapter>this.adapter).dispatchKeyEvent(charCode, isShift, isCTRL, isAlt);
 		}
 		var oldText=this._text;
 		if(!this._selectionBeginIndex){
