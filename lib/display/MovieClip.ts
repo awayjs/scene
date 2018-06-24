@@ -225,6 +225,14 @@ export class MovieClip extends Sprite
 	{
 		this._buttonMode = value;
 	}
+	public get isButton():boolean
+	{
+		return this._isButton;
+	}
+	public set isButton(value:boolean)
+	{
+		this._isButton = value;
+	}
 	public get isInit():boolean
 	{
 		return this._isInit;
@@ -363,6 +371,7 @@ export class MovieClip extends Sprite
 			case MouseEvent.MOUSE_MOVE:
 			case MouseEvent.MOUSE_DOWN:
 			case MouseEvent.MOUSE_OVER:
+			case MouseEvent.MOUSE_UP:
 			case MouseEvent.MOUSE_UP_OUTSIDE:
 			case MouseEvent.MOUSE_WHEEL:
 				this.mouseListenerCount++;
@@ -379,6 +388,7 @@ export class MovieClip extends Sprite
 			case MouseEvent.MOUSE_MOVE:
 			case MouseEvent.MOUSE_DOWN:
 			case MouseEvent.MOUSE_OVER:
+			case MouseEvent.MOUSE_UP:
 			case MouseEvent.MOUSE_UP_OUTSIDE:
 			case MouseEvent.MOUSE_WHEEL:
 				if(this.mouseListenerCount>0)
@@ -473,7 +483,12 @@ export class MovieClip extends Sprite
 		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
 
 		this._sessionID_childs[sessionID] = child;
+		
+		if(child.adapter!=child){
+			(<any>child.adapter).deleteOwnProperties();
+		}
 
+		
 		return this.addChildAtDepth(child, depth);
 	}
 
