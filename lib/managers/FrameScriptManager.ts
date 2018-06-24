@@ -54,10 +54,11 @@ export class FrameScriptManager
 	public static add_script_to_queue(mc:MovieClip, script:any):void
 	{
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
-		var i=this._queued_mcs_pass2.length;
-		while(i--){
+		var i=0;//this._queued_mcs_pass2.length;
+		while(i<this._queued_mcs_pass2.length){
 			this._queued_mcs.push(this._queued_mcs_pass2[i]);
 			this._queued_scripts.push(this._queued_scripts_pass2[i]);
+			i++
 		}
 		this._queued_mcs_pass2.length = 0;
 		this._queued_scripts_pass2.length = 0;
@@ -67,10 +68,11 @@ export class FrameScriptManager
 	public static add_loaded_action_to_queue(mc:MovieClip):void
 	{
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
-		var i=this._queued_mcs_pass2.length;
-		while(i--){
+		var i=0;//this._queued_mcs_pass2.length;
+		while(i<this._queued_mcs_pass2.length){
 			this._queued_mcs.push(this._queued_mcs_pass2[i]);
 			this._queued_scripts.push(this._queued_scripts_pass2[i]);
+			i++
 		}
 		this._queued_mcs_pass2.length = 0;
 		this._queued_scripts_pass2.length = 0;
@@ -99,10 +101,11 @@ export class FrameScriptManager
 			this._queued_mcs.length = 0;
 			this._queued_scripts.length = 0;
 	
-			var i=this._queued_mcs_pass2.length;
-			while(i--){
+			var i=0;//this._queued_mcs_pass2.length;
+			while(i<this._queued_mcs_pass2.length){
 				queues_tmp.push(this._queued_mcs_pass2[i]);
 				queues_scripts_tmp.push(this._queued_scripts_pass2[i]);
+				i++;
 			}
 			this._queued_mcs_pass2.length = 0;
 			this._queued_scripts_pass2.length = 0;

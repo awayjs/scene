@@ -61,14 +61,20 @@ export class DisplayObjectContainer extends DisplayObject
 		var i:number=this._children.length;
 		while(i>0){
 			i--;
-			this._children[i].dispatchEnterFrame(event);
+			// the dispatched Event might change the childs, so make sure they still exits
+			if(i<this._children.length){
+				this._children[i].dispatchEnterFrame(event);
+			}
 		}
 	}
 	public dispatchExitFrame(event:any) {
 		var i:number=this._children.length;
 		while(i>0){
 			i--;
-			this._children[i].dispatchExitFrame(event);
+			// the dispatched Event might change the childs, so make sure they still exits
+			if(i<this._children.length){
+				this._children[i].dispatchExitFrame(event);
+			}
 		}
 		this.dispatchEvent(event);//Exit
 	}

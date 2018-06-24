@@ -315,29 +315,10 @@ export class Timeline
 
 
 		var i:number;
-		var k:number;
-		var inputTextTexts:any={};
-		var hasInputTextMap:boolean=false;
 		var child:DisplayObject;
-		for (i = target_mc.numChildren - 1; i >= 0; i--) {
-			child = target_mc._children[i];
-			if(child.isAsset(TextField) && (<TextField>child).type!=TextFieldType.STATIC){
-				hasInputTextMap=true;
-				inputTextTexts[child.name]=(<TextField>child).text;
-			}
-		}
 
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
-			this.constructNextFrame(target_mc, queue_script, false);
-			if(hasInputTextMap){
-				for (i = target_mc.numChildren - 1; i >= 0; i--) {
-					child = target_mc._children[i];
-					if(child.isAsset(TextField) && (<TextField>child).type!=TextFieldType.STATIC){
-						if(inputTextTexts[child.name])
-							(<TextField>child).text=inputTextTexts[child.name];
-					}
-				}
-			}
+			this.constructNextFrame(target_mc, queue_script, true);
 			return;
 		}
 
@@ -426,17 +407,6 @@ export class Timeline
 
 		//pass2: apply update commands for objects on stage (only if they are not blocked by script)
 		this.pass2(target_mc);
-
-		if(hasInputTextMap){
-
-			for (i = target_mc.numChildren - 1; i >= 0; i--) {
-				child = target_mc._children[i];
-				if(child.isAsset(TextField) && (<TextField>child).type!=TextFieldType.STATIC){
-					if(inputTextTexts[child.name])
-						(<TextField>child).text=inputTextTexts[child.name];
-				}
-			}
-		}
 
 		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 	}
@@ -575,8 +545,8 @@ export class Timeline
 		var idx:number;
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
-		for (var i:number = end_index - 1; i >= start_index; i--) {
-		//for (var i:number = start_index; i < end_index; i++) {
+		//for (var i:number = end_index - 1; i >= start_index; i--) {
+		for (var i:number = start_index; i < end_index; i++) {
 			idx = i*2;
 			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
 			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);//this.add_child_stream[idx]);
