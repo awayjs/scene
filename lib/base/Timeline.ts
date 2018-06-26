@@ -373,6 +373,14 @@ export class Timeline
 							child.visible = true;
 						}
 					}
+					else{
+						child.transform.clearColorTransform();
+						child.transform.clearMatrix3D();
+						child.visible = true;
+						//this.name="";
+						child.masks = null;
+						child.maskMode = false;
+					}
 				}
 			}
 		}
