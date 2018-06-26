@@ -1,4 +1,4 @@
-import {BuildMode, Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point} from "@awayjs/core";
+import {BuildMode, PerspectiveProjection, Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, ProjectionBase, Point, Vector3D} from "@awayjs/core";
 
 import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
 
@@ -204,6 +204,7 @@ export class TextField extends DisplayObject
 	private char_positions_x:number[] = [];
 	private char_positions_y:number[] = [];
 
+	private _strokeScale:Vector3D = new Vector3D();
 	// keeping track of the original textfield that was used for cloning this one.
 	public sourceTextField:TextField=null;
 
@@ -381,11 +382,13 @@ export class TextField extends DisplayObject
 		}
 		tf.font_table.initFontSize(tf.size);
 		var height:number= tf.font_table.getLineHeight();
+		var cursorScale:number=this.transform.concatenatedMatrix3D.decompose()[3].x*this._strokeScale.x;
+		if(cursorScale<=0)cursorScale=1;
 		if(!this.cursorShape){
-			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x,y,0.5,height],tf.color,1);
+			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x,y,0.5*(1/cursorScale),height],tf.color,1);
 		}
 		else{
-			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5,height]);
+			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5*(1/cursorScale),height]);
 		}
 	}
 	private drawSelectedBG(){
@@ -545,6 +548,20 @@ export class TextField extends DisplayObject
 			this._invalidateBounds();
 	}
 
+
+	public _iInternalUpdate(projection:ProjectionBase):void
+	{
+		super._iInternalUpdate(projection);
+		
+		if (projection) {
+			this._strokeScale.x = (<PerspectiveProjection> projection).hFocalLength/1000;
+			this._strokeScale.y = (<PerspectiveProjection> projection).focalLength/1000;
+		}else{
+			this._strokeScale.x = 1;
+			this._strokeScale.y = 1;
+		}
+		
+	}
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
@@ -820,6 +837,14 @@ export class TextField extends DisplayObject
 				value = value.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
 				value = value.replace(new RegExp("Ã", 'g'), String.fromCharCode(215));
 				value = value.replace(new RegExp("<br>", 'g'), "<br/>");
+				value = value.replace(new RegExp("<BR>", 'g'), "<br/>");
+				value = value.replace(new RegExp("<BR/>", 'g'), "<br/>");
+				value = value.replace(new RegExp("<B>", 'g'), "<b>");
+				value = value.replace(new RegExp("</B>", 'g'), "</b>");
+				value = value.replace(new RegExp("<I>", 'g'), "<i>");
+				value = value.replace(new RegExp("</I>", 'g'), "</i>");
+				value = value.replace(new RegExp("<P>", 'g'), "<p>");
+				value = value.replace(new RegExp("</P>", 'g'), "</p>");
 				this._htmlText=value;
 				var textProps:any= {
 					text:""
@@ -3292,9 +3317,8 @@ export class TextField extends DisplayObject
 		this._glyphsDirty=true;
 		this.reConstruct();
 		this.drawSelectionGraphics();
-		this.invalidate();
 		
-		if(this._onChanged && oldText!=this._text)
+		if(this._onChanged && oldText!==this._text)
 			this._onChanged();
 	}
 	public onMouseDownDelegate:(e:any) => void;
