@@ -57,7 +57,6 @@ export class DisplayObjectContainer extends DisplayObject
 
 	}
 	public dispatchEnterFrame(event:any) {
-		this.dispatchEvent(event);//ENTER_FRAME
 		var i:number=this._children.length;
 		while(i>0){
 			i--;
@@ -66,6 +65,7 @@ export class DisplayObjectContainer extends DisplayObject
 				this._children[i].dispatchEnterFrame(event);
 			}
 		}
+		this.dispatchEvent(event);//ENTER_FRAME
 	}
 	public dispatchExitFrame(event:any) {
 		var i:number=this._children.length;
