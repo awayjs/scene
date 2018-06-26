@@ -833,6 +833,7 @@ export class TextField extends DisplayObject
 		return this._htmlText;
 	};
 	public set htmlText(value:string){
+				//console.log("html in", value);
 				value = value.replace(new RegExp("&nbsp;", 'g'), " ");
 				value = value.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
 				value = value.replace(new RegExp("Ã", 'g'), String.fromCharCode(215));
@@ -845,6 +846,117 @@ export class TextField extends DisplayObject
 				value = value.replace(new RegExp("</I>", 'g'), "</i>");
 				value = value.replace(new RegExp("<P>", 'g'), "<p>");
 				value = value.replace(new RegExp("</P>", 'g'), "</p>");
+
+				// 	some preprocessing to make sure that html-tags are closing
+				// 	todo: this can probably be done better
+				var cnt=0;
+				var openTags:any[]=[];
+				var openParagraph:boolean=false;
+				var openBold:boolean=false;
+				var openItalic:boolean=false;
+				var openFont:boolean=false;
+				var insertAt:number[]=[];
+				var insert:string[]=[];
+				while(cnt<value.length){
+					if(value[cnt]=="<"){
+						if(value[cnt+1]=="p"){							
+							//console.log("html p");
+							openTags[openTags.length]="p";
+							openParagraph=true;}
+						else if(value[cnt+1]=="b"){	
+							//console.log("html b");
+							openTags[openTags.length]="b";
+							openBold=true;}
+						else if(value[cnt+1]=="i"){	
+							//console.log("html i");
+							openTags[openTags.length]="i";
+							openItalic=true;}
+						else if(value[cnt+1]=="f" && value[cnt+2]=="o" && value[cnt+3]=="n" && value[cnt+4]=="t"){
+							//console.log("html font");
+							openTags[openTags.length]="font";
+							openFont=true;
+							cnt+=2;
+						}
+						else if(value[cnt+1]=="/" && value[cnt+2]=="p"){
+							var c:number=openTags.length;
+							while(c>0){
+								c--;
+								if(openTags[c]=="p"){
+									openTags.pop();
+									break;
+								}
+								else{
+									openTags.pop();
+									insertAt[insertAt.length]=cnt;
+									insert[insert.length]="</"+openTags[c]+">";
+								}
+							}
+						} 
+						else if(value[cnt+1]=="/" && value[cnt+2]=="b"){	
+							var c:number=openTags.length;
+							while(c>0){
+								c--;
+								if(openTags[c]=="b"){
+									openTags.pop();
+									break;
+								}
+								else{
+									openTags.pop();
+									insertAt[insertAt.length]=cnt;
+									insert[insert.length]="</"+openTags[c]+">";
+								}
+							}
+						}
+						else if(value[cnt+1]=="/" && value[cnt+2]=="i"){	
+							var c:number=openTags.length;
+							while(c>0){
+								c--;
+								if(openTags[c]=="i"){
+									openTags.pop();
+									break;
+								}
+								else{
+									openTags.pop();
+									insertAt[insertAt.length]=cnt;
+									insert[insert.length]="</"+openTags[c]+">";
+								}
+							}
+						}
+						else if(value[cnt+1]=="/" && value[cnt+2]=="f" && value[cnt+3]=="o" && value[cnt+4]=="n" && value[cnt+5]=="t"){
+							var c:number=openTags.length;
+							while(c>0){
+								c--;
+								if(openTags[c]=="font"){
+									openTags.pop();
+									break;
+								}
+								else{
+									openTags.pop();
+									insertAt[insertAt.length]=cnt;
+									insert[insert.length]="</"+openTags[c]+">";
+								}
+							}
+						}
+						cnt++;
+					}
+					else{
+						cnt++;
+					}
+				}
+				var c:number=openTags.length;
+				while(c>0){
+					c--;
+					insertAt[insertAt.length]=cnt;
+					insert[insert.length]="</"+openTags[c]+">";
+				}
+				var additional:number=0;
+				var len:number=insert.length;
+				for(var i:number=0; i<len;i++){
+					value = value.slice(0, insertAt[i]+additional) + insert[i] + value.slice(insertAt[i]+additional);
+					additional+=insert[i].length;
+				}
+
+				//console.log("html fixed",  value);
 				this._htmlText=value;
 				var textProps:any= {
 					text:""
@@ -870,13 +982,15 @@ export class TextField extends DisplayObject
 					if(doc.firstChild.childNodes.length>0){
 						if(doc.firstChild.childNodes[0].localName=="parsererror"){
 							startNode=doc.firstChild.childNodes[1];
+							console.log("html errored",  doc.firstChild);
 						}
 					}
 					this.readHTMLTextPropertiesRecursive(startNode, textProps, this._textFormat);
 				}
 		
-				if (this._text == textProps.text)
-					return;
+				// 	text might be the same, 
+				//	we still need to set textDirty, because formatting might have changed
+				//console.log("html out",  textProps.text);
 				this._labelData = null;
 				this._text = textProps.text;
 				this._textDirty = true;
@@ -960,12 +1074,8 @@ export class TextField extends DisplayObject
 					if((<any>myChild.attributes).color){
 						childFormat=currentFormat.clone();
 						var colorString:string=(<any>myChild.attributes).color.nodeValue;
-						if(colorString=="#ff0000"){
-							childFormat.color =  0xff0000;
-						}
-						else if(colorString=="#0000ff"){
-							childFormat.color =  0x0000ff;
-						}
+						colorString=colorString.replace("#", "0x");
+						childFormat.color=parseInt(colorString);
 						this._textFormats.push(childFormat);
 						this._textFormatsIdx.push(textProps.text.length);
 					}
@@ -3317,6 +3427,7 @@ export class TextField extends DisplayObject
 		this._glyphsDirty=true;
 		this.reConstruct();
 		this.drawSelectionGraphics();
+		this.invalidate();
 		
 		if(this._onChanged && oldText!==this._text)
 			this._onChanged();
