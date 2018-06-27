@@ -982,7 +982,7 @@ export class TextField extends DisplayObject
 					if(doc.firstChild.childNodes.length>0){
 						if(doc.firstChild.childNodes[0].localName=="parsererror"){
 							startNode=doc.firstChild.childNodes[1];
-							console.log("html errored",  doc.firstChild);
+							//console.log("html errored",  doc.firstChild);
 						}
 					}
 					this.readHTMLTextPropertiesRecursive(startNode, textProps, this._textFormat);
@@ -2000,15 +2000,17 @@ export class TextField extends DisplayObject
 			//console.log("textrun tf = ", tf);
 			for (c = this._textFormatsIdx[f]; c < c_len; c++) {
 				char_code=thisText.charCodeAt(c);
+				// todo: clean this up + allow exscaping of special chars
 				//console.log("char = ", char_code);
 				//console.log("process char", c, thisText[c], char_code, tf.id);
-				if(char_code==92 || char_code == 10) {
+				if(char_code==92 || char_code == 10 || char_code == 13) {
 					// this is a backslash. if it is last char, we do not handle it special
-					// if it is followed by a "n", we add a new paragraph
+					// if it is followed by a "n" or a "r", we add a new paragraph
 					// if it is followed by a "\n" we add a paragraph too (legacy for icycle and sunflower - needs cleanup)
-					if (char_code == 10 || c < thisText.length - 1) {
+					if (char_code == 10 || char_code == 13 || c < thisText.length - 1) {
 						next_char_code = thisText.charCodeAt(c + 1);
-						if (char_code == 10 || (next_char_code == 10)||(next_char_code == 110) || (next_char_code == 92 && (c < thisText.length - 2) && thisText.charCodeAt(c + 2) == 110)) {
+						if (char_code == 10  || char_code == 13 || (next_char_code == 10) || (next_char_code == 110) || (next_char_code == 114)
+						|| (next_char_code == 92 && (c < thisText.length - 2) && thisText.charCodeAt(c + 2) == 110)) {
 							// next chars are "n" or "\n". we create a new paragraph
 							//console.log("create new paragraph");
 							//finish textrun:
@@ -2027,7 +2029,7 @@ export class TextField extends DisplayObject
 							// create a new textrun
 							this._textRuns_formats[this._textRuns_formats.length]=tf;
 							this._textRuns_words[this._textRuns_words.length]=this.words.length;
-							c+=(char_code == 10)?0:(next_char_code == 110)?1:2;
+							c+=(char_code == 10 || char_code == 13)?0:(next_char_code == 110 || next_char_code == 114)?1:2;
 							/*
 							this.chars_codes[this.chars_codes.length]=55;
 							this.chars_width[this.chars_width.length]=0;
