@@ -264,10 +264,10 @@ export class MovieClip extends Sprite
 		return this._timeline.numFrames;
 	}
 
-	public jumpToLabel(label:string):void
+	public jumpToLabel(label:string, offset:number=0):void
 	{
 		// the timeline.jumpTolabel will set currentFrameIndex
-		this._timeline.jumpToLabel(this, label);
+		this._timeline.jumpToLabel(this, label, offset);
 	}
 
 	/**
