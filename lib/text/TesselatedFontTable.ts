@@ -252,7 +252,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var i_len:number=indices.length;
 		if(this._glyphIdxToChar[tf["fileurl"]]==null){
 			console.log("no glyphIdx-map for textfield");
-			return;
+			return new Point(0, 0);
 		}
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here

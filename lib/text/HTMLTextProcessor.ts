@@ -180,6 +180,7 @@ export class HTMLTextProcessor
 							openTags.pop();
 							c--;
 						}
+						openTags.pop();
 					}
 				}
 				cnt++;
