@@ -1,0 +1,369 @@
+import { TextField } from '../display/TextField';
+import { TextFormat } from './TextFormat';
+import { ColorUtils } from '@awayjs/core';
+
+export class HTMLTextProcessor
+{
+	private static instance:HTMLTextProcessor;
+	public static get(){
+		if(!HTMLTextProcessor.instance)
+			HTMLTextProcessor.instance=new HTMLTextProcessor();
+		return HTMLTextProcessor.instance;
+	}
+
+	constructor(){
+
+	}
+
+
+	public processHTML(target_tf:TextField, input:string):string{
+		//console.log("html in", input);
+		input = input.replace(new RegExp("&nbsp;", 'g'), " ");
+		input = input.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
+		input = input.replace(new RegExp("Ã", 'g'), String.fromCharCode(215));
+		input = input.replace(new RegExp("<br>", 'g'), "<br/>");
+		input = input.replace(new RegExp("<BR>", 'g'), "<br/>");
+		input = input.replace(new RegExp("<BR/>", 'g'), "<br/>");
+		input = input.replace(new RegExp("<B>", 'g'), "<b>");
+		input = input.replace(new RegExp("</B>", 'g'), "</b>");
+		input = input.replace(new RegExp("<I>", 'g'), "<i>");
+		input = input.replace(new RegExp("</I>", 'g'), "</i>");
+		input = input.replace(new RegExp("<P>", 'g'), "<p>");
+		input = input.replace(new RegExp("</P>", 'g'), "</p>");
+		input = input.replace(new RegExp("<U>", 'g'), "<u>");
+		input = input.replace(new RegExp("</U>", 'g'), "</u>");
+
+		// 	some preprocessing to make sure that html-tags are closing
+		// 	todo: this can probably be done better
+		var cnt=0;
+		var openTags:any[]=[];
+		var insertAt:number[]=[];
+		var insert:any[]=[];
+		while(cnt<input.length){
+			if(input[cnt]=="<"){
+				if(input[cnt+1]=="p"){							
+					//console.log("html p");
+					openTags[openTags.length]="p";}
+				else if(input[cnt+1]=="b"){	
+					//console.log("html b");
+					openTags[openTags.length]="b";}
+				else if(input[cnt+1]=="i"){	
+					//console.log("html i");
+					openTags[openTags.length]="i";}
+				else if(input[cnt+1]=="u"){	
+					//console.log("html i");
+					openTags[openTags.length]="u";}
+				else if(input[cnt+1]=="f" && input[cnt+2]=="o" && input[cnt+3]=="n" && input[cnt+4]=="t"){
+					//console.log("html font");
+					openTags[openTags.length]="font";
+					cnt+=2;
+				}
+				else if(input[cnt+1]=="/" && input[cnt+2]=="p"){
+					var c:number=openTags.length;
+					var lastOpenTag:number=-1;
+					while(c>0){
+						c--;
+						if(openTags[c]=="p"){
+							lastOpenTag=c;
+							break;
+						}
+					}
+					if(lastOpenTag<0){
+						insertAt[insertAt.length]=cnt;
+						insert[insert.length]=4;
+					}
+					else{
+						var c:number=openTags.length-1;
+						while(c>lastOpenTag){
+							insertAt[insertAt.length]=cnt;
+							insert[insert.length]="</"+openTags[c]+">";
+							openTags.pop();
+							c--;
+						}
+						openTags.pop();
+					}
+				} 
+				else if(input[cnt+1]=="/" && input[cnt+2]=="b"){	
+					var c:number=openTags.length;
+					var lastOpenTag:number=-1;
+					while(c>0){
+						c--;
+						if(openTags[c]=="b"){
+							lastOpenTag=c;
+							break;
+						}
+					}
+					if(lastOpenTag<0){
+						insertAt[insertAt.length]=cnt;
+						insert[insert.length]=4;
+					}
+					else{
+						var c:number=openTags.length-1;
+						while(c>lastOpenTag){
+							insertAt[insertAt.length]=cnt;
+							insert[insert.length]="</"+openTags[c]+">";
+							openTags.pop();
+							c--;
+						}
+						openTags.pop();
+					}
+				}
+				else if(input[cnt+1]=="/" && input[cnt+2]=="i"){	
+					var c:number=openTags.length;
+					var lastOpenTag:number=-1;
+					while(c>0){
+						c--;
+						if(openTags[c]=="i"){
+							lastOpenTag=c;
+							break;
+						}
+					}
+					if(lastOpenTag<0){
+						insertAt[insertAt.length]=cnt;
+						insert[insert.length]=4;
+					}
+					else{
+						var c:number=openTags.length-1;
+						while(c>lastOpenTag){
+							insertAt[insertAt.length]=cnt;
+							insert[insert.length]="</"+openTags[c]+">";
+							openTags.pop();
+							c--;
+						}
+						openTags.pop();
+					}
+				}
+				else if(input[cnt+1]=="/" && input[cnt+2]=="u"){	
+					var c:number=openTags.length;
+					var lastOpenTag:number=-1;
+					while(c>0){
+						c--;
+						if(openTags[c]=="u"){
+							lastOpenTag=c;
+							break;
+						}
+					}
+					if(lastOpenTag<0){
+						insertAt[insertAt.length]=cnt;
+						insert[insert.length]=4;
+					}
+					else{
+						var c:number=openTags.length-1;
+						while(c>lastOpenTag){
+							insertAt[insertAt.length]=cnt;
+							insert[insert.length]="</"+openTags[c]+">";
+							openTags.pop();
+							c--;
+						}
+						openTags.pop();
+					}
+				}
+				else if(input[cnt+1]=="/" && input[cnt+2]=="f" && input[cnt+3]=="o" && input[cnt+4]=="n" && input[cnt+5]=="t"){
+					var c:number=openTags.length;
+					var lastOpenTag:number=-1;
+					while(c>0){
+						c--;
+						if(openTags[c]=="font"){
+							lastOpenTag=c;
+							break;
+						}
+					}
+					if(lastOpenTag<0){
+						insertAt[insertAt.length]=cnt;
+						insert[insert.length]=7;
+					}
+					else{
+						var c:number=openTags.length-1;
+						while(c>lastOpenTag){
+							insertAt[insertAt.length]=cnt;
+							insert[insert.length]="</"+openTags[c]+">";
+							openTags.pop();
+							c--;
+						}
+					}
+				}
+				cnt++;
+			}
+			else{
+				cnt++;
+			}
+		}
+		var c:number=openTags.length;
+		while(c>0){
+			c--;
+			insertAt[insertAt.length]=cnt;
+			insert[insert.length]="</"+openTags[c]+">";
+		}
+		var additional:number=0;
+		var len:number=insert.length;
+		for(var i:number=0; i<len;i++){
+			if(typeof insert[i]==="number"){
+				input = input.slice(0, insertAt[i]+additional) + input.slice(insertAt[i]+additional+ insert[i]);
+				additional-=insert[i];
+			}
+			else{
+				input = input.slice(0, insertAt[i]+additional) + insert[i] + input.slice(insertAt[i]+additional);
+				additional+=insert[i].length;
+			}
+		}
+
+		//console.log("html fixed",  input);
+		var textProps:any= {
+			text:""
+			/*size:this.textFormat.size,
+			color:this.textFormat.color,
+			indent:this.le,
+			leftMargin:symbol.tag.leftMargin/20,
+			rightMargin:symbol.tag.rightMargin/20,
+			variableName:symbol.tag.variableName,
+			align:symbol.tag.align,
+			multiline:false*/
+		}
+
+		target_tf._textFormats=[target_tf._textFormat];
+		target_tf._textFormat.italic=false;
+		target_tf._textFormat.bold=false;
+		target_tf._textFormatsIdx=[0];
+		var parser = new DOMParser();
+		var doc = parser.parseFromString("<p>"+input+"</p>", "application/xml");
+		if(doc && doc.firstChild){
+			textProps.multiline=doc.firstChild.childNodes.length>0;
+			var startNode:any=doc;
+			if(doc.firstChild.childNodes.length>0){
+				if(doc.firstChild.childNodes[0].localName=="parsererror"){
+					startNode=doc.firstChild.childNodes[1];
+					//console.log("html errored",  doc.firstChild);
+				}
+			}
+			this.readHTMLTextPropertiesRecursive(target_tf, startNode, textProps, target_tf._textFormat);
+		}
+		return textProps.text;
+	}
+	private readHTMLTextPropertiesRecursive(target_tf:TextField, myChild, textProps:any, currentFormat:TextFormat){
+
+		//console.log("textfied content xml node:",myChild);
+		//console.log(myChild.tagName);
+		var newProps_values:any[]=[];
+		var newProps_names:string[]=[];
+		if(myChild.attributes){
+			if((<any>myChild.attributes).size){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).size.nodeValue;
+				newProps_names[newProps_names.length] = "size";
+			}
+			if((<any>myChild.attributes).color){
+				
+				var colorString:string=(<any>myChild.attributes).color.nodeValue;
+				colorString=colorString.replace("#", "0x");
+				newProps_values[newProps_values.length] = parseInt(colorString);//ColorUtils.f32_RGBA_To_f32_ARGB((<any>myChild.attributes).color.nodeValue);
+				newProps_names[newProps_names.length] = "color";
+			}
+			if((<any>myChild.attributes).indent){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).indent.nodeValue;
+				newProps_names[newProps_names.length] = "indent";
+
+			}
+			if((<any>myChild.attributes).leftMargin){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).leftMargin.nodeValue;
+				newProps_names[newProps_names.length] = "leftMargin";
+
+			}
+			if((<any>myChild.attributes).rightMargin){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).rightMargin.nodeValue;
+				newProps_names[newProps_names.length] = "rightMargin";
+
+			}
+			if((<any>myChild.attributes).align){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).align.nodeValue;
+				newProps_names[newProps_names.length] = "align";
+			}
+		}
+		var i=newProps_values.length;
+		var cloneFormat=false;
+		while(i>0){
+			i--;
+			if(currentFormat[newProps_names[i]]!=newProps_values[i]){
+				cloneFormat=true;
+				break;
+			}
+		}
+		/*if(target_tf._textFormats[target_tf._textFormats.length-1]!=currentFormat){
+			target_tf._textFormats.push(currentFormat);
+			target_tf._textFormatsIdx.push(textProps.text.length);
+
+		}*/
+
+		// check if this is a paragraph. if it is, we want to add a linebreak in case there is text already present
+		// we also check if there is already a linebreak in the text, and do not add another if there is
+		if(myChild.tagName=="p"){
+			if(textProps.text!=""){
+				textProps.text+="\\n";						
+			}
+		}
+
+		// if this is a bold-tag, we create a new textformat if the current format is not bold
+		else if(myChild.tagName=="b"){			
+			if(!currentFormat.bold){
+				cloneFormat=true;
+				newProps_values[newProps_values.length] =true;
+				newProps_names[newProps_names.length] = "bold";
+			}
+		}
+		// if this is a italic-tag, we create a new textformat if the current format is not italic
+		else if(myChild.tagName=="i"){			
+			if(!currentFormat.italic){
+				cloneFormat=true;
+				newProps_values[newProps_values.length] =true;
+				newProps_names[newProps_names.length] = "italic";
+			}
+		}
+		else if(myChild.tagName=="u"){			
+			if(!currentFormat.underline){
+				cloneFormat=true;
+				newProps_values[newProps_values.length] =true;
+				newProps_names[newProps_names.length] = "underline";
+			}
+		}
+		else if(myChild.tagName=="font"){
+			// todo 
+			cloneFormat=true;
+		}
+		else if(myChild.tagName=="br"){
+			textProps.text+="\\n";
+		}
+
+		var childFormat:TextFormat=currentFormat;
+		if(cloneFormat){
+			childFormat=currentFormat.clone();//(FontStyleName.BOLD);
+			i=newProps_values.length;
+			while(i>0){
+				i--;
+				childFormat[newProps_names[i]]=newProps_values[i];
+			}
+			target_tf._textFormats.push(childFormat);
+			target_tf._textFormatsIdx.push(textProps.text.length);
+		}
+		
+		// if the node has children, we just traverse children, and do not consider adding the nodeValue as text
+		// todo: double check if above behavior is true for html text
+		if(myChild.childNodes && myChild.childNodes.length>0){
+			for(var k=0; k<myChild.childNodes.length;k++){
+				if(target_tf._textFormats[target_tf._textFormats.length-1]!=childFormat){	
+
+				
+					target_tf._textFormats.push(childFormat);
+					target_tf._textFormatsIdx.push(textProps.text.length);
+				}
+				this.readHTMLTextPropertiesRecursive(target_tf, myChild.childNodes[k], textProps, childFormat);
+			}
+		}
+		else{
+			// if nodeValue exists, we add it to the text
+			if((<any>myChild).nodeValue){
+				// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
+				var testContent:string=(<any>myChild).nodeValue.replace(/[\s\r\n]/gi, '');
+				if(testContent!="")
+					textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
+			}
+		}
+	}
+}

@@ -156,6 +156,17 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		//return this._size_multiply*this._font_em_size;
 	//	return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
 	}
+	public getUnderLineHeight():number
+	{
+		var thisLineheighttest:number=this._size_multiply*(this._ascent-this.descent/2);
+		//var thisLineheighttest:number=this._current_size *(this._font_em_size/this._ascent);
+		/*if(this.name=="BoldStyle"){
+			thisLineheighttest=this._current_size;
+		}*/
+		return thisLineheighttest; // sf
+		//return this._size_multiply*this._font_em_size;
+	//	return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
+	}
 
 	public get assetType():string
 	{
@@ -311,6 +322,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			select_start=tf.selectionEndIndex;
 			select_end=tf.selectionBeginIndex;
 		}
+		var start_x:number=0;
+		if(newFormat.underline && (startWord+1)<tf.words.length){
+			start_x=tf.words[startWord+1];
+		}
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (w = startWord; w < w_len; w+=5) {
@@ -374,6 +389,23 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						//console.log("TesselatedFontTable: Error: char not found in fontTable", tf.chars_codes[c], tf.chars_codes[c].toString());
 					}
 				}
+			}
+			var half_thickness:number=0.25*(1/tf.getHairlineScaleY());
+			var topY:number=y+this.getUnderLineHeight()+half_thickness;
+			var bottomY:number=y+this.getUnderLineHeight()-+half_thickness;
+			if(newFormat.underline && (startWord+1)<tf.words.length){
+				currentTextShape.verts[currentTextShape.verts.length]=start_x;
+				currentTextShape.verts[currentTextShape.verts.length]=bottomY;
+				currentTextShape.verts[currentTextShape.verts.length]=start_x;
+				currentTextShape.verts[currentTextShape.verts.length]=topY;
+				currentTextShape.verts[currentTextShape.verts.length]=x;
+				currentTextShape.verts[currentTextShape.verts.length]=topY;
+				currentTextShape.verts[currentTextShape.verts.length]=x;
+				currentTextShape.verts[currentTextShape.verts.length]=topY;
+				currentTextShape.verts[currentTextShape.verts.length]=x;
+				currentTextShape.verts[currentTextShape.verts.length]=bottomY;
+				currentTextShape.verts[currentTextShape.verts.length]=start_x;
+				currentTextShape.verts[currentTextShape.verts.length]=bottomY;
 			}
 
 		}

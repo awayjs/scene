@@ -29,6 +29,8 @@ import {MovieClip} from "./MovieClip";
 import {TextShape} from "../text/TextShape";
 import { FontStyleName } from '../text/FontStyleName';
 import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
+import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
+import { TextFormatAlign } from '../..';
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -152,10 +154,10 @@ export class TextField extends DisplayObject
 	private _lineText:string;
 	private _paragraphLength:number;
 
-	private _textFormats:TextFormat[];
-	private _textFormatsIdx:number[];
+	public _textFormats:TextFormat[];
+	public _textFormatsIdx:number[];
 
-	private _textFormat:TextFormat;
+	public _textFormat:TextFormat;
 	private _bgElements:TriangleElements;
 	private _textElements:TriangleElements;
 	private _textElements2:TriangleElements;
@@ -390,6 +392,11 @@ export class TextField extends DisplayObject
 		else{
 			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5*(1/cursorScale),height]);
 		}
+	}
+	public getHairlineScaleY(){
+		var scaleY:number=this.transform.concatenatedMatrix3D.decompose()[3].y*this._strokeScale.y;
+		if(scaleY<=0)scaleY=1;
+		return scaleY;
 	}
 	private drawSelectedBG(){
 
@@ -833,281 +840,23 @@ export class TextField extends DisplayObject
 		return this._htmlText;
 	};
 	public set htmlText(value:string){
-				//console.log("html in", value);
-				value = value.replace(new RegExp("&nbsp;", 'g'), " ");
-				value = value.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
-				value = value.replace(new RegExp("Ã", 'g'), String.fromCharCode(215));
-				value = value.replace(new RegExp("<br>", 'g'), "<br/>");
-				value = value.replace(new RegExp("<BR>", 'g'), "<br/>");
-				value = value.replace(new RegExp("<BR/>", 'g'), "<br/>");
-				value = value.replace(new RegExp("<B>", 'g'), "<b>");
-				value = value.replace(new RegExp("</B>", 'g'), "</b>");
-				value = value.replace(new RegExp("<I>", 'g'), "<i>");
-				value = value.replace(new RegExp("</I>", 'g'), "</i>");
-				value = value.replace(new RegExp("<P>", 'g'), "<p>");
-				value = value.replace(new RegExp("</P>", 'g'), "</p>");
+		
+		this._htmlText=value;
+		var processedText=HTMLTextProcessor.get().processHTML(this, value);
 
-				// 	some preprocessing to make sure that html-tags are closing
-				// 	todo: this can probably be done better
-				var cnt=0;
-				var openTags:any[]=[];
-				var openParagraph:boolean=false;
-				var openBold:boolean=false;
-				var openItalic:boolean=false;
-				var openFont:boolean=false;
-				var insertAt:number[]=[];
-				var insert:string[]=[];
-				while(cnt<value.length){
-					if(value[cnt]=="<"){
-						if(value[cnt+1]=="p"){							
-							//console.log("html p");
-							openTags[openTags.length]="p";
-							openParagraph=true;}
-						else if(value[cnt+1]=="b"){	
-							//console.log("html b");
-							openTags[openTags.length]="b";
-							openBold=true;}
-						else if(value[cnt+1]=="i"){	
-							//console.log("html i");
-							openTags[openTags.length]="i";
-							openItalic=true;}
-						else if(value[cnt+1]=="f" && value[cnt+2]=="o" && value[cnt+3]=="n" && value[cnt+4]=="t"){
-							//console.log("html font");
-							openTags[openTags.length]="font";
-							openFont=true;
-							cnt+=2;
-						}
-						else if(value[cnt+1]=="/" && value[cnt+2]=="p"){
-							var c:number=openTags.length;
-							while(c>0){
-								c--;
-								if(openTags[c]=="p"){
-									openTags.pop();
-									break;
-								}
-								else{
-									openTags.pop();
-									insertAt[insertAt.length]=cnt;
-									insert[insert.length]="</"+openTags[c]+">";
-								}
-							}
-						} 
-						else if(value[cnt+1]=="/" && value[cnt+2]=="b"){	
-							var c:number=openTags.length;
-							while(c>0){
-								c--;
-								if(openTags[c]=="b"){
-									openTags.pop();
-									break;
-								}
-								else{
-									openTags.pop();
-									insertAt[insertAt.length]=cnt;
-									insert[insert.length]="</"+openTags[c]+">";
-								}
-							}
-						}
-						else if(value[cnt+1]=="/" && value[cnt+2]=="i"){	
-							var c:number=openTags.length;
-							while(c>0){
-								c--;
-								if(openTags[c]=="i"){
-									openTags.pop();
-									break;
-								}
-								else{
-									openTags.pop();
-									insertAt[insertAt.length]=cnt;
-									insert[insert.length]="</"+openTags[c]+">";
-								}
-							}
-						}
-						else if(value[cnt+1]=="/" && value[cnt+2]=="f" && value[cnt+3]=="o" && value[cnt+4]=="n" && value[cnt+5]=="t"){
-							var c:number=openTags.length;
-							while(c>0){
-								c--;
-								if(openTags[c]=="font"){
-									openTags.pop();
-									break;
-								}
-								else{
-									openTags.pop();
-									insertAt[insertAt.length]=cnt;
-									insert[insert.length]="</"+openTags[c]+">";
-								}
-							}
-						}
-						cnt++;
-					}
-					else{
-						cnt++;
-					}
-				}
-				var c:number=openTags.length;
-				while(c>0){
-					c--;
-					insertAt[insertAt.length]=cnt;
-					insert[insert.length]="</"+openTags[c]+">";
-				}
-				var additional:number=0;
-				var len:number=insert.length;
-				for(var i:number=0; i<len;i++){
-					value = value.slice(0, insertAt[i]+additional) + insert[i] + value.slice(insertAt[i]+additional);
-					additional+=insert[i].length;
-				}
+		// 	text might be the same, 
+		//	we still need to set textDirty, because formatting might have changed
+		//console.log("html out",  textProps.text);
+		this._labelData = null;
+		this._text = processedText;
+		this._textDirty = true;
+		//console.log("set text", value, "on" , this);
+		if (this._autoSize != TextFieldAutoSize.NONE)
+			this._invalidateBounds();
 
-				//console.log("html fixed",  value);
-				this._htmlText=value;
-				var textProps:any= {
-					text:""
-					/*size:this.textFormat.size,
-					color:this.textFormat.color,
-					indent:this.le,
-					leftMargin:symbol.tag.leftMargin/20,
-					rightMargin:symbol.tag.rightMargin/20,
-					variableName:symbol.tag.variableName,
-					align:symbol.tag.align,
-					multiline:false*/
-				}
+	};
 		
-				this._textFormats=[this._textFormat];
-				this._textFormat.italic=false;
-				this._textFormat.bold=false;
-				this._textFormatsIdx=[0];
-				var parser = new DOMParser();
-				var doc = parser.parseFromString("<p>"+value+"</p>", "application/xml");
-				if(doc && doc.firstChild){
-					textProps.multiline=doc.firstChild.childNodes.length>0;
-					var startNode:any=doc;
-					if(doc.firstChild.childNodes.length>0){
-						if(doc.firstChild.childNodes[0].localName=="parsererror"){
-							startNode=doc.firstChild.childNodes[1];
-							//console.log("html errored",  doc.firstChild);
-						}
-					}
-					this.readHTMLTextPropertiesRecursive(startNode, textProps, this._textFormat);
-				}
-		
-				// 	text might be the same, 
-				//	we still need to set textDirty, because formatting might have changed
-				//console.log("html out",  textProps.text);
-				this._labelData = null;
-				this._text = textProps.text;
-				this._textDirty = true;
-				//console.log("set text", value, "on" , this);
-				if (this._autoSize != TextFieldAutoSize.NONE)
-					this._invalidateBounds();
-		
-			};
-		
-			// todo: use ColorUtils instead
-			public rgbaToArgb(float32Color:number):number
-			{
-				var r:number = ( float32Color & 0xff000000 ) >>> 24;
-				var g:number = ( float32Color & 0xff0000 ) >>> 16;
-				var b:number = ( float32Color & 0xff00 ) >>> 8;
-				var a:number = float32Color & 0xff;
-				return (a << 24) | (r << 16) |
-					(g << 8) | b;
-			}
-			private readHTMLTextPropertiesRecursive(myChild, textProps:any, currentFormat:TextFormat){
-		
-				//console.log("textfied content xml node:",myChild);
-				//console.log(myChild.tagName);
-				if(myChild.attributes){
-					if((<any>myChild.attributes).size)
-						textProps.size =  (<any>myChild.attributes).size.nodeValue;
-					if((<any>myChild.attributes).color)
-						textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);
-					if((<any>myChild.attributes).indent)
-						textProps.indent = (<any>myChild.attributes).indent.nodeValue;
-					if((<any>myChild.attributes).leftMargin)
-						textProps.leftMargin = (<any>myChild.attributes).leftMargin.nodeValue;
-					if((<any>myChild.attributes).rightMargin)
-						textProps.rightMargin =  (<any>myChild.attributes).rightMargin.nodeValue;
-					if((<any>myChild.attributes).align){
-		
-						//console.log("align",myChild);
-						//textProps.align = this.textFormatAlignMapStringToInt[(<any>myChild.attributes).align.nodeValue];
-					}
-				}
-				/*if(this._textFormats[this._textFormats.length-1]!=currentFormat){
-					this._textFormats.push(currentFormat);
-					this._textFormatsIdx.push(textProps.text.length);
-		
-				}*/
-				var childFormat:TextFormat=null;
-		
-				// check if this is a paragraph. if it is, we want to add a linebreak in case there is text already present
-				// we also check if there is already a linebreak in the text, and do not add another if there is
-				if(myChild.tagName=="p"){
-					if(textProps.text!=""){
-						if(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\"){
-							// there is already a linebreak
-						}
-						else{
-							textProps.text+="\\n";
-						}
-					}
-				}
-		
-				// if this is a bold-tag, we create a new textformat if the current format is not bold
-				else if(myChild.tagName=="b"){			
-					if(!currentFormat.bold){
-						childFormat=currentFormat.clone();//(FontStyleName.BOLD);
-						childFormat.bold=true;
-						this._textFormats.push(childFormat);
-						this._textFormatsIdx.push(textProps.text.length);
-					}
-				}
-				// if this is a italic-tag, we create a new textformat if the current format is not italic
-				else if(myChild.tagName=="i"){			
-					if(!currentFormat.italic){
-						childFormat=currentFormat.clone();
-						childFormat.italic=true;
-						this._textFormats.push(childFormat);
-						this._textFormatsIdx.push(textProps.text.length);
-					}
-				}
-				else if(myChild.tagName=="font"){
-					// todo add more options than just color
-					if((<any>myChild.attributes).color){
-						childFormat=currentFormat.clone();
-						var colorString:string=(<any>myChild.attributes).color.nodeValue;
-						colorString=colorString.replace("#", "0x");
-						childFormat.color=parseInt(colorString);
-						this._textFormats.push(childFormat);
-						this._textFormatsIdx.push(textProps.text.length);
-					}
-				}
-				else if(myChild.tagName=="br"){
-					textProps.text+="\\n";
-				}
-		
-				if(childFormat==null){
-					childFormat=currentFormat;
-				}
-				
-				// if the node has children, we just traverse children, and do not consider adding the nodeValue as text
-				// todo: double check if above behavior is true for html text
-				if(myChild.childNodes && myChild.childNodes.length>0){
-					for(var k=0; k<myChild.childNodes.length;k++){
-						if(this._textFormats[this._textFormats.length-1]!=childFormat){	
-		
-						
-							this._textFormats.push(childFormat);
-							this._textFormatsIdx.push(textProps.text.length);
-						}
-						this.readHTMLTextPropertiesRecursive(myChild.childNodes[k], textProps, childFormat);
-					}
-				}
-				else{
-					// if nodeValue exists, we add it to the text
-					if((<any>myChild).nodeValue){
-						textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
-					}
-				}
-			}
+	
 
 	/**
 	 * The number of characters in a text field. A character such as tab
@@ -2178,9 +1927,12 @@ export class TextField extends DisplayObject
 		this.lines_height.length = 0;
 		this.lines_numSpacesPerline.length = 0;
 		this.lines_charIdx_start.length = 0;
+
 		this.lines_charIdx_end.length = 0;
-		var lines_heights:number[]=[];
+		var lines_heights:number[]=[];		
+		var lines_formats:TextFormat[]=[];
 		// loop over all paragraphs
+
 		for (p = 0; p < p_len; p++) {
 			tr_len=(p==(p_len-1))? this._textRuns_formats.length : this._paragraph_textRuns_indices[p+1];
 			//console.log("process word positions for paragraph", p, "textruns", this._paragraph_textRuns_indices[p], tr_len);
@@ -2199,12 +1951,14 @@ export class TextField extends DisplayObject
 				//console.log(this._textFieldWidth, tr_length, maxLineWidth);
 			}
 
+
 			this.lines_wordStartIndices[this.lines_wordStartIndices.length] = this._textRuns_words[(this._paragraph_textRuns_indices[p] * 4)];
 			this.lines_wordEndIndices[this.lines_wordEndIndices.length] = w_len;
 			this.lines_width[this.lines_width.length] = 0;
 			this.lines_numSpacesPerline[this.lines_numSpacesPerline.length] = 0;
 			var lineHeightCnt:number=0;
 			this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt];
+			lines_formats[linecnt]=format;
 
 			var line_width: number = 0;
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
@@ -2222,6 +1976,7 @@ export class TextField extends DisplayObject
 						linelength += word_width;
 						this.lines_wordEndIndices[linecnt] = w + 5;
 						this.lines_width[linecnt] += word_width;
+						lines_formats[linecnt]=format;
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 						}
@@ -2238,6 +1993,7 @@ export class TextField extends DisplayObject
 						if (linelength <= (maxLineWidth - indent-10) || this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;
+							lines_formats[linecnt]=format;
 						}
 						else {
 							linelength = word_width;
@@ -2247,6 +2003,7 @@ export class TextField extends DisplayObject
 							this.lines_width[linecnt] = word_width;
 							this.lines_numSpacesPerline[linecnt] = 0;
 							this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt];
+							lines_formats[linecnt]=format;
 							indent = format.indent;
 						}
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
@@ -2277,6 +2034,7 @@ export class TextField extends DisplayObject
 			start_idx = this.lines_wordStartIndices[l];
 			end_idx = this.lines_wordEndIndices[l];
 			numSpaces = this.lines_numSpacesPerline[l];
+			format = lines_formats[l];
 			//console.log("numLine:", l,linelength,start_idx,end_idx,numSpaces);
 
 			lineSpaceLeft = maxLineWidth - linelength;
@@ -2287,7 +2045,7 @@ export class TextField extends DisplayObject
 			additionalWhiteSpace = 0;
 			offsetx = this.textOffsetX + format.leftMargin + format.indent;
 
-			if (format.align == "justify") {
+			if (format.align == TextFormatAlign.JUSTIFY) {
 				if ((l != l_cnt - 1) && lineSpaceLeft > 0 && numSpaces > 0) {
 					// this is a textline that should be justified
 					additionalWhiteSpace = lineSpaceLeft / numSpaces;
@@ -2297,13 +2055,13 @@ export class TextField extends DisplayObject
 					offsetx -= format.indent;
 				}
 			}
-			else if (format.align == "center") {
+			else if (format.align == TextFormatAlign.CENTER) {
 				offsetx += lineSpaceLeft / 2;
 			}
-			else if (format.align == "right") {
+			else if (format.align == TextFormatAlign.RIGHT) {
 				offsetx += lineSpaceLeft;
 			}
-			else if (format.align == "left") {
+			else if (format.align == TextFormatAlign.LEFT) {
 				offsetx += 2;
 			}
 			
@@ -2411,7 +2169,7 @@ export class TextField extends DisplayObject
 			}
 			if(record.color){
 				//textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);
-				formats[r].color=this.rgbaToArgb(record.color);
+				formats[r].color=ColorUtils.f32_RGBA_To_f32_ARGB(record.color);
 			}
 			else if (r>0){
 				formats[r].color=formats[r-1].color;

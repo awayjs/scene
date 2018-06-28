@@ -62,14 +62,15 @@ export {PrimitiveSpherePrefab} from "./lib/prefabs/PrimitiveSpherePrefab";
 export {PrimitiveTorusPrefab} from "./lib/prefabs/PrimitiveTorusPrefab";
 
 export {AntiAliasType} from "./lib/text/AntiAliasType";
+export {BitmapFontChar} from "./lib/text/BitmapFontChar";
+export {BitmapFontTable} from "./lib/text/BitmapFontTable";
 export {Font} from "./lib/text/Font";
 export {FontStyleName} from "./lib/text/FontStyleName";
 export {GridFitType} from "./lib/text/GridFitType";
 export {IFontTable} from "./lib/text/IFontTable";
+export {HTMLTextProcessor} from "./lib/text/HTMLTextProcessor";
 export {TesselatedFontTable} from "./lib/text/TesselatedFontTable";
-export {BitmapFontTable} from "./lib/text/BitmapFontTable";
 export {TesselatedFontChar} from "./lib/text/TesselatedFontChar";
-export {BitmapFontChar} from "./lib/text/BitmapFontChar";
 export {TextFieldAutoSize} from "./lib/text/TextFieldAutoSize";
 export {TextFieldType} from "./lib/text/TextFieldType";
 export {TextFormat} from "./lib/text/TextFormat";
