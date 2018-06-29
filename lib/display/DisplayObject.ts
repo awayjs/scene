@@ -1862,12 +1862,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public hitTestObject(obj:DisplayObject):boolean
 	{
-		var objBox:Box = obj.getBoxBounds(this.scene, false, true);
+		var objBox:Box = obj.getBoxBounds(this.scene, true);
 
 		if(objBox == null)
 			return false;
 		
-		var box:Box = this.getBoxBounds(this.scene, false, true);
+		var box:Box = this.getBoxBounds(this.scene, true);
 
 		if(box == null)
 			return false;
