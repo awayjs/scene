@@ -30,7 +30,7 @@ import {TextShape} from "../text/TextShape";
 import { FontStyleName } from '../text/FontStyleName';
 import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
 import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
-import { TextFormatAlign } from '../..';
+import { TextFormatAlign } from '../text/TextFormatAlign';
 
 /**
  * The TextField class is used to create display objects for text display and
