@@ -33,8 +33,10 @@ export class BoundingVolumeBase extends AbstractionBase
 
 		this._boundingObject.addEventListener(DisplayObjectEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 
-		if (this._targetCoordinateSpace)
+		if (this._targetCoordinateSpace) {
 			this._targetCoordinateSpace.transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+			this._targetCoordinateSpace.addEventListener(DisplayObjectEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
+		}
 	}
 
 	public _onInvalidateBounds(event:DisplayObjectEvent):void
@@ -53,8 +55,11 @@ export class BoundingVolumeBase extends AbstractionBase
 
 		this._boundingObject.removeEventListener(DisplayObjectEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
 		
-		if (this._targetCoordinateSpace)
-			this._targetCoordinateSpace.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+		if (this._targetCoordinateSpace) {
+			this._targetCoordinateSpace.transform.removeEventListener(TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3DDelegate);
+			//TODO: some optimisation to be made by identifying whether bubbled Bounds invalidation comes from movement of the bounding object, or just its siblings
+			this._targetCoordinateSpace.removeEventListener(DisplayObjectEvent.INVALIDATE_BOUNDS, this._onInvalidateBoundsDelegate);
+		}
 		
 		this._targetCoordinateSpace = null;
 		this._boundingObject = null;
