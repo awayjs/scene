@@ -737,7 +737,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._maskMode == value)
 			return;
 
+		if (this._pScene)
+			this._pScene._clearEntity(this);
+				
 		this._maskMode = value;
+
+		if (this._pScene)
+			this._pScene._invalidateEntity(this);
 
 		this._explicitMaskId = value? this.id : -1;
 
