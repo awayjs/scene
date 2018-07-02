@@ -2,7 +2,7 @@ import {AssetBase, Point} from "@awayjs/core";
 
 import {AttributesBuffer, AttributesView} from "@awayjs/stage";
 
-import {GraphicsPath, GraphicsFactoryStrokes, GraphicsFactoryFills, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle} from "@awayjs/graphics";
+import {GraphicsPath, GraphicsFactoryStrokes, GraphicsFactoryFills, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle, GraphicsFactoryHelper} from "@awayjs/graphics";
 
 import {TesselatedFontChar} from "./TesselatedFontChar";
 import {IFontTable} from "./IFontTable";
@@ -125,14 +125,20 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public getCharWidth(char_code:string):number
 	{
 		if(char_code=="32"){
-			return this._whitespace_width*this._size_multiply;
+			return (Math.floor(this._whitespace_width*this._size_multiply*20))/20;
 		}
 		if(char_code=="9"){
-			return this._whitespace_width*this._size_multiply*8;
+			return (Math.floor(this._whitespace_width*this._size_multiply*8*20))/20;
 		}
 		var tesselated_font_char:TesselatedFontChar = this._font_chars_dic[char_code];
 		if(tesselated_font_char){
-			return tesselated_font_char.char_width*this._size_multiply;
+			return (Math.floor(tesselated_font_char.char_width*this._size_multiply*20))/20;
+		}
+		else{
+			if(char_code=="9679"){
+				tesselated_font_char=this.createPointGlyph_9679();
+				return (Math.floor(tesselated_font_char.char_width*this._size_multiply*20))/20;
+			}
 		}
 		if(this.fallbackTable)
 			return this.fallbackTable.getCharWidth(char_code);
@@ -148,24 +154,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public getLineHeight():number
 	{
 		var thisLineheighttest:number=this._size_multiply*(this._ascent-this.descent);
-		//var thisLineheighttest:number=this._current_size *(this._font_em_size/this._ascent);
-		/*if(this.name=="BoldStyle"){
-			thisLineheighttest=this._current_size;
-		}*/
 		return thisLineheighttest; // sf
 		//return this._size_multiply*this._font_em_size;
 	//	return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
 	}
 	public getUnderLineHeight():number
 	{
-		var thisLineheighttest:number=this._size_multiply*(this._ascent-this.descent/2);
-		//var thisLineheighttest:number=this._current_size *(this._font_em_size/this._ascent);
-		/*if(this.name=="BoldStyle"){
-			thisLineheighttest=this._current_size;
-		}*/
-		return thisLineheighttest; // sf
-		//return this._size_multiply*this._font_em_size;
-	//	return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
+		return this._size_multiply*(this._ascent-this.descent/2);
 	}
 
 	public get assetType():string
@@ -414,6 +409,21 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 	}
 
+	public createPointGlyph_9679():TesselatedFontChar
+	{
+		var verts:number[]=[];
+		GraphicsFactoryHelper.drawElipse(this._font_em_size/2, this._font_em_size/2, this._font_em_size/8, this._font_em_size/8, verts, 0, 360, 5, false);
+		
+		var attributesView:AttributesView = new AttributesView(Float32Array, 2);
+		attributesView.set(verts);		
+		var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
+		attributesView.dispose();		
+		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(attributesBuffer, null, null);
+		tesselated_font_char.char_width=this._font_em_size;
+		this._font_chars.push(tesselated_font_char);
+		this._font_chars_dic["9679"]=tesselated_font_char;
+		return tesselated_font_char;
+	}
 
 	/**
 	 *
@@ -478,6 +488,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 					}
 				}
 			}
+			if(name=="9679"){
+				tesselated_font_char=this.createPointGlyph_9679();
+			}
 		}
 		else if(tesselated_font_char.fill_data==null && tesselated_font_char.stroke_data==null && tesselated_font_char.fill_data_path!=null){
 			tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(tesselated_font_char.fill_data_path, true);
@@ -486,7 +499,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			}
 		}
 		if(!tesselated_font_char){
-			console.log("getChar: could nto find glyph: ", name);
+			console.log("getChar: could not find glyph: ", name, String.fromCharCode(parseInt(name)));
 		}
 		return tesselated_font_char;
 	}
@@ -496,6 +509,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0, fill_data_path:GraphicsPath=null, fileURL:string=""):void
 	{
+		char_width=Math.floor(char_width*20)/20;
 		//console.log("adding char", name, String.fromCharCode(parseInt(name)));
 		if((fills_data==null)&&(stroke_data==null)&&(fill_data_path==null))
 			throw("TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data, stroke_data and fill_data_path is null)");

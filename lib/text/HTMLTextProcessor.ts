@@ -32,6 +32,8 @@ export class HTMLTextProcessor
 		input = input.replace(new RegExp("</P>", 'g'), "</p>");
 		input = input.replace(new RegExp("<U>", 'g'), "<u>");
 		input = input.replace(new RegExp("</U>", 'g'), "</u>");
+		input = input.replace(new RegExp("<LI>", 'g'), "<li>");
+		input = input.replace(new RegExp("</LI>", 'g'), "</li>");
 
 		// 	some preprocessing to make sure that html-tags are closing
 		// 	todo: this can probably be done better
@@ -57,6 +59,11 @@ export class HTMLTextProcessor
 					//console.log("html font");
 					openTags[openTags.length]="font";
 					cnt+=2;
+				}
+				else if(input[cnt+1]=="l" && input[cnt+2]=="i"){
+					//console.log("html font");
+					openTags[openTags.length]="li";
+					cnt++;
 				}
 				else if(input[cnt+1]=="/" && input[cnt+2]=="p"){
 					var c:number=openTags.length;
@@ -158,6 +165,31 @@ export class HTMLTextProcessor
 						openTags.pop();
 					}
 				}
+				else if(input[cnt+1]=="/" && input[cnt+2]=="l" && input[cnt+3]=="i"){
+					var c:number=openTags.length;
+					var lastOpenTag:number=-1;
+					while(c>0){
+						c--;
+						if(openTags[c]=="li"){
+							lastOpenTag=c;
+							break;
+						}
+					}
+					if(lastOpenTag<0){
+						insertAt[insertAt.length]=cnt;
+						insert[insert.length]=7;
+					}
+					else{
+						var c:number=openTags.length-1;
+						while(c>lastOpenTag){
+							insertAt[insertAt.length]=cnt;
+							insert[insert.length]="</"+openTags[c]+">";
+							openTags.pop();
+							c--;
+						}
+						openTags.pop();
+					}
+				}
 				else if(input[cnt+1]=="/" && input[cnt+2]=="f" && input[cnt+3]=="o" && input[cnt+4]=="n" && input[cnt+5]=="t"){
 					var c:number=openTags.length;
 					var lastOpenTag:number=-1;
@@ -238,6 +270,18 @@ export class HTMLTextProcessor
 			}
 			this.readHTMLTextPropertiesRecursive(target_tf, startNode, textProps, target_tf._textFormat);
 		}
+		if(textProps.text!="" && (textProps.text.length>=3 && textProps.text[textProps.text.length-1]=="n" && textProps.text[textProps.text.length-2]=="\\" && textProps.text[textProps.text.length-3]=="\\")){
+			textProps.text=textProps.text.slice(0, textProps.text.length-3);
+		}
+		else if(textProps.text!="" && (textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n" && textProps.text[textProps.text.length-2]=="\\")){
+			textProps.text=textProps.text.slice(0, textProps.text.length-2);
+		}
+		if(textProps.text!="" && (textProps.text.length>=3 && textProps.text[textProps.text.length-1]=="n" && textProps.text[textProps.text.length-2]=="\\" && textProps.text[textProps.text.length-3]=="\\")){
+			textProps.text=textProps.text.slice(0, textProps.text.length-3);
+		}
+		else if(textProps.text!="" && (textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n" && textProps.text[textProps.text.length-2]=="\\")){
+			textProps.text=textProps.text.slice(0, textProps.text.length-2);
+		}
 		return textProps.text;
 	}
 	private readHTMLTextPropertiesRecursive(target_tf:TextField, myChild, textProps:any, currentFormat:TextFormat){
@@ -295,12 +339,13 @@ export class HTMLTextProcessor
 
 		// check if this is a paragraph. if it is, we want to add a linebreak in case there is text already present
 		// we also check if there is already a linebreak in the text, and do not add another if there is
-		if(myChild.tagName=="p"){
-			if(textProps.text!=""){
-				textProps.text+="\\n";						
-			}
-		}
 
+		if(myChild.tagName=="p"){
+			/*if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\")){
+						
+				textProps.text+="\\n";						
+			}*/
+		}
 		// if this is a bold-tag, we create a new textformat if the current format is not bold
 		else if(myChild.tagName=="b"){			
 			if(!currentFormat.bold){
@@ -327,6 +372,12 @@ export class HTMLTextProcessor
 		else if(myChild.tagName=="font"){
 			// todo 
 			cloneFormat=true;
+		}
+		else if(myChild.tagName=="li"){
+		/*	if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\")){
+				textProps.text+="\\n";
+			}*/						
+			textProps.text+="    ●    ";
 		}
 		else if(myChild.tagName=="br"){
 			textProps.text+="\\n";
@@ -362,9 +413,18 @@ export class HTMLTextProcessor
 			if((<any>myChild).nodeValue){
 				// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
 				var testContent:string=(<any>myChild).nodeValue.replace(/[\s\r\n]/gi, '');
-				if(testContent!="")
+				if(testContent!=""){
+					//if(!myChild.tagName){
+					//	textProps.text+="\\n";
+					//}
 					textProps.text+=(<any>myChild).nodeValue.replace("\n", "\\n");
+				}
 			}
+		}
+		if(myChild.tagName=="li" || myChild.tagName=="p"){
+			//if(textProps.text!="" && !(textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\")){
+				textProps.text+="\\n";
+			//}						
 		}
 	}
 }

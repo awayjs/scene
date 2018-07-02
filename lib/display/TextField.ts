@@ -206,6 +206,8 @@ export class TextField extends DisplayObject
 	private char_positions_x:number[] = [];
 	private char_positions_y:number[] = [];
 
+	public _avm1_width:number=0;
+	public _avm1_x:number=0;
 	private _strokeScale:Vector3D = new Vector3D();
 	// keeping track of the original textfield that was used for cloning this one.
 	public sourceTextField:TextField=null;
@@ -339,10 +341,10 @@ export class TextField extends DisplayObject
 		}	
 
 		if(this._selectionBeginIndex==this._selectionEndIndex){			
-			if(this.bgShape){
+			if(this.bgShapeSelect){
 				this.showSelection=false;
-				GraphicsFactoryHelper.updateRectanglesShape(this.bgShape,[]);
-				this.bgShape.invalidate();
+				GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect,[]);
+				this.bgShapeSelect.invalidate();
 			}
 			this.drawCursor();
 		}
@@ -388,10 +390,10 @@ export class TextField extends DisplayObject
 		if(cursorScale<=0)cursorScale=1;
 		if(!this.cursorShape){
 			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x,y,0.5*(1/cursorScale),height],tf.color,1);
+			return;
 		}
-		else{
-			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5*(1/cursorScale),height]);
-		}
+		GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5*(1/cursorScale),height]);
+		
 	}
 	public getHairlineScaleY(){
 		var scaleY:number=this.transform.concatenatedMatrix3D.decompose()[3].y*this._strokeScale.y;
@@ -454,13 +456,20 @@ export class TextField extends DisplayObject
 		if(width>0){
 			rectangles.push(startx, oldy, width, height);
 		}
-		//if(!this.bgShape){
-			this.bgShape=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
-		/*}
-		else{
-			GraphicsFactoryHelper.updateRectanglesShape(this.bgShape, rectangles);
-		}*/
+		if(!this.bgShapeSelect){
+			this.bgShapeSelect=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
+			return;
+		}
+		GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect, rectangles);
+		
 
+	}
+	public drawBG(){
+		if(!this.bgShape){
+			this.bgShape=GraphicsFactoryHelper.drawRectangles([this.textOffsetX, this.textOffsetY, this.width, this.height], this.backgroundColor, 1);
+			return;
+		}
+		GraphicsFactoryHelper.updateRectanglesShape(this.bgShape, [this.textOffsetX, this.textOffsetY, this.width, this.height]);	
 	}
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
@@ -567,6 +576,7 @@ export class TextField extends DisplayObject
 			this._strokeScale.x = 1;
 			this._strokeScale.y = 1;
 		}
+		this._graphics.updateScale(projection);
 		
 	}
 
@@ -1220,6 +1230,7 @@ export class TextField extends DisplayObject
 
 	private cursorShape:Shape;
 	private bgShape:Shape;
+	private bgShapeSelect:Shape;
 	/**
 	 *
 	 * @param renderer
@@ -1239,12 +1250,15 @@ export class TextField extends DisplayObject
 
 		}
 
-		this._graphics.acceptTraverser(traverser);
-		if(this.showSelection && this._isInFocus && this.bgShape){
-			traverser[this.bgShape.elements.traverseName](this.bgShape);
-		}
 		if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
 			traverser[this.cursorShape.elements.traverseName](this.cursorShape);
+		}
+		this._graphics.acceptTraverser(traverser);
+		if(this.showSelection && this._isInFocus && this.bgShapeSelect){
+			traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
+		}
+		if(this.bgShape){
+			traverser[this.bgShape.elements.traverseName](this.bgShape);
 		}
 	}
 
@@ -1415,8 +1429,10 @@ export class TextField extends DisplayObject
 
 	public get x():number
 	{
-		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
+			
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap){
 			this.reConstruct();
+		}
 
 		return this._transform.position.x;
 	}
@@ -1434,17 +1450,20 @@ export class TextField extends DisplayObject
 		this._transform.invalidatePosition();
 	}
 
+
 	/**
 	 *
 	 */
 	public get width():number
 	{
-		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap){
+
 			this.reConstruct();
+		}
 
 		return this._width;
 	}
-
+	
 	public set width(val:number)
 	{
 		if (this._width == val)
@@ -1454,7 +1473,7 @@ export class TextField extends DisplayObject
 			return;
 
 		this._width = val;
-
+		
 		this._positionsDirty = true;
 
 		this._invalidateBounds();
@@ -1513,6 +1532,8 @@ export class TextField extends DisplayObject
 		this._textColor=-1;
 		this._width=100;
 		this._height=100;
+		this._avm1_width=100;
+		this._avm1_x=0;
 		this._textWidth=0;
 		this._textHeight=0;
 		this._type = TextFieldType.DYNAMIC;
@@ -1656,11 +1677,9 @@ export class TextField extends DisplayObject
 				this._textWidth = 0;
 				this._textHeight = 0;
 				if(this._autoSize!=TextFieldAutoSize.NONE ){
-
-					this.adjustPositionForAutoSize(0);
-					this._width = 4;
+					this.adjustPositionForAutoSize(0);//(this._width - 4)/2);
+					
 					this._height = 4;
-
 					this._invalidateBounds();
 				}
 				if(this._type==TextFieldType.INPUT)
@@ -1864,11 +1883,11 @@ export class TextField extends DisplayObject
 		}
 
 	}
- 
+	
 	private adjustPositionForAutoSize(newWidth:number){
 
 		var oldSize:number=this._width;
-		this._width = 4 + this.textOffsetX + newWidth;
+		this._width = 4 + newWidth;
 		this._invalidateBounds();
 		if (this._autoSize==TextFieldAutoSize.RIGHT){
 			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
@@ -1910,7 +1929,9 @@ export class TextField extends DisplayObject
 
 		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
 		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty) {
-			this.adjustPositionForAutoSize(this._maxWidthLine + this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
+			var oldSize:number=this._width-4;
+			var maxSizeComplete:number=this._maxWidthLine + this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin;
+			this.adjustPositionForAutoSize(maxSizeComplete);
 		} 
 
 		var maxLineWidth: number = this._width - (this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
@@ -2113,7 +2134,7 @@ export class TextField extends DisplayObject
 
 		// if autosize is enabled, we adjust the textFieldHeight
 		if(this.autoSize!=TextFieldAutoSize.NONE){
-			this._height=this._textHeight+3;
+			this._height=this._textHeight+4;
 			this._invalidateBounds();
 		}
 	}
@@ -2226,15 +2247,16 @@ export class TextField extends DisplayObject
 		this._textHeight=text_height;
 		//this._width=text_width+4;
 		//this._height=text_height+4;
+		if(this._background){
+			this.drawBG();
+		}
 		this._graphics.clear();
-		if(this._background || this._border){
-			if(this._background)
-				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
-			if(this._border)
-				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
+		if(this._border){
+			this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
 			this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
 			this._graphics.endFill();
 		}
+		
 		/*
 		this._graphics.clear();
 		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
@@ -2304,16 +2326,13 @@ export class TextField extends DisplayObject
 		}
 		this.textShapes={};
 
+		if(this._background){
+			this.drawBG();
+		} 
 		this._graphics.clear();
-		if(this._background || this._border || this._isInFocus){
-			if(this._background)
-				this._graphics.beginFill(this._backgroundColor, 1);//this.background?1:0);
-			//if(this._isInFocus)
-			//	this._graphics.lineStyle(0.1, 0xff0000, 1);//this.borderColor, this.border?1:0);
-			if(this._border)
-				this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
-			//this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
-			this._graphics.drawRect(this.textOffsetX,this.textOffsetY,this._width, this._height);
+		if(this._border){
+			this._graphics.lineStyle(0, this._borderColor, 1);//this.borderColor, this.border?1:0);
+			this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
 			this._graphics.endFill();
 		}
 
