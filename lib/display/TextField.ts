@@ -2291,7 +2291,11 @@ export class TextField extends DisplayObject
 			}
 			else {
 
-				var obj=Graphics.get_material_for_color(this._textColor==-1?textShape.format.color:this._textColor, 1);
+				var alpha=this._textColor==-1?ColorUtils.float32ColorToARGB(textShape.format.color)[0]:ColorUtils.float32ColorToARGB(this._textColor)[0];
+				if(alpha==0){
+					alpha=255;
+				}
+				var obj=Graphics.get_material_for_color(this._textColor==-1?textShape.format.color:this._textColor, alpha/255);
 
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
