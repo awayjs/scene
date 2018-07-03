@@ -25,6 +25,9 @@ import {KeyboardEvent} from "../events/KeyboardEvent";
 import {MouseEvent} from "../events/MouseEvent";
 
 import {DisplayObject} from "./DisplayObject";
+import {DisplayObjectContainer} from "./DisplayObjectContainer";
+import {Sprite} from "./Sprite";
+import {TextSprite} from "./TextSprite";
 import {MovieClip} from "./MovieClip";
 import {TextShape} from "../text/TextShape";
 import { FontStyleName } from '../text/FontStyleName';
@@ -111,7 +114,7 @@ import { TextFormatAlign } from '../text/TextFormatAlign';
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-export class TextField extends DisplayObject
+export class TextField extends DisplayObjectContainer
 {
 	private static _textFields:Array<TextField> = [];
 
@@ -166,11 +169,18 @@ export class TextField extends DisplayObject
 	private _textShape2:Shape;
 
 	public textShapes:any;
+	
+	private inMaskMode:boolean;
+	private maskChild:Sprite;// holds the mask for the textfield
+	private textChild:TextSprite;// holds the graphic-content for this textfield
+	private targetGraphics:Graphics;
+	private prevTargetGraphics:Graphics;
+
 
 
 	private cursorIntervalID:number=0;
-	private cursorBlinking:boolean=false;
-	private showSelection:boolean=false;
+	public cursorBlinking:boolean=false;
+	public showSelection:boolean=false;
 	
 	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
 	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
@@ -212,6 +222,46 @@ export class TextField extends DisplayObject
 	// keeping track of the original textfield that was used for cloning this one.
 	public sourceTextField:TextField=null;
 
+	public updateMaskMode()
+	{
+		if(this._textWidth>this._width || this._textHeight>this._height){
+			// mask needed
+			if(this.maskMode){	
+				// 	masking already setup 
+				// 	just make sure the mask has correct size 
+				//	todo: add check to only redraw mask when size has changed
+				this.maskChild.graphics.clear();
+				this.maskChild.graphics.beginFill(0xffffff);
+				this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
+				this.maskChild.graphics.endFill();			
+				return;
+			}
+			this.inMaskMode=true;
+			if(!this.maskChild)
+				this.maskChild=new Sprite();			
+			if(!this.textChild)
+				this.textChild=new TextSprite();
+			this.textChild.parentTextField=this;
+			this.maskChild.graphics.beginFill(0xffffff);
+			this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
+			this.maskChild.graphics.endFill();
+			this.addChild(this.maskChild);
+			this.addChild(this.textChild);
+			this.maskChild.maskMode=true;
+			this.textChild.masks=[this.maskChild];
+
+			this._graphics.clear();
+			this.targetGraphics=this.textChild.graphics;			
+			return;
+		}
+		// mask not needed
+		this.inMaskMode=false;
+		if(this.textChild)
+			this.textChild.graphics.clear();
+		this.targetGraphics=this._graphics;
+		if(this.numChildren>0)
+			this.removeChildren(0, this.numChildren);
+	}
 	public getMouseCursor():string
 	{
 		// check if any parent is a button, otherwise return the cursor type set for this text
@@ -470,6 +520,12 @@ export class TextField extends DisplayObject
 			return;
 		}
 		GraphicsFactoryHelper.updateRectanglesShape(this.bgShape, [this.textOffsetX, this.textOffsetY, this.width, this.height]);	
+	}
+	public drawBorder(){		
+		this.targetGraphics.lineStyle(0.1, this._borderColor, 1);
+		this.targetGraphics.drawRect(this.textOffsetX,this.textOffsetY, this._width, this._height);
+		this.targetGraphics.endFill();
+		
 	}
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
@@ -1228,9 +1284,9 @@ export class TextField extends DisplayObject
 		return false;
 	}
 
-	private cursorShape:Shape;
-	private bgShape:Shape;
-	private bgShapeSelect:Shape;
+	public cursorShape:Shape;
+	public bgShape:Shape;
+	public bgShapeSelect:Shape;
 	/**
 	 *
 	 * @param renderer
@@ -1250,15 +1306,17 @@ export class TextField extends DisplayObject
 
 		}
 
-		if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
-			traverser[this.cursorShape.elements.traverseName](this.cursorShape);
-		}
-		this._graphics.acceptTraverser(traverser);
-		if(this.showSelection && this._isInFocus && this.bgShapeSelect){
-			traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
-		}
-		if(this.bgShape){
-			traverser[this.bgShape.elements.traverseName](this.bgShape);
+		if(!this.maskMode){
+			if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
+				traverser[this.cursorShape.elements.traverseName](this.cursorShape);
+			}
+			this._graphics.acceptTraverser(traverser);
+			if(this.showSelection && this._isInFocus && this.bgShapeSelect){
+				traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
+			}
+			if(this.bgShape){
+				traverser[this.bgShape.elements.traverseName](this.bgShape);
+			}
 		}
 	}
 
@@ -1599,7 +1657,7 @@ export class TextField extends DisplayObject
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
-	private reConstruct(buildGraphics:boolean=false) {
+	public reConstruct(buildGraphics:boolean=false) {
 
 		if(!this._textDirty && !this._positionsDirty && !this._glyphsDirty)
 			return;
@@ -1685,6 +1743,7 @@ export class TextField extends DisplayObject
 				if(this._type==TextFieldType.INPUT)
 					this.drawSelectionGraphics();
 			}
+			this.updateMaskMode();
 		}
 
 		this._textDirty=false;
@@ -2077,10 +2136,18 @@ export class TextField extends DisplayObject
 				}
 			}
 			else if (format.align == TextFormatAlign.CENTER) {
-				offsetx += lineSpaceLeft / 2;
+				if(lineSpaceLeft>0)
+					offsetx += lineSpaceLeft / 2;
+				else{
+					offsetx += 2;
+				}
 			}
 			else if (format.align == TextFormatAlign.RIGHT) {
-				offsetx += lineSpaceLeft;
+				if(lineSpaceLeft>0)
+					offsetx += lineSpaceLeft;
+				else{
+					offsetx += 2;
+				}
 			}
 			else if (format.align == TextFormatAlign.LEFT) {
 				offsetx += 2;
@@ -2137,6 +2204,8 @@ export class TextField extends DisplayObject
 			this._height=this._textHeight+4;
 			this._invalidateBounds();
 		}
+		this.updateMaskMode();
+
 	}
 	public staticMatrix:any;
 	private buildGlyphsForLabelData() {
@@ -2250,11 +2319,11 @@ export class TextField extends DisplayObject
 		if(this._background){
 			this.drawBG();
 		}
-		this._graphics.clear();
-		if(this._border){
-			this._graphics.lineStyle(0.1, this._borderColor, 1);//this.borderColor, this.border?1:0);
-			this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
-			this._graphics.endFill();
+		this.targetGraphics=this._graphics;
+		this.targetGraphics.clear();
+
+		if(this.border){
+			this.drawBorder();
 		}
 		
 		/*
@@ -2279,7 +2348,7 @@ export class TextField extends DisplayObject
 			//if(tess_fontTable.usesCurves){
 			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 			//}
-			textShape.shape = this._graphics.addShape(Shape.getShape(textShape.elements));
+			textShape.shape = this.targetGraphics.addShape(Shape.getShape(textShape.elements));
 
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
@@ -2319,7 +2388,8 @@ export class TextField extends DisplayObject
 		var textShape:TextShape;
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
-			this._graphics.removeShape(textShape.shape);
+			if(this.targetGraphics.getShapeIndex(textShape.shape)>=0)
+				this.targetGraphics.removeShape(textShape.shape);
 			Shape.storeShape(textShape.shape);
 			/*textShape.shape.dispose();*/
 			textShape.shape = null;
@@ -2333,11 +2403,10 @@ export class TextField extends DisplayObject
 		if(this._background){
 			this.drawBG();
 		} 
-		this._graphics.clear();
+		this.prevTargetGraphics=this.targetGraphics;
+		this.targetGraphics.clear();
 		if(this._border){
-			this._graphics.lineStyle(0, this._borderColor, 1);//this.borderColor, this.border?1:0);
-			this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
-			this._graphics.endFill();
+			this.drawBorder();
 		}
 
 		/*
@@ -2373,7 +2442,7 @@ export class TextField extends DisplayObject
 			//if(tess_fontTable.usesCurves){
 			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 			//}
-			textShape.shape = this._graphics.addShape(Shape.getShape(textShape.elements));
+			textShape.shape = this.targetGraphics.addShape(Shape.getShape(textShape.elements));
 
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
