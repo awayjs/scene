@@ -46,7 +46,7 @@ export class HTMLTextProcessor
 				if(input[cnt+1]=="p"){							
 					//console.log("html p");
 					openTags[openTags.length]="p";}
-				else if(input[cnt+1]=="b"){	
+				else if(input[cnt+1]=="b" && input[cnt+2]!="r"){	
 					//console.log("html b");
 					openTags[openTags.length]="b";}
 				else if(input[cnt+1]=="i"){	
