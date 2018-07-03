@@ -286,14 +286,14 @@ export class Timeline
 
 	public jumpToLabel(target_mc:MovieClip, label:string, offset:number=0) : void
 	{
-		var key_frame_index:number = this._labels[label];
+		var key_frame_index:number = this._labels[label.toLowerCase()];
 		if(key_frame_index >= 0)
 			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index]+offset;
 	}
 
 	public getScriptForLabel(target_mc:MovieClip, label:string):any
 	{
-		var key_frame_index:number = this._labels[label];
+		var key_frame_index:number = this._labels[label.toLowerCase()];
 		if(key_frame_index < 0)
 			return null;
 		if(key_frame_index >= 0 && this._framescripts[key_frame_index]!=null){
