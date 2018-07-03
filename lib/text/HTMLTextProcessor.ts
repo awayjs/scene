@@ -270,6 +270,9 @@ export class HTMLTextProcessor
 			}
 			this.readHTMLTextPropertiesRecursive(target_tf, startNode, textProps, target_tf._textFormat);
 		}
+		if(textProps.text!="" && ((textProps.text.charCodeAt(textProps.text.length-1)==13 ) || (textProps.text.charCodeAt(textProps.text.length-1)==10 ))){
+			textProps.text=textProps.text.slice(0, textProps.text.length-1);
+		}	
 		if(textProps.text!="" && (textProps.text.length>=3 && textProps.text[textProps.text.length-1]=="n" && textProps.text[textProps.text.length-2]=="\\" && textProps.text[textProps.text.length-3]=="\\")){
 			textProps.text=textProps.text.slice(0, textProps.text.length-3);
 		}

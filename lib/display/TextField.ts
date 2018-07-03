@@ -1228,6 +1228,15 @@ export class TextField extends DisplayObjectContainer
 			this.htmlText=value;
 			return;
 		}
+		if(value!="" && ((value.charCodeAt(value.length-1)==13 ) || (value.charCodeAt(value.length-1)==10 ))){
+			value=value.slice(0, value.length-1);
+		}	
+		if(value!="" && (value.length>=3 && value[value.length-1]=="n" && value[value.length-2]=="\\" && value[value.length-3]=="\\")){
+			value=value.slice(0, value.length-3);
+		}
+		if(value!="" && (value.length>=3 && value[value.length-1]=="n" && value[value.length-2]=="\\")){
+			value=value.slice(0, value.length-2);
+		}
 		if (this._text == value)
 			return;
 		this._labelData=null;
