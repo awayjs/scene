@@ -1743,8 +1743,9 @@ export class TextField extends DisplayObjectContainer
 				// this is empty text, we need to reset the text-size
 				this._textWidth = 0;
 				this._textHeight = 0;
-				if(this._autoSize!=TextFieldAutoSize.NONE ){
-					this.adjustPositionForAutoSize(0);//(this._width - 4)/2);
+				if(this._autoSize!=TextFieldAutoSize.NONE  ){
+					if(!this.wordWrap)
+						this.adjustPositionForAutoSize(0);//(this._width - 4)/2);
 					
 					this._height = 4;
 					this._invalidateBounds();
