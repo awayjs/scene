@@ -39,7 +39,7 @@ export class TextSprite extends Sprite
 			traverser[tf.bgShapeSelect.elements.traverseName](tf.bgShapeSelect);
 		}
 		
-		if(tf.bgShape){
+		if(tf.bgShape && tf.background){
 			traverser[tf.bgShape.elements.traverseName](tf.bgShape);
 		}
 	}

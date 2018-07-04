@@ -1323,7 +1323,7 @@ export class TextField extends DisplayObjectContainer
 			if(this.showSelection && this._isInFocus && this.bgShapeSelect){
 				traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
 			}
-			if(this.bgShape){
+			if(this.bgShape && this.background){
 				traverser[this.bgShape.elements.traverseName](this.bgShape);
 			}
 		}
@@ -2410,11 +2410,10 @@ export class TextField extends DisplayObjectContainer
 		}
 		this.textShapes={};
 
+		this.targetGraphics.clear();
 		if(this._background){
 			this.drawBG();
 		} 
-		this.prevTargetGraphics=this.targetGraphics;
-		this.targetGraphics.clear();
 		if(this._border){
 			this.drawBorder();
 		}
