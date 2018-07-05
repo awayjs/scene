@@ -139,6 +139,7 @@ export class TextField extends DisplayObjectContainer
 	private _numLines:number;
 	private _selectionBeginIndex:number=0;
 	private _selectionEndIndex:number=0;
+	private _iText:string = "";
 	private _text:string = "";
 	private _textInteractionMode:TextInteractionMode;
 
@@ -914,7 +915,7 @@ export class TextField extends DisplayObjectContainer
 		//	we still need to set textDirty, because formatting might have changed
 		//console.log("html out",  textProps.text);
 		this._labelData = null;
-		this._text = processedText;
+		this._iText = processedText;
 		this._textDirty = true;
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
@@ -930,7 +931,7 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public get length():number /*int*/
 	{
-		return this._text.length;
+		return this._iText.length;
 	}
 
 	/**
@@ -1228,6 +1229,10 @@ export class TextField extends DisplayObjectContainer
 			this.htmlText=value;
 			return;
 		}
+		if (this._text == value)
+			return;
+		this._labelData=null;
+		this._text=value;
 		if(value!="" && ((value.charCodeAt(value.length-1)==13 ) || (value.charCodeAt(value.length-1)==10 ))){
 			value=value.slice(0, value.length-1);
 		}	
@@ -1237,10 +1242,7 @@ export class TextField extends DisplayObjectContainer
 		if(value!="" && (value.length>=3 && value[value.length-1]=="n" && value[value.length-2]=="\\")){
 			value=value.slice(0, value.length-2);
 		}
-		if (this._text == value)
-			return;
-		this._labelData=null;
-		this._text = value;
+		this._iText = value;
 
 		this._textDirty = true;
 
@@ -1253,7 +1255,7 @@ export class TextField extends DisplayObjectContainer
 	{
 		this._labelData=labelData;
 
-		this._text = "";
+		this._iText = "";
 
 		this._textDirty = false;
 		this._positionsDirty = false;
@@ -1711,12 +1713,12 @@ export class TextField extends DisplayObjectContainer
 
 			this._maxWidthLine=0;
 
-			if(this._text != "" && this._textFormat != null) {
+			if(this._iText != "" && this._textFormat != null) {
 					//console.log("textlength", this.text.toString().length, this.text.toString());
 					this.buildParagraphs();
 			}
 
-			//console.log("TextField buildParagraph", this.id, this._text);
+			//console.log("TextField buildParagraph", this.id, this._iText);
 			//console.log("TextField buildParagraph", this.id, this._autoSize);
 			//console.log("TextField buildParagraph", this.id, this._wordWrap);
 			//console.log("TextField buildParagraph", this.id, this.multiline);
@@ -1735,7 +1737,7 @@ export class TextField extends DisplayObjectContainer
 
 		if(this._positionsDirty){
 			this._glyphsDirty=true;
-			if(this._text != "" && this._textFormat != null) {
+			if(this._iText != "" && this._textFormat != null) {
 				//console.log("TextField getWordPositions", this.id, this.words);
 				this.getWordPositions();
 			}
@@ -1801,7 +1803,7 @@ export class TextField extends DisplayObjectContainer
 	}
 
 	private buildParagraphs() {
-		var thisText:string=this._text.toString();
+		var thisText:string=this._iText.toString();
 		if(!this._textFormats || !this._textFormatsIdx || this._textFormats.length==0 || (this._textFormats.length != this._textFormatsIdx.length)){
 			this._textFormats=[this._textFormat];
 			this._textFormatsIdx=[0];
@@ -1970,7 +1972,7 @@ export class TextField extends DisplayObjectContainer
 
 	private getWordPositions() {
 
-		/*console.log("this._text", this._text);
+		/*console.log("this._iText", this._iText);
 		console.log("this._width", this._width);
 		console.log("this._height", this._height);*/
 		var tr: number = 0;
@@ -2500,7 +2502,7 @@ export class TextField extends DisplayObjectContainer
 	 * @param newText The string to append to the existing text.
 	 */
 	public appendText(newText:string) {
-		this._text += newText;
+		this._iText += newText;
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._invalidateBounds();
@@ -2512,7 +2514,7 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public closeParagraph():void
 	{
-		this._text+="\n";
+		this._iText+="\n";
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this._invalidateBounds();
@@ -2729,7 +2731,7 @@ export class TextField extends DisplayObjectContainer
 		if(lineIndex>=this.lines_width.length)
 			lineIndex=this.lines_width.length-1;
 		
-		return this._text.slice(this.lines_charIdx_start[lineIndex], this.lines_charIdx_end[lineIndex]);	
+		return this._iText.slice(this.lines_charIdx_start[lineIndex], this.lines_charIdx_end[lineIndex]);	
 	}
 
 	/**
@@ -2799,15 +2801,15 @@ export class TextField extends DisplayObjectContainer
 				selectionStart=this._selectionEndIndex;
 				selectionEnd=this._selectionBeginIndex;
 			}
-			var textBeforeCursor:string=this._text.slice(0, selectionStart-1);
-			var textAfterCursor:string=this._text.slice(selectionEnd, this._text.length);
+			var textBeforeCursor:string=this._iText.slice(0, selectionStart-1);
+			var textAfterCursor:string=this._iText.slice(selectionEnd, this._iText.length);
 			this.text = textBeforeCursor + value + textAfterCursor;
 			this._selectionBeginIndex=selectionStart;
 			this._selectionEndIndex=this._selectionBeginIndex+value.length;
 			return;
 		}
-		var textBeforeCursor:string=this._text.slice(0, selectionStart);
-		var textAfterCursor:string=this._text.slice(selectionEnd, this._text.length);
+		var textBeforeCursor:string=this._iText.slice(0, selectionStart);
+		var textAfterCursor:string=this._iText.slice(selectionEnd, this._iText.length);
 		this.text = textBeforeCursor + value + textAfterCursor;
 		this._selectionBeginIndex=selectionStart+1;
 		this._selectionEndIndex=this._selectionBeginIndex;
@@ -2835,8 +2837,8 @@ export class TextField extends DisplayObjectContainer
 	public replaceText(beginIndex:number /*int*/, endIndex:number /*int*/, newText:string):void
 	{
 
-		var textBeforeCursor:string=this._text.slice(0, beginIndex-1);
-		var textAfterCursor:string=this._text.slice(endIndex, this._text.length);
+		var textBeforeCursor:string=this._iText.slice(0, beginIndex-1);
+		var textAfterCursor:string=this._iText.slice(endIndex, this._iText.length);
 		this.text = textBeforeCursor + newText + textAfterCursor;
 		this._selectionEndIndex=this._selectionBeginIndex+newText.length;
 	}
@@ -3132,8 +3134,8 @@ export class TextField extends DisplayObjectContainer
 			return;
 		
 		if(this._selectionBeginIndex!=this._selectionEndIndex){
-			var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex-1);
-			var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+			var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex-1);
+			var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
 			this.text = textBeforeCursor + textAfterCursor;
 			this._selectionEndIndex=this._selectionBeginIndex;
 			return;
@@ -3142,15 +3144,15 @@ export class TextField extends DisplayObjectContainer
 			if(this._selectionBeginIndex==0){
 				return;
 			}
-			var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex-1);
-			var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+			var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex-1);
+			var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
 			this.text = textBeforeCursor + textAfterCursor;
 			this._selectionBeginIndex-=1;
 			this._selectionEndIndex=this._selectionBeginIndex;
 		}
 		else if(deleteMode=="Delete"){
-			var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
-			var textAfterCursor:string=this._text.slice(this._selectionEndIndex+1, this._text.length);
+			var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+			var textAfterCursor:string=this._iText.slice(this._selectionEndIndex+1, this._iText.length);
 			this.text = textBeforeCursor + textAfterCursor;
 			this._selectionEndIndex=this._selectionBeginIndex;
 		}
@@ -3183,7 +3185,7 @@ export class TextField extends DisplayObjectContainer
             }
 			(<ITextfieldAdapter>this.adapter).dispatchKeyEvent(charCode, isShift, isCTRL, isAlt);
 		}
-		var oldText=this._text;
+		var oldText=this._iText;
 		if(!this._selectionBeginIndex){
 			this._selectionBeginIndex=0;
 		}
@@ -3247,8 +3249,8 @@ export class TextField extends DisplayObjectContainer
 		
 		else if (char.length==1){
 			if(this._selectionBeginIndex!=this._selectionEndIndex){
-				var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
-				var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+				var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+				var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
 				if(this.maxChars>0 && (textBeforeCursor.length+textAfterCursor.length+char.length)>this.maxChars){
 					var maxNewChars:number=this.maxChars-textBeforeCursor.length+textAfterCursor.length;
 					if(maxNewChars>0){
@@ -3259,22 +3261,22 @@ export class TextField extends DisplayObjectContainer
 				this._selectionBeginIndex+=1;
 				this._selectionEndIndex=this._selectionBeginIndex;
 			}
-			if(this.maxChars>0 && this._text.length>=this.maxChars){
+			if(this.maxChars>0 && this._iText.length>=this.maxChars){
 
 			}
 			else{
 				if(this._restrictInternal && this._restrictInternal!=""){
 					if(this._restrictInternal.indexOf(char)!=-1){
-						var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
-						var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+						var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+						var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
 						this.text = textBeforeCursor + char + textAfterCursor;
 						this._selectionBeginIndex+=1;
 						this._selectionEndIndex=this._selectionBeginIndex;
 					}
 				}
 				else{
-					var textBeforeCursor:string=this._text.slice(0, this._selectionBeginIndex);
-					var textAfterCursor:string=this._text.slice(this._selectionEndIndex, this._text.length);
+					var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+					var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
 					this.text = textBeforeCursor+char+textAfterCursor;
 					this._selectionBeginIndex+=1;
 					this._selectionEndIndex=this._selectionBeginIndex;
@@ -3290,7 +3292,7 @@ export class TextField extends DisplayObjectContainer
 		this.drawSelectionGraphics();
 		this.invalidate();
 		
-		if(this._onChanged && oldText!==this._text)
+		if(this._onChanged && oldText!==this._iText)
 			this._onChanged();
 	}
 	public onMouseDownDelegate:(e:any) => void;
@@ -3340,7 +3342,7 @@ export class TextField extends DisplayObjectContainer
 		newInstance.sourceTextField=this;
 		newInstance["fileurl"] = this["fileurl"];
 
-		newInstance.text = this._text;
+		newInstance.text = this._iText;
 		if(this._labelData){
 			newInstance.setLabelData(this._labelData);
 		}
