@@ -563,6 +563,8 @@ export class DisplayObjectContainer extends DisplayObject
 	 */
 	public swapChildren(child1:DisplayObject, child2:DisplayObject):void
 	{
+		if(child1.parent!=this || child2.parent!=this)
+			return;
 		this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2))
 	}
 
