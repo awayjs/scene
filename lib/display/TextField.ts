@@ -2082,7 +2082,13 @@ export class TextField extends DisplayObjectContainer
 					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
 						word_width = this.words[w + 3];
 						linelength += word_width;
-						if (linelength <= (maxLineWidth - indent-10) || this.lines_width[linecnt] == 0) {
+						var isSpace:boolean=false;
+						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
+							this.lines_numSpacesPerline[linecnt] += 1;
+							isSpace=true;
+						}
+						// (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
+						if (isSpace || linelength <= (maxLineWidth - indent - (1.5* format.font_table.getCharWidth("32"))) || this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;
 							lines_formats[linecnt]=format;
@@ -2097,9 +2103,6 @@ export class TextField extends DisplayObjectContainer
 							this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt];
 							lines_formats[linecnt]=format;
 							indent = format.indent;
-						}
-						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
-							this.lines_numSpacesPerline[linecnt] += 1;
 						}
 					}
 					//console.log("split lines",linecnt );
