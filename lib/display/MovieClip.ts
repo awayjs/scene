@@ -631,8 +631,8 @@ export class MovieClip extends Sprite
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
 				if (this.loop){
 					 // end of loop - jump to first frame.
-					 // todo: dont use currentframe here. use a specific funtion for going to frame
-					this.currentFrameIndex = 0;
+					this._currentFrameIndex = 0;					
+					this._timeline.gotoFrame(this, 0, true, true);
 				}	
 				else //end of timeline, stop playing
 					this._isPlaying = false;
@@ -647,7 +647,7 @@ export class MovieClip extends Sprite
 
 		var len:number = this._children.length;
 		var child:DisplayObject;
-		for (var i:number = len-1; i >=  0; --i) {
+		for (var i:number = 0;i< len; i++) {
 			child = this._children[i];
 
 			if (child.isAsset(MovieClip)){

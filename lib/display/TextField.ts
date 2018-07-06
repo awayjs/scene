@@ -640,7 +640,7 @@ export class TextField extends DisplayObjectContainer
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
 		this.reConstruct();
-/*
+		/*
 		if(BuildMode.mode==BuildMode.AVM1 && !this._selectable){
 			this._pBoxBounds.x = 0;
 			this._pBoxBounds.y = 0;
@@ -648,8 +648,7 @@ export class TextField extends DisplayObjectContainer
 			this._pBoxBounds.height = 0;
 			return;
 		}
-		*/
-		
+		*/		
 		var box:Box = new Box(this.textOffsetX, this.textOffsetY, 0, this._width, this._height);
 
 		if (matrix3D)
@@ -1223,7 +1222,7 @@ export class TextField extends DisplayObjectContainer
 
 	public set text(value:string)
 	{
-		value = value.toString();
+		value = value?value.toString():"";
 
 		if(this.html){
 			this.htmlText=value;

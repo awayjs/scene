@@ -305,7 +305,7 @@ export class Timeline
 		}
 	}
 
-	public gotoFrame(target_mc:MovieClip, value:number, queue_script:boolean = true):void
+	public gotoFrame(target_mc:MovieClip, value:number, queue_script:boolean = true, queue_pass2:boolean = false):void
 	{
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
 		var target_keyframe_idx:number = this.keyframe_indices[value];
@@ -348,7 +348,7 @@ export class Timeline
 		var new_depth_sessionIDs:Object={};
 
 		//pass1: only apply add/remove commands into depth_sessionIDs.
-		this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs, new_depth_sessionIDs);
+		this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs, new_depth_sessionIDs, queue_pass2);
 
 		// check what childs are alive on both frames.
 		// childs that are not alive anymore get removed and unregistered
@@ -400,7 +400,7 @@ export class Timeline
 		target_mc.preventScript=false;
 		
 		if (queue_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
-			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, true);
+			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, !queue_pass2);
 
 		// add children that was constructed on this frame
 		for (var key in depth_sessionIDs) {
@@ -419,7 +419,7 @@ export class Timeline
 		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 	}
 
-	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object):void
+	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object, queue_pass2:boolean):void
 	{
 		var i:number;
 		var k:number;
@@ -444,14 +444,26 @@ export class Timeline
 				start_index = this.command_index_stream[frame_command_idx];
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
 				// apply add commands in reversed order to have script exeucted in correct order.
-				// this could be changed in exporter
-				//for (i = end_index - 1; i >= start_index; i--)
-				for (i =start_index; i < end_index; i++)
-					depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
+				// this could be changed in exporter				
+				if(queue_pass2){
+					for (i = end_index - 1; i >= start_index; i--)
+						depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
+				}
+				else{
+					for (i =start_index; i < end_index; i++)
+						depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
+				}
 				if(k==target_keyframe_idx){
-					//for (i = end_index - 1; i >= start_index; i--){
-					for (i =start_index; i < end_index; i++){
-						new_depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = true;
+					if(queue_pass2){
+						for (i = end_index - 1; i >= start_index; i--){	
+							new_depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = true;
+						}
+					}
+					else{
+						for (i =start_index; i < end_index; i++){
+							new_depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = true;
+						}
+
 					}
 				}
 				
@@ -553,7 +565,6 @@ export class Timeline
 		var idx:number;
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
-		//for (var i:number = end_index - 1; i >= start_index; i--) {
 		for (var i:number = start_index; i < end_index; i++) {
 			idx = i*2;
 			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
