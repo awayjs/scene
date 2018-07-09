@@ -3,6 +3,12 @@ import {MovieClip} from "../display/MovieClip";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import { BuildMode } from '@awayjs/core';
 
+interface IInterval{
+	f:Function;
+	t:number;
+	dt:number;
+	isTimeout:boolean;
+}
 export class FrameScriptManager
 {
 	// FrameScript debugging:
@@ -27,10 +33,24 @@ export class FrameScriptManager
 	private static _active_intervals:Object = new Object(); // maps id to function
 
 	private static _intervalID:number=0;
-	public static setInterval(func:any):number
+	public static setInterval(fun:Function, time:number):number
 	{
 		this._intervalID++;
-		this._active_intervals[this._intervalID]=func;
+		// make sure we have at least 4ms intervals
+		if(time<4){
+			time=4;
+		}
+		this._active_intervals[this._intervalID]=<IInterval>{"f":fun, "t":time, "dt":0, "isTimeout":false};
+		return this._intervalID
+	}
+	public static setTimeOut(fun:Function, time:number):number
+	{
+		this._intervalID++;
+		// make sure we have at least 4ms intervals
+		if(time<4){
+			time=4;
+		}
+		this._active_intervals[this._intervalID]=<IInterval>{"f":fun, "t":time, "dt":0, "isTimeout":true};
 		return this._intervalID
 	}
 
@@ -39,10 +59,26 @@ export class FrameScriptManager
 		delete this._active_intervals[id];
 	}
 
-	public static execute_intervals():void
+	public static clearTimeout(id:number):void
 	{
+		delete this._active_intervals[id];
+	}
+
+	public static execute_intervals(dt:number=0):void
+	{
+		var interval:IInterval;
 		for(var key in this._active_intervals){
-			this._active_intervals[key].call();
+			interval=this._active_intervals[key];
+			interval.dt+=dt;
+			// keep executing the setInterval for as many times as the dt allows
+			// a setInterval can delete itself, so we need to check if it still exists
+			while(this._active_intervals[key] && interval.dt>=interval.t){
+				interval.dt-=interval.t;
+				interval.f();
+				if(interval.isTimeout){
+					delete this._active_intervals[key];
+				}
+			}
 		}
 	}
 

@@ -725,7 +725,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 * first object, and that object's <code>mask</code> property becomes
 	 * <code>null</code>.</p>
 	 */
-	public mask:DisplayObject;
+	public set mask(value:DisplayObject){
+		if(value){
+			value.maskMode=true;
+		}
+		if(!this.masks)this.masks=[];
+		this.masks.push(value);
+	}
 
 	public get maskMode():boolean
 	{

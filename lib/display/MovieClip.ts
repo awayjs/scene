@@ -13,10 +13,13 @@ import {TextField} from "./TextField";
 
 export class MovieClip extends Sprite
 {
+	//todo: this 3 are no longer used (?)
 	public static avm1ScriptQueue:MovieClip[]=[];
 	public static avm1ScriptQueueScripts:any[]=[];
 	public static avm1LoadedActions:any[]=[];
+
 	public static _skipAdvance:boolean;
+	
 
 	public swappedDepthsMap:any={};
 	public doingSwap:boolean=false;
@@ -70,7 +73,6 @@ export class MovieClip extends Sprite
 		super();
 
 		this.doingSwap=false;
-
 		this._isButton=false;
 		this._buttonMode=false;
 		this._useHandCursor=true;
@@ -531,7 +533,7 @@ export class MovieClip extends Sprite
 	/**
 	 * should be called right before the call to away3d-render.
 	 */
-	public update(events:any[]=null):void
+	public update(events:any[]=null, dt:number=0):void
 	{
 
 		// Not used for AVM1 !!!
@@ -556,7 +558,7 @@ export class MovieClip extends Sprite
 		FrameScriptManager.execute_queue();
 
 		// now we execute any intervals queued
-		FrameScriptManager.execute_intervals();
+		FrameScriptManager.execute_intervals(dt);
 
 		// finally, we execute any scripts that were added from intervals
 		FrameScriptManager.execute_queue();
