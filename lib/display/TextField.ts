@@ -1042,15 +1042,21 @@ export class TextField extends DisplayObjectContainer
 	 * @default null
 	 */
 	public _restrict:string;
-	public _restrictInternal:string;
+	public _restrictRegex:RegExp;
 	public get restrict():string{
 		return this._restrict;
 	}
 	public set restrict(value:string){
 		this._restrict=value;
-		this._restrictInternal="";
+		this._restrictRegex=null;
+		if(typeof value=="undefined")
+			return;
+		value=value.toString();
+		if(value.length>=2 && value[0]=="-" && !isNaN(parseInt(value[1])))
+			value="0"+value;
+		this._restrictRegex=new RegExp("[^"+value+"]", "g");
 		// todo: implement this with regex
-        if(value.indexOf(".")>=0){
+       /* if(value.indexOf(".")>=0){
             this._restrictInternal+=".";
             value=value.replace(".", "");
         }
@@ -1091,6 +1097,7 @@ export class TextField extends DisplayObjectContainer
 			}
         }
 		this._restrictInternal+=value;
+		*/
 	};
 
 	/**
@@ -3251,6 +3258,11 @@ export class TextField extends DisplayObjectContainer
 		}
 		
 		else if (char.length==1){
+			if(this._restrictRegex){
+				char=char.replace(this._restrictRegex, "");
+				if(char=="")
+					return;
+			}
 			if(this._selectionBeginIndex!=this._selectionEndIndex){
 				var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
 				var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
@@ -3268,22 +3280,11 @@ export class TextField extends DisplayObjectContainer
 
 			}
 			else{
-				if(this._restrictInternal && this._restrictInternal!=""){
-					if(this._restrictInternal.indexOf(char)!=-1){
-						var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-						var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
-						this.text = textBeforeCursor + char + textAfterCursor;
-						this._selectionBeginIndex+=1;
-						this._selectionEndIndex=this._selectionBeginIndex;
-					}
-				}
-				else{
-					var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-					var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
-					this.text = textBeforeCursor+char+textAfterCursor;
-					this._selectionBeginIndex+=1;
-					this._selectionEndIndex=this._selectionBeginIndex;
-				}
+				var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+				var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
+				this.text = textBeforeCursor+char+textAfterCursor;
+				this._selectionBeginIndex+=1;
+				this._selectionEndIndex=this._selectionBeginIndex;				
 			}
 		}
 		else if (char.length>1){
