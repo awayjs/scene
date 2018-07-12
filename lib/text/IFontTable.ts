@@ -5,6 +5,7 @@ import {TextFormat} from "./TextFormat";
  */
 export interface IFontTable extends IAsset
 {
+	font:any;
 	initFontSize(font_size:number);
 	fallbackTable:IFontTable;
 	getCharWidth(char_code:string);

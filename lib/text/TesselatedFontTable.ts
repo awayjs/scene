@@ -37,6 +37,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	private _opentype_font:any;
 	private _glyphIdxToChar:any;
 
+	public font:any;
 	public fallbackTable:IFontTable;
 
 	//TODO test shader picking

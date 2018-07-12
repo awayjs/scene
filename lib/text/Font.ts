@@ -31,9 +31,10 @@ export class Font extends AssetBase
 	{
 		super();
 	}
+	public fontName:string=null;
+	public regularFontStyle:IFontTable=null;
 
 	// ------------ dummys for as3web:
-	public fontName:string=null;
 
 	public static registerFont(any){
 		
@@ -69,9 +70,19 @@ export class Font extends AssetBase
 	{
 		var len:number = this._font_styles.length;
 
+		if(this.regularFontStyle==null){			
+			for (var i:number = 0; i < len; ++i) {
+				if((this._font_styles[i].assetType==assetType)&&(this._font_styles[i].name==FontStyleName.STANDART)){
+					this.regularFontStyle=this._font_styles[i];
+				}
+			}
+		}
 		//console.log("font name", this.name, style_name);
 		for (var i:number = 0; i < len; ++i) {
 			if((this._font_styles[i].assetType==assetType)&&(this._font_styles[i].name==style_name)){
+				if(style_name!=FontStyleName.STANDART){
+					this._font_styles[i].fallbackTable=this.regularFontStyle;
+				}
 				return this._font_styles[i];
 			}
 		}
@@ -83,7 +94,21 @@ export class Font extends AssetBase
 			font_style = new BitmapFontTable();
 		}
 		font_style.name=<string>style_name;
+		font_style.font=this;
 		this._font_styles.push(font_style);
+		if(style_name==FontStyleName.STANDART){
+			this.regularFontStyle=font_style;			
+			for (var i:number = 0; i < len; ++i) {
+				if(this._font_styles[i].name!=FontStyleName.STANDART){
+					this._font_styles[i].fallbackTable=this.regularFontStyle;
+				}
+			}
+		}
+		else{
+			font_style.fallbackTable=this.regularFontStyle;
+
+		}
+	
 		return font_style;
 	}
 

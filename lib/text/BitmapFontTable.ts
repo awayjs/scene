@@ -34,6 +34,7 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	private _texture_width:number;
 	private _texture_height:number;
 	private _charDictDirty:Boolean;
+	public font:any;
 	public fallbackTable:IFontTable;
 	public _adjust_size:number;
 	//TODO test shader picking

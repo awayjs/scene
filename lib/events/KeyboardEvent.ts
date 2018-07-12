@@ -8,6 +8,7 @@ import {Camera} from "../display/Camera";
 export class KeyboardEvent extends EventBase
 {
 	public static KEYDOWN:string = "keydown";
+	public static KEYUP:string = "keyup";
 
 	private _charCode:number;
 	private _char:string;

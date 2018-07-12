@@ -914,6 +914,7 @@ export class TextField extends DisplayObjectContainer
 		//	we still need to set textDirty, because formatting might have changed
 		//console.log("html out",  textProps.text);
 		this._labelData = null;
+		this._text=processedText;
 		this._iText = processedText;
 		this._textDirty = true;
 		//console.log("set text", value, "on" , this);
@@ -3344,7 +3345,13 @@ export class TextField extends DisplayObjectContainer
 		newInstance.sourceTextField=this;
 		newInstance["fileurl"] = this["fileurl"];
 
-		newInstance.text = this._iText;
+		if(this.html){
+			if(this.htmlText)
+				newInstance.htmlText = this.htmlText;
+		}
+		else{
+			newInstance.text = this.text;
+		}
 		if(this._labelData){
 			newInstance.setLabelData(this._labelData);
 		}
