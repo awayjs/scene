@@ -294,8 +294,6 @@ export class MovieClip extends Sprite
 
 
 			
-		// prevents the playhead to get moved in the advance frame again:	
-		this._skipAdvance=true;
 	
 		if(fireScripts){
 			var numFrames:number = this._timeline.keyframe_indices.length;
@@ -310,6 +308,8 @@ export class MovieClip extends Sprite
 				this._currentFrameIndex = -1;
 			}
 		}
+		// prevents the playhead to get moved in the advance frame again:	
+		this._skipAdvance=true;
 
 		
 	}
@@ -348,6 +348,7 @@ export class MovieClip extends Sprite
 			queue_script = false;
 		}
 
+		this._skipAdvance=false;
 		if (this._currentFrameIndex == value)
 			return;
 
@@ -359,7 +360,6 @@ export class MovieClip extends Sprite
 		//already been executed
 
 		//this._skipAdvance = MovieClip._skipAdvance;
-		
 		this._timeline.gotoFrame(this, value, queue_script);
 	}
 
