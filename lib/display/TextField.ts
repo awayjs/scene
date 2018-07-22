@@ -225,7 +225,7 @@ export class TextField extends DisplayObjectContainer
 
 	public updateMaskMode()
 	{
-		if(this._textWidth>this._width || this._textHeight>this._height){
+		//if(this._textWidth>this._width || this._textHeight>this._height){
 			// mask needed
 			if(this.maskMode){	
 				// 	masking already setup 
@@ -254,14 +254,14 @@ export class TextField extends DisplayObjectContainer
 			this._graphics.clear();
 			this.targetGraphics=this.textChild.graphics;			
 			return;
-		}
+		//}
 		// mask not needed
-		this.inMaskMode=false;
+		/*this.inMaskMode=false;
 		if(this.textChild)
 			this.textChild.graphics.clear();
 		this.targetGraphics=this._graphics;
 		if(this.numChildren>0)
-			this.removeChildren(0, this.numChildren);
+			this.removeChildren(0, this.numChildren);*/
 	}
 	public getMouseCursor():string
 	{
