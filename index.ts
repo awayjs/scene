@@ -46,6 +46,7 @@ export {ResizeEvent} from "./lib/events/ResizeEvent";
 export {SkyboxElements, _Render_SkyboxElements, _Stage_SkyboxElements} from "./lib/elements/SkyboxElements";
 
 export {ISceneGraphFactory} from "./lib/factories/ISceneGraphFactory";
+export {DefaultSceneGraphFactory} from "./lib/factories/DefaultSceneGraphFactory";
 
 export {FrameScriptManager} from "./lib/managers/FrameScriptManager";
 export {DefaultFontManager} from "./lib/managers/DefaultFontManager";
