@@ -1050,6 +1050,7 @@ export class TextField extends DisplayObjectContainer
 		if(typeof value=="undefined")
 			return;
 		value=value.toString();
+		value=value.replace("\\", "\\\\");
 		if(value.length>=2 && value[0]=="-" && !isNaN(parseInt(value[1])))
 			value="0"+value;
 		this._restrictRegex=new RegExp("[^"+value+"]", "g");
