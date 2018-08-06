@@ -217,8 +217,6 @@ export class TextField extends DisplayObjectContainer
 	private char_positions_x:number[] = [];
 	private char_positions_y:number[] = [];
 
-	public _avm1_width:number=0;
-	public _avm1_x:number=0;
 	private _strokeScale:Vector3D = new Vector3D();
 	// keeping track of the original textfield that was used for cloning this one.
 	public sourceTextField:TextField=null;
@@ -1608,8 +1606,6 @@ export class TextField extends DisplayObjectContainer
 		this._textColor=-1;
 		this._width=100;
 		this._height=100;
-		this._avm1_width=100;
-		this._avm1_x=0;
 		this._textWidth=0;
 		this._textHeight=0;
 		this._type = TextFieldType.DYNAMIC;
