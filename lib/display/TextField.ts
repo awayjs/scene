@@ -1252,7 +1252,7 @@ export class TextField extends DisplayObjectContainer
 
 	public set text(value:string)
 	{
-		value = value?value.toString():"";
+		value = (typeof value==="undefined")?"":value.toString();
 
 		if(this.html){
 			this.htmlText=value;
