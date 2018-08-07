@@ -1050,7 +1050,30 @@ export class TextField extends DisplayObjectContainer
 		if(typeof value=="undefined")
 			return;
 		value=value.toString();
+		// escape special chars so that regex will be valid
 		value=value.replace("\\", "\\\\");
+		value=value.replace(new RegExp("[^a-zA-Z0-9]\-", "g"), "\-");
+		value=value.replace(".", "\\.");
+		value=value.replace("<", "\\<");
+		value=value.replace(">", "\\>");
+		value=value.replace("+", "\\+");
+		value=value.replace("*", "\\*");
+		value=value.replace("?", "\\?");
+		value=value.replace("[", "\\[");
+		value=value.replace("]", "\\]");
+		value=value.replace("^", "\\^");
+		value=value.replace("$", "\\$");
+		value=value.replace("(", "\\(");
+		value=value.replace(")", "\\)");
+		value=value.replace("{", "\\{");
+		value=value.replace("}", "\\}");
+		value=value.replace("=", "\\=");
+		value=value.replace("!", "\\!");
+		value=value.replace(":", "\\:");
+		value=value.replace("|", "\\|");
+		value=value.replace("/", "\\/");
+		value=value.replace("%", "\\%");
+		//value=value.replace("-", "\\-");
 		if(value.length>=2 && value[0]=="-" && !isNaN(parseInt(value[1])))
 			value="0"+value;
 		this._restrictRegex=new RegExp("[^"+value+"]", "g");
