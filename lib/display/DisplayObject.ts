@@ -2433,8 +2433,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				implicitChildren = this._pImplicitMasks[i];
 				numChildren = implicitChildren.length;
 				implicitChildIds = new Array<number>();
-				for (var j:number = 0; j < numChildren; j++)
-					implicitChildIds.push(implicitChildren[j].id);
+				for (var j:number = 0; j < numChildren; j++){
+					// todo: figure out why a item in the array can be null
+					if(implicitChildren[j])
+						implicitChildIds.push(implicitChildren[j].id);
+				}
 
 				this._pImplicitMaskIds.push(implicitChildIds);
 			}
