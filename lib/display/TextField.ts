@@ -179,7 +179,7 @@ export class TextField extends DisplayObjectContainer
 
 
 
-	private cursorIntervalID:number=0;
+	private cursorIntervalID:number=-1;
 	public cursorBlinking:boolean=false;
 	public showSelection:boolean=false;
 	
@@ -318,6 +318,10 @@ export class TextField extends DisplayObjectContainer
 		if(enable && this._isInFocus){
 			this.drawSelectionGraphics();
 			var myThis=this;
+			if(this.cursorIntervalID>=0){
+				window.clearInterval(this.cursorIntervalID);
+				this.cursorIntervalID=-1;
+			}
 			this.cursorIntervalID=window.setInterval(function(){
 				myThis.cursorBlinking=!myThis.cursorBlinking;
 				myThis.cursorShape.invalidate();
@@ -325,7 +329,10 @@ export class TextField extends DisplayObjectContainer
 		}
 		else{
 			this._glyphsDirty=true;
-			window.clearInterval(this.cursorIntervalID)
+			if(this.cursorIntervalID>=0){
+				window.clearInterval(this.cursorIntervalID);
+				this.cursorIntervalID=-1;
+			}
 		}
 		if(this.cursorShape)
 			this.cursorShape.invalidate();
@@ -1589,6 +1596,8 @@ export class TextField extends DisplayObjectContainer
 		this.onMouseDownDelegate = (event:any) => this.onMouseDown(event);
 		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
 		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
+
+		this.cursorIntervalID=-1;
 
 		this._isTabEnabled=true;
 		this.cursorType="text";
