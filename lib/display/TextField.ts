@@ -1050,76 +1050,44 @@ export class TextField extends DisplayObjectContainer
 		if(typeof value=="undefined")
 			return;
 		value=value.toString();
-		// escape special chars so that regex will be valid
-		value=value.replace("\\", "\\\\");
-		value=value.replace(new RegExp("[^a-zA-Z0-9]\-", "g"), "\-");
-		value=value.replace(".", "\\.");
-		value=value.replace("<", "\\<");
-		value=value.replace(">", "\\>");
-		value=value.replace("+", "\\+");
-		value=value.replace("*", "\\*");
-		value=value.replace("?", "\\?");
-		value=value.replace("[", "\\[");
-		value=value.replace("]", "\\]");
-		value=value.replace("^", "\\^");
-		value=value.replace("$", "\\$");
-		value=value.replace("(", "\\(");
-		value=value.replace(")", "\\)");
-		value=value.replace("{", "\\{");
-		value=value.replace("}", "\\}");
-		value=value.replace("=", "\\=");
-		value=value.replace("!", "\\!");
-		value=value.replace(":", "\\:");
-		value=value.replace("|", "\\|");
-		value=value.replace("/", "\\/");
-		value=value.replace("%", "\\%");
-		//value=value.replace("-", "\\-");
+
+		// flash allows something like -9 to be used instaed 0-9. fix this here:
 		if(value.length>=2 && value[0]=="-" && !isNaN(parseInt(value[1])))
 			value="0"+value;
-		this._restrictRegex=new RegExp("[^"+value+"]", "g");
-		// todo: implement this with regex
-       /* if(value.indexOf(".")>=0){
-            this._restrictInternal+=".";
-            value=value.replace(".", "");
-        }
-        if(value.indexOf("0-9")>=0){
-            this._restrictInternal+=" 0123456789";
-            value=value.replace("0-9", "");
-        }
-        if(value.indexOf("a-z")>=0){
-            this._restrictInternal+="abcdefghijklmnopqrstuvwxyz";
-            value=value.replace("a-z", "");
-        }
-        if(value.indexOf("A-Z")>=0){
-            this._restrictInternal+="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            value=value.replace("A-Z", "");
-        }
-        if (this._restrictInternal == "" && value!="") {
-			var checkForRange=value.split("-");
-			var foundValidRange:boolean=false;
-			if(checkForRange.length==2){
-				var startInt:number=parseInt(checkForRange[0]);
-				var endInt:number=parseInt(checkForRange[1]);
-				if(startInt!=null && endInt!=null ){
-					foundValidRange=true;
-					var start:number=startInt;
-					var end:number=endInt;
-					if(start>end){
-						start=endInt;
-						end=startInt;
-					}
-					for(var i:number=start; i<=end; i++){
-						this._restrictInternal+=i.toString();
-					}
 
-				}
-			}
-			if(!foundValidRange){
-				console.log("WARNING: Unsupported set of restriction chars in TextField.restrict");
-			}
-        }
-		this._restrictInternal+=value;
-		*/
+		// remove all backslashes. flash does not allow to use backslash as allowed char
+		value=value.replace(/\\/g, "");
+		// remove all ^. flash does not allow to use ^ as allowed char
+		value=value.replace(/\^/g, "");
+		
+		// make sure all "-" are escaped if they are not used to define a range
+		value=value.replace(/[^a-zA-Z0-9]\-/g, "\\-");
+
+		// escape all special chars so that regex will be valid
+		//todo: should be able to do the following with a single regex:
+		value=value.replace(/\./g, "\\.");
+		value=value.replace(/\</g, "\\<");
+		value=value.replace(/\>/g, "\\>");
+		value=value.replace(/\+/g, "\\+");
+		value=value.replace(/\*/g, "\\*");
+		value=value.replace(/\?/g, "\\?");
+		value=value.replace(/\[/g, "\\[");
+		value=value.replace(/\]/g, "\\]");
+		value=value.replace(/\$/g, "\\$");
+		value=value.replace(/\(/g, "\\(");
+		value=value.replace(/\)/g, "\\)");
+		value=value.replace(/\{/g, "\\{");
+		value=value.replace(/\}/g, "\\}");
+		value=value.replace(/\=/g, "\\=");
+		value=value.replace(/\!/g, "\\!");
+		value=value.replace(/\:/g, "\\:");
+		value=value.replace(/\|/g, "\\|");
+		value=value.replace(/\//g, "\\/");
+		value=value.replace(/\%/g, "\\%");
+
+
+		this._restrictRegex=new RegExp("[^"+value+"]", "g");
+		
 	};
 
 	/**
