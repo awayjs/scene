@@ -1901,7 +1901,7 @@ export class TextField extends DisplayObjectContainer
 				}
 				linewidth+=char_width;
 				this.chars_width[this.chars_width.length]=char_width;
-				this.tf_per_char[this.tf_per_char.length]=tf;
+				//this.tf_per_char[this.tf_per_char.length]=tf;
 				
 				// we create a new word if the char is either:
 				// 	- first char of paragraph
@@ -2178,6 +2178,7 @@ export class TextField extends DisplayObjectContainer
 				for (c = start_idx; c < c_len; c++) {
 					this.char_positions_x[this.char_positions_x.length]=char_pos;
 					this.char_positions_y[this.char_positions_y.length]=offsety;
+					this.tf_per_char[this.tf_per_char.length]=format;
 					char_pos+=this.chars_width[c];
 					charCnt++;
 				}
