@@ -497,6 +497,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(tesselated_font_char.fill_data_path, true);
 			if(!tesselated_font_char.fill_data){
 				console.log("error tesselating glyph");
+				return null;
 			}
 		}
 		if(!tesselated_font_char){
