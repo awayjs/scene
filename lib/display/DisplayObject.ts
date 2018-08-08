@@ -2199,15 +2199,16 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		// call getBoxBounds() if absolute size need to update transform
 		if (this._absoluteDimension) {
 			var box:Box = this.getBoxBounds();
+			if(box){
+				if (this._width != null)
+					this._setScaleX(this._width/box.width);
+					
+				if (this._height != null)
+					this._setScaleY(this._height/box.height);
 
-			if (this._width != null)
-				this._setScaleX(this._width/box.width);
-
-			if (this._height != null)
-				this._setScaleY(this._height/box.height);
-
-			if (this._depth != null)
-				this._setScaleZ(this._depth/box.depth);
+				if (this._depth != null)
+					this._setScaleZ(this._depth/box.depth);
+			}
 		}
 
 		this._concatenatedMatrix3D.copyFrom(this._transform.matrix3D);
