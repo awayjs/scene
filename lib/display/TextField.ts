@@ -1068,7 +1068,7 @@ export class TextField extends DisplayObjectContainer
 		value=value.replace(/\^/g, "");
 		
 		// make sure all "-" are escaped if they are not used to define a range
-		value=value.replace(/[^a-zA-Z0-9]\-/g, "\\-");
+		value=value.replace(/([^a-zA-Z0-9])\-/g, "$1\\-");
 
 		// escape all special chars so that regex will be valid
 		//todo: should be able to do the following with a single regex:
