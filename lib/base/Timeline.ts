@@ -601,7 +601,8 @@ export class Timeline
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		var child:DisplayObject;
-		for(var i:number = start_index; i < end_index; i++) {
+		//for(var i:number = start_index; i < end_index; i++) {
+		for(var i:number = end_index; i >= start_index; i--) {
 			child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
 			if (child) {
 				// check if the child is active + not blocked by script
