@@ -3274,15 +3274,17 @@ export class TextField extends DisplayObjectContainer
 				this._selectionBeginIndex+=1;
 				this._selectionEndIndex=this._selectionBeginIndex;
 			}
-			if(this.maxChars>0 && this._iText.length>=this.maxChars){
-
-			}
 			else{
-				var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-				var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
-				this.text = textBeforeCursor+char+textAfterCursor;
-				this._selectionBeginIndex+=1;
-				this._selectionEndIndex=this._selectionBeginIndex;				
+				if(this.maxChars>0 && this._iText.length>=this.maxChars){
+	
+				}
+				else{
+					var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+					var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
+					this.text = textBeforeCursor+char+textAfterCursor;
+					this._selectionBeginIndex+=1;
+					this._selectionEndIndex=this._selectionBeginIndex;				
+				}
 			}
 		}
 		else if (char.length>1){
