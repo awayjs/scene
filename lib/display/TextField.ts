@@ -926,7 +926,6 @@ export class TextField extends DisplayObjectContainer
 	};
 	public set htmlText(value:string){
 		
-		console.log("set html text", value);
 
 		this._htmlText=value;
 		var processedText=HTMLTextProcessor.get().processHTML(this, value);
