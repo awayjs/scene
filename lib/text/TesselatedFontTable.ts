@@ -494,6 +494,14 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			}
 		}
 		else if(tesselated_font_char.fill_data==null && tesselated_font_char.stroke_data==null && tesselated_font_char.fill_data_path!=null){
+			// 	hack for messed up "X": remove the first command if it is moveTo that points to 0,0
+			//	change the new first command to moveTo
+			if(name=="88" && tesselated_font_char.fill_data_path.commands[0][0]==1 && tesselated_font_char.fill_data_path.data[0][0]==0 && tesselated_font_char.fill_data_path.data[0][1]==0){
+				tesselated_font_char.fill_data_path.data[0].shift();
+				tesselated_font_char.fill_data_path.data[0].shift();
+				tesselated_font_char.fill_data_path.commands[0].shift();
+				tesselated_font_char.fill_data_path.commands[0][0]=2;
+			}
 			tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(tesselated_font_char.fill_data_path, true);
 			if(!tesselated_font_char.fill_data){
 				console.log("error tesselating glyph");
