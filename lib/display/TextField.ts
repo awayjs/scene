@@ -171,7 +171,7 @@ export class TextField extends DisplayObjectContainer
 
 	public textShapes:any;
 	
-	private inMaskMode:boolean;
+	private inMaskMode:boolean=false;
 	private maskChild:Sprite;// holds the mask for the textfield
 	private textChild:TextSprite;// holds the graphic-content for this textfield
 	private targetGraphics:Graphics;
@@ -221,36 +221,50 @@ export class TextField extends DisplayObjectContainer
 	// keeping track of the original textfield that was used for cloning this one.
 	public sourceTextField:TextField=null;
 
+	private _maskWidth:number=0;
+	private _maskHeight:number=0;
+	private _maskTextOffsetX:number=0;
+	private _maskTextOffsetY:number=0;
 	public updateMaskMode()
 	{
 		//if(this._textWidth>this._width || this._textHeight>this._height){
 			// mask needed
-			if(this.maskMode){	
+			if(this.inMaskMode){	
+				if(this._maskWidth!=this._width || this._maskHeight!=this._height ||
+					this._maskTextOffsetX!=this.textOffsetX || this._maskTextOffsetY!=this.textOffsetY){
+					
+					this._maskWidth=this._width;
+					this._maskHeight=this._height;
+					this._maskTextOffsetX=this.textOffsetX;
+					this._maskTextOffsetY=this.textOffsetY;
+					this.maskChild.graphics.clear();
+					this.maskChild.graphics.beginFill(0xffffff);
+					this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
+					this.maskChild.graphics.endFill();	
+				}	
+				this._graphics.clear();
+			}
+			if(!this.inMaskMode){	
 				// 	masking already setup 
 				// 	just make sure the mask has correct size 
-				//	todo: add check to only redraw mask when size has changed
-				this.maskChild.graphics.clear();
+				this.inMaskMode=true;
+				if(!this.maskChild)
+					this.maskChild=new Sprite();			
+				if(!this.textChild)
+					this.textChild=new TextSprite();
+				this.textChild.parentTextField=this;
 				this.maskChild.graphics.beginFill(0xffffff);
 				this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
-				this.maskChild.graphics.endFill();			
+				this.maskChild.graphics.endFill();
+				this.addChild(this.maskChild);
+				this.addChild(this.textChild);
+				this.maskChild.maskMode=true;
+				this.textChild.masks=[this.maskChild];
+	
+				this._graphics.clear();
+				this.targetGraphics=this.textChild.graphics;	
 				return;
-			}
-			this.inMaskMode=true;
-			if(!this.maskChild)
-				this.maskChild=new Sprite();			
-			if(!this.textChild)
-				this.textChild=new TextSprite();
-			this.textChild.parentTextField=this;
-			this.maskChild.graphics.beginFill(0xffffff);
-			this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
-			this.maskChild.graphics.endFill();
-			this.addChild(this.maskChild);
-			this.addChild(this.textChild);
-			this.maskChild.maskMode=true;
-			this.textChild.masks=[this.maskChild];
-
-			this._graphics.clear();
-			this.targetGraphics=this.textChild.graphics;			
+			}			
 			return;
 		//}
 		// mask not needed
@@ -912,6 +926,8 @@ export class TextField extends DisplayObjectContainer
 	};
 	public set htmlText(value:string){
 		
+		console.log("set html text", value);
+
 		this._htmlText=value;
 		var processedText=HTMLTextProcessor.get().processHTML(this, value);
 
@@ -1329,7 +1345,7 @@ export class TextField extends DisplayObjectContainer
 			if(this.showSelection && this._isInFocus && this.bgShapeSelect){
 				traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
 			}
-			if(this.bgShape && this.background){
+			if(this.bgShape){// && this.background){
 				traverser[this.bgShape.elements.traverseName](this.bgShape);
 			}
 		}
@@ -2080,25 +2096,22 @@ export class TextField extends DisplayObjectContainer
 				}
 				else {
 					//console.log("split lines");
-					linelength = 0;
 					word_width = 0;
 					indent = 0;
 					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
 						word_width = this.words[w + 3];
-						linelength += word_width;
 						var isSpace:boolean=false;
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 							isSpace=true;
 						}
 						// (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
-						if (isSpace || linelength <= (maxLineWidth - indent - (1.5* format.font_table.getCharWidth("32"))) || this.lines_width[linecnt] == 0) {
+						if (isSpace || this.lines_width[linecnt] <= (maxLineWidth - indent -(1.5* format.font_table.getCharWidth("32"))) || this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;
 							lines_formats[linecnt]=format;
 						}
 						else {
-							linelength = word_width;
 							linecnt++;
 							this.lines_wordStartIndices[linecnt] = w;
 							this.lines_wordEndIndices[linecnt] = w + 5;

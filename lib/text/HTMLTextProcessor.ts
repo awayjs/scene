@@ -1,6 +1,7 @@
 import { TextField } from '../display/TextField';
 import { TextFormat } from './TextFormat';
 import { ColorUtils } from '@awayjs/core';
+import { TextFormatAlign } from '../..';
 
 export class HTMLTextProcessor
 {
@@ -256,6 +257,7 @@ export class HTMLTextProcessor
 		target_tf._textFormats=[target_tf._textFormat];
 		target_tf._textFormat.italic=false;
 		target_tf._textFormat.bold=false;
+		target_tf._textFormat.align=TextFormatAlign.LEFT;
 		target_tf._textFormatsIdx=[0];
 		var parser = new DOMParser();
 		var doc = parser.parseFromString("<p>"+input+"</p>", "application/xml");
