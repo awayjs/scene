@@ -175,7 +175,6 @@ export class TextField extends DisplayObjectContainer
 	private maskChild:Sprite;// holds the mask for the textfield
 	private textChild:TextSprite;// holds the graphic-content for this textfield
 	private targetGraphics:Graphics;
-	private prevTargetGraphics:Graphics;
 
 
 
@@ -1252,6 +1251,7 @@ export class TextField extends DisplayObjectContainer
 			return;
 		this._labelData=null;
 		this._text=value;
+
 		if(value!="" && ((value.charCodeAt(value.length-1)==13 ) || (value.charCodeAt(value.length-1)==10 ))){
 			value=value.slice(0, value.length-1);
 		}	
@@ -2194,10 +2194,10 @@ export class TextField extends DisplayObjectContainer
 			for (w = start_idx; w < end_idx; w += 5) {
 				this.words[w + 1] = offsetx;
 				this.words[w + 2] = offsety;
-				
+				char_pos=0;
 				c_len=start_idx + this.words[w+4];
 				for (c = start_idx; c < c_len; c++) {
-					this.char_positions_x[this.char_positions_x.length]=char_pos;
+					this.char_positions_x[this.char_positions_x.length]=offsetx+char_pos;
 					this.char_positions_y[this.char_positions_y.length]=offsety;
 					this.tf_per_char[this.tf_per_char.length]=format;
 					char_pos+=this.chars_width[c];
@@ -2205,6 +2205,7 @@ export class TextField extends DisplayObjectContainer
 				}
 				offsetx += this.words[w + 3];
 				line_width += this.words[w + 3];
+				start_idx=c_len;
 				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
 				//if (format.align == "justify" && (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9)) {
 					// this is whitepace, we need to add extra space for justified text
@@ -3154,8 +3155,8 @@ export class TextField extends DisplayObjectContainer
 			return;
 		
 		if(this._selectionBeginIndex!=this._selectionEndIndex){
-			var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex-1);
-			var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
+			var textBeforeCursor:string=(this._selectionBeginIndex!=0)?this._iText.slice(0, this._selectionBeginIndex):"";
+			var textAfterCursor:string=(this._selectionEndIndex<this._iText.length)?this._iText.slice(this._selectionEndIndex, this._iText.length):"";
 			this.text = textBeforeCursor + textAfterCursor;
 			this._selectionEndIndex=this._selectionBeginIndex;
 			return;
