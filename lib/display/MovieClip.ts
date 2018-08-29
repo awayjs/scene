@@ -67,7 +67,8 @@ export class MovieClip extends Sprite
 
 	private _hitArea:DisplayObject
 	public onLoadedAction:any=null;
-
+	public onCustomConstructor:any=null;
+    
 	constructor(timeline:Timeline = null)
 	{
 		super();
@@ -465,9 +466,8 @@ export class MovieClip extends Sprite
 			if(child.adapter!=child){
 				(<IDisplayObjectAdapter>child.adapter).doInitEvents();
 				if(child.isAsset(MovieClip)){
-					   if((<MovieClip>child).onLoadedAction){
-						   FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);
-	   
+					   if((<MovieClip>child).onLoadedAction || (<MovieClip>child).onCustomConstructor){
+						   FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);	   
 					   }
 				   }
 

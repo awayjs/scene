@@ -158,6 +158,10 @@ export class FrameScriptManager
 						(<any>mc).onLoadedAction();
 						(<any>mc).onLoadedAction=null;	
 					}
+					if((<any>mc).onCustomConstructor){
+						(<any>mc).onCustomConstructor();
+						(<any>mc).onCustomConstructor=null;	
+					}
 					if(queues_scripts_tmp[i]!=null){
 						//console.log("execute script", mc.name, queues_scripts_tmp[i]);
 						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
