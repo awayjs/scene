@@ -254,10 +254,11 @@ export class HTMLTextProcessor
 			multiline:false*/
 		}
 
-		target_tf._textFormats=[target_tf._textFormat];
 		target_tf._textFormat.italic=false;
 		target_tf._textFormat.bold=false;
 		target_tf._textFormat.align=TextFormatAlign.LEFT;
+		target_tf._textFormats=[target_tf._textFormat];
+		//target_tf._textFormat.size=16;
 		target_tf._textFormatsIdx=[0];
 		var parser = new DOMParser();
 		var doc = parser.parseFromString("<p>"+input+"</p>", "application/xml");
@@ -287,6 +288,7 @@ export class HTMLTextProcessor
 		else if(textProps.text!="" && (textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n" && textProps.text[textProps.text.length-2]=="\\")){
 			textProps.text=textProps.text.slice(0, textProps.text.length-2);
 		}
+        target_tf._textFormatsIdx[target_tf._textFormatsIdx.length-1]=textProps.text.length;
 		return textProps.text;
 	}
 	private readHTMLTextPropertiesRecursive(target_tf:TextField, myChild, textProps:any, currentFormat:TextFormat){
@@ -397,7 +399,8 @@ export class HTMLTextProcessor
 				childFormat[newProps_names[i]]=newProps_values[i];
 			}
 			target_tf._textFormats.push(childFormat);
-			target_tf._textFormatsIdx.push(textProps.text.length);
+            target_tf._textFormatsIdx[target_tf._textFormatsIdx.length-1]=textProps.text.length;
+            target_tf._textFormatsIdx.push(textProps.text.length);
 		}
 		
 		// if the node has children, we just traverse children, and do not consider adding the nodeValue as text
@@ -408,6 +411,7 @@ export class HTMLTextProcessor
 
 				
 					target_tf._textFormats.push(childFormat);
+                    target_tf._textFormatsIdx[target_tf._textFormatsIdx.length-1]=textProps.text.length;
 					target_tf._textFormatsIdx.push(textProps.text.length);
 				}
 				this.readHTMLTextPropertiesRecursive(target_tf, myChild.childNodes[k], textProps, childFormat);
