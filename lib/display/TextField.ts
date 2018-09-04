@@ -2105,7 +2105,7 @@ export class TextField extends DisplayObjectContainer
 							isSpace=true;
 						}
                         // (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
-                        console.log(String.fromCharCode(this.chars_codes[this.words[w]]), maxLineWidth, this.lines_width[linecnt], word_width);
+                        //console.log(String.fromCharCode(this.chars_codes[this.words[w]]), maxLineWidth, this.lines_width[linecnt], word_width);
 						if (isSpace || (this.lines_width[linecnt] +word_width)<= (maxLineWidth - indent -(1* format.font_table.getCharWidth("32"))) || this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;

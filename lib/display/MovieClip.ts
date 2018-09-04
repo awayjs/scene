@@ -128,7 +128,7 @@ export class MovieClip extends Sprite
 
 		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
 	}
-	
+        
 	public get hitArea():DisplayObject
 	{
 		return this._hitArea;

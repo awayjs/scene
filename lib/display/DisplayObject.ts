@@ -1797,6 +1797,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return <BoundingVolumeBase> pool.getAbstraction(targetCoordinateSpace);
 	}
 
+    
 	public getBoxBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false, fastFlag:boolean = false):Box
 	{
 		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? (fastFlag? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS) : (fastFlag? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))).getBox();
