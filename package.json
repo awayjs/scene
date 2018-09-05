@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/scene",
-  "version": "0.9.134",
+  "version": "0.9.135",
   "description": "AwayJS scene classes",
   "main": "bundle/awayjs-scene.umd.js",
   "module": "dist/index.js",
