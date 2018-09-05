@@ -229,11 +229,7 @@ export class TextFormat extends AssetBase
 	public set bold(value:boolean){
 		this._bold=value;
 		
-		this._style_name=FontStyleName.STANDART;
-		if(this._bold)
-			this._style_name=FontStyleName.BOLD;
-		if(this._italic)
-			this._style_name=FontStyleName.BOLDITALIC;
+        this.getStyleName();
 		
 		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 
@@ -249,11 +245,7 @@ export class TextFormat extends AssetBase
 	}
 	public set italic(value:boolean){
 		this._italic=value;
-		this._style_name=FontStyleName.STANDART;
-		if(this._italic)
-			this._style_name=FontStyleName.ITALIC;
-		if(this._bold)
-			this._style_name=FontStyleName.BOLDITALIC;
+        this.getStyleName();
 		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
 	/**
@@ -352,6 +344,18 @@ export class TextFormat extends AssetBase
 		}
     }
     
+	private getStyleName():FontStyleName{
+        
+		if(!this._italic && !this._bold)
+			this._style_name=FontStyleName.STANDART;
+		else if(this._italic && !this._bold)
+			this._style_name=FontStyleName.ITALIC;
+        else if(!this._italic && this._bold)
+            this._style_name=FontStyleName.BOLD;
+		else if(this._italic && this._bold)
+			this._style_name=FontStyleName.BOLDITALIC;
+		return this._style_name;
+	}
 	public get style_name():FontStyleName{
 		return this._style_name;
 	}
@@ -364,11 +368,20 @@ export class TextFormat extends AssetBase
 		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
 	public get font():Font{
-		return this._font?this._font:null;
+        if(this._font){
+            return this._font;            
+        }
+        
+		this._font=DefaultFontManager.getFont(null);
+		this._font_table=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+  
+		return this._font;
 	}
 	public set font(value:Font){
 		this._font_name=value.name;
 		this._font=value;
+        this.font_table=this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+        
 
 	}
 
@@ -482,8 +495,8 @@ export class TextFormat extends AssetBase
         this.link_target = link_target;
         
         // make sure a fontTable exists:
-		this._font=DefaultFontManager.getFont(font);
-		this.font_table=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+		this._font=null;//DefaultFontManager.getFont(font);
+		this._font_table=null;//=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
     }
     
 	public clone():TextFormat{
