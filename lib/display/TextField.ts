@@ -419,18 +419,18 @@ export class TextField extends DisplayObjectContainer
 			return;*/
 		var x:number=0;
 		var y:number=0;
-		var tf:TextFormat=this._textFormat;
+		var tf:TextFormat=this.newTextFormat;
 		
 		if(this.char_positions_x.length==0){
 			x=this.textOffsetX+(this._width/2)+this._textWidth/2;
-			if (this._textFormat.align == "justify") {
+			if (tf.align == "justify") {
 			}
-			else if (this._textFormat.align == "center") {
+			else if (tf.align == "center") {
 			}
-			else if (this._textFormat.align == "right") {
+			else if (tf.align == "right") {
 				x = this.textOffsetX+this._width;
 			}
-			else if (this._textFormat.align == "left") {
+			else if (tf.align == "left") {
 				x = this.textOffsetX+4+this._textWidth;
 			}
 		}
@@ -1920,12 +1920,11 @@ export class TextField extends DisplayObjectContainer
 
 				// if this is a letter, and next char is no whitespace, we add the letterSpacing to the letter-width
 				// todo: we might need to add the letterspacing also if next char is a linebreak ?
-				if(char_code!=32 && char_code!=9 && c<c_len-1){
+				if(char_code!=32 && char_code!=9 && c<c_end-1){
 					char_width+=(thisText.charCodeAt(c+1)==32 || thisText.charCodeAt(c+1)==9)?0:tf.letterSpacing;
 				}
 				linewidth+=char_width;
 				this.chars_width[this.chars_width.length]=char_width;
-				//this.tf_per_char[this.tf_per_char.length]=tf;
 				
 				// we create a new word if the char is either:
 				// 	- first char of paragraph
@@ -1995,6 +1994,9 @@ export class TextField extends DisplayObjectContainer
 		/*console.log("this._iText", this._iText);
 		console.log("this._width", this._width);
 		console.log("this._height", this._height);*/
+        /*for(var i=0; i<this.chars_codes.length; i++){
+            console.log("test: ", this.chars_codes[i], this.chars_width[i]);
+        }*/
 		var tr: number = 0;
 		var tr_len: number = this._textRuns_formats.length;
 
@@ -2210,8 +2212,9 @@ export class TextField extends DisplayObjectContainer
 					char_pos+=this.chars_width[c];
 					charCnt++;
 				}
-				offsetx += this.words[w + 3];
-				line_width += this.words[w + 3];
+                //console.log("word_width", char_pos, "word:'"+wordstr+"'");
+				offsetx += char_pos;//this.words[w + 3];
+				line_width += char_pos;//this.words[w + 3];
 				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
 				//if (format.align == "justify" && (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9)) {
 					// this is whitepace, we need to add extra space for justified text
@@ -2465,7 +2468,6 @@ export class TextField extends DisplayObjectContainer
 		var tr_len:number=this._textRuns_formats.length;
 		for (tr = 0; tr < tr_len; tr++) {
 			this._textRuns_formats[tr].font_table.initFontSize(this._textRuns_formats[tr].size);
-		//	console.log("this._textRuns_words", this._textRuns_words);
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
 			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
@@ -3246,7 +3248,18 @@ export class TextField extends DisplayObjectContainer
 		
 		else if (char.length==1){
 			if(this._restrictRegex){
-				char=char.replace(this._restrictRegex, "");
+				var chartest1=char.replace(this._restrictRegex, "");
+				if(chartest1.length<char.length){
+                    var chartest2=char.toUpperCase().replace(this._restrictRegex, "");
+                    var chartest3=char.toLowerCase().replace(this._restrictRegex, "");
+                    char=chartest2;
+                    if(chartest2.length<chartest3.length){
+                        char=chartest3;
+                    }
+                    if(chartest1.length>char.length){
+                        char=chartest1;
+                    }
+                }
 				if(char=="")
 					return;
 			}
