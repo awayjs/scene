@@ -1807,13 +1807,12 @@ export class TextField extends DisplayObjectContainer
 	}
 
 	public reset(){
-		super.reset();
-		//console.log("reset textfield:", this.name);
+        super.reset();
 		//if(this.name && typeof this.name !== "number"){
 			// if the textfield has a valid name, it might have been changed by scripts. 
 			// in that case we want to reset it to its original state
 			if(this.sourceTextField){
-				this.sourceTextField.copyTo(this);
+                this.sourceTextField.copyTo(this);
 				this._textFormats=[this.newTextFormat];
 				this._textFormatsIdx=[this._iText.length];
 			}
@@ -3327,6 +3326,9 @@ export class TextField extends DisplayObjectContainer
 	public copyTo(newInstance:TextField):void
 	{
 		super.copyTo(newInstance);
+		newInstance.autoSize=this.autoSize;
+		newInstance.type = this._type;
+		newInstance.html = this.html;
 		newInstance.width = this._width;
 		newInstance.height = this._height;
 		if(this._textFormat)
@@ -3339,18 +3341,15 @@ export class TextField extends DisplayObjectContainer
 		newInstance.textOffsetX = this.textOffsetX;
 		newInstance.textOffsetY = this.textOffsetY;
 		newInstance.staticMatrix = this.staticMatrix;
-		newInstance.type = this._type;
 		newInstance.selectable = this._selectable;
 		newInstance.multiline = this.multiline;
 		newInstance.wordWrap = this.wordWrap;
 		newInstance.maxChars = this.maxChars;
-		newInstance.html = this.html;
 		newInstance.sourceTextField=this;
 		newInstance["fileurl"] = this["fileurl"];
 
-		if(this.html){
-			if(this.htmlText)
-				newInstance.htmlText = this.htmlText;
+		if(newInstance.html){
+            newInstance.htmlText = this.htmlText;              
 		}
 		else{
 			newInstance.text = this.text;

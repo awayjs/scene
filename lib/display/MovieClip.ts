@@ -58,7 +58,7 @@ export class MovieClip extends Sprite
 	private _skipAdvance : boolean;
 	private _isInit:boolean = true;
 
-	private _potentialInstances:Array<IAsset> = [];
+	private _potentialInstances:any = {};
 	private _depth_sessionIDs:Object = {};
 	private _sessionID_childs:Object = {};
 
@@ -188,7 +188,7 @@ export class MovieClip extends Sprite
 	{
 		super.disposeValues();
 
-		this._potentialInstances = [];
+		this._potentialInstances = {};
 		this._depth_sessionIDs = {};
 		this._sessionID_childs = {};
 	}
@@ -196,13 +196,14 @@ export class MovieClip extends Sprite
 	public reset_textclones():void
 	{
 		if(this.timeline) {
-			var len:number = this._potentialInstances.length;
-			for (var i:number = 0; i< len; i++) {
-				if (this._potentialInstances[i] != null) {
-					if (this._potentialInstances[i].isAsset(TextField))
-						(<TextField>this._potentialInstances[i]).text = (<TextField>this.timeline.getPotentialChildPrototype(i)).text;
-					else if (this._potentialInstances[i].isAsset(MovieClip))
-						(<MovieClip>this._potentialInstances[i]).reset_textclones();
+			//var len:number = this._potentialInstances.length;
+			for (var key in this._potentialInstances) {
+				if (this._potentialInstances[key] != null) {
+					if (this._potentialInstances[key].isAsset(TextField)){
+						(<TextField>this._potentialInstances[key]).text = (<TextField>this.timeline.getPotentialChildPrototype(parseInt(key))).text;
+                    }
+					else if (this._potentialInstances[key].isAsset(MovieClip))
+						(<MovieClip>this._potentialInstances[key]).reset_textclones();
 				}
 			}
 		}
@@ -502,8 +503,8 @@ export class MovieClip extends Sprite
 		}
 
 		//check to make sure _depth_sessionIDs wasn't modified with a new child
-		if (this._depth_sessionIDs[child._depthID] == child._sessionID)
-			delete this._depth_sessionIDs[child._depthID];
+		//if (this._depth_sessionIDs[child._depthID] == child._sessionID)
+		//delete this._depth_sessionIDs[child._depthID];
 
 		delete this._sessionID_childs[child._sessionID];
 
@@ -567,11 +568,11 @@ export class MovieClip extends Sprite
 		}
 	}
 
-	public getPotentialChildInstance(id:number) : IAsset
+	public getPotentialChildInstance(id:number, instanceID:string) : IAsset
 	{
 		if (!this._potentialInstances[id])
 			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
-
+        this._timeline.initChildInstance(<DisplayObject>this._potentialInstances[id], instanceID);
 		return this._potentialInstances[id];
 	}
 
@@ -686,9 +687,8 @@ export class MovieClip extends Sprite
 	public clear():void
 	{
 		//clear out potential instances
-		var len:number = this._potentialInstances.length;
-		for (var i:number = 0; i < len; i++) {
-			var instance:IAsset = this._potentialInstances[i];
+		for (var key in this._potentialInstances) {
+			var instance:IAsset = this._potentialInstances[key];
 
 			//only dispose instances that are not used in script ie. do not have an instance name
 			if (instance && instance.name == "") {
@@ -696,7 +696,7 @@ export class MovieClip extends Sprite
 					FrameScriptManager.add_child_to_dispose(<DisplayObject>instance);
 
 				}
-				delete this._potentialInstances[i];
+				delete this._potentialInstances[key];
 			}
 		}
 

@@ -239,6 +239,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public isSlice9ScaledMC:boolean=false;
 	public isSlice9ScaledSprite:boolean=false;
+	public instanceID:string="";
 
 	// this is needed for AVM1 - todo: maybe do this on adapters ?
 	public placeObjectTag:any=null;
@@ -1647,12 +1648,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		super.addEventListener(type, listener);
 
 		switch (type) {
-			case DisplayObjectEvent.SCENE_CHANGED:
-				this._listenToSceneChanged = true;
-				break;
+            case DisplayObjectEvent.SCENE_CHANGED:
+                this._listenToSceneChanged = true;
+                break;
 			case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
 				this._listenToSceneTransformChanged = true;
-				break;
+                break;
 		}
 	}
 
@@ -1684,6 +1685,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		displayObject.maskMode = this._maskMode;
 		displayObject.castsShadows = this.castsShadows;
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
+		displayObject.assetNamespace = this.assetNamespace;
 		displayObject._symbol = this._symbol;
 		if (this._explicitMasks)
 			displayObject.masks = this._explicitMasks;

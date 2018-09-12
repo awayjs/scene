@@ -112,8 +112,9 @@ export class Timeline
 
 	public init():void
 	{
-		if((this.frame_command_indices == null)||(this.frame_recipe == null)||(this.keyframe_durations == null))
+		if((this.frame_command_indices == null)||(this.frame_recipe == null)||(this.keyframe_durations == null)){
 			return;
+        }
 
 		this.keyframe_firstframes = [];
 		this.keyframe_constructframes = [];
@@ -197,7 +198,8 @@ export class Timeline
 				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
 
 		}
-	}
+    }
+    
 	public get_script_for_frame(target_mc:MovieClip, frame_index:number):any{
 
 		var keyframe_idx:number=this.keyframe_firstframes[frame_index];
@@ -211,8 +213,8 @@ export class Timeline
 				return this._framescripts[keyframe_idx];
 			}
 		}
-	}
-
+    }
+    
 	public get numFrames():number
 	{
 		return this.keyframe_indices.length;
@@ -243,15 +245,21 @@ export class Timeline
 		}
 		else{
 			var clonedInstance:DisplayObject=<DisplayObject> (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
-			var placeObjectTag:any=this.potentialPrototypesInitEventsMap[id]
-			if(placeObjectTag && ((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0))){
-				(<any>clonedInstance.adapter).placeObjectTag=placeObjectTag;
-				(<any>clonedInstance.adapter).initEvents=this.potentialPrototypesInitEventsMap[id];
-			}
 			return clonedInstance;
 		}
 	}
-
+	public initChildInstance(child:DisplayObject, id:string)
+	{
+        var placeObjectTag:any=this.potentialPrototypesInitEventsMap[id];
+        (<any>child.adapter).placeObjectTag=null;
+        (<any>child.adapter).initEvents=null;
+        child.instanceID=id;
+        if(placeObjectTag && ((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0))){
+            (<any>child.adapter).placeObjectTag=placeObjectTag;
+            (<any>child.adapter).initEvents=this.potentialPrototypesInitEventsMap[id];
+        }
+    }
+    
 	public registerPotentialChild(prototype:IAsset) : number
 	{
 		var id = this._potentialPrototypes.length;
@@ -315,7 +323,7 @@ export class Timeline
 
 
 		var i:number;
-		var child:DisplayObject;
+        var child:DisplayObject;
 
 		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
 			this.constructNextFrame(target_mc, queue_script, true);
@@ -324,7 +332,7 @@ export class Timeline
 
 		var break_frame_idx:number = this.keyframe_constructframes[target_keyframe_idx];
 
-		//we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
+		//  we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
 
 		var jump_forward:boolean = (target_keyframe_idx > current_keyframe_idx);
 		var jump_gap:boolean = (break_frame_idx > current_keyframe_idx);
@@ -334,54 +342,76 @@ export class Timeline
 		var start_construct_idx:number = (jump_forward && !jump_gap)? current_keyframe_idx + 1 : break_frame_idx;
 
 
-		if (jump_gap) // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
-			for (i = target_mc.numChildren - 1; i >= 0; i--)
+		if (jump_gap){ // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
+			for (i = target_mc.numChildren - 1; i >= 0; i--){
 				if (target_mc._children[i]._depthID < 0)
-					target_mc.removeChildAt(i);
+                    target_mc.removeChildAt(i);
+            }
+        }
 
 		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
-		if (!jump_forward)
-			target_mc.resetSessionIDs();
-
 		// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
-		var depth_sessionIDs:Object = target_mc.getSessionIDDepths();
+        var depth_sessionIDs:Object = {};
+        var test={};
 		var new_depth_sessionIDs:Object={};
+        if (jump_forward){
+            var depth_sessionIDs2={};
+            depth_sessionIDs = target_mc.getSessionIDDepths();
+            for(var key in depth_sessionIDs){
+                depth_sessionIDs2[key]={id:depth_sessionIDs[key], instanceID:"oldID"}
+                test[key]={id:depth_sessionIDs[key], instanceID:"oldID"}
+            }
+            depth_sessionIDs=depth_sessionIDs2;
+        }
 
 		//pass1: only apply add/remove commands into depth_sessionIDs.
 		this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs, new_depth_sessionIDs, queue_pass2);
 
 		// check what childs are alive on both frames.
-		// childs that are not alive anymore get removed and unregistered
-		// childs that are alive on both frames have their properties reset if we are jumping back
+		// child-instances that are not alive anymore get removed and unregistered
+		// child-instances that are alive on both frames have their properties reset if we are jumping back
+		// child-instances that are alive on both frames but have different instance-id get fully reset
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
-			child = target_mc._children[i];
+            child = target_mc._children[i];
 			if (child._depthID < 0) {
-				if (depth_sessionIDs[child._depthID] != child._sessionID) {
+				if (!depth_sessionIDs[child._depthID]){
 					target_mc.removeChildAt(i);
-				} else if (!jump_forward) {
-					if(child._adapter) {
-						if (!(<IDisplayObjectAdapter> child.adapter).isColorTransformByScript()) {
-							child.transform.clearColorTransform();
-						}
-						if (!(<IDisplayObjectAdapter> child.adapter).isBlockedByScript()) {
-							child.transform.clearMatrix3D();
-							//this.name="";
-							child.masks = null;
-							child.maskMode = false;
-						}
-						if (!(<IDisplayObjectAdapter> child.adapter).isVisibilityByScript()) {
-							child.visible = true;
-						}
-					}
-					else{
-						child.transform.clearColorTransform();
-						child.transform.clearMatrix3D();
-						child.visible = true;
-						//this.name="";
-						child.masks = null;
-						child.maskMode = false;
-					}
-				}
+                }
+                else if (depth_sessionIDs[child._depthID].instanceID=="oldID"){
+                    // child-instance was not changed by timeline (should never happen when jumping back)
+                }
+                else if (depth_sessionIDs[child._depthID].instanceID==child.instanceID){
+                    // child-instance was not changed by timeline
+                    // if we jump back we still want to reset the childs-properties
+                    if(!jump_forward){
+                        if(child._adapter) {
+                            if (!(<IDisplayObjectAdapter> child.adapter).isColorTransformByScript()) {
+                                child.transform.clearColorTransform();
+                            }
+                            if (!(<IDisplayObjectAdapter> child.adapter).isBlockedByScript()) {
+                                child.transform.clearMatrix3D();
+                                //this.name="";
+                                child.masks = null;
+                                child.maskMode = false;
+                            }
+                            if (!(<IDisplayObjectAdapter> child.adapter).isVisibilityByScript()) {
+                                child.visible = true;
+                            }
+                        }
+                        else{
+                            child.transform.clearColorTransform();
+                            child.transform.clearMatrix3D();
+                            child.visible = true;
+                            child.masks = null;
+                            child.maskMode = false;                            
+                        }
+                    }
+                }
+                else if (depth_sessionIDs[child._depthID].instanceID!=child.instanceID){
+                    //  child-instance was changed by timeline.
+                    //  force a full reset by re-adding it to timeline
+                    target_mc.removeChildAt(i);
+                }                
 			}
 		}
 
@@ -390,11 +420,11 @@ export class Timeline
 		// onClipevents for children added in previous frames must be queued before the script of the target_mc, 
 		target_mc.preventScript=true;
 		for (var key in depth_sessionIDs) {
-			if(!new_depth_sessionIDs[key]){
-				child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
+			if(!new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID!="oldID"){
+				child1 = target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
 				child=<DisplayObject>child1;
 				if (child._sessionID == -1)
-					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
+					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 			}			
 		}
 		target_mc.preventScript=false;
@@ -404,19 +434,18 @@ export class Timeline
 
 		// add children that was constructed on this frame
 		for (var key in depth_sessionIDs) {
-			if(new_depth_sessionIDs[key]){
-				child1 = target_mc.getPotentialChildInstance(this.add_child_stream[depth_sessionIDs[key]*2]);
+			if(new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID!="oldID"){
+				child1 = target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
 				child=<DisplayObject>child1;
 				if (child._sessionID == -1)
-					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key]);
-			}			
+					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
+			}
 		}
-
 
 		//pass2: apply update commands for objects on stage (only if they are not blocked by script)
 		this.pass2(target_mc);
 
-		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
+        target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 	}
 
 	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object, queue_pass2:boolean):void
@@ -427,7 +456,7 @@ export class Timeline
 		this._update_indices.length = 0;// store a list of updatecommand_indices, so we dont have to read frame_recipe again
 		var update_cnt = 0;
 		var start_index:number;
-		var end_index:number;
+        var end_index:number;
 		for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
 			var frame_command_idx:number = this.frame_command_indices[k];
 			var frame_recipe:number = this.frame_recipe[k];
@@ -443,15 +472,13 @@ export class Timeline
 			if (frame_recipe & 4) {
 				start_index = this.command_index_stream[frame_command_idx];
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
-				// apply add commands in reversed order to have script exeucted in correct order.
-				// this could be changed in exporter				
 				if(queue_pass2){
 					for (i = end_index - 1; i >= start_index; i--)
-						depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
+						depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = {id:this.add_child_stream[i*2], instanceID:this.add_child_stream[i*2]+"#"+this.keyframe_firstframes[k]};
 				}
 				else{
 					for (i =start_index; i < end_index; i++)
-						depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = i;
+						depth_sessionIDs[this.add_child_stream[i*2 + 1] - 16383] = {id:this.add_child_stream[i*2], instanceID:this.add_child_stream[i*2]+"#"+this.keyframe_firstframes[k]};
 				}
 				if(k==target_keyframe_idx){
 					if(queue_pass2){
@@ -536,7 +563,7 @@ export class Timeline
 
 			if(frame_recipe & 16)
 				this.start_sounds(target_mc, frame_command_idx++);
-		}
+        }
 	}
 
 
@@ -567,8 +594,8 @@ export class Timeline
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		for (var i:number = start_index; i < end_index; i++) {
 			idx = i*2;
-			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx]);
-			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, i);//this.add_child_stream[idx]);
+			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx], this.add_child_stream[idx]+"#"+sourceMovieClip.currentFrameIndex);
+			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, this.add_child_stream[idx]);//this.add_child_stream[idx]);
 		}
 	}
 
@@ -605,13 +632,15 @@ export class Timeline
 		//for(var i:number = end_index; i >= start_index; i--) {
 			child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
 			if (child) {
+                
 				// check if the child is active + not blocked by script
 				this._blocked = Boolean(child._adapter && (<IDisplayObjectAdapter> child.adapter).isBlockedByScript());
 
 				props_start_idx = this.update_child_props_indices_stream[i];
 				props_end_index = props_start_idx + this.update_child_props_length_stream[i];
 				for(p = props_start_idx; p < props_end_index; p++)
-					this._functions[this.property_type_stream[p]].call(this, child, target_mc, this.property_index_stream[p]);
+                    this._functions[this.property_type_stream[p]].call(this, child, target_mc, this.property_index_stream[p]);
+                    
 			}
 			else{
 				//console.log("timeline: child not found");

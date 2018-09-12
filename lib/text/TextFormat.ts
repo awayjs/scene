@@ -501,8 +501,6 @@ export class TextFormat extends AssetBase
     
 	public clone():TextFormat{
         var clonedFormat:TextFormat=new TextFormat();
-        clonedFormat.font=this.font;
-        clonedFormat.font_table=this.font_table;
         this.applyToFormat(clonedFormat);
 		return clonedFormat;
 
@@ -521,6 +519,12 @@ export class TextFormat extends AssetBase
 
 	public applyToFormat(format:TextFormat){
         
+        if(this._style_name){
+            format.style_name=this._style_name;
+        }
+        if(this._font!==null){
+            format.font=this._font;
+        }
 		if(this._align!==null)
             format.align=this._align;
         if(this._leftMargin!==null)

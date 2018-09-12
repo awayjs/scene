@@ -246,8 +246,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var idx:number=0;
 		var i:number=0;
 		var i_len:number=indices.length;
-		if(this._glyphIdxToChar[tf["fileurl"]]==null){
-			console.log("no glyphIdx-map for textfield");
+		if(this._glyphIdxToChar[tf.assetNamespace]==null){
+			console.log("no glyphIdx-map for textfield", tf.adaptee.assetNamespace);
 			return new Point(0, 0);
 		}
 		// loop over all the words and create the text data for it
@@ -255,7 +255,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		for (i = 0; i < i_len; i++) {
 			idx=indices[i];
 
-			charGlyph=this._glyphIdxToChar[tf["fileurl"]][idx];
+			charGlyph=this._glyphIdxToChar[tf.assetNamespace][idx];
 			size_multiply=this._size_multiply;
 
 			if(!charGlyph) {
