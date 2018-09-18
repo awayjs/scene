@@ -364,8 +364,9 @@ export class TextFormat extends AssetBase
 		if(this._style_name==FontStyleName.BOLD || this._style_name==FontStyleName.BOLDITALIC)
 			this._bold=true;
 		if(this._style_name==FontStyleName.ITALIC || this._style_name==FontStyleName.BOLDITALIC)
-			this._italic=true;
-		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+            this._italic=true;
+        if(this._font)
+		    this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
 	public get font():Font{
         if(this._font){
@@ -497,6 +498,7 @@ export class TextFormat extends AssetBase
         // make sure a fontTable exists:
 		this._font=null;//DefaultFontManager.getFont(font);
 		this._font_table=null;//=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+        this._style_name=FontStyleName.STANDART;
     }
     
 	public clone():TextFormat{
@@ -519,9 +521,9 @@ export class TextFormat extends AssetBase
 
 	public applyToFormat(format:TextFormat){
         
-        if(this._style_name){
+        /*if(this._style_name!==null){
             format.style_name=this._style_name;
-        }
+        }*/
         if(this._font!==null){
             format.font=this._font;
         }

@@ -1,9 +1,11 @@
 import {TesselatedFontTable} from "../text/TesselatedFontTable";
 import {Font} from "../text/Font";
+import {AssetBase} from "@awayjs/core";
 export class DefaultFontManager
 {
 	private static _default_font:Font;
 	private static _registered_fonts:any={};
+	public static shared_fonts_ns:string;
 
 	public static getDefaultFont():Font
 	{
@@ -12,18 +14,55 @@ export class DefaultFontManager
 		}
 		return DefaultFontManager._default_font;
 	}
+	public static applySharedFonts(ns:string)
+	{
+        if(ns==DefaultFontManager.shared_fonts_ns)
+            return;
+        if(!DefaultFontManager._registered_fonts[ns]){
+            DefaultFontManager._registered_fonts[ns]={};
+        }
+        if(!DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]){
+            DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]={};
+        }
+        var fontsInSharedSWF=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns];
+        for(var key in fontsInSharedSWF){
+            if(!DefaultFontManager._registered_fonts[ns][key]){
+                DefaultFontManager._registered_fonts[ns][key]=fontsInSharedSWF[key];
+            }
+            else{
+                var len=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][key].font_styles.length;
+                for(var i:number=0; i<len;i++){
+                    var fontStyle=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][key].font_styles[i];
+                    var oldTable=DefaultFontManager._registered_fonts[ns][key].get_font_table(fontStyle.name, TesselatedFontTable.assetType, null, false);
+                    if(!oldTable)
+                        DefaultFontManager._registered_fonts[ns][key].font_styles.push(fontStyle);
+                    else{
+                        if(oldTable.getGlyphCount()==0){
+                            DefaultFontManager._registered_fonts[ns][key].replace_font_table(fontStyle.name, fontStyle);
+                        }
+                    }
+                }
+            } if(DefaultFontManager._registered_fonts[ns][key].font){
+                DefaultFontManager._registered_fonts[ns][key]=fontsInSharedSWF[key];
+            }
+        }
+	}
 
-	public static getFont(fontName:string):Font{
+	public static getFont(fontName:string, ns:string=AssetBase.DEFAULT_NAMESPACE):Font{
+        //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
 		if(!fontName)
 			return DefaultFontManager.getDefaultFont();
-		fontName=fontName.toString().toLowerCase();
-		if(DefaultFontManager._registered_fonts[fontName]){
-			return DefaultFontManager._registered_fonts[fontName];
+        fontName=fontName.toString().toLowerCase();
+        if(!DefaultFontManager._registered_fonts[ns]){
+            DefaultFontManager._registered_fonts[ns]={};
+        }
+		if(DefaultFontManager._registered_fonts[ns][fontName]){
+			return DefaultFontManager._registered_fonts[ns][fontName];
 		}
 		var newFont:Font=new Font();
 		newFont.name=fontName;
 		//DefaultFontManager._registered_fonts[fontName.toString().split(" ")[0].toLowerCase()]=newFont;
-		DefaultFontManager._registered_fonts[fontName]=newFont;
+		DefaultFontManager._registered_fonts[ns][fontName]=newFont;
 		return newFont;
 	}
 

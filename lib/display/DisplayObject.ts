@@ -240,6 +240,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public isSlice9ScaledMC:boolean=false;
 	public isSlice9ScaledSprite:boolean=false;
 	public instanceID:string="";
+	public avm1Symbol:any;
 
 	// this is needed for AVM1 - todo: maybe do this on adapters ?
 	public placeObjectTag:any=null;
@@ -1686,7 +1687,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		displayObject.castsShadows = this.castsShadows;
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		displayObject.assetNamespace = this.assetNamespace;
-		displayObject._symbol = this._symbol;
+        displayObject._symbol = this._symbol;
+        displayObject.avm1Symbol = this.avm1Symbol;
+        
 		if (this._explicitMasks)
 			displayObject.masks = this._explicitMasks;
 

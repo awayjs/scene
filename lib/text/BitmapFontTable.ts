@@ -63,6 +63,9 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 		this._adjust_size=0;
 	}
 
+	public getGlyphCount():number{
+        return this._font_chars.length;
+    }
 	public get assetType():string
 	{
 		return BitmapFontTable.assetType;

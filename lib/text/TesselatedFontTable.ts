@@ -86,6 +86,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		}
 	}
 
+	public getGlyphCount():number{
+        return this._font_chars.length;
+    }
 	public getRatio(size:number):number
 	{
 		return this._size_multiply;

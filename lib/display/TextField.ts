@@ -1232,13 +1232,15 @@ export class TextField extends DisplayObjectContainer
 
 	public set text(value:string)
 	{
-		value = (typeof value==="undefined")?"":value.toString();
+        value = (typeof value==="undefined")?"":value.toString();
+
+        value = value.replace(String.fromCharCode(160), " ");
 
 		if (this._text == value)
 			return;
 		this._labelData=null;
 		this._text=value;
-
+ 
 		if(value!="" && ((value.charCodeAt(value.length-1)==13 ) || (value.charCodeAt(value.length-1)==10 ))){
 			value=value.slice(0, value.length-1);
 		}	
@@ -1328,15 +1330,15 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public _acceptTraverser(traverser:TraverserBase):void
 	{
-		this.reConstruct(true);
+        this.reConstruct(true);
+        
 		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material ){
+            // only for FNT font-tables
+            // todo: do we still need this ?
 
-			var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-			//if(new_ct.color==0xffffff){
+			this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 			this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
 			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-			//}
-
 		}
 
 		if(!this.maskMode){
@@ -1855,7 +1857,7 @@ export class TextField extends DisplayObjectContainer
 			// loop over all chars for this format
 			//console.log("textrun tf = ", tf);
 			for (c = c_start; c < c_end; c++) {
-				char_code=thisText.charCodeAt(c);
+                char_code=thisText.charCodeAt(c);
 				// todo: clean this up + allow exscaping of special chars
 				//console.log("char = ", char_code);
 				//console.log("process char", c, thisText[c], char_code, tf.id);
@@ -2804,7 +2806,8 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public getTextFormat(beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):TextFormat
 	{
-		console.log("Textfield.getTextFormat() not correctly implemented for multi-formatted text");
+        if(beginIndex>=0 || endIndex>=0)
+		    console.warn("Textfield.getTextFormat() not correctly implemented for multi-formatted text");
 		return this._textFormat;
 	}
 
@@ -3260,8 +3263,13 @@ export class TextField extends DisplayObjectContainer
                     }
                 }
 				if(char=="")
-					return;
-			}
+                    return;                
+            }
+            if(this.newTextFormat.font_table){
+                if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
+                    return;
+                }
+            }
 			if(this._selectionBeginIndex!=this._selectionEndIndex){
 				var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
 				var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
