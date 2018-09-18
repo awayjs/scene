@@ -2179,7 +2179,7 @@ export class TextField extends DisplayObjectContainer
 			}
 			else if (format.align == TextFormatAlign.RIGHT) {
 				if(lineSpaceLeft>0)
-					offsetx += lineSpaceLeft;
+					offsetx += lineSpaceLeft-2;
 				else{
 					offsetx += 2;
 				}
