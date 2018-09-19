@@ -51,11 +51,22 @@ export class DefaultFontManager
 	public static getFont(fontName:string, ns:string=AssetBase.DEFAULT_NAMESPACE):Font{
         //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
 		if(!fontName)
-			return DefaultFontManager.getDefaultFont();
+            return DefaultFontManager.getDefaultFont();
         fontName=fontName.toString().toLowerCase();
         if(!DefaultFontManager._registered_fonts[ns]){
             DefaultFontManager._registered_fonts[ns]={};
         }
+        if(ns==AssetBase.DEFAULT_NAMESPACE){            
+            if(DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][fontName]){
+                return DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][fontName];                
+            }
+            for (var key in DefaultFontManager._registered_fonts){               
+                if(DefaultFontManager._registered_fonts[key][fontName]){
+                    return DefaultFontManager._registered_fonts[key][fontName];                
+                } 
+            }
+        }
+
 		if(DefaultFontManager._registered_fonts[ns][fontName]){
 			return DefaultFontManager._registered_fonts[ns][fontName];
 		}

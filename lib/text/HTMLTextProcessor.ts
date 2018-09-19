@@ -328,6 +328,10 @@ export class HTMLTextProcessor
 				newProps_values[newProps_values.length] = (<any>myChild.attributes).align.nodeValue;
 				newProps_names[newProps_names.length] = "align";
 			}
+			if((<any>myChild.attributes).face){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).face.nodeValue;
+				newProps_names[newProps_names.length] = "font_name";
+			}
 		}
 		var i=newProps_values.length;
 		var cloneFormat=false;
