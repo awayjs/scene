@@ -512,7 +512,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			}
 		}
 		if(!tesselated_font_char){
-			console.log("getChar: could not find glyph: ", name, String.fromCharCode(parseInt(name)));
+			console.warn("Warning: could not find glyph: ", name, String.fromCharCode(parseInt(name)), this.font.name, this.name, this.font);
 		}
 		return tesselated_font_char;
 	}
