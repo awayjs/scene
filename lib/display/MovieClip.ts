@@ -1,4 +1,4 @@
-import {AssetEvent,IAsset, Matrix3D, EventBase, IAssetAdapter, Box} from "@awayjs/core";
+import {AssetEvent,IAsset, Matrix3D, EventBase, IAssetAdapter, Box, WaveAudio} from "@awayjs/core";
 import {Graphics} from "@awayjs/graphics";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
@@ -61,6 +61,7 @@ export class MovieClip extends Sprite
 	private _potentialInstances:any = {};
 	private _depth_sessionIDs:Object = {};
 	private _sessionID_childs:Object = {};
+	private _sounds:Object = {};
 
 	public _useHandCursor:boolean;
 	public mouseListenerCount:number;
@@ -102,6 +103,24 @@ export class MovieClip extends Sprite
 	}
 	public buttonEnabled:boolean=true;
 
+	public startSound(id:number, sound:WaveAudio  ){
+        if(this._sounds[id]){
+            this._sounds[id].stop();
+        }
+        this._sounds[id]=sound;
+    }
+	public stopSounds(){
+        for (var key in this._sounds){
+            this._sounds[key].stop();
+        }
+        this._sounds={};
+    }
+	public stopSound(id:number){
+        if(this._sounds[id]){
+            this._sounds[id].stop();
+            delete this._sounds[id];
+        }
+    }
 	public buttonReset(){
 		if(this._isButton && !this.buttonEnabled){
 			this.currentFrameIndex = 0;
@@ -281,7 +300,8 @@ export class MovieClip extends Sprite
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
 		this._time = 0;
-		this.swappedDepthsMap={};
+        this.swappedDepthsMap={};
+        this.stopSounds();
 
 		if(this._adapter)
 			(<IMovieClipAdapter> this.adapter).freeFromScript();
@@ -582,6 +602,7 @@ export class MovieClip extends Sprite
 	 */
 	public stop():void
 	{
+        this.stopSounds();
 		this._isPlaying = false;
 	}
 

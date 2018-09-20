@@ -606,15 +606,20 @@ export class Timeline
 		for(var i:number = start_index; i < end_index; i++) {
 			var audioProps:any = this.audioPool[this.add_sounds_stream[i]];
 			if(audioProps){
-
-				var child:WaveAudio =audioProps.sound;
-				if(audioProps.props.loopCount>0){
-					child.loopsToPlay=audioProps.props.loopCount;
-				}
-				else{
-					child.loopsToPlay=0;
-				}
-				child.play(0,false);
+                if(audioProps.cmd==15){// start sound
+                    var child:WaveAudio = audioProps.sound;
+                    if(audioProps.props.loopCount>0){
+                        child.loopsToPlay=audioProps.props.loopCount;
+                    }
+                    else{
+                        child.loopsToPlay=0;
+                    }
+                    child.play(0,false);
+                    target_mc.startSound(audioProps.id, child);
+                }
+                else if(audioProps.cmd==16){// stop sound
+                    target_mc.stopSound(audioProps.id);
+                }
 				//console.log("start sound:", child);
 			}
 		}
