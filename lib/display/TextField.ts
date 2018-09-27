@@ -207,7 +207,6 @@ export class TextField extends DisplayObjectContainer
 	private char_positions_x:number[] = [];
 	private char_positions_y:number[] = [];
 
-	private _strokeScale:Vector3D = new Vector3D();
 	// keeping track of the original textfield that was used for cloning this one.
 	public sourceTextField:TextField=null;
 
@@ -307,7 +306,7 @@ export class TextField extends DisplayObjectContainer
 		if(this._isInFocus==value){
 			return;
 		}
-		this._isInFocus=value;
+        this._isInFocus=value;
 		this.enableInput(value);
 
 		// check if a adapter exists
@@ -319,7 +318,7 @@ export class TextField extends DisplayObjectContainer
 
 	private enableInput(enable:boolean=true){
 
-		if(enable && this._isInFocus){
+		if(enable && this._isInFocus && this.selectable){
 			this.drawSelectionGraphics();
 			var myThis=this;
 			if(this.cursorIntervalID>=0){
@@ -327,7 +326,11 @@ export class TextField extends DisplayObjectContainer
 				this.cursorIntervalID=-1;
 			}
 			this.cursorIntervalID=window.setInterval(function(){
-				myThis.cursorBlinking=!myThis.cursorBlinking;
+                myThis.cursorBlinking=!myThis.cursorBlinking;
+                if(!myThis.selectable){
+                    myThis.cursorBlinking=true;
+                }
+                myThis.drawCursor()
 				myThis.cursorShape.invalidate();
 			}, 500);
 		}
@@ -343,7 +346,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public findCharIdxForMouse(event):number{
 		
-		var myPoint:Point=this.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		var myPoint:Point=this.textChild.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
 		var lineIdx:number=this.getLineIndexAtPoint(myPoint.x, myPoint.y);
 		var charIdx:number=this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
 		
@@ -367,7 +370,8 @@ export class TextField extends DisplayObjectContainer
 		this._selectionEndIndex=this._selectionBeginIndex;
 		//console.log("startSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);	
 		this._glyphsDirty=true;
-		this.reConstruct();
+        this.reConstruct();
+        this.cursorBlinking=false;
 		this.drawSelectionGraphics();
 	}
 	public stopSelectionByMouse(event){
@@ -411,12 +415,33 @@ export class TextField extends DisplayObjectContainer
 		else{
 			this.showSelection=true;	
 			this.drawSelectedBG();			
-		}
+        }
+        
 	}
 
+	private scrollToCursor(x, y){
+        if(!this.textChild){
+            return;
+        }
+        if(x>this._width){
+            this.textChild.x-=10;
+        }
+        if(x<Math.abs(this.textChild.x)){
+            this.textChild.x=this.textChild.x+x+2;
+        }
+        if(this.textChild.x<(this._width-this.textChild.width)){
+            this.textChild.x=this._width-this.textChild.width;
+        }
+        if(this.textChild.x>0){
+            this.textChild.x=0;
+        }
+    }
 	private drawCursor(){
-		/*if(this._selectionBeginIndex!=this._selectionEndIndex)
-			return;*/
+        if(this.cursorBlinking || !this.selectable){
+            if(this.cursorShape)
+                GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[]);
+            return;
+        }
 		var x:number=0;
 		var y:number=0;
 		var tf:TextFormat=this.newTextFormat;
@@ -428,7 +453,7 @@ export class TextField extends DisplayObjectContainer
 			else if (tf.align == "center") {
 			}
 			else if (tf.align == "right") {
-				x = this.textOffsetX+this._width;
+				x = this.textOffsetX+this._width-2;
 			}
 			else if (tf.align == "left") {
 				x = this.textOffsetX+4+this._textWidth;
@@ -446,20 +471,17 @@ export class TextField extends DisplayObjectContainer
 		}
 		tf.font_table.initFontSize(tf.size);
 		var height:number= tf.font_table.getLineHeight();
-		var cursorScale:number=this.transform.concatenatedMatrix3D.decompose()[3].x*this._strokeScale.x;
+		var cursorScale:number=this.internalScale.x;
 		if(cursorScale<=0)cursorScale=1;
 		if(!this.cursorShape){
-			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x,y,0.5*(1/cursorScale),height],tf.color,1);
+			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.25*cursorScale),y,0.5*(cursorScale),height],tf.color,1);
 			return;
 		}
-		GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5*(1/cursorScale),height]);
+        GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5*(1/cursorScale),height]);
+        this.scrollToCursor(x,y);
 		
-	}
-	public getHairlineScaleY(){
-		var scaleY:number=this.transform.concatenatedMatrix3D.decompose()[3].y*this._strokeScale.y;
-		if(scaleY<=0)scaleY=1;
-		return scaleY;
-	}
+    }
+    
 	private drawSelectedBG(){
 
 		if(this._selectionBeginIndex<0){
@@ -520,22 +542,27 @@ export class TextField extends DisplayObjectContainer
 			this.bgShapeSelect=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
 			return;
 		}
-		GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect, rectangles);
+        GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect, rectangles);
+        
+        this.scrollToCursor(startx+width,oldy+height);
 		
 
 	}
 	public drawBG(){
-		if(!this.bgShape){
-			this.bgShape=GraphicsFactoryHelper.drawRectangles([this.textOffsetX, this.textOffsetY, this.width, this.height], this.backgroundColor, 1);
-			return;
-		}
-		GraphicsFactoryHelper.updateRectanglesShape(this.bgShape, [this.textOffsetX, this.textOffsetY, this.width, this.height]);	
-	}
-	public drawBorder(){		
-		this.targetGraphics.lineStyle(0.1, this._borderColor, 1);
-		this.targetGraphics.drawRect(this.textOffsetX,this.textOffsetY, this._width, this._height);
-		this.targetGraphics.endFill();
-		
+        this._graphics.beginFill(this.backgroundColor, 1);
+        this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
+        this._graphics.endFill();
+    }
+     
+	public drawBorder(){	
+		var half_thickness_x:number=0.25*this.internalScale.x;
+        var half_thickness_y:number=0.25*this.internalScale.y;	
+		this._graphics.beginFill(this._borderColor, 1);
+		this._graphics.drawRect(this.textOffsetX,this.textOffsetY, this._width, half_thickness_y*2);
+		this._graphics.drawRect(this.textOffsetX,this.textOffsetY+this._height-half_thickness_y*2, this._width, half_thickness_y*2);
+		this._graphics.drawRect(this.textOffsetX,this.textOffsetY+half_thickness_y*2, half_thickness_x*2, this._height-half_thickness_y*2);
+		this._graphics.drawRect(this.textOffsetX+this._width-half_thickness_x*2,this.textOffsetY+half_thickness_y*2, half_thickness_x*2, this._height-half_thickness_y*2);
+        this._graphics.endFill();        
 	}
 
 	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
@@ -631,10 +658,31 @@ export class TextField extends DisplayObjectContainer
 	}
 
 
+    private _internalScale:Vector3D = new Vector3D(1,1,1);
+    public get internalScale():Vector3D{
+        return this._internalScale;
+    }
+	public getInternalScale(projection:ProjectionBase = null):Vector3D
+	{
+		if(this.parent)
+			this._internalScale.copyFrom(this.parent.transform.concatenatedMatrix3D.decompose()[3]);
+		else
+			this._internalScale.identity();
+
+		if (projection) {
+			this._internalScale.x *= (<PerspectiveProjection> projection).hFocalLength/1000;
+			this._internalScale.y *= (<PerspectiveProjection> projection).focalLength/1000;
+		}
+
+        this._internalScale.x=1/this._internalScale.x;
+        this._internalScale.y=1/this._internalScale.y;
+		return this._internalScale;
+	}
 	public _iInternalUpdate(projection:ProjectionBase):void
 	{
 		super._iInternalUpdate(projection);
-		
+        
+        /*
 		if (projection) {
 			this._strokeScale.x = (<PerspectiveProjection> projection).hFocalLength/1000;
 			this._strokeScale.y = (<PerspectiveProjection> projection).focalLength/1000;
@@ -642,9 +690,18 @@ export class TextField extends DisplayObjectContainer
 			this._strokeScale.x = 1;
 			this._strokeScale.y = 1;
 		}
-		this._graphics.updateScale(projection);
+        this._graphics.updateScale(projection);*/
+        
+        
+		var prevScaleX:number = this._internalScale.x;
+		var prevScaleY:number = this._internalScale.y;
+		var scale:Vector3D = this.getInternalScale(projection);
+		if (scale.x == prevScaleX && scale.y == prevScaleY)
+             return;
+        this._internalScale=scale;
+        this._glyphsDirty=true;
 		
-	}
+    }
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
@@ -1342,16 +1399,16 @@ export class TextField extends DisplayObjectContainer
 		}
 
 		if(!this.maskMode){
-			if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
-				traverser[this.cursorShape.elements.traverseName](this.cursorShape);
-			}
+			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
+			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
+			//}
 			this._graphics.acceptTraverser(traverser);
-			if(this.showSelection && this._isInFocus && this.bgShapeSelect){
-				traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
-			}
-			if(this.bgShape){// && this.background){
-				traverser[this.bgShape.elements.traverseName](this.bgShape);
-			}
+			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
+			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
+			//}
+			//if(this.bgShape){// && this.background){
+			//	traverser[this.bgShape.elements.traverseName](this.bgShape);
+			//}
 		}
 	}
 
@@ -1492,7 +1549,7 @@ export class TextField extends DisplayObjectContainer
 		}
 		this._type=value;
 		if(value==TextFieldType.INPUT){
-			this._selectable=true;
+            //this._selectable=true;
 			this.enableInput(true);
 			this.addEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
 		}
@@ -1816,7 +1873,7 @@ export class TextField extends DisplayObjectContainer
 			if(this.sourceTextField){
                 this.sourceTextField.copyTo(this);
 				this._textFormats=[this.newTextFormat];
-				this._textFormatsIdx=[this._iText.length];
+                this._textFormatsIdx=[this._iText.length];
 			}
 		//}
 		/*if(this.adapter != this){
@@ -1848,7 +1905,9 @@ export class TextField extends DisplayObjectContainer
 			word_cnt=0;
 			whitespace_cnt=0;
 			startNewWord=true;
-			tf=this._textFormats[f];
+            tf=this._textFormats[f];
+            var maxLineWidth: number = this._width - (tf.indent + tf.leftMargin + tf.rightMargin);
+
 			tf.font_table.initFontSize(tf.size);
 			c_end=(f==f_len-1)?thisText.length : this._textFormatsIdx[f];
 			// create a new textrun
@@ -1944,7 +2003,24 @@ export class TextField extends DisplayObjectContainer
 					startNewWord=true;
 				}
 				else{
-					// no whitespace
+                    // no whitespace
+                    
+                    if (this.multiline && this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
+                        if(this.words[this.words.length-2]+char_width>=maxLineWidth){                            
+							/*this._textRuns_words[this._textRuns_words.length]=word_cnt;
+							this._textRuns_words[this._textRuns_words.length]=linewidth;
+							this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
+
+							this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
+							// create a new textrun
+							this._textRuns_formats[this._textRuns_formats.length]=tf;
+                            this._textRuns_words[this._textRuns_words.length]=this.words.length;*/
+                            startNewWord=true;
+                        }
+                        
+                    }
+
+
 					if(startNewWord){
 						//console.log("startNewWord");
 						// create new word (either this is the first char, or the last char was whitespace)
@@ -2448,6 +2524,7 @@ export class TextField extends DisplayObjectContainer
 		this.textShapes={};
 
 		this.targetGraphics.clear();
+		this._graphics.clear();
 		if(this._background){
 			this.drawBG();
 		} 
@@ -2472,6 +2549,16 @@ export class TextField extends DisplayObjectContainer
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
 			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
+		if(this._background){
+			//this.targetGraphics.addShape(this.bgShape);
+           
+        }
+        this.drawSelectionGraphics();
+        if(this.bgShapeSelect){
+           var bgshapetmp = this.targetGraphics.addShape(Shape.getShape(this.bgShapeSelect.elements));            
+           bgshapetmp.style = this.bgShapeSelect.style;
+           bgshapetmp.material = this.bgShapeSelect.material;
+        }
 
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
@@ -2488,7 +2575,7 @@ export class TextField extends DisplayObjectContainer
 			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 			//}
 			textShape.shape = this.targetGraphics.addShape(Shape.getShape(textShape.elements));
-
+            
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
 			if (textShape.format.material && this._textColor==-1) {
@@ -2523,7 +2610,14 @@ export class TextField extends DisplayObjectContainer
 				*/
 
 			}
-		}
+        }
+
+        if(this.type==TextFieldType.INPUT && this.isInFocus && this.cursorShape){
+            var cursorShapetmp = this.targetGraphics.addShape(Shape.getShape(this.cursorShape.elements));
+            cursorShapetmp.style = this.cursorShape.style;
+            cursorShapetmp.material = this.cursorShape.material;
+        }
+        
 	}
 
 
@@ -3247,6 +3341,9 @@ export class TextField extends DisplayObjectContainer
 			}
 			//this._selectionEndIndex=this._selectionBeginIndex;
 		}
+		else if(char=="Enter" && this.multiline){
+            this._insertNewText("\n");
+        }
 		
 		else if (char.length==1){
 			if(this._restrictRegex){
@@ -3267,34 +3364,16 @@ export class TextField extends DisplayObjectContainer
             }
             if(this.newTextFormat.font_table){
                 if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
-                    return;
+                    char=char.toUpperCase();
+                    if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
+                        char=char.toLowerCase();
+                        if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
+                            return;
+                        }
+                    }
                 }
             }
-			if(this._selectionBeginIndex!=this._selectionEndIndex){
-				var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-				var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
-				if(this.maxChars>0 && (textBeforeCursor.length+textAfterCursor.length+char.length)>this.maxChars){
-					var maxNewChars:number=this.maxChars-textBeforeCursor.length+textAfterCursor.length;
-					if(maxNewChars>0){
-						char=char.slice(0, maxNewChars);
-					}
-				}
-				this.text = textBeforeCursor + char + textAfterCursor;
-				this._selectionBeginIndex+=1;
-				this._selectionEndIndex=this._selectionBeginIndex;
-			}
-			else{
-				if(this.maxChars>0 && this._iText.length>=this.maxChars){
-	
-				}
-				else{
-					var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-					var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
-					this.text = textBeforeCursor+char+textAfterCursor;
-					this._selectionBeginIndex+=1;
-					this._selectionEndIndex=this._selectionBeginIndex;				
-				}
-			}
+            this._insertNewText(char);
 		}
 		else if (char.length>1){
 			console.log("invalid keyboard input: ", char);
@@ -3307,7 +3386,35 @@ export class TextField extends DisplayObjectContainer
 		
 		if(this._onChanged && oldText!==this._iText)
 			this._onChanged();
-	}
+    }
+    private _insertNewText(newText:string){
+
+        if(this._selectionBeginIndex!=this._selectionEndIndex){
+            var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+            var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
+            if(this.maxChars>0 && (textBeforeCursor.length+textAfterCursor.length+newText.length)>this.maxChars){
+                var maxNewChars:number=this.maxChars-textBeforeCursor.length+textAfterCursor.length;
+                if(maxNewChars>0){
+                    newText=newText.slice(0, maxNewChars);
+                }
+            }
+            this.text = textBeforeCursor + newText + textAfterCursor;
+            this._selectionBeginIndex+=1;
+            this._selectionEndIndex=this._selectionBeginIndex;
+        }
+        else{
+            if(this.maxChars>0 && this._iText.length>=this.maxChars){
+
+            }
+            else{
+                var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
+                var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
+                this.text = textBeforeCursor+newText+textAfterCursor;
+                this._selectionBeginIndex+=1;
+                this._selectionEndIndex=this._selectionBeginIndex;				
+            }
+        }
+    }
 	public onMouseDownDelegate:(e:any) => void;
 	public onMouseDown(e:any){
 		console.log("textfield.onMouseDown", e);
