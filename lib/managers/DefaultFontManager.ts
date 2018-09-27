@@ -24,6 +24,11 @@ export class DefaultFontManager
         if(!DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]){
             DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]={};
         }
+        if(!DefaultFontManager._default_font){
+            if(DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]["arial"]){
+                DefaultFontManager._default_font=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]["arial"];
+            }
+        }
         var fontsInSharedSWF=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns];
         for(var key in fontsInSharedSWF){
             if(!DefaultFontManager._registered_fonts[ns][key]){
