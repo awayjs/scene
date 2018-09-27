@@ -3056,7 +3056,7 @@ export class TextField extends DisplayObjectContainer
          *  this means that we only want to act on the existing textFormats list, 
          *  never on the textFormat property directly
          * */
-        console.log("setTextFormat", this.chars_codes.length, format, this._iText);
+        //console.log("setTextFormat", this.chars_codes.length, format, this._iText);
         if(this.chars_codes.length==0 || !format)
             return;
 

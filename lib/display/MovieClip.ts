@@ -604,7 +604,7 @@ export class MovieClip extends Sprite
 	 */
 	public stop():void
 	{
-        //this.stopSounds();
+        this.stopSounds();
 		this._isPlaying = false;
 	}
 
