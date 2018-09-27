@@ -22,19 +22,22 @@ export class HTMLTextProcessor
 		input = input.replace(new RegExp("&nbsp;", 'g'), " ");
 		input = input.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
 		input = input.replace(new RegExp("Ã", 'g'), String.fromCharCode(215));
+        input = input.replace(new RegExp("<\\\\", 'g'), "</");
 		input = input.replace(new RegExp("<br>", 'g'), "<br/>");
 		input = input.replace(new RegExp("<BR>", 'g'), "<br/>");
 		input = input.replace(new RegExp("<BR/>", 'g'), "<br/>");
-		input = input.replace(new RegExp("<B>", 'g'), "<b>");
+		input = input.replace(new RegExp("<B", 'g'), "<b");
 		input = input.replace(new RegExp("</B>", 'g'), "</b>");
-		input = input.replace(new RegExp("<I>", 'g'), "<i>");
+		input = input.replace(new RegExp("<I", 'g'), "<i");
 		input = input.replace(new RegExp("</I>", 'g'), "</i>");
-		input = input.replace(new RegExp("<P>", 'g'), "<p>");
+		input = input.replace(new RegExp("<P", 'g'), "<p");
 		input = input.replace(new RegExp("</P>", 'g'), "</p>");
-		input = input.replace(new RegExp("<U>", 'g'), "<u>");
+		input = input.replace(new RegExp("<U", 'g'), "<u");
 		input = input.replace(new RegExp("</U>", 'g'), "</u>");
-		input = input.replace(new RegExp("<LI>", 'g'), "<li>");
+		input = input.replace(new RegExp("<LI", 'g'), "<li");
 		input = input.replace(new RegExp("</LI>", 'g'), "</li>");
+		input = input.replace(new RegExp("<FONT", 'g'), "<font");
+		input = input.replace(new RegExp("</FONT>", 'g'), "</font>");
 
 		// 	some preprocessing to make sure that html-tags are closing
 		// 	todo: this can probably be done better
@@ -302,9 +305,18 @@ export class HTMLTextProcessor
 				newProps_values[newProps_values.length] = (<any>myChild.attributes).size.nodeValue;
 				newProps_names[newProps_names.length] = "size";
 			}
-			if((<any>myChild.attributes).color){
-				
+			else if((<any>myChild.attributes).SIZE){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).SIZE.nodeValue;
+				newProps_names[newProps_names.length] = "size";
+			}
+			if((<any>myChild.attributes).color){				
 				var colorString:string=(<any>myChild.attributes).color.nodeValue;
+				colorString=colorString.replace("#", "0x");
+				newProps_values[newProps_values.length] = parseInt(colorString);//ColorUtils.f32_RGBA_To_f32_ARGB((<any>myChild.attributes).color.nodeValue);
+				newProps_names[newProps_names.length] = "color";
+			}
+			else if((<any>myChild.attributes).COLOR){				
+				var colorString:string=(<any>myChild.attributes).COLOR.nodeValue;
 				colorString=colorString.replace("#", "0x");
 				newProps_values[newProps_values.length] = parseInt(colorString);//ColorUtils.f32_RGBA_To_f32_ARGB((<any>myChild.attributes).color.nodeValue);
 				newProps_names[newProps_names.length] = "color";
@@ -314,7 +326,17 @@ export class HTMLTextProcessor
 				newProps_names[newProps_names.length] = "indent";
 
 			}
+			else if((<any>myChild.attributes).INDENT){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).INDENT.nodeValue;
+				newProps_names[newProps_names.length] = "indent";
+
+			}
 			if((<any>myChild.attributes).leftMargin){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).leftMargin.nodeValue;
+				newProps_names[newProps_names.length] = "leftMargin";
+
+			}
+			else if((<any>myChild.attributes).LEFTMARGIN){
 				newProps_values[newProps_values.length] = (<any>myChild.attributes).leftMargin.nodeValue;
 				newProps_names[newProps_names.length] = "leftMargin";
 
@@ -324,12 +346,25 @@ export class HTMLTextProcessor
 				newProps_names[newProps_names.length] = "rightMargin";
 
 			}
+			else if((<any>myChild.attributes).RIGHTMARGIN){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).RIGHTMARGIN.nodeValue;
+				newProps_names[newProps_names.length] = "rightMargin";
+
+			}
 			if((<any>myChild.attributes).align){
 				newProps_values[newProps_values.length] = (<any>myChild.attributes).align.nodeValue;
 				newProps_names[newProps_names.length] = "align";
 			}
+			else if((<any>myChild.attributes).ALIGN){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).ALIGN.nodeValue;
+				newProps_names[newProps_names.length] = "align";
+			}
 			if((<any>myChild.attributes).face){
 				newProps_values[newProps_values.length] = (<any>myChild.attributes).face.nodeValue;
+				newProps_names[newProps_names.length] = "font_name";
+			}
+			else if((<any>myChild.attributes).FACE){
+				newProps_values[newProps_values.length] = (<any>myChild.attributes).FACE.nodeValue;
 				newProps_names[newProps_names.length] = "font_name";
 			}
 		}
