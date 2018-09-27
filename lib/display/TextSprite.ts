@@ -29,19 +29,19 @@ export class TextSprite extends Sprite
 			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 		}
 
-		if(!tf.cursorBlinking &&  tf.isInFocus && tf.cursorShape && tf._type==TextFieldType.INPUT){
+		/*if(!tf.cursorBlinking &&  tf.isInFocus && tf.cursorShape && tf._type==TextFieldType.INPUT){
 			traverser[tf.cursorShape.elements.traverseName](tf.cursorShape);
-		}
+		}*/
 
 		this._graphics.acceptTraverser(traverser);
 
-		if(tf.showSelection && tf.isInFocus && tf.bgShapeSelect){
-			traverser[tf.bgShapeSelect.elements.traverseName](tf.bgShapeSelect);
-		}
+		//if(tf.showSelection && tf.isInFocus && tf.bgShapeSelect){
+		//	traverser[tf.bgShapeSelect.elements.traverseName](tf.bgShapeSelect);
+		//}
 		
-		if(tf.bgShape && tf.background){
-			traverser[tf.bgShape.elements.traverseName](tf.bgShape);
-		}
+		//if(tf.bgShape && tf.background){
+		//	traverser[tf.bgShape.elements.traverseName](tf.bgShape);
+		//}
 	}
 
 
