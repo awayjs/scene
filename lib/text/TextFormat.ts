@@ -230,8 +230,9 @@ export class TextFormat extends AssetBase
 		this._bold=value;
 		
         this.getStyleName();
-		
-		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+        if(this._font){		
+            this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+        }
 
 	}
 
@@ -246,7 +247,9 @@ export class TextFormat extends AssetBase
 	public set italic(value:boolean){
 		this._italic=value;
         this.getStyleName();
-		this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+        if(this._font){
+            this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+        }
 	}
 	/**
 	 * Indicates whether the text that uses this text format is underlined
