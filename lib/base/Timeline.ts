@@ -579,8 +579,10 @@ export class Timeline
 			if(sourceMovieClip.swappedDepthsMap[depth]!=null){
 				depth2=sourceMovieClip.swappedDepthsMap[depth];
 				sourceMovieClip.swappedDepthsMap[depth]=null;
-			}
-			sourceMovieClip.removeChildAt(sourceMovieClip.getDepthIndexInternal(depth2));
+            }
+            var idx:number=sourceMovieClip.getDepthIndexInternal(depth2);
+            if(idx>=0)
+			    sourceMovieClip.removeChildAt(idx);
 		}
 	}
 
@@ -614,8 +616,7 @@ export class Timeline
                     else{
                         child.loopsToPlay=0;
                     }
-                    child.play(0,false);
-                    target_mc.startSound(audioProps.id, child);
+                    target_mc.startSound(audioProps.id, child, child.loopsToPlay);
                 }
                 else if(audioProps.cmd==16){// stop sound
                     target_mc.stopSound(audioProps.id);

@@ -103,10 +103,12 @@ export class MovieClip extends Sprite
 	}
 	public buttonEnabled:boolean=true;
 
-	public startSound(id:number, sound:WaveAudio  ){
+	public startSound(id:number, sound:WaveAudio, loopsToPlay:number){
         if(this._sounds[id]){
             this._sounds[id].stop();
         }
+        sound.loopsToPlay=loopsToPlay;
+        sound.play(0,false);
         this._sounds[id]=sound;
     }
 	public stopSounds(){
@@ -602,7 +604,7 @@ export class MovieClip extends Sprite
 	 */
 	public stop():void
 	{
-        this.stopSounds();
+        //this.stopSounds();
 		this._isPlaying = false;
 	}
 
