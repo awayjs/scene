@@ -329,7 +329,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (w = startWord; w < w_len; w+=5) {
 			startIdx=tf.words[w];
-			x=tf.words[w+1];
+            x=tf.words[w+1];
             y=tf.words[w+2];
 			if(this.name=="BoldStyle"){
 				y-=0.2*this.getLineHeight();
@@ -362,22 +362,22 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						buffer = new Float32Array(char_vertices.buffer);
 						if(this.usesCurves) {
 							for (v = 0; v < char_vertices.count; v++) {
-								currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3] * size_multiply + x;
-								currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
+								currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 3] * size_multiply )+ x;
+								currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 3 + 1] * size_multiply ) + y;
 								currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3 + 2];
 							}
 						}
 						else {
 							if(hack_x_mirror){
 								for (v = 0; v < char_vertices.count; v++) {
-									currentTextShape.verts[currentTextShape.verts.length] = (charGlyph.char_width-buffer[v * 2]) * size_multiply + x;
-									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
+									currentTextShape.verts[currentTextShape.verts.length] = ((charGlyph.char_width-buffer[v * 2]) * size_multiply) + x;
+									currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 2 + 1] * size_multiply) + y;
 								}
 							}
 							else{
 								for (v = 0; v < char_vertices.count; v++) {
-									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 2] * size_multiply + x;
-									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
+									currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 2] * size_multiply) + x;
+									currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 2 + 1] * size_multiply) + y;
 								}
 							}
 						}
@@ -389,9 +389,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 					}
 				}
 			}
-			var half_thickness:number=0.25*(1/tf.getHairlineScaleY());
+			var half_thickness:number=0.25*tf.internalScale.y;
 			var topY:number=y+this.getUnderLineHeight()+half_thickness;
-			var bottomY:number=y+this.getUnderLineHeight()-+half_thickness;
+			var bottomY:number=y+this.getUnderLineHeight()-half_thickness;
 			if(newFormat.underline && (startWord+1)<tf.words.length){
 				currentTextShape.verts[currentTextShape.verts.length]=start_x;
 				currentTextShape.verts[currentTextShape.verts.length]=bottomY;
