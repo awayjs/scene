@@ -313,13 +313,19 @@ export class Timeline
 		}
 	}
 
-	public gotoFrame(target_mc:MovieClip, value:number, queue_script:boolean = true, queue_pass2:boolean = false):void
+	public gotoFrame(target_mc:MovieClip, value:number, queue_script:boolean = true, queue_pass2:boolean = false, forceReconstruct:boolean=false):void
 	{
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
 		var target_keyframe_idx:number = this.keyframe_indices[value];
 
-		if (current_keyframe_idx == target_keyframe_idx) // already constructed - exit
-			return;
+        var jumpBackToSameKeyFrame:boolean=false;
+		if (current_keyframe_idx == target_keyframe_idx){
+            if(!forceReconstruct)
+                return;
+            //  if the mc is already on same keyframe, it must be on different frame,
+            //  so it must be jumping back to the first frame of a keyframe
+            jumpBackToSameKeyFrame=true;
+        }
 
 
 		var i:number;
@@ -334,7 +340,10 @@ export class Timeline
 
 		//  we now have 3 index to keyframes: current_keyframe_idx / target_keyframe_idx / break_frame_idx
 
-		var jump_forward:boolean = (target_keyframe_idx > current_keyframe_idx);
+        var jump_forward:boolean = (target_keyframe_idx > current_keyframe_idx);
+        if(jumpBackToSameKeyFrame){
+            jump_forward=false;
+        }
 		var jump_gap:boolean = (break_frame_idx > current_keyframe_idx);
 
 		// in case we jump forward, but not jump a gap, we start at current_keyframe_idx + 1
@@ -699,11 +708,16 @@ export class Timeline
 		var masks:Array<DisplayObject> = new Array<DisplayObject>();
 		var numMasks:number = this.properties_stream_int[i++];
 
+        if(numMasks==0){
+            child.masks = null;
+            return;
+        }
 		//mask may not exist if a goto command moves the playhead to a point in the timeline after
 		//one of the masks in a mask array has already been removed. Therefore a check is needed.
 		for(var m:number = 0; m < numMasks; m++)
 			if((mask = target_mc.getChildAtSessionID(this.properties_stream_int[i++])))
-				masks.push(mask);
+                masks.push(mask);
+        
 
 
 		child.masks = masks;

@@ -380,7 +380,7 @@ export class MovieClip extends Sprite
 		//already been executed
 
 		//this._skipAdvance = MovieClip._skipAdvance;
-		this._timeline.gotoFrame(this, value, queue_script);
+		this._timeline.gotoFrame(this, value, queue_script, false, true);
 	}
 
 	public addEventListener(type:string, listener:(event:EventBase) => void):void
@@ -652,9 +652,14 @@ export class MovieClip extends Sprite
 		if (this._isPlaying && !this._skipAdvance) {
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
 				if (this.loop){
-					 // end of loop - jump to first frame.
-					this._currentFrameIndex = 0;					
-					this._timeline.gotoFrame(this, 0, true, true);
+                     // end of loop - jump to first frame.
+                     if(this._currentFrameIndex==0){
+                        // do nothing if we are already on frame 1
+                     }
+                     else{
+                        this._currentFrameIndex = 0;					
+                        this._timeline.gotoFrame(this, 0, true, true, true);
+                     }
 				}	
 				else //end of timeline, stop playing
 					this._isPlaying = false;
