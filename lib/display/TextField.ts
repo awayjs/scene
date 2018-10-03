@@ -1336,7 +1336,7 @@ export class TextField extends DisplayObjectContainer
 	public get newTextFormat():TextFormat
 	{
         // only use the newTextformat if it is available, otherwise fall back to textFormat
-		return this._newTextFormat!=null?this._newTextFormat:this._textFormat;
+		return this._newTextFormat?this._newTextFormat:this._textFormat;
 	}
 	public set newTextFormat(value:TextFormat)
 	{

@@ -277,6 +277,9 @@ export class TextFormat extends AssetBase
 	 */
 	private _font_table:IFontTable;
 	public get font_table():IFontTable{
+        if(!this._font_table){
+            this.font_table=<TesselatedFontTable>this.font.get_font_table(this.font_style, TesselatedFontTable.assetType);
+        }
         return this._font_table;
     }
 	public set font_table(value:IFontTable){
@@ -373,7 +376,7 @@ export class TextFormat extends AssetBase
 	}
 	public get font():Font{
         if(this._font){
-            return this._font;            
+            return this._font;
         }
         
 		this._font=DefaultFontManager.getFont(null);
@@ -384,7 +387,7 @@ export class TextFormat extends AssetBase
 	public set font(value:Font){
 		this._font_name=value.name;
 		this._font=value;
-        this.font_table=this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+        this._font_table=this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
         
 
 	}
