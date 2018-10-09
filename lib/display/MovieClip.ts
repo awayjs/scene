@@ -116,7 +116,8 @@ export class MovieClip extends Sprite
     }
 	public stopSounds(soundID:any=null){
         if(soundID){
-            this._sounds[soundID].stop();
+			if(this._sounds[soundID])
+            	this._sounds[soundID].stop();
         }
         else{
             for (var key in this._sounds){
