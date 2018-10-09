@@ -313,7 +313,8 @@ export class TextField extends DisplayObjectContainer
 		if(value && sendSoftKeyEvent && this.adapter != this){
 			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
 			(<any>this.adapter).selectTextField(fromMouseDown);
-		}
+        }
+        this._glyphsDirty=true;
 	}
 
 	private enableInput(enable:boolean=true){
@@ -474,10 +475,10 @@ export class TextField extends DisplayObjectContainer
 		var cursorScale:number=this.internalScale.x;
 		if(cursorScale<=0)cursorScale=1;
 		if(!this.cursorShape){
-			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.25*cursorScale),y,0.5*(cursorScale),height],tf.color,1);
+			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],tf.color,1);
 			return;
 		}
-        GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x,y,0.5*(1/cursorScale),height]);
+        GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x-(0.5*cursorScale),y,cursorScale,height]);
         this.scrollToCursor(x,y);
 		
     }
