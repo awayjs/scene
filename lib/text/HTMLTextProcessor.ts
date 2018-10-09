@@ -301,71 +301,45 @@ export class HTMLTextProcessor
 		var newProps_values:any[]=[];
 		var newProps_names:string[]=[];
 		if(myChild.attributes){
-			if((<any>myChild.attributes).size){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).size.nodeValue;
+			if((<any>myChild.attributes).size || (<any>myChild.attributes).SIZE){
+                var value=(<any>myChild.attributes).size?(<any>myChild.attributes).size.nodeValue:(<any>myChild.attributes).SIZE.nodeValue;
+                value=value.replace(/[^0-9.]/g, "");
+				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = "size";
 			}
-			else if((<any>myChild.attributes).SIZE){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).SIZE.nodeValue;
-				newProps_names[newProps_names.length] = "size";
-			}
-			if((<any>myChild.attributes).color){				
-				var colorString:string=(<any>myChild.attributes).color.nodeValue;
-				colorString=colorString.replace("#", "0x");
-				newProps_values[newProps_values.length] = parseInt(colorString);//ColorUtils.f32_RGBA_To_f32_ARGB((<any>myChild.attributes).color.nodeValue);
+			if((<any>myChild.attributes).color || (<any>myChild.attributes).COLOR){
+                var value=(<any>myChild.attributes).color?(<any>myChild.attributes).color.nodeValue:(<any>myChild.attributes).COLOR.nodeValue;
+				value=value.replace("#", "0x");
+				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = "color";
 			}
-			else if((<any>myChild.attributes).COLOR){				
-				var colorString:string=(<any>myChild.attributes).COLOR.nodeValue;
-				colorString=colorString.replace("#", "0x");
-				newProps_values[newProps_values.length] = parseInt(colorString);//ColorUtils.f32_RGBA_To_f32_ARGB((<any>myChild.attributes).color.nodeValue);
-				newProps_names[newProps_names.length] = "color";
-			}
-			if((<any>myChild.attributes).indent){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).indent.nodeValue;
+			if((<any>myChild.attributes).indent || (<any>myChild.attributes).INDENT){
+                var value=(<any>myChild.attributes).indent?(<any>myChild.attributes).indent.nodeValue:(<any>myChild.attributes).INDENT.nodeValue;
+                value=value.replace(/[^0-9.]/g, "");
+				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = "indent";
-
 			}
-			else if((<any>myChild.attributes).INDENT){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).INDENT.nodeValue;
-				newProps_names[newProps_names.length] = "indent";
-
-			}
-			if((<any>myChild.attributes).leftMargin){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).leftMargin.nodeValue;
+			if((<any>myChild.attributes).leftMargin || (<any>myChild.attributes).LEFTMARGIN){
+                var value=(<any>myChild.attributes).leftMargin?(<any>myChild.attributes).leftMargin.nodeValue:(<any>myChild.attributes).LEFTMARGIN.nodeValue;
+                value=value.replace(/[^0-9.]/g, "");
+				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = "leftMargin";
-
 			}
-			else if((<any>myChild.attributes).LEFTMARGIN){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).leftMargin.nodeValue;
-				newProps_names[newProps_names.length] = "leftMargin";
-
-			}
-			if((<any>myChild.attributes).rightMargin){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).rightMargin.nodeValue;
+			if((<any>myChild.attributes).rightMargin || (<any>myChild.attributes).RIGHTMARGIN){
+                var value=(<any>myChild.attributes).rightMargin?(<any>myChild.attributes).rightMargin.nodeValue:(<any>myChild.attributes).RIGHTMARGIN.nodeValue;
+                value=value.replace(/[^0-9.]/g, "");
+				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = "rightMargin";
-
 			}
-			else if((<any>myChild.attributes).RIGHTMARGIN){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).RIGHTMARGIN.nodeValue;
-				newProps_names[newProps_names.length] = "rightMargin";
-
-			}
-			if((<any>myChild.attributes).align){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).align.nodeValue;
+			if((<any>myChild.attributes).align || (<any>myChild.attributes).ALIGN){
+                var value=(<any>myChild.attributes).align?(<any>myChild.attributes).align.nodeValue:(<any>myChild.attributes).ALIGN.nodeValue;
+				newProps_values[newProps_values.length] = value;
 				newProps_names[newProps_names.length] = "align";
 			}
-			else if((<any>myChild.attributes).ALIGN){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).ALIGN.nodeValue;
-				newProps_names[newProps_names.length] = "align";
-			}
-			if((<any>myChild.attributes).face){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).face.nodeValue;
-				newProps_names[newProps_names.length] = "font_name";
-			}
-			else if((<any>myChild.attributes).FACE){
-				newProps_values[newProps_values.length] = (<any>myChild.attributes).FACE.nodeValue;
-				newProps_names[newProps_names.length] = "font_name";
+			if((<any>myChild.attributes).face || (<any>myChild.attributes).FACE){
+                var value=(<any>myChild.attributes).face?(<any>myChild.attributes).face.nodeValue:(<any>myChild.attributes).FACE.nodeValue;
+				newProps_values[newProps_values.length] = value;
+				newProps_names[newProps_names.length] = "face";
 			}
 		}
 		var i=newProps_values.length;
