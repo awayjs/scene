@@ -229,9 +229,8 @@ export class TextFormat extends AssetBase
 	public set bold(value:boolean){
 		this._bold=value;
 		
-        this.getStyleName();
         if(this._font){		
-            this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+            this.font_table=this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
         }
 
 	}
@@ -246,9 +245,8 @@ export class TextFormat extends AssetBase
 	}
 	public set italic(value:boolean){
 		this._italic=value;
-        this.getStyleName();
         if(this._font){
-            this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+            this.font_table=this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
         }
 	}
 	/**
@@ -271,14 +269,13 @@ export class TextFormat extends AssetBase
 	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
 	 * The font-style can be used to get a Font-table, from a Font-object.
 	 */
-	public font_style:string;
 	/**
 	 * The font-table that provides the subgeos for the chars
 	 */
 	private _font_table:IFontTable;
 	public get font_table():IFontTable{
         if(!this._font_table){
-            this.font_table=<TesselatedFontTable>this.font.get_font_table(this.font_style, TesselatedFontTable.assetType);
+            this.font_table=<TesselatedFontTable>this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
         }
         return this._font_table;
     }
@@ -350,8 +347,7 @@ export class TextFormat extends AssetBase
 		}
     }
     
-	private getStyleName():FontStyleName{
-        
+	public get style_name():FontStyleName{
 		if(!this._italic && !this._bold)
 			this._style_name=FontStyleName.STANDART;
 		else if(this._italic && !this._bold)
@@ -360,9 +356,6 @@ export class TextFormat extends AssetBase
             this._style_name=FontStyleName.BOLD;
 		else if(this._italic && this._bold)
 			this._style_name=FontStyleName.BOLDITALIC;
-		return this._style_name;
-	}
-	public get style_name():FontStyleName{
 		return this._style_name;
 	}
 	public set style_name(value:FontStyleName){
