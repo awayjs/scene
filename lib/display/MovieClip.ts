@@ -68,12 +68,15 @@ export class MovieClip extends Sprite
 
 	private _hitArea:DisplayObject
 	public onLoadedAction:any=null;
-	public onCustomConstructor:any=null;
+    public onCustomConstructor:any=null;
+    private _parentSoundVolume:number;
     
 	constructor(timeline:Timeline = null)
 	{
 		super();
 
+        this._soundVolume=1;
+        this._parentSoundVolume=1;
 		this.doingSwap=false;
 		this._isButton=false;
 		this._buttonMode=false;
@@ -103,7 +106,7 @@ export class MovieClip extends Sprite
 	}
 	public buttonEnabled:boolean=true;
 
-	public startSound(id:number, sound:WaveAudio, loopsToPlay:number){
+	public startSound(id:any, sound:WaveAudio, loopsToPlay:number){
         if(this._sounds[id]){
             this._sounds[id].stop();
         }
@@ -111,11 +114,44 @@ export class MovieClip extends Sprite
         sound.play(0,false);
         this._sounds[id]=sound;
     }
-	public stopSounds(){
-        for (var key in this._sounds){
-            this._sounds[key].stop();
+	public stopSounds(soundID:any=null){
+        if(soundID){
+            this._sounds[soundID].stop();
+        }
+        else{
+            for (var key in this._sounds){
+                this._sounds[key].stop();
+            }
+
         }
         this._sounds={};
+		var len:number = this._children.length;
+		var child:DisplayObject;
+		for (var i:number = 0; i < len; ++i) {
+			child = this._children[i];
+			if (child.isAsset(MovieClip))
+				(<MovieClip> child).stopSounds(soundID);
+		}
+    }
+    private _soundVolume:number;
+	public get soundVolume():number{
+        return this._soundVolume;
+    }
+	public set soundVolume(value:number){
+        if(this._soundVolume==value){
+            return;
+        }
+        this._soundVolume=value;
+        for (var key in this._sounds){
+            this._sounds[key].volume=value;
+        }
+		var len:number = this._children.length;
+		var child:DisplayObject;
+		for (var i:number = 0; i < len; ++i) {
+			child = this._children[i];
+			if (child.isAsset(MovieClip))
+				(<MovieClip> child).soundVolume=value;
+		}
     }
 	public stopSound(id:number){
         if(this._sounds[id]){
@@ -303,7 +339,7 @@ export class MovieClip extends Sprite
 		// time only is relevant for the root mc, as it is the only one that executes the update function
 		this._time = 0;
         this.swappedDepthsMap={};
-        this.stopSounds();
+        //this.stopSounds();
 
 		if(this._adapter)
 			(<IMovieClipAdapter> this.adapter).freeFromScript();
@@ -604,7 +640,7 @@ export class MovieClip extends Sprite
 	 */
 	public stop():void
 	{
-        this.stopSounds();
+        //this.stopSounds();
 		this._isPlaying = false;
 	}
 
