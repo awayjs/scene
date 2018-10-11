@@ -649,7 +649,7 @@ export class TextField extends DisplayObjectContainer
 		if (this._autoSize == value)
 			return;
 
-		 this._autoSize = value;
+		this._autoSize = value;
 
 		this._positionsDirty = true;
 
@@ -1828,7 +1828,11 @@ export class TextField extends DisplayObjectContainer
 					if(!this.wordWrap)
 						this.adjustPositionForAutoSize(0);//(this._width - 4)/2);
 					
-					this._height = 4;
+                    this._height = 4;
+                    if(this._type==TextFieldType.INPUT){
+                        this.newTextFormat.font_table.initFontSize(this.newTextFormat.size);
+                        this._height = this.newTextFormat.font_table.getLineHeight()+4; 
+                    } 
 					this._invalidateBounds();
 				}
 				if(this._type==TextFieldType.INPUT)
