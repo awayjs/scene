@@ -218,6 +218,17 @@ export class Sprite extends DisplayObjectContainer
 		return this._graphics.getSphereBounds(this._center, matrix3D, strokeFlag, cache, target);
 	}
 
+	/**
+	 *
+	 */
+	public _iInternalUpdate(viewport:Viewport):void
+	{
+		super._iInternalUpdate(viewport);
+
+		if(this.parent)
+			this._graphics.updateScale(viewport);
+	}
+
 	protected _isEntityInternal():boolean
 	{
 		return Boolean(this._graphics.count) || super._isEntityInternal();
