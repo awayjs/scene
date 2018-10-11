@@ -2,7 +2,7 @@ import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matr
 
 import {BlendMode, Viewport} from "@awayjs/stage";
 
-import {PartitionBase, IRenderable, IAnimator, IMaterial, Style, IEntity, TraverserBase, StyleEvent, PickingCollision, BoundingVolumeBase, BoundingBox, BoundingSphere, BoundingVolumePool, BoundingVolumeType} from "@awayjs/renderer";
+import {PartitionBase, IRenderable, IAnimator, IMaterial, Style, IEntity, TraverserBase, StyleEvent, PickingCollision, BoundingVolumeBase, BoundingBox, BoundingSphere, BoundingVolumePool, BoundingVolumeType, EntityEvent} from "@awayjs/renderer";
 
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
@@ -2361,7 +2361,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._boundsDirty = true;
 		this._boundsPrefabDirty = true;
 
-		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_BOUNDS, this));
+		this.dispatchEvent(new DisplayObjectEvent(EntityEvent.INVALIDATE_BOUNDS, this));
 
 		if (this._absoluteDimension)
 			this.transform.invalidateMatrix3D();
@@ -2485,6 +2485,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	{
 		if (this._boundsPrefab instanceof PrimitiveCubePrefab) {
 			var box:Box = (<BoundingBox> this.getBoundingVolume(null, this._defaultBoundingVolume)).getBox();
+
+			//TODO: if box is null, no prefab should be visible
+			if (box == null)
+				return;
+
 			this._boundsPrefab.width = box.width;
 			this._boundsPrefab.height = box.height;
 			this._boundsPrefab.depth = box.depth;
@@ -2499,6 +2504,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		} else if (this._boundsPrefab instanceof PrimitiveSpherePrefab) {
 			var sphere:Sphere = (<BoundingSphere> this.getBoundingVolume(null, this._defaultBoundingVolume)).getSphere();
+
+			if (sphere == null)
+				return;
+			
 			this._boundsPrefab.radius = sphere.radius;
 			this._boundsPrimitive.x = sphere.x;
 			this._boundsPrimitive.y = sphere.y;
@@ -2551,7 +2560,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	protected _getDefaultBoundingVolume():BoundingVolumeType
 	{
-		return BoundingVolumeType.BOX;
+		return BoundingVolumeType.BOX_BOUNDS_FAST;
 	}
 
 	private _updateAbsoluteDimension():void
