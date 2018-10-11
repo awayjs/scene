@@ -1,7 +1,7 @@
 import { TextField } from '../display/TextField';
 import { TextFormat } from './TextFormat';
 import { ColorUtils } from '@awayjs/core';
-import { TextFormatAlign } from '../..';
+import { TextFormatAlign } from './TextFormatAlign';
 
 export class HTMLTextProcessor
 {
