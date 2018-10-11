@@ -1,6 +1,6 @@
 ﻿import {AssetEvent, Box, Point, Matrix3D, Matrix, Vector3D} from "@awayjs/core";
 
-import {IAnimator, TraverserBase, IMaterial, Style} from "@awayjs/renderer";
+import {IAnimator, TraverserBase, IMaterial, Style, RenderableContainerNode, PartitionBase} from "@awayjs/renderer";
 
 import {GraphicsPathCommand, GraphicsFillStyle, GradientFillStyle, BitmapFillStyle, GraphicsStrokeStyle, Graphics, GraphicsPath} from "@awayjs/graphics";
 
@@ -256,3 +256,5 @@ export class MorphSprite extends Sprite
 		(<MorphSprite>sprite).end=this.end;
 	}
 }
+
+PartitionBase.registerAbstraction(RenderableContainerNode, MorphSprite);

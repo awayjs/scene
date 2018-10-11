@@ -1,17 +1,13 @@
-import {Matrix3D, Plane3D, Vector3D, ProjectionEvent, ProjectionBase, PerspectiveProjection} from "@awayjs/core";
+import {Vector3D, ProjectionBase, PerspectiveProjection} from "@awayjs/core";
 
-import {IEntity, TraverserBase} from "@awayjs/renderer";
+import {IEntity, PartitionBase, BoundingVolumeType} from "@awayjs/renderer";
 
-import {HierarchicalProperties} from "../base/HierarchicalProperties";
-import {BoundingVolumeType} from "../bounds/BoundingVolumeType";
 import {CameraEvent} from "../events/CameraEvent";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
 export class Camera extends DisplayObjectContainer implements IEntity
 {
-	public static traverseName:string = TraverserBase.addEntityName("applyCamera");
-	
 	public static assetType:string = "[asset Camera]";
 
 	private _projection:ProjectionBase;
@@ -20,11 +16,10 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	{
 		super();
 
-		this._pIsEntity = true;
+		this._isEntity = true;
 
 		this._projection = projection || new PerspectiveProjection();
 		this._projection.transform = this._transform;
-
 		this.z = -1000;
 	}
 
@@ -65,9 +60,9 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	 * @param point3d the position vector of the scene coordinates to be projected.
 	 * @return The normalised screen position of the given scene coordinates.
 	 */
-	public project(vector3D:Vector3D):Vector3D
+	public project(position:Vector3D, target:Vector3D = null):Vector3D
 	{
-		return this._projection.project(vector3D);
+		return this._projection.project(this._transform.inverseConcatenatedMatrix3D.transformVector(position, target), target);
 	}
 
 	/**
@@ -80,7 +75,7 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	 */
 	public unproject(nX:number, nY:number, sZ:number, target:Vector3D = null):Vector3D
 	{
-		return this._projection.unproject(nX, nY, sZ, target);
+        return this._transform.concatenatedMatrix3D.transformVector(this._projection.unproject(nX, nY, sZ, target));
 	}
 
 	protected _getDefaultBoundingVolume():BoundingVolumeType
@@ -88,3 +83,21 @@ export class Camera extends DisplayObjectContainer implements IEntity
 		return BoundingVolumeType.NULL;
 	}
 }
+
+import {TraverserBase, RenderableContainerNode} from "@awayjs/renderer";
+
+/**
+ * @class away.partition.CameraNode
+ */
+export class CameraNode extends RenderableContainerNode
+{
+	/**
+	 * @inheritDoc
+	 */
+	public acceptTraverser(traverser:TraverserBase):void
+	{
+		// todo: dead end for now, if it has a debug sprite, then sure accept that
+	}
+}
+
+PartitionBase.registerAbstraction(CameraNode, Camera);

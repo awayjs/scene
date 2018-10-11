@@ -1,10 +1,10 @@
 import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase, IAbstractionPool, ProjectionBase, AbstractMethodError} from "@awayjs/core";
 
-import {BlendMode} from "@awayjs/stage";
+import {BlendMode, Viewport} from "@awayjs/stage";
 
-import {IRenderable, IAnimator, IMaterial, Style, IEntity, TraverserBase, StyleEvent, PickingCollision} from "@awayjs/renderer";
+import {PartitionBase, IRenderable, IAnimator, IMaterial, Style, IEntity, TraverserBase, StyleEvent, PickingCollision, BoundingVolumeBase, BoundingBox, BoundingSphere, BoundingVolumePool, BoundingVolumeType} from "@awayjs/renderer";
 
-import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
+
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import {ControllerBase} from "../controllers/ControllerBase";
@@ -15,11 +15,10 @@ import {DisplayObjectEvent} from "../events/DisplayObjectEvent";
 import {PrefabBase} from "../prefabs/PrefabBase";
 
 import {Scene} from "../Scene";
-import { BoundingVolumeBase } from "../bounds/BoundingVolumeBase";
-import { BoundingBox } from "../bounds/BoundingBox";
-import { BoundingSphere } from "../bounds/BoundingSphere";
-import { BoundingVolumePool } from '../bounds/BoundingVolumePool';
-import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
+import { ElementsType } from '@awayjs/graphics';
+import { PrimitiveCubePrefab } from '../prefabs/PrimitiveCubePrefab';
+import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
+import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -62,7 +61,7 @@ import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
  *
  * <p>Some properties previously used in the ActionScript 1.0 and 2.0
  * MovieClip, TextField, and Button classes(such as <code>_alpha</code>,
- * <code>_height</code>, <code>_name</code>, <code>_width</code>,
+ * <code>_height</code>, <code>_pName</code>, <code>_width</code>,
  * <code>_x</code>, <code>_y</code>, and others) have equivalents in the
  * ActionScript 3.0 DisplayObject class that are renamed so that they no
  * longer begin with the underscore(_) character.</p>
@@ -152,13 +151,11 @@ import { BoundingVolumeType } from '../bounds/BoundingVolumeType';
  */
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
-	public static traverseName:string = "applyEntity";
-
 	//temp point used in hit testing
 	protected _tempPoint:Point = new Point();
 
-	public _iIsRoot:boolean;
-	public _iIsPartition:boolean;
+	private _partition:PartitionBase;
+
 	private _animator:IAnimator;
 	public _material:IMaterial;
 	public _style:Style;
@@ -169,19 +166,22 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _root:DisplayObjectContainer;
 	private _bounds:Rectangle;
 	private _boundingVolumePools:Object = new Object();
-	private _debugVisible:boolean;
-	public _pName:string;
+	private _boundsVisible:boolean;
+	private _boundsPrefab:PrimitivePrefabBase;
+	private _boundsPrefabDirty:boolean;
+	private _boundsPrimitive:DisplayObject;
+	private _boundsPrimitiveDirty:boolean;
+	private _pName:string;
 
-	public _pScene:Scene;
-	public _pParent:DisplayObjectContainer;
-	public _concatenatedMatrix3D:Matrix3D = new Matrix3D();
-	public _tempTransform:Matrix3D;
-	public _pIsEntity:boolean = false;
-	public _pIsContainer:boolean = false;
+	protected _parent:DisplayObjectContainer;
+	private _concatenatedMatrix3D:Matrix3D = new Matrix3D();
+	private _tempTransform:Matrix3D;
+	protected _isEntity:boolean = false;
+	protected _isContainer:boolean = false;
 	public _sessionID:number = -1;
 	public _depthID:number = -16384;
 
-	public _pPartition:DisplayObject;
+	public _implicitPartition:PartitionBase;
 
 	private _sceneTransformChanged:DisplayObjectEvent;
 	private _sceneChanged:DisplayObjectEvent;
@@ -200,7 +200,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _pImplicitMouseEnabled:boolean = true;
 	public _pImplicitColorTransform:ColorTransform;
 	private _listenToSceneTransformChanged:boolean;
-	private _listenToSceneChanged:boolean;
 
 	private _boundsDirty:boolean;
 	private _matrix3DDirty:boolean;
@@ -225,8 +224,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	protected _isTabEnabled:boolean;
 	protected _tabIndex:number;
 
-	public _iSourcePrefab:PrefabBase;
-
     private _inheritColorTransform:boolean = true;
 	private _maskMode:boolean = false;
 
@@ -242,13 +239,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public instanceID:string="";
 	public avm1Symbol:any;
 
+	public pickShape:boolean = false;
+
 	// this is needed for AVM1 - todo: maybe do this on adapters ?
 	public placeObjectTag:any=null;
 	public getScriptPrecedence(): number[] {
-      if (!this._pParent) {
+      if (!this._parent) {
         return [];
       }
-      var result = this._pParent.getScriptPrecedence();
+      var result = this._parent.getScriptPrecedence();
       if (this.placeObjectTag) {
         result.push(this.placeObjectTag.actionBlocksPrecedence);
       }
@@ -297,11 +296,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public setFocus(value:boolean, fromMouseDown:boolean=false, sendSoftKeyEvent:boolean=true ){
 		
 		this._isInFocus=value;
-	}
-
-	public get traverseName():string
-	{
-		return DisplayObject.traverseName;
 	}
 
     public get inheritColorTransform():boolean
@@ -382,6 +376,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			return;
 
 		this._defaultBoundingVolume = value;
+
+		if (this._boundsPrimitive) {
+			this._boundsPrimitive.dispose();
+			this._boundsPrimitive = null;
+		}
 
 		this.invalidate();
 		
@@ -656,8 +655,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get index():number
 	{
-		if (this._pParent)
-			return this._pParent.getChildIndex(this);
+		if (this._parent)
+			return this._parent.getChildIndex(this);
 
 		return 0;
 	}
@@ -667,7 +666,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get isEntity():boolean
 	{
-		return this._pIsEntity;
+		return this._isEntity;
 	}
 
 	/**
@@ -675,7 +674,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get isContainer():boolean
 	{
-		return this._pIsContainer;
+		return this._isContainer;
 	}
 
 	/**
@@ -745,13 +744,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._maskMode == value)
 			return;
 
-		if (this._pScene)
-			this._pScene._clearEntity(this);
+		if (this._implicitPartition)
+			this._implicitPartition.clearEntity(this);
 				
 		this._maskMode = value;
 
-		if (this._pScene)
-			this._pScene._invalidateEntity(this);
+		if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 
 		this._explicitMaskId = value? this.id : -1;
 
@@ -852,27 +851,28 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public get parent():DisplayObjectContainer
 	{
-		return this._pParent;
+		return this._parent;
 	}
 
 	/**
 	 *
 	 */
-	public get isPartition():boolean
+	public get partition():PartitionBase
 	{
-		return this._iIsPartition;
+		return this._partition;
 	}
 
-	public set isPartition(value:boolean)
+	public set partition(value:PartitionBase)
 	{
-		if (this._iIsPartition == value)
+		if (this._partition == value)
 			return;
 
-		this._iIsPartition = value;
+		if (this._partition && this._partition.parent)
+			this._partition.parent.removeChild(this._partition);
 
-		this._iSetScene(this._pScene, this._pParent? this._pParent._pPartition : null);
+		this._partition = value;
 
-		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
+		this._setPartition(this._parent? this._parent._implicitPartition : null);
 	}
 
 	/**
@@ -1239,22 +1239,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get partition():IEntity
-	{
-		return this._pPartition;
-	}
-
-	/**
-	 *
-	 */
-	public get scene():Scene
-	{
-		return this._pScene;
-	}
-
-	/**
-	 *
-	 */
 	public get scenePosition():Vector3D
 	{
 		if (this._scenePositionDirty) {
@@ -1376,20 +1360,56 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public get debugVisible():boolean
+	public get boundsVisible():boolean
 	{
-		return this._debugVisible;
+		return this._boundsVisible;
 	}
 
-	public set debugVisible(value:boolean)
+	public set boundsVisible(value:boolean)
 	{
-		if (value == this._debugVisible)
+		if (value == this._boundsVisible)
 			return;
 
-		this._debugVisible = value;
+		this._boundsVisible = value;
 
 		this.invalidate();
 	}
+
+	public get boundsPrimitive():DisplayObject
+	{
+		if (this._boundsPrimitive == null) {
+			switch (this._defaultBoundingVolume) {
+				case BoundingVolumeType.BOX:
+				case BoundingVolumeType.BOX_BOUNDS:
+				case BoundingVolumeType.BOX_BOUNDS_FAST:
+				case BoundingVolumeType.BOX_FAST:
+					this._boundsPrefab = new PrimitiveCubePrefab(null, ElementsType.LINE);
+					this._boundsPrimitive = this._boundsPrefab.getNewObject();
+					break;
+				case BoundingVolumeType.SPHERE:
+				case BoundingVolumeType.SPHERE_BOUNDS:
+				case BoundingVolumeType.SPHERE_BOUNDS_FAST:
+				case BoundingVolumeType.SPHERE_FAST:
+					this._boundsPrefab = new PrimitiveSpherePrefab(null, ElementsType.LINE);
+					this._boundsPrimitive = this._boundsPrefab.getNewObject();
+					break;
+				default:
+			}
+
+			this._boundsPrefabDirty = true;
+			this._boundsPrimitiveDirty = true;
+		}
+
+		if (this._boundsPrefabDirty)
+			this._updateBoundsPrefab();
+
+		if (this._boundsPrimitiveDirty)
+			this._updateBoundsPrimitive();
+
+		return this._boundsPrimitive;
+	}
+
+	
 
 	/**
 	 * An object with properties pertaining to a display object's matrix, color
@@ -1618,7 +1638,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._isTabEnabled=false;
 		this._tabIndex=-1;
 		//global debug bounding boxes:
-		//this._debugVisible=true;
+		//this._boundsVisible=true;
 		this._onInvalidatePropertiesDelegate = (event:StyleEvent) => this._onInvalidateProperties(event);
 
 		//creation of associated transform object
@@ -1635,7 +1655,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._defaultBoundingVolume = this._getDefaultBoundingVolume();
 	}
 
-
     public getRenderableIndex(renderable:IRenderable):number
     {
         return -1;
@@ -1649,9 +1668,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		super.addEventListener(type, listener);
 
 		switch (type) {
-            case DisplayObjectEvent.SCENE_CHANGED:
-                this._listenToSceneChanged = true;
-                break;
 			case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
 				this._listenToSceneTransformChanged = true;
                 break;
@@ -1672,14 +1688,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public copyTo(displayObject:DisplayObject):void
 	{
-		displayObject.isPartition = this._iIsPartition;
 		displayObject.defaultBoundingVolume = this._defaultBoundingVolume;
 
 		if (this._registrationMatrix3D)
 			displayObject._registrationMatrix3D = this._registrationMatrix3D.clone();
 
-		displayObject._iSourcePrefab = this._iSourcePrefab;
-		displayObject.debugVisible = this._debugVisible;
+		displayObject.boundsVisible = this._boundsVisible;
 		displayObject.name = this._pName;
 		displayObject.mouseEnabled = this._explicitMouseEnabled;
 		displayObject.extra = this.extra;
@@ -1706,8 +1720,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public disposeValues():void
 	{
-		if (this._pParent)
-			this._pParent.removeChild(this);
+		if (this._parent)
+			this._parent.removeChild(this);
 
 		//if (this._adapter) {
 		//	this._adapter.dispose();
@@ -1792,10 +1806,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		if (boundingVolumeType == null)
 			boundingVolumeType = this._defaultBoundingVolume;
-
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-		
 			
 		var pool:BoundingVolumePool = (this._boundingVolumePools[boundingVolumeType] || (this._boundingVolumePools[boundingVolumeType] = new BoundingVolumePool(this, boundingVolumeType)));
 	
@@ -1880,12 +1890,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public hitTestObject(obj:DisplayObject):boolean
 	{
-		var objBox:Box = obj.getBoxBounds(this.scene, true);
+		//TODO: getBoxBounds should be using the root partition root
+		var objBox:Box = obj.getBoxBounds(<DisplayObject> this._implicitPartition.root, true);
 
 		if(objBox == null)
 			return false;
 		
-		var box:Box = this.getBoxBounds(this.scene, true);
+		var box:Box = this.getBoxBounds(<DisplayObject> this._implicitPartition.root, true);
 
 		if(box == null)
 			return false;
@@ -2101,9 +2112,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			return;
 
 		switch (type) {
-			case DisplayObjectEvent.SCENE_CHANGED:
-				this._listenToSceneChanged = false;
-				break;
 			case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
 				this._listenToSceneTransformChanged = true;
 				break;
@@ -2129,14 +2137,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public iSetParent(value:DisplayObjectContainer):void
+	public _setParent(parent:DisplayObjectContainer):void
 	{
-		this._pParent = value;
+		if (!parent && this._partition)
+			this._parent._implicitPartition.removeChild(this._partition);
 
-        if (value)
-			this._iSetScene(value._pScene, value._pPartition);
-		else
-			this._iSetScene(null, null);
+		this._parent = parent;
+
+        this._setPartition(parent? parent._implicitPartition : null);
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.ALL);
 	}
@@ -2153,9 +2161,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this.transform.invalidateConcatenatedMatrix3D();
 			
 			this._scenePositionDirty = true;
+			this._boundsPrimitiveDirty = true;
 
-			if (this._pScene)
-				this._pScene._invalidateEntity(this);
+			if (this._implicitPartition)
+				this._implicitPartition.invalidateEntity(this);
 
 			if (this._listenToSceneTransformChanged)
 				this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
@@ -2167,31 +2176,33 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @protected
 	 */
-	public _iSetScene(scene:Scene, partition:DisplayObject):void
+	public _setPartition(parentPartition:PartitionBase):boolean
 	{
-		var sceneChanged:boolean = this._pScene != scene;
+		var partition:PartitionBase = this._partition || parentPartition;
 
-		if (this._pScene) {
-			//unregister object from current scene
-			this._pScene._clearEntity(this);
+		//add partition as a child of parentPartition
+		if (this._partition && parentPartition)
+			parentPartition.addChild(this._partition);
+			
+		
+		if (this._implicitPartition == partition)
+			return true;
+		
+		//unregister object from current partition container
+		if (this._implicitPartition)
+			this._implicitPartition.clearEntity(this);
 
-			//gc abstraction objects
+		// assign parent partition if _partition is false
+		this._implicitPartition = partition;
+
+		if (this._implicitPartition) //register object with scene
+			this._implicitPartition.invalidateEntity(this);
+		else //gc abstraction objects
 			this.clear();
-		}
 
-		// assign parent partition if _iIsPartition is false
-		this._pPartition = this._iIsPartition? this : partition;
+		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 
-		//assign scene
-		if (sceneChanged)
-			this._pScene = scene;
-
-		//register object with scene
-		if (this._pScene)
-			this._pScene._invalidateEntity(this);
-
-		if (sceneChanged && this._listenToSceneChanged)
-			this.queueDispatch(this._sceneChanged || (this._sceneChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENE_CHANGED, this)));
+		return false;
 	}
 
 	/**
@@ -2199,9 +2210,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _onUpdateConcatenatedMatrix3D(event:TransformEvent):void
 	{
-		if (this._iController)
-			this._iController.updateController();
-
 		// call getBoxBounds() if absolute size need to update transform
 		if (this._absoluteDimension) {
 			var box:Box = this.getBoxBounds();
@@ -2226,18 +2234,21 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				this._concatenatedMatrix3D.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
 		}
 
-		if (this._pParent && !this._pParent._iIsRoot)
-			this._concatenatedMatrix3D.append(this._pParent._transform.concatenatedMatrix3D);
+		if (this._parent)
+			this._concatenatedMatrix3D.append(this._parent._transform.concatenatedMatrix3D);
 
 		this._matrix3DDirty = false;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.SCENE_TRANSFORM;
+
+		if (this._iController)
+			this._iController.updateController();
 	}
 
 	/**
 	 *
 	 */
-	public _iInternalUpdate(projection:ProjectionBase):void
+	public _iInternalUpdate(viewport:Viewport):void
 	{
 		if (this._iController)
 			this._iController.update();
@@ -2330,8 +2341,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 
-		if (this._pParent)
-			this._pParent._invalidateBounds();
+		if (this._parent)
+			this._parent._invalidateBounds();
 	}
 
 	/**
@@ -2348,19 +2359,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			return;
 		
 		this._boundsDirty = true;
+		this._boundsPrefabDirty = true;
 
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.INVALIDATE_BOUNDS, this));
 
 		if (this._absoluteDimension)
 			this.transform.invalidateMatrix3D();
 
-		if (this._pParent)
-			this._pParent._invalidateBounds();
+		if (this._parent)
+			this._parent._invalidateBounds();
 	}
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
-		throw new AbstractMethodError();
+		return target;
 	}
 
 	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
@@ -2406,28 +2418,28 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _updateMouseEnabled():void
 	{
-		this._pImplicitMouseEnabled = (this._pParent)? this._pParent.mouseChildren && this._pParent._pImplicitMouseEnabled : true;
+		this._pImplicitMouseEnabled = (this._parent)? this._parent.mouseChildren && this._parent._pImplicitMouseEnabled : true;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
 	}
 
 	private _updateVisible():void
 	{
-		this._pImplicitVisibility = (this._pParent)? this._explicitVisibility && this._pParent._iIsVisible() : this._explicitVisibility;
+		this._pImplicitVisibility = (this._parent)? this._explicitVisibility && this._parent._iIsVisible() : this._explicitVisibility;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.VISIBLE;
 	}
 
 	private _updateMaskId():void
 	{
-		this._pImplicitMaskId = (this._pParent && this._pParent._iAssignedMaskId() != -1)? this._pParent._iAssignedMaskId() : this._explicitMaskId;
+		this._pImplicitMaskId = (this._parent && this._parent._iAssignedMaskId() != -1)? this._parent._iAssignedMaskId() : this._explicitMaskId;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
 	}
 
 	private _updateMasks():void
 	{
-		this._pImplicitMasks = (this._pParent && this._pParent._iAssignedMasks())? (this._explicitMasks != null)? this._pParent._iAssignedMasks().concat([this._explicitMasks]) : this._pParent._iAssignedMasks().concat() : (this._explicitMasks != null)? [this._explicitMasks] : null;
+		this._pImplicitMasks = (this._parent && this._parent._iAssignedMasks())? (this._explicitMasks != null)? this._parent._iAssignedMasks().concat([this._explicitMasks]) : this._parent._iAssignedMasks().concat() : (this._explicitMasks != null)? [this._explicitMasks] : null;
 
 		this._pImplicitMaskIds.length = 0;
 
@@ -2458,8 +2470,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (!this._pImplicitColorTransform)
 			this._pImplicitColorTransform = new ColorTransform();
 
-		if (this._inheritColorTransform && this._pParent && this._pParent._iAssignedColorTransform()) {
-			this._pImplicitColorTransform.copyFrom(this._pParent._iAssignedColorTransform());
+		if (this._inheritColorTransform && this._parent && this._parent._iAssignedColorTransform()) {
+			this._pImplicitColorTransform.copyFrom(this._parent._iAssignedColorTransform());
 			
 			this._pImplicitColorTransform.prepend(this._transform.colorTransform);
 		} else {
@@ -2467,6 +2479,36 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
+	}
+
+	private _updateBoundsPrefab():void
+	{
+		if (this._boundsPrefab instanceof PrimitiveCubePrefab) {
+			var box:Box = (<BoundingBox> this.getBoundingVolume(null, this._defaultBoundingVolume)).getBox();
+			this._boundsPrefab.width = box.width;
+			this._boundsPrefab.height = box.height;
+			this._boundsPrefab.depth = box.depth;
+
+			var hx:number = box.width/2;
+			var hy:number = box.height/2;
+			var hz:number = box.depth/2;
+			var cx:number = box.x + hx;
+			var cy:number = box.y + hy;
+			var cz:number = box.z + hz;
+			this._boundsPrimitive.registrationPoint = new Vector3D(-cx*this._boundsPrimitive.transform.scale.x, -cy*this._boundsPrimitive.transform.scale.y, -cz*this._boundsPrimitive.transform.scale.z);
+
+		} else if (this._boundsPrefab instanceof PrimitiveSpherePrefab) {
+			var sphere:Sphere = (<BoundingSphere> this.getBoundingVolume(null, this._defaultBoundingVolume)).getSphere();
+			this._boundsPrefab.radius = sphere.radius;
+			this._boundsPrimitive.x = sphere.x;
+			this._boundsPrimitive.y = sphere.y;
+			this._boundsPrimitive.z = sphere.z;
+		}
+	}
+	
+	private _updateBoundsPrimitive():void
+	{
+		this._boundsPrimitive.transform.matrix3D = this.transform.concatenatedMatrix3D;
 	}
 
 	public _updateMaskMode():void

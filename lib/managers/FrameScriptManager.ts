@@ -152,7 +152,7 @@ export class FrameScriptManager
 			for (i = 0; i <queues_tmp.length; i++) {
 				// during the loop we might add more scripts to the queue
 				mc=queues_tmp[i];
-				if(mc.scene!=null) {
+				if(mc._implicitPartition && mc._implicitPartition.scene) {
 					// first we execute any pending loadedAction for this MC
 					if((<any>mc).onLoadedAction){
 						(<any>mc).onLoadedAction();

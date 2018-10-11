@@ -14,7 +14,7 @@ export class SkyboxElements extends TriangleElements
     }
 }
 
-import {Stage, ContextGLDrawMode, ContextGLProgramType, IContextGL, ShaderRegisterCache, ShaderRegisterData, ShaderRegisterElement} from "@awayjs/stage";
+import {Stage, ContextGLDrawMode, ContextGLProgramType, IContextGL, ShaderRegisterCache, ShaderRegisterData, ShaderRegisterElement, Viewport} from "@awayjs/stage";
 
 import {RenderGroup} from "@awayjs/renderer";
 
@@ -87,20 +87,20 @@ export class _Stage_SkyboxElements extends _Stage_TriangleElements
 {
     private _skyboxProjection:Matrix3D = new Matrix3D();
 
-    public draw(renderable:_Render_RenderableBase, shader:ShaderBase, projection:ProjectionBase, count:number, offset:number):void
+    public draw(renderable:_Render_RenderableBase, shader:ShaderBase, viewport:Viewport, count:number, offset:number):void
     {
         var index:number = shader.scenePositionIndex;
-        var camPos:Vector3D = projection.transform.concatenatedMatrix3D.position;
+        var camPos:Vector3D = viewport.projection.transform.concatenatedMatrix3D.position;
         shader.vertexConstantData[index++] = 2*camPos.x;
         shader.vertexConstantData[index++] = 2*camPos.y;
         shader.vertexConstantData[index++] = 2*camPos.z;
         shader.vertexConstantData[index++] = 1;
-        shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = projection.far/Math.sqrt(3);
+        shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = viewport.projection.far/Math.sqrt(3);
         shader.vertexConstantData[index] = 1;
 
         var near:Vector3D = new Vector3D();
 
-        this._skyboxProjection.copyFrom(projection.viewMatrix3D);
+        this._skyboxProjection.copyFrom(viewport.viewMatrix3D);
         this._skyboxProjection.copyRowTo(2, near);
 
         var cx:number = near.x;

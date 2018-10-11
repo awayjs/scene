@@ -1,8 +1,8 @@
-import {BuildMode, PerspectiveProjection, Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, ProjectionBase, Point, Vector3D} from "@awayjs/core";
+import {Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D} from "@awayjs/core";
 
-import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Byte4Attributes} from "@awayjs/stage";
+import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Viewport} from "@awayjs/stage";
 
-import {TraverserBase, Style, IMaterial, MaterialUtils} from "@awayjs/renderer";
+import {TraverserBase, Style, RenderableContainerNode, PartitionBase} from "@awayjs/renderer";
 
 import {MaterialBase} from "@awayjs/materials";
 
@@ -22,7 +22,6 @@ import {TextFormat} from "../text/TextFormat";
 import {TextInteractionMode} from "../text/TextInteractionMode";
 import {TextLineMetrics} from "../text/TextLineMetrics";
 import {KeyboardEvent} from "../events/KeyboardEvent";
-import {MouseEvent} from "../events/MouseEvent";
 
 import {DisplayObject} from "./DisplayObject";
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
@@ -663,25 +662,25 @@ export class TextField extends DisplayObjectContainer
     public get internalScale():Vector3D{
         return this._internalScale;
     }
-	public getInternalScale(projection:ProjectionBase = null):Vector3D
+	public getInternalScale(viewport:Viewport = null):Vector3D
 	{
 		if(this.parent)
 			this._internalScale.copyFrom(this.parent.transform.concatenatedMatrix3D.decompose()[3]);
 		else
 			this._internalScale.identity();
 
-		if (projection) {
-			this._internalScale.x *= (<PerspectiveProjection> projection).hFocalLength/1000;
-			this._internalScale.y *= (<PerspectiveProjection> projection).focalLength/1000;
+		if (viewport) {
+			this._internalScale.x *= viewport.focalLength*viewport.pixelRatio/1000;
+			this._internalScale.y *= viewport.focalLength/1000;
 		}
 
         this._internalScale.x=1/this._internalScale.x;
         this._internalScale.y=1/this._internalScale.y;
 		return this._internalScale;
 	}
-	public _iInternalUpdate(projection:ProjectionBase):void
+	public _iInternalUpdate(viewport:Viewport):void
 	{
-		super._iInternalUpdate(projection);
+		super._iInternalUpdate(viewport);
         
         /*
 		if (projection) {
@@ -696,7 +695,7 @@ export class TextField extends DisplayObjectContainer
         
 		var prevScaleX:number = this._internalScale.x;
 		var prevScaleY:number = this._internalScale.y;
-		var scale:Vector3D = this.getInternalScale(projection);
+		var scale:Vector3D = this.getInternalScale(viewport);
 		if (scale.x == prevScaleX && scale.y == prevScaleY)
              return;
         this._internalScale=scale;
@@ -3476,3 +3475,5 @@ export class TextField extends DisplayObjectContainer
 	}
 	
 }
+
+PartitionBase.registerAbstraction(RenderableContainerNode, TextField);

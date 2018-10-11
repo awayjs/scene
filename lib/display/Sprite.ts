@@ -1,11 +1,13 @@
 ﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D, Sphere, ProjectionBase} from "@awayjs/core";
 
-import {TraverserBase, IAnimator, IMaterial, Style, IRenderable} from "@awayjs/renderer";
+import {TraverserBase, IAnimator, IMaterial, Style, IRenderable, RenderableContainerNode, PartitionBase} from "@awayjs/renderer";
 
 import {Graphics, Shape} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import { DisplayObject } from './DisplayObject';
+import { Viewport } from '@awayjs/stage';
+import { PrefabBase } from '../prefabs/PrefabBase';
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -14,6 +16,8 @@ import { DisplayObject } from './DisplayObject';
  */
 export class Sprite extends DisplayObjectContainer
 {
+	public _iSourcePrefab:PrefabBase;
+
 	private static _sprites:Array<Sprite> = new Array<Sprite>();
 
 	public static assetType:string = "[asset Sprite]";
@@ -175,6 +179,8 @@ export class Sprite extends DisplayObjectContainer
 	{
 		super.copyTo(sprite);
 
+		sprite._iSourcePrefab = this._iSourcePrefab;
+
 		this._graphics.copyTo(sprite.graphics, cloneShapes);
     }
 
@@ -185,12 +191,18 @@ export class Sprite extends DisplayObjectContainer
 	 */
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
+		
 		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, this._graphics.getBoxBounds(matrix3D, strokeFlag, cache, target));
 	}
 
 
 	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
 	{
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
+		
 		var box:Box = this.getBoxBounds();
 
 		if (box == null)
@@ -204,17 +216,6 @@ export class Sprite extends DisplayObjectContainer
 		this._center.z = box.z + box.depth/2;
 
 		return this._graphics.getSphereBounds(this._center, matrix3D, strokeFlag, cache, target);
-	}
-
-	/**
-	 *
-	 */
-	public _iInternalUpdate(projection:ProjectionBase):void
-	{
-		super._iInternalUpdate(projection);
-
-		if(this.parent)
-			this._graphics.updateScale(projection);
 	}
 
 	protected _isEntityInternal():boolean
@@ -286,3 +287,5 @@ export class Sprite extends DisplayObjectContainer
 
 
 }
+
+PartitionBase.registerAbstraction(RenderableContainerNode, Sprite);

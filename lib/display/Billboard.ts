@@ -2,7 +2,7 @@ import {Rectangle, Matrix, Matrix3D, Box} from "@awayjs/core";
 
 import {ImageSampler, Image2D, ImageUtils} from "@awayjs/stage";
 
-import {TraverserBase, IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent} from "@awayjs/renderer";
+import {TraverserBase, IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent, PickingCollision, PartitionBase, RenderableContainerNode} from "@awayjs/renderer";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import {DisplayObject} from "./DisplayObject";
@@ -46,8 +46,6 @@ import {DisplayObject} from "./DisplayObject";
 // (in away3d Sprite3D extends on ObjectContainer3D)
 export class Billboard extends DisplayObjectContainer implements IRenderable
 {
-	public static traverseName:string = TraverserBase.addRenderableName("applyBillboard");
-	
 	public static assetType:string = "[asset Billboard]";
 
 	private _billboardWidth:number;
@@ -121,7 +119,7 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 	{
 		super();
 
-		this._pIsEntity = true;
+		this._isEntity = true;
 
 		this._onInvalidateTextureDelegate = (event:MaterialEvent) => this._onInvalidateTexture(event);
 
@@ -152,7 +150,22 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 
 	public _acceptTraverser(traverser:TraverserBase):void
 	{
-		traverser[Billboard.traverseName](this);
+		traverser.applyRenderable(this);
+	}
+
+	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
+	{
+		collision.renderable = null;
+
+		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollision, shortestCollisionDistance)) {
+		//	shortestCollisionDistance = pickingCollision.rayEntryDistance;
+		//
+		//	pickingCollision.renderable = billboard;
+		//
+		//	return true;
+		//}
+
+		return false;
 	}
 
 	private _updateDimensions():void
@@ -304,3 +317,5 @@ export class _Render_Billboard extends _Render_RenderableBase
 }
 
 RenderEntity.registerRenderable(_Render_Billboard, Billboard);
+
+PartitionBase.registerAbstraction(RenderableContainerNode, Billboard);

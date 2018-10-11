@@ -9,6 +9,7 @@ import {FrameScriptManager} from "../managers/FrameScriptManager";
 import {DisplayObject} from "./DisplayObject";
 import {Sprite} from "./Sprite";
 import {TextField} from "./TextField";
+import { PartitionBase, RenderableContainerNode } from '@awayjs/renderer';
 
 
 export class MovieClip extends Sprite
@@ -542,7 +543,7 @@ export class MovieClip extends Sprite
 
 		this._sessionID_childs[sessionID] = child;
 		
-		if(child.adapter!=child){
+		if(child.adapter!=child && (<any>child.adapter).deleteOwnProperties){
 			(<any>child.adapter).deleteOwnProperties();
 		}
 
@@ -773,4 +774,5 @@ export class MovieClip extends Sprite
 		return Boolean(this._hitArea != null) || super._isEntityInternal();
 	}
 }
-export default MovieClip;
+
+PartitionBase.registerAbstraction(RenderableContainerNode, MovieClip);

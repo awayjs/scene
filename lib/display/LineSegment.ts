@@ -1,6 +1,6 @@
 ﻿import {Vector3D, Matrix3D, Box, Sphere} from "@awayjs/core";
 
-import {TraverserBase, IRenderable, RenderableEvent, IMaterial} from "@awayjs/renderer";
+import {TraverserBase, IRenderable, RenderableEvent, IMaterial, PickingCollision, PartitionBase, RenderableContainerNode} from "@awayjs/renderer";
 
 import {DisplayObject} from "./DisplayObject";
 
@@ -9,8 +9,6 @@ import {DisplayObject} from "./DisplayObject";
  */
 export class LineSegment extends DisplayObject implements IRenderable
 {
-	public static traverseName:string = TraverserBase.addRenderableName("applyLineSegment");
-
 	public static assetType:string = "[asset LineSegment]";
 
 	public _startPosition:Vector3D;
@@ -90,7 +88,7 @@ export class LineSegment extends DisplayObject implements IRenderable
 	{
 		super();
 
-		this._pIsEntity = true;
+		this._isEntity = true;
 
 		this.material = material;
 
@@ -99,6 +97,10 @@ export class LineSegment extends DisplayObject implements IRenderable
 		this._halfThickness = thickness*0.5;
 	}
 
+	public _acceptTraverser(traverser:TraverserBase):void
+	{
+		traverser.applyRenderable(this);
+	}
 
 	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
 	{
@@ -112,7 +114,7 @@ export class LineSegment extends DisplayObject implements IRenderable
 		if (matrix3D)
 			box = matrix3D.transformBox(box);
 
-		return box.union(target, target || cache);
+		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, box.union(target, target || cache));
 	}
 
 	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
@@ -146,6 +148,8 @@ export class LineSegment extends DisplayObject implements IRenderable
 	public invalidateElements():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
+
+		this._invalidateBounds();
 	}
 
 	public invalidateMaterial():void
@@ -153,9 +157,11 @@ export class LineSegment extends DisplayObject implements IRenderable
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
 
-	public _acceptTraverser(traverser:TraverserBase):void
+	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		traverser[LineSegment.traverseName](this);
+		collision.renderable = null;
+		
+		return false;
 	}
 }
 
@@ -237,3 +243,5 @@ export class _Render_LineSegment extends _Render_RenderableBase
 }
 
 RenderEntity.registerRenderable(_Render_LineSegment, LineSegment);
+
+PartitionBase.registerAbstraction(RenderableContainerNode, LineSegment);

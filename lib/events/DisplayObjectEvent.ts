@@ -17,11 +17,6 @@ export class DisplayObjectEvent extends EventBase
 	/**
 	 *
 	 */
-	public static SCENE_CHANGED:string = "sceneChanged";
-
-	/**
-	 *
-	 */
 	public static PARTITION_CHANGED:string = "partitionChanged";
 
 	/**

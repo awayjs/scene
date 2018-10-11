@@ -71,7 +71,7 @@ export class LookAtController extends ControllerBase
 			if (this._pLookAtPosition)
 				this._pTargetObject.lookAt(this._pLookAtPosition);
 			else if (this._pLookAtObject)
-				this._pTargetObject.lookAt(this._pLookAtObject.scene? this._pLookAtObject.scenePosition : this._pLookAtObject.transform.position);
+				this._pTargetObject.lookAt(this._pLookAtObject.transform.concatenatedMatrix3D.position);
 		}
 	}
 

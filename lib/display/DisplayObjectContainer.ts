@@ -1,5 +1,7 @@
 import {Box, Point, ArgumentError, RangeError, Matrix3D} from "@awayjs/core";
 
+import { PartitionBase, RenderableContainerNode } from "@awayjs/renderer";
+
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 
 import {Scene} from "../Scene";
@@ -197,8 +199,8 @@ export class DisplayObjectContainer extends DisplayObject
 			throw new ArgumentError("Parameter child cannot be null.");
 
 		//if child already has a parent, remove it.
-		if (child._pParent)
-			child._pParent.removeChildAtInternal(child._pParent.getChildIndex(child));
+		if (child.parent)
+			child.parent.removeChildAtInternal(child.parent.getChildIndex(child));
 
 
 		if(this.isSlice9ScaledMC && child.assetType=="[asset Sprite]"){
@@ -224,7 +226,7 @@ export class DisplayObjectContainer extends DisplayObject
 
 		child._depthID = depth;
 
-		child.iSetParent(this);
+		child._setParent(this);
 
 		this._invalidateChildren();
 
@@ -481,7 +483,7 @@ export class DisplayObjectContainer extends DisplayObject
 	{
 		var child:DisplayObject = this.removeChildAtInternal(index);
 
-		child.iSetParent(null);
+		child._setParent(null);
 
 		this._invalidateChildren();
 
@@ -514,7 +516,7 @@ export class DisplayObjectContainer extends DisplayObject
 
 		//var oldChilds:DisplayObject[]=this._children.slice();
 		for(var i:number = endIndex-1;i >= beginIndex; i--)
-			this.removeChildAtInternal(i).iSetParent(null);
+			this.removeChildAtInternal(i)._setParent(null);
 		this._invalidateChildren();
 	}
 
@@ -661,13 +663,16 @@ export class DisplayObjectContainer extends DisplayObject
 	/**
 	 * @internal
 	 */
-	public _iSetScene(value:Scene, partition:DisplayObject):void
+	public _setPartition(parentPartition:PartitionBase):boolean
 	{
-		super._iSetScene(value, partition);
+		if (super._setPartition(parentPartition))
+			return true;
 
 		var len:number = this._children.length;
 		for (var i:number = 0; i < len; ++i)
-			this._children[i]._iSetScene(value, this._pPartition);
+			this._children[i]._setPartition(this._implicitPartition);
+
+		return false;
 	}
 
 	/**
@@ -739,17 +744,19 @@ export class DisplayObjectContainer extends DisplayObject
 		var isContainer:boolean = Boolean(this._children.length);
 		var isEntity:boolean = this._isEntityInternal();
 
-		if (this._pIsContainer != isContainer || this._pIsEntity != isEntity) {
-			if (this._pScene)
-				this._pScene._clearEntity(this);
+		if (this._isContainer != isContainer || this._isEntity != isEntity) {
+			if (this._implicitPartition)
+				this._implicitPartition.clearEntity(this);
 
-			this._pIsContainer = isContainer;
-			this._pIsEntity = isEntity;
+			this._isContainer = isContainer;
+			this._isEntity = isEntity;
 
-			if (this._pScene)
-				this._pScene._invalidateEntity(this);
+			if (this._implicitPartition)
+				this._implicitPartition.invalidateEntity(this);
 		}
 
 		this._invalidateBounds();
 	}
 }
+
+PartitionBase.registerAbstraction(RenderableContainerNode, DisplayObjectContainer);
