@@ -348,7 +348,9 @@ export class MovieClip extends Sprite
 
 		this.constructedKeyFrameIndex = -1;
 		for (var i:number = this.numChildren - 1; i >= 0; i--)
-			this.removeChildAt(i);
+            this.removeChildAt(i);
+        
+        this.graphics.clear();
 
 
 			
