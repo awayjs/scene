@@ -471,13 +471,31 @@ export class TextField extends DisplayObjectContainer
 		}
 		tf.font_table.initFontSize(tf.size);
 		var height:number= tf.font_table.getLineHeight();
+        var color=this.getTextColorForTextFormat(tf);
 		var cursorScale:number=this.internalScale.x;
 		if(cursorScale<=0)cursorScale=1;
 		if(!this.cursorShape){
-			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],tf.color,1);
+            
+			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],color,1);
 			return;
 		}
         GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x-(0.5*cursorScale),y,cursorScale,height]);
+        if(this.cursorShape.style.color!=color){    
+            var alpha=ColorUtils.float32ColorToARGB(color)[0];
+            if(alpha==0){
+                alpha=255;
+            }        
+            var obj:any = Graphics.get_material_for_color(color, alpha/255);
+            if(obj.colorPos){
+                this.cursorShape.style = new Style();
+                var sampler:ImageSampler = new ImageSampler();
+                obj.material.animateUVs=true;
+                this.cursorShape.style.color=color;
+                this.cursorShape.style.addSamplerAt(sampler, obj.material.getTextureAt(0));
+                this.cursorShape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+                this.cursorShape.invalidateMaterial();
+            }
+        }
         this.scrollToCursor(x,y);
 		
     }
@@ -1481,6 +1499,13 @@ export class TextField extends DisplayObjectContainer
 		}
 	}
 
+	private getTextColorForTextFormat(format:TextFormat)
+	{
+        if(format.hasPropertySet("color")){
+            return format.color;
+        }
+        return this._textColor;
+    }
 	/**
 	 * The interaction mode property, Default value is
 	 * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
@@ -2483,10 +2508,7 @@ export class TextField extends DisplayObjectContainer
 			}
 			else {
 
-                var color=this._textColor;
-                if(textShape.format.hasPropertySet("color")){
-                    color=textShape.format.color;
-                } 
+                var color=this.getTextColorForTextFormat(textShape.format);
 				var alpha=ColorUtils.float32ColorToARGB(color)[0];
 				if(alpha==0){
 					alpha=255;
@@ -2590,10 +2612,7 @@ export class TextField extends DisplayObjectContainer
 			}
 			else {
 
-                var color=this._textColor;
-                if(textShape.format.hasPropertySet("color")){
-                    color=textShape.format.color;
-                } 
+                var color=this.getTextColorForTextFormat(textShape.format);
 				var alpha=ColorUtils.float32ColorToARGB(color)[0];
 				if(alpha==0){
 					alpha=255;
@@ -3072,8 +3091,9 @@ export class TextField extends DisplayObjectContainer
             || ((beginIndex==-1 || beginIndex==0)&& endIndex>=this.chars_codes.length)){
             // easy: apply the format to all formats in the list
             for(i=0; i<this._textFormats.length;i++){
+                this._textFormats[i]=this._textFormats[i].clone();
                 format.applyToFormat(this._textFormats[i]);
-		}
+		    }
 			this._textDirty=true;
 			return;
 		}
@@ -3117,19 +3137,19 @@ export class TextField extends DisplayObjectContainer
 			oldFormat=this._textFormats[i];
 			//console.log("oldFormat", oldStartIdx, oldEndIdx);
 
-            console.log("check formats", oldStartIdx, oldEndIdx, beginIndex, endIndex);
+            //console.log("check formats", oldStartIdx, oldEndIdx, beginIndex, endIndex);
             if(oldStartIdx<=beginIndex && oldEndIdx>beginIndex){
                 // we have a interset in the range.
-                console.log("intersects");
+                //console.log("intersects");
                 // we have a bit of text that should remain the original format
                 if(oldStartIdx<beginIndex){
 					newFormatsTextFormats.push(oldFormat);
 					newFormatsTextFormatsIdx.push(beginIndex);
-                    console.log("add old format", beginIndex);
-			}
+                    //console.log("add old format", beginIndex);
+			    }
 
                 while(oldEndIdx<endIndex){
-                    console.log("add new merged format", oldEndIdx);
+                    //console.log("add new merged format", oldEndIdx);
                     var newFormat=this._textFormats[i].clone();
                     format.applyToFormat(newFormat)
 					newFormatsTextFormats.push(newFormat);
@@ -3144,25 +3164,25 @@ export class TextField extends DisplayObjectContainer
                     }
 				}
                 if(oldEndIdx==endIndex){                    
-                    console.log("add new format rest", endIndex);
+                    //console.log("add new format rest", endIndex);
                     var newFormat=oldFormat.clone();
                     format.applyToFormat(newFormat)
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(endIndex);
 				}
                 if(oldEndIdx>endIndex){
-                    console.log("add new format rest", endIndex);
+                    //console.log("add new format rest", endIndex);
                     var newFormat=oldFormat.clone();
                     format.applyToFormat(newFormat)
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(endIndex);
-                    console.log("add old format rest", oldEndIdx);
+                    //console.log("add old format rest", oldEndIdx);
 					newFormatsTextFormats.push(oldFormat);
 					newFormatsTextFormatsIdx.push(oldEndIdx);
 				}
 			}
 			else{
-				console.log("outside of new range. just add it", oldStartIdx, oldEndIdx);
+				//console.log("outside of new range. just add it", oldStartIdx, oldEndIdx);
 				// outside of new range. just add it
 				newFormatsTextFormats.push(this._textFormats[i]);
 				newFormatsTextFormatsIdx.push(this._textFormatsIdx[i]);
@@ -3175,7 +3195,7 @@ export class TextField extends DisplayObjectContainer
 		this._textFormats.length=0;
 		this._textFormatsIdx.length=0;
 		for(i=0; i<newFormatsTextFormats.length;i++){
-			console.log("new formats ", newFormatsTextFormatsIdx[i], newFormatsTextFormats[i]);
+			//console.log("new formats ", newFormatsTextFormatsIdx[i], newFormatsTextFormats[i]);
 			this._textFormats[i]=newFormatsTextFormats[i];
 			this._textFormatsIdx[i]=newFormatsTextFormatsIdx[i];
 		}
