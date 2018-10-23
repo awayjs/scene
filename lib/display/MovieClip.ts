@@ -21,8 +21,6 @@ export class MovieClip extends Sprite
 
 	public static _skipAdvance:boolean;
 	
-
-	public swappedDepthsMap:any={};
 	public doingSwap:boolean=false;
 	public preventScript:boolean=false;
 
@@ -340,7 +338,6 @@ export class MovieClip extends Sprite
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
 		this._time = 0;
-        this.swappedDepthsMap={};
         //this.stopSounds();
 
 		if(this._adapter)
@@ -496,7 +493,9 @@ export class MovieClip extends Sprite
 
 		this.doingSwap=true;
 		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
-		this.addChildAtDepth(child, depth);
+        this.addChildAtDepth(child, depth);
+        this._depth_sessionIDs[depth]=child._sessionID;
+        this._depth_sessionIDs[this._children[index1]._depthID]=this._children[index2]._sessionID;
 		this.doingSwap=false;
 	}
 	public swapDepths(child:DisplayObject, depth:number){
@@ -506,11 +505,11 @@ export class MovieClip extends Sprite
 		if(currentDepth==depth){
 			return;
 		}
+        delete this._depth_sessionIDs[currentDepth];
+        this._depth_sessionIDs[depth]=child._sessionID;
 		this.doingSwap=true;
-		this.swappedDepthsMap[currentDepth]=depth;
 		super.removeChildAtDepth(currentDepth);
 		if(existingChild){
-			this.swappedDepthsMap[depth]=currentDepth;
 			super.removeChildAtDepth(depth);
 			super.addChildAtDepth(existingChild, currentDepth);
 		}
@@ -570,7 +569,13 @@ export class MovieClip extends Sprite
 
 		delete this._sessionID_childs[child._sessionID];
 
-		child._sessionID = -1;
+		if(!this.doingSwap){
+            child._sessionID = -1;
+        }
+        else{
+            child._sessionID = -2;
+
+        }
 
 		return super.removeChildAtInternal(index);
 	}
@@ -632,7 +637,7 @@ export class MovieClip extends Sprite
 
 	public getPotentialChildInstance(id:number, instanceID:string) : IAsset
 	{
-		if (!this._potentialInstances[id])
+		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID==-2)
 			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
         this._timeline.initChildInstance(<DisplayObject>this._potentialInstances[id], instanceID);
 		return this._potentialInstances[id];
