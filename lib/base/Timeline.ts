@@ -21,8 +21,10 @@ import {FrameScriptManager} from "../managers/FrameScriptManager";
 export class Timeline
 {
 	private _functions:Array<(child:DisplayObject, target_mc:MovieClip, i:number) => void> = [];
-	private _blocked:boolean;
-	public _update_indices:Array<number> = [];
+    private _blocked:boolean;
+    
+	public _update_indices:number[] = [];
+	public _update_frames:number[] = [];
 	public isButton:boolean = false;
 	public _labels:Object;			// dictionary to store label => keyframeindex
 	public _framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
@@ -33,9 +35,9 @@ export class Timeline
 	public avm1Exports:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 
 
-	public keyframe_indices:Array<number>;     		//stores 1 keyframeindex per frameindex
-	public keyframe_firstframes:Array<number>;     	//stores the firstframe of each keyframe
-	public keyframe_constructframes:Array<number>;    //stores the previous fullConstruct keyframeindex
+	public keyframe_indices:number[];     		//stores 1 keyframeindex per frameindex
+	public keyframe_firstframes:number[];     	//stores the firstframe of each keyframe
+	public keyframe_constructframes:number[];    //stores the previous fullConstruct keyframeindex
 
 	public keyframe_durations:ArrayBufferView;    //only needed to calulcate other arrays
 
@@ -61,14 +63,14 @@ export class Timeline
 
 	public properties_stream_int:ArrayBufferView;		// lists of ints used for property values. for now, only mask_ids are using ints
 
-	// propertiy_values_stream:
+	// property_values_stream:
 	public properties_stream_f32_mtx_all:ArrayBufferView;	// list of floats
 	public properties_stream_f32_mtx_scale_rot:ArrayBufferView;	// list of floats
 	public properties_stream_f32_mtx_pos:ArrayBufferView;	// list of floats
 	public properties_stream_f32_ct:ArrayBufferView;	// list of floats
 	public properties_stream_strings:Array<string>;
 
-	private _potentialPrototypes:Array<IAsset>;
+	private _potentialPrototypes:IAsset[];
 	public potentialPrototypesInitEventsMap:any;
 	public graphicsPool:any;
 	public audioPool:any;
@@ -254,6 +256,8 @@ export class Timeline
         (<any>child.adapter).placeObjectTag=null;
         (<any>child.adapter).initEvents=null;
         child.instanceID=id;
+        // todo: refactor so the addedOnFrame can be set in nicer way
+        child.addedOnFrame=parseInt(id.split("#")[1]);
         if(placeObjectTag && ((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0))){
             (<any>child.adapter).placeObjectTag=placeObjectTag;
             (<any>child.adapter).initEvents=this.potentialPrototypesInitEventsMap[id];
@@ -374,7 +378,7 @@ export class Timeline
         }
 
 		//pass1: only apply add/remove commands into depth_sessionIDs.
-		this.pass1(start_construct_idx, target_keyframe_idx, depth_sessionIDs, new_depth_sessionIDs, queue_pass2);
+		this.pass1(target_mc, start_construct_idx, target_keyframe_idx, depth_sessionIDs, new_depth_sessionIDs, queue_pass2);
 
 		// check what childs are alive on both frames.
 		// child-instances that are not alive anymore get removed and unregistered
@@ -457,13 +461,14 @@ export class Timeline
         target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 	}
 
-	public pass1(start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object, queue_pass2:boolean):void
+	public pass1(target_mc:MovieClip, start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object, queue_pass2:boolean):void
 	{
 		var i:number;
 		var k:number;
 
 		this._update_indices.length = 0;// store a list of updatecommand_indices, so we dont have to read frame_recipe again
-		var update_cnt = 0;
+        this._update_frames.length=0;
+        var update_cnt = 0;
 		var start_index:number;
         var end_index:number;
 		for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
@@ -505,26 +510,14 @@ export class Timeline
 				
 			}
 
-			if (frame_recipe & 8)
-				this._update_indices[update_cnt++] = frame_command_idx++;// execute update command later
+			if (frame_recipe & 8){
+                this._update_frames[update_cnt] = this.keyframe_firstframes[k];
+                this._update_indices[update_cnt++] = frame_command_idx++;// execute update command later
 
+            }
+				
 			if (frame_recipe & 16 && k==target_keyframe_idx) {
-				start_index = this.command_index_stream[frame_command_idx];
-				end_index = start_index + this.command_length_stream[frame_command_idx];
-				for(i = start_index; i < end_index; i++) {
-					var audioProps:any = this.audioPool[this.add_sounds_stream[i]];
-					if(audioProps){		
-						var child:WaveAudio =audioProps.sound;
-						if(audioProps.props.loopCount>0){
-							child.loopsToPlay=audioProps.props.loopCount;
-						}
-						else{
-							child.loopsToPlay=0;
-						}
-						child.play(0,false);
-						//console.log("start sound:", child);
-					}
-				}
+                this.start_sounds(target_mc, frame_command_idx);
 			}
 
 		}
@@ -535,7 +528,7 @@ export class Timeline
 		var k:number;
 		var len:number = this._update_indices.length;
 		for (k = 0; k < len; k++)
-			this.update_childs(target_mc, this._update_indices[k]);
+			this.update_childs(target_mc, this._update_indices[k], this._update_frames[k]);
 	}
 
 	/* constructs the next frame of a mc.
@@ -556,7 +549,6 @@ export class Timeline
 			var frame_recipe = this.frame_recipe[new_keyFrameIndex];
 
 			if(frame_recipe & 1) {
-				target_mc.swappedDepthsMap={};
 				for (var i:number = target_mc.numChildren - 1; i >= 0; i--)
 					if (target_mc._children[i]._depthID < 0)
 						target_mc.removeChildAt(i);
@@ -582,14 +574,9 @@ export class Timeline
 		var start_index:number = this.command_index_stream[frame_command_idx];
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		var depth:number;
-		var depth2:number;
 		for(var i:number = start_index; i < end_index; i++){
-			depth2=depth=this.remove_child_stream[i] - 16383;
-			if(sourceMovieClip.swappedDepthsMap[depth]!=null){
-				depth2=sourceMovieClip.swappedDepthsMap[depth];
-				sourceMovieClip.swappedDepthsMap[depth]=null;
-            }
-            var idx:number=sourceMovieClip.getDepthIndexInternal(depth2);
+            depth=this.remove_child_stream[i] - 16383;
+            var idx:number=sourceMovieClip.getDepthIndexInternal(depth);
             if(idx>=0)
 			    sourceMovieClip.removeChildAt(idx);
 		}
@@ -635,7 +622,7 @@ export class Timeline
 		}
 
 	}
-	public update_childs(target_mc:MovieClip, frame_command_idx:number):void
+	public update_childs(target_mc:MovieClip, frame_command_idx:number, frameIdx:number=-1):void
 	{
 		var p:number;
 		var props_start_idx:number;
@@ -647,6 +634,8 @@ export class Timeline
 		//for(var i:number = end_index; i >= start_index; i--) {
 			child = target_mc.getChildAtSessionID(this.update_child_stream[i]);
 			if (child) {
+                if(frameIdx>0 && child.addedOnFrame>frameIdx)
+                    continue;
                 
 				// check if the child is active + not blocked by script
 				this._blocked = Boolean(child._adapter && (<IDisplayObjectAdapter> child.adapter).isBlockedByScript());
