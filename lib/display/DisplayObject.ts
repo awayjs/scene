@@ -237,6 +237,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public isSlice9ScaledMC:boolean=false;
 	public isSlice9ScaledSprite:boolean=false;
 	public instanceID:string="";
+	public addedOnFrame:number=0;
 	public avm1Symbol:any;
 
 	public pickShape:boolean = false;
