@@ -35,6 +35,7 @@ export class TesselatedFontChar
 	 */
 	public char_width:number;
 	public glyph_idx:number;
+	public name:string;
 
 	/**
 	 * Elements for this char

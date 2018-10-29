@@ -265,8 +265,16 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 				//console.log("no glyph found at idx", idx, "todo: support fallback fonts");
 			}
 			else{
-				if(charGlyph.fill_data==null)
-					charGlyph.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
+				if(charGlyph.fill_data==null){
+                    
+                    if((charGlyph.name=="120" || charGlyph.name=="88") && charGlyph.fill_data_path.commands[0][0]==1 && charGlyph.fill_data_path.data[0][0]==0 && charGlyph.fill_data_path.data[0][1]==0){
+                        charGlyph.fill_data_path.data[0].shift();
+                        charGlyph.fill_data_path.data[0].shift();
+                        charGlyph.fill_data_path.commands[0].shift();
+                        charGlyph.fill_data_path.commands[0][0]=2;
+                    }
+                    charGlyph.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
+                }
 				char_vertices = charGlyph.fill_data;
 				if(char_vertices){
 					buffer = new Float32Array(char_vertices.buffer);
@@ -499,7 +507,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		else if(tesselated_font_char.fill_data==null && tesselated_font_char.stroke_data==null && tesselated_font_char.fill_data_path!=null){
 			// 	hack for messed up "X": remove the first command if it is moveTo that points to 0,0
 			//	change the new first command to moveTo
-			if(name=="88" && tesselated_font_char.fill_data_path.commands[0][0]==1 && tesselated_font_char.fill_data_path.data[0][0]==0 && tesselated_font_char.fill_data_path.data[0][1]==0){
+			if((name=="120" || name=="88") && tesselated_font_char.fill_data_path.commands[0][0]==1 && tesselated_font_char.fill_data_path.data[0][0]==0 && tesselated_font_char.fill_data_path.data[0][1]==0){
 				tesselated_font_char.fill_data_path.data[0].shift();
 				tesselated_font_char.fill_data_path.data[0].shift();
 				tesselated_font_char.fill_data_path.commands[0].shift();
@@ -536,7 +544,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		}
 		var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data, fill_data_path);
 		tesselated_font_char.char_width=char_width;
-		tesselated_font_char.glyph_idx=glyph_idx;
+        tesselated_font_char.glyph_idx=glyph_idx;
+        tesselated_font_char.name=name;
 		if(this._glyphIdxToChar[fileURL]==null){
 			this._glyphIdxToChar[fileURL]={};
 		}
