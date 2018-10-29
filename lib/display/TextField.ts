@@ -1486,7 +1486,16 @@ export class TextField extends DisplayObjectContainer
 	public set textColor(value:number)
 	{
 		this._textColor = value;
-		//this._textFormat.color=value;
+        //this._textFormat.color=value;
+        if(this._textFormats){
+            var i=this._textFormats.length;
+            while(i>0){
+                i--;
+                if(this._textFormats[i])
+                    this._textFormats[i].color=value;
+            }
+            this._textDirty = true;
+        }
 
 		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material){
 			if(!this.transform.colorTransform)
@@ -3101,8 +3110,8 @@ export class TextField extends DisplayObjectContainer
 		// todo: the above conditions are a hack to get it working for a AVM1 lesson.
 		// below is the code that should actually do the job more, but could not get it to work 100% yet
 
-		console.log("\n\nadd format", this.id, this._iText, beginIndex, endIndex, format.color);
-		console.log("this._textFormats", this._textFormats, this._textFormatsIdx);
+		//console.log("\n\nadd format", this.id, this._iText, beginIndex, endIndex, format.color);
+		//console.log("this._textFormats", this._textFormats, this._textFormatsIdx);
 		
         
         /**
@@ -3129,7 +3138,7 @@ export class TextField extends DisplayObjectContainer
         if(endIndex==beginIndex){
             endIndex++;
 		}
-        console.log("check formats");
+        //console.log("check formats");
 		for(i=0; i<formatLen;i++){
             if(i>0)
                 oldStartIdx=oldEndIdx;
