@@ -134,7 +134,8 @@ export class TextField extends DisplayObjectContainer
 	private _maxScrollV:number;
 	private _numLines:number;
 	private _selectionBeginIndex:number=0;
-	private _selectionEndIndex:number=0;
+    private _selectionEndIndex:number=0;
+    private _biggestLine:number=0;
     
 	private _iText:string = "";
 	private _text:string = "";
@@ -418,6 +419,7 @@ export class TextField extends DisplayObjectContainer
         }
         
 	}
+
 
 	private scrollToCursor(x, y){
         if(!this.textChild){
@@ -828,6 +830,10 @@ export class TextField extends DisplayObjectContainer
 	{
 		return this._bottomScrollV;
 	}
+	public set bottomScrollV(value:number) /*int*/
+	{
+		this._bottomScrollV=value;
+	}
 
 	/**
 	 * The index of the insertion point(caret) position. If no insertion point
@@ -1033,16 +1039,18 @@ export class TextField extends DisplayObjectContainer
 	/**
 	 * The maximum value of <code>scrollH</code>.
 	 */
-	public maxScrollH():number /*int*/
+	public get maxScrollH():number /*int*/
 	{
+        this.reConstruct();
 		return this._maxScrollH;
 	}
 
 	/**
 	 * The maximum value of <code>scrollV</code>.
 	 */
-	public maxScrollV():number /*int*/
+	public get maxScrollV():number /*int*/
 	{
+        this.reConstruct();
 		return this._maxScrollV;
 	}
 
@@ -1193,7 +1201,16 @@ export class TextField extends DisplayObjectContainer
 	 * <p><b>Note: </b>The <code>scrollH</code> property is zero-based, not
 	 * 1-based like the <code>scrollV</code> vertical scrolling property.</p>
 	 */
-	public scrollH:number;
+    private _scrollH:number;
+    
+	public get scrollH():number /*int*/
+	{
+		return this._scrollH;
+	}
+	public set scrollH(value:number) /*int*/
+	{
+		this._scrollH=value;
+	}
 
 	/**
 	 * The vertical position of text in a text field. The <code>scrollV</code>
@@ -1209,8 +1226,24 @@ export class TextField extends DisplayObjectContainer
 	 * text rather than a partial line. Even if there are multiple fonts on a
 	 * line, the height of the line adjusts to fit the largest font in use.</p>
 	 */
-	public scrollV:number;
+	public _scrollV:number;
 
+	public get scrollV():number /*int*/
+	{
+		return this._scrollV;
+	}
+	public set scrollV(value:number) /*int*/
+	{
+        this._scrollV=Math.floor(value);
+        
+        if(this._scrollV>this._maxScrollV)
+            this._scrollV=this._maxScrollV;
+        
+        if(!this.textChild){
+            return;
+        }
+        this.textChild.y=-this.lines_start_y[this._scrollV];
+	}
 	/**
 	 * A Boolean value that indicates whether the text field is selectable. The
 	 * value <code>true</code> indicates that the text is selectable. The
@@ -1824,6 +1857,9 @@ export class TextField extends DisplayObjectContainer
 			this.lines_height.length=0;
 			this.lines_numSpacesPerline.length=0;
 
+            this._maxScrollH=0;
+            this._maxScrollV=0;
+
 			this._maxWidthLine=0;
 
 			if(this._iText != "" && this._textFormat != null) {
@@ -2256,6 +2292,7 @@ export class TextField extends DisplayObjectContainer
 		var l_cnt: number = this.lines_wordStartIndices.length;
 
 		var charCnt:number=0;
+		this._biggestLine=0;
 		this._numLines = l_cnt;
 		for (l = 0; l < l_cnt; l++) {
 			linelength = this.lines_width[l];
@@ -2348,6 +2385,7 @@ export class TextField extends DisplayObjectContainer
 
 
 			if (line_width > text_width) {
+                this._biggestLine=l;
 				text_width = line_width;
 			}
 		}
@@ -2360,7 +2398,36 @@ export class TextField extends DisplayObjectContainer
 		if(this.autoSize!=TextFieldAutoSize.NONE){
 			this._height=this._textHeight+4;
 			this._invalidateBounds();
-		}
+        }
+        if(this._textWidth>this._width){
+
+            // get the max-scroll horizontal value 
+			start_idx = this.lines_charIdx_start[this._biggestLine]; 
+			c = this.lines_charIdx_end[this._biggestLine];
+            var maxCnt=0;
+			while (c > start_idx) {
+                c--;
+                maxCnt+=this.chars_width[c];
+                if(maxCnt>this._width){
+                    this._maxScrollH=c;
+                    break;
+                }
+            }
+        }
+        if(this._textHeight>this._height){
+            // get the max-scroll vertical value 
+            var l_len:number=this.lines_height.length;
+            var maxCnt=4;
+            while(l_len>0){
+                l_len--;
+                maxCnt+=this.lines_height[l_len];
+                if(maxCnt>this._height){
+                    this._maxScrollV=l_len+1;
+                    break;
+                }
+            }
+            
+        }
 		this.updateMaskMode();
 
 	}
