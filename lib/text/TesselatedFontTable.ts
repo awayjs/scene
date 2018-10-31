@@ -354,8 +354,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			for (c = startIdx; c < c_len; c++) {
 				hack_x_mirror=false;
 				if(tf.chars_codes[c]==40){
-					tf.chars_codes[c]=41;
-					hack_x_mirror=true;
+					//tf.chars_codes[c]=41;
+					//hack_x_mirror=true;
 				}
 				currentTextShape=(tf.isInFocus && c>=select_start && c<select_end )?textShapeSelected:textShape;
 				if(tf.chars_codes[c]!=32 && tf.chars_codes[c]!=9){
