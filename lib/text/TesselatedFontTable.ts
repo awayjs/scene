@@ -267,7 +267,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			else{
 				if(charGlyph.fill_data==null){
                     
-                    if((charGlyph.name=="120" || charGlyph.name=="88") && charGlyph.fill_data_path.commands[0][0]==1 && charGlyph.fill_data_path.data[0][0]==0 && charGlyph.fill_data_path.data[0][1]==0){
+                    if(charGlyph.fill_data_path.commands[0][0]==1 && charGlyph.fill_data_path.data[0][0]==0 && charGlyph.fill_data_path.data[0][1]==0){
                         charGlyph.fill_data_path.data[0].shift();
                         charGlyph.fill_data_path.data[0].shift();
                         charGlyph.fill_data_path.commands[0].shift();
@@ -507,7 +507,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		else if(tesselated_font_char.fill_data==null && tesselated_font_char.stroke_data==null && tesselated_font_char.fill_data_path!=null){
 			// 	hack for messed up "X": remove the first command if it is moveTo that points to 0,0
 			//	change the new first command to moveTo
-			if((name=="120" || name=="88") && tesselated_font_char.fill_data_path.commands[0][0]==1 && tesselated_font_char.fill_data_path.data[0][0]==0 && tesselated_font_char.fill_data_path.data[0][1]==0){
+			if( tesselated_font_char.fill_data_path.commands[0][0]==1 && tesselated_font_char.fill_data_path.data[0][0]==0 && tesselated_font_char.fill_data_path.data[0][1]==0){
 				tesselated_font_char.fill_data_path.data[0].shift();
 				tesselated_font_char.fill_data_path.data[0].shift();
 				tesselated_font_char.fill_data_path.commands[0].shift();
