@@ -669,6 +669,29 @@ export class TextField extends DisplayObjectContainer
 		if (this._autoSize == value)
 			return;
 
+        if(typeof value==="string"){
+            if(value!=TextFieldAutoSize.CENTER &&
+                 value!=TextFieldAutoSize.NONE &&
+                 value!=TextFieldAutoSize.LEFT &&
+                 value!=TextFieldAutoSize.RIGHT){
+                     return;
+                 }
+        }
+        else{
+            if(typeof value==="boolean"){
+                if(value)
+                    value=TextFieldAutoSize.CENTER;
+                else
+                    value=TextFieldAutoSize.NONE;
+            }
+            if(typeof value==="number"){
+                if(value>0)
+                    value=TextFieldAutoSize.CENTER;
+                else
+                    value=TextFieldAutoSize.NONE;
+            }
+        }
+
 		this._autoSize = value;
 
 		this._positionsDirty = true;
