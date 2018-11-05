@@ -37,7 +37,8 @@ export class HTMLTextProcessor
 		input = input.replace(new RegExp("<LI", 'g'), "<li");
 		input = input.replace(new RegExp("</LI>", 'g'), "</li>");
 		input = input.replace(new RegExp("<FONT", 'g'), "<font");
-		input = input.replace(new RegExp("</FONT>", 'g'), "</font>");
+        input = input.replace(new RegExp("</FONT>", 'g'), "</font>");
+        input = input.replace(new RegExp("&", 'g'), "AWAYJSSPECIALCHAR_38");
 
 		// 	some preprocessing to make sure that html-tags are closing
 		// 	todo: this can probably be done better
@@ -276,6 +277,7 @@ export class HTMLTextProcessor
 			}
 			this.readHTMLTextPropertiesRecursive(target_tf, startNode, textProps, target_tf._textFormat);
 		}
+        textProps.text = textProps.text.replace(new RegExp("AWAYJSSPECIALCHAR_38", 'g'), "&");
 		if(textProps.text!="" && ((textProps.text.charCodeAt(textProps.text.length-1)==13 ) || (textProps.text.charCodeAt(textProps.text.length-1)==10 ))){
 			textProps.text=textProps.text.slice(0, textProps.text.length-1);
 		}	
