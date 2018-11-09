@@ -17,13 +17,6 @@ export class Font extends AssetBase
 
 	private _font_styles:Array<IFontTable> = [];
 
-	//TODO test shader picking
-//		public get shaderPickingDetails():boolean
-//		{
-//
-//			return this.sourceEntity.shaderPickingDetails;
-//		}
-
 	/**
 	 * Creates a new TesselatedFont object
 	 */

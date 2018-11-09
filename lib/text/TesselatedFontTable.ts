@@ -40,13 +40,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public font:any;
 	public fallbackTable:IFontTable;
 
-	//TODO test shader picking
-//		public get shaderPickingDetails():boolean
-//		{
-//
-//			return this.sourceEntity.shaderPickingDetails;
-//		}
-
 	/**
 	 * Creates a new TesselatedFont object
 	 * If a opentype_font object is passed, the chars will get tessellated whenever requested.

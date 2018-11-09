@@ -37,12 +37,6 @@ export class BitmapFontTable extends AssetBase implements IFontTable
 	public font:any;
 	public fallbackTable:IFontTable;
 	public _adjust_size:number;
-	//TODO test shader picking
-//		public get shaderPickingDetails():boolean
-//		{
-//
-//			return this.sourceEntity.shaderPickingDetails;
-//		}
 
 	/**
 	 * Creates a new TesselatedFont object
