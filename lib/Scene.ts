@@ -1,6 +1,5 @@
-import {IEntity, IView, PartitionBase, RenderableContainerNode} from "@awayjs/renderer";
-
 import {DisplayObjectContainer} from "./display/DisplayObjectContainer";
+import { PartitionBase, EntityNode } from '@awayjs/renderer';
 
 export class Scene extends DisplayObjectContainer
 {
@@ -23,4 +22,4 @@ export class Scene extends DisplayObjectContainer
 	}
 }
 
-PartitionBase.registerAbstraction(RenderableContainerNode, Scene);
+PartitionBase.registerAbstraction(EntityNode, Scene);

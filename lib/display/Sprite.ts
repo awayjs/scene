@@ -1,6 +1,6 @@
 ﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D, Sphere, ProjectionBase} from "@awayjs/core";
 
-import {TraverserBase, IAnimator, IMaterial, Style, IRenderable, RenderableContainerNode, PartitionBase} from "@awayjs/renderer";
+import {IAnimator, IMaterial, Style, IRenderable, PartitionBase, RendererBase, RaycastPicker, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
 
 import {Graphics, Shape} from "@awayjs/graphics";
 
@@ -16,6 +16,8 @@ import { PrefabBase } from '../prefabs/PrefabBase';
  */
 export class Sprite extends DisplayObjectContainer
 {
+	private _isEntity:boolean = false;
+
 	public _iSourcePrefab:PrefabBase;
 
 	private static _sprites:Array<Sprite> = new Array<Sprite>();
@@ -130,6 +132,11 @@ export class Sprite extends DisplayObjectContainer
 		this.material = material;
 	}
 
+	public isEntity():boolean
+	{
+		return Boolean(this._graphics.count);
+	}
+
 	/**
 	 * @inheritDoc
 	 */
@@ -185,53 +192,14 @@ export class Sprite extends DisplayObjectContainer
     }
 
 	/**
-	 * //TODO
-	 *
-	 * @protected
-	 */
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
-	{
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-		
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, this._graphics.getBoxBounds(matrix3D, strokeFlag, cache, target));
-	}
-
-
-	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
-	{
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-		
-		var box:Box = this.getBoxBounds();
-
-		if (box == null)
-			return;
-
-		if (!this._center)
-			this._center = new Vector3D();
-
-		this._center.x = box.x + box.width/2;
-		this._center.y = box.y + box.height/2;
-		this._center.z = box.z + box.depth/2;
-
-		return this._graphics.getSphereBounds(this._center, matrix3D, strokeFlag, cache, target);
-	}
-
-	/**
 	 *
 	 */
-	public _iInternalUpdate(viewport:Viewport):void
+	public _iInternalUpdate():void
 	{
-		super._iInternalUpdate(viewport);
+		super._iInternalUpdate();
 
-		if(this.parent)
-			this._graphics.updateScale(viewport);
-	}
-
-	protected _isEntityInternal():boolean
-	{
-		return Boolean(this._graphics.count) || super._isEntityInternal();
+		// if(this.parent)
+		// 	this._graphics.updateScale(viewport);
 	}
 
 	/**
@@ -241,7 +209,16 @@ export class Sprite extends DisplayObjectContainer
 	 */
 	private _onGraphicsInvalidate(event:AssetEvent):void
 	{
-		this._invalidateChildren();
+		var isEntity:boolean = this.isEntity();
+
+		if (this._isEntity != isEntity) {
+			if (!isEntity && this._implicitPartition)
+				this._implicitPartition.clearEntity(this);
+
+			this._isEntity = isEntity;
+		}
+
+		this.invalidate();
 	}
 
 	/**
@@ -250,24 +227,20 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:TraverserBase):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
-		this.graphics.acceptTraverser(traverser);
+		this.graphics._applyRenderables(renderer);
 	}
-
-	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
+	
+	/**
+	 *
+	 * @param renderer
+	 *
+	 * @internal
+	 */
+	public _applyPickables(picker:IPicker):void
 	{
-		if(this._graphics.count) {
-			//early out for non-shape tests
-			if (!shapeFlag)
-				return true;
-
-			//ok do the graphics thing
-			if (this._graphics._hitTestPointInternal(this._tempPoint.x, this._tempPoint.y))
-				return true;
-		}
-
-		return super._hitTestPointInternal(x, y, shapeFlag, masksFlag);
+		this.graphics._applyPickables(picker);
 	}
 
 	public clear():void
@@ -299,4 +272,4 @@ export class Sprite extends DisplayObjectContainer
 
 }
 
-PartitionBase.registerAbstraction(RenderableContainerNode, Sprite);
+PartitionBase.registerAbstraction(EntityNode, Sprite);

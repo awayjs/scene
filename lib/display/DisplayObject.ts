@@ -1,8 +1,8 @@
-import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase, IAbstractionPool, ProjectionBase, AbstractMethodError} from "@awayjs/core";
+import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase} from "@awayjs/core";
 
-import {BlendMode, Viewport} from "@awayjs/stage";
+import {BlendMode} from "@awayjs/stage";
 
-import {PartitionBase, IRenderable, IAnimator, IMaterial, Style, IEntity, TraverserBase, StyleEvent, PickingCollision, BoundingVolumeBase, BoundingBox, BoundingSphere, BoundingVolumePool, BoundingVolumeType, EntityEvent} from "@awayjs/renderer";
+import {PartitionBase, IRenderable, IAnimator, IMaterial, Style, IEntity, StyleEvent, BoundingBox, BoundingSphere, BoundingVolumeType, IPicker, IRenderer, BasicPartition, PickGroup} from "@awayjs/renderer";
 
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
@@ -151,8 +151,6 @@ import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
  */
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 {
-	//temp point used in hit testing
-	protected _tempPoint:Point = new Point();
 
 	private _partition:PartitionBase;
 
@@ -164,20 +162,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _mouseX:number;
 	private _mouseY:number;
 	private _root:DisplayObjectContainer;
-	private _bounds:Rectangle;
-	private _boundingVolumePools:Object = new Object();
 	private _boundsVisible:boolean;
 	private _boundsPrefab:PrimitivePrefabBase;
 	private _boundsPrefabDirty:boolean;
 	private _boundsPrimitive:DisplayObject;
 	private _boundsPrimitiveDirty:boolean;
+	private _pickObjectDirty:boolean;
 	private _pName:string;
 
 	protected _parent:DisplayObjectContainer;
 	private _concatenatedMatrix3D:Matrix3D = new Matrix3D();
 	private _tempTransform:Matrix3D;
-	protected _isEntity:boolean = false;
-	protected _isContainer:boolean = false;
 	public _sessionID:number = -1;
 	public _depthID:number = -16384;
 
@@ -192,29 +187,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _explicitVisibility:boolean = true;
 	private _explicitMaskId:number = -1;
 	public _explicitMasks:Array<DisplayObject>;
-	public _pImplicitVisibility:boolean = true;
-	public _pImplicitMaskId:number = -1;
-	public _pImplicitMasks:Array<Array<IEntity>>;
-	public _pImplicitMaskIds:Array<Array<number>> = new Array<Array<number>>();
+	private _implicitVisibility:boolean = true;
+	public _implicitMaskId:number = -1;
+	public _maskOwners:Array<IEntity>;
 	private _explicitMouseEnabled:boolean = true;
-	public _pImplicitMouseEnabled:boolean = true;
+	private _implicitMouseEnabled:boolean = true;
 	public _pImplicitColorTransform:ColorTransform;
 	private _listenToSceneTransformChanged:boolean;
-
-	private _boundsDirty:boolean;
 	private _matrix3DDirty:boolean;
 
 	private _eulers:Vector3D;
 
-	public _width:number;
-	public _height:number;
-	public _depth:number;
-	public _absoluteDimension:boolean;
-
 	public _registrationMatrix3D:Matrix3D;
 	private _orientationMatrix:Matrix3D = new Matrix3D();
-	private _pickingCollision:PickingCollision;
-	private _shaderPickingDetails:boolean;
 
 	private _defaultBoundingVolume:BoundingVolumeType;
 
@@ -226,6 +211,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
     private _inheritColorTransform:boolean = true;
 	private _maskMode:boolean = false;
+	private _pickObject:DisplayObjectContainer;
+
+	private _renderMode:boolean = true;
 
 	public _hierarchicalPropsDirty:number;
 
@@ -238,8 +226,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public isSlice9ScaledSprite:boolean=false;
 	public instanceID:string="";
 	public avm1Symbol:any;
-
-	public pickShape:boolean = false;
 
 	// this is needed for AVM1 - todo: maybe do this on adapters ?
 	public placeObjectTag:any=null;
@@ -383,8 +369,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		this.invalidate();
-		
-		this._invalidateBounds();
 	}
 
 	/**
@@ -450,47 +434,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 *
 	 */
 	public castsShadows:boolean = true;
-
-	/**
-	 * Indicates the depth of the display object, in pixels. The depth is
-	 * calculated based on the bounds of the content of the display object. When
-	 * you set the <code>depth</code> property, the <code>scaleZ</code> property
-	 * is adjusted accordingly, as shown in the following code:
-	 *
-	 * <p>Except for TextField and Video objects, a display object with no
-	 * content (such as an empty sprite) has a depth of 0, even if you try to
-	 * set <code>depth</code> to a different value.</p>
-	 */
-	public get depth():number
-	{
-		var box:Box = this.getBoxBounds();
-
-		if (box == null)
-			return 0;
-
-		if (this._registrationMatrix3D)
-			return  box.depth*this.scaleZ*this._registrationMatrix3D._rawData[10];
-
-		return box.depth*this.scaleZ;
-	}
-
-	public set depth(val:number)
-	{
-		if (this._depth == val)
-			return;
-
-		var box:Box = this.getBoxBounds();
-
-		//return if box is empty ie setting depth for no content is impossible
-		if (box == null || box.depth == 0)
-			return;
-
-		this._depth = val;
-
-		this._updateAbsoluteDimension();
-		
-		this._setScaleZ(val/box.depth);
-	}
 
 	/**
 	 * Defines the rotation of the 3d object as a <code>Vector3D</code> object containing euler angles for rotation around x, y and z axis.
@@ -605,47 +548,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 //		public filters:Array<Dynamic>;
 
 	/**
-	 * Indicates the height of the display object, in pixels. The height is
-	 * calculated based on the bounds of the content of the display object. When
-	 * you set the <code>height</code> property, the <code>scaleY</code> property
-	 * is adjusted accordingly, as shown in the following code:
-	 *
-	 * <p>Except for TextField and Video objects, a display object with no
-	 * content (such as an empty sprite) has a height of 0, even if you try to
-	 * set <code>height</code> to a different value.</p>
-	 */
-	public get height():number
-	{
-		var box:Box = this.getBoxBounds();
-
-		if (box == null)
-			return 0;
-
-		if (this._registrationMatrix3D)
-			return box.height*this.scaleY*this._registrationMatrix3D._rawData[5];
-
-		return box.height*this.scaleY;
-	}
-
-	public set height(val:number)
-	{
-		if (this._height == val)
-			return;
-
-		var box:Box = this.getBoxBounds();
-
-		//return if box is empty ie setting height for no content is impossible
-		if (box == null || box.height == 0)
-			return;
-
-		this._height = val;
-
-		this._updateAbsoluteDimension();
-
-		this._setScaleY(val/box.height);
-	}
-
-	/**
 	 * Indicates the instance container index of the DisplayObject. The object can be
 	 * identified in the child list of its parent display object container by
 	 * calling the <code>getChildByIndex()</code> method of the display object
@@ -661,20 +563,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return 0;
 	}
 
-	/**
-	 *
-	 */
-	public get isEntity():boolean
+	public get isRenderable():boolean
 	{
-		return this._isEntity;
-	}
-
-	/**
-	 *
-	 */
-	public get isContainer():boolean
-	{
-		return this._isContainer;
+		return this._renderMode && this._iAssignedColorTransform()._isRenderable();
 	}
 
 	/**
@@ -749,13 +640,41 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 				
 		this._maskMode = value;
 
-		if (this._implicitPartition)
+		if (this._implicitPartition && this.isEntity())
 			this._implicitPartition.invalidateEntity(this);
 
 		this._explicitMaskId = value? this.id : -1;
 
 		this._updateMaskMode();
 	}
+
+	public get pickObject():DisplayObjectContainer
+	{
+		if (this._pickObject && this._pickObjectDirty)
+			this._updatePickObject();
+
+		return this._pickObject;
+	}
+
+	public set pickObject(value:DisplayObjectContainer)
+	{
+		if (this._pickObject == value)
+			return;
+
+		if (this._pickObject)
+			this._pickObject.partition = null;
+
+		this._pickObject = value;
+
+		if (this._pickObject) {
+			this._pickObject.partition = new BasicPartition(this._pickObject);
+			this._pickObject.mouseChildren = false;
+			this._pickObject.mouseEnabled = false;
+
+			this._updatePickObject();
+		}
+	}
+
 	/**
 	 * Specifies whether this object receives mouse, or other user input,
 	 * messages. The default value is <code>true</code>, which means that by
@@ -1124,10 +1043,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public set scaleX(val:number)
 	{
-		//remove absolute width
-		this._width = null;
-
-		this._updateAbsoluteDimension();
+		//this._updateAbsoluteDimension();
 
 		this._setScaleX(val);
 	}
@@ -1147,10 +1063,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public set scaleY(val:number)
 	{
-		//remove absolute height
-		this._height = null;
-
-		this._updateAbsoluteDimension();
+		//this._updateAbsoluteDimension();
 
 		this._setScaleY(val);
 	}
@@ -1171,10 +1084,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public set scaleZ(val:number)
 	{
-		//remove absolute depth
-		this._depth = null;
-
-		this._updateAbsoluteDimension();
+		//this._updateAbsoluteDimension();
 		
 		this._setScaleZ(val);
 	}
@@ -1348,14 +1258,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._onInvalidateProperties();
 	}
-	
-	/**
-	 *
-	 */
-	public get shaderPickingDetails():boolean
-	{
-		return this._shaderPickingDetails;
-	}
 
 	/**
 	 *
@@ -1372,10 +1274,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._boundsVisible = value;
 
+		if (this._boundsVisible && !this.partition)
+			this.partition = new BasicPartition(this);
+
 		this.invalidate();
 	}
 
-	public get boundsPrimitive():DisplayObject
+	public getBoundsPrimitive(pickGroup:PickGroup):DisplayObject
 	{
 		if (this._boundsPrimitive == null) {
 			switch (this._defaultBoundingVolume) {
@@ -1401,7 +1306,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		if (this._boundsPrefabDirty)
-			this._updateBoundsPrefab();
+			this._updateBoundsPrefab(pickGroup);
 
 		if (this._boundsPrimitiveDirty)
 			this._updateBoundsPrimitive();
@@ -1494,47 +1399,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		}
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.MASKS);
-	}
-
-	/**
-	 * Indicates the width of the display object, in pixels. The width is
-	 * calculated based on the bounds of the content of the display object. When
-	 * you set the <code>width</code> property, the <code>scaleX</code> property
-	 * is adjusted accordingly, as shown in the following code:
-	 *
-	 * <p>Except for TextField and Video objects, a display object with no
-	 * content(such as an empty sprite) has a width of 0, even if you try to set
-	 * <code>width</code> to a different value.</p>
-	 */
-	public get width():number
-	{
-		var box:Box = this.getBoxBounds();
-
-		if (box == null)
-			return 0;
-
-		if (this._registrationMatrix3D)
-			return box.width*this.scaleX*this._registrationMatrix3D._rawData[0];
-
-		return box.width*this.scaleX;
-	}
-
-	public set width(val:number)
-	{
-		if (this._width == val)
-			return;
-		
-		var box:Box = this.getBoxBounds();
-
-		//return if box is empty ie setting width for no content is impossible
-		if (box == null || box.width == 0)
-			return;
-
-		this._width = val;
-
-		this._updateAbsoluteDimension();
-
-		this._setScaleX(val/box.width);
 	}
 
 	/**
@@ -1655,6 +1519,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._defaultBoundingVolume = this._getDefaultBoundingVolume();
 	}
 
+	
+	public isEntity():boolean
+	{
+		return false;
+	}
+
     public getRenderableIndex(renderable:IRenderable):number
     {
         return -1;
@@ -1693,6 +1563,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._registrationMatrix3D)
 			displayObject._registrationMatrix3D = this._registrationMatrix3D.clone();
 
+		displayObject.pickObject = this._pickObject;
 		displayObject.boundsVisible = this._boundsVisible;
 		displayObject.name = this._pName;
 		displayObject.mouseEnabled = this._explicitMouseEnabled;
@@ -1742,85 +1613,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this._explicitMasks = null;
 
-		for (var key in this._boundingVolumePools) {
-			this._boundingVolumePools[key].dispose();
-			delete this._boundingVolumePools[key];
+		if (this._partition) {
+			this._partition.dispose();
+			this._partition = null;
 		}
-	}
 
-	/**
-	 * Returns a rectangle that defines the area of the display object relative
-	 * to the coordinate system of the <code>targetCoordinateSpace</code> object.
-	 * Consider the following code, which shows how the rectangle returned can
-	 * vary depending on the <code>targetCoordinateSpace</code> parameter that
-	 * you pass to the method:
-	 *
-	 * <p><b>Note:</b> Use the <code>localToGlobal()</code> and
-	 * <code>globalToLocal()</code> methods to convert the display object's local
-	 * coordinates to display coordinates, or display coordinates to local
-	 * coordinates, respectively.</p>
-	 *
-	 * <p>The <code>getBounds()</code> method is similar to the
-	 * <code>getRect()</code> method; however, the Rectangle returned by the
-	 * <code>getBounds()</code> method includes any strokes on shapes, whereas
-	 * the Rectangle returned by the <code>getRect()</code> method does not. For
-	 * an example, see the description of the <code>getRect()</code> method.</p>
-	 *
-	 * @param targetCoordinateSpace The display object that defines the
-	 *                              coordinate system to use.
-	 * @return The rectangle that defines the area of the display object relative
-	 *         to the <code>targetCoordinateSpace</code> object's coordinate
-	 *         system.
-	 */
-	public getBounds(targetCoordinateSpace:DisplayObject):Rectangle
-	{
-		return this._bounds; //TODO
-	}
-
-	/**
-	 * Returns a rectangle that defines the boundary of the display object, based
-	 * on the coordinate system defined by the <code>targetCoordinateSpace</code>
-	 * parameter, excluding any strokes on shapes. The values that the
-	 * <code>getRect()</code> method returns are the same or smaller than those
-	 * returned by the <code>getBounds()</code> method.
-	 *
-	 * <p><b>Note:</b> Use <code>localToGlobal()</code> and
-	 * <code>globalToLocal()</code> methods to convert the display object's local
-	 * coordinates to Scene coordinates, or Scene coordinates to local
-	 * coordinates, respectively.</p>
-	 *
-	 * @param targetCoordinateSpace The display object that defines the
-	 *                              coordinate system to use.
-	 * @return The rectangle that defines the area of the display object relative
-	 *         to the <code>targetCoordinateSpace</code> object's coordinate
-	 *         system.
-	 */
-	public getRect(targetCoordinateSpace:DisplayObject = null):Rectangle
-	{
-		return this._bounds; //TODO
-	}
-
-	public getBoundingVolume(targetCoordinateSpace:DisplayObject = null, boundingVolumeType:BoundingVolumeType = null):BoundingVolumeBase
-	{
-		this._boundsDirty = false;
-
-		if (boundingVolumeType == null)
-			boundingVolumeType = this._defaultBoundingVolume;
-			
-		var pool:BoundingVolumePool = (this._boundingVolumePools[boundingVolumeType] || (this._boundingVolumePools[boundingVolumeType] = new BoundingVolumePool(this, boundingVolumeType)));
-	
-		return <BoundingVolumeBase> pool.getAbstraction(targetCoordinateSpace);
-	}
-
-    
-	public getBoxBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false, fastFlag:boolean = false):Box
-	{
-		return (<BoundingBox> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? (fastFlag? BoundingVolumeType.BOX_BOUNDS_FAST : BoundingVolumeType.BOX_BOUNDS) : (fastFlag? BoundingVolumeType.BOX_FAST : BoundingVolumeType.BOX))).getBox();
-	}
-
-	public getSphereBounds(targetCoordinateSpace:DisplayObject = null, strokeFlag:boolean = false, fastFlag:boolean = false):Sphere
-	{
-		return (<BoundingSphere> this.getBoundingVolume(targetCoordinateSpace, strokeFlag? (fastFlag? BoundingVolumeType.SPHERE_BOUNDS_FAST : BoundingVolumeType.SPHERE_BOUNDS) : (fastFlag? BoundingVolumeType.SPHERE_FAST :BoundingVolumeType.SPHERE))).getSphere();
 	}
 
 	/**
@@ -1878,90 +1675,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public globalToLocal3D(position:Vector3D):Vector3D
 	{
 		return this._transform.inverseConcatenatedMatrix3D.transformVector(position);
-	}
-
-	/**
-	 * Evaluates the bounding box of the display object to see if it overlaps or
-	 * intersects with the bounding box of the <code>obj</code> display object.
-	 *
-	 * @param obj The display object to test against.
-	 * @return <code>true</code> if the bounding boxes of the display objects
-	 *         intersect; <code>false</code> if not.
-	 */
-	public hitTestObject(obj:DisplayObject):boolean
-	{
-		//TODO: getBoxBounds should be using the root partition root
-		var objBox:Box = obj.getBoxBounds(<DisplayObject> this._implicitPartition.root, true);
-
-		if(objBox == null)
-			return false;
-		
-		var box:Box = this.getBoxBounds(<DisplayObject> this._implicitPartition.root, true);
-
-		if(box == null)
-			return false;
-
-		if (objBox.intersects(box))
-			return true;
-		
-		return false;
-	}
-
-	/**
-	 * Evaluates the display object to see if it overlaps or intersects with the
-	 * point specified by the <code>x</code> and <code>y</code> parameters. The
-	 * <code>x</code> and <code>y</code> parameters specify a point in the
-	 * coordinate space of the Scene, not the display object container that
-	 * contains the display object(unless that display object container is the
-	 * Scene).
-	 *
-	 * @param x         The <i>x</i> coordinate to test against this object.
-	 * @param y         The <i>y</i> coordinate to test against this object.
-	 * @param shapeFlag Whether to check against the actual pixels of the object
-	 *                 (<code>true</code>) or the bounding box
-	 *                 (<code>false</code>).
-	 * @param maskFlag Whether to check against the object when it is used as mask
-	 *                 (<code>false</code>).
-	 * @return <code>true</code> if the display object overlaps or intersects
-	 *         with the specified point; <code>false</code> otherwise.
-	 */
-	public hitTestPoint(x:number, y:number, shapeFlag:boolean = false, masksFlag = false):boolean
-	{
-		if(!this._pImplicitVisibility)
-			return false;
-
-		if(this._pImplicitMaskId != -1 && !masksFlag)
-			return false;
-
-		//set local tempPoint for later reference
-		this._tempPoint.setTo(x,y);
-		this.globalToLocal(this._tempPoint, this._tempPoint);
-
-		//early out for box test
-		var box:Box = this.getBoxBounds(null, false, true);
-
-		if(box == null || !box.contains(this._tempPoint.x, this._tempPoint.y, 0))
-			return false;
-
-		if (this._explicitMasks) {
-			var numMasks:number = this._explicitMasks.length;
-			var maskHit:boolean = false;
-			for (var i:number = 0; i < numMasks; i++) {
-				if (this._explicitMasks[i].hitTestPoint(x, y, shapeFlag, true)) {
-					maskHit = true;
-					break;
-				}
-			}
-
-			if (!maskHit)
-				return false;
-		}
-
-		//early out for non-shape tests
-		if (!shapeFlag || this.assetType=="[asset TextField]" ||  this.assetType=="[asset Billboard]")
-			return true;
-
-		return this._hitTestPointInternal(x, y, shapeFlag, masksFlag);
 	}
 
 	/**
@@ -2126,20 +1839,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public get _iPickingCollision():PickingCollision
-	{
-		if (!this._pickingCollision)
-			this._pickingCollision = new PickingCollision(this);
-
-		return this._pickingCollision;
-	}
-
-	/**
-	 * @internal
-	 */
 	public _setParent(parent:DisplayObjectContainer):void
 	{
-		if (!parent && this._partition)
+		if (!parent && this._partition) //if there is a new parent, the addChild(partition) will remove from the previous partition
 			this._parent._implicitPartition.removeChild(this._partition);
 
 		this._parent = parent;
@@ -2162,8 +1864,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			
 			this._scenePositionDirty = true;
 			this._boundsPrimitiveDirty = true;
+			this._pickObjectDirty = true;
 
-			if (this._implicitPartition)
+			if (this._implicitPartition && this.isEntity())
 				this._implicitPartition.invalidateEntity(this);
 
 			if (this._listenToSceneTransformChanged)
@@ -2178,24 +1881,26 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	 */
 	public _setPartition(parentPartition:PartitionBase):boolean
 	{
-		var partition:PartitionBase = this._partition || parentPartition;
+		if (parentPartition && this._partition == null)
+			this._partition = parentPartition.getPartition(this) || this._partition;
 
 		//add partition as a child of parentPartition
 		if (this._partition && parentPartition)
 			parentPartition.addChild(this._partition);
-			
-		
+
+		var partition:PartitionBase = this._partition || parentPartition;
+
 		if (this._implicitPartition == partition)
 			return true;
 		
 		//unregister object from current partition container
-		if (this._implicitPartition)
+		if (this._implicitPartition && this.isEntity())
 			this._implicitPartition.clearEntity(this);
 
 		// assign parent partition if _partition is false
 		this._implicitPartition = partition;
 
-		if (this._implicitPartition) //register object with scene
+		if (this._implicitPartition && this.isEntity()) //register object with scene
 			this._implicitPartition.invalidateEntity(this);
 		else //gc abstraction objects
 			this.clear();
@@ -2211,19 +1916,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _onUpdateConcatenatedMatrix3D(event:TransformEvent):void
 	{
 		// call getBoxBounds() if absolute size need to update transform
-		if (this._absoluteDimension) {
-			var box:Box = this.getBoxBounds();
-			if(box){
-				if (this._width != null)
-					this._setScaleX(this._width/box.width);
+		// if (this._absoluteDimension) {
+		// 	var box:Box = this.getBoxBounds();
+		// 	if(box){
+		// 		if (this._width != null)
+		// 			this._setScaleX(this._width/box.width);
 					
-				if (this._height != null)
-					this._setScaleY(this._height/box.height);
+		// 		if (this._height != null)
+		// 			this._setScaleY(this._height/box.height);
 
-				if (this._depth != null)
-					this._setScaleZ(this._depth/box.depth);
-			}
-		}
+		// 		if (this._depth != null)
+		// 			this._setScaleZ(this._depth/box.depth);
+		// 	}
+		// }
 
 		this._concatenatedMatrix3D.copyFrom(this._transform.matrix3D);
 
@@ -2248,7 +1953,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 *
 	 */
-	public _iInternalUpdate(viewport:Viewport):void
+	public _iInternalUpdate():void
 	{
 		if (this._iController)
 			this._iController.update();
@@ -2269,37 +1974,29 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.VISIBLE)
 			this._updateVisible();
 
-		return this._pImplicitVisibility;
+		return this._implicitVisibility;
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iAssignedMaskId():number
+	public get maskId():number
 	{
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASK_ID)
 			this._updateMaskId();
 
-		return this._pImplicitMaskId;
+		return this._implicitMaskId;
 	}
 
 	/**
 	 * @internal
 	 */
-	public _iAssignedMasks():Array<Array<IEntity>>
+	public get maskOwners():Array<IEntity>
 	{
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
-			this._updateMasks();
+			this._updateMaskOwners();
 
-		return this._pImplicitMasks;
-	}
-
-	public _iMasksConfig():Array<Array<number>>
-	{
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
-			this._updateMasks();
-
-		return this._pImplicitMaskIds;
+		return this._maskOwners;
 	}
 
 	public _iAssignedColorTransform():ColorTransform
@@ -2319,10 +2016,33 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
 			this._updateMouseEnabled();
 
-		return this._pImplicitMouseEnabled && this._explicitMouseEnabled;
+		return this._implicitMouseEnabled && this._explicitMouseEnabled;
 	}
 
-	public _acceptTraverser(traverser:TraverserBase):void
+	public isDescendant(displayObject:DisplayObject):boolean
+	{
+		var parent:DisplayObject = this;
+		while (parent.parent) {
+			parent = parent.parent;
+			if (parent == displayObject)
+				return true;		
+		}
+
+		return false;
+	}
+	
+	public isAncestor(displayObject:DisplayObject):boolean
+	{
+		return displayObject.isDescendant(this);
+	}
+
+	public _applyRenderables(renderer:IRenderer):void
+	{
+		//nothing to do here
+	}
+
+	
+	public _applyPickables(picker:IPicker):void
 	{
 		//nothing to do here
 	}
@@ -2340,9 +2060,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._matrix3DDirty = true;
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
-
-		if (this._parent)
-			this._parent._invalidateBounds();
 	}
 
 	/**
@@ -2351,33 +2068,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _onInvalidateColorTransform(event:TransformEvent):void
 	{
 		this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-	}
-
-	public _invalidateBounds():void
-	{
-		if (this._boundsDirty)
-			return;
-		
-		this._boundsDirty = true;
-		this._boundsPrefabDirty = true;
-
-		this.dispatchEvent(new DisplayObjectEvent(EntityEvent.INVALIDATE_BOUNDS, this));
-
-		if (this._absoluteDimension)
-			this.transform.invalidateMatrix3D();
-
-		if (this._parent)
-			this._parent._invalidateBounds();
-	}
-
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
-	{
-		return target;
-	}
-
-	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
-	{
-		return target;
 	}
 
 	private queueDispatch(event:EventBase):void
@@ -2418,49 +2108,28 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	public _updateMouseEnabled():void
 	{
-		this._pImplicitMouseEnabled = (this._parent)? this._parent.mouseChildren && this._parent._pImplicitMouseEnabled : true;
+		this._implicitMouseEnabled = (this._parent)? this._parent.mouseChildren && this._parent._implicitMouseEnabled : true;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
 	}
 
 	private _updateVisible():void
 	{
-		this._pImplicitVisibility = (this._parent)? this._explicitVisibility && this._parent._iIsVisible() : this._explicitVisibility;
+		this._implicitVisibility = (this._parent)? this._explicitVisibility && this._parent._iIsVisible() : this._explicitVisibility;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.VISIBLE;
 	}
 
 	private _updateMaskId():void
 	{
-		this._pImplicitMaskId = (this._parent && this._parent._iAssignedMaskId() != -1)? this._parent._iAssignedMaskId() : this._explicitMaskId;
+		this._implicitMaskId = (this._parent && this._parent.maskId != -1)? this._parent.maskId : this._explicitMaskId;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
 	}
 
-	private _updateMasks():void
+	private _updateMaskOwners():void
 	{
-		this._pImplicitMasks = (this._parent && this._parent._iAssignedMasks())? (this._explicitMasks != null)? this._parent._iAssignedMasks().concat([this._explicitMasks]) : this._parent._iAssignedMasks().concat() : (this._explicitMasks != null)? [this._explicitMasks] : null;
-
-		this._pImplicitMaskIds.length = 0;
-
-		if (this._pImplicitMasks && this._pImplicitMasks.length) {
-			var numLayers:number = this._pImplicitMasks.length;
-			var numChildren:number;
-			var implicitChildren:Array<IEntity>;
-			var implicitChildIds:Array<number>;
-			for (var i:number = 0; i < numLayers; i++) {
-				implicitChildren = this._pImplicitMasks[i];
-				numChildren = implicitChildren.length;
-				implicitChildIds = new Array<number>();
-				for (var j:number = 0; j < numChildren; j++){
-					// todo: figure out why a item in the array can be null
-					if(implicitChildren[j])
-						implicitChildIds.push(implicitChildren[j].id);
-				}
-
-				this._pImplicitMaskIds.push(implicitChildIds);
-			}
-		}
+		this._maskOwners = (this._parent && this._parent.maskOwners)? this._explicitMasks? this._parent.maskOwners.concat([this]) : this._parent.maskOwners.concat() : (this._explicitMasks != null)? [this] : null;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASKS;
 	}
@@ -2481,10 +2150,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
 	}
 
-	private _updateBoundsPrefab():void
+	private _updateBoundsPrefab(pickGroup:PickGroup):void
 	{
 		if (this._boundsPrefab instanceof PrimitiveCubePrefab) {
-			var box:Box = (<BoundingBox> this.getBoundingVolume(null, this._defaultBoundingVolume)).getBox();
+			var box:Box = (<BoundingBox> pickGroup.getBoundsPicker(this.partition).getBoundingVolume(null, this._defaultBoundingVolume)).getBox();
 
 			//TODO: if box is null, no prefab should be visible
 			if (box == null)
@@ -2503,7 +2172,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._boundsPrimitive.registrationPoint = new Vector3D(-cx*this._boundsPrimitive.transform.scale.x, -cy*this._boundsPrimitive.transform.scale.y, -cz*this._boundsPrimitive.transform.scale.z);
 
 		} else if (this._boundsPrefab instanceof PrimitiveSpherePrefab) {
-			var sphere:Sphere = (<BoundingSphere> this.getBoundingVolume(null, this._defaultBoundingVolume)).getSphere();
+			var sphere:Sphere = (<BoundingSphere> pickGroup.getBoundsPicker(this.partition).getBoundingVolume(null, this._defaultBoundingVolume)).getSphere();
 
 			if (sphere == null)
 				return;
@@ -2514,9 +2183,16 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._boundsPrimitive.z = sphere.z;
 		}
 	}
-	
+
+	private _updatePickObject():void
+	{
+		this._pickObject.transform.matrix3D = this.transform.concatenatedMatrix3D;
+	}
+
 	private _updateBoundsPrimitive():void
 	{
+		this._boundsPrimitiveDirty = false;
+
 		this._boundsPrimitive.transform.matrix3D = this.transform.concatenatedMatrix3D;
 	}
 
@@ -2528,6 +2204,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		this._invalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
 	}
 
+	public invalidate():void
+	{
+		super.invalidate();
+
+		if (this._implicitPartition && this.isEntity())
+			this._implicitPartition.invalidateEntity(this);
+	}
+
 	public clear():void
 	{
 		super.clear();
@@ -2535,12 +2219,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		var i:number;
 
 		this._pImplicitColorTransform = null;
-		this._pImplicitMasks = null;
-	}
-
-	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
-	{
-		return false;
+		this._maskOwners = null;
 	}
 
 	public invalidateMaterial():void
@@ -2563,8 +2242,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return BoundingVolumeType.BOX_BOUNDS_FAST;
 	}
 
-	private _updateAbsoluteDimension():void
-	{
-		this._absoluteDimension = Boolean(this._width != null || this._height != null || this._depth != null);
-	}
+	// private _updateAbsoluteDimension():void
+	// {
+	// 	this._absoluteDimension = Boolean(this._width != null || this._height != null || this._depth != null);
+	// }
 }

@@ -2,7 +2,7 @@ import {AssetEvent} from "@awayjs/core";
 
 import {BlendMode, ImageCube, Viewport} from "@awayjs/stage";
 
-import {BoundingVolumeType, TraverserBase, IAnimationSet, IRenderable, IMaterial, IEntity, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, PickingCollision, PartitionBase} from "@awayjs/renderer";
+import {BoundingVolumeType, IAnimationSet, IRenderable, IMaterial, IEntity, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, PickingCollision, PartitionBase, RendererBase, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
 
 import {ImageTextureCube} from "@awayjs/materials";
 
@@ -132,8 +132,6 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 
 		this._onTextureInvalidateDelegate = (event:AssetEvent) => this.onTextureInvalidate(event);
 
-		this._isEntity = true;
-
 		this._owners = new Array<IEntity>(this);
 
 		this.style = new Style();
@@ -143,6 +141,11 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
         } else {
             this._style.color = Number(imageColor);
         }
+	}
+
+	public isEntity():boolean
+	{
+		return true;
 	}
 
 	public get assetType():string
@@ -199,11 +202,16 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this.invalidatePasses();
 	}
 
-	public _acceptTraverser(traverser:TraverserBase):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
-		traverser.applyRenderable(this);
+		renderer.applyRenderable(this);
 	}
-
+	
+	public _applyPickable(picker:IPicker):void
+	{
+		picker.applyPickable(this);
+	}
+	
 	public iAddOwner(owner:IEntity):void
 	{
 
@@ -380,14 +388,12 @@ export class _Render_Skybox extends _Render_RenderableBase
 
 import {Plane3D} from "@awayjs/core";
 
-import {RenderableContainerNode} from "@awayjs/renderer";
-
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
  *
  * @class away.partition.SkyboxNode
  */
-export class SkyboxNode extends RenderableContainerNode
+export class SkyboxNode extends EntityNode
 {
 	/**
 	 *

@@ -1,8 +1,8 @@
-import {Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D} from "@awayjs/core";
+import {Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D, AssetEvent} from "@awayjs/core";
 
 import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Viewport} from "@awayjs/stage";
 
-import {TraverserBase, Style, RenderableContainerNode, PartitionBase} from "@awayjs/renderer";
+import {Style, PartitionBase, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
 
 import {MaterialBase} from "@awayjs/materials";
 
@@ -115,6 +115,9 @@ import { TextFormatAlign } from '../text/TextFormatAlign';
  */
 export class TextField extends DisplayObjectContainer
 {
+	private _isEntity:boolean = false;
+	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
+	
 	private static _textFields:Array<TextField> = [];
 
 	public static assetType:string = "[asset TextField]";
@@ -127,6 +130,8 @@ export class TextField extends DisplayObjectContainer
 
 	public textOffsetX:number=0;
 	public textOffsetY:number=0;
+	private _width:number;
+	private _height:number;
 	private _graphics:Graphics;
 	private _bottomScrollV:number;
 	private _caretIndex:number;
@@ -240,7 +245,9 @@ export class TextField extends DisplayObjectContainer
 					this.maskChild=new Sprite();			
 				if(!this.textChild)
 					this.textChild=new TextSprite();
+				this.textChild.mouseEnabled = false;
 				this.textChild.parentTextField=this;
+				this.maskChild.mouseEnabled = false;
 				this.maskChild.graphics.beginFill(0xffffff);
 				this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
 				this.maskChild.graphics.endFill();
@@ -420,21 +427,21 @@ export class TextField extends DisplayObjectContainer
 	}
 
 	private scrollToCursor(x, y){
-        if(!this.textChild){
-            return;
-        }
-        if(x>this._width){
-            this.textChild.x-=10;
-        }
-        if(x<Math.abs(this.textChild.x)){
-            this.textChild.x=this.textChild.x+x+2;
-        }
-        if(this.textChild.x<(this._width-this.textChild.width)){
-            this.textChild.x=this._width-this.textChild.width;
-        }
-        if(this.textChild.x>0){
-            this.textChild.x=0;
-        }
+        // if(!this.textChild){
+        //     return;
+        // }
+        // if(x>this._width){
+        //     this.textChild.x-=10;
+        // }
+        // if(x<Math.abs(this.textChild.x)){
+        //     this.textChild.x=this.textChild.x+x+2;
+        // }
+        // if(this.textChild.x<(this._width-this.textChild.width)){
+        //     this.textChild.x=this._width-this.textChild.width;
+        // }
+        // if(this.textChild.x>0){
+        //     this.textChild.x=0;
+        // }
     }
 	private drawCursor(){
         if(this.cursorBlinking || !this.selectable){
@@ -548,8 +555,8 @@ export class TextField extends DisplayObjectContainer
 		
 
 	}
-	public drawBG(){
-        this._graphics.beginFill(this.backgroundColor, 1);
+	public drawBG(useBackgroundColor:boolean){
+        this._graphics.beginFill(useBackgroundColor? this.backgroundColor : 0x000000, 0);
         this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
         this._graphics.endFill();
     }
@@ -654,7 +661,7 @@ export class TextField extends DisplayObjectContainer
 		this._positionsDirty = true;
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._invalidateBounds();
+			this.invalidate();
 	}
 
 
@@ -678,10 +685,21 @@ export class TextField extends DisplayObjectContainer
         this._internalScale.y=1/this._internalScale.y;
 		return this._internalScale;
 	}
-	public _iInternalUpdate(viewport:Viewport):void
+	public _iInternalUpdate():void
 	{
-		super._iInternalUpdate(viewport);
+		super._iInternalUpdate();
+
+		this.reConstruct(true);
         
+		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material ){
+            // only for FNT font-tables
+            // todo: do we still need this ?
+
+			this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+			this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
+			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+		}
+
         /*
 		if (projection) {
 			this._strokeScale.x = (<PerspectiveProjection> projection).hFocalLength/1000;
@@ -695,32 +713,31 @@ export class TextField extends DisplayObjectContainer
         
 		var prevScaleX:number = this._internalScale.x;
 		var prevScaleY:number = this._internalScale.y;
-		var scale:Vector3D = this.getInternalScale(viewport);
-		if (scale.x == prevScaleX && scale.y == prevScaleY)
-             return;
-        this._internalScale=scale;
-        this._glyphsDirty=true;
+		// var scale:Vector3D = this.getInternalScale(viewport);
+		// if (scale.x == prevScaleX && scale.y == prevScaleY)
+        //      return;
+        // this._internalScale=scale;
+        // this._glyphsDirty=true;
 		
     }
 
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
+	/**
+	 * //TODO
+	 *
+	 * @private
+	 */
+	private _onGraphicsInvalidate(event:AssetEvent):void
 	{
-		this.reConstruct();
-		/*
-		if(BuildMode.mode==BuildMode.AVM1 && !this._selectable){
-			this._pBoxBounds.x = 0;
-			this._pBoxBounds.y = 0;
-			this._pBoxBounds.width = 0;
-			this._pBoxBounds.height = 0;
-			return;
+		var isEntity:boolean = this.isEntity();
+
+		if (this._isEntity != isEntity) {
+			if (!isEntity && this._implicitPartition)
+				this._implicitPartition.clearEntity(this);
+
+			this._isEntity = isEntity;
 		}
-		*/		
-		var box:Box = new Box(this.textOffsetX, this.textOffsetY, 0, this._width, this._height);
 
-		if (matrix3D)
-			box = matrix3D.transformBox(box);
-
-		return box.union(target, target || cache);
+		this.invalidate();
 	}
 
 	/**
@@ -956,7 +973,7 @@ export class TextField extends DisplayObjectContainer
 
 		this._positionsDirty = true;
 
-		this._invalidateBounds();
+		this.invalidate();
 	}
 
 	/**
@@ -986,7 +1003,7 @@ export class TextField extends DisplayObjectContainer
 		this._textDirty = true;
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._invalidateBounds();
+			this.invalidate();
 
 	};
 		
@@ -1217,6 +1234,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public set selectable(value:boolean){
 		this._selectable=value;
+		this.mouseEnabled = value;
 	}
 
 
@@ -1315,7 +1333,7 @@ export class TextField extends DisplayObjectContainer
 
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._invalidateBounds();
+			this.invalidate();
 	}
 
 	public setLabelData(labelData:any)
@@ -1329,7 +1347,7 @@ export class TextField extends DisplayObjectContainer
 		this._glyphsDirty = true;
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._invalidateBounds();
+			this.invalidate();
 
 	}
 
@@ -1363,17 +1381,7 @@ export class TextField extends DisplayObjectContainer
 		//this.reConstruct();
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._invalidateBounds();
-	}
-
-	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
-	{
-		if(this._graphics.count) {
-			if (this._graphics._hitTestPointInternal(this._tempPoint.x, this._tempPoint.y))
-				return true;
-		}
-
-		return false;
+			this.invalidate();
 	}
 
 	public cursorShape:Shape;
@@ -1385,24 +1393,13 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:TraverserBase):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
-        this.reConstruct(true);
-        
-		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material ){
-            // only for FNT font-tables
-            // todo: do we still need this ?
-
-			this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-			this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
-			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-		}
-
 		if(!this.maskMode){
 			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
 			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
 			//}
-			this._graphics.acceptTraverser(traverser);
+			this._graphics._applyRenderables(renderer);
 			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
 			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
 			//}
@@ -1411,7 +1408,22 @@ export class TextField extends DisplayObjectContainer
 			//}
 		}
 	}
-
+		
+	public _applyPickables(picker:IPicker):void
+	{
+		if(!this.maskMode){
+			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
+			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
+			//}
+			this._graphics._applyPickables(picker);
+			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
+			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
+			//}
+			//if(this.bgShape){// && this.background){
+			//	traverser[this.bgShape.elements.traverseName](this.bgShape);
+			//}
+		}
+	}
 
 	/**
 	 * Indicates the horizontal scale(percentage) of the object as applied from
@@ -1626,7 +1638,7 @@ export class TextField extends DisplayObjectContainer
 		
 		this._positionsDirty = true;
 
-		this._invalidateBounds();
+		this.invalidate();
 	}
 
 	public set wordWrap(val:boolean)
@@ -1639,7 +1651,7 @@ export class TextField extends DisplayObjectContainer
 		this._positionsDirty = true;
 
 		if (!val)
-			this._invalidateBounds();
+			this.invalidate();
 	}
 	/**
 	 * The width of the text in pixels.
@@ -1647,15 +1659,6 @@ export class TextField extends DisplayObjectContainer
 	public get wordWrap():boolean
 	{
 		return this._wordWrap;
-	}
-
-
-	/**
-	 *
-	 */
-	public get isEntity():boolean
-	{
-		return true; //TODO do this better
 	}
 
 	/**
@@ -1673,6 +1676,8 @@ export class TextField extends DisplayObjectContainer
 		this.onMouseDownDelegate = (event:any) => this.onMouseDown(event);
 		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
 		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
+
+		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
 
 		this.cursorIntervalID=-1;
 
@@ -1704,6 +1709,12 @@ export class TextField extends DisplayObjectContainer
 
 
 		this._graphics = Graphics.getGraphics(this); //unique graphics object for each TextField
+		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+	}
+
+	public isEntity():boolean
+	{
+		return true;
 	}
 
 	public clear():void
@@ -1829,7 +1840,7 @@ export class TextField extends DisplayObjectContainer
 						this.adjustPositionForAutoSize(0);//(this._width - 4)/2);
 					
 					this._height = 4;
-					this._invalidateBounds();
+					this.invalidate();
 				}
 				if(this._type==TextFieldType.INPUT)
 					this.drawSelectionGraphics();
@@ -2055,7 +2066,10 @@ export class TextField extends DisplayObjectContainer
 
 		var oldSize:number=this._width;
 		this._width = 4 + newWidth;
-		this._invalidateBounds();
+
+		if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
+
 		if (this._autoSize==TextFieldAutoSize.RIGHT){
 			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
 			this._transform.invalidatePosition();
@@ -2321,7 +2335,7 @@ export class TextField extends DisplayObjectContainer
 		// if autosize is enabled, we adjust the textFieldHeight
 		if(this.autoSize!=TextFieldAutoSize.NONE){
 			this._height=this._textHeight+4;
-			this._invalidateBounds();
+			this.invalidate();
 		}
 		this.updateMaskMode();
 
@@ -2435,9 +2449,6 @@ export class TextField extends DisplayObjectContainer
 		this._textHeight=text_height;
 		//this._width=text_width+4;
 		//this._height=text_height+4;
-		if(this._background){
-			this.drawBG();
-		}
 		this.targetGraphics=this._graphics;
 		this.targetGraphics.clear();
 
@@ -2467,7 +2478,7 @@ export class TextField extends DisplayObjectContainer
 			//if(tess_fontTable.usesCurves){
 			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 			//}
-			textShape.shape = this.targetGraphics.addShape(Shape.getShape(textShape.elements));
+			textShape.shape = <Shape>this.targetGraphics.addShape(Shape.getShape(textShape.elements));
 
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
@@ -2525,9 +2536,7 @@ export class TextField extends DisplayObjectContainer
 
 		this.targetGraphics.clear();
 		this._graphics.clear();
-		if(this._background){
-			this.drawBG();
-		} 
+		this.drawBG(this._background);
 		if(this._border){
 			this.drawBorder();
 		}
@@ -2574,7 +2583,7 @@ export class TextField extends DisplayObjectContainer
 			//if(tess_fontTable.usesCurves){
 			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 			//}
-			textShape.shape = this.targetGraphics.addShape(Shape.getShape(textShape.elements));
+			textShape.shape = <Shape>this.targetGraphics.addShape(Shape.getShape(textShape.elements));
             
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
@@ -2634,7 +2643,7 @@ export class TextField extends DisplayObjectContainer
 		this._iText += newText;
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._invalidateBounds();
+			this.invalidate();
 	}
 
 	/**
@@ -2646,7 +2655,7 @@ export class TextField extends DisplayObjectContainer
 		this._iText+="\n";
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
-			this._invalidateBounds();
+			this.invalidate();
 	}
 
 	/**
@@ -3476,4 +3485,4 @@ export class TextField extends DisplayObjectContainer
 	
 }
 
-PartitionBase.registerAbstraction(RenderableContainerNode, TextField);
+PartitionBase.registerAbstraction(EntityNode, TextField);
