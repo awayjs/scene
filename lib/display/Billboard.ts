@@ -332,7 +332,7 @@ export class _Render_Billboard extends _Render_RenderableBase
 
     protected _getRenderMaterial():_Render_MaterialBase
     {
-        return this._renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._billboard.material || MaterialUtils.getDefaultColorMaterial());
+        return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._billboard.material || MaterialUtils.getDefaultColorMaterial());
     }
 
 }
