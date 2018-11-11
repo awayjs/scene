@@ -1,6 +1,6 @@
 ﻿import {Vector3D, Matrix3D, Box, Sphere} from "@awayjs/core";
 
-import {TraverserBase, IRenderable, RenderableEvent, IMaterial, PickingCollision, PartitionBase, RenderableContainerNode} from "@awayjs/renderer";
+import {IRenderable, RenderableEvent, IMaterial, PickingCollision, PartitionBase, IPicker, IRenderer, _Pick_PickableBase, PickEntity, EntityNode} from "@awayjs/renderer";
 
 import {DisplayObject} from "./DisplayObject";
 
@@ -88,8 +88,6 @@ export class LineSegment extends DisplayObject implements IRenderable
 	{
 		super();
 
-		this._isEntity = true;
-
 		this.material = material;
 
 		this._startPosition = startPosition;
@@ -97,49 +95,20 @@ export class LineSegment extends DisplayObject implements IRenderable
 		this._halfThickness = thickness*0.5;
 	}
 
-	public _acceptTraverser(traverser:TraverserBase):void
+	public isEntity():boolean
 	{
-		traverser.applyRenderable(this);
+		return true;
 	}
 
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
+	public _applyRenderables(renderer:IRenderer):void
 	{
-		var box:Box = new Box(Math.min(this._startPosition.x, this._endPosition.x), 
-							Math.min(this._startPosition.y, this._endPosition.y),
-							Math.min(this._startPosition.z, this._endPosition.z),
-							Math.abs(this._startPosition.x - this._endPosition.x),
-							Math.abs(this._startPosition.y - this._endPosition.y),
-							Math.abs(this._startPosition.z - this._endPosition.z));
-
-		if (matrix3D)
-			box = matrix3D.transformBox(box);
-
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, box.union(target, target || cache));
+		renderer.applyRenderable(this);
 	}
 
-	public _getSphereBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, cache:Sphere, target:Sphere = null):Sphere
+		
+	public _applyPickable(picker:IPicker):void
 	{
-		if (target == null)
-			target = cache || new Sphere();
-		
-		var halfWidth:number = (this._endPosition.x - this._startPosition.x)/2;
-		var halfHeight:number = (this._endPosition.y - this._startPosition.y)/2;
-		var halfDepth:number = (this._endPosition.z - this._startPosition.z)/2;
-
-		var sphere:Sphere = new Sphere(this._startPosition.x + halfWidth, 
-								this._startPosition.y + halfHeight,
-								this._startPosition.z + halfDepth,
-								Math.sqrt(halfWidth*halfWidth + halfHeight*halfHeight + halfDepth*halfDepth));
-		// if (matrix3D) {
-		// 	matrix3D.transformSphere(sphere, target);
-		// } else {
-			target.x = sphere.x;
-			target.y = sphere.y;
-			target.z = sphere.z;
-			target.radius = sphere.radius;	
-		// }
-		
-		return target;
+		picker.applyPickable(this);
 	}
 
 	/**
@@ -149,19 +118,12 @@ export class LineSegment extends DisplayObject implements IRenderable
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
 
-		this._invalidateBounds();
+		this.invalidate();
 	}
 
 	public invalidateMaterial():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
-	}
-
-	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
-	{
-		collision.renderable = null;
-		
-		return false;
 	}
 }
 
@@ -238,10 +200,101 @@ export class _Render_LineSegment extends _Render_RenderableBase
 
     protected _getRenderMaterial():_Render_MaterialBase
     {
-        return this._renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._lineSegment.material || MaterialUtils.getDefaultColorMaterial());
+        return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._lineSegment.material || MaterialUtils.getDefaultColorMaterial());
     }
 }
 
-RenderEntity.registerRenderable(_Render_LineSegment, LineSegment);
+/**
+ * @class away.pool._Render_Shape
+ */
+export class _Pick_LineSegment extends _Pick_PickableBase
+{
+	private _lineSegmentBox:Box;
+	private _lineSegmentBoxDirty:boolean = true;
+	private _lineSegmentSphere:Sphere;
+	private _lineSegmentSphereDirty:boolean = true;
+    /**
+     *
+     */
+    private _lineSegment:LineSegment;
 
-PartitionBase.registerAbstraction(RenderableContainerNode, LineSegment);
+    /**
+     * //TODO
+     *
+     * @param renderEntity
+     * @param shape
+     * @param level
+     * @param indexOffset
+     */
+    constructor(lineSegment:LineSegment, pickEntity:PickEntity)
+    {
+        super(lineSegment, pickEntity);
+
+        this._lineSegment = lineSegment;
+    }
+	
+	public onInvalidateElements(event:RenderableEvent):void
+    {
+		super.onInvalidateElements(event);
+
+		this._lineSegmentBoxDirty = true;
+		this._lineSegmentSphereDirty = true;
+	}
+
+    public onClear(event:AssetEvent):void
+    {
+        super.onClear(event);
+
+        this._lineSegment = null;
+	}
+	
+	public hitTestPoint(x:number, y:number, z:number):boolean
+	{
+		return true;
+	}
+
+	public getBoxBounds(matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Box = null, target:Box = null):Box
+	{
+		if (this._lineSegmentBoxDirty) {
+			this._lineSegmentBoxDirty = false;
+
+			this._lineSegmentBox = new Box(Math.min(this._lineSegment.startPosition.x, this._lineSegment.endPosition.x), 
+										Math.min(this._lineSegment.startPosition.y, this._lineSegment.endPosition.y),
+										Math.min(this._lineSegment.startPosition.z, this._lineSegment.endPosition.z),
+										Math.abs(this._lineSegment.startPosition.x - this._lineSegment.endPosition.x),
+										Math.abs(this._lineSegment.startPosition.y - this._lineSegment.endPosition.y),
+										Math.abs(this._lineSegment.startPosition.z - this._lineSegment.endPosition.z));
+		}
+
+		return (matrix3D? matrix3D.transformBox(this._lineSegmentBox) : this._lineSegmentBox).union(target, target || cache);
+	}
+
+	public getSphereBounds(center:Vector3D, matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Sphere = null, target:Sphere = null):Sphere
+	{
+		if (this._lineSegmentSphereDirty) {
+			this._lineSegmentSphereDirty = false;
+
+			var halfWidth:number = (this._lineSegment.endPosition.x - this._lineSegment.startPosition.x)/2;
+			var halfHeight:number = (this._lineSegment.endPosition.y - this._lineSegment.startPosition.y)/2;
+			var halfDepth:number = (this._lineSegment.endPosition.z - this._lineSegment.startPosition.z)/2;
+	
+			this._lineSegmentSphere = new Sphere(this._lineSegment.startPosition.x + halfWidth, 
+									this._lineSegment.startPosition.y + halfHeight,
+									this._lineSegment.startPosition.z + halfDepth,
+									Math.sqrt(halfWidth*halfWidth + halfHeight*halfHeight + halfDepth*halfDepth));
+		}
+
+		return (matrix3D? matrix3D.transformSphere(this._lineSegmentSphere) : this._lineSegmentSphere).union(target, target || cache);
+	}
+
+	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
+	{
+		collision.renderable = null;
+		//TODO
+		return false;
+	}
+}
+
+RenderEntity.registerRenderable(_Render_LineSegment, LineSegment);
+PickEntity.registerPickable(_Pick_LineSegment, LineSegment);
+PartitionBase.registerAbstraction(EntityNode, LineSegment);

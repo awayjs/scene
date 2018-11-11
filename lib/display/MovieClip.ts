@@ -1,4 +1,4 @@
-import {AssetEvent,IAsset, Matrix3D, EventBase, IAssetAdapter, Box, WaveAudio} from "@awayjs/core";
+import {AssetEvent,IAsset, EventBase, WaveAudio} from "@awayjs/core";
 import {Graphics} from "@awayjs/graphics";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
@@ -9,7 +9,7 @@ import {FrameScriptManager} from "../managers/FrameScriptManager";
 import {DisplayObject} from "./DisplayObject";
 import {Sprite} from "./Sprite";
 import {TextField} from "./TextField";
-import { PartitionBase, RenderableContainerNode } from '@awayjs/renderer';
+import { PartitionBase, EntityNode } from '@awayjs/renderer';
 
 
 export class MovieClip extends Sprite
@@ -63,9 +63,6 @@ export class MovieClip extends Sprite
 	private _sounds:Object = {};
 
 	public _useHandCursor:boolean;
-	public mouseListenerCount:number;
-
-	private _hitArea:DisplayObject
 	public onLoadedAction:any=null;
     public onCustomConstructor:any=null;
     private _parentSoundVolume:number;
@@ -80,7 +77,6 @@ export class MovieClip extends Sprite
 		this._isButton=false;
 		this._buttonMode=false;
 		this._useHandCursor=true;
-		this.mouseListenerCount=0;
 		this.cursorType="pointer";
 		//this.debugVisible=true;
 		this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
@@ -164,37 +160,6 @@ export class MovieClip extends Sprite
 			this.currentFrameIndex = 0;
 
 		}
-	}
-
-		/**
-	 * //TODO
-	 *
-	 * @protected
-	 */
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
-	{
-		if(this._hitArea) {
-			//this._hitArea.
-
-			/*var new_matrix:Matrix3D = this._hitArea.transform.matrix3D;
-			this.transform.matrix3D.copyTo(new_matrix);
-
-			this._hitArea.transform.invalidateComponents();*/
-			return this._hitArea._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);	
-		}
-
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, target);
-	}
-        
-	public get hitArea():DisplayObject
-	{
-		return this._hitArea;
-	}
-	public set hitArea(value:DisplayObject)
-	{
-		this._hitArea=value;
-
-		this._invalidateChildren();
 	}
 
 	public getMouseCursor():string
@@ -420,41 +385,6 @@ export class MovieClip extends Sprite
 		this._timeline.gotoFrame(this, value, queue_script, false, true);
 	}
 
-	public addEventListener(type:string, listener:(event:EventBase) => void):void
-	{
-
-		super.addEventListener(type, listener);
-
-		switch (type) {
-			case MouseEvent.MOUSE_OUT:
-			case MouseEvent.MOUSE_MOVE:
-			case MouseEvent.MOUSE_DOWN:
-			case MouseEvent.MOUSE_OVER:
-			case MouseEvent.MOUSE_UP:
-			case MouseEvent.MOUSE_UP_OUTSIDE:
-			case MouseEvent.MOUSE_WHEEL:
-				this.mouseListenerCount++;
-				break;
-		}
-	}
-	public removeEventListener(type:string, listener:(event:EventBase) => void):void
-	{
-
-		super.removeEventListener(type, listener);
-
-		switch (type) {
-			case MouseEvent.MOUSE_OUT:
-			case MouseEvent.MOUSE_MOVE:
-			case MouseEvent.MOUSE_DOWN:
-			case MouseEvent.MOUSE_OVER:
-			case MouseEvent.MOUSE_UP:
-			case MouseEvent.MOUSE_UP_OUTSIDE:
-			case MouseEvent.MOUSE_WHEEL:
-				if(this.mouseListenerCount>0)
-					this.mouseListenerCount--;
-				break;
-		}
-	}
 	public addButtonListeners():void
 	{
 		this._isButton = true;
@@ -465,6 +395,8 @@ export class MovieClip extends Sprite
 		this.addEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
 		this.addEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
+
+		this.mouseChildren = false;
 	}
 
 	public removeButtonListeners():void
@@ -474,6 +406,7 @@ export class MovieClip extends Sprite
 		this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
 		this.removeEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
 
+		this.mouseChildren = true;
 	}
 
 	public getChildAtSessionID(sessionID:number):DisplayObject
@@ -666,7 +599,6 @@ export class MovieClip extends Sprite
 	{
 		super.copyTo(newInstance);
 
-		newInstance.hitArea = this._hitArea;
 		newInstance.timeline = this._timeline;
 		newInstance.loop = this.loop;
 	}
@@ -775,11 +707,6 @@ export class MovieClip extends Sprite
 
 		super.clear();
 	}
-
-	protected _isEntityInternal():boolean
-	{
-		return Boolean(this._hitArea != null) || super._isEntityInternal();
-	}
 }
 
-PartitionBase.registerAbstraction(RenderableContainerNode, MovieClip);
+PartitionBase.registerAbstraction(EntityNode, MovieClip);

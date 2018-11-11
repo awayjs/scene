@@ -291,7 +291,7 @@ export class Timeline
 			child.rotationZ = originalChild.rotationZ;
 			hitArea.addChild(child);
 		}
-		target_mc.hitArea=hitArea;
+		target_mc.pickObject=hitArea;
 		target_mc.reset(false);
 		return hitArea;
 	}

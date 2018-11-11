@@ -1,6 +1,6 @@
 import {Box, Point, ArgumentError, RangeError, Matrix3D} from "@awayjs/core";
 
-import { PartitionBase, RenderableContainerNode } from "@awayjs/renderer";
+import { PartitionBase} from "@awayjs/renderer";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 
@@ -103,6 +103,7 @@ export class DisplayObjectContainer extends DisplayObject
 	 */
 	public get mouseChildren():boolean
 	{
+		//ensure the update of _implicitMouseEnabled for cases where child _implicitMouseEnabled is calculated
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
 			this._updateMouseEnabled();
 
@@ -227,8 +228,6 @@ export class DisplayObjectContainer extends DisplayObject
 		child._depthID = depth;
 
 		child._setParent(this);
-
-		this._invalidateChildren();
 
 		return child;
 	}
@@ -485,8 +484,6 @@ export class DisplayObjectContainer extends DisplayObject
 
 		child._setParent(null);
 
-		this._invalidateChildren();
-
 		return child;
 	}
 
@@ -517,7 +514,6 @@ export class DisplayObjectContainer extends DisplayObject
 		//var oldChilds:DisplayObject[]=this._children.slice();
 		for(var i:number = endIndex-1;i >= beginIndex; i--)
 			this.removeChildAtInternal(i)._setParent(null);
-		this._invalidateChildren();
 	}
 
 	/**
@@ -587,63 +583,7 @@ export class DisplayObjectContainer extends DisplayObject
 		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
 		this.addChildAtDepth(child, depth);
 	}
-
-
-	/**
-	 * //TODO
-	 *
-	 * @protected
-	 */
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
-	{
-		var numChildren:number = this._children.length;
-
-		if (numChildren > 0) {
-			var m:Matrix3D = new Matrix3D();
-			if (fastFlag) {
-				var box:Box;
-				for (var i:number = 0; i < numChildren; ++i) {
-
-					// ignore bounds of childs that are masked
-					// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
-					//if(this._children[i].masks==null){
-						box = this._children[i]._getBoxBoundsInternal(null, strokeFlag, fastFlag, box);
-						
-						if (box != null) {
-							m.copyFrom(this._children[i].transform.matrix3D);
-							
-							if (this._children[i]._registrationMatrix3D)
-								m.prepend(this._children[i]._registrationMatrix3D);
-
-							target = m.transformBox(box).union(target, target || cache);
-						}
-				//	}
-				}
-			} else {
-				for (var i:number = 0; i < numChildren; ++i) {
-
-					// ignore bounds of childs that are masked
-					// todo: this check is only needed for icycle, to get mouseclicks work correct in shop
-					//if(this._children[i].masks==null){
-						if (matrix3D)
-							m.copyFrom(matrix3D);
-						else
-							m.identity();
-						
-						m.prepend(this._children[i].transform.matrix3D);
-
-						if (this._children[i]._registrationMatrix3D)
-							m.prepend(this._children[i]._registrationMatrix3D);
-
-						target = this._children[i]._getBoxBoundsInternal(m, strokeFlag, fastFlag, cache, target);
-				//	}
-				}
-			}
-		}
-
-		return target;
-	}
-
+	
 	/**
 	 * @protected
 	 */
@@ -716,16 +656,6 @@ export class DisplayObjectContainer extends DisplayObject
 		this._nextHighestDepth += 1;
 	}
 
-	public _hitTestPointInternal(x:number, y:number, shapeFlag:boolean, masksFlag:boolean):boolean
-	{
-		var numChildren:number = this._children.length;
-		for(var i:number = 0; i < numChildren; i++)
-			if(this._children[i].hitTestPoint(x,y, shapeFlag, masksFlag))
-				return true;
-
-		return false;
-	}
-
 	public _updateMaskMode():void
 	{
 		if (this.maskMode)
@@ -733,30 +663,4 @@ export class DisplayObjectContainer extends DisplayObject
 
 		super._updateMaskMode();
 	}
-
-	protected _isEntityInternal():boolean
-	{
-		return Boolean(this._children.length);
-	}
-
-	protected _invalidateChildren():void
-	{
-		var isContainer:boolean = Boolean(this._children.length);
-		var isEntity:boolean = this._isEntityInternal();
-
-		if (this._isContainer != isContainer || this._isEntity != isEntity) {
-			if (this._implicitPartition)
-				this._implicitPartition.clearEntity(this);
-
-			this._isContainer = isContainer;
-			this._isEntity = isEntity;
-
-			if (this._implicitPartition)
-				this._implicitPartition.invalidateEntity(this);
-		}
-
-		this._invalidateBounds();
-	}
 }
-
-PartitionBase.registerAbstraction(RenderableContainerNode, DisplayObjectContainer);

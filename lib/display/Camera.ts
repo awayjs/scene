@@ -16,11 +16,14 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	{
 		super();
 
-		this._isEntity = true;
-
 		this._projection = projection || new PerspectiveProjection();
 		this._projection.transform = this._transform;
 		this.z = -1000;
+	}
+
+	public isEntity():boolean
+	{
+		return true;
 	}
 
 	//@override
@@ -84,17 +87,17 @@ export class Camera extends DisplayObjectContainer implements IEntity
 	}
 }
 
-import {TraverserBase, RenderableContainerNode} from "@awayjs/renderer";
+import {ITraverser, EntityNode} from "@awayjs/renderer";
 
 /**
  * @class away.partition.CameraNode
  */
-export class CameraNode extends RenderableContainerNode
+export class CameraNode extends EntityNode
 {
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:TraverserBase):void
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		// todo: dead end for now, if it has a debug sprite, then sure accept that
 	}

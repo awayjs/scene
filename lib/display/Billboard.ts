@@ -1,11 +1,10 @@
-import {Rectangle, Matrix, Matrix3D, Box} from "@awayjs/core";
+import {Rectangle, Matrix3D, Box, Vector3D, Sphere} from "@awayjs/core";
 
 import {ImageSampler, Image2D, ImageUtils} from "@awayjs/stage";
 
-import {TraverserBase, IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent, PickingCollision, PartitionBase, RenderableContainerNode} from "@awayjs/renderer";
+import {IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent, PickingCollision, PartitionBase, IPicker, IRenderer, PickEntity, _Pick_PickableBase, EntityNode} from "@awayjs/renderer";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
-import {DisplayObject} from "./DisplayObject";
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -48,12 +47,15 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 {
 	public static assetType:string = "[asset Billboard]";
 
+	private _width:number;
+	private _height:number;
 	private _billboardWidth:number;
 	private _billboardHeight:number;
 	private _billboardRect:Rectangle;
-	private _billboardBox:Box;
 
 	private _onInvalidateTextureDelegate:(event:MaterialEvent) => void;
+
+	public preserveDimensions:boolean = false;
 
 	/**
 	 *
@@ -115,11 +117,46 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		this._updateDimensions();
 	}
 
+	
+	/**
+	 *
+	 */
+	public get width():number
+	{
+		return this._width;
+	}
+	
+	public set width(val:number)
+	{
+		if (this._width == val)
+			return;
+
+		this._width = val;
+
+		this.scaleX = this._width/this._billboardRect.width;
+	}
+	
+	/**
+	 *
+	 */
+	public get height():number
+	{
+		return this._height;
+	}
+
+	public set height(val:number)
+	{
+		if (this._height == val)
+			return;
+
+		this._height = val;
+
+		this.scaleY = this._height/this._billboardRect.height;
+	}
+
 	constructor(material:IMaterial, pixelSnapping:string = "auto", smoothing:boolean = false)
 	{
 		super();
-
-		this._isEntity = true;
 
 		this._onInvalidateTextureDelegate = (event:MaterialEvent) => this._onInvalidateTexture(event);
 
@@ -128,16 +165,10 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		this._updateDimensions();
 	}
 
-	/**
-	 * @protected
-	 */
-	public _getBoxBoundsInternal(matrix3D:Matrix3D, strokeFlag:boolean, fastFlag:boolean, cache:Box = null, target:Box = null):Box
+	public isEntity():boolean
 	{
-		var box:Box = matrix3D? matrix3D.transformBox(this._billboardBox) : this._billboardBox;
-		
-		return super._getBoxBoundsInternal(matrix3D, strokeFlag, fastFlag, cache, box.union(target, target || cache));
+		return true;
 	}
-
 	
 	public clone():Billboard
 	{
@@ -148,24 +179,14 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		return newInstance;
 	}
 
-	public _acceptTraverser(traverser:TraverserBase):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
-		traverser.applyRenderable(this);
+		renderer.applyRenderable(this);
 	}
-
-	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
+	
+	public _applyPickable(picker:IPicker):void
 	{
-		collision.renderable = null;
-
-		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollision, shortestCollisionDistance)) {
-		//	shortestCollisionDistance = pickingCollision.rayEntryDistance;
-		//
-		//	pickingCollision.renderable = billboard;
-		//
-		//	return true;
-		//}
-
-		return false;
+		picker.applyPickable(this);
 	}
 
 	private _updateDimensions():void
@@ -191,17 +212,17 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 			this._billboardRect = new Rectangle(0, 0, 1, 1);
 		}
 
-		this._billboardBox = new Box(this._billboardRect.x, this._billboardRect.y, 0, this._billboardRect.width, this._billboardRect.height, 0);
-
-		this._invalidateBounds();
+		this.invalidate();
 
 		this.invalidateElements();
 
-		if (this._width != null)
-			this._setScaleX(this._width/this._billboardRect.width);
-
-		if (this._height != null)
-			this._setScaleY(this._height/this._billboardRect.height);
+		if (!this.preserveDimensions) {
+			this._width = this._billboardRect.width*this.scaleX;
+			this._height = this._billboardRect.height*this.scaleY;
+		} else {
+			this.scaleX = this._width/this._billboardRect.width;
+			this.scaleY = this._height/this._billboardRect.height;
+		}
 	}
 
 
@@ -311,11 +332,91 @@ export class _Render_Billboard extends _Render_RenderableBase
 
     protected _getRenderMaterial():_Render_MaterialBase
     {
-        return this._renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._billboard.material || MaterialUtils.getDefaultColorMaterial());
+        return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._billboard.material || MaterialUtils.getDefaultColorMaterial());
     }
 
 }
 
-RenderEntity.registerRenderable(_Render_Billboard, Billboard);
+/**
+ * @class away.pool._Render_Shape
+ */
+export class _Pick_Billboard extends _Pick_PickableBase
+{
+	private _billboardBox:Box;
+	private _billboardBoxDirty:boolean = true;
 
-PartitionBase.registerAbstraction(RenderableContainerNode, Billboard);
+    /**
+     *
+     */
+    private _billboard:Billboard;
+
+    /**
+     * //TODO
+     *
+     * @param renderEntity
+     * @param shape
+     * @param level
+     * @param indexOffset
+     */
+    constructor(billboard:Billboard, pickEntity:PickEntity)
+    {
+        super(billboard, pickEntity);
+
+        this._billboard = billboard;
+    }
+	
+	public onInvalidateElements(event:RenderableEvent):void
+    {
+		super.onInvalidateElements(event);
+
+		this._billboardBoxDirty = true;
+	}
+
+    public onClear(event:AssetEvent):void
+    {
+        super.onClear(event);
+
+        this._billboard = null;
+	}
+	
+	public hitTestPoint(x:number, y:number, z:number):boolean
+	{
+		return true;
+	}
+
+	public getBoxBounds(matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Box = null, target:Box = null):Box
+	{
+		if (this._billboardBoxDirty) {
+			this._billboardBoxDirty = false;
+
+			this._billboardBox = new Box(this._billboard.billboardRect.x, this._billboard.billboardRect.y, 0, this._billboard.billboardRect.width, this._billboard.billboardRect.height, 0);
+		}
+
+		return (matrix3D? matrix3D.transformBox(this._billboardBox) : this._billboardBox).union(target, target || cache);
+	}
+
+	public getSphereBounds(center:Vector3D, matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Sphere = null, target:Sphere = null):Sphere
+	{
+		//TODO
+		return target;
+	}
+
+	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
+	{
+		collision.renderable = null;
+
+		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollision, shortestCollisionDistance)) {
+		//	shortestCollisionDistance = pickingCollision.rayEntryDistance;
+		//
+		//	pickingCollision.renderable = billboard;
+		//
+		//	return true;
+		//}
+
+		return false;
+	}
+}
+
+RenderEntity.registerRenderable(_Render_Billboard, Billboard);
+PickEntity.registerPickable(_Pick_Billboard, Billboard);
+PartitionBase.registerAbstraction(EntityNode, Billboard);
