@@ -1800,6 +1800,8 @@ export class TextField extends DisplayObjectContainer
 
 		this._graphics = Graphics.getGraphics(this); //unique graphics object for each TextField
 		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+
+		this.mouseEnabled = this._selectable;
 	}
 
 	public isEntity():boolean
