@@ -405,8 +405,6 @@ export class MovieClip extends Sprite
 		this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
 		this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
 		this.removeEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
-
-		this.mouseChildren = true;
 	}
 
 	public getChildAtSessionID(sessionID:number):DisplayObject
