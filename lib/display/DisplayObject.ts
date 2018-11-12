@@ -206,7 +206,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public cursorType:string;
 
 	protected _isInFocus:boolean;
-	protected _isTabEnabled:boolean;
+	protected _tabEnabled:boolean;
 	protected _tabIndex:number;
 
     private _inheritColorTransform:boolean = true;
@@ -256,13 +256,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return "initial";
 	}
 
-	public get isTabEnabled():boolean
+	public get tabEnabled():boolean
 	{
-		return this._isTabEnabled;
+		return this._tabEnabled;
 	}
-	public set isTabEnabled(value:boolean)
+	public set tabEnabled(value:boolean)
 	{
-		this._isTabEnabled=value;
+		this._tabEnabled=value;
 	}
 	public get tabIndex():number
 	{
@@ -1500,7 +1500,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 		this.cursorType="";
 		this._isInFocus=false;
-		this._isTabEnabled=false;
+		this._tabEnabled=false;
 		this._tabIndex=-1;
 		//global debug bounding boxes:
 		//this._boundsVisible=true;

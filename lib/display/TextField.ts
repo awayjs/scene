@@ -1771,7 +1771,7 @@ export class TextField extends DisplayObjectContainer
 
 		this.cursorIntervalID=-1;
 
-		this._isTabEnabled=true;
+		this._tabEnabled=true;
 		this.cursorType="text";
 		this.textOffsetX=0;
 		this.textOffsetY=0;
