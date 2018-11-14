@@ -321,7 +321,10 @@ export class TextField extends DisplayObjectContainer
 			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
 			(<any>this.adapter).selectTextField(fromMouseDown);
         }
-        this._glyphsDirty=true;
+		this._glyphsDirty=true;
+
+		if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 	}
 
 	private enableInput(enable:boolean=true){
@@ -1408,6 +1411,8 @@ export class TextField extends DisplayObjectContainer
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
+		else if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 	}
 
 	public setLabelData(labelData:any)
@@ -1422,6 +1427,8 @@ export class TextField extends DisplayObjectContainer
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
+		else if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 
 	}
 
@@ -1456,6 +1463,8 @@ export class TextField extends DisplayObjectContainer
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
+		else if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 	}
 
 	public cursorShape:Shape;
@@ -1573,6 +1582,9 @@ export class TextField extends DisplayObjectContainer
 			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 		} else {
 			this._glyphsDirty = true;
+
+			if (this._implicitPartition)
+				this._implicitPartition.invalidateEntity(this);
 		}
 	}
 
@@ -1938,8 +1950,7 @@ export class TextField extends DisplayObjectContainer
                     if(this._type==TextFieldType.INPUT){
                         this.newTextFormat.font_table.initFontSize(this.newTextFormat.size);
                         this._height = this.newTextFormat.font_table.getLineHeight()+4; 
-                    } 
-					this.invalidate();
+                    }
 				}
 				if(this._type==TextFieldType.INPUT)
 					this.drawSelectionGraphics();
@@ -2165,9 +2176,6 @@ export class TextField extends DisplayObjectContainer
 
 		var oldSize:number=this._width;
 		this._width = 4 + newWidth;
-
-		if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
 
 		if (this._autoSize==TextFieldAutoSize.RIGHT){
 			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
@@ -2434,10 +2442,9 @@ export class TextField extends DisplayObjectContainer
 
 
 		// if autosize is enabled, we adjust the textFieldHeight
-		if(this.autoSize!=TextFieldAutoSize.NONE){
+		if(this.autoSize!=TextFieldAutoSize.NONE)
 			this._height=this._textHeight+4;
-			this.invalidate();
-        }
+
         if(this._textWidth>this._width){
 
             // get the max-scroll horizontal value 
@@ -2579,6 +2586,7 @@ export class TextField extends DisplayObjectContainer
 		this._textHeight=text_height;
 		//this._width=text_width+4;
 		//this._height=text_height+4;
+		this.drawBG(this._background);
 		this.targetGraphics=this._graphics;
 		this.targetGraphics.clear();
 
@@ -2768,6 +2776,8 @@ export class TextField extends DisplayObjectContainer
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
+		else if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 	}
 
 	/**
@@ -2780,6 +2790,8 @@ export class TextField extends DisplayObjectContainer
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
+		else if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 	}
 
 	/**
