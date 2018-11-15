@@ -44,6 +44,8 @@ export class MovieClip extends Sprite
 
 	private _onMouseOver:(event:MouseEvent) => void;
 	private _onMouseOut:(event:MouseEvent) => void;
+	private _onDragOver:(event:MouseEvent) => void;
+	private _onDragOut:(event:MouseEvent) => void;
 	private _onMouseDown:(event:MouseEvent) => void;
 	private _onMouseUp:(event:MouseEvent) => void;
 
@@ -83,20 +85,34 @@ export class MovieClip extends Sprite
 
 		this.inheritColorTransform = true;
 
-		// todo: allow to set cursor-types for movieclip
 		this._onMouseOver = (event:MouseEvent) => {
-			this.currentFrameIndex = 1;
+            if(this.buttonEnabled)
+                this.currentFrameIndex = 1;
+            else
+                this.currentFrameIndex = 0;
 		};
 		this._onMouseOut = (event:MouseEvent) => {
 			this.currentFrameIndex = 0;
 		};
 		this._onMouseDown = (event:MouseEvent) => {
-			this.currentFrameIndex = 2;
+            if(this.buttonEnabled)
+                this.currentFrameIndex = 2;
+            else
+                this.currentFrameIndex = 0;
 		};
 		this._onMouseUp = (event:MouseEvent) => {
 			this.currentFrameIndex = this.currentFrameIndex == 0? 0 : 1;
 		};
-
+		this._onDragOver = (event:MouseEvent) => {
+            if(this.buttonEnabled)
+                this.currentFrameIndex = 2;
+            else
+                this.currentFrameIndex = 0;
+		};
+		this._onDragOut = (event:MouseEvent) => {
+			this.currentFrameIndex = 1;
+		};
+        
 		this._timeline = timeline || new Timeline();
 	}
 	public buttonEnabled:boolean=true;
@@ -158,7 +174,6 @@ export class MovieClip extends Sprite
 	public buttonReset(){
 		if(this._isButton && !this.buttonEnabled){
 			this.currentFrameIndex = 0;
-
 		}
 	}
 
@@ -169,6 +184,8 @@ export class MovieClip extends Sprite
 		if(this._useHandCursor && (this.buttonMode)){
 			return this.cursorType;
 		}
+        return "initial";
+        /*
 		var cursorName:string;
 		var parent:DisplayObject=this.parent;
 		while(parent){
@@ -183,7 +200,8 @@ export class MovieClip extends Sprite
 				return "initial";
 			}
 		}
-		return "initial";
+        return "initial";
+        */
 	}
 	public registerScriptObject(child:DisplayObject):void
 	{
@@ -395,6 +413,8 @@ export class MovieClip extends Sprite
 		this.addEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
 		this.addEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
+		this.addEventListener(MouseEvent.DRAG_OVER, this._onDragOver);
+		this.addEventListener(MouseEvent.DRAG_OUT, this._onDragOut);
 
 		this.mouseChildren = false;
 	}
@@ -405,6 +425,8 @@ export class MovieClip extends Sprite
 		this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
 		this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
 		this.removeEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
+		this.removeEventListener(MouseEvent.DRAG_OVER, this._onDragOver);
+		this.removeEventListener(MouseEvent.DRAG_OUT, this._onDragOut);
 	}
 
 	public getChildAtSessionID(sessionID:number):DisplayObject
