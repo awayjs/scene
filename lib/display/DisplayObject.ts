@@ -12,6 +12,7 @@ import {AlignmentMode} from "../base/AlignmentMode";
 import {OrientationMode} from "../base/OrientationMode";
 import {IBitmapDrawable} from "../base/IBitmapDrawable";
 import {DisplayObjectEvent} from "../events/DisplayObjectEvent";
+import {FocusEvent} from "../events/FocusEvent";
 import {PrefabBase} from "../prefabs/PrefabBase";
 
 import {Scene} from "../Scene";
@@ -226,7 +227,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public isSlice9ScaledSprite:boolean=false;
 	public instanceID:string="";
 	public addedOnFrame:number=0;
-	public avm1Symbol:any;
+    public avm1Symbol:any;
+    
+    public static focusEvent:FocusEvent=new FocusEvent(FocusEvent.FOCUS_IN);
 
 	// this is needed for AVM1 - todo: maybe do this on adapters ?
 	public placeObjectTag:any=null;
@@ -279,10 +282,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public set isInFocus(value:boolean)
 	{
 		this._isInFocus=value;
-	}
+    }
+    
 	public setFocus(value:boolean, fromMouseDown:boolean=false, sendSoftKeyEvent:boolean=true ){
-		
-		this._isInFocus=value;
+        if(this._isInFocus==value)
+            return;
+        this._isInFocus=value;
+        if(this._isInFocus)
+            DisplayObject.focusEvent.type=FocusEvent.FOCUS_IN;
+        else            
+            DisplayObject.focusEvent.type=FocusEvent.FOCUS_OUT;
+        this.dispatchEnterFrame(DisplayObject.focusEvent)
 	}
 
     public get inheritColorTransform():boolean
