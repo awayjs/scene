@@ -22,6 +22,7 @@ import {TextFormat} from "../text/TextFormat";
 import {TextInteractionMode} from "../text/TextInteractionMode";
 import {TextLineMetrics} from "../text/TextLineMetrics";
 import {KeyboardEvent} from "../events/KeyboardEvent";
+import {TextfieldEvent} from "../events/TextfieldEvent";
 
 import {DisplayObject} from "./DisplayObject";
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
@@ -33,6 +34,7 @@ import { FontStyleName } from '../text/FontStyleName';
 import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
 import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
 import { TextFormatAlign } from '../text/TextFormatAlign';
+import { MouseEvent } from '../events/MouseEvent';
 
 /**
  * The TextField class is used to create display objects for text display and
@@ -126,6 +128,7 @@ export class TextField extends DisplayObjectContainer
 	{
 		return (TextField._textFields.length)? TextField._textFields.pop() : new TextField()
 	}
+    private static _onChangedEvent=new TextfieldEvent(TextfieldEvent.CHANGED);
 
 
 	public textOffsetX:number=0;
@@ -192,7 +195,6 @@ export class TextField extends DisplayObjectContainer
 	private _textRuns_words:number[]=[];	// stores words-offset, word-count and width for each textrun
 	private _paragraph_textRuns_indices:number[]=[];	// stores textFormat for each textrun
 
-	private _onChanged:Function;
 
 	private _maxWidthLine:number=0;
 
@@ -273,32 +275,9 @@ export class TextField extends DisplayObjectContainer
 	}
 	public getMouseCursor():string
 	{
-		// check if any parent is a button, otherwise return the cursor type set for this text
-		var cursorName:string;
-		var parent:DisplayObject=this.parent;
-		while(parent){
-			if(parent.isAsset(MovieClip)){
-				cursorName=(<MovieClip>parent).getMouseCursor();
-				if(cursorName!="initial"){
-					return cursorName;
-				}
-			}
-			parent=parent.parent;
-			if(parent && parent.name=="scene"){
-				parent=null;
-			}
-		}
 		return this.cursorType;
 	}
 
-	public get onChanged():Function
-	{
-		return this._onChanged;
-	}
-	public set onChanged(value:Function)
-	{
-		this._onChanged=value;
-	}
 
 	public get isInFocus():boolean
 	{
@@ -312,8 +291,9 @@ export class TextField extends DisplayObjectContainer
 		
 		if(this._isInFocus==value){
 			return;
-		}
-        this._isInFocus=value;
+        }
+        super.setFocus(value, fromMouseDown, sendSoftKeyEvent);
+
 		this.enableInput(value);
 
 		// check if a adapter exists
@@ -375,8 +355,11 @@ export class TextField extends DisplayObjectContainer
 		//console.log("lineIdx", lineIdx, "charIdx", charIdx);
 		return charIdx;
 
-	}
-	public startSelectionByMouse(event){
+    }
+    
+    
+	private startSelectionByMouseDelegate:(event)=>void;
+	private startSelectionByMouse(event){
 		this._selectionBeginIndex=this.findCharIdxForMouse(event);	
 		this._selectionEndIndex=this._selectionBeginIndex;
 		//console.log("startSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);	
@@ -385,7 +368,8 @@ export class TextField extends DisplayObjectContainer
         this.cursorBlinking=false;
 		this.drawSelectionGraphics();
 	}
-	public stopSelectionByMouse(event){
+	private stopSelectionByMouseDelegate:(event)=>void;
+	private stopSelectionByMouse(event){
 		this._selectionEndIndex=this.findCharIdxForMouse(event);
 		//console.log("stopSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
 		this._glyphsDirty=true;
@@ -393,7 +377,8 @@ export class TextField extends DisplayObjectContainer
 		this.drawSelectionGraphics();
 
 	}
-	public updateSelectionByMouse(event){
+	private updateSelectionByMouseDelegate:(event)=>void;
+	private updateSelectionByMouse(event){
 		this._selectionEndIndex=this.findCharIdxForMouse(event);
 		//console.log("updateSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
 		this._glyphsDirty=true;
@@ -1310,8 +1295,21 @@ export class TextField extends DisplayObjectContainer
 		return this._selectable;
 	}
 	public set selectable(value:boolean){
+        if(this.selectable==value){
+            return;
+        }
 		this._selectable=value;
-		this.mouseEnabled = value;
+        this.mouseEnabled = value;
+        if(value){            
+            this.addEventListener(MouseEvent.DRAG_START, this.startSelectionByMouseDelegate);
+            this.addEventListener(MouseEvent.DRAG_STOP, this.stopSelectionByMouseDelegate);
+            this.addEventListener(MouseEvent.DRAG_MOVE, this.updateSelectionByMouseDelegate);
+        }
+        else{            
+            this.removeEventListener(MouseEvent.DRAG_START, this.startSelectionByMouseDelegate);
+            this.removeEventListener(MouseEvent.DRAG_STOP, this.stopSelectionByMouseDelegate);
+            this.removeEventListener(MouseEvent.DRAG_MOVE, this.updateSelectionByMouseDelegate);
+        }
 	}
 
 
@@ -1412,7 +1410,8 @@ export class TextField extends DisplayObjectContainer
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
 		else if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+            this._implicitPartition.invalidateEntity(this);
+            
 	}
 
 	public setLabelData(labelData:any)
@@ -1778,9 +1777,12 @@ export class TextField extends DisplayObjectContainer
 		this.onMouseDownDelegate = (event:any) => this.onMouseDown(event);
 		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
 		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
+		this.startSelectionByMouseDelegate = (event:any) => this.startSelectionByMouse(event);
+		this.stopSelectionByMouseDelegate = (event:any) => this.stopSelectionByMouse(event);
+		this.updateSelectionByMouseDelegate = (event:any) => this.updateSelectionByMouse(event);
 
 		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
-
+        
 		this.cursorIntervalID=-1;
 
 		this._tabEnabled=true;
@@ -3530,8 +3532,8 @@ export class TextField extends DisplayObjectContainer
 		this.drawSelectionGraphics();
 		this.invalidate();
 		
-		if(this._onChanged && oldText!==this._iText)
-			this._onChanged();
+		if(oldText!==this._iText)
+			this.dispatchEvent(TextField._onChangedEvent);
     }
     private _insertNewText(newText:string){
 
