@@ -42,6 +42,34 @@ export class MouseEvent extends EventBase
 	public static MOUSE_MOVE:string = "mouseMove3d";
 
 	/**
+	 * Defines the value of the type property of a dragMove3d event object.
+	 */
+	public static DRAG_MOVE:string = "dragMove3d";
+	/**
+	 * Defines the value of the type property of a dragOut3d event object.
+	 */
+	public static DRAG_OUT:string = "dragOut3d";
+	/**
+	 * Defines the value of the type property of a dragOver3d event object.
+	 */
+	public static DRAG_OVER:string = "dragOver3d";
+	/**
+	 * Defines the value of the type property of a dragStart3d event object.
+	 */
+	public static DRAG_START:string = "dragStart3d";
+	/**
+	 * Defines the value of the type property of a dragStop3d event object.
+	 */
+	public static DRAG_STOP:string = "dragStop3d";
+	/**
+	 * Defines the value of the type property of a focusIn3d event object.
+	 */
+	public static FOCUS_IN:string = "focusIn3d";
+	/**
+	 * Defines the value of the type property of a focusOut3d event object.
+	 */
+	public static FOCUS_OUT:string = "focusOut3d";
+	/**
 	 * Defines the value of the type property of a rollOver3d event object.
 	 */
 //		public static ROLL_OVER : string = "rollOver3d";

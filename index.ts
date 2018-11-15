@@ -33,9 +33,11 @@ export {CastError} from "./lib/errors/CastError";
 
 export {CameraEvent} from "./lib/events/CameraEvent";
 export {DisplayObjectEvent} from "./lib/events/DisplayObjectEvent";
+export {FocusEvent} from "./lib/events/FocusEvent";
 export {KeyboardEvent} from "./lib/events/KeyboardEvent";
 export {MouseEvent} from "./lib/events/MouseEvent";
 export {ResizeEvent} from "./lib/events/ResizeEvent";
+export {TextfieldEvent} from "./lib/events/TextfieldEvent";
 
 export {SkyboxElements, _Render_SkyboxElements, _Stage_SkyboxElements} from "./lib/elements/SkyboxElements";
 
