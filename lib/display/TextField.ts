@@ -221,6 +221,9 @@ export class TextField extends DisplayObjectContainer
 	private _maskHeight:number=0;
 	private _maskTextOffsetX:number=0;
 	private _maskTextOffsetY:number=0;
+    
+    public isStatic:boolean=false;
+    
 	public updateMaskMode()
 	{
 		//if(this._textWidth>this._width || this._textHeight>this._height){
@@ -295,7 +298,12 @@ export class TextField extends DisplayObjectContainer
         super.setFocus(value, fromMouseDown, sendSoftKeyEvent);
 
 		this.enableInput(value);
-
+        if(value){
+            this.setSelection(0, this._iText.length);
+        }
+        else{
+            this.setSelection(0, 0);
+        }
 		// check if a adapter exists
 		if(value && sendSoftKeyEvent && this.adapter != this){
 			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
@@ -434,7 +442,7 @@ export class TextField extends DisplayObjectContainer
         // }
     }
 	private drawCursor(){
-        if(this.cursorBlinking || !this.selectable){
+        if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!=this.selectionEndIndex){
             if(this.cursorShape)
                 GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[]);
             return;
@@ -519,7 +527,7 @@ export class TextField extends DisplayObjectContainer
 		var width:number=0;
 		var height:number=0;
 		var rectangles:number[]=[];
-		if(this.char_positions_x.length!=0){
+		if(this.char_positions_x.length!=0 && this._selectionEndIndex!=this._selectionBeginIndex){
 			var len:number=(select_end>this.char_positions_x.length)?this.char_positions_x.length:select_end;
 			//console.log(select_start, select_end);
 			for(var i:number=select_start; i<len; i++){
@@ -675,13 +683,13 @@ export class TextField extends DisplayObjectContainer
         else{
             if(typeof value==="boolean"){
                 if(value)
-                    value=TextFieldAutoSize.CENTER;
+                    value=TextFieldAutoSize.LEFT;
                 else
                     value=TextFieldAutoSize.NONE;
             }
             if(typeof value==="number"){
                 if(value>0)
-                    value=TextFieldAutoSize.CENTER;
+                    value=TextFieldAutoSize.LEFT;
                 else
                     value=TextFieldAutoSize.NONE;
             }
@@ -1417,7 +1425,7 @@ export class TextField extends DisplayObjectContainer
 	public setLabelData(labelData:any)
 	{
 		this._labelData=labelData;
-
+        this.isStatic=true;
 		this._iText = "";
 
 		this._textDirty = false;
@@ -1589,10 +1597,12 @@ export class TextField extends DisplayObjectContainer
 
 	private getTextColorForTextFormat(format:TextFormat)
 	{
+        var color=this._textColor;
         if(format.hasPropertySet("color")){
-            return format.color;
+            color=format.color;
         }
-        return this._textColor;
+        if(color<0){color=0;}
+        return color;
     }
 	/**
 	 * The interaction mode property, Default value is
@@ -1732,8 +1742,8 @@ export class TextField extends DisplayObjectContainer
 		if (this._width == val)
 			return;
 
-		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
-			return;
+		//if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
+		//	return;
 
 		this._width = val;
 		
@@ -1982,8 +1992,6 @@ export class TextField extends DisplayObjectContainer
 			else{
 				this.buildGlyphs();
 			}
-			if(this._type==TextFieldType.INPUT)
-				this.drawSelectionGraphics();
 		}
 		this._glyphsDirty=false;
 	}
@@ -2733,6 +2741,7 @@ export class TextField extends DisplayObjectContainer
 			else {
 
                 var color=this.getTextColorForTextFormat(textShape.format);
+                
 				var alpha=ColorUtils.float32ColorToARGB(color)[0];
 				if(alpha==0){
 					alpha=255;
