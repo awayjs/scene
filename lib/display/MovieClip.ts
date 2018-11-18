@@ -127,16 +127,17 @@ export class MovieClip extends Sprite
     }
 	public stopSounds(soundID:any=null){
         if(soundID){
-			if(this._sounds[soundID])
+			if(this._sounds[soundID]){
             	this._sounds[soundID].stop();
+                delete this._sounds[soundID];
+            }
         }
         else{
             for (var key in this._sounds){
                 this._sounds[key].stop();
             }
-
+            this._sounds={};
         }
-        this._sounds={};
 		var len:number = this._children.length;
 		var child:DisplayObject;
 		for (var i:number = 0; i < len; ++i) {
