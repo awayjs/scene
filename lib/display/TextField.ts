@@ -1597,12 +1597,10 @@ export class TextField extends DisplayObjectContainer
 
 	private getTextColorForTextFormat(format:TextFormat)
 	{
-        var color=this._textColor;
         if(format.hasPropertySet("color")){
-            color=format.color;
+            return format.color;
         }
-        if(color<0){color=0;}
-        return color;
+        return this._textColor;
     }
 	/**
 	 * The interaction mode property, Default value is
@@ -1800,7 +1798,7 @@ export class TextField extends DisplayObjectContainer
 		this.textOffsetX=0;
 		this.textOffsetY=0;
 		this.textShapes={};
-		this._textColor=-1;
+		this._textColor=0;
 		this._width=100;
 		this._height=100;
 		this._textWidth=0;
@@ -2630,7 +2628,7 @@ export class TextField extends DisplayObjectContainer
 
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
-			if (textShape.format.material && this._textColor==-1) {
+			if (textShape.format.material && this._textColor==0) {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				(<MaterialBase> textShape.shape.material).animateUVs = true;
@@ -2732,7 +2730,7 @@ export class TextField extends DisplayObjectContainer
             
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
-			if (textShape.format.material && this._textColor==-1) {
+			if (textShape.format.material && this._textColor==0) {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
                 (<MaterialBase> textShape.shape.material).animateUVs = true;
