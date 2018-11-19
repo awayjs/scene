@@ -113,6 +113,11 @@ export class MouseEvent extends EventBase
 	 * The entity inside which the event took place.
 	 */
 	public entity:IEntity;
+	
+	/**
+	 * The entity of the picker inside which the event took place.
+	 */
+	public pickerEntity:IEntity;
 
 	/**
 	 * The renderable owner inside which the event took place.
@@ -224,6 +229,7 @@ export class MouseEvent extends EventBase
 
 		result.view = this.view;
 		result.entity = this.entity;
+		result.pickerEntity = this.pickerEntity;
 		result.renderable = this.renderable;
 		result.material = this.material;
 		result.uv = this.uv;
