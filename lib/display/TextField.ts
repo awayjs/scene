@@ -802,6 +802,8 @@ export class TextField extends DisplayObjectContainer
 		return this._background;
 	}
 	public set background(value:boolean){
+        if(this._background==value)
+            return;
 		this._background=value;
 		this._glyphsDirty=true;
 	}
@@ -817,7 +819,7 @@ export class TextField extends DisplayObjectContainer
 	public get backgroundColor():number{
 		return this._backgroundColor;
 	}
-	public set backgroundColor(value:number){
+	public set backgroundColor(value:number){ 
 		this._backgroundColor=value;
 		this._glyphsDirty=true;
 	}
@@ -834,6 +836,8 @@ export class TextField extends DisplayObjectContainer
 		return this._border;
 	}
 	public set border(value:boolean){
+        if(value==this._border)
+            return;
 		this._border=value;
 		this._glyphsDirty=true;
 	}
@@ -849,6 +853,8 @@ export class TextField extends DisplayObjectContainer
 		return this._borderColor;
 	}
 	public set borderColor(value:number){
+        if(value==this.borderColor)
+            return;
 		this._borderColor=value;
 		this._glyphsDirty=true;
 	}
@@ -868,6 +874,8 @@ export class TextField extends DisplayObjectContainer
 	}
 	public set bottomScrollV(value:number) /*int*/
 	{
+        if(value==this._bottomScrollV)
+            return;
 		this._bottomScrollV=value;
 	}
 
@@ -1032,7 +1040,9 @@ export class TextField extends DisplayObjectContainer
 		return this._htmlText;
 	};
 	public set htmlText(value:string){
-		
+        
+        if(value==this._htmlText)
+            return;
 
 		this._htmlText=value;
 		var processedText=HTMLTextProcessor.get().processHTML(this, value);
@@ -1176,6 +1186,8 @@ export class TextField extends DisplayObjectContainer
 		return this._restrict;
 	}
 	public set restrict(value:string){
+        if(value==this._restrict)
+            return;
 		this._restrict=value;
 		this._restrictRegex=null;
 		if(typeof value=="undefined")
@@ -1245,6 +1257,8 @@ export class TextField extends DisplayObjectContainer
 	}
 	public set scrollH(value:number) /*int*/
 	{
+        if(value==this._scrollH)
+            return;
 		this._scrollH=value;
 	}
 
@@ -1270,6 +1284,8 @@ export class TextField extends DisplayObjectContainer
 	}
 	public set scrollV(value:number) /*int*/
 	{
+        if(Math.floor(value)==this._scrollH)
+            return;
         this._scrollV=Math.floor(value);
         
         if(this._scrollV>this._maxScrollV)
@@ -1463,6 +1479,9 @@ export class TextField extends DisplayObjectContainer
 
 	public set textFormat(value:TextFormat)
 	{
+        if(this._textFormat==value){
+            return;
+        }
 		this._textDirty = true;
 
 		this._textFormat = value;
@@ -1530,6 +1549,9 @@ export class TextField extends DisplayObjectContainer
 
 	public set scaleX(val:number)
 	{
+        if(this._transform.scale.x==val){
+            return;
+        }
 		this._setScaleX(val);
 	}
 
@@ -1548,6 +1570,9 @@ export class TextField extends DisplayObjectContainer
 
 	public set scaleY(val:number)
 	{
+        if(this._transform.scale.y==val){
+            return;
+        }
 		this._setScaleY(val);
 	}
 
@@ -1569,6 +1594,9 @@ export class TextField extends DisplayObjectContainer
 
 	public set textColor(value:number)
 	{
+        if(this._textColor==value){
+            return;
+        }
 		this._textColor = value;
         //this._textFormat.color=value;
         if(this._textFormats){
