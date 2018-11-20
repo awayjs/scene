@@ -675,7 +675,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		if (this._pickObject)
 			this._pickObject.partition = null;
 
-		this._pickObject = value;
+		this._pickObject = value.clone();
 
 		if (this._pickObject) {
 			this._pickObject.partition = new BasicPartition(this._pickObject);
