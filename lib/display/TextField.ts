@@ -572,7 +572,7 @@ export class TextField extends DisplayObjectContainer
 
 	}
 	public drawBG(useBackgroundColor:boolean){
-        this._graphics.beginFill(useBackgroundColor? this.backgroundColor : 0x000000, 0);
+        this._graphics.beginFill(useBackgroundColor? this.backgroundColor : 0x000000, useBackgroundColor?1:0);
         this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
         this._graphics.endFill();
     }
@@ -1057,6 +1057,8 @@ export class TextField extends DisplayObjectContainer
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
+        else if (this._implicitPartition)
+            this._implicitPartition.invalidateEntity(this);
 
 	};
 		
