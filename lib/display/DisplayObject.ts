@@ -204,6 +204,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 
 	private _defaultBoundingVolume:BoundingVolumeType;
 
+	private _isDragEntity:boolean;
+
 	public cursorType:string;
 
 	protected _isInFocus:boolean;
@@ -2018,6 +2020,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return this._pImplicitColorTransform || (this._pImplicitColorTransform = new ColorTransform());
 	}
 
+	public _startDrag():void
+	{
+		this._isDragEntity = true;
+	}
+
+	public _stopDrag():void
+	{
+		this._isDragEntity = false;
+	}
+
+	public isDragEntity():boolean
+	{
+		return this._isDragEntity;
+	}
 
 	/**
 	 * @internal
