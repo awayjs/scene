@@ -184,6 +184,7 @@ export class TextField extends DisplayObjectContainer
 	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
 	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
 	public _glyphsDirty:Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
+    public _shapesDirty:Boolean=false;
 
 	public chars_codes:number[]=[];	// stores charcode per char
 	public chars_width:number[]=[];
@@ -310,38 +311,28 @@ export class TextField extends DisplayObjectContainer
 			(<any>this.adapter).selectTextField(fromMouseDown);
         }
 		this._glyphsDirty=true;
-
 		if (this._implicitPartition)
 			this._implicitPartition.invalidateEntity(this);
 	}
 
 	private enableInput(enable:boolean=true){
 
+        if(this.cursorIntervalID>=0){
+            window.clearInterval(this.cursorIntervalID);
+            this.cursorIntervalID=-1;
+        }
 		if(enable && this._isInFocus && this.selectable){
 			this.drawSelectionGraphics();
 			var myThis=this;
-			if(this.cursorIntervalID>=0){
-				window.clearInterval(this.cursorIntervalID);
-				this.cursorIntervalID=-1;
-			}
 			this.cursorIntervalID=window.setInterval(function(){
                 myThis.cursorBlinking=!myThis.cursorBlinking;
                 if(!myThis.selectable){
                     myThis.cursorBlinking=true;
-                }
-                myThis.drawCursor()
-				myThis.cursorShape.invalidate();
+                }                
+                myThis._shapesDirty=true;
+                myThis.invalidate();
 			}, 500);
 		}
-		else{
-			this._glyphsDirty=true;
-			if(this.cursorIntervalID>=0){
-				window.clearInterval(this.cursorIntervalID);
-				this.cursorIntervalID=-1;
-			}
-		}
-		if(this.cursorShape)
-			this.cursorShape.invalidate();
 	}
 	public findCharIdxForMouse(event):number{
 		
@@ -409,11 +400,7 @@ export class TextField extends DisplayObjectContainer
 		}	
 
 		if(this._selectionBeginIndex==this._selectionEndIndex){			
-			if(this.bgShapeSelect){
-				this.showSelection=false;
-				GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect,[]);
-				this.bgShapeSelect.invalidate();
-			}
+			this.bgShapeSelect=null;
 			this.drawCursor();
 		}
 		else{
@@ -442,9 +429,9 @@ export class TextField extends DisplayObjectContainer
         // }
     }
 	private drawCursor(){
+        this._shapesDirty=true;
         if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!=this.selectionEndIndex){
-            if(this.cursorShape)
-                GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[]);
+            this.cursorShape=null;
             return;
         }
 		var x:number=0;
@@ -479,12 +466,7 @@ export class TextField extends DisplayObjectContainer
         var color=this.getTextColorForTextFormat(tf);
 		var cursorScale:number=this.internalScale.x;
 		if(cursorScale<=0)cursorScale=1;
-		if(!this.cursorShape){
-            
-			this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],color,1);
-			return;
-		}
-        GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape,[x-(0.5*cursorScale),y,cursorScale,height]);
+		this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],color,1);
         if(this.cursorShape.style.color!=color){    
             var alpha=ColorUtils.float32ColorToARGB(color)[0];
             if(alpha==0){
@@ -507,6 +489,7 @@ export class TextField extends DisplayObjectContainer
     
 	private drawSelectedBG(){
 
+        this._shapesDirty=true;
 		if(this._selectionBeginIndex<0){
 			this._selectionBeginIndex=0;
 		}	
@@ -557,15 +540,13 @@ export class TextField extends DisplayObjectContainer
 				tf.font_table.initFontSize(tf.size);
 				height = tf.font_table.getLineHeight();
 			}
-		}
+        }
+        this.bgShapeSelect=null;
 		if(width>0){
 			rectangles.push(startx, oldy, width, height);
-		}
-		if(!this.bgShapeSelect){
 			this.bgShapeSelect=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
 			return;
 		}
-        GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect, rectangles);
         
         this.scrollToCursor(startx+width,oldy+height);
 		
@@ -805,7 +786,7 @@ export class TextField extends DisplayObjectContainer
         if(this._background==value)
             return;
 		this._background=value;
-		this._glyphsDirty=true;
+		this._shapesDirty=true;
 	}
 
 	/**
@@ -821,7 +802,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public set backgroundColor(value:number){ 
 		this._backgroundColor=value;
-		this._glyphsDirty=true;
+		this._shapesDirty=true;
 	}
 
 	/**
@@ -839,7 +820,7 @@ export class TextField extends DisplayObjectContainer
         if(value==this._border)
             return;
 		this._border=value;
-		this._glyphsDirty=true;
+		this._shapesDirty=true;
 	}
 
 	/**
@@ -856,7 +837,7 @@ export class TextField extends DisplayObjectContainer
         if(value==this.borderColor)
             return;
 		this._borderColor=value;
-		this._glyphsDirty=true;
+		this._shapesDirty=true;
 	}
 
 	/**
@@ -1812,9 +1793,6 @@ export class TextField extends DisplayObjectContainer
 	{
 		super();
 		this.onKeyDelegate = (event:any) => this.onKey(event);
-		this.onMouseDownDelegate = (event:any) => this.onMouseDown(event);
-		this.onMouseMoveDelegate = (event:any) => this.onMouseMove(event);
-		this.onMouseOutDelegate = (event:any) => this.onMouseOut(event);
 		this.startSelectionByMouseDelegate = (event:any) => this.startSelectionByMouse(event);
 		this.stopSelectionByMouseDelegate = (event:any) => this.stopSelectionByMouse(event);
 		this.updateSelectionByMouseDelegate = (event:any) => this.updateSelectionByMouse(event);
@@ -1904,7 +1882,7 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public reConstruct(buildGraphics:boolean=false) {
 
-		if(!this._textDirty && !this._positionsDirty && !this._glyphsDirty)
+		if(!this._textDirty && !this._positionsDirty && !this._glyphsDirty && !this._shapesDirty)
 			return;
 
 
@@ -2021,7 +1999,13 @@ export class TextField extends DisplayObjectContainer
 				this.buildGlyphs();
 			}
 		}
-		this._glyphsDirty=false;
+        this._glyphsDirty=false;
+        if(this._labelData)
+            return;
+        
+        this.buildShapes();        
+        this._shapesDirty=false;
+
 	}
 
 	public reset(){
@@ -2707,22 +2691,9 @@ export class TextField extends DisplayObjectContainer
 		}
 		this.textShapes={};
 
-		this.targetGraphics.clear();
-		this._graphics.clear();
-		this.drawBG(this._background);
-		if(this._border){
-			this.drawBorder();
-		}
 
-		/*
-		this._graphics.clear();
-		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
-		this._graphics.drawRect(this.textOffsetX-1,this.textOffsetY-1,this._width, this._height);
-		this._graphics.endFill();
-		*/
 
 		
-		var textShape:TextShape;
 		// process all textRuns
 		var tr:number=0;
 		var tr_len:number=this._textRuns_formats.length;
@@ -2731,17 +2702,8 @@ export class TextField extends DisplayObjectContainer
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
 			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
-		if(this._background){
-			//this.targetGraphics.addShape(this.bgShape);
-           
-        }
-        this.drawSelectionGraphics();
-        if(this.bgShapeSelect){
-           var bgshapetmp = this.targetGraphics.addShape(Shape.getShape(this.bgShapeSelect.elements));            
-           bgshapetmp.style = this.bgShapeSelect.style;
-           bgshapetmp.material = this.bgShapeSelect.material;
-        }
 
+		var textShape:TextShape;
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
 
@@ -2753,10 +2715,7 @@ export class TextField extends DisplayObjectContainer
 
 			textShape.elements = new TriangleElements(vertexBuffer);
 			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-			//if(tess_fontTable.usesCurves){
-			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
-			//}
-			textShape.shape = <Shape>this.targetGraphics.addShape(Shape.getShape(textShape.elements));
+            textShape.shape = Shape.getShape(textShape.elements);
             
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
@@ -2782,23 +2741,33 @@ export class TextField extends DisplayObjectContainer
                     (<MaterialBase> textShape.shape.material).animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
-				/*
-				(<any>textShape.shape.material).useColorTransform = true;
-				var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-				this.transform.colorTransform.color = textShape.format.color;
-				this.pInvalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-				*/
-
-			}
+            }
         }
 
-        if(this.type==TextFieldType.INPUT && this.isInFocus && this.cursorShape){
-            var cursorShapetmp = this.targetGraphics.addShape(Shape.getShape(this.cursorShape.elements));
-            cursorShapetmp.style = this.cursorShape.style;
-            cursorShapetmp.material = this.cursorShape.material;
+        
+    }
+    
+    private buildShapes(){
+		this.targetGraphics.clear();
+		this._graphics.clear();
+		this.drawBG(this._background);
+		if(this._border){
+			this.drawBorder();
         }
         
-	}
+        this.drawSelectionGraphics();
+        if(this.bgShapeSelect && this.isInFocus){
+            this.targetGraphics.addShape(this.bgShapeSelect);
+        }
+		var textShape:TextShape;
+		for(var key in this.textShapes) {
+			textShape = this.textShapes[key];
+            <Shape>this.targetGraphics.addShape(textShape.shape);
+        }
+        if(this.type==TextFieldType.INPUT && this.isInFocus && this.cursorShape){
+            this.targetGraphics.addShape(this.cursorShape);
+        }
+    }
 
 
 	/**
@@ -3600,18 +3569,6 @@ export class TextField extends DisplayObjectContainer
             }
         }
     }
-	public onMouseDownDelegate:(e:any) => void;
-	public onMouseDown(e:any){
-		console.log("textfield.onMouseDown", e);
-	}
-	public onMouseMoveDelegate:(e:any) => void;
-	public onMouseMove(e:any){
-		document.body.style.cursor="text";
-	}
-	public onMouseOutDelegate:(e:any) => void;
-	public onMouseOut(e:any){
-		document.body.style.cursor="auto";
-	}
 	public clone():TextField
 	{
 		var newInstance:TextField = TextField.getNewTextField();
