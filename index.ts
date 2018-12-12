@@ -1,5 +1,5 @@
 
-console.log("AwayJS - Scene - 0.11.13");
+console.log("AwayJS - Scene - 0.11.14");
 export {IDisplayObjectAdapter} from "./lib/adapters/IDisplayObjectAdapter";
 export {IMovieClipAdapter} from "./lib/adapters/IMovieClipAdapter";
 
