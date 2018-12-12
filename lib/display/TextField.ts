@@ -3410,30 +3410,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public addChar(char:string, isShift:boolean=false, isCTRL:boolean=false, isAlt:boolean=false){
 
-		if (char && char.length>0 && this.adapter!=this){
-            var charCode:number;
-            switch(char){
-                case "Backspace":
-					charCode = 8;
-					break;
-				case "Delete":
-					charCode = 46;
-					break;
-				case "ArrowRight":
-					charCode = 39;
-					break;
-				case "ArrowLeft":
-					charCode = 37;
-					break;
-				case ".":
-					charCode = 189;
-					break;
-				default:
-					charCode = char.charCodeAt(0);
-					break;
-            }
-			(<ITextfieldAdapter>this.adapter).dispatchKeyEvent(charCode, isShift, isCTRL, isAlt);
-		}
+        //console.log("addChar")
 		var oldText=this._iText;
 		if(!this._selectionBeginIndex){
 			this._selectionBeginIndex=0;
@@ -3539,7 +3516,33 @@ export class TextField extends DisplayObjectContainer
 		this.invalidate();
 		
 		if(oldText!==this._iText)
-			this.dispatchEvent(TextField._onChangedEvent);
+            this.dispatchEvent(TextField._onChangedEvent);
+            
+		if (char && char.length>0 && this.adapter!=this){
+            var charCode:number;
+            switch(char){
+                case "Backspace":
+					charCode = 8;
+					break;
+				case "Delete":
+					charCode = 46;
+					break;
+				case "ArrowRight":
+					charCode = 39;
+					break;
+				case "ArrowLeft":
+					charCode = 37;
+					break;
+				case ".":
+					charCode = 189;
+					break;
+				default:
+					charCode = char.charCodeAt(0);
+					break;
+            }
+            //console.log("dispatchKeyEvent");
+			(<ITextfieldAdapter>this.adapter).dispatchKeyEvent(charCode, isShift, isCTRL, isAlt);
+		}
     }
     private _insertNewText(newText:string){
 
