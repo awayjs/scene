@@ -2,6 +2,7 @@ import { TextField } from '../display/TextField';
 import { TextFormat } from './TextFormat';
 import { ColorUtils } from '@awayjs/core';
 import { TextFormatAlign } from './TextFormatAlign';
+import { TextFieldAutoSize } from './TextFieldAutoSize';
 
 export class HTMLTextProcessor
 {
@@ -18,6 +19,12 @@ export class HTMLTextProcessor
 
 
 	public processHTML(target_tf:TextField, input:string):string{
+
+        if(target_tf.autoSize==TextFieldAutoSize.NONE){
+            target_tf.autoSize=TextFieldAutoSize.CENTER;
+            target_tf.wordWrap=true;
+        }
+
 		//console.log("html in", input);
 		input = input.replace(new RegExp("&nbsp;", 'g'), " ");
 		input = input.replace(new RegExp("â", 'g'), String.fromCharCode(8730));
@@ -341,7 +348,7 @@ export class HTMLTextProcessor
 			if((<any>myChild.attributes).face || (<any>myChild.attributes).FACE){
                 var value=(<any>myChild.attributes).face?(<any>myChild.attributes).face.nodeValue:(<any>myChild.attributes).FACE.nodeValue;
 				newProps_values[newProps_values.length] = value;
-				newProps_names[newProps_names.length] = "face";
+				newProps_names[newProps_names.length] = "font_name";
 			}
 		}
 		var i=newProps_values.length;
