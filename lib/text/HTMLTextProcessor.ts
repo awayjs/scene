@@ -20,10 +20,6 @@ export class HTMLTextProcessor
 
 	public processHTML(target_tf:TextField, input:string):string{
 
-        if(target_tf.autoSize==TextFieldAutoSize.NONE){
-            target_tf.autoSize=TextFieldAutoSize.CENTER;
-            target_tf.wordWrap=true;
-        }
 
 		//console.log("html in", input);
 		input = input.replace(new RegExp("&nbsp;", 'g'), " ");
