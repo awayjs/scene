@@ -463,7 +463,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 						var startx:number=0;
                         var starty:number=0;
-                        var y_offset=(this._opentype_font.tables.head.yMax-this._opentype_font.tables.head.yMin)/72;
+                        var y_offset=(this._ascent)/this._font_em_size;
 						for(i=0;i<len;i++){
                             var cmd = thisPath.commands[i];
                             //console.log("cmd", cmd.type, cmd.x, cmd.y, cmd.x1, cmd.y1, cmd.x2, cmd.y2);
