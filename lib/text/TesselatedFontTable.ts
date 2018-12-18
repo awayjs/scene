@@ -61,15 +61,17 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		if(opentype_font){
 			this._opentype_font=opentype_font;
 
-			/*
-			 console.log("head.yMax "+head.yMax);
-			 console.log("head.yMin "+head.yMin);
-			 console.log("font.numGlyphs "+font.numGlyphs);
-			 console.log('Ascender', font.tables.hhea.ascender);
-			 console.log('Descender', font.tables.hhea.descender);
-			 console.log('Typo Ascender', font.tables.os2.sTypoAscender);
-			 console.log('Typo Descender', font.tables.os2.sTypoDescender);
-			 */
+            this._ascent=opentype_font.tables.hhea.ascender/72;
+            this._descent=opentype_font.tables.hhea.descender/72;
+			
+			 console.log("head.yMax "+opentype_font.tables.head.yMax);
+			 console.log("head.yMin "+opentype_font.tables.head.yMin);
+			 console.log("font.numGlyphs "+opentype_font.numGlyphs);
+			 console.log('Ascender', opentype_font.tables.hhea.ascender);
+			 console.log('Descender', opentype_font.tables.hhea.descender);
+			 console.log('Typo Ascender', opentype_font.tables.os2.sTypoAscender);
+			 console.log('Typo Descender', opentype_font.tables.os2.sTypoDescender);
+			 
 			//this._ascent=this._opentype_font.tables.hhea.ascender;
 			//this._descent=this._opentype_font.tables.hhea.descender;
 			this._font_em_size=72;
@@ -460,23 +462,32 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 
 						var startx:number=0;
-						var starty:number=0;
+                        var starty:number=0;
+                        var y_offset=(this._opentype_font.tables.head.yMax-this._opentype_font.tables.head.yMin)/72;
 						for(i=0;i<len;i++){
-							var cmd = thisPath.commands[i];
+                            var cmd = thisPath.commands[i];
+                            //console.log("cmd", cmd.type, cmd.x, cmd.y, cmd.x1, cmd.y1, cmd.x2, cmd.y2);
 							if (cmd.type === 'M') {
-								awayPath.moveTo(cmd.x, cmd.y);
+								awayPath.moveTo(cmd.x, cmd.y+y_offset);
 								startx=cmd.x;
-								starty=cmd.y;
+								starty=cmd.y+y_offset;
 							}
-							else if (cmd.type === 'L') {	awayPath.lineTo(cmd.x, cmd.y);}
-							else if (cmd.type === 'Q') {	awayPath.curveTo(cmd.x1, cmd.y1, cmd.x, cmd.y);}
-							else if (cmd.type === 'C') {	awayPath.cubicCurveTo(cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y);}
+							else if (cmd.type === 'L') {	awayPath.lineTo(cmd.x, cmd.y+y_offset);}
+							else if (cmd.type === 'Q') {	awayPath.curveTo(cmd.x1, cmd.y1+y_offset, cmd.x, cmd.y+y_offset);}
+							else if (cmd.type === 'C') {	awayPath.cubicCurveTo(cmd.x1, cmd.y1+y_offset, cmd.x2, cmd.y2+y_offset, cmd.x, cmd.y+y_offset);}
 							else if (cmd.type === 'Z') {	awayPath.lineTo(startx, starty);}
-						}
+                        }
+                        /*
+								awayPath.moveTo(0, 0);
+								awayPath.lineTo(-5000, 500);
+								awayPath.lineTo(-5000, 5000);
+								awayPath.lineTo(-500, 5000);
+                                awayPath.lineTo(-500, 500);
+                                */
 
 
-						awayPath.style = new  GraphicsStrokeStyle(0xff0000, 1, 1, JointStyle.MITER, CapsStyle.NONE, 100);
-
+						//awayPath.style = new GraphicsStrokeStyle(0xff0000, 1, 1, JointStyle.MITER, CapsStyle.NONE, 100);
+/*
 						var final_vert_list:Array<number>=[];
 						//todo
 						//GraphicsFactoryStrokes.draw_pathes([awayPath], final_vert_list, false);
@@ -485,9 +496,15 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 						attributesView.dispose();
 
-						var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(attributesBuffer, null);
+                        //console.log("tesselated_font_char.char_width "+tesselated_font_char.char_width);
+                        */
+                        var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(null, null, awayPath);
 						tesselated_font_char.char_width=(thisGlyph.advanceWidth*(1 / thisGlyph.path.unitsPerEm * 72));
-						//console.log("tesselated_font_char.char_width "+tesselated_font_char.char_width);
+                        tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
+                        if(!tesselated_font_char.fill_data){
+                            console.log("error tesselating opentype glyph");
+                            return null;
+                        }
 						this._font_chars.push(tesselated_font_char);
 						this._font_chars_dic[name]=tesselated_font_char;
 					}
