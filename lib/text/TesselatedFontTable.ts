@@ -99,6 +99,17 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	}
 	public hasChar(char_code:string):boolean
 	{
+        
+		var tesselated_font_char:TesselatedFontChar=this._font_chars_dic[name];
+		if(tesselated_font_char==null){
+			if(this._opentype_font){
+				//console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
+				var thisGlyph=this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
+				if(thisGlyph){
+                    return true;
+                }
+            }
+        }
 		return this._font_chars_dic[char_code]!=null;
 	}
 
