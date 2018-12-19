@@ -61,6 +61,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		if(opentype_font){
 			this._opentype_font=opentype_font;
 
+            console.log("head.yMax ",opentype_font);
 			
 			 console.log("head.yMax "+opentype_font.tables.head.yMax);
 			 console.log("head.yMin "+opentype_font.tables.head.yMin);
@@ -70,9 +71,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			 console.log('Typo Ascender', opentype_font.tables.os2.sTypoAscender);
 			 console.log('Typo Descender', opentype_font.tables.os2.sTypoDescender);
 			 
-			this._font_em_size=72;
-            this._ascent=opentype_font.tables.hhea.ascender/this._font_em_size;
-            this._descent=opentype_font.tables.hhea.descender/this._font_em_size;
+			this._font_em_size=72;//2048;
+            this._ascent=opentype_font.tables.hhea.ascender/28.4;///this._font_em_size;
+            this._descent=opentype_font.tables.hhea.descender/25.6;
+            console.log("this._ascent", this._ascent);
+            console.log("this._descent", this._descent);(this._ascent-this.descent)
+            console.log("this._ascent-this._descent", this._ascent-this.descent)
 			this._current_size=0;
 			this._size_multiply=0;
 			return;
@@ -461,7 +465,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 						var startx:number=0;
                         var starty:number=0;
-                        var y_offset=(this._ascent);///this._font_em_size;
+                        var y_offset=this._ascent;
+                        //40 = 66
 						for(i=0;i<len;i++){
                             var cmd = thisPath.commands[i];
                             //console.log("cmd", cmd.type, cmd.x, cmd.y, cmd.x1, cmd.y1, cmd.x2, cmd.y2);
