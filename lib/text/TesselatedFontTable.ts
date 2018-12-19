@@ -60,7 +60,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 		if(opentype_font){
 			this._opentype_font=opentype_font;
-
+/*
             console.log("head.yMax ",opentype_font);
 			
 			 console.log("head.yMax "+opentype_font.tables.head.yMax);
@@ -70,15 +70,22 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			 console.log('Descender', opentype_font.tables.hhea.descender);
 			 console.log('Typo Ascender', opentype_font.tables.os2.sTypoAscender);
 			 console.log('Typo Descender', opentype_font.tables.os2.sTypoDescender);
-			 
+			 */
 			this._font_em_size=72;//2048;
-            this._ascent=opentype_font.tables.hhea.ascender/28.4;///this._font_em_size;
-            this._descent=opentype_font.tables.hhea.descender/25.6;
-            console.log("this._ascent", this._ascent);
+            this._ascent=opentype_font.tables.hhea.ascender/(this._opentype_font.unitsPerEm/72);///this._font_em_size;
+            this._descent=-2+opentype_font.tables.hhea.descender/(this._opentype_font.unitsPerEm/72);
+           /* console.log("this._ascent", this._ascent);
             console.log("this._descent", this._descent);(this._ascent-this.descent)
-            console.log("this._ascent-this._descent", this._ascent-this.descent)
+            console.log("this._ascent-this._descent", this._ascent-this.descent)*/
 			this._current_size=0;
-			this._size_multiply=0;
+            this._size_multiply=0;
+            
+            var thisGlyph=this._opentype_font.charToGlyph(String.fromCharCode(32));
+            if(thisGlyph){
+                //this._whitespace_width=(opentype_font.tables.hhea.advanceWidthMax/72);//*(1 / thisGlyph.path.unitsPerEm * 72));
+                this._whitespace_width=thisGlyph.advanceWidth/(this._opentype_font.unitsPerEm/72);
+                //console.log("this._whitespace_width", thisGlyph.advanceWidth);
+            }
 			return;
 		}
 	}
@@ -131,7 +138,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		if(char_code=="9"){
 			return (Math.floor(this._whitespace_width*this._size_multiply*8*20))/20;
 		}
-		var tesselated_font_char:TesselatedFontChar = this._font_chars_dic[char_code];
+		var tesselated_font_char:TesselatedFontChar = this.getChar(char_code);
 		if(tesselated_font_char){
 			return (Math.floor(tesselated_font_char.char_width*this._size_multiply*20))/20;
 		}
