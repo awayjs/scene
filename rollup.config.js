@@ -9,6 +9,7 @@ module.exports = {
         '@awayjs/core',
         '@awayjs/graphics',
         '@awayjs/stage',
+        '@awayjs/view',
         '@awayjs/renderer',
         '@awayjs/materials'
     ],
@@ -16,6 +17,7 @@ module.exports = {
         '@awayjs/core': 'AwayjsCore',
         '@awayjs/graphics': 'AwayjsGraphics',
         '@awayjs/stage': 'AwayjsStage',
+        '@awayjs/view': 'AwayjsView',
         '@awayjs/renderer': 'AwayjsRenderer',
         '@awayjs/materials': 'AwayjsMaterials'
     },
