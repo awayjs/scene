@@ -1,8 +1,10 @@
 import {AssetEvent} from "@awayjs/core";
 
-import {BlendMode, ImageCube, Viewport} from "@awayjs/stage";
+import {BlendMode, ImageCube} from "@awayjs/stage";
 
-import {BoundingVolumeType, IAnimationSet, IRenderable, IMaterial, IEntity, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, PickingCollision, PartitionBase, RendererBase, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
+import {View, PickingCollision, PartitionBase, BoundingVolumeType} from "@awayjs/view";
+
+import {IAnimationSet, IRenderable, IMaterial, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
 
 import {ImageTextureCube} from "@awayjs/materials";
 
@@ -13,7 +15,7 @@ import {DisplayObject} from "./DisplayObject";
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-export class Skybox extends DisplayObject implements IEntity, IRenderable, IMaterial
+export class Skybox extends DisplayObject implements IRenderable, IMaterial
 {
 	private _textures:Array<ITexture> = new Array<ITexture>();
 
@@ -22,7 +24,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	private _texture:ImageTextureCube;
 	private _animationSet:IAnimationSet;
 	public _pBlendMode:string = BlendMode.NORMAL;
-	private _owners:Array<IEntity>;
+	private _owners:Array<IRenderEntity>;
 	private _onTextureInvalidateDelegate:(event:AssetEvent) => void;
 
 	public animateUVs:boolean = false;
@@ -72,7 +74,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	 *
 	 * @private
 	 */
-	public get iOwners():Array<IEntity>
+	public get iOwners():Array<IRenderEntity>
 	{
 		return this._owners;
 	}
@@ -132,7 +134,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 
 		this._onTextureInvalidateDelegate = (event:AssetEvent) => this.onTextureInvalidate(event);
 
-		this._owners = new Array<IEntity>(this);
+		this._owners = new Array<IRenderEntity>(this);
 
 		this.style = new Style();
         if (imageColor instanceof ImageCube) {
@@ -202,17 +204,12 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 		this.invalidatePasses();
 	}
 
-	public _applyRenderables(renderer:IRenderer):void
+	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
-		renderer.applyRenderable(this);
+		traverser.applyTraversable(this);
 	}
 	
-	public _applyPickable(picker:IPicker):void
-	{
-		picker.applyPickable(this);
-	}
-	
-	public iAddOwner(owner:IEntity):void
+	public iAddOwner(owner:IRenderEntity):void
 	{
 
 	}
@@ -223,7 +220,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	 *
 	 * @internal
 	 */
-	public iRemoveOwner(owner:IEntity):void
+	public iRemoveOwner(owner:IRenderEntity):void
 	{
 
 	}
@@ -236,7 +233,7 @@ export class Skybox extends DisplayObject implements IEntity, IRenderable, IMate
 	
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.renderable = null;
+		collision.pickable = null;
 		
 		return false;
 	}
@@ -312,18 +309,18 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase
     }
 
 
-    public _setRenderState(renderable:_Render_RenderableBase, viewport:Viewport):void
+    public _setRenderState(renderable:_Render_RenderableBase, view:View):void
     {
-        super._setRenderState(renderable, viewport);
+        super._setRenderState(renderable, view);
 
         this._texture._setRenderState(renderable);
     }
     /**
      * @inheritDoc
      */
-    public _activate(viewport:Viewport):void
+    public _activate(view:View):void
     {
-        super._activate(viewport);
+        super._activate(view);
 
         this._stage.context.setDepthTest(false, ContextGLCompareMode.LESS);
 
@@ -387,6 +384,7 @@ export class _Render_Skybox extends _Render_RenderableBase
 }
 
 import {Plane3D} from "@awayjs/core";
+import { IEntityTraverser, EntityNode } from '@awayjs/view';
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.

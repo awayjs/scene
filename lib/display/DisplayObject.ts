@@ -2,8 +2,11 @@ import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matr
 
 import {BlendMode} from "@awayjs/stage";
 
-import {PartitionBase, IRenderable, IAnimator, IMaterial, Style, IEntity, StyleEvent, BoundingBox, BoundingSphere, BoundingVolumeType, IPicker, IRenderer, BasicPartition, PickGroup} from "@awayjs/renderer";
+import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition, PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
 
+import {IRenderable, IAnimator, IMaterial, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
+
+import { ElementsType } from '@awayjs/graphics';
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
@@ -13,10 +16,7 @@ import {OrientationMode} from "../base/OrientationMode";
 import {IBitmapDrawable} from "../base/IBitmapDrawable";
 import {DisplayObjectEvent} from "../events/DisplayObjectEvent";
 import {FocusEvent} from "../events/FocusEvent";
-import {PrefabBase} from "../prefabs/PrefabBase";
 
-import {Scene} from "../Scene";
-import { ElementsType } from '@awayjs/graphics';
 import { PrimitiveCubePrefab } from '../prefabs/PrimitiveCubePrefab';
 import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
 import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
@@ -150,7 +150,7 @@ import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
+export class DisplayObject extends AssetBase implements IBitmapDrawable, IRenderEntity, IPickingEntity
 {
 
 	private _partition:PartitionBase;
@@ -190,7 +190,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public _explicitMasks:Array<DisplayObject>;
 	private _implicitVisibility:boolean = true;
 	public _implicitMaskId:number = -1;
-	public _maskOwners:Array<IEntity>;
+	public _maskOwners:Array<IPartitionEntity>;
 	private _explicitMouseEnabled:boolean = true;
 	private _implicitMouseEnabled:boolean = true;
 	public _pImplicitColorTransform:ColorTransform;
@@ -219,9 +219,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	private _renderMode:boolean = true;
 
 	public _hierarchicalPropsDirty:number;
-
-	//temp vector used in global to local
-	private _tempVector3D:Vector3D = new Vector3D();
 
 	private _onInvalidatePropertiesDelegate:(event:StyleEvent) => void;
 
@@ -1634,63 +1631,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	}
 
 	/**
-	 * Converts the <code>point</code> object from the Scene(global) coordinates
-	 * to the display object's(local) coordinates.
-	 *
-	 * <p>To use this method, first create an instance of the Point class. The
-	 * <i>x</i> and <i>y</i> values that you assign represent global coordinates
-	 * because they relate to the origin(0,0) of the main display area. Then
-	 * pass the Point instance as the parameter to the
-	 * <code>globalToLocal()</code> method. The method returns a new Point object
-	 * with <i>x</i> and <i>y</i> values that relate to the origin of the display
-	 * object instead of the origin of the Scene.</p>
-	 *
-	 * @param point An object created with the Point class. The Point object
-	 *              specifies the <i>x</i> and <i>y</i> coordinates as
-	 *              properties.
-	 * @return A Point object with coordinates relative to the display object.
-	 */
-	public globalToLocal(point:Point, target:Point = null):Point
-	{
-		this._tempVector3D.setTo(point.x, point.y, 0);
-		//console.log("this._tempVector3D", this._tempVector3D);
-		//console.log("this._transform.inverseConcatenatedMatrix3D", this._transform.inverseConcatenatedMatrix3D);
-		var pos:Vector3D = this._transform.inverseConcatenatedMatrix3D.transformVector(this._tempVector3D, this._tempVector3D);
-
-		//console.log("pos", pos);
-		if (!target)
-			target = new Point();
-
-		target.x = pos.x;
-		target.y = pos.y;
-
-		return target;
-	}
-
-	/**
-	 * Converts a two-dimensional point from the Scene(global) coordinates to a
-	 * three-dimensional display object's(local) coordinates.
-	 *
-	 * <p>To use this method, first create an instance of the Vector3D class. The x,
-	 * y and z values that you assign to the Vector3D object represent global
-	 * coordinates because they are relative to the origin(0,0,0) of the scene. Then
-	 * pass the Vector3D object to the <code>globalToLocal3D()</code> method as the
-	 * <code>position</code> parameter.
-	 * The method returns three-dimensional coordinates as a Vector3D object
-	 * containing <code>x</code>, <code>y</code>, and <code>z</code> values that
-	 * are relative to the origin of the three-dimensional display object.</p>
-	 *
-	 * @param point A Vector3D object representing global x, y and z coordinates in
-	 *              the scene.
-	 * @return A Vector3D object with coordinates relative to the three-dimensional
-	 *         display object.
-	 */
-	public globalToLocal3D(position:Vector3D):Vector3D
-	{
-		return this._transform.inverseConcatenatedMatrix3D.transformVector(position);
-	}
-
-	/**
 	 * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	 *
 	 * @param    target        The vector defining the point to be looked at
@@ -1699,43 +1639,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	public lookAt(scenePosition:Vector3D, upAxis:Vector3D = null):void
 	{
 		this.transform.lookAt(scenePosition, upAxis);
-	}
-
-	/**
-	 * Converts the <code>point</code> object from the display object's(local)
-	 * coordinates to the Scene(global) coordinates.
-	 *
-	 * <p>This method allows you to convert any given <i>x</i> and <i>y</i>
-	 * coordinates from values that are relative to the origin(0,0) of a
-	 * specific display object(local coordinates) to values that are relative to
-	 * the origin of the Scene(global coordinates).</p>
-	 *
-	 * <p>To use this method, first create an instance of the Point class. The
-	 * <i>x</i> and <i>y</i> values that you assign represent local coordinates
-	 * because they relate to the origin of the display object.</p>
-	 *
-	 * <p>You then pass the Point instance that you created as the parameter to
-	 * the <code>localToGlobal()</code> method. The method returns a new Point
-	 * object with <i>x</i> and <i>y</i> values that relate to the origin of the
-	 * Scene instead of the origin of the display object.</p>
-	 *
-	 * @param point The name or identifier of a point created with the Point
-	 *              class, specifying the <i>x</i> and <i>y</i> coordinates as
-	 *              properties.
-	 * @return A Point object with coordinates relative to the Scene.
-	 */
-	public localToGlobal(point:Point, target:Point = null):Point
-	{
-		this._tempVector3D.setTo(point.x, point.y, 0);
-		var pos:Vector3D = this._transform.concatenatedMatrix3D.transformVector(this._tempVector3D, this._tempVector3D);
-
-		if (!target)
-			target = new Point();
-
-		target.x = pos.x;
-		target.y = pos.y;
-
-		return target;
 	}
 
 	/**
@@ -2004,7 +1907,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 	/**
 	 * @internal
 	 */
-	public get maskOwners():Array<IEntity>
+	public get maskOwners():Array<IPartitionEntity>
 	{
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
 			this._updateMaskOwners();
@@ -2063,13 +1966,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 		return displayObject.isDescendant(this);
 	}
 
-	public _applyRenderables(renderer:IRenderer):void
-	{
-		//nothing to do here
-	}
-
-	
-	public _applyPickables(picker:IPicker):void
+	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
 		//nothing to do here
 	}
@@ -2190,24 +2087,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._boundsPrefab.height = box.height;
 			this._boundsPrefab.depth = box.depth;
 
-			var hx:number = box.width/2;
-			var hy:number = box.height/2;
-			var hz:number = box.depth/2;
-			var cx:number = box.x + hx;
-			var cy:number = box.y + hy;
-			var cz:number = box.z + hz;
-			this._boundsPrimitive.registrationPoint = new Vector3D(-cx*this._boundsPrimitive.transform.scale.x, -cy*this._boundsPrimitive.transform.scale.y, -cz*this._boundsPrimitive.transform.scale.z);
+			this._boundsPrimitive.registrationPoint = new Vector3D(-(box.x + box.width/2)*this._boundsPrimitive.transform.scale.x, -(box.y + box.height/2)*this._boundsPrimitive.transform.scale.y, -(box.z + box.depth/2)*this._boundsPrimitive.transform.scale.z);
 
 		} else if (this._boundsPrefab instanceof PrimitiveSpherePrefab) {
 			var sphere:Sphere = (<BoundingSphere> pickGroup.getBoundsPicker(this.partition).getBoundingVolume(null, this._defaultBoundingVolume)).getSphere();
-
+			console.log(sphere)
 			if (sphere == null)
 				return;
 			
 			this._boundsPrefab.radius = sphere.radius;
-			this._boundsPrimitive.x = sphere.x;
-			this._boundsPrimitive.y = sphere.y;
-			this._boundsPrimitive.z = sphere.z;
+
+			this._boundsPrimitive.registrationPoint = new Vector3D(-sphere.x*this._boundsPrimitive.transform.scale.x, -sphere.y*this._boundsPrimitive.transform.scale.y, -sphere.z*this._boundsPrimitive.transform.scale.z);
 		}
 	}
 

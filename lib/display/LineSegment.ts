@@ -1,6 +1,8 @@
 ﻿import {Vector3D, Matrix3D, Box, Sphere} from "@awayjs/core";
 
-import {IRenderable, RenderableEvent, IMaterial, PickingCollision, PartitionBase, IPicker, IRenderer, _Pick_PickableBase, PickEntity, EntityNode} from "@awayjs/renderer";
+import {PickingCollision, PartitionBase, _Pick_PickableBase, PickEntity, IEntityTraverser, EntityNode} from "@awayjs/view";
+
+import {IRenderable, RenderableEvent, IMaterial} from "@awayjs/renderer";
 
 import {DisplayObject} from "./DisplayObject";
 
@@ -26,7 +28,7 @@ export class LineSegment extends DisplayObject implements IRenderable
 	/**
 	 *
 	 */
-	public get startPostion():Vector3D
+	public get startPosition():Vector3D
 	{
 		return this._startPosition;
 	}
@@ -100,15 +102,9 @@ export class LineSegment extends DisplayObject implements IRenderable
 		return true;
 	}
 
-	public _applyRenderables(renderer:IRenderer):void
+	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
-		renderer.applyRenderable(this);
-	}
-
-		
-	public _applyPickable(picker:IPicker):void
-	{
-		picker.applyPickable(this);
+		traverser.applyTraversable(this);
 	}
 
 	/**
@@ -131,7 +127,7 @@ import {AssetEvent} from "@awayjs/core";
 
 import {LineElements} from "@awayjs/graphics";
 
-import {IEntity, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, MaterialUtils, RendererBase} from "@awayjs/renderer";
+import {_Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, MaterialUtils} from "@awayjs/renderer";
 
 
 /**
@@ -178,7 +174,7 @@ export class _Render_LineSegment extends _Render_RenderableBase
     {
         var elements:LineElements = _Render_LineSegment._lineGraphics[this._lineSegment.id] || (_Render_LineSegment._lineGraphics[this._lineSegment.id] = new LineElements());
 
-        var start:Vector3D = this._lineSegment.startPostion;
+        var start:Vector3D = this._lineSegment.startPosition;
         var end:Vector3D = this._lineSegment.endPosition;
 
         var positions:Float32Array = new Float32Array(6);
@@ -213,6 +209,8 @@ export class _Pick_LineSegment extends _Pick_PickableBase
 	private _lineSegmentBoxDirty:boolean = true;
 	private _lineSegmentSphere:Sphere;
 	private _lineSegmentSphereDirty:boolean = true;
+	private _onInvalidateElementsDelegate:(event:RenderableEvent) => void;
+
     /**
      *
      */
@@ -230,13 +228,15 @@ export class _Pick_LineSegment extends _Pick_PickableBase
     {
         super(lineSegment, pickEntity);
 
-        this._lineSegment = lineSegment;
+		this._lineSegment = lineSegment;
+		
+		this._onInvalidateElementsDelegate = (event:RenderableEvent) => this._onInvalidateElements(event);
+
+		this._lineSegment.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
     }
 	
-	public onInvalidateElements(event:RenderableEvent):void
+	public _onInvalidateElements(event:RenderableEvent):void
     {
-		super.onInvalidateElements(event);
-
 		this._lineSegmentBoxDirty = true;
 		this._lineSegmentSphereDirty = true;
 	}
@@ -245,6 +245,7 @@ export class _Pick_LineSegment extends _Pick_PickableBase
     {
         super.onClear(event);
 
+		this._lineSegment.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
         this._lineSegment = null;
 	}
 	
@@ -289,7 +290,7 @@ export class _Pick_LineSegment extends _Pick_PickableBase
 
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.renderable = null;
+		collision.pickable = null;
 		//TODO
 		return false;
 	}

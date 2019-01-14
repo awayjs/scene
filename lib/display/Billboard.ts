@@ -2,7 +2,9 @@ import {Rectangle, Matrix3D, Box, Vector3D, Sphere} from "@awayjs/core";
 
 import {ImageSampler, Image2D, ImageUtils} from "@awayjs/stage";
 
-import {IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent, PickingCollision, PartitionBase, IPicker, IRenderer, PickEntity, _Pick_PickableBase, EntityNode} from "@awayjs/renderer";
+import {PickingCollision, PartitionBase, PickEntity, _Pick_PickableBase, EntityNode} from "@awayjs/view";
+
+import {IRenderable, RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent} from "@awayjs/renderer";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
@@ -179,14 +181,9 @@ export class Billboard extends DisplayObjectContainer implements IRenderable
 		return newInstance;
 	}
 
-	public _applyRenderables(renderer:IRenderer):void
+	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
-		renderer.applyRenderable(this);
-	}
-	
-	public _applyPickable(picker:IPicker):void
-	{
-		picker.applyPickable(this);
+		traverser.applyTraversable(this);
 	}
 
 	private _updateDimensions():void
@@ -256,9 +253,10 @@ import {AssetEvent} from "@awayjs/core";
 
 import {AttributesBuffer} from "@awayjs/stage";
 
-import {IEntity, MaterialUtils, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity} from "@awayjs/renderer";
+import {MaterialUtils, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity} from "@awayjs/renderer";
 
 import {TriangleElements} from "@awayjs/graphics";
+import { IEntityTraverser } from "@awayjs/view";
 
 /**
  * @class away.pool.RenderableListItem
@@ -344,6 +342,7 @@ export class _Pick_Billboard extends _Pick_PickableBase
 {
 	private _billboardBox:Box;
 	private _billboardBoxDirty:boolean = true;
+	private _onInvalidateElementsDelegate:(event:RenderableEvent) => void;
 
     /**
      *
@@ -362,13 +361,15 @@ export class _Pick_Billboard extends _Pick_PickableBase
     {
         super(billboard, pickEntity);
 
-        this._billboard = billboard;
+		this._billboard = billboard;
+		
+		this._onInvalidateElementsDelegate = (event:RenderableEvent) => this._onInvalidateElements(event);
+
+		this._billboard.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
     }
 	
-	public onInvalidateElements(event:RenderableEvent):void
+	public _onInvalidateElements(event:RenderableEvent):void
     {
-		super.onInvalidateElements(event);
-
 		this._billboardBoxDirty = true;
 	}
 
@@ -376,6 +377,7 @@ export class _Pick_Billboard extends _Pick_PickableBase
     {
         super.onClear(event);
 
+		this._billboard.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
         this._billboard = null;
 	}
 	
@@ -403,7 +405,7 @@ export class _Pick_Billboard extends _Pick_PickableBase
 
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.renderable = null;
+		collision.pickable = null;
 
 		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollision, shortestCollisionDistance)) {
 		//	shortestCollisionDistance = pickingCollision.rayEntryDistance;

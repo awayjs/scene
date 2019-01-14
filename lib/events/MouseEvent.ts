@@ -1,6 +1,9 @@
 import {Point, Vector3D, EventBase} from "@awayjs/core";
 
-import {IEntity, IRenderable, IMaterial, IView} from "@awayjs/renderer";
+import {IPartitionEntity, ITraversable, View} from "@awayjs/view";
+
+import {IMaterial} from "@awayjs/renderer";
+import { DisplayObject } from '../display/DisplayObject';
 
 /**
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
@@ -107,22 +110,22 @@ export class MouseEvent extends EventBase
 	/**
 	 * The view object inside which the event took place.
 	 */
-	public view:IView;
+	public view:View;
 
 	/**
 	 * The entity inside which the event took place.
 	 */
-	public entity:IEntity;
+	public entity:DisplayObject;
 	
 	/**
 	 * The entity of the picker inside which the event took place.
 	 */
-	public pickerEntity:IEntity;
+	public pickerEntity:DisplayObject;
 
 	/**
-	 * The renderable owner inside which the event took place.
+	 * The traversable owner inside which the event took place.
 	 */
-	public renderable:IRenderable;
+	public traversable:ITraversable;
 
 	/**
 	 * The material of the 3d element inside which the event took place.
@@ -230,7 +233,7 @@ export class MouseEvent extends EventBase
 		result.view = this.view;
 		result.entity = this.entity;
 		result.pickerEntity = this.pickerEntity;
-		result.renderable = this.renderable;
+		result.traversable = this.traversable;
 		result.material = this.material;
 		result.uv = this.uv;
 		result.position = this.position;

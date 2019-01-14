@@ -1,6 +1,6 @@
 ﻿import {Matrix} from "@awayjs/core";
 
-import {PartitionBase, EntityNode} from "@awayjs/renderer";
+import {PartitionBase, EntityNode} from "@awayjs/view";
 
 import {GraphicsPathCommand, GraphicsFillStyle, GradientFillStyle, BitmapFillStyle, GraphicsStrokeStyle, Graphics, GraphicsPath} from "@awayjs/graphics";
 

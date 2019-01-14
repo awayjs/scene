@@ -1,6 +1,6 @@
 import {Box, Point, ArgumentError, RangeError, Matrix3D} from "@awayjs/core";
 
-import { PartitionBase} from "@awayjs/renderer";
+import { PartitionBase} from "@awayjs/view";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 

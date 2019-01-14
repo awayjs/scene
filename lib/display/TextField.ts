@@ -1,19 +1,17 @@
 import {Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D, AssetEvent} from "@awayjs/core";
 
-import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Viewport} from "@awayjs/stage";
+import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes} from "@awayjs/stage";
 
-import {Style, PartitionBase, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
+import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
+
+import {Style} from "@awayjs/renderer";
 
 import {MaterialBase} from "@awayjs/materials";
 
 import {Graphics, Shape, TriangleElements, GraphicsFactoryHelper} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
-import {AlignmentMode} from "../base/AlignmentMode";
-import {Font} from "../text/Font";
-import {TesselatedFontChar} from "../text/TesselatedFontChar";
 import {TesselatedFontTable} from "../text/TesselatedFontTable";
-import {BitmapFontTable} from "../text/BitmapFontTable";
 import {AntiAliasType} from "../text/AntiAliasType";
 import {GridFitType} from "../text/GridFitType";
 import {TextFieldAutoSize} from "../text/TextFieldAutoSize";
@@ -28,9 +26,7 @@ import {DisplayObject} from "./DisplayObject";
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import {Sprite} from "./Sprite";
 import {TextSprite} from "./TextSprite";
-import {MovieClip} from "./MovieClip";
 import {TextShape} from "../text/TextShape";
-import { FontStyleName } from '../text/FontStyleName';
 import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
 import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
 import { TextFormatAlign } from '../text/TextFormatAlign';
@@ -336,7 +332,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public findCharIdxForMouse(event):number{
 		
-		var myPoint:Point=this.textChild.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		var myPoint:Point=this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
 		var lineIdx:number=this.getLineIndexAtPoint(myPoint.x, myPoint.y);
 		var charIdx:number=this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
 		
@@ -689,22 +685,22 @@ export class TextField extends DisplayObjectContainer
     public get internalScale():Vector3D{
         return this._internalScale;
     }
-	public getInternalScale(viewport:Viewport = null):Vector3D
-	{
-		if(this.parent)
-			this._internalScale.copyFrom(this.parent.transform.concatenatedMatrix3D.decompose()[3]);
-		else
-			this._internalScale.identity();
+	// public getInternalScale(view:View = null):Vector3D
+	// {
+	// 	if(this.parent)
+	// 		this._internalScale.copyFrom(this.parent.transform.concatenatedMatrix3D.decompose()[3]);
+	// 	else
+	// 		this._internalScale.identity();
 
-		if (viewport) {
-			this._internalScale.x *= viewport.focalLength*viewport.pixelRatio/1000;
-			this._internalScale.y *= viewport.focalLength/1000;
-		}
+	// 	if (view) {
+	// 		this._internalScale.x *= view.focalLength*view.pixelRatio/1000;
+	// 		this._internalScale.y *= view.focalLength/1000;
+	// 	}
 
-        this._internalScale.x=1/this._internalScale.x;
-        this._internalScale.y=1/this._internalScale.y;
-		return this._internalScale;
-	}
+    //     this._internalScale.x=1/this._internalScale.x;
+    //     this._internalScale.y=1/this._internalScale.y;
+	// 	return this._internalScale;
+	// }
 	public _iInternalUpdate():void
 	{
 		super._iInternalUpdate();
@@ -733,7 +729,7 @@ export class TextField extends DisplayObjectContainer
         
 		var prevScaleX:number = this._internalScale.x;
 		var prevScaleY:number = this._internalScale.y;
-		// var scale:Vector3D = this.getInternalScale(viewport);
+		// var scale:Vector3D = this.getInternalScale(view);
 		// if (scale.x == prevScaleX && scale.y == prevScaleY)
         //      return;
         // this._internalScale=scale;
@@ -1485,29 +1481,13 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _applyRenderables(renderer:IRenderer):void
+	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
 		if(!this.maskMode){
 			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
 			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
 			//}
-			this._graphics._applyRenderables(renderer);
-			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
-			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
-			//}
-			//if(this.bgShape){// && this.background){
-			//	traverser[this.bgShape.elements.traverseName](this.bgShape);
-			//}
-		}
-	}
-		
-	public _applyPickables(picker:IPicker):void
-	{
-		if(!this.maskMode){
-			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
-			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
-			//}
-			this._graphics._applyPickables(picker);
+			this._graphics._acceptTraverser(traverser);
 			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
 			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
 			//}

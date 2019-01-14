@@ -1,6 +1,6 @@
-import {Point, Vector3D, EventBase} from "@awayjs/core";
+import {EventBase} from "@awayjs/core";
 
-import {IEntity, IRenderable, IMaterial, IView} from "@awayjs/renderer";
+import {IPartitionEntity, View, ITraversable} from "@awayjs/view";
 /**
  * A FocusEvent is dispatched when a entity is focused
  */
@@ -19,22 +19,22 @@ export class FocusEvent extends EventBase
 	/**
 	 * The view object inside which the event took place.
 	 */
-	public view:IView;
+	public view:View;
 
 	/**
 	 * The entity inside which the event took place.
 	 */
-    public entity:IEntity;
+    public entity:IPartitionEntity;
     
 	/**
 	 * True if the focus was set by mouse-interaction
 	 */
-	public invokedByMouse:IEntity;
+	public invokedByMouse:IPartitionEntity;
 
 	/**
-	 * The renderable owner inside which the event took place.
+	 * The traversable owner inside which the event took place.
 	 */
-	public renderable:IRenderable;
+	public traversable:ITraversable;
 
 
 	/**
