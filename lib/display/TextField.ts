@@ -2681,12 +2681,17 @@ export class TextField extends DisplayObjectContainer
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
 			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
-
 		var textShape:TextShape;
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
-
-			var attr_length:number = 2;//(tess_fontTable.usesCurves)?3:2;
+			
+			var color=this.getTextColorForTextFormat(textShape.format);
+			var alpha=ColorUtils.float32ColorToARGB(color)[0];
+			if(alpha==0){
+				alpha=255;
+			}
+			// this textShapeshape is for FNT font
+			var attr_length:number = textShape.fntMaterial?4:2;
 			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
 			attributesView.set(textShape.verts);
 			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
@@ -2694,36 +2699,39 @@ export class TextField extends DisplayObjectContainer
 
 			textShape.elements = new TriangleElements(vertexBuffer);
 			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-            textShape.shape = Shape.getShape(textShape.elements);
-            
+			if(textShape.fntMaterial)
+				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
+			textShape.shape = Shape.getShape(textShape.elements);
+			
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
-			if (textShape.format.material && this._textColor==0) {
+
+			if(textShape.fntMaterial){
+				// 	used by FNT fonts
+				textShape.shape.material=textShape.fntMaterial;
+				//(<MaterialBase> textShape.shape.material).colorTransform=new ColorTransform();
+				//(<MaterialBase> textShape.shape.material).colorTransform.color=color;					
+			}
+			else if (textShape.format.material && this._textColor==0) {
+				// 	used for textfields loaded from awd. 
+				//	the material on the format uses textureAtlas from awd
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-                (<MaterialBase> textShape.shape.material).animateUVs = true;
+				(<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			}
 			else {
-
-                var color=this.getTextColorForTextFormat(textShape.format);
-                
-				var alpha=ColorUtils.float32ColorToARGB(color)[0];
-				if(alpha==0){
-					alpha=255;
-				}
-				var obj=Graphics.get_material_for_color(color, alpha/255);
-
+				// 	used by runtime textureatlas. 
+				//	(standart for dynamic created text and text loaded from swf)					
+				var obj=Graphics.get_material_for_color(color, alpha/255);	
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-                    (<MaterialBase> textShape.shape.material).animateUVs=true;
+					(<MaterialBase> textShape.shape.material).animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
-            }
+			}	
         }
-
-        
     }
     
     private buildShapes(){
