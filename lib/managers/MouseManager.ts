@@ -180,7 +180,7 @@ export class MouseManager {
                 window.removeEventListener("keyup", this.onKeyUpDelegate);
             //}
 
-            this._containerLookup.slice(this._containerLookup.indexOf(container), 1);
+            this._containerLookup.splice(this._containerLookup.indexOf(container), 1);
         }
     }
 
@@ -447,7 +447,7 @@ export class MouseManager {
 
     public unregisterScene(scene: Scene): void {
         if (scene)
-            this._sceneLookup.slice(this._sceneLookup.indexOf(scene), 1);
+            this._sceneLookup.splice(this._sceneLookup.indexOf(scene), 1);
     }
 
     public addEventsForSceneBinary(touchMessage: ArrayBuffer, sceneIdx: number = 0): void {
@@ -779,9 +779,9 @@ export class MouseManager {
 
             if (event.touches) {
                 var touch;
-                var len: number = event.touches.length;
-                for (var i: number = 0; i < len; i++) {
-                    touch = event.touches[i];
+                var len_touches: number = event.touches.length;
+                for (var t: number = 0; t < len_touches; t++) {
+                    touch = event.touches[t];
                     scene._touchPoints.push(new TouchPoint(touch.clientX + scene.view.x, touch.clientY + scene.view.y, touch.identifier));
                 }
             }
