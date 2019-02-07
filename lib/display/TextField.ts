@@ -476,7 +476,6 @@ export class TextField extends DisplayObjectContainer
                 this.cursorShape.style.color=color;
                 this.cursorShape.style.addSamplerAt(sampler, obj.material.getTextureAt(0));
                 this.cursorShape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
-                this.cursorShape.invalidateMaterial();
             }
         }
         this.scrollToCursor(x,y);

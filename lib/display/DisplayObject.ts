@@ -4,7 +4,7 @@ import {BlendMode} from "@awayjs/stage";
 
 import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition, PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
 
-import {IRenderable, IAnimator, IMaterial, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
+import {IAnimator, IMaterial, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
 
 import { ElementsType } from '@awayjs/graphics';
 
@@ -1266,7 +1266,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._style)
 			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-		this._onInvalidateProperties();
+		this.invalidateStyle();
 	}
 
 	/**
@@ -1534,11 +1534,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	{
 		return false;
 	}
-
-    public getRenderableIndex(renderable:IRenderable):number
-    {
-        return -1;
-    }
 
 	/**
 	 *
@@ -2143,6 +2138,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	{
 		//TODO: herarchical materials and/or Styles?
 	}
+	
+	public invalidateStyle():void
+	{
+		//TODO: herarchical materials and/or Styles?
+	}
 
 	public invalidateElements():void
 	{
@@ -2151,7 +2151,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public _onInvalidateProperties(event:StyleEvent = null):void
 	{
-		this.invalidateMaterial();
+		this.invalidateStyle();
 	}
 
 	protected _getDefaultBoundingVolume():BoundingVolumeType

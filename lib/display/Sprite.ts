@@ -2,9 +2,9 @@
 
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 
-import {IAnimator, IMaterial, Style, IRenderable } from "@awayjs/renderer";
+import {IAnimator, IMaterial, Style } from "@awayjs/renderer";
 
-import {Graphics, Shape} from "@awayjs/graphics";
+import {Graphics} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import { PrefabBase } from '../prefabs/PrefabBase';
@@ -46,11 +46,6 @@ export class Sprite extends DisplayObjectContainer
 	{
 		return Sprite.assetType;
 	}
-
-    public getRenderableIndex(renderable:IRenderable):number
-    {
-        return this._graphics.getShapeIndex(<Shape> renderable);
-    }
 
 	/**
 	 * Specifies the Graphics object belonging to this Sprite object, where
@@ -254,6 +249,11 @@ export class Sprite extends DisplayObjectContainer
 	}
 
 	public invalidateMaterial():void
+	{
+		this.graphics.invalidateMaterials();
+	}
+			
+	public invalidateStyle():void
 	{
 		this.graphics.invalidateMaterials();
 	}

@@ -4,7 +4,7 @@ import {BlendMode, ImageCube} from "@awayjs/stage";
 
 import {View, PickingCollision, PartitionBase, BoundingVolumeType} from "@awayjs/view";
 
-import {IAnimationSet, IRenderable, IMaterial, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
+import {IAnimationSet, IMaterial, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
 
 import {ImageTextureCube} from "@awayjs/materials";
 
@@ -15,7 +15,7 @@ import {DisplayObject} from "./DisplayObject";
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-export class Skybox extends DisplayObject implements IRenderable, IMaterial
+export class Skybox extends DisplayObject implements IMaterial
 {
 	private _textures:Array<ITexture> = new Array<ITexture>();
 
@@ -103,14 +103,6 @@ export class Skybox extends DisplayObject implements IRenderable, IMaterial
 		this.invalidatePasses();
 	}
 
-	public getRenderableIndex(renderable:IRenderable):number
-	{
-		if (renderable == this)
-			return 0;
-
-		return -1;
-	}
-
 	public getNumTextures():number
 	{
 		return this._textures.length;
@@ -134,7 +126,7 @@ export class Skybox extends DisplayObject implements IRenderable, IMaterial
 
 		this._onTextureInvalidateDelegate = (event:AssetEvent) => this.onTextureInvalidate(event);
 
-		this._owners = new Array<IRenderEntity>(this);
+		this._owners = [this];
 
 		this.style = new Style();
         if (imageColor instanceof ImageCube) {
@@ -173,6 +165,11 @@ export class Skybox extends DisplayObject implements IRenderable, IMaterial
 	public invalidateMaterial():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
+	}
+			
+	public invalidateStyle():void
+	{
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
 	}
 
 	public addTexture(texture:ITexture):void
@@ -336,25 +333,7 @@ export class _Render_Skybox extends _Render_RenderableBase
     /**
      *
      */
-    private static _elements:SkyboxElements;
-
-    /**
-     *
-     */
-    private _skybox:Skybox;
-
-    /**
-     * //TODO
-     *
-     * @param pool
-     * @param skybox
-     */
-    constructor(skybox:Skybox, renderEntity:RenderEntity)
-    {
-        super(skybox, renderEntity);
-
-        this._skybox = skybox;
-    }
+	private static _elements:SkyboxElements;
 
     /**
      * //TODO
@@ -379,7 +358,12 @@ export class _Render_Skybox extends _Render_RenderableBase
 
     protected _getRenderMaterial():_Render_SkyboxMaterial
     {
-        return <_Render_SkyboxMaterial> this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._skybox);
+        return <_Render_SkyboxMaterial> this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(<Skybox> this._asset);
+	}
+		
+	protected _getStyle():Style
+    {
+        return (<Skybox> this._asset).style;
     }
 }
 
