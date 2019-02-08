@@ -93,7 +93,7 @@ export class FNTGenerator
                     outputBitmaps.push(outputBitmap);
                     (<TesselatedFontTable>font.font_styles[i]).addFNTChannel(outputBitmap);
 
-                    while(mipSize>2){
+                    while(mipSize>=2){
                         mipSize*=0.5;
                         mipScale*=0.5;
 

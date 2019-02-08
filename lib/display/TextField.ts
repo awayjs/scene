@@ -2703,12 +2703,13 @@ export class TextField extends DisplayObjectContainer
 				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
 			textShape.shape = Shape.getShape(textShape.elements);
 			
-			var sampler:ImageSampler = new ImageSampler();
+			var sampler:ImageSampler = new ImageSampler(false, true, true);
 			textShape.shape.style = new Style();
 
 			if(textShape.fntMaterial){
 				// 	used by FNT fonts
 				textShape.shape.material=textShape.fntMaterial;
+				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				//(<MaterialBase> textShape.shape.material).colorTransform=new ColorTransform();
 				//(<MaterialBase> textShape.shape.material).colorTransform.color=color;					
 			}
