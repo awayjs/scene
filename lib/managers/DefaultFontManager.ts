@@ -61,7 +61,10 @@ export class DefaultFontManager
         if(!DefaultFontManager._registered_fonts[ns]){
             DefaultFontManager._registered_fonts[ns]={};
         }
-        if(ns==AssetBase.DEFAULT_NAMESPACE){            
+        if(ns==AssetBase.DEFAULT_NAMESPACE){  
+            if(!DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]){
+                DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]={};
+            }       
             if(DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][fontName]){
                 return DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][fontName];                
             }
