@@ -34,6 +34,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	private _descent:number;
 	public _current_size:number;
 	public _size_multiply:number;
+	public vertical_glyph_offset:number;
 	private _charDictDirty:Boolean;
 	private _usesCurves:boolean;
 	private _opentype_font:any;
@@ -63,6 +64,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		this._glyphIdxToChar={};
 		this._whitespace_width=0;
 		this._fnt_channels=[];
+		this.vertical_glyph_offset=0;
 
 		if(opentype_font){
 			this._opentype_font=opentype_font;
@@ -812,13 +814,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 								if(hack_x_mirror){
 									for (v = 0; v < char_vertices.count; v++) {
 										currentTextShape.verts[currentTextShape.verts.length] = ((charGlyph.char_width-buffer[v * 2]) * size_multiply) + x;
-										currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 2 + 1] * size_multiply) + y;
+										currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2 + 1]-this.vertical_glyph_offset) * size_multiply) + y;
 									}
 								}
 								else{
 									for (v = 0; v < char_vertices.count; v++) {
-										currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 2] * size_multiply) + x;
-										currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 2 + 1] * size_multiply) + y;
+										currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2]) * size_multiply) + x;
+										currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2 + 1]-this.vertical_glyph_offset) * size_multiply) + y;
 									}
 								}
 							}
