@@ -1,17 +1,19 @@
 import {Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D, AssetEvent} from "@awayjs/core";
 
-import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes} from "@awayjs/stage";
+import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes, Viewport} from "@awayjs/stage";
 
-import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
-
-import {Style} from "@awayjs/renderer";
+import {Style, PartitionBase, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
 
 import {MaterialBase} from "@awayjs/materials";
 
 import {Graphics, Shape, TriangleElements, GraphicsFactoryHelper} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import {AlignmentMode} from "../base/AlignmentMode";
+import {Font} from "../text/Font";
+import {TesselatedFontChar} from "../text/TesselatedFontChar";
 import {TesselatedFontTable} from "../text/TesselatedFontTable";
+import {BitmapFontTable} from "../text/BitmapFontTable";
 import {AntiAliasType} from "../text/AntiAliasType";
 import {GridFitType} from "../text/GridFitType";
 import {TextFieldAutoSize} from "../text/TextFieldAutoSize";
@@ -26,7 +28,9 @@ import {DisplayObject} from "./DisplayObject";
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import {Sprite} from "./Sprite";
 import {TextSprite} from "./TextSprite";
+import {MovieClip} from "./MovieClip";
 import {TextShape} from "../text/TextShape";
+import { FontStyleName } from '../text/FontStyleName';
 import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
 import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
 import { TextFormatAlign } from '../text/TextFormatAlign';
@@ -332,7 +336,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public findCharIdxForMouse(event):number{
 		
-		var myPoint:Point=this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		var myPoint:Point=this.textChild.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
 		var lineIdx:number=this.getLineIndexAtPoint(myPoint.x, myPoint.y);
 		var charIdx:number=this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
 		
@@ -476,6 +480,7 @@ export class TextField extends DisplayObjectContainer
                 this.cursorShape.style.color=color;
                 this.cursorShape.style.addSamplerAt(sampler, obj.material.getTextureAt(0));
                 this.cursorShape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+                this.cursorShape.invalidateMaterial();
             }
         }
         this.scrollToCursor(x,y);
@@ -684,22 +689,22 @@ export class TextField extends DisplayObjectContainer
     public get internalScale():Vector3D{
         return this._internalScale;
     }
-	// public getInternalScale(view:View = null):Vector3D
-	// {
-	// 	if(this.parent)
-	// 		this._internalScale.copyFrom(this.parent.transform.concatenatedMatrix3D.decompose()[3]);
-	// 	else
-	// 		this._internalScale.identity();
+	public getInternalScale(viewport:Viewport = null):Vector3D
+	{
+		if(this.parent)
+			this._internalScale.copyFrom(this.parent.transform.concatenatedMatrix3D.decompose()[3]);
+		else
+			this._internalScale.identity();
 
-	// 	if (view) {
-	// 		this._internalScale.x *= view.focalLength*view.pixelRatio/1000;
-	// 		this._internalScale.y *= view.focalLength/1000;
-	// 	}
+		if (viewport) {
+			this._internalScale.x *= viewport.focalLength*viewport.pixelRatio/1000;
+			this._internalScale.y *= viewport.focalLength/1000;
+		}
 
-    //     this._internalScale.x=1/this._internalScale.x;
-    //     this._internalScale.y=1/this._internalScale.y;
-	// 	return this._internalScale;
-	// }
+        this._internalScale.x=1/this._internalScale.x;
+        this._internalScale.y=1/this._internalScale.y;
+		return this._internalScale;
+	}
 	public _iInternalUpdate():void
 	{
 		super._iInternalUpdate();
@@ -728,7 +733,7 @@ export class TextField extends DisplayObjectContainer
         
 		var prevScaleX:number = this._internalScale.x;
 		var prevScaleY:number = this._internalScale.y;
-		// var scale:Vector3D = this.getInternalScale(view);
+		// var scale:Vector3D = this.getInternalScale(viewport);
 		// if (scale.x == prevScaleX && scale.y == prevScaleY)
         //      return;
         // this._internalScale=scale;
@@ -1436,7 +1441,7 @@ export class TextField extends DisplayObjectContainer
 	public get newTextFormat():TextFormat
 	{
         // only use the newTextformat if it is available, otherwise fall back to textFormat
-		return this._newTextFormat?this._newTextFormat:this._textFormat?this._textFormat:new TextFormat();
+		return this._newTextFormat?this._newTextFormat:this._textFormat;
 	}
 	public set newTextFormat(value:TextFormat)
 	{
@@ -1480,13 +1485,29 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:IEntityTraverser):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
 		if(!this.maskMode){
 			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
 			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
 			//}
-			this._graphics._acceptTraverser(traverser);
+			this._graphics._applyRenderables(renderer);
+			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
+			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
+			//}
+			//if(this.bgShape){// && this.background){
+			//	traverser[this.bgShape.elements.traverseName](this.bgShape);
+			//}
+		}
+	}
+		
+	public _applyPickables(picker:IPicker):void
+	{
+		if(!this.maskMode){
+			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
+			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
+			//}
+			this._graphics._applyPickables(picker);
 			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
 			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
 			//}
@@ -2681,17 +2702,12 @@ export class TextField extends DisplayObjectContainer
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
 			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
+
 		var textShape:TextShape;
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
-			
-			var color=this.getTextColorForTextFormat(textShape.format);
-			var alpha=ColorUtils.float32ColorToARGB(color)[0];
-			if(alpha==0){
-				alpha=255;
-			}
-			// this textShapeshape is for FNT font
-			var attr_length:number = textShape.fntMaterial?4:2;
+
+			var attr_length:number = 2;//(tess_fontTable.usesCurves)?3:2;
 			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
 			attributesView.set(textShape.verts);
 			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
@@ -2699,40 +2715,36 @@ export class TextField extends DisplayObjectContainer
 
 			textShape.elements = new TriangleElements(vertexBuffer);
 			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-			if(textShape.fntMaterial)
-				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
-			textShape.shape = Shape.getShape(textShape.elements);
-			
-			var sampler:ImageSampler = new ImageSampler(false, true, true);
+            textShape.shape = Shape.getShape(textShape.elements);
+            
+			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
-
-			if(textShape.fntMaterial){
-				// 	used by FNT fonts
-				textShape.shape.material=textShape.fntMaterial;
-				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-				//(<MaterialBase> textShape.shape.material).colorTransform=new ColorTransform();
-				//(<MaterialBase> textShape.shape.material).colorTransform.color=color;					
-			}
-			else if (textShape.format.material && this._textColor==0) {
-				// 	used for textfields loaded from awd. 
-				//	the material on the format uses textureAtlas from awd
+			if (textShape.format.material && this._textColor==0) {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-				(<MaterialBase> textShape.shape.material).animateUVs = true;
+                (<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			}
 			else {
-				// 	used by runtime textureatlas. 
-				//	(standart for dynamic created text and text loaded from swf)					
-				var obj=Graphics.get_material_for_color(color, alpha/255);	
+
+                var color=this.getTextColorForTextFormat(textShape.format);
+                
+				var alpha=ColorUtils.float32ColorToARGB(color)[0];
+				if(alpha==0){
+					alpha=255;
+				}
+				var obj=Graphics.get_material_for_color(color, alpha/255);
+
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-					(<MaterialBase> textShape.shape.material).animateUVs=true;
+                    (<MaterialBase> textShape.shape.material).animateUVs=true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
-			}	
+            }
         }
+
+        
     }
     
     private buildShapes(){

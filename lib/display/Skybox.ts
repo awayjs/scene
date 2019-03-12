@@ -1,10 +1,8 @@
 import {AssetEvent} from "@awayjs/core";
 
-import {BlendMode, ImageCube} from "@awayjs/stage";
+import {BlendMode, ImageCube, Viewport} from "@awayjs/stage";
 
-import {View, PickingCollision, PartitionBase, BoundingVolumeType} from "@awayjs/view";
-
-import {IAnimationSet, IMaterial, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
+import {BoundingVolumeType, IAnimationSet, IRenderable, IMaterial, IEntity, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, PickingCollision, PartitionBase, RendererBase, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
 
 import {ImageTextureCube} from "@awayjs/materials";
 
@@ -15,7 +13,7 @@ import {DisplayObject} from "./DisplayObject";
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-export class Skybox extends DisplayObject implements IMaterial
+export class Skybox extends DisplayObject implements IEntity, IRenderable, IMaterial
 {
 	private _textures:Array<ITexture> = new Array<ITexture>();
 
@@ -24,7 +22,7 @@ export class Skybox extends DisplayObject implements IMaterial
 	private _texture:ImageTextureCube;
 	private _animationSet:IAnimationSet;
 	public _pBlendMode:string = BlendMode.NORMAL;
-	private _owners:Array<IRenderEntity>;
+	private _owners:Array<IEntity>;
 	private _onTextureInvalidateDelegate:(event:AssetEvent) => void;
 
 	public animateUVs:boolean = false;
@@ -74,7 +72,7 @@ export class Skybox extends DisplayObject implements IMaterial
 	 *
 	 * @private
 	 */
-	public get iOwners():Array<IRenderEntity>
+	public get iOwners():Array<IEntity>
 	{
 		return this._owners;
 	}
@@ -103,6 +101,14 @@ export class Skybox extends DisplayObject implements IMaterial
 		this.invalidatePasses();
 	}
 
+	public getRenderableIndex(renderable:IRenderable):number
+	{
+		if (renderable == this)
+			return 0;
+
+		return -1;
+	}
+
 	public getNumTextures():number
 	{
 		return this._textures.length;
@@ -126,7 +132,7 @@ export class Skybox extends DisplayObject implements IMaterial
 
 		this._onTextureInvalidateDelegate = (event:AssetEvent) => this.onTextureInvalidate(event);
 
-		this._owners = [this];
+		this._owners = new Array<IEntity>(this);
 
 		this.style = new Style();
         if (imageColor instanceof ImageCube) {
@@ -166,11 +172,6 @@ export class Skybox extends DisplayObject implements IMaterial
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
-			
-	public invalidateStyle():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
-	}
 
 	public addTexture(texture:ITexture):void
 	{
@@ -201,12 +202,17 @@ export class Skybox extends DisplayObject implements IMaterial
 		this.invalidatePasses();
 	}
 
-	public _acceptTraverser(traverser:IEntityTraverser):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
-		traverser.applyTraversable(this);
+		renderer.applyRenderable(this);
 	}
 	
-	public iAddOwner(owner:IRenderEntity):void
+	public _applyPickable(picker:IPicker):void
+	{
+		picker.applyPickable(this);
+	}
+	
+	public iAddOwner(owner:IEntity):void
 	{
 
 	}
@@ -217,7 +223,7 @@ export class Skybox extends DisplayObject implements IMaterial
 	 *
 	 * @internal
 	 */
-	public iRemoveOwner(owner:IRenderEntity):void
+	public iRemoveOwner(owner:IEntity):void
 	{
 
 	}
@@ -230,7 +236,7 @@ export class Skybox extends DisplayObject implements IMaterial
 	
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.pickable = null;
+		collision.renderable = null;
 		
 		return false;
 	}
@@ -306,18 +312,18 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase
     }
 
 
-    public _setRenderState(renderable:_Render_RenderableBase, view:View):void
+    public _setRenderState(renderable:_Render_RenderableBase, viewport:Viewport):void
     {
-        super._setRenderState(renderable, view);
+        super._setRenderState(renderable, viewport);
 
         this._texture._setRenderState(renderable);
     }
     /**
      * @inheritDoc
      */
-    public _activate(view:View):void
+    public _activate(viewport:Viewport):void
     {
-        super._activate(view);
+        super._activate(viewport);
 
         this._stage.context.setDepthTest(false, ContextGLCompareMode.LESS);
 
@@ -333,7 +339,25 @@ export class _Render_Skybox extends _Render_RenderableBase
     /**
      *
      */
-	private static _elements:SkyboxElements;
+    private static _elements:SkyboxElements;
+
+    /**
+     *
+     */
+    private _skybox:Skybox;
+
+    /**
+     * //TODO
+     *
+     * @param pool
+     * @param skybox
+     */
+    constructor(skybox:Skybox, renderEntity:RenderEntity)
+    {
+        super(skybox, renderEntity);
+
+        this._skybox = skybox;
+    }
 
     /**
      * //TODO
@@ -358,17 +382,11 @@ export class _Render_Skybox extends _Render_RenderableBase
 
     protected _getRenderMaterial():_Render_SkyboxMaterial
     {
-        return <_Render_SkyboxMaterial> this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(<Skybox> this._asset);
-	}
-		
-	protected _getStyle():Style
-    {
-        return (<Skybox> this._asset).style;
+        return <_Render_SkyboxMaterial> this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._skybox);
     }
 }
 
 import {Plane3D} from "@awayjs/core";
-import { IEntityTraverser, EntityNode } from '@awayjs/view';
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.

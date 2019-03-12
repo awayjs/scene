@@ -1,5 +1,5 @@
 
-console.log("AwayJS - Scene - 0.11.32");
+console.log("AwayJS - Scene - 0.11.15");
 export {IDisplayObjectAdapter} from "./lib/adapters/IDisplayObjectAdapter";
 export {IMovieClipAdapter} from "./lib/adapters/IMovieClipAdapter";
 
@@ -8,7 +8,6 @@ export {HierarchicalProperties} from "./lib/base/HierarchicalProperties";
 export {IBitmapDrawable} from "./lib/base/IBitmapDrawable";
 export {OrientationMode} from "./lib/base/OrientationMode";
 export {Timeline} from "./lib/base/Timeline";
-export {TouchPoint} from "./lib/base/TouchPoint";
 
 export {ControllerBase} from "./lib/controllers/ControllerBase";
 export {FirstPersonController} from "./lib/controllers/FirstPersonController";
@@ -45,14 +44,8 @@ export {SkyboxElements, _Render_SkyboxElements, _Stage_SkyboxElements} from "./l
 export {ISceneGraphFactory} from "./lib/factories/ISceneGraphFactory";
 export {DefaultSceneGraphFactory} from "./lib/factories/DefaultSceneGraphFactory";
 
-export {SceneImage2D} from "./lib/image/SceneImage2D";
-
 export {FrameScriptManager} from "./lib/managers/FrameScriptManager";
 export {DefaultFontManager} from "./lib/managers/DefaultFontManager";
-export {MouseManager} from "./lib/managers/MouseManager";
-
-export {SceneGraphNode} from "./lib/partition/SceneGraphNode";
-export {SceneGraphPartition} from "./lib/partition/SceneGraphPartition";
 
 export {PrefabBase}	from "./lib/prefabs/PrefabBase";
 export {PrimitiveCapsulePrefab} from "./lib/prefabs/PrimitiveCapsulePrefab";
@@ -68,7 +61,6 @@ export {PrimitiveTorusPrefab} from "./lib/prefabs/PrimitiveTorusPrefab";
 export {AntiAliasType} from "./lib/text/AntiAliasType";
 export {BitmapFontChar} from "./lib/text/BitmapFontChar";
 export {BitmapFontTable} from "./lib/text/BitmapFontTable";
-export {FNTGenerator} from "./lib/text/FNTGenerator";
 export {Font} from "./lib/text/Font";
 export {FontStyleName} from "./lib/text/FontStyleName";
 export {GridFitType} from "./lib/text/GridFitType";

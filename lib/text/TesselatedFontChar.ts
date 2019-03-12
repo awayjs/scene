@@ -1,6 +1,5 @@
 import {AttributesBuffer} from "@awayjs/stage";
 import {GraphicsPath, GraphicsFactoryFills} from "@awayjs/graphics"
-import { Rectangle } from '@awayjs/core';
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -37,10 +36,6 @@ export class TesselatedFontChar
 	public char_width:number;
 	public glyph_idx:number;
 	public name:string;
-	
-	public fnt_rect:Rectangle;
-	public fnt_uv:Rectangle;
-	public fnt_channel:number=0;
 
 	/**
 	 * Elements for this char

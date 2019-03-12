@@ -1,12 +1,12 @@
 import {Vector3D, ProjectionBase, PerspectiveProjection} from "@awayjs/core";
 
-import {PartitionBase, BoundingVolumeType, IPartitionTraverser, EntityNode} from "@awayjs/view";
+import {IEntity, PartitionBase, BoundingVolumeType} from "@awayjs/renderer";
 
 import {CameraEvent} from "../events/CameraEvent";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 
-export class Camera extends DisplayObjectContainer
+export class Camera extends DisplayObjectContainer implements IEntity
 {
 	public static assetType:string = "[asset Camera]";
 
@@ -87,6 +87,8 @@ export class Camera extends DisplayObjectContainer
 	}
 }
 
+import {ITraverser, EntityNode} from "@awayjs/renderer";
+
 /**
  * @class away.partition.CameraNode
  */
@@ -95,7 +97,7 @@ export class CameraNode extends EntityNode
 	/**
 	 * @inheritDoc
 	 */
-	public acceptTraverser(traverser:IPartitionTraverser):void
+	public acceptTraverser(traverser:ITraverser):void
 	{
 		// todo: dead end for now, if it has a debug sprite, then sure accept that
 	}

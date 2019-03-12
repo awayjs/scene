@@ -1,15 +1,13 @@
 ﻿import {Vector3D, Matrix3D, Box, Sphere} from "@awayjs/core";
 
-import {PickingCollision, PartitionBase, _Pick_PickableBase, PickEntity, IEntityTraverser, EntityNode} from "@awayjs/view";
-
-import {RenderableEvent, IMaterial} from "@awayjs/renderer";
+import {IRenderable, RenderableEvent, IMaterial, PickingCollision, PartitionBase, IPicker, IRenderer, _Pick_PickableBase, PickEntity, EntityNode} from "@awayjs/renderer";
 
 import {DisplayObject} from "./DisplayObject";
 
 /**
  * A Line Segment primitive.
  */
-export class LineSegment extends DisplayObject
+export class LineSegment extends DisplayObject implements IRenderable
 {
 	public static assetType:string = "[asset LineSegment]";
 
@@ -28,7 +26,7 @@ export class LineSegment extends DisplayObject
 	/**
 	 *
 	 */
-	public get startPosition():Vector3D
+	public get startPostion():Vector3D
 	{
 		return this._startPosition;
 	}
@@ -102,9 +100,15 @@ export class LineSegment extends DisplayObject
 		return true;
 	}
 
-	public _acceptTraverser(traverser:IEntityTraverser):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
-		traverser.applyTraversable(this);
+		renderer.applyRenderable(this);
+	}
+
+		
+	public _applyPickable(picker:IPicker):void
+	{
+		picker.applyPickable(this);
 	}
 
 	/**
@@ -121,18 +125,13 @@ export class LineSegment extends DisplayObject
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
-			
-	public invalidateStyle():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
-	}
 }
 
 import {AssetEvent} from "@awayjs/core";
 
 import {LineElements} from "@awayjs/graphics";
 
-import {_Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, MaterialUtils, Style} from "@awayjs/renderer";
+import {IEntity, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, MaterialUtils, RendererBase} from "@awayjs/renderer";
 
 
 /**
@@ -143,6 +142,33 @@ export class _Render_LineSegment extends _Render_RenderableBase
     private static _lineGraphics:Object = new Object();
 
     /**
+     *
+     */
+    private _lineSegment:LineSegment;
+
+    /**
+     * //TODO
+     *
+     * @param pool
+     * @param graphic
+     * @param level
+     * @param dataOffset
+     */
+    constructor(lineSegment:LineSegment, renderStatePool:RenderEntity)
+    {
+        super(lineSegment, renderStatePool);
+
+        this._lineSegment = lineSegment;
+    }
+
+    public onClear(event:AssetEvent):void
+    {
+        super.onClear(event);
+
+        this._lineSegment = null;
+    }
+
+    /**
      * //TODO
      *
      * @returns {base.LineElements}
@@ -150,10 +176,10 @@ export class _Render_LineSegment extends _Render_RenderableBase
      */
     protected _getStageElements():_Stage_ElementsBase
     {
-        var elements:LineElements = _Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id] || (_Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id] = new LineElements());
+        var elements:LineElements = _Render_LineSegment._lineGraphics[this._lineSegment.id] || (_Render_LineSegment._lineGraphics[this._lineSegment.id] = new LineElements());
 
-        var start:Vector3D = (<LineSegment> this._asset).startPosition;
-        var end:Vector3D = (<LineSegment> this._asset).endPosition;
+        var start:Vector3D = this._lineSegment.startPostion;
+        var end:Vector3D = this._lineSegment.endPosition;
 
         var positions:Float32Array = new Float32Array(6);
         var thickness:Float32Array = new Float32Array(1);
@@ -164,7 +190,7 @@ export class _Render_LineSegment extends _Render_RenderableBase
         positions[3] = end.x;
         positions[4] = end.y;
         positions[5] = end.z;
-        thickness[0] = (<LineSegment> this._asset).thickness;
+        thickness[0] = this._lineSegment.thickness;
 
         elements.setPositions(positions);
         elements.setThickness(thickness);
@@ -174,12 +200,7 @@ export class _Render_LineSegment extends _Render_RenderableBase
 
     protected _getRenderMaterial():_Render_MaterialBase
     {
-        return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction((<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial());
-	}
-	
-	protected _getStyle():Style
-    {
-        return (<LineSegment> this._asset).style;
+        return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction(this._lineSegment.material || MaterialUtils.getDefaultColorMaterial());
     }
 }
 
@@ -192,7 +213,10 @@ export class _Pick_LineSegment extends _Pick_PickableBase
 	private _lineSegmentBoxDirty:boolean = true;
 	private _lineSegmentSphere:Sphere;
 	private _lineSegmentSphereDirty:boolean = true;
-	private _onInvalidateElementsDelegate:(event:RenderableEvent) => void;
+    /**
+     *
+     */
+    private _lineSegment:LineSegment;
 
     /**
      * //TODO
@@ -204,24 +228,24 @@ export class _Pick_LineSegment extends _Pick_PickableBase
      */
     constructor(lineSegment:LineSegment, pickEntity:PickEntity)
     {
-		super(lineSegment, pickEntity);
-		
-		this._onInvalidateElementsDelegate = (event:RenderableEvent) => this._onInvalidateElements(event);
+        super(lineSegment, pickEntity);
 
-		this._asset.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
+        this._lineSegment = lineSegment;
     }
 	
-	public _onInvalidateElements(event:RenderableEvent):void
+	public onInvalidateElements(event:RenderableEvent):void
     {
+		super.onInvalidateElements(event);
+
 		this._lineSegmentBoxDirty = true;
 		this._lineSegmentSphereDirty = true;
 	}
 
     public onClear(event:AssetEvent):void
     {
-		this._asset.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
-
         super.onClear(event);
+
+        this._lineSegment = null;
 	}
 	
 	public hitTestPoint(x:number, y:number, z:number):boolean
@@ -234,15 +258,12 @@ export class _Pick_LineSegment extends _Pick_PickableBase
 		if (this._lineSegmentBoxDirty) {
 			this._lineSegmentBoxDirty = false;
 
-			var startPosition:Vector3D = (<LineSegment> this._asset).startPosition;
-			var endPosition:Vector3D = (<LineSegment> this._asset).endPosition;
-
-			this._lineSegmentBox = new Box(Math.min(startPosition.x, endPosition.x), 
-										Math.min(startPosition.y, endPosition.y),
-										Math.min(startPosition.z, endPosition.z),
-										Math.abs(startPosition.x - endPosition.x),
-										Math.abs(startPosition.y - endPosition.y),
-										Math.abs(startPosition.z - endPosition.z));
+			this._lineSegmentBox = new Box(Math.min(this._lineSegment.startPosition.x, this._lineSegment.endPosition.x), 
+										Math.min(this._lineSegment.startPosition.y, this._lineSegment.endPosition.y),
+										Math.min(this._lineSegment.startPosition.z, this._lineSegment.endPosition.z),
+										Math.abs(this._lineSegment.startPosition.x - this._lineSegment.endPosition.x),
+										Math.abs(this._lineSegment.startPosition.y - this._lineSegment.endPosition.y),
+										Math.abs(this._lineSegment.startPosition.z - this._lineSegment.endPosition.z));
 		}
 
 		return (matrix3D? matrix3D.transformBox(this._lineSegmentBox) : this._lineSegmentBox).union(target, target || cache);
@@ -253,16 +274,13 @@ export class _Pick_LineSegment extends _Pick_PickableBase
 		if (this._lineSegmentSphereDirty) {
 			this._lineSegmentSphereDirty = false;
 
-			var startPosition:Vector3D = (<LineSegment> this._asset).startPosition;
-			var endPosition:Vector3D = (<LineSegment> this._asset).endPosition;
-
-			var halfWidth:number = (endPosition.x - startPosition.x)/2;
-			var halfHeight:number = (endPosition.y - startPosition.y)/2;
-			var halfDepth:number = (endPosition.z - startPosition.z)/2;
+			var halfWidth:number = (this._lineSegment.endPosition.x - this._lineSegment.startPosition.x)/2;
+			var halfHeight:number = (this._lineSegment.endPosition.y - this._lineSegment.startPosition.y)/2;
+			var halfDepth:number = (this._lineSegment.endPosition.z - this._lineSegment.startPosition.z)/2;
 	
-			this._lineSegmentSphere = new Sphere(startPosition.x + halfWidth, 
-									startPosition.y + halfHeight,
-									startPosition.z + halfDepth,
+			this._lineSegmentSphere = new Sphere(this._lineSegment.startPosition.x + halfWidth, 
+									this._lineSegment.startPosition.y + halfHeight,
+									this._lineSegment.startPosition.z + halfDepth,
 									Math.sqrt(halfWidth*halfWidth + halfHeight*halfHeight + halfDepth*halfDepth));
 		}
 
@@ -271,7 +289,7 @@ export class _Pick_LineSegment extends _Pick_PickableBase
 
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.pickable = null;
+		collision.renderable = null;
 		//TODO
 		return false;
 	}

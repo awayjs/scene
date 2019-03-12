@@ -1,5 +1,6 @@
-import {EventBase} from "@awayjs/core";
+import {Point, Vector3D, EventBase} from "@awayjs/core";
 
+import {IEntity, IRenderable, IMaterial, IView} from "@awayjs/renderer";
 /**
  * A FocusEvent is dispatched when a entity is focused
  */

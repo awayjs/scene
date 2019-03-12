@@ -1,9 +1,5 @@
-import {AssetEvent,IAsset, WaveAudio} from "@awayjs/core";
-
-import { PartitionBase, EntityNode } from '@awayjs/view';
-
+import {AssetEvent,IAsset, EventBase, WaveAudio} from "@awayjs/core";
 import {Graphics} from "@awayjs/graphics";
-
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
 import {Timeline} from "../base/Timeline";
@@ -13,6 +9,7 @@ import {FrameScriptManager} from "../managers/FrameScriptManager";
 import {DisplayObject} from "./DisplayObject";
 import {Sprite} from "./Sprite";
 import {TextField} from "./TextField";
+import { PartitionBase, EntityNode } from '@awayjs/renderer';
 
 
 export class MovieClip extends Sprite

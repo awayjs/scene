@@ -1,12 +1,12 @@
 ﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D, Sphere, ProjectionBase} from "@awayjs/core";
 
-import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
+import {IAnimator, IMaterial, Style, IRenderable, PartitionBase, RendererBase, RaycastPicker, IPicker, IRenderer, EntityNode} from "@awayjs/renderer";
 
-import {IAnimator, IMaterial, Style } from "@awayjs/renderer";
-
-import {Graphics} from "@awayjs/graphics";
+import {Graphics, Shape} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
+import { DisplayObject } from './DisplayObject';
+import { Viewport } from '@awayjs/stage';
 import { PrefabBase } from '../prefabs/PrefabBase';
 
 /**
@@ -46,6 +46,11 @@ export class Sprite extends DisplayObjectContainer
 	{
 		return Sprite.assetType;
 	}
+
+    public getRenderableIndex(renderable:IRenderable):number
+    {
+        return this._graphics.getShapeIndex(<Shape> renderable);
+    }
 
 	/**
 	 * Specifies the Graphics object belonging to this Sprite object, where
@@ -194,7 +199,7 @@ export class Sprite extends DisplayObjectContainer
 		super._iInternalUpdate();
 
 		// if(this.parent)
-		// 	this._graphics.updateScale(view);
+		// 	this._graphics.updateScale(viewport);
 	}
 
 	/**
@@ -222,9 +227,20 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:IEntityTraverser):void
+	public _applyRenderables(renderer:IRenderer):void
 	{
-		this.graphics._acceptTraverser(traverser);
+		this.graphics._applyRenderables(renderer);
+	}
+	
+	/**
+	 *
+	 * @param renderer
+	 *
+	 * @internal
+	 */
+	public _applyPickables(picker:IPicker):void
+	{
+		this.graphics._applyPickables(picker);
 	}
 
 	public clear():void
@@ -249,11 +265,6 @@ export class Sprite extends DisplayObjectContainer
 	}
 
 	public invalidateMaterial():void
-	{
-		this.graphics.invalidateMaterials();
-	}
-			
-	public invalidateStyle():void
 	{
 		this.graphics.invalidateMaterials();
 	}
