@@ -20,7 +20,7 @@ export class Sprite extends DisplayObjectContainer
 
 	public _iSourcePrefab:PrefabBase;
 
-	private static _sprites:Array<Sprite> = new Array<Sprite>();
+	public static _sprites:Array<Sprite> = new Array<Sprite>();
 
 	public static assetType:string = "[asset Sprite]";
 

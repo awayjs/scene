@@ -24,7 +24,7 @@ export class MovieClip extends Sprite
 	public doingSwap:boolean=false;
 	public preventScript:boolean=false;
 
-	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
+	public static _movieClips:Array<MovieClip> = new Array<MovieClip>();
 
 	public static assetType:string = "[asset MovieClip]";
 

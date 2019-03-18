@@ -1630,6 +1630,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IEntity
 			this._partition.dispose();
 			this._partition = null;
 		}
+		this._pickObject=null;
 
 	}
 

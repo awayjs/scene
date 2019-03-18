@@ -120,7 +120,7 @@ export class TextField extends DisplayObjectContainer
 	private _isEntity:boolean = false;
 	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
 	
-	private static _textFields:Array<TextField> = [];
+	public static _textFields:Array<TextField> = [];
 
 	public static assetType:string = "[asset TextField]";
 
@@ -1854,6 +1854,7 @@ export class TextField extends DisplayObjectContainer
 	{
 		this.disposeValues();
 
+
 		TextField._textFields.push(this);
 	}
 
@@ -1874,6 +1875,13 @@ export class TextField extends DisplayObjectContainer
 			this._textElements2.dispose();
 			this._textElements2 = null;
 		}
+		
+		for(var key in this.textShapes) {
+			var textShape = this.textShapes[key];
+			textShape.verts.length=0;
+			delete this.textShapes[key];
+		}
+		this.textShapes=null;
 	}
 
 
