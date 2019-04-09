@@ -645,12 +645,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._maskMode == value)
 			return;
 
+		var parent:PartitionBase;
+
+		if (this._partition && (parent = this._partition.parent))
+			parent.removeChild(this._partition);
+
 		if (this._implicitPartition)
 			this._implicitPartition.clearEntity(this);
 				
 		this._maskMode = value;
 
-		if (this._implicitPartition && this.isEntity())
+		if (this._partition && parent)
+			parent.addChild(this._partition);
+
+		if (this._implicitPartition)
 			this._implicitPartition.invalidateEntity(this);
 
 		this._explicitMaskId = value? this.id : -1;
