@@ -1,4 +1,4 @@
-import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem} from "@awayjs/core";
+import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D} from "@awayjs/core";
 
 import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
 
@@ -9,6 +9,8 @@ import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
 import {Scene} from "../Scene";
+import {Camera} from "../display/Camera";
+
 import { View } from '@awayjs/view';
 
 /**
@@ -73,22 +75,26 @@ export class SceneImage2D extends BitmapImage2D
 		//create the projection
 		var projection = new PerspectiveProjection();
 		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
+		projection.fieldOfView = 30;
 		projection.originX = -1;
-		projection.originY = -1;
+		projection.originY = 1;
 
 		//create the view
-		this._scene = new Scene(new DefaultRenderer(new SceneGraphPartition(root), new View(projection, this._stage)));
+		this._scene = new Scene(new DefaultRenderer(new SceneGraphPartition(root, true)));//, new View(projection, this._stage)));
 		this._scene.disableMouseEvents = true;
 		this._scene.view.width = this._rect.width;
 		this._scene.view.height = this._rect.height;
 		this._fillColor = this._fillColor;
 		this._scene.renderer.view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
 		this._scene.renderer.view.backgroundColor = this._fillColor & 0xffffff;
-		this._scene.renderer.view.preserveFocalLength = true;
-
+		//this._scene.renderer.view.preserveFocalLength = true;
+		this._scene.view.stage.container.style.display="NONE";
+       
 		this._scene.renderer.renderableSorter = null;//new RenderableSort2D();
 
-		this._scene.camera.projection = projection;
+		this._scene.camera.projection=projection;
+		(<PerspectiveProjection>this._scene.camera.projection).fieldOfView = Math.atan(this._rect.height/1000/2)*360/Math.PI;
+		
 	}
 
 	/**
@@ -197,25 +203,32 @@ export class SceneImage2D extends BitmapImage2D
 	{
 		if (source instanceof DisplayObject) {
 			var root:DisplayObjectContainer = new DisplayObjectContainer();
-			root.addChild(source);
-
+			var oldParent=source.parent;
+			root.transform.scaleTo(this.rect.height/this.rect.width, -1, 1);
+			root.transform.moveTo(0, this.rect.height,0);
 			if (matrix) {
 				root.transform.scaleTo(matrix.a, matrix.d, 1);
 				root.transform.moveTo(matrix.tx, matrix.ty, 0);
 			}
-			root.transform.colorTransform = colorTransform;
+			//root.transform.colorTransform = colorTransform;
 
 			if (!this._scene)
 				this.createScene(root);
 
+			root.addChild(source);
+			this._scene.view.clear();
 			//save snapshot if unlocked
-			if (!this._locked)
-				this._scene.renderer.queueSnapshot(this);
-
-			this._scene.renderer.disableClear = !this._locked;
+			//if (!this._locked)
+			this._scene.renderer.queueSnapshot(this);
+			//this._scene.view.target=this;
+			//this._scene.renderer.disableClear = !this._locked;
 
 			//render
 			this._scene.renderer.render();
+
+			if(oldParent){
+				oldParent.addChild(source);
+			}
 
 			return;
 		}
