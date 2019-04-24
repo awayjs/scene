@@ -229,6 +229,8 @@ export class SceneImage2D extends BitmapImage2D
 			if(oldParent){
 				oldParent.addChild(source);
 			}
+			this._scene.dispose();
+			this._scene=null;
 
 			return;
 		}
