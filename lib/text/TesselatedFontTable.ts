@@ -169,6 +169,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	 */
 	public dispose():void
 	{
+		for(var i:number=0; i<this._font_chars.length; i++){
+			this._font_chars[i].dispose();
+		}
+		this._font_chars.length=0;
+		this._font_chars_dic=null;
+
 
 	}
 

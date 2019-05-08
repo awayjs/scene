@@ -228,6 +228,9 @@ export class MovieClip extends Sprite
 	public disposeValues():void
 	{
 		super.disposeValues();
+		if(this.timeline)
+			this.timeline.dispose();
+		this.timeline=null;
 
 		this._potentialInstances = {};
 		this._depth_sessionIDs = {};
