@@ -566,7 +566,8 @@ export class MovieClip extends Sprite
 		if(events!=null){
 			(<any>this.adapter).dispatchEvent(events[0]);
 		}
-		this.advanceFrame();
+		if(this._timeline && this._timeline.numFrames>0)
+			this.advanceFrame();
 
 		MovieClip._skipAdvance = false;
 
