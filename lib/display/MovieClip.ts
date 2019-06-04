@@ -566,8 +566,8 @@ export class MovieClip extends Sprite
 		if(events!=null){
 			(<any>this.adapter).dispatchEvent(events[0]);
 		}
-		if(this._timeline && this._timeline.numFrames>0)
-			this.advanceFrame();
+		//if(this._timeline && this._timeline.numFrames>0)
+		this.advanceFrame();
 
 		MovieClip._skipAdvance = false;
 
@@ -651,7 +651,8 @@ export class MovieClip extends Sprite
 		// this happens for objects that have been newly added to parent
 		// they still need to queue their scripts
 
-		if (this._isPlaying && !this._skipAdvance) {
+		//if(this._timeline && this._timeline.numFrames>0)
+		if (this._timeline && this._timeline.numFrames>0 && this._isPlaying && !this._skipAdvance) {
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
 				if (this.loop){
                      // end of loop - jump to first frame.
