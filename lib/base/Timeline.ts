@@ -778,6 +778,7 @@ export class Timeline
 		if(child.isAsset(Sprite)){
 			var myGraphics:Graphics=<Graphics>this.graphicsPool[this.properties_stream_int[i]];
 			//console.log("frame:", target_mc.currentFrameIndex ,"swap graphics: ", target_mc.id, i, myGraphics.id);
+			myGraphics.endFill();
 			(<Sprite>child).graphics.clear();
 			(<Sprite>child).graphics.copyFrom(myGraphics);
 		}
