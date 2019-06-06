@@ -236,7 +236,7 @@ export class TextField extends DisplayObjectContainer
 					this.maskChild.graphics.clear();
 					this.maskChild.graphics.beginFill(0xffffff);
 					this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
-					this.maskChild.graphics.endFill();	
+					this.maskChild.graphics.endFill();
 				}	
 				this._graphics.clear();
 			}
@@ -245,7 +245,7 @@ export class TextField extends DisplayObjectContainer
 				// 	just make sure the mask has correct size 
 				this.inMaskMode=true;
 				if(!this.maskChild)
-					this.maskChild=new Sprite();			
+					this.maskChild=new Sprite();		
 				if(!this.textChild)
 					this.textChild=new TextSprite();
 				this.textChild.mouseEnabled = false;
