@@ -104,18 +104,14 @@ export class Billboard extends DisplayObjectContainer
 		if (value == this._material)
 			return;
 
-		if (this._material) {
-			this._material.iRemoveOwner(this);
-			this._material.removeEventListener(MaterialEvent.INVALIDATE_TEXTURE, this._onInvalidateTextureDelegate);
-		}
-
+		if (this._material)
+			this._material.removeEventListener(MaterialEvent.INVALIDATE_TEXTURES, this._onInvalidateTextureDelegate);
 
 		this._material = value;
 
-		if (this._material) {
-			this._material.iAddOwner(this);
-			this._material.addEventListener(MaterialEvent.INVALIDATE_TEXTURE, this._onInvalidateTextureDelegate);
-		}
+		if (this._material)
+			this._material.addEventListener(MaterialEvent.INVALIDATE_TEXTURES, this._onInvalidateTextureDelegate);
+
 		this._updateDimensions();
 	}
 
@@ -220,22 +216,6 @@ export class Billboard extends DisplayObjectContainer
 			this.scaleX = this._width/this._billboardRect.width;
 			this.scaleY = this._height/this._billboardRect.height;
 		}
-	}
-
-
-	public invalidateElements():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
-	}
-	
-	public invalidateMaterial():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
-	}
-		
-	public invalidateStyle():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
 	}
 
 	public _onInvalidateProperties(event:StyleEvent = null):void

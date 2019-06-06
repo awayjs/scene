@@ -4,7 +4,7 @@ import {BlendMode} from "@awayjs/stage";
 
 import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition, PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
 
-import {IAnimator, IMaterial, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
+import {IAnimator, IMaterial, Style, StyleEvent, IRenderEntity, RenderableEvent} from "@awayjs/renderer";
 
 import { ElementsType } from '@awayjs/graphics';
 
@@ -1242,13 +1242,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._material == value)
 			return;
 
-		if (this._material)
-			this._material.iRemoveOwner(this);
-		
 		this._material = value;
-
-		if (this._material)
-			this._material.iAddOwner(this);
 
 		this.invalidateMaterial();
 	}
@@ -1576,6 +1570,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._registrationMatrix3D)
 			displayObject._registrationMatrix3D = this._registrationMatrix3D.clone();
 
+		displayObject.material = this._material;
+		displayObject.style = this._style;	
 		displayObject.pickObject = this._pickObject;
 		displayObject.boundsVisible = this._boundsVisible;
 		displayObject.name = this._pName;
@@ -1590,6 +1586,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
         
 		if (this._explicitMasks)
 			displayObject.masks = this._explicitMasks;
+		
+		if (this._animator)
+			displayObject.animator = this._animator.clone();
 
 		this._transform.copyRawDataTo(displayObject._transform);
 	}
@@ -1606,6 +1605,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	{
 		if (this._parent)
 			this._parent.removeChild(this);
+
+		this.material = null;
+		
+		if (this._animator)
+			this._animator.dispose();
 
 		//if (this._adapter) {
 		//	this._adapter.dispose();
@@ -2141,20 +2145,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._pImplicitColorTransform = null;
 		this._maskOwners = null;
 	}
-
+	
 	public invalidateMaterial():void
 	{
-		//TODO: herarchical materials and/or Styles?
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
-	
+		
 	public invalidateStyle():void
 	{
-		//TODO: herarchical materials and/or Styles?
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
 	}
 
 	public invalidateElements():void
 	{
-		//TODO: herarchical elements?
+		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 
 	public _onInvalidateProperties(event:StyleEvent = null):void

@@ -106,26 +106,6 @@ export class LineSegment extends DisplayObject
 	{
 		traverser.applyTraversable(this);
 	}
-
-	/**
-	 * @private
-	 */
-	public invalidateElements():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));//TODO improve performance by only using one geometry for all line segments
-
-		this.invalidate();
-	}
-
-	public invalidateMaterial():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
-	}
-			
-	public invalidateStyle():void
-	{
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
-	}
 }
 
 import {AssetEvent} from "@awayjs/core";

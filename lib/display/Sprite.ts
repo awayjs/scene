@@ -1,8 +1,8 @@
-﻿import {AssetEvent, Box, Point, Matrix3D, Vector3D, Sphere, ProjectionBase} from "@awayjs/core";
+﻿import {AssetEvent, Vector3D, ArgumentError} from "@awayjs/core";
 
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 
-import {IAnimator, IMaterial, Style } from "@awayjs/renderer";
+import {IMaterial } from "@awayjs/renderer";
 
 import {Graphics} from "@awayjs/graphics";
 
@@ -24,7 +24,7 @@ export class Sprite extends DisplayObjectContainer
 
 	public static assetType:string = "[asset Sprite]";
 
-	public static getNewSprite(material:IMaterial = null):Sprite
+	public static getNewSprite(graphics:Graphics = null, material:IMaterial = null):Sprite
 	{
 		if (Sprite._sprites.length) {
 			var sprite:Sprite = Sprite._sprites.pop();
@@ -32,7 +32,7 @@ export class Sprite extends DisplayObjectContainer
 			return sprite;
 		}
 
-		return new Sprite(material);
+		return new Sprite(graphics, material);
 	}
 
 	private _center:Vector3D;
@@ -64,64 +64,35 @@ export class Sprite extends DisplayObjectContainer
 
 		return this._graphics;
 	}
-/*
-	public set graphics(value:Graphics){
-		value._entity=this;
-		this._graphics=value;
+
+	public set graphics(value:Graphics)
+	{
+		if (this._graphics == value)
+			return;
+
+		if (value == null)
+			throw new ArgumentError("graphics cannot be null");
+
+		this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+		
+		this._graphics = value;
+
+		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+
 		this.invalidateElements();
 	}
-	*/
-	/**
-	 * Defines the animator of the graphics object.  Default value is <code>null</code>.
-	 */
-	public get animator():IAnimator
-	{
-		return this._graphics.animator;
-	}
-
-	public set animator(value:IAnimator)
-	{
-		this._graphics.animator = value;
-	}
-
-	/**
-	 * The material with which to render the Sprite.
-	 */
-	public get material():IMaterial
-	{
-		return this._graphics.material;
-	}
-
-	public set material(value:IMaterial)
-	{
-		this._graphics.material = value;
-	}
-
-	/**
-	 *
-	 */
-	public get style():Style
-	{
-		return this._graphics.style;
-	}
-
-	public set style(value:Style)
-	{
-		this._graphics.style = value;
-	}
-	
 	/**
 	 * Create a new Sprite object.
 	 *
 	 * @param material    [optional]        The material with which to render the Sprite.
 	 */
-	constructor(material:IMaterial = null)
+	constructor(graphics:Graphics = null, material:IMaterial = null)
 	{
 		super();
 
 		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
 
-		this._graphics = Graphics.getGraphics(this); //unique graphics object for each Sprite
+		this._graphics = graphics || Graphics.getGraphics();
 		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 
 		this.material = material;
@@ -242,23 +213,6 @@ export class Sprite extends DisplayObjectContainer
 		this._graphics.applyTransformation(this.transform.matrix3D);
 		this.transform.clearMatrix3D();
 	}
-	
-	public invalidateElements():void
-	{
-		this.graphics.invalidateElements();
-	}
-
-	public invalidateMaterial():void
-	{
-		this.graphics.invalidateMaterials();
-	}
-			
-	public invalidateStyle():void
-	{
-		this.graphics.invalidateMaterials();
-	}
-
-
 }
 
 PartitionBase.registerAbstraction(EntityNode, Sprite);

@@ -62,7 +62,7 @@ export class MorphSprite extends Sprite
 		var len=this.start.length;
 		var ratioStart=1-ratio;
 		var ratioEnd=ratio;
-		var newGraphics:Graphics=Graphics.getGraphics(null);
+		var newGraphics:Graphics=Graphics.getGraphics();
 		var newPath:GraphicsPath;
 		var startPath:GraphicsPath;
 		var endPath:GraphicsPath;
@@ -227,8 +227,7 @@ export class MorphSprite extends Sprite
 		*/
 
 		newGraphics.endFill();
-		this.graphics.clear();
-		this.graphics.copyFrom(newGraphics);
+		this.graphics = newGraphics;
 		this.ratioCache[lookupRatio]=newGraphics;
 
 	}

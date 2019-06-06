@@ -222,12 +222,6 @@ export class Timeline
 		return this.keyframe_indices.length;
 	}
 
-	public get potentialPrototypes():Array<IAsset>
-	{
-		return this._potentialPrototypes;
-
-	}
-
 	public getPotentialChildPrototype(id:number):IAsset
 	{
 		return this._potentialPrototypes[id];
@@ -428,14 +422,11 @@ export class Timeline
 			}
 		}
 
-		var child1:IAsset;
-
 		// onClipevents for children added in previous frames must be queued before the script of the target_mc, 
 		target_mc.preventScript=true;
 		for (var key in depth_sessionIDs) {
 			if(!new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID!="oldID"){
-				child1 = target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
-				child=<DisplayObject>child1;
+				child = <DisplayObject> target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
 				if (child._sessionID == -1)
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 			}			
@@ -448,8 +439,7 @@ export class Timeline
 		// add children that was constructed on this frame
 		for (var key in depth_sessionIDs) {
 			if(new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID!="oldID"){
-				child1 = target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
-				child=<DisplayObject>child1;
+				child = <DisplayObject> target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
 				if (child._sessionID == -1)
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 			}
@@ -778,9 +768,8 @@ export class Timeline
 		if(child.isAsset(Sprite)){
 			var myGraphics:Graphics=<Graphics>this.graphicsPool[this.properties_stream_int[i]];
 			//console.log("frame:", target_mc.currentFrameIndex ,"swap graphics: ", target_mc.id, i, myGraphics.id);
-			myGraphics.endFill();
-			(<Sprite>child).graphics.clear();
-			(<Sprite>child).graphics.copyFrom(myGraphics);
+
+			(<Sprite>child).graphics = myGraphics;
 		}
 	}
 
