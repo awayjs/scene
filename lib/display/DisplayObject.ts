@@ -1244,7 +1244,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._material = value;
 
-		this.invalidateMaterial();
+		this._invalidateMaterial();
 	}
 
 	/**
@@ -1268,7 +1268,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._style)
 			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
 
-		this.invalidateStyle();
+		this._invalidateStyle();
 	}
 
 	/**
@@ -1611,10 +1611,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._animator)
 			this._animator.dispose();
 
-		//if (this._adapter) {
-		//	this._adapter.dispose();
-		//	this._adapter = null;
-		//}
+		if (this._adapter) {
+			this._adapter.dispose();
+			this._adapter = null;
+		}
 
 		//this._pos = null;
 		//this._rot = null;
@@ -1767,6 +1767,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (!parent && this._partition) //if there is a new parent, the addChild(partition) will remove from the previous partition
 			this._parent._implicitPartition.removeChild(this._partition);
 
+		// if (!parent && this._partition) {//if there is a new parent, the addChild(partition) will remove from the previous partition
+		// 	this._parent._implicitPartition.removeChild(this._partition);
+
+		// 	if (this.isEntity())
+		// 		this._partition.clearEntity(this);
+
+		// 	this.clear();
+		// }
+
 		this._parent = parent;
 
         this._setPartition(parent? parent._implicitPartition : null);
@@ -1823,10 +1832,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		// assign parent partition if _partition is false
 		this._implicitPartition = partition;
 
-		if (this._implicitPartition && this.isEntity()) //register object with scene
-			this._implicitPartition.invalidateEntity(this);
-		else //gc abstraction objects
+		if (this._implicitPartition) {//register object with scene
+			if (this.isEntity())
+				this._implicitPartition.invalidateEntity(this);
+		} else {//gc abstraction objects
 			this.clear();
+		}
 
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 
@@ -2146,12 +2157,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._maskOwners = null;
 	}
 	
-	public invalidateMaterial():void
+	private _invalidateMaterial():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}
 		
-	public invalidateStyle():void
+	private _invalidateStyle():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
 	}
@@ -2161,9 +2172,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 
-	public _onInvalidateProperties(event:StyleEvent = null):void
+	protected _onInvalidateProperties(event:StyleEvent = null):void
 	{
-		this.invalidateStyle();
+		this._invalidateStyle();
 	}
 
 	protected _getDefaultBoundingVolume():BoundingVolumeType

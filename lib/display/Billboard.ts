@@ -218,9 +218,9 @@ export class Billboard extends DisplayObjectContainer
 		}
 	}
 
-	public _onInvalidateProperties(event:StyleEvent = null):void
+	protected _onInvalidateProperties(event:StyleEvent = null):void
 	{
-		this.invalidateStyle();
+		super._onInvalidateProperties(event);
 
 		this._updateDimensions();
 	}
