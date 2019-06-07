@@ -14,5 +14,5 @@ export interface IDisplayObjectAdapter extends IAssetAdapter
 	
 	freeFromScript():void;
 
-	clone();
+	clone():IDisplayObjectAdapter;
 }

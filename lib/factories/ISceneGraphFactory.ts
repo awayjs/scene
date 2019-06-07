@@ -9,6 +9,7 @@ import {MovieClip} from "../display/MovieClip";
 import {Sprite} from "../display/Sprite";
 import {PrefabBase} from "../prefabs/PrefabBase";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
+import { Graphics } from '@awayjs/graphics';
 
 export interface ISceneGraphFactory extends IGraphicsFactory
 {
@@ -18,7 +19,7 @@ export interface ISceneGraphFactory extends IGraphicsFactory
 
 	createDisplayObjectContainer():DisplayObjectContainer;
 
-	createSprite(prefab?:PrefabBase):Sprite;
+	createSprite(prefab?:PrefabBase, graphics?:Graphics):Sprite;
 
 	createBillboard(material?:IMaterial):Billboard;
 

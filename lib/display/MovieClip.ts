@@ -33,7 +33,14 @@ export class MovieClip extends Sprite
 
 	public static getNewMovieClip(timeline:Timeline = null):MovieClip
 	{
-		return (MovieClip._movieClips.length)? MovieClip._movieClips.pop() : new MovieClip(timeline)
+		if (MovieClip._movieClips.length) {
+			var movieClip:MovieClip = MovieClip._movieClips.pop()
+			movieClip.timeline = timeline || new Timeline();
+
+			return movieClip;
+		}
+
+		return new MovieClip(timeline);
 	}
 
 	private _timeline:Timeline;
@@ -235,6 +242,8 @@ export class MovieClip extends Sprite
 		this._potentialInstances = {};
 		this._depth_sessionIDs = {};
 		this._sessionID_childs = {};
+
+		this._timeline = null;
 	}
 
 	public reset_textclones():void
@@ -293,6 +302,9 @@ export class MovieClip extends Sprite
 
 	public set timeline(value:Timeline)
 	{
+		if (this._timeline == value)
+			return;
+
 		this._timeline = value;
 
 		this.reset(false);
@@ -620,12 +632,11 @@ export class MovieClip extends Sprite
 		return newInstance;
 	}
 
-	public copyTo(newInstance:MovieClip):void
+	public copyTo(movieClip:MovieClip):void
 	{
-		super.copyTo(newInstance);
+		super.copyTo(movieClip);
 
-		newInstance.timeline = this._timeline;
-		newInstance.loop = this.loop;
+		movieClip.loop = this.loop;
 	}
 
 	public getScriptsForFrameConstruct():void
@@ -722,7 +733,7 @@ export class MovieClip extends Sprite
 			var instance:IAsset = this._potentialInstances[key];
 
 			//only dispose instances that are not used in script ie. do not have an instance name
-			if (instance && instance.name == "") {
+			if (instance && !instance.name) {
 				if(!instance.isAsset(Graphics)){
 					FrameScriptManager.add_child_to_dispose(<DisplayObject>instance);
 

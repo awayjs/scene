@@ -28,6 +28,7 @@ export class Sprite extends DisplayObjectContainer
 	{
 		if (Sprite._sprites.length) {
 			var sprite:Sprite = Sprite._sprites.pop();
+			sprite.graphics = graphics || Graphics.getGraphics();
 			sprite.material = material;
 			return sprite;
 		}
@@ -70,16 +71,22 @@ export class Sprite extends DisplayObjectContainer
 		if (this._graphics == value)
 			return;
 
-		if (value == null)
-			throw new ArgumentError("graphics cannot be null");
+		if (this._graphics) {
+			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+			this._graphics.usages--;
 
-		this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+			if (!this._graphics.usages)
+				this.graphics.dispose();
+		}
 		
 		this._graphics = value;
 
-		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+		if (this._graphics) {
+			this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+			this._graphics.usages++;
+		}
 
-		this.invalidateElements();
+		this.invalidate();
 	}
 	/**
 	 * Create a new Sprite object.
@@ -92,15 +99,14 @@ export class Sprite extends DisplayObjectContainer
 
 		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
 
-		this._graphics = graphics || Graphics.getGraphics();
-		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+		this.graphics = graphics || Graphics.getGraphics();
 
 		this.material = material;
 	}
 
 	public isEntity():boolean
 	{
-		return Boolean(this._graphics.count);
+		return Boolean(this._graphics && this._graphics.count);
 	}
 
 	/**
@@ -120,7 +126,7 @@ export class Sprite extends DisplayObjectContainer
 	{
 		super.disposeValues();
 
-		this._graphics.dispose();
+		this.graphics = null;
 	}
 
 	/**
@@ -141,7 +147,7 @@ export class Sprite extends DisplayObjectContainer
 	 */
 	public clone():Sprite
 	{
-		var newInstance:Sprite = (Sprite._sprites.length)? Sprite._sprites.pop() : new Sprite();
+		var newInstance:Sprite = Sprite.getNewSprite();
 
 		this.copyTo(newInstance);
 
@@ -196,13 +202,6 @@ export class Sprite extends DisplayObjectContainer
 	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
 		this.graphics._acceptTraverser(traverser);
-	}
-
-	public clear():void
-	{
-		super.clear();
-
-		this._graphics.clearInternal();
 	}
 
 	/**
