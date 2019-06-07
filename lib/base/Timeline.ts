@@ -235,14 +235,16 @@ export class Timeline
 	public getPotentialChildInstance(id:number) : IAsset
 	{
 		var asset:IAsset=this._potentialPrototypes[id];
-		if(asset.isAsset(Graphics)){
+		if(asset.isAsset(Sprite)) {
+			//In the case of Sprites, do not duplicate graphics
 			//(<Graphics>asset).endFill();
-			return asset;
+			var sprite:Sprite = Sprite.getNewSprite((<Sprite> asset).graphics);
+			sprite.mouseEnabled = false;
+
+			return sprite;
 		}
-		else{
-			var clonedInstance:DisplayObject=<DisplayObject> (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
-			return clonedInstance;
-		}
+
+		return (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
 	}
 	public initChildInstance(child:DisplayObject, id:string)
 	{
