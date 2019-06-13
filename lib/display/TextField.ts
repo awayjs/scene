@@ -547,15 +547,17 @@ export class TextField extends DisplayObjectContainer
 		
 
 	}
-	public drawBG(useBackgroundColor:boolean){
-        this._graphics.beginFill(useBackgroundColor? this.backgroundColor : 0x000000, useBackgroundColor?1:0);
+	public drawBG():void
+	{
+        this._graphics.beginFill(this.backgroundColor, 1);
         this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
         this._graphics.endFill();
     }
      
-	public drawBorder(){	
-		var half_thickness_x:number=0.25*this.internalScale.x;
-        var half_thickness_y:number=0.25*this.internalScale.y;	
+	public drawBorder():void
+	{	
+		var half_thickness_x:number=this.border? 0.25*this.internalScale.x : 0;
+        var half_thickness_y:number=this.border? 0.25*this.internalScale.y : 0;	
 		this._graphics.beginFill(this._borderColor, 1);
 		this._graphics.drawRect(this.textOffsetX,this.textOffsetY, this._width, half_thickness_y*2);
 		this._graphics.drawRect(this.textOffsetX,this.textOffsetY+this._height-half_thickness_y*2, this._width, half_thickness_y*2);
@@ -2587,13 +2589,15 @@ export class TextField extends DisplayObjectContainer
 		this._textHeight=text_height;
 		//this._width=text_width+4;
 		//this._height=text_height+4;
-		this.drawBG(this._background);
+
 		this.targetGraphics=this._graphics;
 		this.targetGraphics.clear();
 
-		if(this.border){
+		if (this._background)
+			this.drawBG();
+
+		if(this.border || !this._background)
 			this.drawBorder();
-		}
 		
 		/*
 		this._graphics.clear();
@@ -2738,10 +2742,12 @@ export class TextField extends DisplayObjectContainer
     private buildShapes(){
 		this.targetGraphics.clear();
 		this._graphics.clear();
-		this.drawBG(this._background);
-		if(this._border){
+
+		if (this._background)
+			this.drawBG();
+
+		if(this._border || !this._background)
 			this.drawBorder();
-        }
         
         this.drawSelectionGraphics();
         if(this.bgShapeSelect && this.isInFocus){
