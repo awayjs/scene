@@ -2064,7 +2064,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	private _updateMaskId():void
 	{
-		this._implicitMaskId = (this._parent && this._parent.maskId != -1)? this._parent.maskId : this._explicitMaskId;
+		this._implicitMaskId = (this._explicitMaskId != -1)? this._explicitMaskId : (this._parent && this._parent.maskId != -1)? this._parent.maskId : -1;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
 	}
