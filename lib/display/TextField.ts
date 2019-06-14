@@ -160,10 +160,6 @@ export class TextField extends DisplayObjectContainer
 	public _textFormats:TextFormat[];
 	public _textFormatsIdx:number[];
 
-    
-	private _textElements:TriangleElements;
-	private _textElements2:TriangleElements;
-
 	public textShapes:any;
 	
 	private inMaskMode:boolean=false;
@@ -1824,8 +1820,6 @@ export class TextField extends DisplayObjectContainer
 	{
 		super.clear();
 
-		if (this._textElements)
-			this._textElements.clear();
 	}
 
 	/**
@@ -1845,16 +1839,19 @@ export class TextField extends DisplayObjectContainer
 	{
 		super.disposeValues();
 
-		this._textFormat = null;
+		if(this.maskChild) {
+			this.maskChild.dispose();
+			this.maskChild = null;
+		}
 
-		if (this._textElements) {
-			this._textElements.dispose();
-			this._textElements = null;
+		if(this.textChild) {
+			this.textChild.dispose();
+			this.textChild = null;
 		}
-		if (this._textElements2) {
-			this._textElements2.dispose();
-			this._textElements2 = null;
-		}
+
+		this._clearTextShapes();
+
+		this._textFormat = null;
 	}
 
 
@@ -2483,22 +2480,7 @@ export class TextField extends DisplayObjectContainer
 	public staticMatrix:any;
 	private buildGlyphsForLabelData() {
 
-
-		var textShape:TextShape;
-		for(var key in this.textShapes) {
-			textShape = this.textShapes[key];
-			this._graphics.removeShape(textShape.shape);
-			Shape.storeShape(textShape.shape);
-			textShape.shape.dispose();
-			textShape.shape = null;
-			textShape.elements.clear();
-			textShape.elements.dispose();
-			textShape.elements = null;
-			textShape.verts.length=0;
-		}
-		this.textShapes={};
-
-
+		this._clearTextShapes();
 
 		var height:number=null;
 		var formats:TextFormat[]=[];
@@ -2656,26 +2638,10 @@ export class TextField extends DisplayObjectContainer
 			}
 		}
 	}
-	private buildGlyphs() {
 
-
-		var textShape:TextShape;
-		for(var key in this.textShapes) {
-			textShape = this.textShapes[key];
-			if(this.targetGraphics.getShapeIndex(textShape.shape)>=0)
-				this.targetGraphics.removeShape(textShape.shape);
-			Shape.storeShape(textShape.shape);
-			/*textShape.shape.dispose();*/
-			textShape.shape = null;
-			textShape.elements.clear();
-			textShape.elements.dispose();
-			textShape.elements = null;
-			textShape.verts.length=0;
-		}
-		this.textShapes={};
-
-
-
+	private buildGlyphs():void
+	{
+		this._clearTextShapes();
 		
 		// process all textRuns
 		var tr:number=0;
@@ -2685,6 +2651,7 @@ export class TextField extends DisplayObjectContainer
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
 			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
 		}
+
 		var textShape:TextShape;
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
@@ -3610,6 +3577,21 @@ export class TextField extends DisplayObjectContainer
 		}
 		if(this._labelData){
 			newInstance.setLabelData(this._labelData);
+		}
+	}
+
+	private _clearTextShapes():void
+	{
+		if (this.targetGraphics)
+			this.targetGraphics.clear();
+
+		var textShape:TextShape;
+		for(var key in this.textShapes) {
+			textShape = this.textShapes[key];
+			textShape.shape = null;
+			textShape.elements = null;
+			textShape.verts.length=0;
+			delete this.textShapes[key];
 		}
 	}
 	

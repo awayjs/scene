@@ -14,5 +14,6 @@ export interface IFontTable extends IAsset
 	getCharVertCnt(char_code:string);
 	getLineHeight();
 	fillTextRun(tf:TextField, format:TextFormat, startWord:number, wordCnt:number);
+	dispose();
 	
 }
