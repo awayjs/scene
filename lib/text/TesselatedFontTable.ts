@@ -531,7 +531,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	 */
 	public dispose():void
 	{
-
+		for(var i:number=0; i<this._font_chars.length; i++){
+			this._font_chars[i].dispose();
+		}
+		this._font_chars.length=0;
+		this._font_chars_dic=null;
 	}
 
 	get fntSizeLimit():number {
@@ -976,10 +980,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			//console.warn("Warning: could not find glyph: ", name, String.fromCharCode(parseInt(name)), this.font.name, this.name, this.font);
 		}
 		return tesselated_font_char;
-	}
-	/**
-	 *
-	 */
+	}	
+
 
 	public setChar(name:string, char_width:number, fills_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, uses_curves:boolean=false, glyph_idx:number=0, fill_data_path:GraphicsPath=null, fileURL:string=""):void
 	{
