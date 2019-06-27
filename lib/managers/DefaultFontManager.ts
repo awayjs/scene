@@ -114,5 +114,10 @@ export class DefaultFontManager
 		*/
 		//DefaultFontManager._default_font_table.
 	}
+    public static clearAll(){
+        DefaultFontManager._default_font=null;
+        DefaultFontManager._registered_fonts={};
+        DefaultFontManager.shared_fonts_ns=null;
+    }
 
 }
