@@ -66,4 +66,20 @@ export class TesselatedFontChar
 		this.fill_data_path = fill_data_path;
 	}
 
+	
+	public dispose(){
+		if(this.stroke_data){
+			this.stroke_data.dispose();
+			this.stroke_data=null;
+		}
+		if(this.fill_data){
+			this.fill_data.dispose();
+			this.fill_data=null;
+		}
+		if(this.fill_data_path){
+			//this.fill_data_path.dispose();
+			this.fill_data_path=null;
+		}
+	}
+
 }
