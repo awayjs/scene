@@ -794,7 +794,8 @@ export class Timeline
 	
 	public dispose(){
 		for(var i=0; i<this._potentialPrototypes.length; i++){
-			this._potentialPrototypes[i].dispose();
+			if((<any>this._potentialPrototypes[i]).dispose)
+				(<any>this._potentialPrototypes[i]).dispose();
 
 		}
 		this.keyframe_indices = [];
