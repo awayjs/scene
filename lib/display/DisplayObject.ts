@@ -1616,6 +1616,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this._adapter = null;
 		}
 
+		this._pickObject=null;
 		//this._pos = null;
 		//this._rot = null;
 		//this._sca = null;
