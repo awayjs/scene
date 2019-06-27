@@ -183,6 +183,47 @@ export class MouseManager {
             this._containerLookup.splice(this._containerLookup.indexOf(container), 1);
         }
     }
+    public dispose(){
+        this._stage=null;
+        this.onClickDelegate = null;
+        this.onDoubleClickDelegate = null;
+        this.onMouseDownDelegate = null;
+        this.onMouseMoveDelegate = null;
+        this.onMouseUpDelegate = null;
+        this.onMouseWheelDelegate = null;
+        this.onMouseOverDelegate = null;
+        this.onMouseOutDelegate = null;
+        this.onKeyDownDelegate = null;
+        this.onKeyUpDelegate = null;
+        window.removeEventListener('touchstart', this.onFirstTouchDelegate);
+        this.onFirstTouchDelegate = null;
+        
+        this._mouseMoveEvent = null;
+        this._mouseUp = null;
+        this._mouseUpOutside = null;
+        this._mouseClick = null;
+        this._mouseOut = null;
+        this._dragOut = null;
+        this._dragOver = null;
+        this._mouseDown = null;
+        this._mouseMove = null;
+        this._mouseOver = null;
+        this._mouseWheel = null;
+        this._mouseDoubleClick = null;
+        this._dragMove = null;
+        this._dragStart = null;
+        this._dragStop = null;
+
+
+    }
+
+    public static clearInstance() {
+        if (this._instance){
+            this._instance.dispose();
+            this._instance=null;
+
+        }
+    }
 
     public static getInstance(pickGroup: PickGroup): MouseManager {
         if (this._instance)
