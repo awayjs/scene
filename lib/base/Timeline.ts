@@ -791,4 +791,22 @@ export class Timeline
 	{
 		console.log("update rendermode "+i);
 	}
+	
+	public dispose(){
+		for(var i=0; i<this._potentialPrototypes.length; i++){
+			this._potentialPrototypes[i].dispose();
+
+		}
+		this.keyframe_indices = [];
+		this.avm1Exports={};
+		this.avm1InitActions={};
+		this.avm1ButtonActions=[];
+		this.graphicsPool={};
+		this.audioPool={};
+		this.potentialPrototypesInitEventsMap={};
+		this._potentialPrototypes = [];
+		this._labels = {};
+		this._framescripts = {};
+		this._framescripts_translated = {};
+	}
 }
