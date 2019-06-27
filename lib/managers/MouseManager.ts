@@ -709,7 +709,7 @@ export class MouseManager {
     // ---------------------------------------------------------------------
 
     public onKeyDown(event): void {
-        event.preventDefault();
+        //event.preventDefault();
 
         if (this._currentFocusEntity || this._stage) {
             //console.log("dispatch keydown on ", this._currentFocusEntity);
@@ -725,7 +725,7 @@ export class MouseManager {
 
     }
     public onKeyUp(event): void {
-        event.preventDefault();
+        //event.preventDefault();
 
         if (this._currentFocusEntity || this._stage) {
             //console.log("dispatch keydown on ", this._currentFocusEntity);
