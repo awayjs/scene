@@ -47,6 +47,8 @@ import {DisplayObjectContainer} from "./DisplayObjectContainer";
 // (in away3d Sprite3D extends on ObjectContainer3D)
 export class Billboard extends DisplayObjectContainer
 {
+	private static _billboards:Array<Billboard> = new Array<Billboard>();
+
 	public static assetType:string = "[asset Billboard]";
 
 	private _width:number;
@@ -56,6 +58,19 @@ export class Billboard extends DisplayObjectContainer
 	private _billboardRect:Rectangle;
 
 	private _onInvalidateTextureDelegate:(event:MaterialEvent) => void;
+
+	public static getNewBillboard(material:IMaterial, pixelSnapping:string = "auto", smoothing:boolean = false):Billboard
+	{
+		if (Billboard._billboards.length) {
+			var billboard:Billboard = Billboard._billboards.pop();
+			billboard.material = material;
+			//billboard.pixelSnapping = pixelSnapping;
+			//billboard.smoothing = smoothing;
+			return billboard;
+		}
+
+		return new Billboard(material, pixelSnapping, smoothing);
+	}
 
 	public preserveDimensions:boolean = false;
 
@@ -168,9 +183,19 @@ export class Billboard extends DisplayObjectContainer
 		return true;
 	}
 	
+	/**
+	 * @inheritDoc
+	 */
+	public dispose():void
+	{
+		this.disposeValues();
+
+		Billboard._billboards.push(this);
+	}
+
 	public clone():Billboard
 	{
-		var newInstance:Billboard = new Billboard(this.material);
+		var newInstance:Billboard = Billboard.getNewBillboard(this._material);
 
 		this.copyTo(newInstance);
 
