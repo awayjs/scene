@@ -385,7 +385,7 @@ export class SkyboxNode extends EntityNode
 	 */
 	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
 	{
-		if (!this._entity._iIsVisible)
+		if (!this.isVisible())
 			return false;
 
 		//a skybox is always in view unless its visibility is set to false

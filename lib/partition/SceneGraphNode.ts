@@ -44,11 +44,11 @@ export class SceneGraphNode extends NodeBase
 	{
 		node.parent = this;
 
-		if (node._entity.maskMode) {
+		if (node.isMask()) {
 			this._childMasks.push(node);
 			this._numMasks++;
 		} else {
-			var depth:number = (this._entity != node._entity) ? (<DisplayObject> node._entity)._depthID : -16384;
+			var depth:number = (this._entity != node.entity) ? (<DisplayObject> node.entity)._depthID : -16384;
 			var len:number = this._childDepths.length;
 			var index:number = len;
 
@@ -81,7 +81,7 @@ export class SceneGraphNode extends NodeBase
 	 */
 	public iRemoveNode(node:EntityNode):void
 	{
-		if (node._entity.maskMode) {
+		if (node.isMask()) {
 			this._childMasks.splice(this._childMasks.indexOf(node), 1);
 			this._numMasks--;
 		} else {
