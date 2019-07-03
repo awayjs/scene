@@ -318,11 +318,8 @@ export class DisplayObjectContainer extends DisplayObject
 	 */
 	public disposeValues():void
 	{
-		for (var i:number = this._children.length - 1; i >= 0; i--){
-			var removedChild=this.removeChild(this._children[i]);
-			removedChild.dispose();
-		}
-
+		for (var i:number = this._children.length - 1; i >= 0; i--)
+			this.removeChild(this._children[i]);
 
 		super.disposeValues();
 	}
