@@ -5,6 +5,7 @@ import {PartitionBase, EntityNode} from "@awayjs/view";
 import {GraphicsPathCommand, GraphicsFillStyle, GradientFillStyle, BitmapFillStyle, GraphicsStrokeStyle, Graphics, GraphicsPath} from "@awayjs/graphics";
 
 import {Sprite} from "./Sprite";
+import { IMaterial } from '@awayjs/renderer';
 
 export class MorphSprite extends Sprite
 {
@@ -12,9 +13,19 @@ export class MorphSprite extends Sprite
 	public static assetType:string = "[asset MorphSprite]";
 	private static _morphSprites:Array<MorphSprite> = new Array<MorphSprite>();
 
-	public start:GraphicsPath[];
-	public end:GraphicsPath[];
-	public ratioCache:any;
+	public static getNewMorphSprite(graphics:Graphics = null, material:IMaterial = null):MorphSprite
+	{
+		if (MorphSprite._morphSprites.length) {
+			var sprite:MorphSprite = MorphSprite._morphSprites.pop();
+			sprite.graphics = graphics || Graphics.getGraphics();
+			sprite.material = material;
+			return sprite;
+		}
+
+		return new MorphSprite(graphics, material);
+	}
+
+	private _ratio:string;
 
 	//todo: move to colorutils
 	private static interpolateColor(start:number, end:number, ratio:number){
@@ -47,29 +58,30 @@ export class MorphSprite extends Sprite
 	}
 
 	public setRatio(ratio:number){
-		if(!this.ratioCache)
-			this.ratioCache={};
 		var lookupRatio:string=Math.round(ratio*0xffffff).toString();
 
-		if(this.ratioCache[lookupRatio]){
-			this.graphics.clear();
-			this.graphics.copyFrom(this.ratioCache[lookupRatio]);
+		
+		if(this._ratio == lookupRatio){
 			return;
 		}
-		if(this.start.length!=this.end.length){
+
+		this._ratio = lookupRatio;
+		this._graphics.endFill(); //trigger a queue execution if one is needed
+		this._graphics.clear();
+
+		if(this._graphics.start.length!=this._graphics.end.length){
 			throw("Error in morph data - different number of pathes");
 		}
-		var len=this.start.length;
+		var len=this._graphics.start.length;
 		var ratioStart=1-ratio;
 		var ratioEnd=ratio;
-		var newGraphics:Graphics=Graphics.getGraphics();
 		var newPath:GraphicsPath;
 		var startPath:GraphicsPath;
 		var endPath:GraphicsPath;
 		for(var i:number=0; i<len; i++){
 			newPath=new GraphicsPath();
-			startPath=this.start[i];
-			endPath=this.end[i];
+			startPath=this._graphics.start[i];
+			endPath=this._graphics.end[i];
 			if (startPath.style.data_type != endPath.style.data_type){
 				throw("Error in morph data - different styles of pathes");
 			}
@@ -123,8 +135,8 @@ export class MorphSprite extends Sprite
 			var endLastX=0;
 			var endLastY=0;
 			var len_contours=startPath._commands.length;
-			startPath=this.start[0];
-			endPath=this.end[0];
+			startPath=this._graphics.start[0];
+			endPath=this._graphics.end[0];
 			if(endPath._commands.length!=len_contours) {
 				len_contours=Math.min(endPath._commands.length, len_contours);
 				//throw("Error in morph data - different number of contour");
@@ -210,7 +222,7 @@ export class MorphSprite extends Sprite
 					}
 				}
 			}
-			newGraphics.add_queued_path(newPath);
+			this._graphics.add_queued_path(newPath);
 			//console.log(endPath);
 			//console.log(startPath);
 
@@ -226,31 +238,27 @@ export class MorphSprite extends Sprite
 		newGraphics.add_queued_path(newPath);
 		*/
 
-		newGraphics.endFill();
-		this.graphics = newGraphics;
-		this.ratioCache[lookupRatio]=newGraphics;
+		this._graphics.endFill();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public dispose():void
+	{
+		this.disposeValues();
 
+		MorphSprite._morphSprites.push(this);
 	}
 
 	public clone():Sprite
 	{
-		var newInstance:MorphSprite = (MorphSprite._morphSprites.length)? MorphSprite._morphSprites.pop() : new MorphSprite();
+		var newInstance:MorphSprite = MorphSprite.getNewMorphSprite();
 
 		this.copyTo(newInstance);
 
 
 		return newInstance;
-	}
-
-	public copyTo(sprite:Sprite, cloneShapes:boolean = false):void
-	{
-		super.copyTo(sprite, cloneShapes);
-
-		if(!this.ratioCache)
-			this.ratioCache={};
-		(<MorphSprite>sprite).ratioCache=this.ratioCache;
-		(<MorphSprite>sprite).start=this.start;
-		(<MorphSprite>sprite).end=this.end;
 	}
 }
 
