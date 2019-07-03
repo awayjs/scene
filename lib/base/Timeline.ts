@@ -244,6 +244,15 @@ export class Timeline
 			return sprite;
 		}
 
+		if(asset.isAsset(MorphSprite)) {
+			//In the case of Sprites, do not duplicate graphics
+			//(<Graphics>asset).endFill();
+			var morphSprite:MorphSprite = MorphSprite.getNewMorphSprite((<MorphSprite> asset).graphics);
+			morphSprite.mouseEnabled = false;
+
+			return morphSprite;
+		}
+
 		return (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
 	}
 	public initChildInstance(child:DisplayObject, id:string)
