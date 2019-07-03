@@ -36,6 +36,7 @@ export class MovieClip extends Sprite
 		if (MovieClip._movieClips.length) {
 			var movieClip:MovieClip = MovieClip._movieClips.pop()
 			movieClip.timeline = timeline || new Timeline();
+			movieClip.graphics = Graphics.getGraphics();
 
 			return movieClip;
 		}
@@ -734,7 +735,7 @@ export class MovieClip extends Sprite
 
 			//only dispose instances that are not used in script ie. do not have an instance name
 			if (instance && !instance.name) {
-				if(!instance.isAsset(Graphics)){
+				if(!instance.isAsset(Sprite)){
 					FrameScriptManager.add_child_to_dispose(<DisplayObject>instance);
 
 				}

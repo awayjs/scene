@@ -1631,10 +1631,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._explicitMasks = null;
 
-		if (this._partition) {
-			this._partition.dispose();
-			this._partition = null;
-		}
+		// if (this._partition) {
+		// 	this._partition.dispose();
+		// 	this._partition = null;
+		// }
 
 	}
 
@@ -1765,17 +1765,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 	public _setParent(parent:DisplayObjectContainer):void
 	{
-		if (!parent && this._partition) //if there is a new parent, the addChild(partition) will remove from the previous partition
-			this._parent._implicitPartition.removeChild(this._partition);
-
-		// if (!parent && this._partition) {//if there is a new parent, the addChild(partition) will remove from the previous partition
+		// if (!parent && this._partition) //if there is a new parent, the addChild(partition) will remove from the previous partition
 		// 	this._parent._implicitPartition.removeChild(this._partition);
 
-		// 	if (this.isEntity())
-		// 		this._partition.clearEntity(this);
-
-		// 	this.clear();
-		// }
+		if (this._partition) {
+			if (!parent) {//if there is a new parent, the addChild(partition) will remove from the previous partition
+				this._parent._implicitPartition.removeChild(this._partition);
+	
+				this.clear();
+			} else if (this._implicitPartition && this._implicitPartition == this._partition && this.isEntity()) {
+				this._implicitPartition.invalidateEntity(this);
+			}
+		}
 
 		this._parent = parent;
 
@@ -1821,24 +1822,21 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._partition && parentPartition)
 			parentPartition.addChild(this._partition);
 
+		// assign parent partition if _partition is null
 		var partition:PartitionBase = this._partition || parentPartition;
 
 		if (this._implicitPartition == partition)
 			return true;
 		
-		//unregister object from current partition container
-		if (this._implicitPartition && this.isEntity())
-			this._implicitPartition.clearEntity(this);
+		//gc any old abstraction objects
+		if (this._implicitPartition)
+			this.clear();
 
-		// assign parent partition if _partition is false
 		this._implicitPartition = partition;
 
-		if (this._implicitPartition) {//register object with scene
-			if (this.isEntity())
-				this._implicitPartition.invalidateEntity(this);
-		} else {//gc abstraction objects
-			this.clear();
-		}
+		//register entity with new partition
+		if (this._implicitPartition && this.isEntity())
+			this._implicitPartition.invalidateEntity(this);
 
 		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 
