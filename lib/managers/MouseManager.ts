@@ -152,6 +152,7 @@ export class MouseManager {
             container.addEventListener("mousemove", this.onMouseMoveDelegate);
             container.addEventListener("mouseup", this.onMouseUpDelegate);
             container.addEventListener("touchend", this.onMouseUpDelegate);
+            container.addEventListener("touchend", this.onClickDelegate);
             container.addEventListener("mousewheel", this.onMouseWheelDelegate);
             container.addEventListener("mouseover", this.onMouseOverDelegate);
             container.addEventListener("mouseout", this.onMouseOutDelegate);
@@ -171,8 +172,9 @@ export class MouseManager {
             container.removeEventListener("mousedown", this.onMouseDownDelegate);
             container.removeEventListener("touchmove", this.onMouseMoveDelegate);
             container.removeEventListener("mousemove", this.onMouseMoveDelegate);
-            container.removeEventListener("touchend", this.onMouseUpDelegate);
             container.removeEventListener("mouseup", this.onMouseUpDelegate);
+            container.removeEventListener("touchend", this.onMouseUpDelegate);
+            container.removeEventListener("touchend", this.onClickDelegate);
             container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
             container.removeEventListener("mouseover", this.onMouseOverDelegate);
             container.removeEventListener("mouseout", this.onMouseOutDelegate);
@@ -746,6 +748,8 @@ export class MouseManager {
     }
 
     public onMouseMove(event): void {
+        this._isTouch = (event.type != "mousemove");
+
         event.preventDefault();
 
         this.updateColliders(event);
