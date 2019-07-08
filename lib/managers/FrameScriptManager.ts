@@ -164,7 +164,8 @@ export class FrameScriptManager
 					}
 					if(queues_scripts_tmp[i]!=null){
 						//console.log("execute script", mc.name, queues_scripts_tmp[i]);
-						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+						if(mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
+							(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
 					}
 				}
 			}
