@@ -69,11 +69,11 @@ export class TesselatedFontChar
 	
 	public dispose(){
 		if(this.stroke_data){
-			this.stroke_data.dispose();
+			//this.stroke_data.dispose();
 			this.stroke_data=null;
 		}
 		if(this.fill_data){
-			this.fill_data.dispose();
+			//this.fill_data.dispose();
 			this.fill_data=null;
 		}
 		if(this.fill_data_path){
