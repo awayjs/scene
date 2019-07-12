@@ -459,6 +459,7 @@ export class TextField extends DisplayObjectContainer
 		var cursorScale:number=this.internalScale.x;
 		if(cursorScale<=0)cursorScale=1;
 		this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],color,1);
+		this.cursorShape.usages++;//TODO: get rid of this memory leak
         if(this.cursorShape.style.color!=color){    
             var alpha=ColorUtils.float32ColorToARGB(color)[0];
             if(alpha==0){
@@ -531,11 +532,15 @@ export class TextField extends DisplayObjectContainer
 				tf.font_table.initFontSize(tf.size);
 				height = tf.font_table.getLineHeight();
 			}
-        }
-        this.bgShapeSelect=null;
+		}
+		// if (this.bgShapeSelect) {
+		// 	this.bgShapeSelect.dispose();
+		// 	this.bgShapeSelect=null;
+		// }
 		if(width>0){
 			rectangles.push(startx, oldy, width, height);
 			this.bgShapeSelect=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
+			this.bgShapeSelect.usages++; //TODO: get rid of this memory leak
 			return;
 		}
         
@@ -702,17 +707,19 @@ export class TextField extends DisplayObjectContainer
 	{
 		super._iInternalUpdate();
 
-		this.reConstruct(true);
-        
-		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material ){
-            // only for FNT font-tables
-            // todo: do we still need this ?
+		if (!this.inMaskMode) {
 
-			this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-			this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
-			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			this.reConstruct(true);
+			
+			if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material ){
+				// only for FNT font-tables
+				// todo: do we still need this ?
+
+				this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+				this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
+				this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			}
 		}
-
         /*
 		if (projection) {
 			this._strokeScale.x = (<PerspectiveProjection> projection).hFocalLength/1000;
@@ -1849,6 +1856,16 @@ export class TextField extends DisplayObjectContainer
 			this.textChild = null;
 		}
 
+		if(this.cursorShape) {
+			this.cursorShape.dispose();
+            this.cursorShape=null;
+		}
+		
+		if (this.bgShapeSelect) {
+			this.bgShapeSelect.dispose();
+			this.bgShapeSelect=null;
+		}
+
 		this._clearTextShapes();
 
 		this._textFormat = null;
@@ -2604,7 +2621,7 @@ export class TextField extends DisplayObjectContainer
 			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 			//}
 			textShape.shape = <Shape>this.targetGraphics.addShape(Shape.getShape(textShape.elements));
-
+			textShape.shape.usages++;
 			var sampler:ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
 			if (textShape.format.material && this._textColor==0) {
@@ -2673,7 +2690,8 @@ export class TextField extends DisplayObjectContainer
 			if(textShape.fntMaterial)
 				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
 			textShape.shape = Shape.getShape(textShape.elements);
-			
+			textShape.shape.usages++;
+
 			var sampler:ImageSampler = new ImageSampler(false, true, true);
 			textShape.shape.style = new Style();
 
@@ -3588,6 +3606,7 @@ export class TextField extends DisplayObjectContainer
 		var textShape:TextShape;
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
+			textShape.shape.dispose();
 			textShape.shape = null;
 			textShape.elements = null;
 			textShape.verts.length=0;
