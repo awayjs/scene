@@ -1,7 +1,7 @@
 import {Vector3D, getTimer} from "@awayjs/core";
 
 import { View, PickingCollision, BasicPartition, PartitionBase, TabPicker, RaycastPicker, PickGroup } from '@awayjs/view';
-import {DefaultRenderer, RendererBase} from "@awayjs/renderer";
+import {RendererBase, RenderGroup, RendererType} from "@awayjs/renderer";
 
 import {TouchPoint} from "./base/TouchPoint";
 import {Camera} from "./display/Camera";
@@ -28,6 +28,7 @@ export class Scene
 	 ******************clear********************************************************************************************************
 	 */
 
+	private _rendererType:RendererType;
 	private _camera:Camera;
 	private _renderer:RendererBase;
 	private _partition:PartitionBase;
@@ -57,12 +58,12 @@ export class Scene
 			return;
 
 		this._partition = value;
-		this._renderer.partition = value;
 		this._mousePicker = this._pickGroup.getRaycastPicker(this._partition);
 		this._tabPicker = this._pickGroup.getTabPicker(this._partition);
 		this._mousePicker.findClosestCollision = true;
 
 		if (this._camera) {
+			this._camera.clear();
 			this._partition.invalidateEntity(this._camera);
 			this._camera.partition = this._partition;
 		}
@@ -72,6 +73,8 @@ export class Scene
 		this._mousePicker.findClosestCollision = true;
 
 		this._partition.root.partition = this._partition;
+
+		this._disposeRenderer();
 	}
 
 	public get view():View
@@ -88,7 +91,6 @@ export class Scene
 			this._mouseManager.unregisterContainer(this._view.stage.container);
 
 		this._view = value;
-		this._renderer.view = value;
 		this._pickGroup = PickGroup.getInstance(this._view);
 
 		this._mouseManager = MouseManager.getInstance(this._pickGroup);
@@ -97,6 +99,8 @@ export class Scene
 
 		if (this._camera)
 			this._view.projection = this._camera.projection;
+
+		this._disposeRenderer();
 	}
 
 	/*
@@ -109,12 +113,14 @@ export class Scene
 	 * public _pTouch3DManager:away.managers.Touch3DManager;
 	 *
 	 */
-	constructor(renderer:RendererBase = null, camera:Camera = null)
+	constructor(partition:PartitionBase = null, camera:Camera = null, view:View = null, rendererType:RendererType = null)
 	{
 		this._onProjectionChangedDelegate = (event:CameraEvent) => this._onProjectionChanged(event);
 
+		this._rendererType = rendererType || RendererType.DEFAULT;
+		this.view = view || new View();
+		this.partition = partition || new BasicPartition(new DisplayObjectContainer());
 		this.camera = camera || new Camera();
-		this.renderer = renderer || new DefaultRenderer(new BasicPartition(new DisplayObjectContainer()));
 		
 //			if (this._shareContext)
 //				this._mouse3DManager.addViewLayer(this);
@@ -123,7 +129,15 @@ export class Scene
 	public layeredView:boolean; //TODO: something to enable this correctly
 
 	public disableMouseEvents:boolean; //TODO: hack to ignore mouseevents on certain views
-	
+
+	public get renderer():RendererBase
+	{
+		if (!this._renderer)
+			this._renderer = RenderGroup.getInstance(this._view, this._rendererType).getRenderer(this._partition);
+
+		return this._renderer;
+	}
+
 	public get root():DisplayObjectContainer
 	{
 		return <DisplayObjectContainer> this._partition.root;
@@ -171,23 +185,19 @@ export class Scene
 	/**
 	 *
 	 */
-	public get renderer():RendererBase
+	public get rendererType():RendererType
 	{
-		return this._renderer;
+		return this._rendererType;
 	}
 
-	public set renderer(value:RendererBase)
+	public set rendererType(value:RendererType)
 	{
-		if (this._renderer == value)
+		if (this._rendererType == value)
 			return;
 
-		if (this._renderer)
-			this._renderer.dispose();
+		this._rendererType = value;
 
-		this._renderer = value;
-
-		this.view = this._renderer.view;
-		this.partition = this._renderer.partition;
+		this._disposeRenderer();
 	}
 
 	/**
@@ -207,8 +217,10 @@ export class Scene
 		if (this._camera == value)
 			return;
 
-		if (this._camera)
+		if (this._camera) {
+			this._camera.clear();
 			this._camera.removeEventListener(CameraEvent.PROJECTION_CHANGED, this._onProjectionChangedDelegate);
+		}
 
 		this._camera = value;
 
@@ -216,11 +228,9 @@ export class Scene
 
 		if (this._view)
 			this._view.projection = this._camera.projection;
-		
-		if (this._partition) {
-			this._partition.invalidateEntity(this._camera);
-			this._camera.partition = this._partition;
-		}
+
+		this._partition.invalidateEntity(this._camera);
+		this._camera.partition = this._partition;
 	}
 	
 	/**
@@ -230,6 +240,11 @@ export class Scene
 	public get deltaTime():number
 	{
 		return this._deltaTime;
+	}
+
+	public get mouseManager():MouseManager
+	{
+		return this._mouseManager;
 	}
 
 	/**
@@ -268,10 +283,13 @@ export class Scene
 	{
 		this._updateTime();
 
+		if (!this._renderer)
+			this._renderer = RenderGroup.getInstance(this._view, this._rendererType).getRenderer(this._partition);
+
 		// update picking
 		if (!this.disableMouseEvents) {
 			if (this.forceMouseMove && !this._mouseManager._iUpdateDirty)
-				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this._renderer.view);
+				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this._view);
 
 			this._mouseManager.fireMouseEvents(this.forceMouseMove);
 			//_touch3DManager.fireTouchEvents();
@@ -299,12 +317,20 @@ export class Scene
 		this._time = time;
 	}
 
+	private _disposeRenderer():void
+	{
+		if (this._renderer) {
+			this._renderer.dispose();
+			this._renderer = null;
+		}
+	}
+
 	/**
 	 *
 	 */
 	public dispose():void
 	{
-		this._renderer.dispose();
+		this._disposeRenderer();
 
 		// TODO: imeplement mouseManager / touch3DManager
 		this._mouseManager.unregisterScene(this);
@@ -314,8 +340,6 @@ export class Scene
 
 		this._mouseManager = null;
 		//this._touch3DManager = null;
-
-		this._renderer = null;
 	}
 
 	/**
@@ -323,8 +347,7 @@ export class Scene
 	 */
 	private _onProjectionChanged(event:CameraEvent):void
 	{
-		if (this._renderer)
-			this._renderer.view.projection = this._camera.projection;
+		this._view.projection = this._camera.projection;
 	}
 
 	/* TODO: implement Touch3DManager
@@ -361,7 +384,7 @@ export class Scene
 	{
 		if (!this.disableMouseEvents) {
 			// if (!this._renderer.shareContext) {
-				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this._renderer.view);
+				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this._view);
 			// } else {
 			// 	var collidingObject:PickingCollision = this.getViewCollision(this._mouseX, this._mouseY, this);
 			//

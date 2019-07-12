@@ -36,7 +36,7 @@ export class FNTGenerator
 		//projection.originY = -1;
 
         //create the view
-		this._scene = new Scene(new DefaultRenderer(new SceneGraphPartition(root)));
+		this._scene = new Scene(new SceneGraphPartition(root));
 		this._scene.camera.projection = projection;
 		this._scene.disableMouseEvents = true;
 		this._scene.view.width = maxSize;

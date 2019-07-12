@@ -4,7 +4,7 @@ import {BlendMode, ImageCube} from "@awayjs/stage";
 
 import {View, PickingCollision, PartitionBase, BoundingVolumeType} from "@awayjs/view";
 
-import {IAnimationSet, IMaterial, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, IRenderEntity} from "@awayjs/renderer";
+import {IAnimationSet, IMaterial, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, IRenderEntity, RenderGroup} from "@awayjs/renderer";
 
 import {ImageTextureCube} from "@awayjs/materials";
 
@@ -402,6 +402,6 @@ export class SkyboxNode extends EntityNode
 	}
 }
 
-DefaultRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
+RenderGroup.registerDefaultMaterial(_Render_SkyboxMaterial, Skybox);
 RenderEntity.registerRenderable(_Render_Skybox, Skybox);
 PartitionBase.registerAbstraction(SkyboxNode, Skybox);

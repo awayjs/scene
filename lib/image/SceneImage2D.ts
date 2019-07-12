@@ -80,7 +80,7 @@ export class SceneImage2D extends BitmapImage2D
 		projection.originY = 1;
 
 		//create the view
-		this._scene = new Scene(new DefaultRenderer(new SceneGraphPartition(root, true)));//, new View(projection, this._stage)));
+		this._scene = new Scene(new SceneGraphPartition(root, true));//, new View(projection, this._stage)));
 		this._scene.disableMouseEvents = true;
 		this._scene.view.width = this._rect.width;
 		this._scene.view.height = this._rect.height;
