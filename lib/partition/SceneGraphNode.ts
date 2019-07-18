@@ -9,8 +9,7 @@ export class SceneGraphNode extends NodeBase
 	private _numNodes:number = 0;
 	private _pChildNodes:Array<EntityNode> = new Array<EntityNode>();
 	private _childDepths:Array<number> = new Array<number>();
-	private _numMasks:number = 0;
-	private _childMasks:Array<EntityNode> = new Array<EntityNode>();
+
 	/**
 	 *
 	 * @param traverser
@@ -30,9 +29,6 @@ export class SceneGraphNode extends NodeBase
 		var i:number;
 		for (i = this._numNodes - 1; i >= 0; i--)
 			this._pChildNodes[i].acceptTraverser(traverser);
-
-		for (i = this._numMasks - 1; i >= 0; i--)
-			this._childMasks[i].acceptTraverser(traverser);
 	}
 
 	/**
@@ -44,29 +40,24 @@ export class SceneGraphNode extends NodeBase
 	{
 		node.parent = this;
 
-		if (node.isMask()) {
-			this._childMasks.push(node);
-			this._numMasks++;
+		var depth:number = (this._entity != node.entity) ? (<DisplayObject> node.entity)._depthID : -16384;
+		var len:number = this._childDepths.length;
+		var index:number = len;
+
+		while (index--)
+			if (this._childDepths[index] < depth)
+				break;
+
+		index++;
+
+		if (index < len) {
+			this._pChildNodes.splice(index, 0, node);
+			this._childDepths.splice(index, 0, depth);
 		} else {
-			var depth:number = (this._entity != node.entity) ? (<DisplayObject> node.entity)._depthID : -16384;
-			var len:number = this._childDepths.length;
-			var index:number = len;
-
-			while (index--)
-				if (this._childDepths[index] < depth)
-					break;
-
-			index++;
-
-			if (index < len) {
-				this._pChildNodes.splice(index, 0, node);
-				this._childDepths.splice(index, 0, depth);
-			} else {
-				this._pChildNodes.push(node);
-				this._childDepths.push(depth);
-			}
-			this._numNodes++;
+			this._pChildNodes.push(node);
+			this._childDepths.push(depth);
 		}
+		this._numNodes++;
 	}
 
 	public isVisible():boolean
@@ -81,15 +72,10 @@ export class SceneGraphNode extends NodeBase
 	 */
 	public iRemoveNode(node:EntityNode):void
 	{
-		if (node.isMask()) {
-			this._childMasks.splice(this._childMasks.indexOf(node), 1);
-			this._numMasks--;
-		} else {
-			var index:number = this._pChildNodes.indexOf(node);
+		var index:number = this._pChildNodes.indexOf(node);
 
-			this._pChildNodes.splice(index, 1);
-			this._childDepths.splice(index, 1);
-			this._numNodes--;
-		}
+		this._pChildNodes.splice(index, 1);
+		this._childDepths.splice(index, 1);
+		this._numNodes--;
 	}
 }
