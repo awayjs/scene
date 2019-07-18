@@ -550,7 +550,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public drawBG():void
 	{
-        this._graphics.beginFill(this.backgroundColor, 1);
+        this._graphics.beginFill(this.backgroundColor, (!this._background && this._type == TextFieldType.INPUT)? 0 : 1);
         this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
         this._graphics.endFill();
     }
@@ -707,7 +707,7 @@ export class TextField extends DisplayObjectContainer
 	{
 		super._iInternalUpdate();
 
-		if (!this.inMaskMode) {
+		//if (!this.inMaskMode) {
 
 			this.reConstruct(true);
 			
@@ -719,7 +719,7 @@ export class TextField extends DisplayObjectContainer
 				this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
 				this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 			}
-		}
+		//}
         /*
 		if (projection) {
 			this._strokeScale.x = (<PerspectiveProjection> projection).hFocalLength/1000;
@@ -2592,10 +2592,10 @@ export class TextField extends DisplayObjectContainer
 		this.targetGraphics=this._graphics;
 		this.targetGraphics.clear();
 
-		if (this._background)
+		if (this._background || this._type == TextFieldType.INPUT)
 			this.drawBG();
 
-		if(this.border || !this._background)
+		if(this.border || (!this._background && this._type != TextFieldType.INPUT))
 			this.drawBorder();
 		
 		/*
@@ -2728,7 +2728,7 @@ export class TextField extends DisplayObjectContainer
 		this.targetGraphics.clear();
 		this._graphics.clear();
 
-		if (this._background)
+		if (this._background || this._type == TextFieldType.INPUT)
 			this.drawBG();
 
 		if(this._border || !this._background)
