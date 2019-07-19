@@ -750,8 +750,6 @@ export class MouseManager {
     public onMouseMove(event): void {
         this._isTouch = (event.type != "mousemove");
 
-        event.preventDefault();
-
         this.updateColliders(event);
 
         this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event, this._iCollision);
@@ -789,7 +787,6 @@ export class MouseManager {
             return;
         }
         this._isDown = true;
-        event.preventDefault();
 
         this.updateColliders(event);
 
@@ -803,7 +800,6 @@ export class MouseManager {
             return;
         }
         this._isDown = false;
-        event.preventDefault();
 
         this.updateColliders(event);
 
