@@ -124,6 +124,10 @@ export class TextField extends DisplayObjectContainer
 	{
 		return (TextField._textFields.length)? TextField._textFields.pop() : new TextField()
 	}
+	public static clearPool()
+	{
+		TextField._textFields=[];
+	}
     private static _onChangedEvent=new TextfieldEvent(TextfieldEvent.CHANGED);
 
 
@@ -1864,6 +1868,10 @@ export class TextField extends DisplayObjectContainer
 		if (this.bgShapeSelect) {
 			this.bgShapeSelect.dispose();
 			this.bgShapeSelect=null;
+		}
+		
+		if (this._labelData) {
+			this._labelData=null;
 		}
 
 		this._clearTextShapes();

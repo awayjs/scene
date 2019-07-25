@@ -232,6 +232,11 @@ export class MouseManager {
         if (this._instance)
             return this._instance;
 
+        //  todo: this is only needed due to MW react-lesson-player requesting a MouseManager with pickGroup=null
+        //  can be removed once the MW code is adjusted
+        if(!pickGroup)
+            return new MouseManager(pickGroup);
+
         return (this._instance = new MouseManager(pickGroup));
     }
 

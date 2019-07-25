@@ -1769,7 +1769,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		// 	this._parent._implicitPartition.removeChild(this._partition);
 
 		if (this._partition) {
-			if (!parent) {//if there is a new parent, the addChild(partition) will remove from the previous partition
+			if (!parent && (this._parent && this._parent._implicitPartition)) {//if there is a new parent, the addChild(partition) will remove from the previous partition
 				this._parent._implicitPartition.removeChild(this._partition);
 	
 				this.clear();
@@ -1780,7 +1780,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._parent = parent;
 
-        this._setPartition(parent? parent._implicitPartition : null);
+        this._setPartition((parent && parent._implicitPartition)? parent._implicitPartition : null);
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.ALL);
 	}

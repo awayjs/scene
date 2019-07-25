@@ -44,6 +44,10 @@ export class MovieClip extends Sprite
 		return new MovieClip(timeline);
 	}
 
+	public static clearPool()
+	{
+		MovieClip._movieClips=[];
+	}
 	private _timeline:Timeline;
 
 	// buttonMode specifies if the mc has any mouse-listeners attached that should trigger showing the hand-cursor

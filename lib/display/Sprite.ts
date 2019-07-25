@@ -35,6 +35,10 @@ export class Sprite extends DisplayObjectContainer
 
 		return new Sprite(graphics, material);
 	}
+	public static clearPool()
+	{
+		Sprite._sprites=[];
+	}
 
 	private _center:Vector3D;
 	public _graphics:Graphics;
