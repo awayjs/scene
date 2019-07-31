@@ -13,16 +13,16 @@ import { Graphics } from '@awayjs/graphics';
 
 export interface ISceneGraphFactory extends IGraphicsFactory
 {
-	createMovieClip(timelime?:Timeline):MovieClip;
+	createMovieClip(timelime?:Timeline, symbol?:any):MovieClip;
 
-	createTextField():TextField;
+	createTextField(symbol?:any):TextField;
 
-	createDisplayObjectContainer():DisplayObjectContainer;
+	createDisplayObjectContainer(symbol?:any):DisplayObjectContainer;
 
-	createSprite(prefab?:PrefabBase, graphics?:Graphics):Sprite;
+	createSprite(prefab?:PrefabBase, graphics?:Graphics, symbol?:any):Sprite;
 
-	createBillboard(material?:IMaterial):Billboard;
+	createBillboard(material?:IMaterial, symbol?:any):Billboard;
 
-	createMaterial(image?:Image2D, alpha?:number):IMaterial;
-	createMaterial(color?:number, alpha?:number):IMaterial;
+	createMaterial(image?:Image2D, alpha?:number, symbol?:any):IMaterial;
+	createMaterial(color?:number, alpha?:number, symbol?:any):IMaterial;
 }

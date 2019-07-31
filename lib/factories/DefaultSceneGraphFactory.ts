@@ -13,16 +13,17 @@ import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import {PrefabBase} from "../prefabs/PrefabBase";
 
 import {ISceneGraphFactory} from "./ISceneGraphFactory";
+import { Graphics } from '@awayjs/graphics';
 
 export class DefaultSceneGraphFactory extends DefaultGraphicsFactory implements ISceneGraphFactory
 {
 
-	createMovieClip(timeline:Timeline = null):MovieClip
+	createMovieClip(timeline:Timeline = null, symbol:any=null):MovieClip
 	{
 		return new MovieClip(timeline);
 	}
 
-	createSprite(prefab:PrefabBase = null):Sprite
+	createSprite(prefab:PrefabBase = null, graphics:Graphics = null, symbol:any=null):Sprite
 	{
 		if (prefab)
 			return <Sprite> prefab.getNewObject();
@@ -30,24 +31,26 @@ export class DefaultSceneGraphFactory extends DefaultGraphicsFactory implements 
 		return new Sprite();
 	}
 
-	createDisplayObjectContainer():DisplayObjectContainer
+	
+
+	createDisplayObjectContainer(symbol:any=null):DisplayObjectContainer
 	{
 		return new DisplayObjectContainer();
 	}
 
-	createTextField():TextField
+	createTextField(symbol:any=null):TextField
 	{
 		return new TextField();
 	}
 
-	createBillboard(material:IMaterial):Billboard
+	createBillboard(material:IMaterial, symbol:any=null):Billboard
 	{
 		return new Billboard(material);
 	}
 
 	createMaterial(image?:Image2D, alpha?:number):MethodMaterial;
 	createMaterial(color?:number, alpha?:number):MethodMaterial;
-	createMaterial(imageColor?:any, alpha?:number):MethodMaterial
+	createMaterial(imageColor?:any, alpha?:number, symbol:any=null):MethodMaterial
 	{
 		return new MethodMaterial(imageColor, alpha);
 	}
