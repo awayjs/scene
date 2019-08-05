@@ -24,6 +24,8 @@ export class MovieClip extends Sprite
 
 	public static _skipAdvance:boolean;
 	
+	public timelineMC:boolean;
+	
 	public doingSwap:boolean=false;
 	public preventScript:boolean=false;
 
@@ -88,6 +90,7 @@ export class MovieClip extends Sprite
 	{
 		super();
 
+		this.timelineMC=false;
         this._soundVolume=1;
         this._parentSoundVolume=1;
 		this.doingSwap=false;
@@ -338,6 +341,8 @@ export class MovieClip extends Sprite
 
 	public reset(fireScripts:boolean=true):void
 	{
+		if(!this.timelineMC)
+			return;
 		super.reset();
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
@@ -640,7 +645,7 @@ export class MovieClip extends Sprite
 	public copyTo(movieClip:MovieClip):void
 	{
 		super.copyTo(movieClip);
-
+		movieClip.timelineMC=this.timelineMC;
 		movieClip.loop = this.loop;
 	}
 
