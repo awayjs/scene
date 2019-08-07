@@ -22,7 +22,8 @@ export class Timeline
 {
 	private _functions:Array<(child:DisplayObject, target_mc:MovieClip, i:number) => void> = [];
     private _blocked:boolean;
-    
+	
+	public static currentInstanceName:string=null;
 	public _update_indices:number[] = [];
 	public _update_frames:number[] = [];
 	public isButton:boolean = false;
@@ -265,7 +266,7 @@ export class Timeline
 		return this.keyframe_indices[frame_index];
 	}
 
-	public getPotentialChildInstance(id:number) : IAsset
+	public getPotentialChildInstance(id:number, instanceID:string=null) : IAsset
 	{
 		var asset:IAsset=this._potentialPrototypes[id];
 		if(asset.isAsset(Sprite)) {
@@ -285,7 +286,12 @@ export class Timeline
 
 			return morphSprite;
 		}
-
+		if(instanceID){			
+			var placeObjectTag:any=this.potentialPrototypesInitEventsMap[instanceID];
+			if(placeObjectTag && ((<any>placeObjectTag).name)){
+				Timeline.currentInstanceName=(<any>placeObjectTag).name;
+			}
+		}
 		return (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
 	}
 	public initChildInstance(child:DisplayObject, id:string)

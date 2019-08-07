@@ -626,7 +626,7 @@ export class MovieClip extends Sprite
 	public getPotentialChildInstance(id:number, instanceID:string) : IAsset
 	{
 		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID==-2)
-			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id);
+			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id, instanceID);
         this._timeline.initChildInstance(<DisplayObject>this._potentialInstances[id], instanceID);
 		return this._potentialInstances[id];
 	}
