@@ -120,6 +120,7 @@ export class Timeline
 
 		this.keyframe_firstframes = [];
 		this.keyframe_constructframes = [];
+		this.keyframe_indices=[];
 		var frame_cnt = 0;
 		var ic = 0;
 		var ic2 = 0;
@@ -127,7 +128,6 @@ export class Timeline
 		var last_construct_frame = 0;
 		for(ic = 0; ic < this.numKeyFrames; ic++){
 			var duration=this.keyframe_durations[(ic)];
-
 			if(this.frame_recipe[ic] & 1)
 				last_construct_frame = keyframe_cnt;
 
@@ -136,6 +136,7 @@ export class Timeline
 
 			for(ic2 = 0; ic2 < duration; ic2++)
 				this.keyframe_indices[frame_cnt++] = ic;
+			//frame_cnt+=this.keyframe_durations[(ic)];
 		}
 	}
 
@@ -149,6 +150,38 @@ export class Timeline
 		else{
 			throw new Error("Framescript is already translated to Function!!!");
 		}
+	}
+	
+	public add_avm2framescript(value:any, frame_idx:number):void
+	{
+		var keyframeIdx=this.keyframe_indices[frame_idx];
+		if(this.keyframe_firstframes[keyframeIdx]!=frame_idx){
+			var newDuration=frame_idx-this.keyframe_firstframes[keyframeIdx];
+			var newDuration2=this.keyframe_durations[keyframeIdx]-newDuration;
+			var newDurations=[];
+			var newFrameRecipe=[];
+
+			for(var i=0; i<this.numKeyFrames; i++){
+				newDurations.push(this.keyframe_durations[i]);
+				newFrameRecipe.push(this.frame_recipe[i]);
+				if(i==keyframeIdx){
+					newDurations[i]=newDuration;
+					newDurations.push(newDuration2);
+					newFrameRecipe.push(0);
+				}
+			}
+			this.numKeyFrames++;
+			this.keyframe_durations=new Uint32Array(newDurations);
+			this.frame_recipe=new Uint32Array(newFrameRecipe);
+			this.init();
+			keyframeIdx++;
+
+		}
+		if(!this._framescripts[keyframeIdx]){
+			this._framescripts[keyframeIdx]=[];
+		}
+		this._framescripts[keyframeIdx].push(value);
+		
 	}
 	public add_framescript(value:any, keyframe_index:number):void
 	{

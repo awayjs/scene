@@ -17,6 +17,7 @@ import {TextField} from "./TextField";
 
 export class MovieClip extends Sprite
 {
+	public static mcForConstructor:MovieClip;
 	//todo: this 3 are no longer used (?)
 	public static avm1ScriptQueue:MovieClip[]=[];
 	public static avm1ScriptQueueScripts:any[]=[];
@@ -499,8 +500,16 @@ export class MovieClip extends Sprite
 
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
-		if(!this.doingSwap)
+		/*if(!this.doingSwap){
 			child.reset();// this takes care of transform and visibility
+		}*/
+		
+		if(!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset)){
+			child.reset();// this takes care of transform and visibility
+			if(child.adapter && (<any>child.adapter).noReset){
+				(<any>child.adapter).noReset=false;
+			}
+		}
 		super.addChildAtDepth(child, depth, replace);
 		
 		if(!this.doingSwap){
@@ -514,7 +523,7 @@ export class MovieClip extends Sprite
 
 			}
 		}
-		return 
+		return child;
 	}
 
 	public _addTimelineChildAt(child:DisplayObject, depth:number, sessionID:number):DisplayObject
@@ -527,7 +536,6 @@ export class MovieClip extends Sprite
 			(<any>child.adapter).deleteOwnProperties();
 		}
 
-		
 		return this.addChildAtDepth(child, depth);
 	}
 
