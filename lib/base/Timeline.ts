@@ -340,6 +340,28 @@ export class Timeline
 		return hitArea;
 	}
 
+	public getCurretFrameLabel(target_mc:MovieClip) : string
+	{
+		var label:string=null;
+		for(var key in this._labels){
+			if(this._labels[key]==target_mc.constructedKeyFrameIndex){
+				return label;
+			}
+		}
+		return label;
+	}
+	public getCurretLabel(target_mc:MovieClip) : string
+	{
+		var label:string=null;
+		var lastLabelframeIdx:number=-1;
+		for(var key in this._labels){
+			if(this._labels[key]>lastLabelframeIdx && this._labels[key]<=target_mc.constructedKeyFrameIndex){
+				lastLabelframeIdx=this._labels[key];
+				label=key;
+			}
+		}
+		return label;
+	}
 	public jumpToLabel(target_mc:MovieClip, label:string, offset:number=0) : void
 	{
 		var key_frame_index:number = this._labels[label.toLowerCase()];
