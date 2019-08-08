@@ -74,7 +74,7 @@ export class Scene
 
 		this._partition.root.partition = this._partition;
 
-		this._disposeRenderer();
+		//this._disposeRenderer();
 	}
 
 	public get view():View

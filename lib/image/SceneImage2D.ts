@@ -69,6 +69,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._fillColor = fillColor;
 		this._stage = stage;
 	}
+	private static scene:Scene=null;
 
 	private createScene(root:DisplayObjectContainer)
 	{
@@ -80,20 +81,20 @@ export class SceneImage2D extends BitmapImage2D
 		projection.originY = 1;
 
 		//create the view
-		this._scene = new Scene(new SceneGraphPartition(root, true));//, new View(projection, this._stage)));
-		this._scene.disableMouseEvents = true;
-		this._scene.view.width = this._rect.width;
-		this._scene.view.height = this._rect.height;
+		SceneImage2D.scene = new Scene(new SceneGraphPartition(root, true));//, new View(projection, this._stage)));
+		SceneImage2D.scene.disableMouseEvents = true;
+		SceneImage2D.scene.view.width = 2048;//this._rect.width;
+		SceneImage2D.scene.view.height = 2048;//this._rect.height;
 		this._fillColor = this._fillColor;
-		this._scene.renderer.view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
-		this._scene.renderer.view.backgroundColor = this._fillColor & 0xffffff;
-		//this._scene.renderer.view.preserveFocalLength = true;
-		this._scene.view.stage.container.style.display="NONE";
+		SceneImage2D.scene.renderer.view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
+		SceneImage2D.scene.renderer.view.backgroundColor = this._fillColor & 0xffffff;
+		//SceneImage2D.scene.renderer.view.preserveFocalLength = true;
+		SceneImage2D.scene.view.stage.container.style.display="NONE";
        
-		this._scene.renderer.renderableSorter = null;//new RenderableSort2D();
+		SceneImage2D.scene.renderer.renderableSorter = null;//new RenderableSort2D();
 
-		this._scene.camera.projection=projection;
-		(<PerspectiveProjection>this._scene.camera.projection).fieldOfView = Math.atan(this._rect.height/1000/2)*360/Math.PI;
+		SceneImage2D.scene.camera.projection=projection;
+		(<PerspectiveProjection>SceneImage2D.scene.camera.projection).fieldOfView = Math.atan(this._rect.height/1000/2)*360/Math.PI;
 		
 	}
 
@@ -212,25 +213,28 @@ export class SceneImage2D extends BitmapImage2D
 			}
 			//root.transform.colorTransform = colorTransform;
 
-			if (!this._scene)
+			if (!SceneImage2D.scene)
 				this.createScene(root);
+			else{
+				SceneImage2D.scene.partition=new SceneGraphPartition(root, true);
+			}
 
 			root.addChild(source);
-			this._scene.view.clear();
+			//SceneImage2D.scene.view.clear();
 			//save snapshot if unlocked
 			//if (!this._locked)
-			this._scene.renderer.queueSnapshot(this);
-			//this._scene.view.target=this;
-			//this._scene.renderer.disableClear = !this._locked;
+			SceneImage2D.scene.renderer.queueSnapshot(this);
+			//SceneImage2D.scene.view.target=this;
+			//SceneImage2D.scene.renderer.disableClear = !this._locked;
 
 			//render
-			this._scene.renderer.render();
+			SceneImage2D.scene.renderer.render();
 
 			if(oldParent){
 				oldParent.addChild(source);
 			}
-			this._scene.dispose();
-			this._scene=null;
+			//SceneImage2D.scene.dispose();
+			//SceneImage2D.scene=null;
 
 			return;
 		}
