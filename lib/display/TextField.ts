@@ -2733,8 +2733,13 @@ export class TextField extends DisplayObjectContainer
     }
     
     private buildShapes(){
+		if(!this.targetGraphics){
+			this.targetGraphics=this._graphics;
+		}
+		else{
+			this._graphics.clear();
+		}
 		this.targetGraphics.clear();
-		this._graphics.clear();
 
 		if (this._background || this._type == TextFieldType.INPUT)
 			this.drawBG();

@@ -597,7 +597,7 @@ export class MovieClip extends Sprite
 			(<any>this.adapter).dispatchEvent(events[0]);
 		}
 		//if(this._timeline && this._timeline.numFrames>0)
-		this.advanceFrame();
+		this.advanceFrame(events);
 
 		MovieClip._skipAdvance = false;
 
@@ -673,7 +673,7 @@ export class MovieClip extends Sprite
 		}
 		this._skipAdvance = false;
 	}
-	public advanceFrame():void
+	public advanceFrame(events:any=null):void
 	{
 
 		// if this._skipadvance is true, the mc has already been moving on its timeline this frame
@@ -710,7 +710,10 @@ export class MovieClip extends Sprite
 			child = this._children[i];
 
 			if (child.isAsset(MovieClip)){
-				(<MovieClip> child).advanceFrame();
+				(<MovieClip> child).advanceFrame(events);
+			}
+			if (child.isAsset(Sprite) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame){
+				(<any>child.adapter).advanceFrame(events);
 			}
 		}
 		//80pro temp this.dispatchEvent(this._enterFrame);
