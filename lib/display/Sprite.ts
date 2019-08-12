@@ -79,8 +79,8 @@ export class Sprite extends DisplayObjectContainer
 			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 			this._graphics.usages--;
 
-			if (!this._graphics.usages)
-				this.graphics.dispose();
+			//if (!this._graphics.usages)
+			//	this.graphics.dispose();
 		}
 		
 		this._graphics = value;
