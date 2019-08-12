@@ -1,6 +1,9 @@
-import {Shape, TriangleElements} from "@awayjs/graphics"
-import {TextFormat} from "./TextFormat"
-import { MaterialBase } from '../../../materials/dist';
+import {Shape, TriangleElements} from "@awayjs/graphics";
+
+import {MaterialBase} from "@awayjs/materials";
+
+import {TextFormat} from "./TextFormat";
+
 export class TextShape
 {
 

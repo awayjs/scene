@@ -4,7 +4,7 @@ import {Sprite} from "./Sprite";
 import { TextField } from './TextField';
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
-import { IEntityTraverser } from '../../../view/dist';
+import { IEntityTraverser } from '@awayjs/view';
 
 /**
  * TextSprite is used for masked text. It is a child of the textfield that is used to render all visible (masked) graphics
