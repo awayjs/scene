@@ -703,16 +703,15 @@ export class MovieClip extends Sprite
 		}
 
 		// than come the children from bottom up:
-
-		var len:number = this._children.length;
 		var child:DisplayObject;
-		for (var i:number = 0;i< len; i++) {
+		for (var i:number = 0;i< this._children.length; i++) {
+			
 			child = this._children[i];
 
-			if (child.isAsset(MovieClip)){
+			if (child && child.isAsset(MovieClip)){
 				(<MovieClip> child).advanceFrame(events);
 			}
-			if (child.isAsset(Sprite) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame){
+			if (child && child.isAsset(Sprite) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame){
 				(<any>child.adapter).advanceFrame(events);
 			}
 		}
