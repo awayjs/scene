@@ -83,8 +83,8 @@ export class SceneImage2D extends BitmapImage2D
 		//create the view
 		SceneImage2D.scene = new Scene(new SceneGraphPartition(root, true));//, new View(projection, this._stage)));
 		SceneImage2D.scene.disableMouseEvents = true;
-		SceneImage2D.scene.view.width = 2048;//this._rect.width;
-		SceneImage2D.scene.view.height = 2048;//this._rect.height;
+		SceneImage2D.scene.view.width = this.rect.width;//2048;
+		SceneImage2D.scene.view.height = this.rect.height;//2048;
 		this._fillColor = this._fillColor;
 		SceneImage2D.scene.renderer.view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
 		SceneImage2D.scene.renderer.view.backgroundColor = this._fillColor & 0xffffff;
@@ -94,7 +94,7 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D.scene.renderer.renderableSorter = null;//new RenderableSort2D();
 
 		SceneImage2D.scene.camera.projection=projection;
-		(<PerspectiveProjection>SceneImage2D.scene.camera.projection).fieldOfView = Math.atan(this._rect.height/1000/2)*360/Math.PI;
+		(<PerspectiveProjection>SceneImage2D.scene.camera.projection).fieldOfView = Math.atan(this.rect.height/1000/2)*360/Math.PI;
 		
 	}
 
@@ -205,7 +205,9 @@ export class SceneImage2D extends BitmapImage2D
 		if (source instanceof DisplayObject) {
 			var root:DisplayObjectContainer = new DisplayObjectContainer();
 			var oldParent=source.parent;
-			root.transform.scaleTo(this.rect.height/this.rect.width, -1, 1);
+			var oldx=source.x;
+			var oldy=source.y;
+			root.transform.scaleTo(this.rect.height /this.rect.width , -1, 1);
 			root.transform.moveTo(0, this.rect.height,0);
 			if (matrix) {
 				root.transform.scaleTo(matrix.a, matrix.d, 1);
@@ -216,11 +218,18 @@ export class SceneImage2D extends BitmapImage2D
 			if (!SceneImage2D.scene)
 				this.createScene(root);
 			else{
+				SceneImage2D.scene.view.width = this.rect.width;//2048;
+				SceneImage2D.scene.view.height = this.rect.height;//2048;
+				(<PerspectiveProjection>SceneImage2D.scene.camera.projection).fieldOfView = Math.atan(this.rect.height/1000/2)*360/Math.PI;
 				SceneImage2D.scene.partition=new SceneGraphPartition(root, true);
 			}
 
+
 			root.addChild(source);
-			//SceneImage2D.scene.view.clear();
+
+			source.x=0;
+			source.y=0;
+			SceneImage2D.scene.view.clear();
 			//save snapshot if unlocked
 			//if (!this._locked)
 			SceneImage2D.scene.renderer.queueSnapshot(this);
@@ -232,6 +241,8 @@ export class SceneImage2D extends BitmapImage2D
 
 			if(oldParent){
 				oldParent.addChild(source);
+				source.x=oldx;
+				source.y=oldy;
 			}
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
