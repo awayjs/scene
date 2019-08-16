@@ -1,8 +1,8 @@
-import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D} from "@awayjs/core";
+import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform} from "@awayjs/core";
 
 import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
 
-import {DefaultRenderer} from "@awayjs/renderer";
+import {DefaultRenderer, RenderGroup, RendererType} from "@awayjs/renderer";
 
 import {DisplayObject} from "../display/DisplayObject";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
@@ -20,7 +20,8 @@ export class SceneImage2D extends BitmapImage2D
 {
 	public static assetType:string = "[image SceneImage2D]";
 
-	private _scene:Scene;
+	private static _renderer:DefaultRenderer;
+	private static _root:DisplayObjectContainer;
 
 	private _fillColor:number;
 	private _stage:Stage;
@@ -69,33 +70,33 @@ export class SceneImage2D extends BitmapImage2D
 		this._fillColor = fillColor;
 		this._stage = stage;
 	}
-	private static scene:Scene=null;
 
-	private createScene(root:DisplayObjectContainer)
+	private createRenderer()
 	{
 		//create the projection
 		var projection = new PerspectiveProjection();
 		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
-		projection.fieldOfView = 30;
 		projection.originX = -1;
 		projection.originY = 1;
 
-		//create the view
-		SceneImage2D.scene = new Scene(new SceneGraphPartition(root, true));//, new View(projection, this._stage)));
-		SceneImage2D.scene.disableMouseEvents = true;
-		SceneImage2D.scene.view.width = this.rect.width;//2048;
-		SceneImage2D.scene.view.height = this.rect.height;//2048;
-		this._fillColor = this._fillColor;
-		SceneImage2D.scene.renderer.view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
-		SceneImage2D.scene.renderer.view.backgroundColor = this._fillColor & 0xffffff;
-		//SceneImage2D.scene.renderer.view.preserveFocalLength = true;
-		SceneImage2D.scene.view.stage.container.style.display="NONE";
-       
-		SceneImage2D.scene.renderer.renderableSorter = null;//new RenderableSort2D();
+        //create the view
+        SceneImage2D._root = new DisplayObjectContainer()
+        SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, null, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._root));
+        SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
-		SceneImage2D.scene.camera.projection=projection;
-		(<PerspectiveProjection>SceneImage2D.scene.camera.projection).fieldOfView = Math.atan(this.rect.height/1000/2)*360/Math.PI;
-		
+		//setup the projection
+		SceneImage2D._renderer.view.backgroundAlpha = 0;
+        SceneImage2D._renderer.view.projection = projection;
+        SceneImage2D._renderer.view.projection.transform = new Transform();
+		SceneImage2D._renderer.view.projection.transform.moveTo(0, 0, -1000);
+		SceneImage2D._renderer.view.projection.transform.lookAt(new Vector3D());
+        
+        //hide the html container
+        SceneImage2D._renderer.view.stage.container.style.display = "NONE";
+        
+
+		SceneImage2D._renderer.renderableSorter = null;//new RenderableSort2D();
+	
 	}
 
 	/**
@@ -203,47 +204,50 @@ export class SceneImage2D extends BitmapImage2D
 	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean):void
 	{
 		if (source instanceof DisplayObject) {
-			var root:DisplayObjectContainer = new DisplayObjectContainer();
+			if (!SceneImage2D._renderer)
+				this.createRenderer();
+
 			var oldParent=source.parent;
 			var oldx=source.x;
 			var oldy=source.y;
-			root.transform.scaleTo(this.rect.height /this.rect.width , -1, 1);
-			root.transform.moveTo(0, this.rect.height,0);
+			var oldColorTransform=source.transform.colorTransform.clone();
+			SceneImage2D._root.transform.scaleTo(1 , -1, 1);
+			SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
 			if (matrix) {
-				root.transform.scaleTo(matrix.a, matrix.d, 1);
-				root.transform.moveTo(matrix.tx, matrix.ty, 0);
+				SceneImage2D._root.transform.scaleTo(matrix.a, matrix.d, 1);
+				SceneImage2D._root.transform.moveTo(matrix.tx, matrix.ty, 0);
 			}
 			//root.transform.colorTransform = colorTransform;
 
-			if (!SceneImage2D.scene)
-				this.createScene(root);
-			else{
-				SceneImage2D.scene.view.width = this.rect.width;//2048;
-				SceneImage2D.scene.view.height = this.rect.height;//2048;
-				(<PerspectiveProjection>SceneImage2D.scene.camera.projection).fieldOfView = Math.atan(this.rect.height/1000/2)*360/Math.PI;
-				SceneImage2D.scene.partition=new SceneGraphPartition(root, true);
-			}
+			var pixelRatio:number = SceneImage2D._renderer.view.stage.context.pixelRatio;
+			SceneImage2D._renderer.view.width = this.rect.width/pixelRatio;
+			SceneImage2D._renderer.view.height = this.rect.height/pixelRatio;
+			SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
+			SceneImage2D._renderer.view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
+			SceneImage2D._renderer.view.backgroundColor = this._fillColor & 0xffffff;
 
-
-			root.addChild(source);
+			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
+			SceneImage2D._root.addChild(source);
 
 			source.x=0;
 			source.y=0;
-			SceneImage2D.scene.view.clear();
+			source.transform.colorTransform = null;
 			//save snapshot if unlocked
 			//if (!this._locked)
-			SceneImage2D.scene.renderer.queueSnapshot(this);
+			SceneImage2D._renderer.queueSnapshot(this);
 			//SceneImage2D.scene.view.target=this;
 			//SceneImage2D.scene.renderer.disableClear = !this._locked;
 
 			//render
-			SceneImage2D.scene.renderer.render();
+			SceneImage2D._renderer.render();
 
 			if(oldParent){
 				oldParent.addChild(source);
-				source.x=oldx;
-				source.y=oldy;
+				
 			}
+			source.x=oldx;
+			source.y=oldy;
+			source.transform.colorTransform = oldColorTransform;
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
 
