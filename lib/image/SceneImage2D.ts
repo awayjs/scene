@@ -210,6 +210,7 @@ export class SceneImage2D extends BitmapImage2D
 			var oldParent=source.parent;
 			var oldx=source.x;
 			var oldy=source.y;
+			var oldVisible=source.visible;
 			var oldColorTransform=source.transform.colorTransform.clone();
 			SceneImage2D._root.transform.scaleTo(1 , -1, 1);
 			SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
@@ -231,6 +232,7 @@ export class SceneImage2D extends BitmapImage2D
 
 			source.x=0;
 			source.y=0;
+			source.visible=true;
 			source.transform.colorTransform = null;
 			//save snapshot if unlocked
 			//if (!this._locked)
@@ -247,6 +249,7 @@ export class SceneImage2D extends BitmapImage2D
 			}
 			source.x=oldx;
 			source.y=oldy;
+			source.visible=oldVisible;
 			source.transform.colorTransform = oldColorTransform;
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
