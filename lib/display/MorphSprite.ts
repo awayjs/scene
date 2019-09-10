@@ -69,6 +69,7 @@ export class MorphSprite extends Sprite
 		this._graphics.endFill(); //trigger a queue execution if one is needed
 		this._graphics.clear();
 
+		/*
 		if(this._graphics.start.length!=this._graphics.end.length){
 			throw("Error in morph data - different number of pathes");
 		}
@@ -227,6 +228,7 @@ export class MorphSprite extends Sprite
 			//console.log(startPath);
 
 		}
+		*/
 		/*
 		var newPath:GraphicsPath=new GraphicsPath();
 		newPath.moveTo(50,50);
