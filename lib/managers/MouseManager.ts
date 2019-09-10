@@ -717,6 +717,7 @@ export class MouseManager {
     // ---------------------------------------------------------------------
 
     public onKeyDown(event): void {
+        //console.log("Keydown", event);
         if(this.allowKeyInput){
             event.preventDefault();
             if (this._currentFocusEntity || this._stage) {
@@ -725,6 +726,7 @@ export class MouseManager {
                 newEvent.isShift = event.shiftKey;
                 newEvent.isCTRL = event.ctrlKey;
                 newEvent.isAlt = event.altKey;
+                (<any>newEvent).keyCode = event.keyCode;
                 if (this._currentFocusEntity)
                     this._currentFocusEntity.dispatchEvent(newEvent);
                 if (this._stage)
@@ -734,6 +736,7 @@ export class MouseManager {
 
     }
     public onKeyUp(event): void {
+        //console.log("Keyup", event);
         if(this.allowKeyInput){
             event.preventDefault();
 
@@ -743,6 +746,7 @@ export class MouseManager {
                 newEvent.isShift = event.shiftKey;
                 newEvent.isCTRL = event.ctrlKey;
                 newEvent.isAlt = event.altKey;
+                (<any>newEvent).keyCode = event.keyCode;
                 if (this._currentFocusEntity)
                     this._currentFocusEntity.dispatchEvent(newEvent);
                 if (this._stage)
