@@ -1,4 +1,4 @@
-import {AssetEvent,IAsset, WaveAudio} from "@awayjs/core";
+import {AssetEvent,IAsset, WaveAudio, AudioManager} from "@awayjs/core";
 
 import { PartitionBase, EntityNode } from '@awayjs/view';
 
@@ -31,6 +31,8 @@ export class MovieClip extends Sprite
 	public preventScript:boolean=false;
 
 	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
+	
+	private static _activeSounds:any = {};
 
 	public static assetType:string = "[asset MovieClip]";
 
@@ -142,7 +144,10 @@ export class MovieClip extends Sprite
         }
         sound.loopsToPlay=loopsToPlay;
         sound.play(0,false);
-        this._sounds[id]=sound;
+		this._sounds[id]=sound;
+		if(!MovieClip._activeSounds[id])
+			MovieClip._activeSounds[id]=[];
+		MovieClip._activeSounds[id].push(sound);
     }
 	public stopSounds(soundID:any=null){
         if(soundID){
@@ -164,6 +169,7 @@ export class MovieClip extends Sprite
 			if (child.isAsset(MovieClip))
 				(<MovieClip> child).stopSounds(soundID);
 		}
+		MovieClip._activeSounds={};
     }
     private _soundVolume:number;
 	public get soundVolume():number{
@@ -189,7 +195,13 @@ export class MovieClip extends Sprite
         if(this._sounds[id]){
             this._sounds[id].stop();
             delete this._sounds[id];
-        }
+		}
+		if(MovieClip._activeSounds[id]){			
+			for(var i:number=0; i<MovieClip._activeSounds[id].length;i++){
+				MovieClip._activeSounds[id][i].stop();
+			}
+			delete MovieClip._activeSounds[id];
+		}
     }
 	public buttonReset(){
 		if(this._isButton && !this.buttonEnabled){
