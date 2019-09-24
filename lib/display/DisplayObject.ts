@@ -227,6 +227,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public instanceID:string="";
 	public addedOnFrame:number=0;
     public avm1Symbol:any;
+    public isAVMScene:boolean=false;
     
     public static focusEvent:FocusEvent=new FocusEvent(FocusEvent.FOCUS_IN);
 
