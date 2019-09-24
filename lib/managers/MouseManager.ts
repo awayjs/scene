@@ -800,7 +800,13 @@ export class MouseManager {
         this.updateColliders(event);
 
         //console.log("this._iCollisionEntity", this._iCollisionEntity);
+        if(this._isTouch){
+            event.preventDefault();
+            for(var key in this._containerLookup){
+                this._containerLookup[key].focus();
 
+            }
+        }
         this.queueDispatch(this._mouseDown, event, this._iCollision);
     }
 
@@ -812,6 +818,13 @@ export class MouseManager {
 
         this.updateColliders(event);
 
+        if(this._isTouch){
+            event.preventDefault();
+            for(var key in this._containerLookup){
+                this._containerLookup[key].focus();
+
+            }
+        }
         this.queueDispatch(this._mouseUp, event, this._iCollision);
     }
 
