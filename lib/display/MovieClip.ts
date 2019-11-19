@@ -605,9 +605,9 @@ export class MovieClip extends Sprite
 		//if events is null, this is as2, if it is not null, this is as3web
 
 		MovieClip._skipAdvance = true;
-		if(events!=null){
-			(<any>this.adapter).dispatchEvent(events[0]);
-		}
+		//if(events!=null){
+		//	(<any>this.adapter).dispatchEvent(events[0]);
+		//}
 		//if(this._timeline && this._timeline.numFrames>0)
 		this.advanceFrame(events);
 
@@ -727,7 +727,8 @@ export class MovieClip extends Sprite
 				(<any>child.adapter).advanceFrame(events);
 			}
 		}
-		//80pro temp this.dispatchEvent(this._enterFrame);
+		if(events)
+			(<any>this.adapter).dispatchEvent(events[0]);
 		this._skipAdvance = false;
 	}
 

@@ -24,6 +24,7 @@ export class Timeline
     private _blocked:boolean;
 	
 	public static currentInstanceName:string=null;
+	public static currentInstanceMatrix:any=null;
 	public _update_indices:number[] = [];
 	public _update_frames:number[] = [];
 	public isButton:boolean = false;
@@ -157,6 +158,7 @@ export class Timeline
 	{
 		var keyframeIdx=this.keyframe_indices[frame_idx];
 		if(this.keyframe_firstframes[keyframeIdx]!=frame_idx){
+			/* temporary disabled this, because it makes problems in badIceCream:
 			var newDuration=frame_idx-this.keyframe_firstframes[keyframeIdx];
 			var newDuration2=this.keyframe_durations[keyframeIdx]-newDuration;
 			var newDurations=[];
@@ -176,6 +178,8 @@ export class Timeline
 			this.frame_recipe=new Uint32Array(newFrameRecipe);
 			this.init();
 			keyframeIdx++;
+			*/
+			
 
 		}
 		if(!this._framescripts[keyframeIdx]){
@@ -291,8 +295,11 @@ export class Timeline
 			if(placeObjectTag && ((<any>placeObjectTag).name)){
 				Timeline.currentInstanceName=(<any>placeObjectTag).name;
 			}
+			if(placeObjectTag && ((<any>placeObjectTag).matrix)){
+				Timeline.currentInstanceMatrix=(<any>placeObjectTag).matrix;
+			}
 		}
-		return (<IDisplayObjectAdapter> asset.adapter).clone().adaptee;
+		return (<any> asset.adapter).clone(false).adaptee;
 	}
 	public initChildInstance(child:DisplayObject, id:string)
 	{
@@ -305,7 +312,7 @@ export class Timeline
         if(placeObjectTag && ((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length>0))){
             (<any>child.adapter).placeObjectTag=placeObjectTag;
             (<any>child.adapter).initEvents=this.potentialPrototypesInitEventsMap[id];
-        }
+		}
     }
     
 	public registerPotentialChild(prototype:IAsset) : number
@@ -467,7 +474,7 @@ export class Timeline
                             if (!(<IDisplayObjectAdapter> child.adapter).isColorTransformByScript()) {
                                 child.transform.clearColorTransform();
                             }
-                            if (!(<IDisplayObjectAdapter> child.adapter).isBlockedByScript()) {
+                            if (!(<IDisplayObjectAdapter> child.adapter).isBlockedByScript() && !(<any>child).noTimelineUpdate) {
                                 child.transform.clearMatrix3D();
                                 //this.name="";
                                 child.masks = null;
@@ -654,6 +661,10 @@ export class Timeline
 		var end_index:number = start_index + this.command_length_stream[frame_command_idx];
 		for (var i:number = start_index; i < end_index; i++) {
 			idx = i*2;
+			if(typeof this.add_child_stream[idx]==="undefined"){
+				console.log("ERROR in timeline. could not find child-id in child_stream for idx", idx, this.add_child_stream);
+				continue;
+			}
 			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx], this.add_child_stream[idx]+"#"+sourceMovieClip.currentFrameIndex);
 			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, this.add_child_stream[idx]);//this.add_child_stream[idx]);
 		}
@@ -716,7 +727,7 @@ export class Timeline
 
 	public update_mtx_all(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
-		if (this._blocked)
+		if (this._blocked || (<any>child).noTimelineUpdate)
 			return;
 
 		i *= 6;
@@ -796,7 +807,7 @@ export class Timeline
 
 	public update_mtx_scale_rot(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
-		if (this._blocked)
+		if (this._blocked || (<any>child).noTimelineUpdate)
 			return;
 
 		i *= 4;
@@ -814,7 +825,7 @@ export class Timeline
 
 	public update_mtx_pos(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
-		if (this._blocked)
+		if (this._blocked || (<any>child).noTimelineUpdate)
 			return;
 
 		i *= 2;

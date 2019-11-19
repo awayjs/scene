@@ -1,4 +1,4 @@
-import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform} from "@awayjs/core";
+import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform, Box} from "@awayjs/core";
 
 import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
 
@@ -11,7 +11,7 @@ import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 import {Scene} from "../Scene";
 import {Camera} from "../display/Camera";
 
-import { View } from '@awayjs/view';
+import { View, PickGroup } from '@awayjs/view';
 
 /**
  * 
@@ -207,16 +207,22 @@ export class SceneImage2D extends BitmapImage2D
 			if (!SceneImage2D._renderer)
 				this.createRenderer();
 
-			var oldParent=source.parent;
-			var oldx=source.x;
-			var oldy=source.y;
-			var oldVisible=source.visible;
-			var oldColorTransform=source.transform.colorTransform.clone();
-			SceneImage2D._root.transform.scaleTo(1 , -1, 1);
+			var oldParent:DisplayObjectContainer=source.parent;
+			var oldChildIdx:number=oldParent?oldParent.getChildIndex(source):0;
+			var oldx:number=source.x;
+			var oldy:number=source.y;
+			var oldVisible:boolean=source.visible;
+			var oldColorTransform:ColorTransform=source.transform.colorTransform.clone();
+			SceneImage2D._root.transform.scaleTo(1, -1, 1);
 			SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
 			if (matrix) {
-				SceneImage2D._root.transform.scaleTo(matrix.a, matrix.d, 1);
-				SceneImage2D._root.transform.moveTo(matrix.tx, matrix.ty, 0);
+				SceneImage2D._root.transform.scaleTo(matrix.a, -matrix.d, 1);
+				var offsetY:number=0;
+				if((<any>source.adapter).stage){
+					var box:Box = PickGroup.getInstance((<any>source.adapter).stage.view).getBoundsPicker(source.partition).getBoxBounds(source);
+					offsetY=(box == null)? 0 : box.height;
+				}
+				SceneImage2D._root.transform.moveTo(matrix.tx, matrix.ty+offsetY, 0);
 			}
 			//root.transform.colorTransform = colorTransform;
 
@@ -244,7 +250,14 @@ export class SceneImage2D extends BitmapImage2D
 			SceneImage2D._renderer.render();
 
 			if(oldParent){
-				oldParent.addChild(source);
+				if(oldParent.adapter && oldParent.adapter!=oldParent &&
+					source.adapter && source.adapter!=source){
+					(<any>oldParent.adapter).addChildAt(source.adapter, oldChildIdx);
+
+				}
+				else{
+					oldParent.addChildAt(source, oldChildIdx);
+				}
 				
 			}
 			source.x=oldx;

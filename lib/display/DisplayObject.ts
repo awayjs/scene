@@ -1705,8 +1705,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public reset():void
 	{
 		this.visible = true;
-
-		this._transform.clearMatrix3D();
+		if(!(<any>this).noTimelineUpdate)
+			this._transform.clearMatrix3D();
 
 		this._transform.clearColorTransform();
 
