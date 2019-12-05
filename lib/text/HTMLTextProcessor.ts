@@ -274,7 +274,7 @@ export class HTMLTextProcessor
 			textProps.multiline=doc.firstChild.childNodes.length>0;
 			var startNode:any=doc;
 			if(doc.firstChild.childNodes.length>0){
-				if(doc.firstChild.childNodes[0].localName=="parsererror"){
+				if(doc.firstChild.childNodes[0].nodeName=="parsererror"){
 					startNode=doc.firstChild.childNodes[1];
 					//console.log("html errored",  doc.firstChild);
 				}

@@ -34,7 +34,7 @@ export class FNTGenerator
 
         //create the view
         this._root = new DisplayObjectContainer()
-        this._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(this._root));
+        this._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(this._root));
         this._root.partition = this._renderer.partition;
 
         //setup the projection
@@ -43,8 +43,6 @@ export class FNTGenerator
 		this._renderer.view.projection.transform.moveTo(0, 0, -1000);
 		this._renderer.view.projection.transform.lookAt(new Vector3D());
         
-        //hide the html container
-        this._renderer.view.stage.container.style.display = "NONE";
         
 
 		this._renderer.renderableSorter = null;//new RenderableSort2D();
@@ -74,31 +72,30 @@ export class FNTGenerator
                     // fntRenderSprite.x = -maxSize/2;
                     // fntRenderSprite.y = -maxSize/2;
                     this._renderer.view.projection.scale = 1000/maxSize;
-                                          
+
+                    var mipmapSelector = 0;
+                    var bitmapSize = (this._stage.glVersion == 1)? maxSize*2 : maxSize;
+                    outputBitmap = new BitmapImage2D(bitmapSize, bitmapSize, true, 0, true);
+
+                    outputBitmaps.push(outputBitmap);
+                    (<TesselatedFontTable>font.font_styles[i]).addFNTChannel(outputBitmap);
 
                     while(mipSize >= 1) {
 
-                        this._renderer.view.width = mipSize/pixelRatio;
-                        this._renderer.view.height = mipSize/pixelRatio;
-                        this._renderer.view.backgroundAlpha = 0;
-                        this._renderer.view.backgroundColor = ColorUtils.ARGBtoFloat32(1, (mipSize/maxSize)*255, 0,0);
-                        
-                        var mipBitmap:BitmapImage2D = new BitmapImage2D(mipSize, mipSize, true, 0, true);
-
-                        this._renderer.queueSnapshot(mipBitmap);
+                        this._renderer.view.backgroundAlpha = 0;//1;
+                        this._renderer.view.backgroundColor = 0;//ColorUtils.ARGBtoFloat32(1, (mipSize/maxSize)*255, 0,0);
+                    
+                        this._renderer.view.target = outputBitmap;
+                        this._renderer.render(true, 0, mipmapSelector);
                         //this._scene.view.stage.context.configureBackBuffer(mipSize/2, mipSize/2, 0, true);
-                        this._renderer.render();
 
-                        if (mipSize == maxSize) {
-                            outputBitmap = mipBitmap
-                            outputBitmaps.push(outputBitmap);
-                            (<TesselatedFontTable>font.font_styles[i]).addFNTChannel(outputBitmap);
-                        } else {
-                            outputBitmap.addMipLevel(mipBitmap);
-                        }
+                        //mipmapped framebuffers are not possible with WebGL1
+                        if (this._stage.glVersion == 1)
+                            break;
 
                         //outputBitmaps.push(mipBitmap);
                         mipSize *= 0.5;
+                        mipmapSelector++;
                     }
                 }
                 //this._bitmapFontTable.addMaterial(mat);

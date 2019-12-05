@@ -1,4 +1,4 @@
-import {Matrix, AssetBase, Point, Rectangle} from "@awayjs/core";
+import {Matrix, AssetBase, Point, Rectangle, ColorTransform, ColorUtils} from "@awayjs/core";
 
 import {ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D} from "@awayjs/stage";
 
@@ -188,7 +188,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	public generateFNTTextures(padding:number, fontSize:number, texSize:number):Shape[]{
 		console.log("generateFNTTextures");
 		if(fontSize){
-			this._fntSizeLimit=fontSize;
+			this._fntSizeLimit=fontSize * 0.5; //why half?
 			this.initFontSize(fontSize);
 
 		}
@@ -349,7 +349,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			}		
 		}
 		
-		this.fntSizeLimit=size_multiply*this._font_em_size;	
+		this._fntSizeLimit=size_multiply*this._font_em_size*0.5; //why half?	
 
 		// collect the glyph-data:
 
@@ -419,7 +419,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			var sampler:ImageSampler = new ImageSampler();
 			shape.style = new Style();
 
-			var color=0xffffff;			
+			var color=0xFFFFFF;			
 			var alpha=1;
 			var obj=Graphics.get_material_for_color(color, alpha);
 
@@ -672,25 +672,29 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 		var useFNT:boolean=this._fntSizeLimit>=0 && (this._fntSizeLimit==0 || this._fntSizeLimit>=format.size);
 		var textShape:TextShape=tf.getTextShapeForIdentifierAndFormat(format.color.toString()+useFNT.toString()+"0", format);
-
+		
 		var fntTextShapesByChannel:any={};
 		var fntSelectedTextShapesByChannel:any={};
-		var currentFNTTextShapeMap:any;
+		//var currentFNTTextShapeMap:any;
 
+		var argb:number[] = ColorUtils.float32ColorToARGB(format.color);
 		var mat:MethodMaterial = new MethodMaterial(this._fnt_channels[0]);
+		mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
 		mat.bothSides = true;
 		mat.alphaBlending = true;
+		mat.alphaPremultiplied = true;
 		mat.useColorTransform = true;
 		mat.style.sampler = new ImageSampler(false, true, true);
 		textShape.fntMaterial=useFNT?mat:null;
-		fntTextShapesByChannel[0]=textShape;
+		fntTextShapesByChannel[format.color.toString()+useFNT.toString()+"0"]=textShape;
 		var newFormat:TextFormat=format.clone();
 		newFormat.color=0xffffff;
-		var textShapeSelected:TextShape=tf.getTextShapeForIdentifierAndFormat(newFormat.color.toString()+useFNT.toString()+"0", newFormat);
-		fntSelectedTextShapesByChannel[0]=textShapeSelected;
+		var textShapeSelected:TextShape=tf.getTextShapeForIdentifierAndFormat(useFNT.toString()+"0", newFormat);
+		fntSelectedTextShapesByChannel[useFNT.toString()+"0"]=textShapeSelected;
 		var mat:MethodMaterial = new MethodMaterial(this._fnt_channels[0]);
 		mat.bothSides = true;
 		mat.alphaBlending = true;
+		mat.alphaPremultiplied = true;
 		mat.useColorTransform = true;
 		mat.style.sampler = new ImageSampler(false, true, true);
 		textShapeSelected.fntMaterial=useFNT?mat:null;
@@ -754,18 +758,20 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 						if(useFNT){
 							// the font should use fnt							
-							currentFNTTextShapeMap=(tf.isInFocus && c>=select_start && c<select_end )?fntSelectedTextShapesByChannel:fntTextShapesByChannel;
 							var curFormat=currentTextShape.format;
-							var currentTextShapeFNT=currentFNTTextShapeMap[charGlyph.fnt_channel];
+							var currentTextShapeFNT=(tf.isInFocus && c>=select_start && c<select_end )?fntSelectedTextShapesByChannel[useFNT.toString()+charGlyph.fnt_channel] : fntTextShapesByChannel[curFormat.color.toString()+useFNT.toString()+charGlyph.fnt_channel];
 							if(!currentTextShapeFNT){								
 								var newtextShape:TextShape=tf.getTextShapeForIdentifierAndFormat(curFormat.color.toString()+useFNT.toString()+charGlyph.fnt_channel.toString(), curFormat);
+								var argb:number[] = ColorUtils.float32ColorToARGB(curFormat.color);
 								var mat:MethodMaterial = new MethodMaterial(this._fnt_channels[charGlyph.fnt_channel]);
+								mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
 								mat.bothSides = true;
 								mat.alphaBlending = true;
+								mat.alphaPremultiplied = true;
 								mat.useColorTransform = true;
 								mat.style.sampler = new ImageSampler(false, true, true);
 								newtextShape.fntMaterial=mat;
-								currentFNTTextShapeMap[charGlyph.fnt_channel]=newtextShape;
+								fntTextShapesByChannel[curFormat.color.toString()+useFNT.toString()+charGlyph.fnt_channel]=newtextShape;
 								currentTextShapeFNT=newtextShape;
 							}
 							var x1:number=x+((charGlyph.char_width * size_multiply)*charGlyph.fnt_rect.x);
