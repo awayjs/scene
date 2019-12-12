@@ -287,6 +287,7 @@ export class SceneImage2D extends BitmapImage2D
 			}
 			//root.transform.colorTransform = colorTransform;
 
+			SceneImage2D._renderer.disableClear = true;
 			SceneImage2D._renderer.view.target = this;
 			SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
 
