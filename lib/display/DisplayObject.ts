@@ -2157,7 +2157,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._maskOwners = null;
 	}
 	
-	private _invalidateMaterial():void
+	public _invalidateMaterial():void
 	{
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
 	}

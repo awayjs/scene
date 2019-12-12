@@ -128,6 +128,7 @@ export class Billboard extends DisplayObjectContainer
 			this._material.addEventListener(MaterialEvent.INVALIDATE_TEXTURES, this._onInvalidateTextureDelegate);
 
 		this._updateDimensions();
+		this._invalidateMaterial();
 	}
 
 	
