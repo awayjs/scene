@@ -2,7 +2,7 @@ import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProject
 
 import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
 
-import {DefaultRenderer, RenderGroup, RendererType} from "@awayjs/renderer";
+import {DefaultRenderer, RenderGroup, RendererType, Style} from "@awayjs/renderer";
 
 import {DisplayObject} from "../display/DisplayObject";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
@@ -12,6 +12,8 @@ import {Scene} from "../Scene";
 import {Camera} from "../display/Camera";
 
 import { View, PickGroup } from '@awayjs/view';
+import { MethodMaterial } from '@awayjs/materials';
+import { Billboard } from '../display/Billboard';
 
 /**
  * 
@@ -21,7 +23,10 @@ export class SceneImage2D extends BitmapImage2D
 	public static assetType:string = "[image SceneImage2D]";
 
 	private static _renderer:DefaultRenderer;
+	private static _billboardRenderer:DefaultRenderer;
 	private static _root:DisplayObjectContainer;
+	private static _billboardRoot:DisplayObjectContainer;
+	private static _billboard:Billboard;
 
 	private _fillColor:number;
 	private _stage:Stage;
@@ -81,7 +86,7 @@ export class SceneImage2D extends BitmapImage2D
 
         //create the view
         SceneImage2D._root = new DisplayObjectContainer()
-        SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, null, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._root));
+        SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._root));
         SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
 		//setup the projection
@@ -90,13 +95,45 @@ export class SceneImage2D extends BitmapImage2D
         SceneImage2D._renderer.view.projection.transform = new Transform();
 		SceneImage2D._renderer.view.projection.transform.moveTo(0, 0, -1000);
 		SceneImage2D._renderer.view.projection.transform.lookAt(new Vector3D());
-        
-        //hide the html container
-        SceneImage2D._renderer.view.stage.container.style.display = "NONE";
-        
+
 
 		SceneImage2D._renderer.renderableSorter = null;//new RenderableSort2D();
 	
+	}
+
+	private createBillboardRenderer():void
+	{
+		//create the projection
+		var projection = new PerspectiveProjection();
+		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
+		projection.originX = -1;
+		projection.originY = 1;
+
+		//create the view
+		SceneImage2D._billboardRoot = new DisplayObjectContainer()
+		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._billboardRoot));
+		SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
+
+		//setup the projection
+		SceneImage2D._billboardRenderer.view.backgroundAlpha = 0;
+		SceneImage2D._billboardRenderer.view.projection = projection;
+		SceneImage2D._billboardRenderer.view.projection.transform = new Transform();
+		SceneImage2D._billboardRenderer.view.projection.transform.moveTo(0, 0, -1000);
+		SceneImage2D._billboardRenderer.view.projection.transform.lookAt(new Vector3D());
+
+
+		SceneImage2D._billboardRenderer.renderableSorter = null;//new RenderableSort2D();
+		
+		var mat:MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, false, 0x0));
+		//mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
+		mat.bothSides = true;
+		mat.alphaBlending = true;
+		mat.alphaPremultiplied = true;
+		
+		SceneImage2D._billboard = new Billboard(mat);
+		SceneImage2D._billboard.style = new Style();
+
+		SceneImage2D._billboardRoot.addChild(SceneImage2D._billboard);
 	}
 
 	/**
@@ -123,6 +160,30 @@ export class SceneImage2D extends BitmapImage2D
 		super.dispose();
 
 		//todo
+	}
+
+	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point);
+	public copyPixels(source:HTMLElement, sourceRect:Rectangle, destPoint:Point);
+	public copyPixels(source:any, sourceRect:Rectangle, destPoint:Point):void
+	{
+		if (source instanceof BitmapImage2D) {
+			if (!SceneImage2D._billboardRenderer)
+				this.createBillboardRenderer();
+
+			SceneImage2D._billboardRenderer.disableClear = true;
+			SceneImage2D._billboardRenderer.view.target = this;
+			SceneImage2D._billboardRenderer.view.projection.scale = 1000/this.rect.height;
+
+			SceneImage2D._billboard.material.style.image = source;
+			SceneImage2D._billboardRoot.transform.scaleTo(1, -1, 1);
+			SceneImage2D._billboardRoot.transform.moveTo(destPoint.x, this.rect.height-destPoint.y, 0);
+
+			//render
+			SceneImage2D._billboardRenderer.render();
+
+			return;
+		}
+		super.copyPixels(source, sourceRect, destPoint);
 	}
 
 	/**
@@ -226,12 +287,8 @@ export class SceneImage2D extends BitmapImage2D
 			}
 			//root.transform.colorTransform = colorTransform;
 
-			var pixelRatio:number = SceneImage2D._renderer.view.stage.context.pixelRatio;
-			SceneImage2D._renderer.view.width = this.rect.width/pixelRatio;
-			SceneImage2D._renderer.view.height = this.rect.height/pixelRatio;
+			SceneImage2D._renderer.view.target = this;
 			SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
-			SceneImage2D._renderer.view.backgroundAlpha = this._transparent? ( this._fillColor & 0xff000000 ) >>> 24 : 1;
-			SceneImage2D._renderer.view.backgroundColor = this._fillColor & 0xffffff;
 
 			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
 			SceneImage2D._root.addChild(source);
@@ -242,7 +299,6 @@ export class SceneImage2D extends BitmapImage2D
 			source.transform.colorTransform = null;
 			//save snapshot if unlocked
 			//if (!this._locked)
-			SceneImage2D._renderer.queueSnapshot(this);
 			//SceneImage2D.scene.view.target=this;
 			//SceneImage2D.scene.renderer.disableClear = !this._locked;
 
@@ -266,6 +322,28 @@ export class SceneImage2D extends BitmapImage2D
 			source.transform.colorTransform = oldColorTransform;
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
+
+			return;
+		} else if (source instanceof BitmapImage2D || source instanceof SceneImage2D) {
+			if (!SceneImage2D._billboardRenderer)
+				this.createBillboardRenderer();
+
+			SceneImage2D._billboardRenderer.disableClear = true;
+			SceneImage2D._billboardRenderer.view.target = this;
+			SceneImage2D._billboardRenderer.view.projection.scale = 1000/this.rect.height;
+
+			SceneImage2D._billboard.material.style.image = source;
+
+			if (matrix) {
+				SceneImage2D._billboardRoot.transform.scaleTo(matrix.a, -matrix.d, 1);
+				SceneImage2D._billboardRoot.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+			} else {
+				SceneImage2D._billboardRoot.transform.scaleTo(1, -1, 1);
+				SceneImage2D._billboardRoot.transform.moveTo(0, this.rect.height,0);
+			}
+
+			//render
+			SceneImage2D._billboardRenderer.render();
 
 			return;
 		}
