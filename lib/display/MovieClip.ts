@@ -1,45 +1,43 @@
-import {AssetEvent,IAsset, WaveAudio, AudioManager} from "@awayjs/core";
+import { AssetEvent, IAsset, WaveAudio, AudioManager } from "@awayjs/core";
 
 import { PartitionBase, EntityNode } from '@awayjs/view';
 
-import {Graphics} from "@awayjs/graphics";
+import { Graphics } from "@awayjs/graphics";
 
-import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
-import {IDisplayObjectAdapter} from "../adapters/IDisplayObjectAdapter";
-import {Timeline} from "../base/Timeline";
-import {MouseEvent} from "../events/MouseEvent";
-import {FrameScriptManager} from "../managers/FrameScriptManager";
+import { IMovieClipAdapter } from "../adapters/IMovieClipAdapter";
+import { IDisplayObjectAdapter } from "../adapters/IDisplayObjectAdapter";
+import { Timeline } from "../base/Timeline";
+import { MouseEvent } from "../events/MouseEvent";
+import { FrameScriptManager } from "../managers/FrameScriptManager";
 
-import {DisplayObject} from "./DisplayObject";
-import {Sprite} from "./Sprite";
-import {TextField} from "./TextField";
+import { DisplayObject } from "./DisplayObject";
+import { Sprite } from "./Sprite";
+import { TextField } from "./TextField";
 
 
-export class MovieClip extends Sprite
-{
-	public static mcForConstructor:MovieClip;
+export class MovieClip extends Sprite {
+	public static mcForConstructor: MovieClip;
 	//todo: this 3 are no longer used (?)
-	public static avm1ScriptQueue:MovieClip[]=[];
-	public static avm1ScriptQueueScripts:any[]=[];
-	public static avm1LoadedActions:any[]=[];
+	public static avm1ScriptQueue: MovieClip[] = [];
+	public static avm1ScriptQueueScripts: any[] = [];
+	public static avm1LoadedActions: any[] = [];
 
-	public static _skipAdvance:boolean;
-	
-	public timelineMC:boolean;
-	
-	public doingSwap:boolean=false;
-	public preventScript:boolean=false;
+	public static _skipAdvance: boolean;
 
-	private static _movieClips:Array<MovieClip> = new Array<MovieClip>();
-	
-	private static _activeSounds:any = {};
+	public timelineMC: boolean;
 
-	public static assetType:string = "[asset MovieClip]";
+	public doingSwap: boolean = false;
+	public preventScript: boolean = false;
 
-	public static getNewMovieClip(timeline:Timeline = null):MovieClip
-	{
+	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
+
+	private static _activeSounds: any = {};
+
+	public static assetType: string = "[asset MovieClip]";
+
+	public static getNewMovieClip(timeline: Timeline = null): MovieClip {
 		if (MovieClip._movieClips.length) {
-			var movieClip:MovieClip = MovieClip._movieClips.pop()
+			var movieClip: MovieClip = MovieClip._movieClips.pop()
 			movieClip.timeline = timeline || new Timeline();
 			movieClip.graphics = Graphics.getGraphics();
 
@@ -49,174 +47,193 @@ export class MovieClip extends Sprite
 		return new MovieClip(timeline);
 	}
 
-	public static clearPool()
-	{
-		MovieClip._movieClips=[];
+	public static clearPool() {
+		MovieClip._movieClips = [];
 	}
-	private _timeline:Timeline;
+	private _timeline: Timeline;
 
 	// buttonMode specifies if the mc has any mouse-listeners attached that should trigger showing the hand-cursor
 	// if this is set once to true; it will never get set back to false again.
-	private _buttonMode:boolean = false;
+	private _buttonMode: boolean = false;
 
 	// isButton specifies if the mc-timeline is actually considered a button-timeline
-	private _isButton:boolean = false;
+	private _isButton: boolean = false;
 
-	private _onMouseOver:(event:MouseEvent) => void;
-	private _onMouseOut:(event:MouseEvent) => void;
-	private _onDragOver:(event:MouseEvent) => void;
-	private _onDragOut:(event:MouseEvent) => void;
-	private _onMouseDown:(event:MouseEvent) => void;
-	private _onMouseUp:(event:MouseEvent) => void;
+	private _onMouseOver: (event: MouseEvent) => void;
+	private _onMouseOut: (event: MouseEvent) => void;
+	private _onDragOver: (event: MouseEvent) => void;
+	private _onDragOut: (event: MouseEvent) => void;
+	private _onMouseDown: (event: MouseEvent) => void;
+	private _onMouseUp: (event: MouseEvent) => void;
 
-	private _time:number = 0;// the current time inside the animation
-	private _currentFrameIndex:number = -1;// the current frame
+	private _time: number = 0;// the current time inside the animation
+	private _currentFrameIndex: number = -1;// the current frame
 
-	private _isPlaying:boolean = true;// false if paused or stopped
+	private _isPlaying: boolean = true;// false if paused or stopped
 
 	// not sure if needed
-	private _enterFrame:AssetEvent;
-	private _skipAdvance : boolean;
-	private _isInit:boolean = true;
+	private _enterFrame: AssetEvent;
+	private _skipAdvance: boolean;
+	private _isInit: boolean = true;
 
-	private _potentialInstances:any = {};
-	private _depth_sessionIDs:Object = {};
-	private _sessionID_childs:Object = {};
-	private _sounds:Object = {};
+	private _potentialInstances: any = {};
+	private _depth_sessionIDs: Object = {};
+	private _sessionID_childs: Object = {};
+	private _sounds: Object = {};
 
-	public _useHandCursor:boolean;
-	public onLoadedAction:any=null;
-    public onCustomConstructor:any=null;
-    private _parentSoundVolume:number;
-    
-	constructor(timeline:Timeline = null)
-	{
+	public _useHandCursor: boolean;
+	public onLoadedAction: any = null;
+	public onCustomConstructor: any = null;
+	private _parentSoundVolume: number;
+
+	public static movieClipSoundsManagerClass = null;
+
+	private _soundStreams: any;
+	public initSoundStream(streamInfo: any, maxFrameNum:number) {
+		if (!this._soundStreams) {
+			this._soundStreams = new MovieClip.movieClipSoundsManagerClass(this);
+		}
+		this._soundStreams.initSoundStream(streamInfo, maxFrameNum);
+	}
+
+	public addSoundStreamBlock(frameNum: number, streamBlock: any) {
+		if (!this._soundStreams) {
+			this._soundStreams = new MovieClip.movieClipSoundsManagerClass(this);
+		}
+		this._soundStreams.addSoundStreamBlock(frameNum, streamBlock);
+	}
+
+	private _syncSounds(frameNum: number) {
+		if (this._soundStreams) {
+			this._soundStreams.syncSounds(frameNum, this._isPlaying);
+		}
+	}
+	constructor(timeline: Timeline = null) {
 		super();
 
-		this.timelineMC=false;
-        this._soundVolume=1;
-        this._parentSoundVolume=1;
-		this.doingSwap=false;
-		this._isButton=false;
-		this._buttonMode=false;
-		this._useHandCursor=true;
-		this.cursorType="pointer";
+		this.timelineMC = false;
+		this._soundVolume = 1;
+		this._parentSoundVolume = 1;
+		this.doingSwap = false;
+		this._isButton = false;
+		this._buttonMode = false;
+		this._useHandCursor = true;
+		this.cursorType = "pointer";
 		//this.debugVisible=true;
 		this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
 
 		this.inheritColorTransform = true;
 
-		this._onMouseOver = (event:MouseEvent) => {
-            if(this.buttonEnabled)
-                this.currentFrameIndex = 1;
-            else
-                this.currentFrameIndex = 0;
+		this._onMouseOver = (event: MouseEvent) => {
+			if (this.buttonEnabled)
+				this.currentFrameIndex = 1;
+			else
+				this.currentFrameIndex = 0;
 		};
-		this._onMouseOut = (event:MouseEvent) => {
+		this._onMouseOut = (event: MouseEvent) => {
 			this.currentFrameIndex = 0;
 		};
-		this._onMouseDown = (event:MouseEvent) => {
-            if(this.buttonEnabled)
-                this.currentFrameIndex = 2;
-            else
-                this.currentFrameIndex = 0;
+		this._onMouseDown = (event: MouseEvent) => {
+			if (this.buttonEnabled)
+				this.currentFrameIndex = 2;
+			else
+				this.currentFrameIndex = 0;
 		};
-		this._onMouseUp = (event:MouseEvent) => {
-			this.currentFrameIndex = this.currentFrameIndex == 0? 0 : 1;
+		this._onMouseUp = (event: MouseEvent) => {
+			this.currentFrameIndex = this.currentFrameIndex == 0 ? 0 : 1;
 		};
-		this._onDragOver = (event:MouseEvent) => {
-            if(this.buttonEnabled)
-                this.currentFrameIndex = 2;
-            else
-                this.currentFrameIndex = 0;
+		this._onDragOver = (event: MouseEvent) => {
+			if (this.buttonEnabled)
+				this.currentFrameIndex = 2;
+			else
+				this.currentFrameIndex = 0;
 		};
-		this._onDragOut = (event:MouseEvent) => {
+		this._onDragOut = (event: MouseEvent) => {
 			this.currentFrameIndex = 1;
 		};
-        
+
 		this._timeline = timeline || new Timeline();
 	}
-	public buttonEnabled:boolean=true;
+	public buttonEnabled: boolean = true;
 
-	public startSound(id:any, sound:WaveAudio, loopsToPlay:number){
-        if(this._sounds[id]){
-            this._sounds[id].stop();
-        }
-        sound.loopsToPlay=loopsToPlay;
-        sound.play(0,false);
-		this._sounds[id]=sound;
-		if(!MovieClip._activeSounds[id])
-			MovieClip._activeSounds[id]=[];
+	public startSound(id: any, sound: WaveAudio, loopsToPlay: number) {
+		if (this._sounds[id]) {
+			this._sounds[id].stop();
+		}
+		sound.loopsToPlay = loopsToPlay;
+		sound.play(0, false);
+		this._sounds[id] = sound;
+		if (!MovieClip._activeSounds[id])
+			MovieClip._activeSounds[id] = [];
 		MovieClip._activeSounds[id].push(sound);
-    }
-	public stopSounds(soundID:any=null){
-        if(soundID){
-			if(this._sounds[soundID]){
-            	this._sounds[soundID].stop();
-                delete this._sounds[soundID];
-            }
-        }
-        else{
-            for (var key in this._sounds){
-                this._sounds[key].stop();
-            }
-            this._sounds={};
-        }
-		var len:number = this._children.length;
-		var child:DisplayObject;
-		for (var i:number = 0; i < len; ++i) {
+	}
+	public stopSounds(soundID: any = null) {
+		if (soundID) {
+			if (this._sounds[soundID]) {
+				this._sounds[soundID].stop();
+				delete this._sounds[soundID];
+			}
+		}
+		else {
+			for (var key in this._sounds) {
+				this._sounds[key].stop();
+			}
+			this._sounds = {};
+		}
+		var len: number = this._children.length;
+		var child: DisplayObject;
+		for (var i: number = 0; i < len; ++i) {
 			child = this._children[i];
 			if (child.isAsset(MovieClip))
-				(<MovieClip> child).stopSounds(soundID);
+				(<MovieClip>child).stopSounds(soundID);
 		}
-		MovieClip._activeSounds={};
-    }
-    private _soundVolume:number;
-	public get soundVolume():number{
-        return this._soundVolume;
-    }
-	public set soundVolume(value:number){
-        if(this._soundVolume==value){
-            return;
-        }
-        this._soundVolume=value;
-        for (var key in this._sounds){
-            this._sounds[key].volume=value;
-        }
-		var len:number = this._children.length;
-		var child:DisplayObject;
-		for (var i:number = 0; i < len; ++i) {
+		MovieClip._activeSounds = {};
+	}
+	private _soundVolume: number;
+	public get soundVolume(): number {
+		return this._soundVolume;
+	}
+	public set soundVolume(value: number) {
+		if (this._soundVolume == value) {
+			return;
+		}
+		this._soundVolume = value;
+		for (var key in this._sounds) {
+			this._sounds[key].volume = value;
+		}
+		var len: number = this._children.length;
+		var child: DisplayObject;
+		for (var i: number = 0; i < len; ++i) {
 			child = this._children[i];
 			if (child.isAsset(MovieClip))
-				(<MovieClip> child).soundVolume=value;
+				(<MovieClip>child).soundVolume = value;
 		}
-    }
-	public stopSound(id:number){
-        if(this._sounds[id]){
-            this._sounds[id].stop();
-            delete this._sounds[id];
+	}
+	public stopSound(id: number) {
+		if (this._sounds[id]) {
+			this._sounds[id].stop();
+			delete this._sounds[id];
 		}
-		if(MovieClip._activeSounds[id]){			
-			for(var i:number=0; i<MovieClip._activeSounds[id].length;i++){
+		if (MovieClip._activeSounds[id]) {
+			for (var i: number = 0; i < MovieClip._activeSounds[id].length; i++) {
 				MovieClip._activeSounds[id][i].stop();
 			}
 			delete MovieClip._activeSounds[id];
 		}
-    }
-	public buttonReset(){
-		if(this._isButton && !this.buttonEnabled){
+	}
+	public buttonReset() {
+		if (this._isButton && !this.buttonEnabled) {
 			this.currentFrameIndex = 0;
 		}
 	}
 
-	public getMouseCursor():string
-	{
-		if(this.name=="scene")
+	public getMouseCursor(): string {
+		if (this.name == "scene")
 			return "initial";
-		if(this._useHandCursor && (this.buttonMode)){
+		if (this._useHandCursor && (this.buttonMode)) {
 			return this.cursorType;
 		}
-        return "initial";
+		return "initial";
         /*
 		var cursorName:string;
 		var parent:DisplayObject=this.parent;
@@ -235,29 +252,25 @@ export class MovieClip extends Sprite
         return "initial";
         */
 	}
-	public registerScriptObject(child:DisplayObject):void
-	{
-		this[child.name]=child;
+	public registerScriptObject(child: DisplayObject): void {
+		this[child.name] = child;
 
-		if(child.isAsset(MovieClip))
+		if (child.isAsset(MovieClip))
 			(<MovieClip>child).removeButtonListeners();
 	}
-	public unregisterScriptObject(child:DisplayObject):void
-	{
+	public unregisterScriptObject(child: DisplayObject): void {
 		delete this[child.name];
 
-		if(child.isAsset(MovieClip))
+		if (child.isAsset(MovieClip))
 			(<MovieClip>child).removeButtonListeners();
 	}
-	public dispose():void
-	{
+	public dispose(): void {
 		this.disposeValues();
 
 		MovieClip._movieClips.push(this);
 	}
 
-	public disposeValues():void
-	{
+	public disposeValues(): void {
 		super.disposeValues();
 
 		this._potentialInstances = {};
@@ -267,15 +280,14 @@ export class MovieClip extends Sprite
 		this._timeline = null;
 	}
 
-	public reset_textclones():void
-	{
-		if(this.timeline) {
+	public reset_textclones(): void {
+		if (this.timeline) {
 			//var len:number = this._potentialInstances.length;
 			for (var key in this._potentialInstances) {
 				if (this._potentialInstances[key] != null) {
-					if (this._potentialInstances[key].isAsset(TextField)){
+					if (this._potentialInstances[key].isAsset(TextField)) {
 						(<TextField>this._potentialInstances[key]).text = (<TextField>this.timeline.getPotentialChildPrototype(parseInt(key))).text;
-                    }
+					}
 					else if (this._potentialInstances[key].isAsset(MovieClip))
 						(<MovieClip>this._potentialInstances[key]).reset_textclones();
 				}
@@ -283,46 +295,36 @@ export class MovieClip extends Sprite
 		}
 	}
 
-	public get useHandCursor():boolean
-	{
+	public get useHandCursor(): boolean {
 		return this._useHandCursor;
 	}
-	public set useHandCursor(value:boolean)
-	{
+	public set useHandCursor(value: boolean) {
 		this._useHandCursor = value;
 	}
-	public get buttonMode():boolean
-	{
+	public get buttonMode(): boolean {
 		return this._buttonMode;
 	}
-	public set buttonMode(value:boolean)
-	{
+	public set buttonMode(value: boolean) {
 		this._buttonMode = value;
 	}
-	public get isButton():boolean
-	{
+	public get isButton(): boolean {
 		return this._isButton;
 	}
-	public set isButton(value:boolean)
-	{
+	public set isButton(value: boolean) {
 		this._isButton = value;
 	}
-	public get isInit():boolean
-	{
+	public get isInit(): boolean {
 		return this._isInit;
 	}
-	public set isInit(value:boolean)
-	{
+	public set isInit(value: boolean) {
 		this._isInit = value;
 	}
 
-	public get timeline():Timeline
-	{
+	public get timeline(): Timeline {
 		return this._timeline;
 	}
 
-	public set timeline(value:Timeline)
-	{
+	public set timeline(value: Timeline) {
 		if (this._timeline == value)
 			return;
 
@@ -334,15 +336,13 @@ export class MovieClip extends Sprite
 	/**
 	 *
 	 */
-	public loop:boolean = true;
+	public loop: boolean = true;
 
-	public get numFrames() : number
-	{
+	public get numFrames(): number {
 		return this._timeline.numFrames;
 	}
 
-	public jumpToLabel(label:string, offset:number=0):void
-	{
+	public jumpToLabel(label: string, offset: number = 0): void {
 		// the timeline.jumpTolabel will set currentFrameIndex
 		this._timeline.jumpToLabel(this, label, offset);
 	}
@@ -350,68 +350,64 @@ export class MovieClip extends Sprite
 	/**
 	 * the current index of the current active frame
 	 */
-	public constructedKeyFrameIndex:number = -1;
+	public constructedKeyFrameIndex: number = -1;
 
-	public reset(fireScripts:boolean=true):void
-	{
-		if(!this.timelineMC)
+	public reset(fireScripts: boolean = true): void {
+		if (!this.timelineMC)
 			return;
 		super.reset();
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
 		this._time = 0;
-        //this.stopSounds();
+		//this.stopSounds();
 
-		if(this._adapter)
-			(<IMovieClipAdapter> this.adapter).freeFromScript();
+		if (this._adapter)
+			(<IMovieClipAdapter>this.adapter).freeFromScript();
 
 		this.constructedKeyFrameIndex = -1;
-		for (var i:number = this.numChildren - 1; i >= 0; i--)
-            this.removeChildAt(i);
-        
-        this.graphics.clear();
+		for (var i: number = this.numChildren - 1; i >= 0; i--)
+			this.removeChildAt(i);
+
+		this.graphics.clear();
 
 
-			
-	
-		if(fireScripts){
-			var numFrames:number = this._timeline.keyframe_indices.length;
+
+
+		if (fireScripts) {
+			var numFrames: number = this._timeline.keyframe_indices.length;
 			this._isPlaying = Boolean(numFrames > 1);
 			if (numFrames) {
 				this._currentFrameIndex = 0;
 				// contruct the timeline and queue the script.
 				//if(fireScripts){
-				this._timeline.constructNextFrame(this, fireScripts&&!this.doingSwap&&!this.preventScript, true);
+				this._timeline.constructNextFrame(this, fireScripts && !this.doingSwap && !this.preventScript, true);
 				//}
 			} else {
 				this._currentFrameIndex = -1;
 			}
 		}
 		// prevents the playhead to get moved in the advance frame again:	
-		this._skipAdvance=true;
+		this._skipAdvance = true;
 
-		
+
 	}
 
 
-	public resetSessionIDs():void
-	{
+	public resetSessionIDs(): void {
 		this._depth_sessionIDs = {};
 	}
 
 	/*
 	* Setting the currentFrameIndex will move the playhead for this movieclip to the new position
 	 */
-	public get currentFrameIndex():number
-	{
+	public get currentFrameIndex(): number {
 		return this._currentFrameIndex;
 	}
 
-	public set currentFrameIndex(value:number)
-	{
-		var queue_script:boolean = true;
+	public set currentFrameIndex(value: number) {
+		var queue_script: boolean = true;
 
-		var numFrames:number = this._timeline.keyframe_indices.length;
+		var numFrames: number = this._timeline.keyframe_indices.length;
 
 		if (!numFrames)
 			return;
@@ -427,7 +423,7 @@ export class MovieClip extends Sprite
 			queue_script = false;
 		}
 
-		this._skipAdvance=false;
+		this._skipAdvance = false;
 		if (this._currentFrameIndex == value)
 			return;
 
@@ -442,8 +438,7 @@ export class MovieClip extends Sprite
 		this._timeline.gotoFrame(this, value, queue_script, false, true);
 	}
 
-	public addButtonListeners():void
-	{
+	public addButtonListeners(): void {
 		this._isButton = true;
 
 		this.stop();
@@ -458,8 +453,7 @@ export class MovieClip extends Sprite
 		this.mouseChildren = false;
 	}
 
-	public removeButtonListeners():void
-	{
+	public removeButtonListeners(): void {
 		this.removeEventListener(MouseEvent.MOUSE_OVER, this._onMouseOver);
 		this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
 		this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
@@ -468,98 +462,92 @@ export class MovieClip extends Sprite
 		this.removeEventListener(MouseEvent.DRAG_OUT, this._onDragOut);
 	}
 
-	public getChildAtSessionID(sessionID:number):DisplayObject
-	{
+	public getChildAtSessionID(sessionID: number): DisplayObject {
 		return this._sessionID_childs[sessionID];
 	}
 
-	public getSessionIDDepths():Object
-	{
+	public getSessionIDDepths(): Object {
 		return this._depth_sessionIDs;
 	}
 
-	public swapChildrenAt(index1:number, index2:number):void
-	{
-		var depth:number = this._children[index2]._depthID;
-		var child:DisplayObject = this._children[index1];
+	public swapChildrenAt(index1: number, index2: number): void {
+		var depth: number = this._children[index2]._depthID;
+		var child: DisplayObject = this._children[index1];
 
-		this.doingSwap=true;
+		this.doingSwap = true;
 		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
-        this.addChildAtDepth(child, depth);
-        this._depth_sessionIDs[depth]=child._sessionID;
-        this._depth_sessionIDs[this._children[index1]._depthID]=this._children[index2]._sessionID;
-		this.doingSwap=false;
+		this.addChildAtDepth(child, depth);
+		this._depth_sessionIDs[depth] = child._sessionID;
+		this._depth_sessionIDs[this._children[index1]._depthID] = this._children[index2]._sessionID;
+		this.doingSwap = false;
 	}
-	public swapDepths(child:DisplayObject, depth:number){
+	public swapDepths(child: DisplayObject, depth: number) {
 
-		var existingChild:DisplayObject=this.getChildAtDepth(depth);
-		var currentDepth:number=child._depthID;
-		if(currentDepth==depth){
+		var existingChild: DisplayObject = this.getChildAtDepth(depth);
+		var currentDepth: number = child._depthID;
+		if (currentDepth == depth) {
 			return;
 		}
-        delete this._depth_sessionIDs[currentDepth];
-        this._depth_sessionIDs[depth]=child._sessionID;
-		this.doingSwap=true;
+		delete this._depth_sessionIDs[currentDepth];
+		this._depth_sessionIDs[depth] = child._sessionID;
+		this.doingSwap = true;
 		super.removeChildAtDepth(currentDepth);
-		if(existingChild){
+		if (existingChild) {
 			super.removeChildAtDepth(depth);
 			super.addChildAtDepth(existingChild, currentDepth);
 		}
 		super.addChildAtDepth(child, depth);
-		this.doingSwap=false;
+		this.doingSwap = false;
 
 	}
 
-	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
-	{
+	public addChildAtDepth(child: DisplayObject, depth: number, replace: boolean = true): DisplayObject {
 		/*if(!this.doingSwap){
 			child.reset();// this takes care of transform and visibility
 		}*/
-		
-		if(!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset)){
+
+		if (!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset)) {
 			child.reset();// this takes care of transform and visibility
-			if(child.adapter && (<any>child.adapter).noReset){
-				(<any>child.adapter).noReset=false;
+			if (child.adapter && (<any>child.adapter).noReset) {
+				(<any>child.adapter).noReset = false;
 			}
 		}
 		super.addChildAtDepth(child, depth, replace);
-		
-		if(!this.doingSwap){
-			if(child.adapter!=child){
+
+		if (!this.doingSwap) {
+			if (child.adapter != child) {
 				(<IDisplayObjectAdapter>child.adapter).doInitEvents();
-				if(child.isAsset(MovieClip)){
-					   if((<MovieClip>child).onLoadedAction || (<MovieClip>child).onCustomConstructor){
-						   FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);	   
-					   }
-				   }
+				if (child.isAsset(MovieClip)) {
+					if ((<MovieClip>child).onLoadedAction || (<MovieClip>child).onCustomConstructor) {
+						FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);
+					}
+				}
 
 			}
 		}
 		return child;
 	}
 
-	public _addTimelineChildAt(child:DisplayObject, depth:number, sessionID:number):DisplayObject
-	{
+	public _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
 		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
 
 		this._sessionID_childs[sessionID] = child;
-		
-		if(child.adapter!=child && (<any>child.adapter).deleteOwnProperties){
+
+		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
 			(<any>child.adapter).deleteOwnProperties();
 		}
 
 		return this.addChildAtDepth(child, depth);
 	}
 
-	public removeChildAtInternal(index:number):DisplayObject
-	{
-		var child:DisplayObject = this._children[index];
+	public removeChildAtInternal(index: number): DisplayObject {
+		var child: DisplayObject = this._children[index];
 
-		if(!this.doingSwap){
-			if(child._adapter)
-				(<IMovieClipAdapter> child.adapter).freeFromScript();
-	
-			(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
+		if (!this.doingSwap) {
+			if (child._adapter)
+				(<IMovieClipAdapter>child.adapter).freeFromScript();
+
+			(<IMovieClipAdapter>this.adapter).unregisterScriptObject(child);
 		}
 
 		//check to make sure _depth_sessionIDs wasn't modified with a new child
@@ -568,27 +556,25 @@ export class MovieClip extends Sprite
 
 		delete this._sessionID_childs[child._sessionID];
 
-		if(!this.doingSwap){
-            child._sessionID = -1;
-        }
-        else{
-            child._sessionID = -2;
+		if (!this.doingSwap) {
+			child._sessionID = -1;
+		}
+		else {
+			child._sessionID = -2;
 
-        }
+		}
 
 		return super.removeChildAtInternal(index);
 	}
 
-	public get assetType():string
-	{
+	public get assetType(): string {
 		return MovieClip.assetType;
 	}
 
 	/**
 	 * Starts playback of animation from current position
 	 */
-	public play():void
-	{
+	public play(): void {
 		if (this._timeline.keyframe_indices.length > 1)
 			this._isPlaying = true;
 	}
@@ -596,8 +582,7 @@ export class MovieClip extends Sprite
 	/**
 	 * should be called right before the call to away3d-render.
 	 */
-	public update(events:any[]=null, dt:number=0):void
-	{
+	public update(events: any[] = null, dt: number = 0): void {
 
 		// Not used for AVM1 !!!
 		// in AVM1 this in done in the onEnter of AVMAwayStage, because we have multiple roots
@@ -630,16 +615,15 @@ export class MovieClip extends Sprite
 		//execute any disposes as a result of framescripts
 		FrameScriptManager.execute_dispose();
 
-		if(events!=null){
+		if (events != null) {
 			(<any>this.adapter).dispatchEvent(events[1]);
 		}
 	}
 
-	public getPotentialChildInstance(id:number, instanceID:string) : IAsset
-	{
-		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID==-2)
+	public getPotentialChildInstance(id: number, instanceID: string): IAsset {
+		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID == -2)
 			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id, instanceID);
-        this._timeline.initChildInstance(<DisplayObject>this._potentialInstances[id], instanceID);
+		this._timeline.initChildInstance(<DisplayObject>this._potentialInstances[id], instanceID);
 		return this._potentialInstances[id];
 	}
 
@@ -647,64 +631,59 @@ export class MovieClip extends Sprite
 	/**
 	 * Stop playback of animation and hold current position
 	 */
-	public stop():void
-	{
-        //this.stopSounds();
+	public stop(): void {
+		//this.stopSounds();
 		this._isPlaying = false;
 	}
 
-	public clone():MovieClip
-	{
-		var newInstance:MovieClip = MovieClip.getNewMovieClip(this._timeline);
+	public clone(): MovieClip {
+		var newInstance: MovieClip = MovieClip.getNewMovieClip(this._timeline);
 
 		this.copyTo(newInstance);
 
 		return newInstance;
 	}
 
-	public copyTo(movieClip:MovieClip):void
-	{
+	public copyTo(movieClip: MovieClip): void {
 		super.copyTo(movieClip);
-		movieClip.timelineMC=this.timelineMC;
+		movieClip.timelineMC = this.timelineMC;
 		movieClip.loop = this.loop;
 	}
 
-	public getScriptsForFrameConstruct():void
-	{
+	public getScriptsForFrameConstruct(): void {
 
-		if(this._skipAdvance){
+		if (this._skipAdvance) {
 			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
 		}
-		var len:number = this._children.length;
-		var child:DisplayObject;
-		for (var i:number = 0; i < len; ++i) {
+		var len: number = this._children.length;
+		var child: DisplayObject;
+		for (var i: number = 0; i < len; ++i) {
 			child = this._children[i];
 
 			if (child.isAsset(MovieClip))
-				(<MovieClip> child).getScriptsForFrameConstruct();
+				(<MovieClip>child).getScriptsForFrameConstruct();
 		}
 		this._skipAdvance = false;
 	}
-	public advanceFrame(events:any=null):void
-	{
+	public advanceFrame(events: any = null): void {
 
 		// if this._skipadvance is true, the mc has already been moving on its timeline this frame
 		// this happens for objects that have been newly added to parent
 		// they still need to queue their scripts
 
 		//if(this._timeline && this._timeline.numFrames>0)
-		if (this._timeline && this._timeline.numFrames>0 && this._isPlaying && !this._skipAdvance) {
+		if (this._timeline && this._timeline.numFrames > 0 && this._isPlaying && !this._skipAdvance) {
 			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
-				if (this.loop){
-                     // end of loop - jump to first frame.
-                     if(this._currentFrameIndex==0){
-                        // do nothing if we are already on frame 1
-                     }
-                     else{
-                        this._currentFrameIndex = 0;					
-                        this._timeline.gotoFrame(this, 0, true, true, true);
-                     }
-				}	
+				if (this.loop) {
+					// end of loop - jump to first frame.
+					if (this._currentFrameIndex == 0) {
+						// do nothing if we are already on frame 1
+					}
+					else {
+						this._currentFrameIndex = 0;
+						this._timeline.gotoFrame(this, 0, true, true, true);
+					}
+				}
 				else //end of timeline, stop playing
 					this._isPlaying = false;
 			} else { // not end - construct next frame
@@ -715,42 +694,41 @@ export class MovieClip extends Sprite
 		}
 
 		// than come the children from bottom up:
-		var child:DisplayObject;
-		for (var i:number = 0;i< this._children.length; i++) {
-			
+		var child: DisplayObject;
+		for (var i: number = 0; i < this._children.length; i++) {
+
 			child = this._children[i];
 
-			if (child && child.isAsset(MovieClip)){
-				(<MovieClip> child).advanceFrame(events);
+			if (child && child.isAsset(MovieClip)) {
+				(<MovieClip>child).advanceFrame(events);
 			}
-			if (child && child.isAsset(Sprite) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame){
+			if (child && child.isAsset(Sprite) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame) {
 				(<any>child.adapter).advanceFrame(events);
 			}
 		}
-		if(events)
+		if (events)
 			(<any>this.adapter).dispatchEvent(events[0]);
 		this._skipAdvance = false;
+		this._syncSounds(this._currentFrameIndex);
 	}
 
-// DEBUG CODE:
-	logHierarchy(depth: number = 0):void
-	{
+	// DEBUG CODE:
+	logHierarchy(depth: number = 0): void {
 		this.printHierarchyName(depth, this);
 
 		var len = this._children.length;
-		var child:DisplayObject;
-		for (var i:number = 0; i < len; i++) {
+		var child: DisplayObject;
+		for (var i: number = 0; i < len; i++) {
 			child = this._children[i];
 
 			if (child.isAsset(MovieClip))
-				(<MovieClip> child).logHierarchy(depth + 1);
+				(<MovieClip>child).logHierarchy(depth + 1);
 			else
 				this.printHierarchyName(depth + 1, child);
 		}
 	}
 
-	printHierarchyName(depth:number, target:DisplayObject):void
-	{
+	printHierarchyName(depth: number, target: DisplayObject): void {
 		var str = "";
 		for (var i = 0; i < depth; ++i)
 			str += "--";
@@ -759,15 +737,14 @@ export class MovieClip extends Sprite
 		console.log(str);
 	}
 
-	public clear():void
-	{
+	public clear(): void {
 		//clear out potential instances
 		for (var key in this._potentialInstances) {
-			var instance:IAsset = this._potentialInstances[key];
+			var instance: IAsset = this._potentialInstances[key];
 
 			//only dispose instances that are not used in script ie. do not have an instance name
 			if (instance && !instance.name) {
-				if(!instance.isAsset(Sprite)){
+				if (!instance.isAsset(Sprite)) {
 					FrameScriptManager.add_child_to_dispose(<DisplayObject>instance);
 
 				}
