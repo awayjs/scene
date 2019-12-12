@@ -274,16 +274,13 @@ export class SceneImage2D extends BitmapImage2D
 			var oldy:number=source.y;
 			var oldVisible:boolean=source.visible;
 			var oldColorTransform:ColorTransform=source.transform.colorTransform.clone();
-			SceneImage2D._root.transform.scaleTo(1, -1, 1);
-			SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
+
 			if (matrix) {
 				SceneImage2D._root.transform.scaleTo(matrix.a, -matrix.d, 1);
-				var offsetY:number=0;
-				if((<any>source.adapter).stage){
-					var box:Box = PickGroup.getInstance((<any>source.adapter).stage.view).getBoundsPicker(source.partition).getBoxBounds(source);
-					offsetY=(box == null)? 0 : box.height;
-				}
-				SceneImage2D._root.transform.moveTo(matrix.tx, matrix.ty+offsetY, 0);
+				SceneImage2D._root.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+			} else {
+				SceneImage2D._root.transform.scaleTo(1, -1, 1);
+				SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
 			}
 			//root.transform.colorTransform = colorTransform;
 
