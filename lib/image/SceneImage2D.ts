@@ -28,9 +28,6 @@ export class SceneImage2D extends BitmapImage2D
 	private static _billboardRoot:DisplayObjectContainer;
 	private static _billboard:Billboard;
 
-	private _fillColor:number;
-	private _stage:Stage;
-
 	/**
 	 *
 	 * @returns {string}
@@ -70,10 +67,7 @@ export class SceneImage2D extends BitmapImage2D
 	 */
 	constructor(width:number, height:number, transparent:boolean=true, fillColor:number=0xffffffff, powerOfTwo:boolean = true, stage:Stage = null)
 	{
-		super(width, height, transparent, fillColor, powerOfTwo);
-
-		this._fillColor = fillColor;
-		this._stage = stage;
+		super(width, height, transparent, fillColor, powerOfTwo, stage);
 	}
 
 	private createRenderer()
@@ -90,6 +84,7 @@ export class SceneImage2D extends BitmapImage2D
         SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
 		//setup the projection
+		SceneImage2D._renderer.disableClear = true;
 		SceneImage2D._renderer.view.backgroundAlpha = 0;
         SceneImage2D._renderer.view.projection = projection;
         SceneImage2D._renderer.view.projection.transform = new Transform();
@@ -115,6 +110,7 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
 		//setup the projection
+		SceneImage2D._billboardRenderer.disableClear = true;
 		SceneImage2D._billboardRenderer.view.backgroundAlpha = 0;
 		SceneImage2D._billboardRenderer.view.projection = projection;
 		SceneImage2D._billboardRenderer.view.projection.transform = new Transform();
@@ -162,6 +158,35 @@ export class SceneImage2D extends BitmapImage2D
 		//todo
 	}
 
+	
+	/**
+	 * Fills a rectangular area of pixels with a specified ARGB color.
+	 *
+	 * @param rect  The rectangular area to fill.
+	 * @param color The ARGB color value that fills the area. ARGB colors are
+	 *              often specified in hexadecimal format; for example,
+	 *              0xFF336699.
+	 * @throws TypeError The rect is null.
+	 */
+	public fillRect(rect:Rectangle, color:number):void
+	{
+		if (!SceneImage2D._renderer)
+			this.createRenderer();
+
+		//set target and scale value
+		SceneImage2D._renderer.view.target = this;
+		SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
+
+		//make sure we are setup on view
+		SceneImage2D._renderer.view.x = rect.x;
+		SceneImage2D._renderer.view.y = rect.y;
+		SceneImage2D._renderer.view.width = rect.width;
+		SceneImage2D._renderer.view.height = rect.height;
+		SceneImage2D._renderer.view.backgroundAlpha = this._transparent? (color >> 24)/255 : 1;
+		SceneImage2D._renderer.view.backgroundColor = color & 0xFFFFFF;
+		SceneImage2D._renderer.view.clear(true, true);
+	}
+
 	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point);
 	public copyPixels(source:HTMLElement, sourceRect:Rectangle, destPoint:Point);
 	public copyPixels(source:any, sourceRect:Rectangle, destPoint:Point):void
@@ -170,7 +195,6 @@ export class SceneImage2D extends BitmapImage2D
 			if (!SceneImage2D._billboardRenderer)
 				this.createBillboardRenderer();
 
-			SceneImage2D._billboardRenderer.disableClear = true;
 			SceneImage2D._billboardRenderer.view.target = this;
 			SceneImage2D._billboardRenderer.view.projection.scale = 1000/this.rect.height;
 
@@ -284,9 +308,13 @@ export class SceneImage2D extends BitmapImage2D
 			}
 			//root.transform.colorTransform = colorTransform;
 
-			SceneImage2D._renderer.disableClear = true;
 			SceneImage2D._renderer.view.target = this;
 			SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
+
+			SceneImage2D._renderer.view.x = 0;
+			SceneImage2D._renderer.view.y = 0;
+			SceneImage2D._renderer.view.width = this.width;
+			SceneImage2D._renderer.view.height = this.height;
 
 			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
 			SceneImage2D._root.addChild(source);
