@@ -14,7 +14,6 @@ import { DisplayObject } from "./DisplayObject";
 import { Sprite } from "./Sprite";
 import { TextField } from "./TextField";
 
-
 export class MovieClip extends Sprite {
 	public static mcForConstructor: MovieClip;
 	//todo: this 3 are no longer used (?)
@@ -230,7 +229,7 @@ export class MovieClip extends Sprite {
 	public getMouseCursor(): string {
 		if (this.name == "scene")
 			return "initial";
-		if (this._useHandCursor && (this.buttonMode)) {
+		if (this._useHandCursor){//} && (this.buttonMode)) {
 			return this.cursorType;
 		}
 		return "initial";
@@ -648,6 +647,8 @@ export class MovieClip extends Sprite {
 		super.copyTo(movieClip);
 		movieClip.timelineMC = this.timelineMC;
 		movieClip.loop = this.loop;
+		movieClip._soundStreams = this._soundStreams;
+
 	}
 
 	public getScriptsForFrameConstruct(): void {
