@@ -31,6 +31,7 @@ export class MovieClip extends Sprite {
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
 
 	private static _activeSounds: any = {};
+	
 
 	public static assetType: string = "[asset MovieClip]";
 
@@ -104,7 +105,7 @@ export class MovieClip extends Sprite {
 
 	private _syncSounds(frameNum: number) {
 		if (this._soundStreams) {
-			this._soundStreams.syncSounds(frameNum, this._isPlaying);
+			this._soundStreams.syncSounds(frameNum, this._isPlaying, this.parent);
 		}
 	}
 	constructor(timeline: Timeline = null) {
@@ -187,6 +188,9 @@ export class MovieClip extends Sprite {
 				(<MovieClip>child).stopSounds(soundID);
 		}
 		MovieClip._activeSounds = {};
+		if (this._soundStreams) {
+			this._soundStreams.syncSounds(0, false, this.parent);
+		}
 	}
 	private _soundVolume: number;
 	public get soundVolume(): number {
