@@ -347,7 +347,7 @@ export class Timeline
 		return hitArea;
 	}
 
-	public getCurretFrameLabel(target_mc:MovieClip) : string
+	public getCurrentFrameLabel(target_mc:MovieClip) : string
 	{
 		var label:string=null;
 		for(var key in this._labels){
@@ -357,7 +357,7 @@ export class Timeline
 		}
 		return label;
 	}
-	public getCurretLabel(target_mc:MovieClip) : string
+	public getCurrentLabel(target_mc:MovieClip) : string
 	{
 		var label:string=null;
 		var lastLabelframeIdx:number=-1;
