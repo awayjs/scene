@@ -7,6 +7,8 @@ export class DefaultFontManager
 	private static _registered_fonts:any={};
 	public static shared_fonts_ns:string;
 
+    public static deviceFont:Font=null;
+    
 	public static getDefaultFont():Font
 	{
 		if(DefaultFontManager._default_font==null){

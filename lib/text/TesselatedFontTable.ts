@@ -12,6 +12,7 @@ import {TextFormat} from "./TextFormat";
 import {TextShape} from "./TextShape";
 
 import {TextField} from "../display/TextField";
+import { DefaultFontManager } from '../managers/DefaultFontManager';
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
@@ -44,7 +45,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	private _fnt_channels:BitmapImage2D[];
 
 	public font:any;
-	public fallbackTable:IFontTable;
+	public get fallbackTable():IFontTable{
+		if(DefaultFontManager.deviceFont && DefaultFontManager.deviceFont.font_styles[0]!=this){
+			return DefaultFontManager.deviceFont.font_styles[0];
+		}
+		return null;
+	}
 
 	/**
 	 * Creates a new TesselatedFont object
@@ -840,7 +846,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						// todo: handle kerning
 					}
 					else{
-						//console.log("TesselatedFontTable: Error: char not found in fontTable", tf.chars_codes[c], tf.chars_codes[c].toString());
+						console.log("TesselatedFontTable: Error: char not found in fontTable", tf.chars_codes[c], tf.chars_codes[c].toString());
 					}
 				}
 			}
