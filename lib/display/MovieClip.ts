@@ -534,13 +534,14 @@ export class MovieClip extends Sprite {
 	public _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
 		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
 
-		this._sessionID_childs[sessionID] = child;
 
 		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
 			(<any>child.adapter).deleteOwnProperties();
 		}
+		var returnObj=this.addChildAtDepth(child, depth);
+		this._sessionID_childs[sessionID] = child;
 
-		return this.addChildAtDepth(child, depth);
+		return returnObj
 	}
 
 	public removeChildAtInternal(index: number): DisplayObject {
