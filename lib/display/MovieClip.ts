@@ -32,6 +32,7 @@ export class MovieClip extends Sprite {
 
 	private static _activeSounds: any = {};
 	
+	public symbolID:number=0;
 
 	public static assetType: string = "[asset MovieClip]";
 
@@ -103,10 +104,11 @@ export class MovieClip extends Sprite {
 		this._soundStreams.addSoundStreamBlock(frameNum, streamBlock);
 	}
 
-	private _syncSounds(frameNum: number) {
+	private _syncSounds(frameNum: number):number {
 		if (this._soundStreams) {
-			this._soundStreams.syncSounds(frameNum, this._isPlaying, this.parent);
+			return this._soundStreams.syncSounds(frameNum, this._isPlaying, this.parent);
 		}
+		return 0;
 	}
 	constructor(timeline: Timeline = null) {
 		super();
@@ -653,6 +655,7 @@ export class MovieClip extends Sprite {
 		movieClip.timelineMC = this.timelineMC;
 		movieClip.loop = this.loop;
 		movieClip._soundStreams = this._soundStreams;
+		movieClip.symbolID=this.symbolID;
 
 	}
 
@@ -671,7 +674,7 @@ export class MovieClip extends Sprite {
 		}
 		this._skipAdvance = false;
 	}
-	public advanceFrame(events: any = null): void {
+	public advanceFrameInternal(events: any = null): void {
 
 		// if this._skipadvance is true, the mc has already been moving on its timeline this frame
 		// this happens for objects that have been newly added to parent
@@ -715,7 +718,22 @@ export class MovieClip extends Sprite {
 		if (events)
 			(<any>this.adapter).dispatchEvent(events[0]);
 		this._skipAdvance = false;
-		this._syncSounds(this._currentFrameIndex);
+	}
+	private _skipFramesForStream:number=0;
+	public advanceFrame(events: any = null): void {
+		if(this._skipFramesForStream==0){
+			this.advanceFrameInternal(events);
+		}
+		/*if(this._skipFramesForStream<0){
+			console.log("wait for audio to catch up");
+		}*/
+		this._skipFramesForStream=this._syncSounds(this._currentFrameIndex);
+		while(this._skipFramesForStream>0){
+			//console.log("skip frame for keeping audio stream synced");
+			FrameScriptManager.execute_queue();
+			this.advanceFrameInternal(events);
+			this._skipFramesForStream=this._syncSounds(this._currentFrameIndex);
+		}
 	}
 
 	// DEBUG CODE:
