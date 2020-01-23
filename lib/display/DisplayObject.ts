@@ -760,7 +760,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 	public get name() :string
     {
-        return this._pName;
+        return this._pName?this._pName:"";
     }
 
     public set name(value : string)
