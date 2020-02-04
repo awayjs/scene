@@ -1,6 +1,6 @@
 import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform, Box} from "@awayjs/core";
 
-import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
+import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace} from "@awayjs/stage";
 
 import {DefaultRenderer, RenderGroup, RendererType, Style} from "@awayjs/renderer";
 
@@ -27,6 +27,8 @@ export class SceneImage2D extends BitmapImage2D
 	private static _root:DisplayObjectContainer;
 	private static _billboardRoot:DisplayObjectContainer;
 	private static _billboard:Billboard;
+
+	private _imageDataDirty:boolean;
 
 	/**
 	 *
@@ -185,30 +187,46 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D._renderer.view.backgroundAlpha = this._transparent? (color >> 24)/255 : 1;
 		SceneImage2D._renderer.view.backgroundColor = color & 0xFFFFFF;
 		SceneImage2D._renderer.view.clear(true, true);
+
+		this._imageDataDirty = true;
 	}
 
-	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point);
-	public copyPixels(source:HTMLElement, sourceRect:Rectangle, destPoint:Point);
-	public copyPixels(source:any, sourceRect:Rectangle, destPoint:Point):void
-	{
+	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean);
+	public copyPixels(source:HTMLElement, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean);
+	public copyPixels(source:any, sourceRect:Rectangle, destPoint:Point, alphaBitmapData: BitmapImage2D = null, alphaPoint: Point = null, mergeAlpha:boolean = false):void
+{
 		if (source instanceof BitmapImage2D) {
-			if (!SceneImage2D._billboardRenderer)
-				this.createBillboardRenderer();
+			this._stage.context.setCulling(ContextGLTriangleFace.NONE);
+			this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 
-			SceneImage2D._billboardRenderer.view.target = this;
-			SceneImage2D._billboardRenderer.view.projection.scale = 1000/this.rect.height;
-
-			SceneImage2D._billboard.material.style.image = source;
-			SceneImage2D._billboardRoot.transform.scaleTo(1, -1, 1);
-			SceneImage2D._billboardRoot.transform.moveTo(destPoint.x, this.rect.height-destPoint.y, 0);
-
-			//render
-			SceneImage2D._billboardRenderer.render();
+			this._imageDataDirty = true;
 
 			return;
 		}
-		super.copyPixels(source, sourceRect, destPoint);
+		
+		super.copyPixels(source, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 	}
+
+	
+	// /**
+	//  *
+	//  * @returns {ImageData}
+	//  */
+	// public getImageData():ImageData
+	// {
+	// 	if (this._imageDataDirty) {
+	// 		this._imageDataDirty = false;
+	// 		SceneImage2D._renderer.view.clear(false, true);
+	// 		var gl:WebGLRenderingContext | WebGL2RenderingContext = (<ContextWebGL> this._stage.context)._gl;
+	// 		var dummy:BitmapImage2D = new BitmapImage2D(this._rect.width, this._rect.height, true, 0x0, false);
+	// 		gl.readPixels(0, 0, this._rect.width, this._rect.height, gl.RGBA, gl.UNSIGNED_BYTE, dummy.getImageData().data);
+	// 		super.draw(dummy);
+	// 		this._stage.setRenderTarget(null, true);
+	// 	}
+
+	// 	return super.getImageData();
+	// }
 
 	/**
 	 * Draws the <code>source</code> display object onto the bitmap image, using
@@ -349,6 +367,8 @@ export class SceneImage2D extends BitmapImage2D
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
 
+			this._imageDataDirty = true;
+
 			return;
 		} else if (source instanceof BitmapImage2D || source instanceof SceneImage2D) {
 			if (!SceneImage2D._billboardRenderer)
@@ -370,6 +390,8 @@ export class SceneImage2D extends BitmapImage2D
 
 			//render
 			SceneImage2D._billboardRenderer.render();
+
+			this._imageDataDirty = true;
 
 			return;
 		}
