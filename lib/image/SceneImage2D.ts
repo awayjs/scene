@@ -191,21 +191,52 @@ export class SceneImage2D extends BitmapImage2D
 		this._imageDataDirty = true;
 	}
 
-	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean);
-	public copyPixels(source:HTMLElement, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean);
-	public copyPixels(source:any, sourceRect:Rectangle, destPoint:Point, alphaBitmapData: BitmapImage2D = null, alphaPoint: Point = null, mergeAlpha:boolean = false):void
-{
-		if (source instanceof BitmapImage2D) {
-			this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-			this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
-			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
+		/**
+	 * Provides a fast routine to perform pixel manipulation between images with
+	 * no stretching, rotation, or color effects. This method copies a
+	 * rectangular area of a source image to a rectangular area of the same size
+	 * at the destination point of the destination BitmapImage2D object.
+	 *
+	 * <p>If you include the <code>alphaBitmap</code> and <code>alphaPoint</code>
+	 * parameters, you can use a secondary image as an alpha source for the
+	 * source image. If the source image has alpha data, both sets of alpha data
+	 * are used to composite pixels from the source image to the destination
+	 * image. The <code>alphaPoint</code> parameter is the point in the alpha
+	 * image that corresponds to the upper-left corner of the source rectangle.
+	 * Any pixels outside the intersection of the source image and alpha image
+	 * are not copied to the destination image.</p>
+	 *
+	 * <p>The <code>mergeAlpha</code> property controls whether or not the alpha
+	 * channel is used when a transparent image is copied onto another
+	 * transparent image. To copy pixels with the alpha channel data, set the
+	 * <code>mergeAlpha</code> property to <code>true</code>. By default, the
+	 * <code>mergeAlpha</code> property is <code>false</code>.</p>
+	 *
+	 * @param sourceBitmapImage2D The input bitmap image from which to copy pixels.
+	 *                         The source image can be a different BitmapImage2D
+	 *                         instance, or it can refer to the current
+	 *                         BitmapImage2D instance.
+	 * @param sourceRect       A rectangle that defines the area of the source
+	 *                         image to use as input.
+	 * @param destPoint        The destination point that represents the
+	 *                         upper-left corner of the rectangular area where
+	 *                         the new pixels are placed.
+	 * @param alphaBitmapImage2D  A secondary, alpha BitmapImage2D object source.
+	 * @param alphaPoint       The point in the alpha BitmapImage2D object source
+	 *                         that corresponds to the upper-left corner of the
+	 *                         <code>sourceRect</code> parameter.
+	 * @param mergeAlpha       To use the alpha channel, set the value to
+	 *                         <code>true</code>. To copy pixels with no alpha
+	 *                         channel, set the value to <code>false</code>.
+	 * @throws TypeError The sourceBitmapImage2D, sourceRect, destPoint are null.
+	 */
+	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean):void
+	{
+		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
+		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 
-			this._imageDataDirty = true;
-
-			return;
-		}
-		
-		super.copyPixels(source, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
+		this._imageDataDirty = true;
 	}
 
 	
@@ -302,8 +333,6 @@ export class SceneImage2D extends BitmapImage2D
 	 */
 	public draw(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
 	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
-	public draw(source:HTMLElement, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
-	public draw(source:Uint8Array, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
 	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean):void
 	{
 		if (source instanceof DisplayObject) {
@@ -370,33 +399,29 @@ export class SceneImage2D extends BitmapImage2D
 			this._imageDataDirty = true;
 
 			return;
-		} else if (source instanceof BitmapImage2D || source instanceof SceneImage2D) {
-			if (!SceneImage2D._billboardRenderer)
-				this.createBillboardRenderer();
+		}
+	
+		if (!SceneImage2D._billboardRenderer)
+			this.createBillboardRenderer();
 
-			SceneImage2D._billboardRenderer.disableClear = true;
-			SceneImage2D._billboardRenderer.view.target = this;
-			SceneImage2D._billboardRenderer.view.projection.scale = 1000/this.rect.height;
+		SceneImage2D._billboardRenderer.disableClear = true;
+		SceneImage2D._billboardRenderer.view.target = this;
+		SceneImage2D._billboardRenderer.view.projection.scale = 1000/this.rect.height;
 
-			SceneImage2D._billboard.material.style.image = source;
+		SceneImage2D._billboard.material.style.image = source;
 
-			if (matrix) {
-				SceneImage2D._billboardRoot.transform.scaleTo(matrix.a, -matrix.d, 1);
-				SceneImage2D._billboardRoot.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
-			} else {
-				SceneImage2D._billboardRoot.transform.scaleTo(1, -1, 1);
-				SceneImage2D._billboardRoot.transform.moveTo(0, this.rect.height,0);
-			}
-
-			//render
-			SceneImage2D._billboardRenderer.render();
-
-			this._imageDataDirty = true;
-
-			return;
+		if (matrix) {
+			SceneImage2D._billboardRoot.transform.scaleTo(matrix.a, -matrix.d, 1);
+			SceneImage2D._billboardRoot.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+		} else {
+			SceneImage2D._billboardRoot.transform.scaleTo(1, -1, 1);
+			SceneImage2D._billboardRoot.transform.moveTo(0, this.rect.height,0);
 		}
 
-		super.draw(source, matrix, colorTransform, blendMode, clipRect, smoothing);
+		//render
+		SceneImage2D._billboardRenderer.render();
+
+		this._imageDataDirty = true;
 	}
 }
 
