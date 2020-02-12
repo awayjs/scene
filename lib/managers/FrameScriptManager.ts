@@ -2,6 +2,7 @@ import {DisplayObject} from "../display/DisplayObject";
 import {MovieClip} from "../display/MovieClip";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
 import { BuildMode } from '@awayjs/core';
+import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 
 interface IInterval{
 	f:Function;
@@ -31,6 +32,8 @@ export class FrameScriptManager
 	private static _queued_scripts_pass2:any[] = [];
 
 	private static _active_intervals:Object = new Object(); // maps id to function
+
+	private static _as3_constructor_queue:any[] = []; 
 
 	private static _intervalID:number=0;
 	public static setInterval(fun:Function, time:number):number
@@ -125,6 +128,61 @@ export class FrameScriptManager
 		this._queued_scripts_pass2.push(script);
 	}
 
+	public static queue_as3_constructor(mc:any):void
+	{
+		this._as3_constructor_queue.push(mc);
+	} 
+	public static execute_as3_constructors():void{
+			
+		if(this._as3_constructor_queue.length==0)
+			return;
+
+		while(this._as3_constructor_queue.length>0){
+			var queue_tmp:any[]=this._as3_constructor_queue.concat();	
+			this._as3_constructor_queue.length = 0;
+			var mc:MovieClip;
+			var i=0;
+			var len=queue_tmp.length;	
+
+			/*
+			as3 constructors for objects created via as3-code execute immediatly, so they are never queued
+			as3 constructors added by timeline get executed in the order they are addChilded in awayjs
+			(childs first, than parents, so in the first frame, the main-scene should come last)
+			*/
+			/*
+			// print list of queued as3_constructors
+			for(i=0; i<len; i++){
+				console.log("i", i);
+				mc=this._as3_constructor_queue[i];
+				if(mc._implicitPartition && mc._implicitPartition.root) {				
+					if ((<IDisplayObjectAdapter>mc.adapter).executeConstructor) {
+						console.log("- run constructor", mc.parent.name, mc.parent.id, mc.name, mc.id, mc);
+					}
+				}
+			}*/
+			for(i=0; i<len; i++){
+				// during the loop we might add more scripts to the queue
+				mc=queue_tmp[i];
+				if(mc._implicitPartition && mc._implicitPartition.root) {				
+					if ((<IDisplayObjectAdapter>mc.adapter).executeConstructor) {
+						let myFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
+						myFunc();
+						// in avm2, framescripts get added to timeline in the constructor of the mc
+						// so when the mc was added to parent, no framescripts exists and therefore none are queued now
+						// we need to execute the script manually. 
+						if (mc.isAsset(MovieClip)) {
+							var script = mc.timeline.get_script_for_frame(mc, mc.currentFrameIndex);
+							if (script) {
+								FrameScriptManager.add_script_to_queue(mc, script);
+							}
+						}
+					}
+				}
+			}
+			queue_tmp.length=0;
+		}
+	}
 	public static execute_queue():void
 	{
 		if(this._queued_mcs.length==0 && this._queued_mcs_pass2.length==0)
@@ -154,17 +212,22 @@ export class FrameScriptManager
 				mc=queues_tmp[i];
 				if(mc._implicitPartition && mc._implicitPartition.root) {
 					// first we execute any pending loadedAction for this MC
-					if((<any>mc).onLoadedAction){
-						(<any>mc).onLoadedAction();
-						(<any>mc).onLoadedAction=null;	
+					if ((<IDisplayObjectAdapter>mc.adapter).onLoaded) {
+						//atm this is only used for avm1, to execute queued "onloaded" actions. 
+						let myFunc = (<IDisplayObjectAdapter>mc.adapter).onLoaded;
+						(<IDisplayObjectAdapter>mc.adapter).onLoaded = null;
+						myFunc();
 					}
-					if((<any>mc).onCustomConstructor){
-						(<any>mc).onCustomConstructor();
-						(<any>mc).onCustomConstructor=null;	
+					if ((<IDisplayObjectAdapter>mc.adapter).executeConstructor) {
+						let myFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
+						myFunc();
 					}
-					if(queues_scripts_tmp[i]!=null){
+					if (queues_scripts_tmp[i] != null) {
 						//console.log("execute script", mc.name, queues_scripts_tmp[i]);
-						if(mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
+						// before we run any framescript, we must make sure that all timeline objects have run their constructors
+						this.execute_as3_constructors();
+						if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
 							(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
 					}
 				}
@@ -173,10 +236,9 @@ export class FrameScriptManager
 	}
 
 
-	public static execute_dispose():void
-	{
-		var len:number = this._queued_dispose.length;
-		for (var i:number = 0; i < len; i++)
+	public static execute_dispose(): void {
+		var len: number = this._queued_dispose.length;
+		for (var i: number = 0; i < len; i++)
 			this._queued_dispose[i].dispose();
 
 		this._queued_dispose.length = 0;

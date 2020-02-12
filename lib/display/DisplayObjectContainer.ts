@@ -7,6 +7,7 @@ import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {Scene} from "../Scene";
 
 import {DisplayObject} from "./DisplayObject";
+import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 //import {Sprite} from "./Sprite";
 
 /**
@@ -39,6 +40,7 @@ export class DisplayObjectContainer extends DisplayObject
 	private _nextHighestDepth:number = 0;
 	private _nextHighestDepthDirty:boolean;
 	public _children:Array<DisplayObject> = new Array<DisplayObject>();
+	public doingSwap: boolean = false;
 
 	/**
 	 *
@@ -196,6 +198,10 @@ export class DisplayObjectContainer extends DisplayObject
 
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
+		
+		if (!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset)) {
+			child.reset();// this takes care of transform and visibility
+		}
 		if (child == null)
 			throw new ArgumentError("Parameter child cannot be null.");
 
@@ -229,6 +235,20 @@ export class DisplayObjectContainer extends DisplayObject
 
 		child._setParent(this);
 
+
+		if (!this.doingSwap) {
+			if (child.adapter != child) {
+				// initAdapter (avm1): 
+				//		- executes the initial actionscript for the timeline (if any)
+				//		- initialize the events (this might add the "onLoaded"-event)
+				//		- add the Constructor function to FrameScriptManager
+				
+				// initAdapter (avm1): 
+				//		- executes the initial actionscript for the timeline (if any)
+				//		- add the Constructor function to FrameScriptManager
+				(<IDisplayObjectAdapter>child.adapter).initAdapter();
+			}
+		}
 		return child;
 	}
 

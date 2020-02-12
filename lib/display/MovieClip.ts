@@ -25,7 +25,6 @@ export class MovieClip extends Sprite {
 
 	public timelineMC: boolean;
 
-	public doingSwap: boolean = false;
 	public preventScript: boolean = false;
 
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
@@ -83,8 +82,7 @@ export class MovieClip extends Sprite {
 	private _sounds: Object = {};
 
 	public _useHandCursor: boolean;
-	public onLoadedAction: any = null;
-	public onCustomConstructor: any = null;
+	
 	private _parentSoundVolume: number;
 
 	public static movieClipSoundsManagerClass = null;
@@ -393,6 +391,7 @@ export class MovieClip extends Sprite {
 		}
 		// prevents the playhead to get moved in the advance frame again:	
 		this._skipAdvance = true;
+		//FrameScriptManager.execute_queue();
 
 
 	}
@@ -505,34 +504,12 @@ export class MovieClip extends Sprite {
 		this.doingSwap = false;
 
 	}
-
+/*
 	public addChildAtDepth(child: DisplayObject, depth: number, replace: boolean = true): DisplayObject {
-		/*if(!this.doingSwap){
-			child.reset();// this takes care of transform and visibility
-		}*/
-
-		if (!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset)) {
-			child.reset();// this takes care of transform and visibility
-			if (child.adapter && (<any>child.adapter).noReset) {
-				(<any>child.adapter).noReset = false;
-			}
-		}
-		super.addChildAtDepth(child, depth, replace);
-
-		if (!this.doingSwap) {
-			if (child.adapter != child) {
-				(<IDisplayObjectAdapter>child.adapter).doInitEvents();
-				if (child.isAsset(MovieClip)) {
-					if ((<MovieClip>child).onLoadedAction || (<MovieClip>child).onCustomConstructor) {
-						FrameScriptManager.add_loaded_action_to_queue(<MovieClip>child);
-					}
-				}
-
-			}
-		}
+		
 		return child;
 	}
-
+*/
 	public _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
 		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
 
@@ -542,7 +519,12 @@ export class MovieClip extends Sprite {
 		}
 		var returnObj=this.addChildAtDepth(child, depth);
 		this._sessionID_childs[sessionID] = child;
-
+		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
+			//(<DisplayObject>oneChild.adapter).dispatchEventRecursive(new Event(Event.REMOVED_FROM_STAGE));
+			(<any>child.adapter).dispatchStaticEvent("added");
+			(<any>child.adapter).dispatchStaticEvent("addedToStage");
+			//(<any>child.adapter).dispatchStaticEvent("frameConstructed");
+		}
 		return returnObj
 	}
 
@@ -603,7 +585,7 @@ export class MovieClip extends Sprite {
 		this.advanceFrame(events);
 
 		MovieClip._skipAdvance = false;
-
+		/*
 		// after we advanced the scenegraph, we might have some script that needs executing
 		FrameScriptManager.execute_queue();
 
@@ -623,11 +605,12 @@ export class MovieClip extends Sprite {
 
 		if (events != null) {
 			(<any>this.adapter).dispatchEvent(events[1]);
-		}
+		}*/
 	}
 
-	public getPotentialChildInstance(id: number, instanceID: string): IAsset {
-		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID == -2 || this._potentialInstances[id].cloneForEveryInstance)
+	public getPotentialChildInstance(id: number, instanceID: string, forceClone:boolean=false): IAsset {
+		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID == -2 || 
+			(this._potentialInstances[id].cloneForEveryInstance && forceClone))
 			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id, instanceID);
 		this._timeline.initChildInstance(<DisplayObject>this._potentialInstances[id], instanceID);
 		return this._potentialInstances[id];
@@ -658,7 +641,7 @@ export class MovieClip extends Sprite {
 		movieClip.symbolID=this.symbolID;
 
 	}
-
+	/*
 	public getScriptsForFrameConstruct(): void {
 
 		if (this._skipAdvance) {
@@ -674,6 +657,7 @@ export class MovieClip extends Sprite {
 		}
 		this._skipAdvance = false;
 	}
+	*/
 	public advanceFrameInternal(events: any = null): void {
 
 		// if this._skipadvance is true, the mc has already been moving on its timeline this frame

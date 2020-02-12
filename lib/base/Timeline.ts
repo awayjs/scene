@@ -29,14 +29,18 @@ export class Timeline
 	public _update_frames:number[] = [];
 	public isButton:boolean = false;
 	public _labels:Object;			// dictionary to store label => keyframeindex
-	public _framescripts:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
-	public _framescripts_translated:Object;    // dictionary to store keyframeindex => bool that keeps track of already converted scripts
 
 	public avm1InitActions:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public avm1ButtonActions:any[];    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public avm1Exports:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 
+	//	framescripts are not stored by keyframe-index, but by frameIdx
+	//	this makes it easy to get/set framescripts on the fly, even when no keyframe exists for that frame
+	private _framescripts: Object;
+	private _framescripts_translated: Object;
 
+
+	public keyframe_to_frameidx:Object;
 	public keyframe_indices:number[];     		//stores 1 keyframeindex per frameindex
 	public keyframe_firstframes:number[];     	//stores the firstframe of each keyframe
 	public keyframe_constructframes:number[];    //stores the previous fullConstruct keyframeindex
@@ -95,6 +99,8 @@ export class Timeline
 		this._framescripts = {};
 		this._framescripts_translated = {};
 
+		this.keyframe_to_frameidx = {};
+
 		//cache functions
 		this._functions[1] = this.update_mtx_all;
 		this._functions[2] = this.update_colortransform;
@@ -114,82 +120,57 @@ export class Timeline
 
 	}
 
-	public init():void
-	{
-		if((this.frame_command_indices == null)||(this.frame_recipe == null)||(this.keyframe_durations == null)){
+	public resetScripts() {
+		this._framescripts = {};
+		this._framescripts_translated = {};
+	}
+	public init(): void {
+		if ((this.frame_command_indices == null) || (this.frame_recipe == null) || (this.keyframe_durations == null)) {
 			return;
         }
 
 		this.keyframe_firstframes = [];
 		this.keyframe_constructframes = [];
-		this.keyframe_indices=[];
+		this.keyframe_indices = [];
 		var frame_cnt = 0;
 		var ic = 0;
 		var ic2 = 0;
 		var keyframe_cnt = 0;
 		var last_construct_frame = 0;
-		for(ic = 0; ic < this.numKeyFrames; ic++){
-			var duration=this.keyframe_durations[(ic)];
-			if(this.frame_recipe[ic] & 1)
+		this.keyframe_to_frameidx = {};
+		this.keyframe_to_frameidx[0] = 0;
+		var duration_all = 0;
+		for (ic = 0; ic < this.numKeyFrames; ic++) {
+
+			this.keyframe_to_frameidx[ic] = duration_all;
+			var duration = this.keyframe_durations[(ic)];
+			duration_all += duration;
+			if (this.frame_recipe[ic] & 1)
 				last_construct_frame = keyframe_cnt;
 
 			this.keyframe_firstframes[keyframe_cnt] = frame_cnt;
 			this.keyframe_constructframes[keyframe_cnt++] = last_construct_frame;
 
-			for(ic2 = 0; ic2 < duration; ic2++)
+			for (ic2 = 0; ic2 < duration; ic2++)
 				this.keyframe_indices[frame_cnt++] = ic;
 			//frame_cnt+=this.keyframe_durations[(ic)];
 		}
 	}
 
-	public get_framescript(keyframe_index:number):string
-	{
-		if(this._framescripts[keyframe_index] == null)
+	public get_framescript(frame_index: number): string {
+		if (this._framescripts[frame_index] == null)
 			return "";
 
-		if (typeof this._framescripts[keyframe_index] == "string")
-			return this._framescripts[keyframe_index];
-		else{
+		if (typeof this._framescripts[frame_index] == "string")
+			return this._framescripts[frame_index];
+		else {
 			throw new Error("Framescript is already translated to Function!!!");
 		}
 	}
 	
-	public add_avm2framescript(value:any, frame_idx:number):void
-	{
-		var keyframeIdx=this.keyframe_indices[frame_idx];
-		if(this.keyframe_firstframes[keyframeIdx]!=frame_idx){
-			/* temporary disabled this, because it makes problems in badIceCream:
-			var newDuration=frame_idx-this.keyframe_firstframes[keyframeIdx];
-			var newDuration2=this.keyframe_durations[keyframeIdx]-newDuration;
-			var newDurations=[];
-			var newFrameRecipe=[];
-
-			for(var i=0; i<this.numKeyFrames; i++){
-				newDurations.push(this.keyframe_durations[i]);
-				newFrameRecipe.push(this.frame_recipe[i]);
-				if(i==keyframeIdx){
-					newDurations[i]=newDuration;
-					newDurations.push(newDuration2);
-					newFrameRecipe.push(0);
-				}
-			}
-			this.numKeyFrames++;
-			this.keyframe_durations=new Uint32Array(newDurations);
-			this.frame_recipe=new Uint32Array(newFrameRecipe);
-			this.init();
-			keyframeIdx++;
-			*/
-			
-
-		}
-		if(!this._framescripts[keyframeIdx]){
-			this._framescripts[keyframeIdx]=[];
-		}
-		this._framescripts[keyframeIdx].push(value);
-		
-	}
-	public add_framescript(value:any, keyframe_index:number):void
-	{
+	public add_framescript(script: any, frame_idx: number): void {
+		/*
+		// disable for now. but keep in mind to find a nicer way to allow debuggibgn for framescripts
 		if(FrameScriptManager.frameScriptDebug){
 			// todo: this is only for as2_as_js scripts
 			// if we are in debug mode, we try to extract the function name from the first line of framescript code,
@@ -197,15 +178,18 @@ export class Timeline
 			// try to get the functions name (it should be the first line as comment)
 			var functionname = value.split(/[\r\n]+/g)[0].split("//")[1];
 			if(FrameScriptManager.frameScriptDebug[functionname]){
-				this._framescripts[keyframe_index] = FrameScriptManager.frameScriptDebug[functionname];
-				this._framescripts_translated[keyframe_index]=true;
+				this._framescripts[frame_idx] = FrameScriptManager.frameScriptDebug[functionname];
+				this._framescripts_translated[frame_idx]=true;
 				return;
 			}
 			else{
 				throw new Error("Framescript could not be found on FrameScriptManager.frameScriptDebug.\n the Object set as FrameScriptmanager.frameScriptDebug should contain a function with the name '"+functionname+"' !!!");
 			}
+		}*/
+		if (!this._framescripts[frame_idx]) {
+			this._framescripts[frame_idx] = [];
 		}
-		this._framescripts[keyframe_index] = value;
+		this._framescripts[frame_idx].push(script);
 	}
 
 	private regexIndexOf(str : string, regex : RegExp, startpos : number) {
@@ -224,34 +208,30 @@ export class Timeline
 		}*/
 	}
 
-	public add_script_for_postcontruct(target_mc:MovieClip, keyframe_idx:number, scriptPass1:Boolean=false) : void
-	{
-		if(this._framescripts[keyframe_idx]!=null){
-			if(this._framescripts_translated[keyframe_idx]==null){
-				this._framescripts[keyframe_idx] = (<IMovieClipAdapter> target_mc.adapter).addScript(this._framescripts[keyframe_idx], keyframe_idx);
-				this._framescripts_translated[keyframe_idx]=true;
+	public add_script_for_postcontruct(target_mc: MovieClip, frame_idx: number, scriptPass1: Boolean = false): void {
+		if (this._framescripts[frame_idx] != null) {
+			if (this._framescripts_translated[frame_idx] == null) {
+				this._framescripts[frame_idx] = (<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frame_idx], frame_idx);
+				this._framescripts_translated[frame_idx] = true;
 			}
 			//console.log("add framescript", target_mc, target_mc.name, keyframe_idx, scriptPass1 );
-			if(scriptPass1)
-				FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[keyframe_idx]);
+			if (scriptPass1)
+				FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[frame_idx]);
 			else
-				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[keyframe_idx]);
+				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[frame_idx]);
 
 		}
     }
     
-	public get_script_for_frame(target_mc:MovieClip, frame_index:number):any{
-
-		var keyframe_idx:number=this.keyframe_firstframes[frame_index];
-		if(this._framescripts[keyframe_idx]!=null){
-			if(frame_index==0 || this.keyframe_firstframes[frame_index-1]!=keyframe_idx){
+	public get_script_for_frame(target_mc: MovieClip, frame_idx: number): any {
 			
-				if(this._framescripts_translated[keyframe_idx]==null){
-					this._framescripts[keyframe_idx] = (<IMovieClipAdapter> target_mc.adapter).addScript(this._framescripts[keyframe_idx], keyframe_idx);
-					this._framescripts_translated[keyframe_idx]=true;
-				}	
-				return this._framescripts[keyframe_idx];
+		if (frame_idx >= 0 && this._framescripts[frame_idx] != null) {
+			if (this._framescripts_translated[frame_idx] == null) {
+				this._framescripts[frame_idx] = (<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frame_idx], frame_idx);
+				this._framescripts_translated[frame_idx] = true;
 			}
+			return this._framescripts[frame_idx];
+			
 		}
     }
     
@@ -347,33 +327,30 @@ export class Timeline
 		return hitArea;
 	}
 
-	public getCurrentFrameLabel(target_mc:MovieClip) : string
-	{
-		var label:string=null;
-		for(var key in this._labels){
-			if(this._labels[key]==target_mc.constructedKeyFrameIndex){
+	public getCurrentFrameLabel(target_mc: MovieClip): string {
+		var label: string = null;
+		for (var key in this._labels) {
+			if (this._labels[key] == target_mc.constructedKeyFrameIndex) {
 				return label;
 			}
 		}
 		return label;
 	}
-	public getCurrentLabel(target_mc:MovieClip) : string
-	{
-		var label:string=null;
-		var lastLabelframeIdx:number=-1;
-		for(var key in this._labels){
-			if(this._labels[key]>lastLabelframeIdx && this._labels[key]<=target_mc.constructedKeyFrameIndex){
-				lastLabelframeIdx=this._labels[key];
-				label=key;
+	public getCurrentLabel(target_mc: MovieClip): string {
+		var label: string = null;
+		var lastLabelframeIdx: number = -1;
+		for (var key in this._labels) {
+			if (this._labels[key] > lastLabelframeIdx && this._labels[key] <= target_mc.constructedKeyFrameIndex) {
+				lastLabelframeIdx = this._labels[key];
+				label = key;
 			}
 		}
 		return label;
 	}
-	public jumpToLabel(target_mc:MovieClip, label:string, offset:number=0) : void
-	{
-		var key_frame_index:number = this._labels[label];
-		if(key_frame_index >= 0)
-			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index]+offset;
+	public jumpToLabel(target_mc: MovieClip, label: string, offset: number = 0): void {
+		var key_frame_index: number = this._labels[label];
+		if (key_frame_index >= 0)
+			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index] + offset;
 	}
 
 	public getScriptForLabel(target_mc:MovieClip, label:string):any
@@ -381,19 +358,20 @@ export class Timeline
 		var key_frame_index:number = this._labels[label.toLowerCase()];
 		if(key_frame_index < 0)
 			return null;
-		if(key_frame_index >= 0 && this._framescripts[key_frame_index]!=null){
-			if(this._framescripts_translated[key_frame_index]==null){
-				this._framescripts[key_frame_index] = (<IMovieClipAdapter> target_mc.adapter).addScript(this._framescripts[key_frame_index], key_frame_index);
-				this._framescripts_translated[key_frame_index]=true;
+		var frameIdx: number = this.keyframe_firstframes[key_frame_index];
+		if (frameIdx >= 0 && this._framescripts[frameIdx] != null) {
+			if (this._framescripts_translated[frameIdx] == null) {
+				this._framescripts[frameIdx] = (<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frameIdx], frameIdx);
+				this._framescripts_translated[frameIdx] = true;
 			}
-			return this._framescripts[key_frame_index];
+			return this._framescripts[frameIdx];
 		}
 	}
 
-	public gotoFrame(target_mc:MovieClip, value:number, queue_script:boolean = true, queue_pass2:boolean = false, forceReconstruct:boolean=false):void
+	public gotoFrame(target_mc:MovieClip, frame_idx:number, queue_script:boolean = true, queue_pass2:boolean = false, forceReconstruct:boolean=false):void
 	{
 		var current_keyframe_idx:number = target_mc.constructedKeyFrameIndex;
-		var target_keyframe_idx:number = this.keyframe_indices[value];
+		var target_keyframe_idx:number = this.keyframe_indices[frame_idx];
 
         var jumpBackToSameKeyFrame:boolean=false;
 		if (current_keyframe_idx == target_keyframe_idx){
@@ -434,18 +412,20 @@ export class Timeline
                     target_mc.removeChildAt(i);
             }
         }
+		if(target_mc.adapter && target_mc.adapter["$Bg__setPropDict"] && (<any>target_mc.adapter).clearPropsDic){
+			(<any>target_mc.adapter).clearPropsDic();
+
+		}
 
 		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
 		// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
         var depth_sessionIDs:Object = {};
-        var test={};
 		var new_depth_sessionIDs:Object={};
         if (jump_forward){
             var depth_sessionIDs2={};
             depth_sessionIDs = target_mc.getSessionIDDepths();
             for(var key in depth_sessionIDs){
                 depth_sessionIDs2[key]={id:depth_sessionIDs[key], instanceID:"oldID"}
-                test[key]={id:depth_sessionIDs[key], instanceID:"oldID"}
             }
             depth_sessionIDs=depth_sessionIDs2;
         }
@@ -501,27 +481,37 @@ export class Timeline
 			}
 		}
 
-		// onClipevents for children added in previous frames must be queued before the script of the target_mc, 
-		target_mc.preventScript=true;
+		// add the children that have been placed on frames that we jumped but are still alive
+		// for this childs, the initAdapter should execute before any framescripts
+		// for as3, the adapter should to be recloned, so that it can do a clean constructor 
+		// framescripts for this child should not be executed (// todo: double check)
+		target_mc.preventScript = true;
 		for (var key in depth_sessionIDs) {
-			if(!new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID!="oldID"){
-				child = <DisplayObject> target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
-				if (child._sessionID == -1)
+			if (!new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID != "oldID") {
+				child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
+				if (child._sessionID == -1){
+					child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 			}			
 		}
-		target_mc.preventScript=false;
+		}
+		target_mc.preventScript = false;
 		
-		if (queue_script && this.keyframe_firstframes[target_keyframe_idx] == value) //frame changed. and firstframe of keyframe. execute framescript if available
-			this.add_script_for_postcontruct(target_mc, target_keyframe_idx, !queue_pass2);
+		// if there is a framescript on this frame, we queue it now, so it sits after the initAdapter of the children
+		if (queue_script && this._framescripts[frame_idx])
+			this.add_script_for_postcontruct(target_mc, frame_idx, !queue_pass2);
 
-		// add children that was constructed on this frame
+		// add the children that have been placed on the target frame
+		// only reclone if it did not exists on the mc already
+		// for this childs, we queue the framescripts
 		for (var key in depth_sessionIDs) {
-			if(new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID!="oldID"){
-				child = <DisplayObject> target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID);
-				if (child._sessionID == -1)
+			if (new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID != "oldID") {
+				child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
+				if (child._sessionID == -1){
+					child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 			}
+		}
 		}
 
 		//pass2: apply update commands for objects on stage (only if they are not blocked by script)
@@ -608,8 +598,8 @@ export class Timeline
 		var frameIndex:number = target_mc.currentFrameIndex;
 		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
 
-		if(queueScript && this.keyframe_firstframes[new_keyFrameIndex] == frameIndex)
-			this.add_script_for_postcontruct(target_mc, new_keyFrameIndex, scriptPass1);
+		if (queueScript && this._framescripts[frameIndex])
+			this.add_script_for_postcontruct(target_mc, frameIndex, scriptPass1);
 
 		if(target_mc.constructedKeyFrameIndex != new_keyFrameIndex) {
 			target_mc.constructedKeyFrameIndex = new_keyFrameIndex;
@@ -665,7 +655,7 @@ export class Timeline
 				console.log("ERROR in timeline. could not find child-id in child_stream for idx", idx, this.add_child_stream);
 				continue;
 			}
-			var childAsset:IAsset=sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx], this.add_child_stream[idx]+"#"+sourceMovieClip.currentFrameIndex);
+			var childAsset: IAsset = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx], this.add_child_stream[idx] + "#" + sourceMovieClip.currentFrameIndex, true);
 			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, this.add_child_stream[idx]);//this.add_child_stream[idx]);
 		}
 	}
