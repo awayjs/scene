@@ -1669,6 +1669,10 @@ export class TextField extends DisplayObjectContainer
 		}
 		this._type=value;
 		this._textDirty = true;
+
+		if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
+
 		if(value==TextFieldType.INPUT){
             //this._selectable=true;
 			this.enableInput(true);
