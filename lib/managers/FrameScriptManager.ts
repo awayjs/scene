@@ -212,10 +212,10 @@ export class FrameScriptManager
 				mc=queues_tmp[i];
 				if(mc._implicitPartition && mc._implicitPartition.root) {
 					// first we execute any pending loadedAction for this MC
-					if ((<IDisplayObjectAdapter>mc.adapter).onLoaded) {
+					if ((<any>mc).onLoaded) {
 						//atm this is only used for avm1, to execute queued "onloaded" actions. 
-						let myFunc = (<IDisplayObjectAdapter>mc.adapter).onLoaded;
-						(<IDisplayObjectAdapter>mc.adapter).onLoaded = null;
+						let myFunc = (<any>mc).onLoaded;
+						(<any>mc).onLoaded = null;
 						myFunc();
 					}
 					if ((<IDisplayObjectAdapter>mc.adapter).executeConstructor) {
