@@ -199,7 +199,7 @@ export class DisplayObjectContainer extends DisplayObject
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
 		
-		if (!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset)) {
+		if (!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset) && !(<any>child).noReset) {
 			child.reset();// this takes care of transform and visibility
 		}
 		if (child == null)
@@ -221,7 +221,9 @@ export class DisplayObjectContainer extends DisplayObject
 				this.removeChildAt(index);
 			} else {
 				//move depth of existing child up by 1
+				(<any>this._children[index]).noReset=true;
 				this.addChildAtDepth(this._children[index], depth + 1, false);
+				(<any>this._children[index]).noReset=false;
 			}
 		}
 
@@ -312,8 +314,13 @@ export class DisplayObjectContainer extends DisplayObject
 		newInstance.mouseChildren = this._mouseChildren;
 
 		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
-			newInstance.addChild((<any>this._children[i].adapter).clone().adaptee);
+		for (var i:number = 0; i < len; ++i){
+			var newChild=(<any>this._children[i].adapter).clone().adaptee;
+			newChild.noReset=true;
+			newInstance.addChild(newChild);
+			newChild.noReset=false;
+
+		}
 	}
 
 	/**
