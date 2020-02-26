@@ -382,7 +382,7 @@ export class SceneImage2D extends BitmapImage2D
 
 			if(oldParent){
 				if(oldParent.adapter && oldParent.adapter!=oldParent &&
-					source.adapter && source.adapter!=source){
+					source.adapter && source.adapter!=source && (<any>oldParent.adapter).addChildAt){
 					(<any>source.adapter).noReset=true;
 					(<any>oldParent.adapter).addChildAt(source.adapter, oldChildIdx);
 					(<any>source.adapter).noReset=false;
