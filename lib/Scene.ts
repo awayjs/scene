@@ -87,8 +87,10 @@ export class Scene
 		if (this._view == value)
 			return;
 
-		if (this._view)
+		if (this._view) {
 			this._mouseManager.unregisterContainer(this._view.stage.container);
+			this._mouseManager.unregisterScene(this);
+		}
 
 		this._view = value;
 		this._pickGroup = PickGroup.getInstance(this._view);
@@ -130,6 +132,8 @@ export class Scene
 
 	public disableMouseEvents:boolean; //TODO: hack to ignore mouseevents on certain views
 
+	public forceMouseMove:boolean;
+	
 	public get renderer():RendererBase
 	{
 		if (!this._renderer)
@@ -287,17 +291,11 @@ export class Scene
 			this._renderer = RenderGroup.getInstance(this._view, this._rendererType).getRenderer(this._partition);
 
 		// update picking
-		if (!this.disableMouseEvents) {
-			if (this.forceMouseMove && !this._mouseManager._iUpdateDirty)
-				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this._view);
+		if (!this.disableMouseEvents)
+			this._mouseManager.fireMouseEvents(this);
 
-			this._mouseManager.fireMouseEvents(this.forceMouseMove);
-			//_touch3DManager.fireTouchEvents();
-		}
-		if(this.beforeRenderCallback){
+		if(this.beforeRenderCallback)
 			this.beforeRenderCallback();
-		}
-		//_touch3DManager.updateCollider();
 
 		//render the contents of the scene
 		this._renderer.render();
@@ -349,56 +347,12 @@ export class Scene
 	{
 		this._view.projection = this._camera.projection;
 	}
-
-	/* TODO: implement Touch3DManager
-	 public get touchPicker():IPicker
-	 {
-	 return this._touch3DManager.touchPicker;
-	 }
-	 */
-	/* TODO: implement Touch3DManager
-	 public set touchPicker( value:IPicker)
-	 {
-	 this._touch3DManager.touchPicker = value;
-	 }
-	 */
-
-	public forceMouseMove:boolean;
-
-	/*TODO: implement Background
-	 public get background():away.textures.Texture2DBase
-	 {
-	 return this._background;
-	 }
-	 */
-	/*TODO: implement Background
-	 public set background( value:away.textures.Texture2DBase )
-	 {
-	 this._background = value;
-	 this._renderer.background = _background;
-	 }
-	 */
-
-	// TODO: required dependency stageGL
-	public updateCollider():void
-	{
-		if (!this.disableMouseEvents) {
-			// if (!this._renderer.shareContext) {
-				this._mouseManager._iCollision = this.getViewCollision(this._mouseX, this._mouseY, this._view);
-			// } else {
-			// 	var collidingObject:PickingCollision = this.getViewCollision(this._mouseX, this._mouseY, this);
-			//
-			// 	if (this.layeredView || this._mouseManager._iCollision == null || collidingObject.rayEntryDistance < this._mouseManager._iCollision.rayEntryDistance)
-			// 		this._mouseManager._iCollision = collidingObject;
-			// }
-		}
-	}
 	
-	public getViewCollision(x:number, y:number, view:View):PickingCollision
+	public getViewCollision(x:number, y:number):PickingCollision
 	{
 		//update ray
-		var rayPosition:Vector3D = view.unproject(x, y, 0);
-		var rayDirection:Vector3D = view.unproject(x, y, 1).subtract(rayPosition);
+		var rayPosition:Vector3D = this._view.unproject(x, y, 0);
+		var rayDirection:Vector3D = this._view.unproject(x, y, 1).subtract(rayPosition);
 
 		return this._mousePicker.getCollision(rayPosition, rayDirection);
 	}
