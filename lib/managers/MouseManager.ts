@@ -78,7 +78,6 @@ export class MouseManager {
     private onMouseOutDelegate: (event) => void;
     private onKeyDownDelegate: (event) => void;
     private onKeyUpDelegate: (event) => void;
-    private onFirstTouchDelegate: (event) => void;
 
     private _useSoftkeyboard: boolean = false;
 
@@ -115,17 +114,10 @@ export class MouseManager {
         this.onMouseOutDelegate = (event) => this.onMouseOut(event);
         this.onKeyDownDelegate = (event) => this.onKeyDown(event);
         this.onKeyUpDelegate = (event) => this.onKeyUp(event);
-        this.onFirstTouchDelegate = (event) => this.onFirstTouch(event);
         this.buttonEnabledDirty = false;
-        this._isTouch = false;
+        this._isTouch = (('ontouchstart' in window) || navigator.msMaxTouchPoints > 0);
         this._showCursor = true;
         this._mouseDragging=false;
-        window.addEventListener('touchstart', this.onFirstTouchDelegate, false);
-    }
-    public onFirstTouch(event): void {
-        this._isTouch = true;
-        // we only need to know once that a human touched the screen, so we can stop listening now
-        window.removeEventListener('touchstart', this.onFirstTouchDelegate, false);
     }
 
     public set useSoftkeyboard(value: boolean) {
@@ -200,8 +192,6 @@ export class MouseManager {
         this.onMouseOutDelegate = null;
         this.onKeyDownDelegate = null;
         this.onKeyUpDelegate = null;
-        window.removeEventListener('touchstart', this.onFirstTouchDelegate);
-        this.onFirstTouchDelegate = null;
         
         this._mouseMoveEvent = null;
         this._mouseUp = null;
@@ -305,8 +295,13 @@ export class MouseManager {
         this.dispatchEvent(event, event.pickerEntity);
     }
 
-    public fireMouseEvents(forceMouseMove: boolean): void {
+    public fireMouseEvents(scene:Scene): void
+    {
+        //forceMouseMove move only makes sense for non-touch interaction
+        if (scene.forceMouseMove && !this._isTouch && !this._iUpdateDirty)
+            this._iCollision = scene.getViewCollision(scene._mouseX, scene._mouseY);
 
+        
         this._iCollisionEntity = <DisplayObject> ((this._iCollision) ? this._iCollision.pickerEntity : null);
 
         if (this._iCollisionEntity != this._prevICollisionEntity) {            
@@ -803,6 +798,7 @@ export class MouseManager {
     private _isDown: boolean = false;
 
     public onMouseDown(event): void {
+        this._isTouch = (event.type != "mousedown");
         if (this._isDown) {
             return;
         }
@@ -874,7 +870,9 @@ export class MouseManager {
   
             scene._mouseY = (mouseY < scene.view.y)? scene.view.y : (mouseY > scene.view.y + scene.view.height)? scene.view.y + scene.view.height : mouseY - scene.view.y;
 
-            scene.updateCollider();
+            if (!scene.disableMouseEvents)
+                this._iCollision = scene.getViewCollision(scene._mouseX, scene._mouseY);
+
 
             if (scene.layeredView && this._iCollision)
                 break;
