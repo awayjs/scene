@@ -368,7 +368,7 @@ export class _Render_Skybox extends _Render_RenderableBase
 }
 
 import {Plane3D} from "@awayjs/core";
-import { IEntityTraverser, EntityNode } from '@awayjs/view';
+import { IEntityTraverser, EntityNode, IPartitionEntity, PickGroup } from '@awayjs/view';
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
@@ -383,7 +383,7 @@ export class SkyboxNode extends EntityNode
 	 * @param numPlanes
 	 * @returns {boolean}
 	 */
-	public isInFrustum(planes:Array<Plane3D>, numPlanes:number):boolean
+	public isInFrustum(rootEntity:IPartitionEntity, planes:Array<Plane3D>, numPlanes:number, pickGroup:PickGroup):boolean
 	{
 		if (!this.isVisible())
 			return false;
