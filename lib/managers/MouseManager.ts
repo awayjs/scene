@@ -9,6 +9,7 @@ import { MouseEvent } from "../events/MouseEvent";
 import { FrameScriptManager } from "../managers/FrameScriptManager";
 
 import { Scene } from "../Scene";
+import { IInputRecorder } from './IInputRecorder';
 
 
 /**
@@ -17,6 +18,7 @@ import { Scene } from "../Scene";
  */
 export class MouseManager {
     private static _instance: MouseManager;
+    public static inputRecorder: IInputRecorder;
 
     private _pickGroup: PickGroup;
     private _sceneLookup: Array<Scene> = new Array<Scene>();
@@ -712,6 +714,8 @@ export class MouseManager {
     // ---------------------------------------------------------------------
 
     public onKeyDown(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
+
         //console.log("Keydown", event);
         if(this.allowKeyInput){
             event.preventDefault();
@@ -731,6 +735,8 @@ export class MouseManager {
 
     }
     public onKeyUp(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
+
         //console.log("Keyup", event);
         if(this.allowKeyInput){
             event.preventDefault();
@@ -752,6 +758,7 @@ export class MouseManager {
     }
 
     public onMouseMove(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this._isTouch = (event.type != "mousemove");
 
         this.updateColliders(event);
@@ -759,25 +766,29 @@ export class MouseManager {
         this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event, this._iCollision);
     }
 
-    private onMouseOut(event): void {
+    public onMouseOut(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this.updateColliders(event);
 
         this.queueDispatch(this._mouseOut, event, this._iCollision);
     }
 
-    private onMouseOver(event): void {
+    public onMouseOver(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this.updateColliders(event);
 
         this.queueDispatch(this._mouseOver, event, this._iCollision);
     }
 
-    private onClick(event): void {
+    public onClick(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this.updateColliders(event);
 
         this.queueDispatch(this._mouseClick, event, this._iCollision);
     }
 
-    private onDoubleClick(event): void {
+    public onDoubleClick(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this.updateColliders(event);
 
         this.queueDispatch(this._mouseDoubleClick, event, this._iCollision);
@@ -791,6 +802,7 @@ export class MouseManager {
         if (this._isDown) {
             return;
         }
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this._isDown = true;
 
         this.updateColliders(event);
@@ -810,6 +822,7 @@ export class MouseManager {
         if (!this._isDown) {
             return;
         }
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this._isDown = false;
 
         this.updateColliders(event);
@@ -824,7 +837,8 @@ export class MouseManager {
         this.queueDispatch(this._mouseUp, event, this._iCollision);
     }
 
-    private onMouseWheel(event): void {
+    public onMouseWheel(event): void {
+        !MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
         this.updateColliders(event);
 
         this.queueDispatch(this._mouseWheel, event, this._iCollision);
