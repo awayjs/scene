@@ -199,7 +199,7 @@ export class DisplayObjectContainer extends DisplayObject
 	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
 	{
 		
-		if (!this.doingSwap && (!child.adapter || !(<any>child.adapter).noReset) && !(<any>child).noReset) {
+		if (!this.doingSwap && child.adapter != child && !(<any>child.adapter).noReset && !(<any>child).noReset) {
 			child.reset();// this takes care of transform and visibility
 		}
 		if (child == null)
