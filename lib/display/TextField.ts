@@ -2124,10 +2124,10 @@ export class TextField extends DisplayObjectContainer
 				this.chars_codes[this.chars_codes.length]=char_code;
 				this.tf_per_char[this.tf_per_char.length]=tf;
 				char_width=tf.font_table.getCharWidth(char_code.toString());
-				if(char_width<=0){
+				/*if(char_width<=0){
 					char_width=tf.font_table.getCharWidth("32");
 					//console.log("ERROR in TextField.buildTextRuns(): char is not provided by FontTable", char_code, this.text[c]);
-				}
+				}*/
 
 				// if this is a letter, and next char is no whitespace, we add the letterSpacing to the letter-width
 				// todo: we might need to add the letterspacing also if next char is a linebreak ?
