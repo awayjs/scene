@@ -23,7 +23,6 @@ export class MovieClip extends Sprite {
 
 	public static _skipAdvance: boolean;
 
-	public timelineMC: boolean;
 
 	public preventScript: boolean = false;
 
@@ -111,7 +110,6 @@ export class MovieClip extends Sprite {
 	constructor(timeline: Timeline = null) {
 		super();
 
-		this.timelineMC = false;
 		this._soundVolume = 1;
 		this._parentSoundVolume = 1;
 		this.doingSwap = false;
@@ -356,8 +354,6 @@ export class MovieClip extends Sprite {
 	public constructedKeyFrameIndex: number = -1;
 
 	public reset(fireScripts: boolean = true): void {
-		if (!this.timelineMC)
-			return;
 		super.reset();
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
@@ -516,6 +512,9 @@ export class MovieClip extends Sprite {
 
 		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
 			(<any>child.adapter).deleteOwnProperties();
+        }
+        if (!this.doingSwap) {
+			child.reset();// this takes care of transform and visibility
 		}
 		var returnObj=this.addChildAtDepth(child, depth);
 		this._sessionID_childs[sessionID] = child;
@@ -635,7 +634,6 @@ export class MovieClip extends Sprite {
 
 	public copyTo(movieClip: MovieClip): void {
 		super.copyTo(movieClip);
-		movieClip.timelineMC = this.timelineMC;
 		movieClip.loop = this.loop;
 		movieClip._soundStreams = this._soundStreams;
 		movieClip.symbolID=this.symbolID;

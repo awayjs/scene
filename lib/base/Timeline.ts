@@ -320,9 +320,7 @@ export class Timeline
 			child.y = originalChild.y;
 			child.scaleY = originalChild.scaleY;
 			child.rotationZ = originalChild.rotationZ;
-			(<any>child).noReset=true;
 			hitArea.addChild(child);
-			(<any>child).noReset=false;
 		}
 		target_mc.pickObject=hitArea;
 		target_mc.reset(false);

@@ -364,9 +364,7 @@ export class SceneImage2D extends BitmapImage2D
 			SceneImage2D._renderer.view.height = this.height;
 
 			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
-			(<any>source.adapter).noReset=true;
 			SceneImage2D._root.addChild(source);
-			(<any>source.adapter).noReset=false;
 
 			source.x=0;
 			source.y=0;
@@ -383,15 +381,11 @@ export class SceneImage2D extends BitmapImage2D
 			if(oldParent){
 				if(oldParent.adapter && oldParent.adapter!=oldParent &&
 					source.adapter && source.adapter!=source && (<any>oldParent.adapter).addChildAt){
-					(<any>source.adapter).noReset=true;
 					(<any>oldParent.adapter).addChildAt(source.adapter, oldChildIdx);
-					(<any>source.adapter).noReset=false;
 
 				}
 				else{
-					(<any>source.adapter).noReset=true;
 					oldParent.addChildAt(source, oldChildIdx);
-					(<any>source.adapter).noReset=false;
 				}
 				
 			}
