@@ -306,18 +306,18 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase
     }
 
 
-    public _setRenderState(renderable:_Render_RenderableBase, view:View):void
+    public _setRenderState(renderable:_Render_RenderableBase):void
     {
-        super._setRenderState(renderable, view);
+        super._setRenderState(renderable);
 
         this._texture._setRenderState(renderable);
     }
     /**
      * @inheritDoc
      */
-    public _activate(view:View):void
+    public _activate():void
     {
-        super._activate(view);
+        super._activate();
 
         this._stage.context.setDepthTest(false, ContextGLCompareMode.LESS);
 

@@ -89,20 +89,20 @@ export class _Stage_SkyboxElements extends _Stage_TriangleElements
 {
     private _skyboxProjection:Matrix3D = new Matrix3D();
 
-    public draw(renderable:_Render_RenderableBase, shader:ShaderBase, view:View, count:number, offset:number):void
+    public draw(renderable:_Render_RenderableBase, shader:ShaderBase, count:number, offset:number):void
     {
         var index:number = shader.scenePositionIndex;
-        var camPos:Vector3D = view.projection.transform.concatenatedMatrix3D.position;
+        var camPos:Vector3D = shader.view.projection.transform.concatenatedMatrix3D.position;
         shader.vertexConstantData[index++] = 2*camPos.x;
         shader.vertexConstantData[index++] = 2*camPos.y;
         shader.vertexConstantData[index++] = 2*camPos.z;
         shader.vertexConstantData[index++] = 1;
-        shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = view.projection.far/Math.sqrt(3);
+        shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = shader.view.projection.far/Math.sqrt(3);
         shader.vertexConstantData[index] = 1;
 
         var near:Vector3D = new Vector3D();
 
-        this._skyboxProjection.copyFrom(view.viewMatrix3D);
+        this._skyboxProjection.copyFrom(shader.view.viewMatrix3D);
         this._skyboxProjection.copyRowTo(2, near);
 
         var cx:number = near.x;

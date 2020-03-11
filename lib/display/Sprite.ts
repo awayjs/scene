@@ -72,6 +72,9 @@ export class Sprite extends DisplayObjectContainer
 
 	public set graphics(value:Graphics)
 	{
+		if (value == null)
+			throw new Error("Cannot have graphics set to null");
+
 		if (this._graphics == value)
 			return;
 
@@ -85,12 +88,9 @@ export class Sprite extends DisplayObjectContainer
 		
 		this._graphics = value;
 
-		if (this._graphics) {
-			this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
-			this._graphics.usages++;
-		}
+		this._graphics.usages++;
 
-		this.invalidate();
+		this._onGraphicsInvalidate(null);
 	}
 	/**
 	 * Create a new Sprite object.
@@ -106,6 +106,16 @@ export class Sprite extends DisplayObjectContainer
 		this.graphics = graphics || Graphics.getGraphics();
 
 		this.material = material;
+	}
+
+	public _setParent(parent:DisplayObjectContainer):void
+	{
+		super._setParent(parent);
+
+		if (parent)
+			this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+		else 
+			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 	}
 
 	public isEntity():boolean
