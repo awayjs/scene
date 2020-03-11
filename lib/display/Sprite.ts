@@ -139,8 +139,6 @@ export class Sprite extends DisplayObjectContainer
 	public disposeValues():void
 	{
 		super.disposeValues();
-
-		this.graphics = null;
 	}
 
 	/**
