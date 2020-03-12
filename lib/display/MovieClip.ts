@@ -231,7 +231,7 @@ export class MovieClip extends Sprite {
 	public getMouseCursor(): string {
 		if (this.name == "scene")
 			return "initial";
-		if (this._useHandCursor){//} && (this.buttonMode)) {
+		if (this._useHandCursor && this.buttonMode) {
 			return this.cursorType;
 		}
 		return "initial";
