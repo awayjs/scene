@@ -88,6 +88,13 @@ export class Scene
 			return;
 
 		if (this._view) {
+			if (this._renderer) {
+				RenderGroup.clearInstance(this._view, this._rendererType);
+				this._renderer = null;
+			}
+
+			PickGroup.clearInstance(this._view);
+
 			this._mouseManager.unregisterContainer(this._view.stage.container);
 			this._mouseManager.unregisterScene(this);
 		}
@@ -101,8 +108,6 @@ export class Scene
 
 		if (this._camera)
 			this._view.projection = this._camera.projection;
-
-		this._disposeRenderer();
 	}
 
 	/*
@@ -199,9 +204,12 @@ export class Scene
 		if (this._rendererType == value)
 			return;
 
-		this._rendererType = value;
+		if (this._renderer) {
+			RenderGroup.clearInstance(this._view, this._rendererType);
+			this._renderer = null;
+		}
 
-		this._disposeRenderer();
+		this._rendererType = value;
 	}
 
 	/**
@@ -287,9 +295,6 @@ export class Scene
 	{
 		this._updateTime();
 
-		if (!this._renderer)
-			this._renderer = RenderGroup.getInstance(this._view, this._rendererType).getRenderer(this._partition);
-
 		// update picking
 		if (!this.disableMouseEvents)
 			this._mouseManager.fireMouseEvents(this);
@@ -298,7 +303,7 @@ export class Scene
 			this.beforeRenderCallback();
 
 		//render the contents of the scene
-		this._renderer.render();
+		this.renderer.render();
 	}
 
 	/**
@@ -315,20 +320,15 @@ export class Scene
 		this._time = time;
 	}
 
-	private _disposeRenderer():void
-	{
-		if (this._renderer) {
-			this._renderer.dispose();
-			this._renderer = null;
-		}
-	}
-
 	/**
 	 *
 	 */
 	public dispose():void
 	{
-		this._disposeRenderer();
+		if (this._renderer) {
+			RenderGroup.clearInstance(this._view, this._rendererType);
+			this._renderer = null;
+		}
 
 		// TODO: imeplement mouseManager / touch3DManager
 		this._mouseManager.unregisterScene(this);
