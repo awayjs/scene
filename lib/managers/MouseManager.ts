@@ -83,7 +83,16 @@ export class MouseManager {
 
     public buttonEnabledDirty: boolean;
     private _isTouch: Boolean;
-    public isAVM1Dragging: Boolean = false;
+    private _isAVM1Dragging: Boolean = false;
+
+    public startDragObject(obj:DisplayObject){
+        this._isAVM1Dragging=true;
+        this._mouseDragEntity=obj;
+        this._mouseDragPickerEntity=obj;
+    }
+    public stopDragObject(){
+        this._isAVM1Dragging=false;
+    }
 
     public get showCursor(): boolean {
         return this._showCursor;
@@ -409,7 +418,7 @@ export class MouseManager {
 
                 var upEntity:DisplayObject = null;
                 var upPickerEntity:DisplayObject = null;
-                if (this.isAVM1Dragging && this._mouseDragPickerEntity) {
+                if (this._isAVM1Dragging && this._mouseDragPickerEntity) {
                     // avm1dragging is in process, dispatch the mouse-up on this._mouseDragEntity instead of the current collision
                     upPickerEntity = this._mouseDragPickerEntity;
                     upEntity = this._mouseDragEntity;
@@ -445,7 +454,7 @@ export class MouseManager {
                 this._mouseDragPickerEntity = null;
                 this._mouseDragEntity = null;
                 this._mouseDragging=false;
-                this.isAVM1Dragging = false;
+                this._isAVM1Dragging = false;
 
             } else if (event.type == MouseEvent.MOUSE_MOVE) {                
                 // no event-bubbling. dispatch on stage first
