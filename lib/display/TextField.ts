@@ -554,7 +554,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public drawBG():void
 	{
-        this._graphics.beginFill(this.backgroundColor, (!this._background && this._type == TextFieldType.INPUT)? 0 : 1);
+        this._graphics.beginFill(this.backgroundColor, (!this._background)? 0 : 1);
         this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
         this._graphics.endFill();
     }
@@ -2605,8 +2605,7 @@ export class TextField extends DisplayObjectContainer
 		this.targetGraphics=this._graphics;
 		this.targetGraphics.clear();
 
-		if (this._background || this._type == TextFieldType.INPUT)
-			this.drawBG();
+		this.drawBG();
 
 		if(this.border || (!this._background && this._type != TextFieldType.INPUT))
 			this.drawBorder();
@@ -2746,8 +2745,7 @@ export class TextField extends DisplayObjectContainer
 		}
 		this.targetGraphics.clear();
 
-		if (this._background || this._type == TextFieldType.INPUT)
-			this.drawBG();
+        this.drawBG();
 
 		if(this._border || !this._background)
 			this.drawBorder();
