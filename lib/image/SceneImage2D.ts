@@ -239,6 +239,15 @@ export class SceneImage2D extends BitmapImage2D
 		this._imageDataDirty = true;
 	}
 
+	public threshold(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean):void
+	{
+		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
+		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
+		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
+
+		this._imageDataDirty = true;
+	}
+
 	
 	// /**
 	//  *
