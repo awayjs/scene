@@ -3489,6 +3489,24 @@ export class TextField extends DisplayObjectContainer
                     return;                
             }
             if(this.newTextFormat.font_table){
+
+				let table = this.newTextFormat.font_table;
+				let symbol = char.charCodeAt(0).toString();
+				let exist = false;
+
+				exist = (exist || table.hasChar(symbol));
+				exist = (exist || table.hasChar(symbol.toLowerCase()));
+				exist = (exist || table.hasChar(symbol.toUpperCase()));
+
+				// check fallback
+				exist = (exist || table.fallbackTable.hasChar(symbol));
+				exist = (exist || table.fallbackTable.hasChar(symbol.toLowerCase()));
+				exist = (exist || table.fallbackTable.hasChar(symbol.toUpperCase()));
+
+				if(!exist) {
+					return;
+				}
+				/*
                 if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
                     char=char.toUpperCase();
                     if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
@@ -3497,7 +3515,7 @@ export class TextField extends DisplayObjectContainer
                             return;
                         }
                     }
-                }
+                }*/
             }
             this._insertNewText(char);
 		}
