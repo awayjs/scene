@@ -26,7 +26,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 {
 	public static assetType:string = "[asset TesselatedFontTable]";
 	private _font_chars:Array<TesselatedFontChar>;
-	public _font_chars_dic:{[key: string]: TesselatedFontChar};
+	public _font_chars_dic:StringMap<TesselatedFontChar>;
 	private _font_em_size:number;
 	private _whitespace_width:number;
 	private _offset_x:number;
