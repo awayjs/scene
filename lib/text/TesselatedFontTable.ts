@@ -26,7 +26,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 {
 	public static assetType:string = "[asset TesselatedFontTable]";
 	private _font_chars:Array<TesselatedFontChar>;
-	public _font_chars_dic:Object;
+	public _font_chars_dic:{[key: string]: TesselatedFontChar};
 	private _font_em_size:number;
 	private _whitespace_width:number;
 	private _offset_x:number;
@@ -61,7 +61,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	{
 		super();
 		this._font_chars = [];
-		this._font_chars_dic = new Object();
+		this._font_chars_dic = Object.create(null);
 		this._current_size=0;
 		this._size_multiply=0;
 		this._ascent=0;
@@ -446,17 +446,18 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	}
 	public hasChar(char_code:string):boolean
 	{
-		var tesselated_font_char:TesselatedFontChar=this._font_chars_dic[name];
-		if(tesselated_font_char==null){
-			if(this._opentype_font){
-				//console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
-				var thisGlyph=this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
-				if(thisGlyph){
-                    return true;
-                }
-            }
-        }
-		return this._font_chars_dic[char_code]!=null;
+		let has = !!this._font_chars_dic[char_code];
+
+		if(!has && this._opentype_font){
+			//console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
+			has = !!this._opentype_font.charToGlyph(String.fromCharCode(parseInt(char_code)));	
+		}
+
+		if(!has && this.fallbackTable) {
+			has = !!this.fallbackTable.hasChar(char_code);
+		}
+		
+		return has;
 	}
 
 	public changeOpenTypeFont(newOpenTypeFont:any, tesselateAllOld:boolean=true)

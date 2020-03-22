@@ -3498,11 +3498,6 @@ export class TextField extends DisplayObjectContainer
 				exist = (exist || table.hasChar(symbol.toLowerCase()));
 				exist = (exist || table.hasChar(symbol.toUpperCase()));
 
-				// check fallback
-				exist = (exist || table.fallbackTable.hasChar(symbol));
-				exist = (exist || table.fallbackTable.hasChar(symbol.toLowerCase()));
-				exist = (exist || table.fallbackTable.hasChar(symbol.toUpperCase()));
-
 				if(!exist) {
 					return;
 				}
