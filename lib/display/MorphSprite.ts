@@ -1,4 +1,4 @@
-﻿import {Matrix} from "@awayjs/core";
+﻿import {Matrix, ColorUtils} from "@awayjs/core";
 
 import {PartitionBase, EntityNode} from "@awayjs/view";
 
@@ -27,26 +27,6 @@ export class MorphSprite extends Sprite
 
 	private _ratio:string;
 
-	//todo: move to colorutils
-	private static interpolateColor(start:number, end:number, ratio:number){
-
-		var a:number = ( start & 0xff000000 ) >>> 24;
-		var r:number = ( start & 0xff0000 ) >>> 16;
-		var g:number = ( start & 0xff00 ) >>> 8;
-		var b:number = start & 0xff;
-		var a2:number = ( end & 0xff000000 ) >>> 24;
-		var r2:number = ( end & 0xff0000 ) >>> 16;
-		var g2:number = ( end & 0xff00 ) >>> 8;
-		var b2:number = end & 0xff;
-
-		var rs=1-ratio;
-		var re=ratio;
-
-		return (((a*rs+a2*re) << 24) | ((r*rs+r2*re) << 16) | ((g*rs+g2*re) << 8) | (b*rs+b2*re));
-
-
-	}
-
 	public get assetType():string
 	{
 		return MorphSprite.assetType;
@@ -74,13 +54,16 @@ export class MorphSprite extends Sprite
 			throw("Error in morph data - different number of pathes");
 		}
 
-		var len=this._graphics.start.length;
-		var ratioStart=1-ratio;
-		var ratioEnd=ratio;
-		var newPath:GraphicsPath;
-		var startPath:GraphicsPath;
-		var endPath:GraphicsPath;
-		for(var i:number=0; i<len; i++){
+		const len=this._graphics.start.length;
+		const ratioStart=1-ratio;
+		const ratioEnd=ratio;
+		let newPath:GraphicsPath;
+		let startPath:GraphicsPath;
+		let endPath:GraphicsPath;
+		let alpha:number;
+		let color:number;
+
+		for(let i:number=0; i<len; i++){
 			newPath=new GraphicsPath();
 			startPath=this._graphics.start[i];
 			endPath=this._graphics.end[i];
@@ -89,26 +72,26 @@ export class MorphSprite extends Sprite
 			}
 			switch(startPath.style.data_type){
 				case GraphicsFillStyle.data_type:
-					var alpha=ratioStart*(<GraphicsFillStyle>startPath.style).alpha + ratioEnd*(<GraphicsFillStyle>endPath.style).alpha;
-					var color=MorphSprite.interpolateColor((<GraphicsFillStyle>startPath.style).color, (<GraphicsFillStyle>endPath.style).color, ratio);
+					alpha=ratioStart*(<GraphicsFillStyle>startPath.style).alpha + ratioEnd*(<GraphicsFillStyle>endPath.style).alpha;
+					color=ColorUtils.interpolateFloat32Color((<GraphicsFillStyle>startPath.style).color, (<GraphicsFillStyle>endPath.style).color, ratio);
 					newPath.style=new GraphicsFillStyle(color, alpha);
 					break;
 				case GradientFillStyle.data_type:
-					var newColors=[];
-					var newRatios=[];
-					var newAlphas=[];
-					var startStyle:GradientFillStyle=(<GradientFillStyle>startPath.style);
-					var endStyle:GradientFillStyle=(<GradientFillStyle>endPath.style);
-					var clen=startStyle.colors.length;
-					for(var c:number=0; c<clen; c++){
-						newColors[newColors.length]= MorphSprite.interpolateColor(startStyle.colors[c], endStyle.colors[c], ratio);
+					let newColors=[];
+					let newRatios=[];
+					let newAlphas=[];
+					let startStyle:GradientFillStyle=(<GradientFillStyle>startPath.style);
+					let endStyle:GradientFillStyle=(<GradientFillStyle>endPath.style);
+					let clen=startStyle.colors.length;
+					for(let c:number=0; c<clen; c++){
+						newColors[newColors.length]= ColorUtils.interpolateFloat32Color(startStyle.colors[c], endStyle.colors[c], ratio);
 						newAlphas[newAlphas.length]=ratioStart*startStyle.alphas[c] + ratioEnd*endStyle.alphas[c];
 						newRatios[newRatios.length]=ratioStart*startStyle.ratios[c] + ratioEnd*endStyle.ratios[c];
 					}
 					//todo: interpolate uvtransform
-					var transform:Matrix=startStyle.matrix;
-					var transformb:Matrix=endStyle.matrix;
-					var transformnew:Matrix=new Matrix();
+					let transform:Matrix=startStyle.matrix;
+					let transformb:Matrix=endStyle.matrix;
+					let transformnew:Matrix=new Matrix();
 					transformnew.a=transform.a*ratioStart + transformb.a*ratioEnd;
 					transformnew.b=transform.b*ratioStart + transformb.b*ratioEnd;
 					transformnew.c=transform.c*ratioStart + transformb.c*ratioEnd;
@@ -118,45 +101,44 @@ export class MorphSprite extends Sprite
 					newPath.style=new GradientFillStyle(startStyle.type, newColors, newAlphas, newRatios, transformnew, startStyle.spreadMethod, startStyle.interpolationMethod, startStyle.focalPointRatio);
 					break;
 				case BitmapFillStyle.data_type:
-					//newPath.style=new BitmapFillStyle();
+					//todo
+					console.warn("MorphSprite: BitmapFillStyle not implemented!");
 					break;
 				case GraphicsStrokeStyle.data_type:
-					var startStrokeStyle:GraphicsStrokeStyle=(<GraphicsStrokeStyle>startPath.style);
-					var endSStroketyle:GraphicsStrokeStyle=(<GraphicsStrokeStyle>endPath.style);
-					var alpha=ratioStart*startStrokeStyle.alpha + ratioEnd*endSStroketyle.alpha;
-					var color=MorphSprite.interpolateColor(startStrokeStyle.color, endSStroketyle.color, ratio);
-					var thickness=ratioStart*startStrokeStyle.thickness + ratioEnd*endSStroketyle.thickness;;
+					let startStrokeStyle:GraphicsStrokeStyle=(<GraphicsStrokeStyle>startPath.style);
+					let endSStroketyle:GraphicsStrokeStyle=(<GraphicsStrokeStyle>endPath.style);
+					alpha=ratioStart*startStrokeStyle.alpha + ratioEnd*endSStroketyle.alpha;
+					color=ColorUtils.interpolateFloat32Color(startStrokeStyle.color, endSStroketyle.color, ratio);
+					let thickness=ratioStart*startStrokeStyle.thickness + ratioEnd*endSStroketyle.thickness;;
 
 					newPath.style=new GraphicsStrokeStyle(color, alpha, thickness, startStrokeStyle.jointstyle, startStrokeStyle.capstyle, startStrokeStyle.miter_limit, startStrokeStyle.scaleMode);
 					break;
 			}
-			var startDataCnt=0;
-			var endDataCnt=0;
-			var startLastX=0;
-			var startLastY=0;
-			var endLastX=0;
-			var endLastY=0;
-			var len_contours=startPath._commands.length;
+			let startDataCnt=0;
+			let endDataCnt=0;
+			let startLastX=0;
+			let startLastY=0;
+			let endLastX=0;
+			let endLastY=0;
+			let len_contours=startPath._commands.length;
 			startPath=this._graphics.start[0];
 			endPath=this._graphics.end[0];
 			if(endPath._commands.length!=len_contours) {
 				len_contours=Math.min(endPath._commands.length, len_contours);
-				//throw("Error in morph data - different number of contour");
+				throw("Error in morph data - different number of contour");
 			}
-			for(var c:number=0; c < len_contours; c++){
-				var startCmds=startPath._commands[c];
-				var startData=startPath._data[c];
-				var endCmds=endPath._commands[c];
-				var endData=endPath._data[c];
-				var len_cmds=startCmds.length;
+			for(let c:number=0; c < len_contours; c++){
+				let startCmds=startPath._commands[c];
+				let startData=startPath._data[c];
+				let endCmds=endPath._commands[c];
+				let endData=endPath._data[c];
+				let len_cmds=startCmds.length;
 				if(endCmds.length!=len_cmds){
 					len_cmds=Math.min(endCmds.length, len_cmds);
-					//throw("Error in morph data - different number of commands in contour");
+					throw("Error in morph data - different number of commands in contour");
 				}
-				//console.log("start", startData);
-				//console.log("end", endData);
 
-				for(var c2:number=0; c2<len_cmds; c2++){
+				for(let c2:number=0; c2<len_cmds; c2++){
 
 					switch(startCmds[c2]){
 						case GraphicsPathCommand.MOVE_TO:
@@ -178,8 +160,8 @@ export class MorphSprite extends Sprite
 								newPath.lineTo(ratioStart * startLastX + ratioEnd * endLastX,ratioStart * startLastY + ratioEnd * endLastY);
 							}
 							else if(endCmds[c2]==GraphicsPathCommand.CURVE_TO){
-								var ctrX=startLastX+(startData[startDataCnt++]-startLastX)/2;
-								var ctrY=startLastY+(startData[startDataCnt++]-startLastY)/2;
+								let ctrX=startLastX+(startData[startDataCnt++]-startLastX)/2;
+								let ctrY=startLastY+(startData[startDataCnt++]-startLastY)/2;
 
 								newPath.curveTo(ratioStart * ctrX + ratioEnd * endData[endDataCnt++],
 									ratioStart * ctrY + ratioEnd * endData[endDataCnt++],
@@ -195,8 +177,8 @@ export class MorphSprite extends Sprite
 							break;
 						case GraphicsPathCommand.CURVE_TO:
 							if(endCmds[c2]==GraphicsPathCommand.LINE_TO){
-								var ctrX=endLastX+(endData[endDataCnt++]-endLastX)/2;
-								var ctrY=endLastY+(endData[endDataCnt++]-endLastY)/2;
+								let ctrX=endLastX+(endData[endDataCnt++]-endLastX)/2;
+								let ctrY=endLastY+(endData[endDataCnt++]-endLastY)/2;
 
 								newPath.curveTo(ratioStart * startData[startDataCnt++] + ratioEnd * ctrX,
 									ratioStart * startData[startDataCnt++] + ratioEnd * ctrY,
@@ -225,22 +207,7 @@ export class MorphSprite extends Sprite
 				}
 			}
 			this._graphics.add_queued_path(newPath);
-			//console.log(endPath);
-			//console.log(startPath);
-
-		}
-		
-		/*
-		var newPath:GraphicsPath=new GraphicsPath();
-		newPath.moveTo(50,50);
-		newPath.lineTo(50,100);
-		newPath.lineTo(100,100);
-		newPath.lineTo(100,50);
-		newPath.lineTo(50,50);
-		newPath.style=this.end[0].style;
-		newGraphics.add_queued_path(newPath);
-		*/
-
+		}		
 		this._graphics.endFill();
 	}
 	
