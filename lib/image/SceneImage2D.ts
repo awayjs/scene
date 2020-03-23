@@ -1,4 +1,4 @@
-import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform, Box} from "@awayjs/core";
+import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform, Box, Matrix3D} from "@awayjs/core";
 
 import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace} from "@awayjs/stage";
 
@@ -350,8 +350,7 @@ export class SceneImage2D extends BitmapImage2D
 
 			var oldParent:DisplayObjectContainer=source.parent;
 			var oldChildIdx:number=oldParent?oldParent.getChildIndex(source):0;
-			var oldx:number=source.x;
-			var oldy:number=source.y;
+			var oldMatrix3D:Matrix3D=source.transform.matrix3D.clone();
 			var oldVisible:boolean=source.visible;
 			var oldColorTransform:ColorTransform=source.transform.colorTransform.clone();
 
@@ -375,8 +374,7 @@ export class SceneImage2D extends BitmapImage2D
 			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
 			SceneImage2D._root.addChild(source);
 
-			source.x=0;
-			source.y=0;
+			source.transform.matrix3D = new Matrix3D();
 			source.visible=true;
 			source.transform.colorTransform = null;
 			//save snapshot if unlocked
@@ -398,9 +396,8 @@ export class SceneImage2D extends BitmapImage2D
 				}
 				
 			}
-			source.x=oldx;
-			source.y=oldy;
-			source.visible=oldVisible;
+			source.transform.matrix3D = oldMatrix3D;
+			source.visible = oldVisible;
 			source.transform.colorTransform = oldColorTransform;
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
