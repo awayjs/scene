@@ -164,7 +164,7 @@ export class TextField extends DisplayObjectContainer
 	public _textFormats:TextFormat[];
 	public _textFormatsIdx:number[];
 
-	public textShapes:any;
+	public textShapes:StringMap<TextShape>;
 	
 	private inMaskMode:boolean=false;
 	private maskChild:Sprite;// holds the mask for the textfield
@@ -1998,7 +1998,7 @@ export class TextField extends DisplayObjectContainer
 		//	the data for new text-shapes is collected from the font-tables
 		//	and the new text-shapes are created and assigned to the graphics
 
-		if(this._glyphsDirty){
+		if(this._glyphsDirty) {
 			//console.log("TextField buildGlyphs", this.id, this.words);
 			if(this._labelData){
 				this.buildGlyphsForLabelData();
@@ -2007,12 +2007,15 @@ export class TextField extends DisplayObjectContainer
 				this.buildGlyphs();
 			}
 		}
+
         this._glyphsDirty=false;
-        if(this._labelData)
-            return;
-        
-        this.buildShapes();        
-        this._shapesDirty=false;
+
+		if(this._labelData) {
+			return;
+		}
+
+		this.buildShapes();
+		this._shapesDirty=false;
 
 	}
 
@@ -2672,24 +2675,28 @@ export class TextField extends DisplayObjectContainer
 	{
 		this._clearTextShapes();
 		
-		// process all textRuns
-		var tr:number=0;
-		var tr_len:number=this._textRuns_formats.length;
-		for (tr = 0; tr < tr_len; tr++) {
-			this._textRuns_formats[tr].font_table.initFontSize(this._textRuns_formats[tr].size);
+		const tr_formats = this._textRuns_formats;
+		const tr_words = this._textRuns_words;
+		const tr_len = tr_formats.length;
+		
+		for (let tr = 0; tr < tr_len; tr++) {
+			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
-			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
+			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], tr_words[(tr*4)], tr_words[(tr*4)+1]);
 		}
 
-		var textShape:TextShape;
+		let textShape:TextShape;
+
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
 			
 			var color=this.getTextColorForTextFormat(textShape.format);
 			var alpha=ColorUtils.float32ColorToARGB(color)[0];
+			
 			if(alpha==0){
 				alpha=255;
 			}
+
 			// this textShapeshape is for FNT font
 			var attr_length:number = textShape.fntMaterial?4:2;
 			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
@@ -2699,8 +2706,11 @@ export class TextField extends DisplayObjectContainer
 
 			textShape.elements = new TriangleElements(vertexBuffer);
 			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-			if(textShape.fntMaterial)
+			
+			if(textShape.fntMaterial) {
 				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
+			}
+			
 			textShape.shape = Shape.getShape(textShape.elements);
 			textShape.shape.usages++;
 
@@ -3553,6 +3563,8 @@ export class TextField extends DisplayObjectContainer
 		}
     }
     private _insertNewText(newText:string){
+
+		console.log('[TEXT] insert', newText, this._iText);
 
         if(this._selectionBeginIndex!=this._selectionEndIndex){
             var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);

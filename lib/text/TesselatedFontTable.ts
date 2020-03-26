@@ -68,9 +68,14 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		this._descent=0;
 		this._usesCurves=false;
 		this._glyphIdxToChar={};
-		this._whitespace_width=0;
 		this._fnt_channels=[];
 		this.vertical_glyph_offset=0;
+
+		// default size
+		this._font_em_size = 32;
+
+		// for default spaces 
+		this._whitespace_width = 14;
 
 		if(opentype_font){
 			this._opentype_font=opentype_font;
@@ -470,11 +475,21 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	}
 	public initFontSize(font_size:number)
 	{
-		if(this.fallbackTable)
+		if(this.fallbackTable){
 			this.fallbackTable.initFontSize(font_size);
-		if(this._current_size==font_size) return;
+		}
+		
+		if(this._current_size === font_size) {
+			return;
+		}
+
 		this._current_size = font_size;
-		this._size_multiply= font_size/this._font_em_size;
+		this._size_multiply= font_size / this._font_em_size;
+
+		if(!this._size_multiply) {
+			debugger;
+		}
+
 		//console.log("text-font-table: ",this._ascent, this._descent, this._font_em_size)
 	}
 
