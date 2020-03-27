@@ -171,11 +171,13 @@ export class TextField extends DisplayObjectContainer
 	private textChild:TextSprite;// holds the graphic-content for this textfield
 	private targetGraphics:Graphics;
 
+	private cursorShape:Shape;
+	private bgShapeSelect:Shape;
 
+	private cursorIntervalID:number = -1;
 
-	private cursorIntervalID:number=-1;
-	public cursorBlinking:boolean=false;
-	public showSelection:boolean=false;
+	public cursorBlinking:boolean = false;
+	public showSelection:boolean = false;
 	
 	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
 	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
@@ -218,7 +220,9 @@ export class TextField extends DisplayObjectContainer
 	private _maskHeight:number=0;
 	private _maskTextOffsetX:number=0;
 	private _maskTextOffsetY:number=0;
-    
+	
+	public bgShape:Shape;
+	
     public isStatic:boolean=false;
     
 	public updateMaskMode()
@@ -381,6 +385,7 @@ export class TextField extends DisplayObjectContainer
 		this.drawSelectionGraphics();
 
 	}
+
 	private drawSelectionGraphics(){
 		if(this._selectionBeginIndex<0){
 			this._selectionBeginIndex=0;
@@ -395,12 +400,12 @@ export class TextField extends DisplayObjectContainer
 			this._selectionEndIndex=this.char_positions_x.length;
 		}	
 
-		if(this._selectionBeginIndex==this._selectionEndIndex){			
-			this.bgShapeSelect=null;
+		if(this._selectionBeginIndex===this._selectionEndIndex) {
+			this.showSelection = false;
 			this.drawCursor();
 		}
 		else{
-			this.showSelection=true;	
+			this.showSelection = true;	
 			this.drawSelectedBG();			
         }
         
@@ -423,13 +428,15 @@ export class TextField extends DisplayObjectContainer
         // if(this.textChild.x>0){
         //     this.textChild.x=0;
         // }
-    }
+	}
+
 	private drawCursor(){
-        this._shapesDirty=true;
-        if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!=this.selectionEndIndex){
-            this.cursorShape=null;
+        this._shapesDirty = true;
+
+		if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!=this.selectionEndIndex) {
             return;
-        }
+		}
+
 		var x:number=0;
 		var y:number=0;
 		var tf:TextFormat=this.newTextFormat;
@@ -457,20 +464,31 @@ export class TextField extends DisplayObjectContainer
 			y=this.char_positions_y[this._selectionBeginIndex];
 			tf=this.tf_per_char[this._selectionBeginIndex];
 		}
+
 		tf.font_table.initFontSize(tf.size);
 		var height:number= tf.font_table.getLineHeight();
         var color=this.getTextColorForTextFormat(tf);
 		var cursorScale:number=this.internalScale.x;
-		if(cursorScale<=0)cursorScale=1;
-		this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],color,1);
-		this.cursorShape.usages++;//TODO: get rid of this memory leak
-        if(this.cursorShape.style.color!=color){    
+		
+		if(cursorScale<=0) {
+			cursorScale=1;
+		}
+
+		const cursorRect = [x-(0.5*cursorScale),y,cursorScale,height];
+
+		if(!this.cursorShape) {
+			this.cursorShape = GraphicsFactoryHelper.drawRectangles(cursorRect,color,1);
+			this.cursorShape.usages++;//TODO: get rid of this memory lea
+		} else {
+			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape, cursorRect);
+		}
+
+		if(this.cursorShape.style.color !== color){    
             var alpha=ColorUtils.float32ColorToARGB(color)[0];
-            if(alpha==0){
-                alpha=255;
-            }        
-            var obj:any = Graphics.get_material_for_color(color, alpha/255);
-            if(obj.colorPos){
+			
+            var obj:any = Graphics.get_material_for_color(color, (alpha / 255) || 1);
+			
+			if(obj.colorPos){
                 this.cursorShape.style = new Style();
                 var sampler:ImageSampler = new ImageSampler();
                 obj.material.animateUVs=true;
@@ -486,18 +504,23 @@ export class TextField extends DisplayObjectContainer
 	private drawSelectedBG(){
 
         this._shapesDirty=true;
+
 		if(this._selectionBeginIndex<0){
 			this._selectionBeginIndex=0;
-		}	
+		}
+
 		if(this._selectionBeginIndex>this.char_positions_x.length){
 			this._selectionBeginIndex=this.char_positions_x.length;
 		}	
+
 		var select_start:number=this._selectionBeginIndex;
 		var select_end:number=this._selectionEndIndex;
+
 		if(this._selectionEndIndex<this._selectionBeginIndex){
 			select_start=this._selectionEndIndex;
 			select_end=this._selectionBeginIndex;
 		}
+
 		var x:number=0;
 		var y:number=0;
 		var oldy:number=-1;
@@ -546,8 +569,12 @@ export class TextField extends DisplayObjectContainer
 		if(width > 0){
 			rectangles.push(startx, oldy, width, height);
 			
-			this.bgShapeSelect = GraphicsFactoryHelper.drawRectangles(rectangles,0x0,1);
-			this.bgShapeSelect.usages++; //TODO: get rid of this memory leak
+			if(!this.bgShapeSelect) {
+				this.bgShapeSelect = GraphicsFactoryHelper.drawRectangles(rectangles,0x0,1);
+				this.bgShapeSelect.usages++; //TODO: get rid of this memory leak
+			} else {
+				GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect,rectangles);
+			}
 
 			return;
 		}
@@ -1484,9 +1511,6 @@ export class TextField extends DisplayObjectContainer
 			this._implicitPartition.invalidateEntity(this);
 	}
 
-	public cursorShape:Shape;
-	public bgShape:Shape;
-	public bgShapeSelect:Shape;
 	/**
 	 *
 	 * @param renderer
@@ -2761,19 +2785,24 @@ export class TextField extends DisplayObjectContainer
 
 		this.drawBG();
 
-		if(this._border || !this._background)
+		if(this._border || !this._background) {
 			this.drawBorder();
-        
-        this.drawSelectionGraphics();
-        if(this.bgShapeSelect && this.isInFocus){
+		}
+
+		this.drawSelectionGraphics();
+
+        if(this.bgShapeSelect && this.isInFocus && this.showSelection){
             this.targetGraphics.addShape(this.bgShapeSelect);
         }
+		
 		var textShape:TextShape;
+		
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
             <Shape>this.targetGraphics.addShape(textShape.shape);
-        }
-        if(this.type==TextFieldType.INPUT && this.isInFocus && this.cursorShape){
+		}
+		
+        if(this.type===TextFieldType.INPUT && this.isInFocus && this.cursorShape && !this.cursorBlinking){
             this.targetGraphics.addShape(this.cursorShape);
         }
     }
