@@ -334,24 +334,37 @@ export class TextField extends DisplayObjectContainer
 			}, 500);
 		}
 	}
-	public findCharIdxForMouse(event):number{
-		
-		var myPoint:Point=this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
-		var lineIdx:number=this.getLineIndexAtPoint(myPoint.x, myPoint.y);
-		var charIdx:number=this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
-		
-		if(lineIdx>=this.lines_start_x.length)
-			lineIdx=this.lines_start_x.length-1;
 
-		if(lineIdx>=0 && charIdx<0 && this.lines_start_x[lineIdx]){
-			if(myPoint.x<=this.lines_start_x[lineIdx])
-				charIdx=this.lines_charIdx_start[lineIdx];
-			else
-				charIdx=this.lines_charIdx_end[lineIdx];				
+	public findCharIdxForMouse(event):number 
+	{	
+		var myPoint = this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		var lineIdx = this.getLineIndexAtPoint(myPoint.x, myPoint.y);
+		var charIdx = this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
+
+		if(lineIdx >= this.lines_start_x.length) 
+		{
+			lineIdx = this.lines_start_x.length - 1;
 		}
-		if(lineIdx<0 || charIdx<0)
-			charIdx=0;
-		//console.log("lineIdx", lineIdx, "charIdx", charIdx);
+
+		if(lineIdx < 0) {
+			lineIdx = 0;
+		}
+
+
+		if(lineIdx >= 0 && charIdx < 0 && this.lines_start_x[lineIdx] !== undefined){
+			if(myPoint.x <= this.lines_start_x[lineIdx]) {
+				charIdx = this.lines_charIdx_start[lineIdx];
+			}
+			else
+			{
+				charIdx = this.lines_charIdx_end[lineIdx];
+			}
+		}
+
+		if(lineIdx < 0 || charIdx < 0){
+			charIdx = 0;
+		}
+
 		return charIdx;
 
     }
@@ -389,13 +402,16 @@ export class TextField extends DisplayObjectContainer
 	private drawSelectionGraphics(){
 		if(this._selectionBeginIndex<0){
 			this._selectionBeginIndex=0;
-		}	
+		}
+
 		if(this._selectionBeginIndex>this.char_positions_x.length){
 			this._selectionBeginIndex=this.char_positions_x.length;
-		}	
+		}
+
 		if(this._selectionEndIndex<0){
 			this._selectionEndIndex=0;
-		}	
+		}
+
 		if(this._selectionEndIndex>this.char_positions_x.length){
 			this._selectionEndIndex=this.char_positions_x.length;
 		}	
@@ -433,7 +449,7 @@ export class TextField extends DisplayObjectContainer
 	private drawCursor(){
         this._shapesDirty = true;
 
-		if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!=this.selectionEndIndex) {
+		if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!==this.selectionEndIndex) {
             return;
 		}
 
@@ -2868,20 +2884,27 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public getCharIndexAtPoint(x:number, y:number, lineIdx:number=-1):number /*int*/
 	{
-		if(lineIdx<0)
-			lineIdx=this.getLineIndexAtPoint(x, y);
-		var startIdx:number=this.lines_charIdx_start[lineIdx];
-		var endIdx:number=this.lines_charIdx_end[lineIdx];
-		for(var i:number=startIdx; i<endIdx; i++){
+		if(lineIdx < 0){
+			lineIdx = this.getLineIndexAtPoint(x, y);
+		}
+		
+		const startIdx = this.lines_charIdx_start[lineIdx];
+		const endIdx = this.lines_charIdx_end[lineIdx];
+		
+		for(let i = startIdx; i < endIdx; i++)
+		{
 			if(x>=this.char_positions_x[i]){
-				if(x<=this.char_positions_x[i]+this.chars_width[i]/2){
+				if(x<=this.char_positions_x[i] + this.chars_width[i] / 2)
+				{
 					return i;
 				}
-				else if(x<=this.char_positions_x[i]+this.chars_width[i]){
-					return i+1;
+				else if(x<=this.char_positions_x[i] + this.chars_width[i])
+				{
+					return i + 1;
 				}
 			} 
 		}
+
 		return -1;
 	}
 
@@ -3589,8 +3612,6 @@ export class TextField extends DisplayObjectContainer
 		}
     }
     private _insertNewText(newText:string){
-
-		console.log('[TEXT] insert', newText, this._iText);
 
         if(this._selectionBeginIndex!=this._selectionEndIndex){
             var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
