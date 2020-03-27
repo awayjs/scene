@@ -164,18 +164,20 @@ export class TextField extends DisplayObjectContainer
 	public _textFormats:TextFormat[];
 	public _textFormatsIdx:number[];
 
-	public textShapes:any;
+	public textShapes:StringMap<TextShape>;
 	
 	private inMaskMode:boolean=false;
 	private maskChild:Sprite;// holds the mask for the textfield
 	private textChild:TextSprite;// holds the graphic-content for this textfield
 	private targetGraphics:Graphics;
 
+	private cursorShape:Shape;
+	private bgShapeSelect:Shape;
 
+	private cursorIntervalID:number = -1;
 
-	private cursorIntervalID:number=-1;
-	public cursorBlinking:boolean=false;
-	public showSelection:boolean=false;
+	public cursorBlinking:boolean = false;
+	public showSelection:boolean = false;
 	
 	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
 	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
@@ -218,7 +220,9 @@ export class TextField extends DisplayObjectContainer
 	private _maskHeight:number=0;
 	private _maskTextOffsetX:number=0;
 	private _maskTextOffsetY:number=0;
-    
+	
+	public bgShape:Shape;
+	
     public isStatic:boolean=false;
     
 	public updateMaskMode()
@@ -330,24 +334,37 @@ export class TextField extends DisplayObjectContainer
 			}, 500);
 		}
 	}
-	public findCharIdxForMouse(event):number{
-		
-		var myPoint:Point=this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
-		var lineIdx:number=this.getLineIndexAtPoint(myPoint.x, myPoint.y);
-		var charIdx:number=this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
-		
-		if(lineIdx>=this.lines_start_x.length)
-			lineIdx=this.lines_start_x.length-1;
 
-		if(lineIdx>=0 && charIdx<0 && this.lines_start_x[lineIdx]){
-			if(myPoint.x<=this.lines_start_x[lineIdx])
-				charIdx=this.lines_charIdx_start[lineIdx];
-			else
-				charIdx=this.lines_charIdx_end[lineIdx];				
+	public findCharIdxForMouse(event):number 
+	{	
+		var myPoint = this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		var lineIdx = this.getLineIndexAtPoint(myPoint.x, myPoint.y);
+		var charIdx = this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
+
+		if(lineIdx >= this.lines_start_x.length) 
+		{
+			lineIdx = this.lines_start_x.length - 1;
 		}
-		if(lineIdx<0 || charIdx<0)
-			charIdx=0;
-		//console.log("lineIdx", lineIdx, "charIdx", charIdx);
+
+		if(lineIdx < 0) {
+			lineIdx = 0;
+		}
+
+
+		if(lineIdx >= 0 && charIdx < 0 && this.lines_start_x[lineIdx] !== undefined){
+			if(myPoint.x <= this.lines_start_x[lineIdx]) {
+				charIdx = this.lines_charIdx_start[lineIdx];
+			}
+			else
+			{
+				charIdx = this.lines_charIdx_end[lineIdx];
+			}
+		}
+
+		if(lineIdx < 0 || charIdx < 0){
+			charIdx = 0;
+		}
+
 		return charIdx;
 
     }
@@ -381,26 +398,30 @@ export class TextField extends DisplayObjectContainer
 		this.drawSelectionGraphics();
 
 	}
+
 	private drawSelectionGraphics(){
 		if(this._selectionBeginIndex<0){
 			this._selectionBeginIndex=0;
-		}	
+		}
+
 		if(this._selectionBeginIndex>this.char_positions_x.length){
 			this._selectionBeginIndex=this.char_positions_x.length;
-		}	
+		}
+
 		if(this._selectionEndIndex<0){
 			this._selectionEndIndex=0;
-		}	
+		}
+
 		if(this._selectionEndIndex>this.char_positions_x.length){
 			this._selectionEndIndex=this.char_positions_x.length;
 		}	
 
-		if(this._selectionBeginIndex==this._selectionEndIndex){			
-			this.bgShapeSelect=null;
+		if(this._selectionBeginIndex===this._selectionEndIndex) {
+			this.showSelection = false;
 			this.drawCursor();
 		}
 		else{
-			this.showSelection=true;	
+			this.showSelection = true;	
 			this.drawSelectedBG();			
         }
         
@@ -423,13 +444,15 @@ export class TextField extends DisplayObjectContainer
         // if(this.textChild.x>0){
         //     this.textChild.x=0;
         // }
-    }
+	}
+
 	private drawCursor(){
-        this._shapesDirty=true;
-        if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!=this.selectionEndIndex){
-            this.cursorShape=null;
+        this._shapesDirty = true;
+
+		if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!==this.selectionEndIndex) {
             return;
-        }
+		}
+
 		var x:number=0;
 		var y:number=0;
 		var tf:TextFormat=this.newTextFormat;
@@ -457,20 +480,31 @@ export class TextField extends DisplayObjectContainer
 			y=this.char_positions_y[this._selectionBeginIndex];
 			tf=this.tf_per_char[this._selectionBeginIndex];
 		}
+
 		tf.font_table.initFontSize(tf.size);
 		var height:number= tf.font_table.getLineHeight();
         var color=this.getTextColorForTextFormat(tf);
 		var cursorScale:number=this.internalScale.x;
-		if(cursorScale<=0)cursorScale=1;
-		this.cursorShape=GraphicsFactoryHelper.drawRectangles([x-(0.5*cursorScale),y,cursorScale,height],color,1);
-		this.cursorShape.usages++;//TODO: get rid of this memory leak
-        if(this.cursorShape.style.color!=color){    
+		
+		if(cursorScale<=0) {
+			cursorScale=1;
+		}
+
+		const cursorRect = [x-(0.5*cursorScale),y,cursorScale,height];
+
+		if(!this.cursorShape) {
+			this.cursorShape = GraphicsFactoryHelper.drawRectangles(cursorRect,color,1);
+			this.cursorShape.usages++;//TODO: get rid of this memory lea
+		} else {
+			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape, cursorRect);
+		}
+
+		if(this.cursorShape.style.color !== color){    
             var alpha=ColorUtils.float32ColorToARGB(color)[0];
-            if(alpha==0){
-                alpha=255;
-            }        
-            var obj:any = Graphics.get_material_for_color(color, alpha/255);
-            if(obj.colorPos){
+			
+            var obj:any = Graphics.get_material_for_color(color, (alpha / 255) || 1);
+			
+			if(obj.colorPos){
                 this.cursorShape.style = new Style();
                 var sampler:ImageSampler = new ImageSampler();
                 obj.material.animateUVs=true;
@@ -486,18 +520,23 @@ export class TextField extends DisplayObjectContainer
 	private drawSelectedBG(){
 
         this._shapesDirty=true;
+
 		if(this._selectionBeginIndex<0){
 			this._selectionBeginIndex=0;
-		}	
+		}
+
 		if(this._selectionBeginIndex>this.char_positions_x.length){
 			this._selectionBeginIndex=this.char_positions_x.length;
 		}	
+
 		var select_start:number=this._selectionBeginIndex;
 		var select_end:number=this._selectionEndIndex;
+
 		if(this._selectionEndIndex<this._selectionBeginIndex){
 			select_start=this._selectionEndIndex;
 			select_end=this._selectionBeginIndex;
 		}
+
 		var x:number=0;
 		var y:number=0;
 		var oldy:number=-1;
@@ -506,6 +545,7 @@ export class TextField extends DisplayObjectContainer
 		var width:number=0;
 		var height:number=0;
 		var rectangles:number[]=[];
+
 		if(this.char_positions_x.length!=0 && this._selectionEndIndex!=this._selectionBeginIndex){
 			var len:number=(select_end>this.char_positions_x.length)?this.char_positions_x.length:select_end;
 			//console.log(select_start, select_end);
@@ -534,17 +574,24 @@ export class TextField extends DisplayObjectContainer
 				width+=this.chars_width[i];
 				oldy=y;			
 				tf.font_table.initFontSize(tf.size);
-				height = tf.font_table.getLineHeight();
+
+				height = Math.max(height, tf.font_table.getLineHeight());
 			}
 		}
 		// if (this.bgShapeSelect) {
 		// 	this.bgShapeSelect.dispose();
 		// 	this.bgShapeSelect=null;
 		// }
-		if(width>0){
+		if(width > 0){
 			rectangles.push(startx, oldy, width, height);
-			this.bgShapeSelect=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
-			this.bgShapeSelect.usages++; //TODO: get rid of this memory leak
+			
+			if(!this.bgShapeSelect) {
+				this.bgShapeSelect = GraphicsFactoryHelper.drawRectangles(rectangles,0x0,1);
+				this.bgShapeSelect.usages++; //TODO: get rid of this memory leak
+			} else {
+				GraphicsFactoryHelper.updateRectanglesShape(this.bgShapeSelect,rectangles);
+			}
+
 			return;
 		}
         
@@ -1480,9 +1527,6 @@ export class TextField extends DisplayObjectContainer
 			this._implicitPartition.invalidateEntity(this);
 	}
 
-	public cursorShape:Shape;
-	public bgShape:Shape;
-	public bgShapeSelect:Shape;
 	/**
 	 *
 	 * @param renderer
@@ -1998,7 +2042,7 @@ export class TextField extends DisplayObjectContainer
 		//	the data for new text-shapes is collected from the font-tables
 		//	and the new text-shapes are created and assigned to the graphics
 
-		if(this._glyphsDirty){
+		if(this._glyphsDirty) {
 			//console.log("TextField buildGlyphs", this.id, this.words);
 			if(this._labelData){
 				this.buildGlyphsForLabelData();
@@ -2007,12 +2051,15 @@ export class TextField extends DisplayObjectContainer
 				this.buildGlyphs();
 			}
 		}
+
         this._glyphsDirty=false;
-        if(this._labelData)
-            return;
-        
-        this.buildShapes();        
-        this._shapesDirty=false;
+
+		if(this._labelData) {
+			return;
+		}
+
+		this.buildShapes();
+		this._shapesDirty=false;
 
 	}
 
@@ -2672,24 +2719,28 @@ export class TextField extends DisplayObjectContainer
 	{
 		this._clearTextShapes();
 		
-		// process all textRuns
-		var tr:number=0;
-		var tr_len:number=this._textRuns_formats.length;
-		for (tr = 0; tr < tr_len; tr++) {
-			this._textRuns_formats[tr].font_table.initFontSize(this._textRuns_formats[tr].size);
+		const tr_formats = this._textRuns_formats;
+		const tr_words = this._textRuns_words;
+		const tr_len = tr_formats.length;
+		
+		for (let tr = 0; tr < tr_len; tr++) {
+			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
-			this._textRuns_formats[tr].font_table.fillTextRun(this, this._textRuns_formats[tr], this._textRuns_words[(tr*4)], this._textRuns_words[(tr*4)+1]);
+			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], tr_words[(tr*4)], tr_words[(tr*4)+1]);
 		}
 
-		var textShape:TextShape;
+		let textShape:TextShape;
+
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
 			
 			var color=this.getTextColorForTextFormat(textShape.format);
 			var alpha=ColorUtils.float32ColorToARGB(color)[0];
+			
 			if(alpha==0){
 				alpha=255;
 			}
+
 			// this textShapeshape is for FNT font
 			var attr_length:number = textShape.fntMaterial?4:2;
 			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
@@ -2699,8 +2750,11 @@ export class TextField extends DisplayObjectContainer
 
 			textShape.elements = new TriangleElements(vertexBuffer);
 			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-			if(textShape.fntMaterial)
+			
+			if(textShape.fntMaterial) {
 				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
+			}
+
 			textShape.shape = Shape.getShape(textShape.elements);
 			textShape.shape.usages++;
 
@@ -2747,19 +2801,24 @@ export class TextField extends DisplayObjectContainer
 
 		this.drawBG();
 
-		if(this._border || !this._background)
+		if(this._border || !this._background) {
 			this.drawBorder();
-        
-        this.drawSelectionGraphics();
-        if(this.bgShapeSelect && this.isInFocus){
+		}
+
+		this.drawSelectionGraphics();
+
+        if(this.bgShapeSelect && this.isInFocus && this.showSelection){
             this.targetGraphics.addShape(this.bgShapeSelect);
         }
+		
 		var textShape:TextShape;
+		
 		for(var key in this.textShapes) {
 			textShape = this.textShapes[key];
             <Shape>this.targetGraphics.addShape(textShape.shape);
-        }
-        if(this.type==TextFieldType.INPUT && this.isInFocus && this.cursorShape){
+		}
+		
+        if(this.type===TextFieldType.INPUT && this.isInFocus && this.cursorShape && !this.cursorBlinking){
             this.targetGraphics.addShape(this.cursorShape);
         }
     }
@@ -2825,20 +2884,27 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public getCharIndexAtPoint(x:number, y:number, lineIdx:number=-1):number /*int*/
 	{
-		if(lineIdx<0)
-			lineIdx=this.getLineIndexAtPoint(x, y);
-		var startIdx:number=this.lines_charIdx_start[lineIdx];
-		var endIdx:number=this.lines_charIdx_end[lineIdx];
-		for(var i:number=startIdx; i<endIdx; i++){
+		if(lineIdx < 0){
+			lineIdx = this.getLineIndexAtPoint(x, y);
+		}
+		
+		const startIdx = this.lines_charIdx_start[lineIdx];
+		const endIdx = this.lines_charIdx_end[lineIdx];
+		
+		for(let i = startIdx; i < endIdx; i++)
+		{
 			if(x>=this.char_positions_x[i]){
-				if(x<=this.char_positions_x[i]+this.chars_width[i]/2){
+				if(x<=this.char_positions_x[i] + this.chars_width[i] / 2)
+				{
 					return i;
 				}
-				else if(x<=this.char_positions_x[i]+this.chars_width[i]){
-					return i+1;
+				else if(x<=this.char_positions_x[i] + this.chars_width[i])
+				{
+					return i + 1;
 				}
 			} 
 		}
+
 		return -1;
 	}
 
@@ -3499,22 +3565,14 @@ export class TextField extends DisplayObjectContainer
 				exist = (exist || table.hasChar(symbol.toUpperCase()));
 
 				if(!exist) {
+
+					console.log('Char not found', symbol);
 					return;
 				}
-				/*
-                if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
-                    char=char.toUpperCase();
-                    if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
-                        char=char.toLowerCase();
-                        if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
-                            return;
-                        }
-                    }
-                }*/
             }
             this._insertNewText(char);
 		}
-		else if (char.length>1){
+		else if (char.length > 1){
 			console.log("invalid keyboard input: ", char);
 		}
 
@@ -3523,9 +3581,10 @@ export class TextField extends DisplayObjectContainer
 		this.drawSelectionGraphics();
 		this.invalidate();
 		
-		if(oldText!==this._iText)
+		if(oldText!==this._iText){
             this.dispatchEvent(TextField._onChangedEvent);
-            
+		}
+
 		if (char && char.length>0 && this.adapter!=this){
             var charCode:number;
             switch(char){
