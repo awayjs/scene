@@ -288,15 +288,22 @@ export class Scene
 
 	public beforeRenderCallback:Function;
 	
+
+	public fireMouseEvents(){
+		if (!this.disableMouseEvents)
+			this._mouseManager.fireMouseEvents(this);
+
+	}
+
 	/** 
 	 * Renders the view.
 	 */
-	public render():void
+	public render(fireMousEvents:boolean=true):void
 	{
 		this._updateTime();
 
 		// update picking
-		if (!this.disableMouseEvents)
+		if (fireMousEvents && !this.disableMouseEvents)
 			this._mouseManager.fireMouseEvents(this);
 
 		if(this.beforeRenderCallback)
