@@ -506,6 +506,7 @@ export class TextField extends DisplayObjectContainer
 		var width:number=0;
 		var height:number=0;
 		var rectangles:number[]=[];
+
 		if(this.char_positions_x.length!=0 && this._selectionEndIndex!=this._selectionBeginIndex){
 			var len:number=(select_end>this.char_positions_x.length)?this.char_positions_x.length:select_end;
 			//console.log(select_start, select_end);
@@ -534,17 +535,20 @@ export class TextField extends DisplayObjectContainer
 				width+=this.chars_width[i];
 				oldy=y;			
 				tf.font_table.initFontSize(tf.size);
-				height = tf.font_table.getLineHeight();
+
+				height = Math.max(height, tf.font_table.getLineHeight());
 			}
 		}
 		// if (this.bgShapeSelect) {
 		// 	this.bgShapeSelect.dispose();
 		// 	this.bgShapeSelect=null;
 		// }
-		if(width>0){
+		if(width > 0){
 			rectangles.push(startx, oldy, width, height);
-			this.bgShapeSelect=GraphicsFactoryHelper.drawRectangles(rectangles,0x000000,1);
+			
+			this.bgShapeSelect = GraphicsFactoryHelper.drawRectangles(rectangles,0x0,1);
 			this.bgShapeSelect.usages++; //TODO: get rid of this memory leak
+
 			return;
 		}
         
@@ -2710,7 +2714,7 @@ export class TextField extends DisplayObjectContainer
 			if(textShape.fntMaterial) {
 				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
 			}
-			
+
 			textShape.shape = Shape.getShape(textShape.elements);
 			textShape.shape.usages++;
 
@@ -3509,22 +3513,14 @@ export class TextField extends DisplayObjectContainer
 				exist = (exist || table.hasChar(symbol.toUpperCase()));
 
 				if(!exist) {
+
+					console.log('Char not found', symbol);
 					return;
 				}
-				/*
-                if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
-                    char=char.toUpperCase();
-                    if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
-                        char=char.toLowerCase();
-                        if(!this.newTextFormat.font_table.hasChar(char.charCodeAt(0).toString())){
-                            return;
-                        }
-                    }
-                }*/
             }
             this._insertNewText(char);
 		}
-		else if (char.length>1){
+		else if (char.length > 1){
 			console.log("invalid keyboard input: ", char);
 		}
 
@@ -3533,9 +3529,10 @@ export class TextField extends DisplayObjectContainer
 		this.drawSelectionGraphics();
 		this.invalidate();
 		
-		if(oldText!==this._iText)
+		if(oldText!==this._iText){
             this.dispatchEvent(TextField._onChangedEvent);
-            
+		}
+
 		if (char && char.length>0 && this.adapter!=this){
             var charCode:number;
             switch(char){
