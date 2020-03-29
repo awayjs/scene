@@ -39,7 +39,6 @@ export class MovieClip extends Sprite {
 			var movieClip: MovieClip = MovieClip._movieClips.pop()
 			movieClip.timeline = timeline || new Timeline();
 			movieClip.graphics = Graphics.getGraphics();
-
 			return movieClip;
 		}
 
@@ -100,9 +99,24 @@ export class MovieClip extends Sprite {
 		}
 		this._soundStreams.addSoundStreamBlock(frameNum, streamBlock);
 	}
+	
+	
+	private stopCurrentStream(frameNum: number) {
+		if (this._soundStreams) {
+			//console.log("sync sounds for mc: ", this.numFrames);
+			return this._soundStreams.stopStream(frameNum);
+		}
+	}
+	private resetStreamStopped() {
+		if (this._soundStreams) {
+			//console.log("sync sounds for mc: ", this.numFrames);
+			this._soundStreams.resetStreamStopped();
+		}
+	}
 
 	private _syncSounds(frameNum: number):number {
 		if (this._soundStreams) {
+			//console.log("sync sounds for mc: ", this.numFrames);
 			return this._soundStreams.syncSounds(frameNum, this._isPlaying, this.parent);
 		}
 		return 0;
@@ -185,6 +199,7 @@ export class MovieClip extends Sprite {
 			if (child.isAsset(MovieClip))
 				(<MovieClip>child).stopSounds(soundID);
 		}
+		this.stopCurrentStream(this._currentFrameIndex);
 		MovieClip._activeSounds = {};
 		if (this._soundStreams) {
 			this._soundStreams.syncSounds(0, false, this.parent);
@@ -356,6 +371,8 @@ export class MovieClip extends Sprite {
 	public reset(fireScripts: boolean = true): void {
 		super.reset();
 
+		this.resetStreamStopped();
+
 		// time only is relevant for the root mc, as it is the only one that executes the update function
 		this._time = 0;
 		//this.stopSounds();
@@ -409,6 +426,7 @@ export class MovieClip extends Sprite {
 
 		var numFrames: number = this._timeline.keyframe_indices.length;
 
+		this.resetStreamStopped();
 		if (!numFrames)
 			return;
 
@@ -422,6 +440,7 @@ export class MovieClip extends Sprite {
 			value = numFrames - 1;
 			queue_script = false;
 		}
+
 
 		this._skipAdvance = false;
 		if (this._currentFrameIndex == value)
@@ -621,6 +640,7 @@ export class MovieClip extends Sprite {
 	 */
 	public stop(): void {
 		//this.stopSounds();
+		this.resetStreamStopped();
 		this._isPlaying = false;
 	}
 
@@ -672,6 +692,7 @@ export class MovieClip extends Sprite {
 					}
 					else {
 						this._currentFrameIndex = 0;
+						this.resetStreamStopped();
 						this._timeline.gotoFrame(this, 0, true, true, true);
 					}
 				}
@@ -745,6 +766,7 @@ export class MovieClip extends Sprite {
 
 	public clear(): void {
 		//clear out potential instances
+		this.resetStreamStopped();
 		for (var key in this._potentialInstances) {
 			var instance: IAsset = this._potentialInstances[key];
 
