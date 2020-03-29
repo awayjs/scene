@@ -25,7 +25,7 @@ export class MorphSprite extends Sprite
 		return new MorphSprite(graphics, material);
 	}
 
-	private _ratio:string;
+	private _ratio:ui16;
 
 	public get assetType():string
 	{
@@ -211,9 +211,9 @@ export class MorphSprite extends Sprite
 	}
 
 	public setRatio(ratio:number){
-		const lookupRatio = Math.round( ratio * 0xffffff).toString();
+		const lookupRatio = (ratio * 0xffff | 0);
 
-		if(this._ratio == lookupRatio){
+		if(this._ratio === lookupRatio){
 			return;
 		}
 
