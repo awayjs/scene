@@ -26,6 +26,7 @@ export class MorphSprite extends Sprite
 	}
 
 	private _ratio:ui16;
+	private _frameCaches: NumberMap<GraphicsPath[]> = {};
 
 	public get assetType():string
 	{
@@ -204,10 +205,6 @@ export class MorphSprite extends Sprite
 				}
 			}
 		}
-
-		if(false) {
-			console.log("");
-		}
 	}
 
 	public setRatio(ratio:number){
@@ -226,19 +223,29 @@ export class MorphSprite extends Sprite
 		}
 
 		const len = this._graphics.start.length;
-
+		const cached = this._frameCaches[lookupRatio] || [];
+		
 		for(let i = 0; i < len; i++){
-			const newPath = new GraphicsPath();
-			const startPath = this._graphics.start[i];
-			const endPath = this._graphics.end[i];
 
-			this._blendStyle(startPath, endPath, newPath, ratio);
-			this._blendContours(startPath, endPath, newPath, ratio);
+			let newPath = cached[i];
+
+			if(!newPath) {
+				newPath = new GraphicsPath();
+
+				const startPath = this._graphics.start[i];
+				const endPath = this._graphics.end[i];
+
+				this._blendStyle(startPath, endPath, newPath, ratio);
+				this._blendContours(startPath, endPath, newPath, ratio);
+
+				cached[i] = newPath;
+			}
 
 			this._graphics.add_queued_path(newPath);
 		}
 
 		this._graphics.endFill();
+		this._frameCaches[lookupRatio] = cached;
 	}
 
 	/**
@@ -247,6 +254,7 @@ export class MorphSprite extends Sprite
 	public dispose():void
 	{
 		this.disposeValues();
+		this._frameCaches = {};
 
 		MorphSprite._morphSprites.push(this);
 	}
@@ -256,7 +264,6 @@ export class MorphSprite extends Sprite
 		var newInstance:MorphSprite = MorphSprite.getNewMorphSprite();
 
 		this.copyTo(newInstance);
-
 
 		return newInstance;
 	}
