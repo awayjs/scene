@@ -126,12 +126,6 @@ export class MorphSprite extends Sprite
 		const ratioStart = 1 - ratio;
 		const ratioEnd = ratio;
 
-		let startDataCnt = 0;
-		let endDataCnt = 0;
-		let startLastX = 0;
-		let startLastY = 0;
-		let endLastX = 0;
-		let endLastY = 0;
 		let len_contours = startPath._commands.length;
 
 		if (endPath._commands.length !== len_contours) {
@@ -145,6 +139,13 @@ export class MorphSprite extends Sprite
 			const startData = startPath._data[c];
 			const endCmds = endPath._commands[c];
 			const endData = endPath._data[c];
+			
+			let startDataCnt = 0;
+			let endDataCnt = 0;
+			let startLastX = 0;
+			let startLastY = 0;
+			let endLastX = 0;
+			let endLastY = 0;
 
 			let len_cmds = startCmds.length;
 
@@ -202,6 +203,10 @@ export class MorphSprite extends Sprite
 						break;
 				}
 			}
+		}
+
+		if(false) {
+			console.log("");
 		}
 	}
 
