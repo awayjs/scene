@@ -16,6 +16,7 @@ import {MorphSprite} from "../display/MorphSprite";
 import {DisplayObject} from "../display/DisplayObject";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import {FrameScriptManager} from "../managers/FrameScriptManager";
+import { IFrameLabel } from './IFrameLabel';
 
 
 export class Timeline
@@ -28,7 +29,7 @@ export class Timeline
 	public _update_indices:number[] = [];
 	public _update_frames:number[] = [];
 	public isButton:boolean = false;
-	public _labels:Object;			// dictionary to store label => keyframeindex
+	public _labels:StringMap<IFrameLabel>;			// dictionary to store label => keyframeindex
 
 	public avm1InitActions:Object;    // dictionary to store keyframeindex => ExecuteScriptCommand
 	public avm1ButtonActions:any[];    // dictionary to store keyframeindex => ExecuteScriptCommand
@@ -328,34 +329,33 @@ export class Timeline
 	}
 
 	public getCurrentFrameLabel(target_mc: MovieClip): string {
-		var label: string = null;
 		for (var key in this._labels) {
-			if (this._labels[key] == target_mc.constructedKeyFrameIndex) {
-				return label;
+			if (this._labels[key].keyFrameIndex == target_mc.constructedKeyFrameIndex) {
+				return this._labels[key].name;
 			}
 		}
-		return label;
+		return null;
 	}
 	public getCurrentLabel(target_mc: MovieClip): string {
 		var label: string = null;
 		var lastLabelframeIdx: number = -1;
 		for (var key in this._labels) {
-			if (this._labels[key] > lastLabelframeIdx && this._labels[key] <= target_mc.constructedKeyFrameIndex) {
-				lastLabelframeIdx = this._labels[key];
-				label = key;
+			if (this._labels[key].keyFrameIndex > lastLabelframeIdx && this._labels[key].keyFrameIndex <= target_mc.constructedKeyFrameIndex) {
+				lastLabelframeIdx = this._labels[key].keyFrameIndex;
+				label = this._labels[key].name;
 			}
 		}
 		return label;
 	}
 	public jumpToLabel(target_mc: MovieClip, label: string, offset: number = 0): void {
-		var key_frame_index: number = this._labels[label];
+		var key_frame_index: number = this._labels[label].keyFrameIndex;
 		if (key_frame_index >= 0)
 			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index] + offset;
 	}
 
 	public getScriptForLabel(target_mc:MovieClip, label:string):any
 	{
-		var key_frame_index:number = this._labels[label.toLowerCase()];
+		var key_frame_index:number = this._labels[label.toLowerCase()].keyFrameIndex;
 		if(key_frame_index < 0)
 			return null;
 		var frameIdx: number = this.keyframe_firstframes[key_frame_index];
