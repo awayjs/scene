@@ -223,29 +223,20 @@ export class MorphSprite extends Sprite
 		}
 
 		const len = this._graphics.start.length;
-		const cached = this._frameCaches[lookupRatio] || [];
 		
 		for(let i = 0; i < len; i++){
 
-			let newPath = cached[i];
+			const newPath = new GraphicsPath();
+			const startPath = this._graphics.start[i];
+			const endPath = this._graphics.end[i];
 
-			if(!newPath) {
-				newPath = new GraphicsPath();
-
-				const startPath = this._graphics.start[i];
-				const endPath = this._graphics.end[i];
-
-				this._blendStyle(startPath, endPath, newPath, ratio);
-				this._blendContours(startPath, endPath, newPath, ratio);
-
-				cached[i] = newPath;
-			}
+			this._blendStyle(startPath, endPath, newPath, ratio);
+			this._blendContours(startPath, endPath, newPath, ratio);
 
 			this._graphics.add_queued_path(newPath);
 		}
 
 		this._graphics.endFill();
-		this._frameCaches[lookupRatio] = cached;
 	}
 
 	/**
