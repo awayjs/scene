@@ -706,7 +706,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
 		mat.bothSides = true;
 		mat.alphaBlending = true;
-		mat.alphaPremultiplied = true;
 		mat.useColorTransform = true;
 		mat.style.sampler = new ImageSampler(false, true, true);
 		textShape.fntMaterial=useFNT?mat:null;
@@ -718,7 +717,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 		var mat:MethodMaterial = new MethodMaterial(this._fnt_channels[0]);
 		mat.bothSides = true;
 		mat.alphaBlending = true;
-		mat.alphaPremultiplied = true;
 		mat.useColorTransform = true;
 		mat.style.sampler = new ImageSampler(false, true, true);
 		textShapeSelected.fntMaterial=useFNT?mat:null;
@@ -791,7 +789,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 								mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
 								mat.bothSides = true;
 								mat.alphaBlending = true;
-								mat.alphaPremultiplied = true;
 								mat.useColorTransform = true;
 								mat.style.sampler = new ImageSampler(false, true, true);
 								newtextShape.fntMaterial=mat;
