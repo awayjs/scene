@@ -205,6 +205,9 @@ export class MovieClip extends Sprite {
 			this._soundStreams.syncSounds(0, false, this.parent);
 		}
 	}
+	public get isPlaying(): boolean {
+		return this._isPlaying;
+	}
 	private _soundVolume: number;
 	public get soundVolume(): number {
 		return this._soundVolume;
