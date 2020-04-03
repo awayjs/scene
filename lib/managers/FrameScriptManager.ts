@@ -163,7 +163,7 @@ export class FrameScriptManager
 			for(i=0; i<len; i++){
 				// during the loop we might add more scripts to the queue
 				mc=queue_tmp[i];
-				if(mc._implicitPartition && mc._implicitPartition.root) {				
+				//if(mc._implicitPartition && mc._implicitPartition.root) {				
 					if ((<IDisplayObjectAdapter>mc.adapter).executeConstructor) {
 						let myFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
 						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
@@ -178,7 +178,7 @@ export class FrameScriptManager
 							}
 						}
 					}
-				}
+				//}
 			}
 			queue_tmp.length=0;
 		}
@@ -210,7 +210,7 @@ export class FrameScriptManager
 			for (i = 0; i <queues_tmp.length; i++) {
 				// during the loop we might add more scripts to the queue
 				mc=queues_tmp[i];
-				if(mc._implicitPartition && mc._implicitPartition.root) {
+				//if(mc._implicitPartition && mc._implicitPartition.root) {
 					// first we execute any pending loadedAction for this MC
 					if ((<any>mc).onLoaded) {
 						//atm this is only used for avm1, to execute queued "onloaded" actions. 
@@ -230,7 +230,7 @@ export class FrameScriptManager
 						if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
 							(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
 					}
-				}
+				//}
 			}
 		}
 	}
