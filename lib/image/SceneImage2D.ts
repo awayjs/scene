@@ -122,11 +122,10 @@ export class SceneImage2D extends BitmapImage2D
 
 		SceneImage2D._billboardRenderer.renderableSorter = null;//new RenderableSort2D();
 		
-		var mat:MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, false, 0x0));
+		var mat:MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, true, 0x0));
 		//mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
 		mat.bothSides = true;
 		mat.alphaBlending = true;
-		mat.alphaPremultiplied = true;
 		
 		SceneImage2D._billboard = new Billboard(mat);
 		SceneImage2D._billboard.style = new Style();
