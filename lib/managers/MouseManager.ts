@@ -690,7 +690,7 @@ export class MouseManager {
 
             event.pickerEntity = <DisplayObject> collision.pickerEntity;
             // Object.
-            event.traversable = collision.pickable;
+            event.traversable = collision.traversable;
             // UV.
             event.uv = collision.uv;
             // Position.
