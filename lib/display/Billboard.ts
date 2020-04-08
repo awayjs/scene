@@ -386,17 +386,15 @@ export class _Pick_Billboard extends _Pick_PickableBase
 
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.pickable = null;
+		var rayEntryDistance:number = -collision.rayPosition.z/collision.rayDirection.z;
+		var position:Vector3D = new Vector3D(collision.rayPosition.x + rayEntryDistance*collision.rayDirection.x, collision.rayPosition.y + rayEntryDistance*collision.rayDirection.y);
 
-		//if (this._testGraphicCollision(<RenderableBase> this._renderablePool.getItem(billboard), pickingCollision, shortestCollisionDistance)) {
-		//	shortestCollisionDistance = pickingCollision.rayEntryDistance;
-		//
-		//	pickingCollision.renderable = billboard;
-		//
-		//	return true;
-		//}
+		collision.traversable = this._asset;
+		collision.rayEntryDistance = rayEntryDistance;
+		collision.position = position;
+		collision.normal = new Vector3D(0,0,1);
 
-		return false;
+		return true;
 	}
 }
 
