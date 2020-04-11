@@ -2,7 +2,7 @@ import {Matrix, AssetBase, Point, Rectangle, ColorTransform, ColorUtils} from "@
 
 import {ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D} from "@awayjs/stage";
 
-import {Graphics, GraphicsPath, Shape, TriangleElements, GraphicsFactoryStrokes, GraphicsFactoryFills, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle, GraphicsFactoryHelper} from "@awayjs/graphics";
+import {Graphics, GraphicsPath, Shape, TriangleElements, GraphicsFactoryStrokes, GraphicsFactoryFills, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle, GraphicsFactoryHelper, MaterialManager} from "@awayjs/graphics";
 
 import {Style} from "@awayjs/renderer";
 import {MaterialBase, MethodMaterial} from "@awayjs/materials";
@@ -432,7 +432,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 			var color=0xFFFFFF;			
 			var alpha=1;
-			var obj=Graphics.get_material_for_color(color, alpha);
+			var obj=MaterialManager.get_material_for_color(color, alpha);
 
 			shape.material = obj.material;
 			if(obj.colorPos){
