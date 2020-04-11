@@ -3673,7 +3673,6 @@ export class TextField extends DisplayObjectContainer
 		newInstance.wordWrap = this.wordWrap;
 		newInstance.maxChars = this.maxChars;
 		newInstance.sourceTextField=this;
-		newInstance["fileurl"] = this["fileurl"];
 
 		if(newInstance.html){
             newInstance.htmlText = this.htmlText;              

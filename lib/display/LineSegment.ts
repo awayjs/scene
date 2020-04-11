@@ -251,7 +251,7 @@ export class _Pick_LineSegment extends _Pick_PickableBase
 
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.pickable = null;
+		collision.traversable = null;
 		//TODO
 		return false;
 	}

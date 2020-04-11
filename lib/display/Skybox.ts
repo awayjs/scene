@@ -230,7 +230,7 @@ export class Skybox extends DisplayObject implements IMaterial
 	
 	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
 	{
-		collision.pickable = null;
+		collision.traversable = null;
 		
 		return false;
 	}
