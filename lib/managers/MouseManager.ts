@@ -1,4 +1,4 @@
-import { BuildMode, Vector3D } from "@awayjs/core";
+import { Vector3D } from "@awayjs/core";
 
 import { PickingCollision, PickGroup } from "@awayjs/view";
 
@@ -131,8 +131,11 @@ export class MouseManager {
 
     public set useSoftkeyboard(value: boolean) {
 
-        this._useSoftkeyboard = value;
-        if (!value && BuildMode.mode == BuildMode.AVM1) {
+		this._useSoftkeyboard = value;
+		// todo: improve this, so that we can 
+		//	- use device-softkeyboard on tablet / mobide
+		//	- optionally use a custom softkeyboard
+        if (!value) {
             window.addEventListener("keydown", this.onKeyDownDelegate);
             window.addEventListener("keyup", this.onKeyUpDelegate);
         }
@@ -159,10 +162,9 @@ export class MouseManager {
             container.addEventListener("mousewheel", this.onMouseWheelDelegate);
             container.addEventListener("mouseover", this.onMouseOverDelegate);
             container.addEventListener("mouseout", this.onMouseOutDelegate);
-           // if (BuildMode.mode == BuildMode.AVM1) {
-                window.addEventListener("keydown", this.onKeyDownDelegate);
-                window.addEventListener("keyup", this.onKeyUpDelegate);
-           // }
+        	window.addEventListener("keydown", this.onKeyDownDelegate);
+            window.addEventListener("keyup", this.onKeyUpDelegate);
+           
             this._containerLookup.push(container);
         }
     }
@@ -181,10 +183,8 @@ export class MouseManager {
             container.removeEventListener("mousewheel", this.onMouseWheelDelegate);
             container.removeEventListener("mouseover", this.onMouseOverDelegate);
             container.removeEventListener("mouseout", this.onMouseOutDelegate);
-            //if (BuildMode.mode == BuildMode.AVM1) {
-                window.removeEventListener("keydown", this.onKeyDownDelegate);
-                window.removeEventListener("keyup", this.onKeyUpDelegate);
-            //}
+            window.removeEventListener("keydown", this.onKeyDownDelegate);
+            window.removeEventListener("keyup", this.onKeyUpDelegate);
 
             this._containerLookup.splice(this._containerLookup.indexOf(container), 1);
         }
