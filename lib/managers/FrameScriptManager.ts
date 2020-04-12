@@ -1,7 +1,6 @@
 import {DisplayObject} from "../display/DisplayObject";
 import {MovieClip} from "../display/MovieClip";
 import {IMovieClipAdapter} from "../adapters/IMovieClipAdapter";
-import { BuildMode } from '@awayjs/core';
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 
 interface IInterval{

@@ -9,6 +9,8 @@ import {CameraEvent} from "./events/CameraEvent";
 import {MouseManager} from "./managers/MouseManager";
 import { DisplayObjectContainer } from './display/DisplayObjectContainer';
 import { DisplayObject } from './display/DisplayObject';
+import { MaterialManager } from '@awayjs/graphics';
+import { MethodMaterial } from '@awayjs/materials';
 
 
 export class Scene
@@ -364,3 +366,5 @@ export class Scene
 		return this._mousePicker.getCollision(rayPosition, rayDirection);
 	}
 }
+
+MaterialManager.materialClass=MethodMaterial;

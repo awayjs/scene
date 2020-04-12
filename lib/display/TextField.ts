@@ -8,7 +8,7 @@ import {Style} from "@awayjs/renderer";
 
 import {MaterialBase} from "@awayjs/materials";
 
-import {Graphics, Shape, TriangleElements, GraphicsFactoryHelper} from "@awayjs/graphics";
+import {Graphics, Shape, TriangleElements, GraphicsFactoryHelper, MaterialManager} from "@awayjs/graphics";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 import {TesselatedFontTable} from "../text/TesselatedFontTable";
@@ -502,7 +502,7 @@ export class TextField extends DisplayObjectContainer
 		if(this.cursorShape.style.color !== color){    
             var alpha=ColorUtils.float32ColorToARGB(color)[0];
 			
-            var obj:any = Graphics.get_material_for_color(color, (alpha / 255) || 1);
+            var obj = MaterialManager.get_material_for_color(color, (alpha / 255) || 1);
 			
 			if(obj.colorPos){
                 this.cursorShape.style = new Style();
@@ -2696,7 +2696,7 @@ export class TextField extends DisplayObjectContainer
 				if(alpha==0){
 					alpha=255;
 				}
-				var obj=Graphics.get_material_for_color(color, alpha/255);
+				var obj=MaterialManager.get_material_for_color(color, alpha/255);
 
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
@@ -2779,7 +2779,7 @@ export class TextField extends DisplayObjectContainer
 			else {
 				// 	used by runtime textureatlas. 
 				//	(standart for dynamic created text and text loaded from swf)					
-				var obj=Graphics.get_material_for_color(color, alpha/255);	
+				var obj=MaterialManager.get_material_for_color(color, alpha/255);	
 				textShape.shape.material = obj.material;
 				if(obj.colorPos){
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
@@ -3673,7 +3673,6 @@ export class TextField extends DisplayObjectContainer
 		newInstance.wordWrap = this.wordWrap;
 		newInstance.maxChars = this.maxChars;
 		newInstance.sourceTextField=this;
-		newInstance["fileurl"] = this["fileurl"];
 
 		if(newInstance.html){
             newInstance.htmlText = this.htmlText;              
