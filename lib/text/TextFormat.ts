@@ -378,11 +378,12 @@ export class TextFormat extends AssetBase
 		return this._font;
 	}
 	public set font(value:Font){
-		this._font_name=value.name;
+		if(typeof value === "string"){
+			this.font_name = value;
+			return;
+		}
 		this._font=value;
         this._font_table=this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
-        
-
 	}
 
 
