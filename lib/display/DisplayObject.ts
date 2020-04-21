@@ -1,4 +1,4 @@
-import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, LoaderInfo, EventBase} from "@awayjs/core";
+import {Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, EventBase, Loader} from "@awayjs/core";
 
 import {BlendMode} from "@awayjs/stage";
 
@@ -159,7 +159,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public _material:IMaterial;
 	public _style:Style;
 	private _queuedEvents:Array<EventBase> = new Array<EventBase>();
-	private _loaderInfo:LoaderInfo;
+	private _loader:Loader;
 	private _mouseX:number;
 	private _mouseY:number;
 	private _root:DisplayObjectContainer;
@@ -592,9 +592,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * <code>this.root.loaderInfo.addEventListener(Event.COMPLETE,
 	 * func)</code>.</p>
 	 */
-	public get loaderInfo():LoaderInfo
+	public get loader():Loader
 	{
-		return this._loaderInfo;
+		return this._loader;
 	}
 
 	/**
@@ -1873,7 +1873,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 				this._concatenatedMatrix3D.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
 		}
 
-		if (this._parent)
+		if (this._parent) // && this._partition == this._parent.partition
 			this._concatenatedMatrix3D.append(this._parent._transform.concatenatedMatrix3D);
 
 		this._matrix3DDirty = false;

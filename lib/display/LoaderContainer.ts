@@ -1,4 +1,4 @@
-import {AssetLibraryBundle, Loader, LoaderContext, URLRequest, AssetEvent, URLLoaderEvent, LoaderEvent, ParserEvent, ParserBase} from "@awayjs/core";
+import {AssetLibraryBundle, Loader, LoaderContext, URLRequest, AssetEvent, URLLoaderEvent, LoaderEvent, ParserEvent, ParserBase, EventBase} from "@awayjs/core";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import {DisplayObject} from "./DisplayObject";
@@ -84,14 +84,17 @@ export class LoaderContainer extends DisplayObjectContainer
 	 */
 	//[Event(name="resourceComplete", type="LoaderEvent")]
 
-	private _loader:Loader;
+	private _contentLoader:Loader;
 	private _useAssetLib:boolean;
 	private _assetLibId:string;
-	private _onLoadCompleteDelegate:(event:LoaderEvent) => void;
+	private _onLoaderStartDelegate:(event:LoaderEvent) => void;
+	private _onLoadProgressDelegate:(event:URLLoaderEvent) => void;
+	private _onLoadCompleteDelegate:(event:URLLoaderEvent) => void;
 	private _onAssetCompleteDelegate:(event:AssetEvent) => void;
-	private _onTextureSizeErrorDelegate:(event:AssetEvent) => void;
-	private _onLoadErrorDelegate:(event:URLLoaderEvent) => boolean;
-	private _onParseErrorDelegate:(event:ParserEvent) => boolean;
+	private _onLoaderCompleteDelegate:(event:LoaderEvent) => void;
+	private _onLoadErrorDelegate:(event:URLLoaderEvent) => void;
+	private _onParseErrorDelegate:(event:ParserEvent) => void;
+	private _errorDelegateSelector:{[index: string]:((event: EventBase) => void)};
 
 	private _content:DisplayObject;
 
@@ -115,6 +118,14 @@ export class LoaderContainer extends DisplayObjectContainer
 	public get content():DisplayObject
 	{
 		return this._content;
+	}
+
+	/**
+	 * 
+	 */
+	public get contentLoader():Loader
+	{
+		return this._contentLoader;
 	}
 
 	/**
@@ -172,11 +183,48 @@ export class LoaderContainer extends DisplayObjectContainer
 		this._useAssetLib = useAssetLibrary;
 		this._assetLibId = assetLibraryId;
 
-		this._onAssetCompleteDelegate = (event:AssetEvent) => this.onAssetComplete(event);
-		this._onTextureSizeErrorDelegate = (event:AssetEvent) => this.onTextureSizeError(event);
-		this._onLoadCompleteDelegate = (event:LoaderEvent) => this.onLoadComplete(event);
-		this._onLoadErrorDelegate = (event:URLLoaderEvent) => this.onLoadError(event);
-		this._onParseErrorDelegate = (event:ParserEvent) => this.onParseError(event);
+		this._onLoaderStartDelegate = (event:LoaderEvent) => this._onLoaderStart(event);
+		this._onLoadProgressDelegate = (event:URLLoaderEvent) => this._onLoadProgress(event);
+		this._onLoadCompleteDelegate = (event:URLLoaderEvent) => this._onLoadComplete(event);
+		this._onAssetCompleteDelegate = (event:AssetEvent) => this._onAssetComplete(event);
+		this._onLoaderCompleteDelegate = (event:LoaderEvent) => this._onLoaderComplete(event);
+		this._onLoadErrorDelegate = (event:URLLoaderEvent) => this._onLoadError(event);
+		this._onParseErrorDelegate = (event:ParserEvent) => this._onParseError(event);
+
+		this._errorDelegateSelector = {
+			[URLLoaderEvent.LOAD_ERROR]: this._onLoadErrorDelegate,
+			[ParserEvent.PARSE_ERROR]: this._onParseErrorDelegate
+		}
+	}
+
+	
+	/**
+	 * Special addEventListener case for <code>URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
+	 * 
+	 * @param type 
+	 * @param listener 
+	 */
+	public addEventListener(type:string, listener:(event:EventBase) => void):void
+	{
+		if (this._contentLoader && type == URLLoaderEvent.LOAD_ERROR || type == ParserEvent.PARSE_ERROR)
+			this._contentLoader.addEventListener(type, this._errorDelegateSelector[type]);
+
+		super.addEventListener(type, listener);
+	}
+	
+	/**
+	 * Special removeEventListener case for <code>URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
+	 * 
+	 * @param type 
+	 * @param listener 
+	 */
+
+	public removeEventListener(type:string, listener:(event:EventBase) => void):void
+	{
+		if (this._contentLoader && type == URLLoaderEvent.LOAD_ERROR || type == ParserEvent.PARSE_ERROR)
+			this._contentLoader.removeEventListener(type, this._errorDelegateSelector[type]);
+
+		super.removeEventListener(type, listener);
 	}
 
 	/**
@@ -186,14 +234,11 @@ export class LoaderContainer extends DisplayObjectContainer
 	 */
 	public close():void
 	{
-		if (!this._loader)
+		if (!this._contentLoader)
 			return;
 		
-		if (this._useAssetLib) {
-			var lib:AssetLibraryBundle;
-			lib = AssetLibraryBundle.getInstance(this._assetLibId);
-			lib.disposeLoader(this._loader);
-		}
+		if (this._useAssetLib)
+			AssetLibraryBundle.getInstance(this._assetLibId).stopLoader(this._contentLoader);
 		
 		this._disposeLoader();
 	}
@@ -463,34 +508,44 @@ export class LoaderContainer extends DisplayObjectContainer
 
 	private _getLoader():Loader
 	{
-		if (this._useAssetLib) {
-			var lib:AssetLibraryBundle = AssetLibraryBundle.getInstance(this._assetLibId);
-			this._loader = lib.getLoader();
-		} else {
-			this._loader = new Loader();
-		}
+		if (this._contentLoader)
+			this.close();
 
-		this._loader.addEventListener(LoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
-		this._loader.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-		this._loader.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+		this._contentLoader = (this._useAssetLib)? AssetLibraryBundle.getInstance(this._assetLibId).getLoader() : new Loader();
 
-		// Error are handled separately (see documentation for addErrorHandler)
-		this._loader._iAddErrorHandler(this._onLoadErrorDelegate);
-		this._loader._iAddParseErrorHandler(this._onParseErrorDelegate);
+		this._contentLoader.addEventListener(LoaderEvent.LOADER_START, this._onLoaderStartDelegate);
+		this._contentLoader.addEventListener(URLLoaderEvent.LOAD_PROGRESS, this._onLoadProgressDelegate);
+		this._contentLoader.addEventListener(URLLoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
+		this._contentLoader.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+		this._contentLoader.addEventListener(LoaderEvent.LOADER_COMPLETE, this._onLoaderCompleteDelegate);
 
-		return this._loader;
+		if (this.hasEventListener(URLLoaderEvent.LOAD_ERROR))
+		this._contentLoader.addEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
+	
+		if (this.hasEventListener(ParserEvent.PARSE_ERROR))
+			this._contentLoader.addEventListener(ParserEvent.PARSE_ERROR, this._onParseErrorDelegate);
+
+		return this._contentLoader;
 	}
 
 	private _disposeLoader():void
 	{
-		this._loader.removeEventListener(LoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
-		this._loader.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, this._onTextureSizeErrorDelegate);
-		this._loader.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+		this._contentLoader.removeEventListener(LoaderEvent.LOADER_START, this._onLoaderStartDelegate);
+		this._contentLoader.removeEventListener(URLLoaderEvent.LOAD_PROGRESS, this._onLoadProgressDelegate);
+		this._contentLoader.removeEventListener(URLLoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
+		this._contentLoader.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
+		this._contentLoader.removeEventListener(LoaderEvent.LOADER_COMPLETE, this._onLoaderCompleteDelegate);
+
+		if (this.hasEventListener(URLLoaderEvent.LOAD_ERROR))
+		this._contentLoader.removeEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
+	
+		if (this.hasEventListener(ParserEvent.PARSE_ERROR))
+			this._contentLoader.removeEventListener(ParserEvent.PARSE_ERROR, this._onParseErrorDelegate);
 
 		if (!this._useAssetLib)
-			this._loader.stop();
+			this._contentLoader.stop();
 
-		this._loader = null;
+		this._contentLoader = null;
 	}
 	
 	/**
@@ -549,7 +604,24 @@ export class LoaderContainer extends DisplayObjectContainer
 		Loader.enableParsers(parserClasses);
 	}
 
-	private onAssetComplete(event:AssetEvent):void
+	/**
+	 * .
+	 */
+	private _onLoaderStart(event:LoaderEvent):void
+	{
+		this.dispatchEvent(event);
+	}
+
+	private _onLoadProgress(event:URLLoaderEvent):void
+	{
+		this.dispatchEvent(event);
+	}
+	
+	private _onLoadComplete(event:URLLoaderEvent):void
+	{
+		this.dispatchEvent(event);
+	}
+	private _onAssetComplete(event:AssetEvent):void
 	{
 		this.dispatchEvent(event);
 	}
@@ -557,7 +629,7 @@ export class LoaderContainer extends DisplayObjectContainer
 	/**
 	 * Called when an error occurs during loading
 	 */
-	private onLoadError(event:URLLoaderEvent):boolean
+	private _onLoadError(event:URLLoaderEvent):boolean
 	{
 		if (this.hasEventListener(URLLoaderEvent.LOAD_ERROR)) {
 			this.dispatchEvent(event);
@@ -570,7 +642,7 @@ export class LoaderContainer extends DisplayObjectContainer
 	/**
 	 * Called when a an error occurs during parsing
 	 */
-	private onParseError(event:ParserEvent):boolean
+	private _onParseError(event:ParserEvent):boolean
 	{
 		if (this.hasEventListener(ParserEvent.PARSE_ERROR)) {
 			this.dispatchEvent(event);
@@ -580,15 +652,10 @@ export class LoaderContainer extends DisplayObjectContainer
 		}
 	}
 
-	private onTextureSizeError(event:AssetEvent):void
-	{
-		this.dispatchEvent(event);
-	}
-
 	/**
 	 * Called when the resource and all of its dependencies was retrieved.
 	 */
-	private onLoadComplete(event:LoaderEvent):void
+	private _onLoaderComplete(event:LoaderEvent):void
 	{
 		this._content = <DisplayObject> event.content;
 
