@@ -17,6 +17,8 @@ import {DisplayObject} from "../display/DisplayObject";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import {FrameScriptManager} from "../managers/FrameScriptManager";
 import { IFrameLabel } from './IFrameLabel';
+import { TimelineActionType } from './TimelineActionType';
+import { IFilter } from '../adapters/IFilter';
 
 
 export class Timeline
@@ -75,7 +77,9 @@ export class Timeline
 	public properties_stream_f32_mtx_scale_rot:ArrayBufferView;	// list of floats
 	public properties_stream_f32_mtx_pos:ArrayBufferView;	// list of floats
 	public properties_stream_f32_ct:ArrayBufferView;	// list of floats
-	public properties_stream_strings:Array<string>;
+	public properties_stream_strings:string[];
+
+	public properties_stream_filters:IFilter[];
 
 	private _potentialPrototypes:IAsset[];
 	public potentialPrototypesInitEventsMap:any;
@@ -103,21 +107,22 @@ export class Timeline
 		this.keyframe_to_frameidx = {};
 
 		//cache functions
-		this._functions[1] = this.update_mtx_all;
-		this._functions[2] = this.update_colortransform;
-		this._functions[3] = this.update_masks;
-		this._functions[4] = this.update_name;
-		this._functions[5] = this.update_button_name;
-		this._functions[6] = this.update_visibility;
-		this._functions[7] = this.update_blendmode;
-		this._functions[8] = this.update_rendermode;
-		this._functions[11] = this.update_mtx_scale_rot;
-		this._functions[12] = this.update_mtx_pos;
-		this._functions[200] = this.enable_maskmode;
-		this._functions[201] = this.remove_masks;
-		this._functions[202] = this.swap_graphics;
-		this._functions[203] = this.set_ratio;
-		this._functions[204] = this.start_audio;
+		this._functions[TimelineActionType.UPDATE_MTX] = this.update_mtx_all;
+		this._functions[TimelineActionType.UPDATE_CMTX] = this.update_colortransform;
+		this._functions[TimelineActionType.UPDATE_MASKS] = this.update_masks;
+		this._functions[TimelineActionType.UPDATE_NAME] = this.update_name;
+		this._functions[TimelineActionType.UPDATE_BUTTON_NAME] = this.update_button_name;
+		this._functions[TimelineActionType.UPDATE_VISIBLE] = this.update_visibility;
+		this._functions[TimelineActionType.UPDATE_BLENDMODE] = this.update_blendmode;
+		this._functions[TimelineActionType.UPDATE_RENDERMODE] = this.update_rendermode;
+		this._functions[TimelineActionType.UPDATE_FILTERS] = this.update_filters;		
+		this._functions[TimelineActionType.UPDATE_SCALE_ROT] = this.update_mtx_scale_rot;
+		this._functions[TimelineActionType.UPDATE_POS] = this.update_mtx_pos;
+		this._functions[TimelineActionType.ENABLE_MASKMODE] = this.enable_maskmode;
+		this._functions[TimelineActionType.REMOVE_MASK] = this.remove_masks;
+		this._functions[TimelineActionType.SWAP_GRAPHICS] = this.swap_graphics;
+		this._functions[TimelineActionType.SET_RATIO] = this.set_ratio;
+		this._functions[TimelineActionType.START_AUDIO] = this.start_audio;
 
 	}
 
@@ -837,6 +842,20 @@ export class Timeline
 	{
 		child.masks = null;
 	}
+
+	public update_filters(child:DisplayObject, target_mc:MovieClip, i:number):void
+	{
+		var startFilter:number = this.properties_stream_int[i++];
+		var numFilter:number = this.properties_stream_int[i++];
+
+        if(numFilter==0){
+            (<IDisplayObjectAdapter>child.adapter).updateFilters(null);
+            return;
+        }
+		(<IDisplayObjectAdapter>child.adapter).updateFilters(this.properties_stream_filters.slice(startFilter, startFilter+numFilter));
+		
+	}
+
 	public swap_graphics(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
 		if(child.isAsset(Sprite)){

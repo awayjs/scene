@@ -2,12 +2,14 @@ console.debug("AwayJS - Scene - 0.13.22");
 
 export {IDisplayObjectAdapter} from "./lib/adapters/IDisplayObjectAdapter";
 export {IMovieClipAdapter} from "./lib/adapters/IMovieClipAdapter";
+export {IFilter} from "./lib/adapters/IFilter";
 
 export {AlignmentMode} from "./lib/base/AlignmentMode";
 export {HierarchicalProperties} from "./lib/base/HierarchicalProperties";
 export {IBitmapDrawable} from "./lib/base/IBitmapDrawable";
 export {OrientationMode} from "./lib/base/OrientationMode";
 export {Timeline} from "./lib/base/Timeline";
+export {TimelineActionType} from "./lib/base/TimelineActionType";
 export {TouchPoint} from "./lib/base/TouchPoint";
 
 export {ControllerBase} from "./lib/controllers/ControllerBase";
