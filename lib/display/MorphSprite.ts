@@ -1,4 +1,4 @@
-﻿import {Matrix, ColorUtils} from "@awayjs/core";
+﻿import {Matrix, ColorUtils, AssetEvent} from "@awayjs/core";
 
 import {PartitionBase, EntityNode} from "@awayjs/view";
 
@@ -27,6 +27,28 @@ export class MorphSprite extends Sprite
 
 	private _ratio:ui16;
 	private _frameCaches: NumberMap<GraphicsPath[]> = {};
+	
+	protected _setGraphics(value: Graphics): void {
+		if (this._graphics == value){
+			return;
+		}
+
+		if (this._graphics) {
+			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+			this._graphics.usages--;
+
+			//if (!this._graphics.usages)
+			//	this.graphics.dispose();
+		}
+		
+		if(!this._graphics) {
+			this._graphics = Graphics.getGraphics();
+		}
+
+		this._graphics.copyFrom(value);
+
+		this._onGraphicsInvalidate(null);
+	}
 
 	public get assetType():string
 	{
@@ -209,34 +231,35 @@ export class MorphSprite extends Sprite
 
 	public setRatio(ratio:number){
 		const lookupRatio = (ratio * 0xffff | 0);
+		const destination = this._graphics;
 
 		if(this._ratio === lookupRatio){
 			return;
 		}
 
 		this._ratio = lookupRatio;
-		this._graphics.endFill(); //trigger a queue execution if one is needed
-		this._graphics.clear();
+		destination.endFill(); //trigger a queue execution if one is needed
+		destination.clear();
 
-		if(this._graphics.start.length!=this._graphics.end.length){
+		if(destination.start.length !== destination.end.length){
 			throw("Error in morph data - different number of pathes");
 		}
 
-		const len = this._graphics.start.length;
+		const len = destination.start.length;
 		
 		for(let i = 0; i < len; i++){
 
 			const newPath = new GraphicsPath();
-			const startPath = this._graphics.start[i];
-			const endPath = this._graphics.end[i];
+			const startPath = destination.start[i];
+			const endPath = destination.end[i];
 
 			this._blendStyle(startPath, endPath, newPath, ratio);
 			this._blendContours(startPath, endPath, newPath, ratio);
 
-			this._graphics.add_queued_path(newPath);
+			destination.add_queued_path(newPath);
 		}
 
-		this._graphics.endFill();
+		destination.endFill();
 	}
 
 	/**

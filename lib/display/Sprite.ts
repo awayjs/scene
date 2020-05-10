@@ -42,7 +42,7 @@ export class Sprite extends DisplayObjectContainer
 
 	private _center:Vector3D;
 	public _graphics:Graphics;
-	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
+	protected _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
 
 	/**
 	 *
@@ -74,9 +74,14 @@ export class Sprite extends DisplayObjectContainer
 	{
 		if (value == null)
 			throw new Error("Cannot have graphics set to null");
+		
+		this._setGraphics(value);
+	}
 
-		if (this._graphics == value)
+	protected _setGraphics(value: Graphics): void {
+		if (this._graphics == value) {
 			return;
+		}
 
 		if (this._graphics) {
 			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
@@ -92,6 +97,7 @@ export class Sprite extends DisplayObjectContainer
 
 		this._onGraphicsInvalidate(null);
 	}
+
 	/**
 	 * Create a new Sprite object.
 	 *
@@ -172,7 +178,7 @@ export class Sprite extends DisplayObjectContainer
 
 		sprite._iSourcePrefab = this._iSourcePrefab;
 
-		this._graphics.copyTo(sprite.graphics, cloneShapes);
+		this._graphics.copyTo(sprite._graphics, cloneShapes);
     }
 
 	/**
@@ -191,7 +197,7 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @private
 	 */
-	private _onGraphicsInvalidate(event:AssetEvent):void
+	protected _onGraphicsInvalidate(event:AssetEvent):void
 	{
 		var isEntity:boolean = this.isEntity();
 
