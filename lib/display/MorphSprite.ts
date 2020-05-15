@@ -120,7 +120,25 @@ export class MorphSprite extends Sprite
 			}
 			case BitmapFillStyle.data_type:{
 				//todo
-				console.warn("MorphSprite: BitmapFillStyle not implemented!");
+				//console.warn("MorphSprite: BitmapFillStyle not implemented!");
+
+				const startStyle = (<BitmapFillStyle>startPath.style);
+				const endStyle = (<BitmapFillStyle>endPath.style);
+
+				//todo: interpolate uvtransform
+				const startTrans = startStyle.matrix;
+				const endTrans = endStyle.matrix;
+				const newTrans = new Matrix();
+
+				newTrans.a = startTrans.a*ratioStart + endTrans.a*ratioEnd;
+				newTrans.b = startTrans.b*ratioStart + endTrans.b*ratioEnd;
+				newTrans.c = startTrans.c*ratioStart + endTrans.c*ratioEnd;
+				newTrans.d = startTrans.d*ratioStart + endTrans.d*ratioEnd;
+				newTrans.tx = startTrans.tx*ratioStart + endTrans.tx*ratioEnd;
+				newTrans.ty = startTrans.ty*ratioStart + endTrans.ty*ratioEnd;
+
+				newPath.style = new BitmapFillStyle(startStyle.material, newTrans, startStyle.repeat, startStyle.smooth);
+
 				break;
 			}
 			case GraphicsStrokeStyle.data_type:{
