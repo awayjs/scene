@@ -13,6 +13,7 @@ import { FrameScriptManager } from "../managers/FrameScriptManager";
 import { DisplayObject } from "./DisplayObject";
 import { Sprite } from "./Sprite";
 import { TextField } from "./TextField";
+import { DisplayObjectContainer } from './DisplayObjectContainer';
 
 export class MovieClip extends Sprite {
 	public static mcForConstructor: MovieClip;
@@ -541,10 +542,8 @@ export class MovieClip extends Sprite {
 		var returnObj=this.addChildAtDepth(child, depth);
 		this._sessionID_childs[sessionID] = child;
 		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
-			//(<DisplayObject>oneChild.adapter).dispatchEventRecursive(new Event(Event.REMOVED_FROM_STAGE));
-			(<any>child.adapter).dispatchStaticEvent("added");
-			(<any>child.adapter).dispatchStaticEvent("addedToStage");
-			//(<any>child.adapter).dispatchStaticEvent("frameConstructed");
+
+			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "added", this.isOnDisplayList()?"addedToStage":null);
 		}
 		return returnObj
 	}
@@ -572,13 +571,51 @@ export class MovieClip extends Sprite {
 			child._sessionID = -2;
 
 		}
+		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
+			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "removed", this.isOnDisplayList()?"removedFromStage":null);
+		}
 
 		return super.removeChildAtInternal(index);
+	}
+
+	public dispatchEventOnAdapterRecursiv(child:DisplayObjectContainer, event, stageEvent) {
+		let numChildren:number=child.numChildren;
+		let cnt:number=0;
+
+		while(cnt<numChildren){
+			let oneChild: DisplayObject = child._children[cnt];
+			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>oneChild, event, stageEvent);
+			cnt++;
+		}
+		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
+			// todo: check if the mc was part of the display-list 
+			// if it was, we dispatch both events, if not, we only dispatch removed
+			(<any>child.adapter).dispatchStaticEvent(event);
+			if(stageEvent)
+				(<any>child.adapter).dispatchStaticEvent(stageEvent);
+		}
+		
+	}
+
+	/*
+	this checks if the mc is part of the displaylist (child of the stage)
+	todo: probably not the best way to do this
+	probably better to get this info by looking at root
+	*/
+	public isOnDisplayList(): boolean {
+		let parent:DisplayObjectContainer=this;
+		while (parent){
+			if(parent.isAVMScene)
+				return true;
+			parent=parent.parent;
+		}
+		return false;
 	}
 
 	public get assetType(): string {
 		return MovieClip.assetType;
 	}
+
 
 	/**
 	 * Starts playback of animation from current position

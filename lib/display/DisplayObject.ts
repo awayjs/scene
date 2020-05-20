@@ -1584,6 +1584,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		displayObject.assetNamespace = this.assetNamespace;
         displayObject._symbol = this._symbol;
         displayObject.avm1Symbol = this.avm1Symbol;
+        displayObject.isAVMScene = this.isAVMScene;
         
 		if (this._explicitMasks)
 			displayObject.masks = this._explicitMasks;
