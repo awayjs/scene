@@ -328,6 +328,7 @@ export class Timeline
 			child.rotationZ = originalChild.rotationZ;
 			hitArea.addChild(child);
 		}
+		hitArea.pickObjectFromTimeline=true;
 		target_mc.pickObject=hitArea;
 		target_mc.reset(false);
 		return hitArea;

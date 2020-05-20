@@ -177,6 +177,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public _sessionID:number = -1;
 	public _depthID:number = -16384;
 
+	public pickObjectFromTimeline:boolean;
+
 	public _implicitPartition:PartitionBase;
 
 	private _sceneTransformChanged:DisplayObjectEvent;
@@ -683,7 +685,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._pickObject)
 			this._pickObject.partition = null;
 
-		this._pickObject = value.clone();
+		this._pickObject = value.pickObjectFromTimeline?value.clone():value;
 
 		if (this._pickObject) {
 			this._pickObject.partition = new BasicPartition(this._pickObject);
@@ -1574,6 +1576,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		displayObject.material = this._material;
 		displayObject.style = this._style;	
 		displayObject.pickObject = this._pickObject;
+		displayObject.pickObjectFromTimeline = this.pickObjectFromTimeline;
+		
 		displayObject.boundsVisible = this._boundsVisible;
 		displayObject.name = this._pName;
 		displayObject.mouseEnabled = this._explicitMouseEnabled;
@@ -2122,7 +2126,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	private _updatePickObject():void
 	{
-		this._pickObject.transform.matrix3D = this.transform.concatenatedMatrix3D;
+		if(this._pickObject.pickObjectFromTimeline)
+			this._pickObject.transform.matrix3D = this.transform.concatenatedMatrix3D;
 	}
 
 	private _updateBoundsPrimitive():void
