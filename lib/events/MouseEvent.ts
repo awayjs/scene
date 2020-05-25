@@ -14,6 +14,7 @@ export class MouseEvent extends EventBase
 	// Private.
 	public _iAllowedToPropagate:boolean = true;
 	public _iParentEvent:MouseEvent;
+	public commonAncestor:DisplayObject;
 
 	/**
 	 * Defines the value of the type property of a mouseOver3d event object.
@@ -25,6 +26,15 @@ export class MouseEvent extends EventBase
 	 */
 	public static MOUSE_OUT:string = "mouseOut3d";
 
+	/**
+	 * Defines the value of the type property of a rollOver3d event object.
+	 */
+	public static ROLL_OVER:string = "rollOver3d";
+
+	/**
+	 * Defines the value of the type property of a rollOut3d event object.
+	 */
+	public static ROLL_OUT:string = "rollOut3d";
 	/**
 	 * Defines the value of the type property of a mouseUp3d event object.
 	 */

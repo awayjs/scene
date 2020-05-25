@@ -10,6 +10,7 @@ import { FrameScriptManager } from "../managers/FrameScriptManager";
 
 import { Scene } from "../Scene";
 import { IInputRecorder } from './IInputRecorder';
+import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 
 
 /**
@@ -62,6 +63,8 @@ export class MouseManager {
     private _mouseOver: MouseEvent = new MouseEvent(MouseEvent.MOUSE_OVER);
     private _mouseWheel: MouseEvent = new MouseEvent(MouseEvent.MOUSE_WHEEL);
     private _mouseDoubleClick: MouseEvent = new MouseEvent(MouseEvent.DOUBLE_CLICK);
+    private _rollOver: MouseEvent = new MouseEvent(MouseEvent.ROLL_OVER);
+    private _rollOut: MouseEvent = new MouseEvent(MouseEvent.ROLL_OUT);
     
     private _dragMove: MouseEvent = new MouseEvent(MouseEvent.DRAG_MOVE);
     private _dragStart: MouseEvent = new MouseEvent(MouseEvent.DRAG_START);
@@ -289,9 +292,12 @@ export class MouseManager {
                 FrameScriptManager.execute_queue();
             }
             return;
-        }
+		}
 
         while (dispatcher) {
+			if(event.commonAncestor && dispatcher==event.commonAncestor){
+				return;
+			}
             if (dispatcher._iIsMouseEnabled())
                 dispatcher.dispatchEvent(event);
 
@@ -310,7 +316,9 @@ export class MouseManager {
         if (scene.forceMouseMove && !this._isTouch && !this._iUpdateDirty)
             this._iCollision = scene.getViewCollision(scene._mouseX, scene._mouseY);
 
-        
+		this._rollOut.commonAncestor=null;
+		this._rollOver.commonAncestor=null;
+
         this._iCollisionEntity = <DisplayObject> ((this._iCollision) ? this._iCollision.pickerEntity : null);
 
         if (this._iCollisionEntity != this._prevICollisionEntity) {            
@@ -327,6 +335,45 @@ export class MouseManager {
                 else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity == this._prevICollisionEntity)
                     this.queueDispatch(this._dragOut, this._mouseMoveEvent, this._prevICollision);
             }
+
+			if(!this._prevICollisionEntity && this._iCollisionEntity){
+				// rollout / rollover easy case, can just bubble up
+				this.queueDispatch(this._rollOut, this._mouseMoveEvent, this._prevICollision);
+				this.queueDispatch(this._rollOver, this._mouseMoveEvent, this._iCollision);
+			}
+			if(this._prevICollisionEntity && !this._iCollisionEntity){
+				// rollout / rollover easy case, can just bubble up
+				this.queueDispatch(this._rollOut, this._mouseMoveEvent, this._prevICollision);
+				this.queueDispatch(this._rollOver, this._mouseMoveEvent, this._iCollision);
+			}
+			if(this._prevICollisionEntity && this._iCollisionEntity){
+				// rollout / rollover find common ancester and only bubble up to that point
+				let parentsPrev:DisplayObject[]=[];
+				let parent:DisplayObject=this._prevICollisionEntity;
+				while(parent && !parent.isAVMScene){
+					parentsPrev.push(parent);
+					parent=parent.parent;
+				}
+				let commonAncestor:DisplayObject=null;
+				parent=this._iCollisionEntity;
+				while(parent && !parent.isAVMScene){
+					let oldParentIdx=parentsPrev.indexOf(parent);
+					if(oldParentIdx==-1){
+						parent=parent.parent;
+					}
+					else{
+						commonAncestor=parent;
+						parent=null;
+					}
+				}
+				if(commonAncestor!=this._prevICollisionEntity)		
+					this.queueDispatch(this._rollOut, this._mouseMoveEvent, this._prevICollision, commonAncestor);
+						
+				if(commonAncestor!=this._iCollisionEntity)	
+					this.queueDispatch(this._rollOver, this._mouseMoveEvent, this._iCollision, commonAncestor);
+	
+
+			}
 
             this._collisionIsEnabledButton=this._iCollisionEntity?(<any>this._iCollisionEntity).buttonEnabled:false;
 
@@ -672,7 +719,7 @@ export class MouseManager {
     // ---------------------------------------------------------------------
     // Private.
     // ---------------------------------------------------------------------
-    private setUpEvent(event: MouseEvent, sourceEvent, collision:PickingCollision): MouseEvent {
+    private setUpEvent(event: MouseEvent, sourceEvent, collision:PickingCollision, commonAncestor:DisplayObject=null): MouseEvent {
         // 2D properties.
         if (sourceEvent) {
             event.delta = sourceEvent.wheelDelta;
@@ -708,13 +755,14 @@ export class MouseManager {
             event.position = this._nullVector;
             event.normal = this._nullVector;
             event.elementIndex = 0;
-        }
+		}
+		event.commonAncestor=commonAncestor;
         return event;
 
     }
-    private queueDispatch(event: MouseEvent, sourceEvent, collision: PickingCollision): void {
+    private queueDispatch(event: MouseEvent, sourceEvent, collision: PickingCollision, commonAncestor:DisplayObject=null): void {
         // Store event to be dispatched later.
-        this._queuedEvents.push(this.setUpEvent(event, sourceEvent, collision));
+        this._queuedEvents.push(this.setUpEvent(event, sourceEvent, collision, commonAncestor));
 
     }
 
