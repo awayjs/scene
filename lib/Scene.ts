@@ -10,7 +10,7 @@ import {MouseManager} from "./managers/MouseManager";
 import { DisplayObjectContainer } from './display/DisplayObjectContainer';
 import { DisplayObject } from './display/DisplayObject';
 import { MaterialManager } from '@awayjs/graphics';
-import { MethodMaterial } from '@awayjs/materials';
+import { MethodMaterial, ImageTexture2D } from '@awayjs/materials';
 
 
 export class Scene
@@ -368,3 +368,4 @@ export class Scene
 }
 
 MaterialManager.materialClass=MethodMaterial;
+MaterialManager.textureClass=ImageTexture2D;
