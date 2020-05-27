@@ -15,6 +15,12 @@ import { View, PickGroup } from '@awayjs/view';
 import { MethodMaterial } from '@awayjs/materials';
 import { Billboard } from '../display/Billboard';
 
+
+// empty matrix for transfrorm reset
+const EMPTY_MATRIX = new Matrix3D();
+const TMP_MATRIX3D = new Matrix3D();
+const TMP_COLOR_MATRIX = new ColorTransform();
+
 /**
  * 
  */
@@ -347,11 +353,15 @@ export class SceneImage2D extends BitmapImage2D
 			if (!SceneImage2D._renderer)
 				this.createRenderer();
 
-			var oldParent:DisplayObjectContainer=source.parent;
-			var oldChildIdx:number=oldParent?oldParent.getChildIndex(source):0;
-			var oldMatrix3D:Matrix3D=source.transform.matrix3D.clone();
-			var oldVisible:boolean=source.visible;
-			var oldColorTransform:ColorTransform=source.transform.colorTransform.clone();
+			var oldParent = source.parent;
+			var oldChildIdx = oldParent ? oldParent.getChildIndex(source) : 0;			
+			var oldVisible = source.visible;
+
+			// because set new matrix, clone it ot needed and slower 
+			TMP_MATRIX3D.copyRawDataFrom(source.transform.matrix3D._rawData);
+
+			// same as matrix
+			TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
 
 			if (matrix) {
 				SceneImage2D._root.transform.scaleTo(matrix.a, -matrix.d, 1);
@@ -372,10 +382,11 @@ export class SceneImage2D extends BitmapImage2D
 
 			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
 			SceneImage2D._root.addChild(source);
-
-			source.transform.matrix3D = new Matrix3D();
-			source.visible=true;
+			
+			source.transform.matrix3D.identity();
+			source.visible = true;
 			source.transform.colorTransform = null;
+
 			//save snapshot if unlocked
 			//if (!this._locked)
 			//SceneImage2D.scene.view.target=this;
@@ -395,9 +406,11 @@ export class SceneImage2D extends BitmapImage2D
 				}
 				
 			}
-			source.transform.matrix3D = oldMatrix3D;
+
 			source.visible = oldVisible;
-			source.transform.colorTransform = oldColorTransform;
+
+			source.transform.matrix3D.copyRawDataFrom(TMP_MATRIX3D._rawData);
+			source.transform.colorTransform.copyRawDataFrom(TMP_COLOR_MATRIX._rawData);
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
 
