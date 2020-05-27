@@ -12,7 +12,7 @@ import { Scene } from "../Scene";
 import { IInputRecorder } from './IInputRecorder';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 
-
+const TMP_POINT = {x: 0, y: 0};
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
  * it provides a manager class for detecting mouse hits on scene objects and sending out mouse events.
@@ -716,18 +716,41 @@ export class MouseManager {
             this.onMouseUp(newTouchEvent);
         }
     }
+
+    private mapContainerToView(x: number, y: number, out: {x: number, y: number} = {x: 0, y: 0}) {
+        let rect;
+        const container = <HTMLCanvasElement>this._containerLookup[0];
+        // IE 11 fix
+        if (!container.parentElement) {
+            rect = { x: 0, y: 0, width: 0, height: 0 };
+        }
+        else {
+            rect = container.getBoundingClientRect();
+        }
+
+        out.x = ((x - rect.left) * ( (container.width || container.clientWidth) / rect.width));
+        out.y = ((y - rect.top) * ((container.height || container.clientHeight) / rect.height));
+
+        return out;
+    }
+
     // ---------------------------------------------------------------------
     // Private.
     // ---------------------------------------------------------------------
     private setUpEvent(event: MouseEvent, sourceEvent, collision:PickingCollision, commonAncestor:DisplayObject=null): MouseEvent {
+        const x = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches ? sourceEvent.changedTouches[0].clientX: 0;
+        const y = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches? sourceEvent.changedTouches[0].clientY:0;
+
+        const point = this.mapContainerToView( x, y, TMP_POINT );
+
         // 2D properties.
         if (sourceEvent) {
             event.delta = sourceEvent.wheelDelta;
             event.ctrlKey = sourceEvent.ctrlKey;
             event.altKey = sourceEvent.altKey;
             event.shiftKey = sourceEvent.shiftKey;
-            event.screenX = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches? sourceEvent.changedTouches[0].clientX:0;
-            event.screenY = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches? sourceEvent.changedTouches[0].clientY:0;
+            event.screenX = point.x;
+            event.screenY = point.y;
         }
         //console.log("event", event, collisionEntity, collisionEntity);
 
@@ -904,9 +927,16 @@ export class MouseManager {
 
     private updateColliders(event): void {
         var scene: Scene;
+
         var mouseX: number = (event.clientX != null) ? event.clientX : event.changedTouches[0].clientX;
         var mouseY: number = (event.clientY != null) ? event.clientY : event.changedTouches[0].clientY;
+
+        let point = this.mapContainerToView( mouseX, mouseY, TMP_POINT );
+        mouseX = point.x;
+        mouseY = point.y;
+
         var len: number = this._sceneLookup.length;
+
         for (var i: number = 0; i < len; i++) {
             scene = this._sceneLookup[i];
             scene._touchPoints.length = 0;
@@ -916,16 +946,22 @@ export class MouseManager {
                 var len_touches: number = event.touches.length;
                 for (var t: number = 0; t < len_touches; t++) {
                     touch = event.touches[t];
-                    scene._touchPoints.push(new TouchPoint(touch.clientX + scene.view.x, touch.clientY + scene.view.y, touch.identifier));
+                    
+                    point = this.mapContainerToView( touch.clientX, touch.clientY, TMP_POINT );
+
+                    scene._touchPoints.push(new TouchPoint(point.x, point.y, touch.identifier));
                 }
             }
 
             if (this._iUpdateDirty)
                 continue;
 
-            scene._mouseX = (mouseX < scene.view.x)? scene.view.x : (mouseX > scene.view.x + scene.view.width)? scene.view.x + scene.view.width : mouseX - scene.view.x;
+            scene._mouseX = mouseX;
+            scene._mouseY = mouseY;
+
+            // scene._mouseX = (mouseX < scene.view.x)? scene.view.x : (mouseX > scene.view.x + scene.view.width)? scene.view.x + scene.view.width : mouseX - scene.view.x;
   
-            scene._mouseY = (mouseY < scene.view.y)? scene.view.y : (mouseY > scene.view.y + scene.view.height)? scene.view.y + scene.view.height : mouseY - scene.view.y;
+            //scene._mouseY = (mouseY < scene.view.y)? scene.view.y : (mouseY > scene.view.y + scene.view.height)? scene.view.y + scene.view.height : mouseY - scene.view.y;
 
             if (!scene.disableMouseEvents)
                 this._iCollision = scene.getViewCollision(scene._mouseX, scene._mouseY);
