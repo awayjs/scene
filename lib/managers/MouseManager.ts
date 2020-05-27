@@ -738,13 +738,12 @@ export class MouseManager {
     // Private.
     // ---------------------------------------------------------------------
     private setUpEvent(event: MouseEvent, sourceEvent, collision:PickingCollision, commonAncestor:DisplayObject=null): MouseEvent {
-        const x = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches ? sourceEvent.changedTouches[0].clientX: 0;
-        const y = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches? sourceEvent.changedTouches[0].clientY:0;
-
-        const point = this.mapContainerToView( x, y, TMP_POINT );
-
         // 2D properties.
         if (sourceEvent) {
+            const x = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches ? sourceEvent.changedTouches[0].clientX: 0;
+            const y = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches? sourceEvent.changedTouches[0].clientY:0;    
+            const point = this.mapContainerToView( x, y, TMP_POINT );
+    
             event.delta = sourceEvent.wheelDelta;
             event.ctrlKey = sourceEvent.ctrlKey;
             event.altKey = sourceEvent.altKey;
@@ -958,10 +957,6 @@ export class MouseManager {
 
             scene._mouseX = mouseX;
             scene._mouseY = mouseY;
-
-            // scene._mouseX = (mouseX < scene.view.x)? scene.view.x : (mouseX > scene.view.x + scene.view.width)? scene.view.x + scene.view.width : mouseX - scene.view.x;
-  
-            //scene._mouseY = (mouseY < scene.view.y)? scene.view.y : (mouseY > scene.view.y + scene.view.height)? scene.view.y + scene.view.height : mouseY - scene.view.y;
 
             if (!scene.disableMouseEvents)
                 this._iCollision = scene.getViewCollision(scene._mouseX, scene._mouseY);
