@@ -132,9 +132,6 @@ export class FrameScriptManager
 	{
 		this._as3_constructor_queue.push(mc);
 	} 
-	public static queue_as3_events(event:any):void{
-		this._as3_event_queue.push(event);
-	}
 	public static execute_as3_constructors():void{
 			
 		if(this._as3_constructor_queue.length==0)
@@ -184,23 +181,6 @@ export class FrameScriptManager
 				//}
 			}
 			queue_tmp.length=0;
-		}
-		if(this._as3_event_queue.length==0)
-			return;
-		while(this._as3_constructor_queue.length>0){
-			var queue_tmp:any[]=this._as3_constructor_queue.concat();	
-			this._as3_constructor_queue.length = 0;
-			var mc:MovieClip;
-			var i=0;
-			var len=queue_tmp.length;	
-			for(i=0; i<len; i++){
-				let e_len=queue_tmp[i].events.length;
-				for(let e=0; e<e_len; e++){
-					(<any>queue_tmp[i].mc).dispatchEvent(queue_tmp[i].events[e]);
-				}
-			}
-			queue_tmp.length=0;
-
 		}
 
 	}
