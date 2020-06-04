@@ -107,22 +107,22 @@ export class Timeline
 		this.keyframe_to_frameidx = {};
 
 		//cache functions
-		this._functions[TimelineActionType.UPDATE_MTX] = this.update_mtx_all;
-		this._functions[TimelineActionType.UPDATE_CMTX] = this.update_colortransform;
-		this._functions[TimelineActionType.UPDATE_MASKS] = this.update_masks;
-		this._functions[TimelineActionType.UPDATE_NAME] = this.update_name;
-		this._functions[TimelineActionType.UPDATE_BUTTON_NAME] = this.update_button_name;
-		this._functions[TimelineActionType.UPDATE_VISIBLE] = this.update_visibility;
-		this._functions[TimelineActionType.UPDATE_BLENDMODE] = this.update_blendmode;
-		this._functions[TimelineActionType.UPDATE_RENDERMODE] = this.update_rendermode;
-		this._functions[TimelineActionType.UPDATE_FILTERS] = this.update_filters;		
-		this._functions[TimelineActionType.UPDATE_SCALE_ROT] = this.update_mtx_scale_rot;
-		this._functions[TimelineActionType.UPDATE_POS] = this.update_mtx_pos;
-		this._functions[TimelineActionType.ENABLE_MASKMODE] = this.enable_maskmode;
-		this._functions[TimelineActionType.REMOVE_MASK] = this.remove_masks;
-		this._functions[TimelineActionType.SWAP_GRAPHICS] = this.swap_graphics;
-		this._functions[TimelineActionType.SET_RATIO] = this.set_ratio;
-		this._functions[TimelineActionType.START_AUDIO] = this.start_audio;
+		this._functions[TimelineActionType.UPDATE_MTX] = (child, target_mc, i)=>this.update_mtx_all(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_CMTX] = (child, target_mc, i)=>this.update_colortransform(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_MASKS] = (child, target_mc, i)=>this.update_masks(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_NAME] = (child, target_mc, i)=>this.update_name(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_BUTTON_NAME] = (child, target_mc, i)=>this.update_button_name(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_VISIBLE] = (child, target_mc, i)=>this.update_visibility(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_BLENDMODE] = (child, target_mc, i)=>this.update_blendmode(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_RENDERMODE] = (child, target_mc, i)=>this.update_rendermode(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_FILTERS] = (child, target_mc, i)=>this.update_filters(child, target_mc, i);		
+		this._functions[TimelineActionType.UPDATE_SCALE_ROT] = (child, target_mc, i)=>this.update_mtx_scale_rot(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_POS] = (child, target_mc, i)=>this.update_mtx_pos(child, target_mc, i);
+		this._functions[TimelineActionType.ENABLE_MASKMODE] = (child, target_mc, i)=>this.enable_maskmode(child, target_mc, i);
+		this._functions[TimelineActionType.REMOVE_MASK] = (child, target_mc, i)=>this.remove_masks(child, target_mc, i);
+		this._functions[TimelineActionType.SWAP_GRAPHICS] = (child, target_mc, i)=>this.swap_graphics(child, target_mc, i);
+		this._functions[TimelineActionType.SET_RATIO] = (child, target_mc, i)=>this.set_ratio(child, target_mc, i);
+		this._functions[TimelineActionType.START_AUDIO] = (child, target_mc, i)=>this.start_audio(child, target_mc, i);
 
 	}
 
@@ -712,7 +712,7 @@ export class Timeline
 				props_start_idx = this.update_child_props_indices_stream[i];
 				props_end_index = props_start_idx + this.update_child_props_length_stream[i];
 				for(p = props_start_idx; p < props_end_index; p++)
-                    this._functions[this.property_type_stream[p]].call(this, child, target_mc, this.property_index_stream[p]);
+                    this._functions[this.property_type_stream[p]](child, target_mc, this.property_index_stream[p]);
                     
 			}
 			else{
