@@ -728,8 +728,8 @@ export class MouseManager {
             rect = container.getBoundingClientRect();
         }
 
-        out.x = ((x - rect.left) * ( (container.width || container.clientWidth) / rect.width));
-        out.y = ((y - rect.top) * ((container.height || container.clientHeight) / rect.height));
+        out.x = (x - rect.left) * container.clientWidth / rect.width;
+        out.y = (y - rect.top) * container.clientHeight / rect.height;
 
         return out;
     }
