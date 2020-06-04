@@ -1,4 +1,4 @@
-import { AssetEvent, IAsset, WaveAudio, AudioManager } from "@awayjs/core";
+import { AssetEvent, IAsset, WaveAudio, AudioManager, IAssetAdapter } from "@awayjs/core";
 
 import { PartitionBase, EntityNode } from '@awayjs/view';
 
@@ -24,6 +24,7 @@ export class MovieClip extends Sprite {
 
 	public static _skipAdvance: boolean;
 
+	private _mcs_newly_added_by_timeline: IAssetAdapter[] = [];
 
 	public preventScript: boolean = false;
 
@@ -545,7 +546,43 @@ export class MovieClip extends Sprite {
 
 			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "added", this.isOnDisplayList()?"addedToStage":null);
 		}
+		if((<IDisplayObjectAdapter>child.adapter).executeConstructor)
+			this._mcs_newly_added_by_timeline.push(child.adapter);
 		return returnObj
+	}
+	public executeAdapterConstructors() {
+		let len=this._mcs_newly_added_by_timeline.length;
+		// execute constructors of as3 childs
+		for(let i=0; i<len; i++){
+			let mcadapter=this._mcs_newly_added_by_timeline[i];
+			let mc=<MovieClip>mcadapter.adaptee;
+			let constructorFunc = (<IDisplayObjectAdapter>mcadapter).executeConstructor;
+			if(constructorFunc){
+				(<IDisplayObjectAdapter>mcadapter).executeConstructor = null;
+				constructorFunc();
+				// in avm2, framescripts get created on timeline within the constructor of the mc
+				// so when the mc was added to parent, no framescripts exists and therefore none are queued now
+				// we need to execute the script manually. 
+				if (mc.isAsset(MovieClip)) {
+					var script = mc.timeline.get_script_for_frame(mc, mc.currentFrameIndex);
+					if (script) {
+						FrameScriptManager.add_script_to_queue(mc, script);
+					}
+				}
+			}
+		}
+		// execute queued events (ADDED / ADDED_TO_STAGE) of as3 childs
+		for(let i=0; i<len; i++){
+			let mcadapter=this._mcs_newly_added_by_timeline[i];
+			let mc=<MovieClip>mcadapter.adaptee;
+			let executeEventsFunc = (<any>mcadapter).executeQueuedEvents;
+			if(executeEventsFunc){
+				(<any>mcadapter).executeQueuedEvents = null;
+				executeEventsFunc();
+			}
+		}
+		
+		this._mcs_newly_added_by_timeline.length=0;
 	}
 
 	public removeChildAtInternal(index: number): DisplayObject {

@@ -523,7 +523,9 @@ export class Timeline
 		//pass2: apply update commands for objects on stage (only if they are not blocked by script)
 		this.pass2(target_mc);
 
-        target_mc.constructedKeyFrameIndex = target_keyframe_idx;
+		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
+		
+		target_mc.executeAdapterConstructors();
 	}
 
 	public pass1(target_mc:MovieClip, start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object, queue_pass2:boolean):void
@@ -629,6 +631,8 @@ export class Timeline
 
 			if(frame_recipe & 16)
 				this.start_sounds(target_mc, frame_command_idx++);
+
+			target_mc.executeAdapterConstructors();
         }
 	}
 
