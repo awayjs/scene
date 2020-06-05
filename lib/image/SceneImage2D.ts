@@ -383,7 +383,7 @@ export class SceneImage2D extends BitmapImage2D
 			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
 			SceneImage2D._root.addChild(source);
 			
-			source.transform.matrix3D.identity();
+			source.transform.matrix3D = null;
 			source.visible = true;
 			source.transform.colorTransform = null;
 
@@ -409,8 +409,8 @@ export class SceneImage2D extends BitmapImage2D
 
 			source.visible = oldVisible;
 
-			source.transform.matrix3D.copyRawDataFrom(TMP_MATRIX3D._rawData);
-			source.transform.colorTransform.copyRawDataFrom(TMP_COLOR_MATRIX._rawData);
+			source.transform.matrix3D = TMP_MATRIX3D;
+			source.transform.colorTransform = TMP_COLOR_MATRIX;
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
 
