@@ -26,8 +26,6 @@ export class Timeline
 	private _functions:Array<(child:DisplayObject, target_mc:MovieClip, i:number) => void> = [];
     private _blocked:boolean;
 	
-	public static currentInstanceName:string=null;
-	public static currentInstanceMatrix:any=null;
 	public _update_indices:number[] = [];
 	public _update_frames:number[] = [];
 	public isButton:boolean = false;
@@ -276,15 +274,6 @@ export class Timeline
 
 			return morphSprite;
 		}
-		if(instanceID){			
-			var placeObjectTag:any=this.potentialPrototypesInitEventsMap[instanceID];
-			if(placeObjectTag && ((<any>placeObjectTag).name)){
-				Timeline.currentInstanceName=(<any>placeObjectTag).name;
-			}
-			if(placeObjectTag && ((<any>placeObjectTag).matrix)){
-				Timeline.currentInstanceMatrix=(<any>placeObjectTag).matrix;
-			}
-		}
 		return (<any> asset.adapter).clone(false).adaptee;
 	}
 	public initChildInstance(child:DisplayObject, id:string)
@@ -444,8 +433,9 @@ export class Timeline
 		// child-instances that are alive on both frames have their properties reset if we are jumping back
 		// child-instances that are alive on both frames but have different instance-id get fully reset
 		for (i = target_mc.numChildren - 1; i >= 0; i--) {
-            child = target_mc._children[i];
-			if (child._depthID < 0) {
+			child = target_mc._children[i];
+			// only timeline childs will have a insanceID assigned
+			if ((<any>child).instanceID!=="") {
 				if (!depth_sessionIDs[child._depthID]){
 					target_mc.removeChildAt(i);
                 }
@@ -495,7 +485,7 @@ export class Timeline
 		for (var key in depth_sessionIDs) {
 			if (!new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID != "oldID") {
 				child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
-				if (child._sessionID == -1){
+				if (child._sessionID <= -1){
 					child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 			}			
@@ -513,7 +503,7 @@ export class Timeline
 		for (var key in depth_sessionIDs) {
 			if (new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID != "oldID") {
 				child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
-				if (child._sessionID == -1){
+				if (child._sessionID <= -1){
 					child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 			}
