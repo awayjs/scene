@@ -364,8 +364,18 @@ export class SceneImage2D extends BitmapImage2D
 			TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
 
 			if (matrix) {
-				SceneImage2D._root.transform.scaleTo(matrix.a, -matrix.d, 1);
-				SceneImage2D._root.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+				const m = SceneImage2D._root.transform.matrix3D;
+				
+				m._rawData[0] = matrix.a;
+				m._rawData[1] = - matrix.b;
+				m._rawData[4] = matrix.c;
+				m._rawData[5] = - matrix.d;
+				m._rawData[12] = matrix.tx;
+				m._rawData[13] = this.rect.height - matrix.ty;
+
+				SceneImage2D._root.transform.invalidateComponents();
+				SceneImage2D._root.transform.invalidateConcatenatedMatrix3D();
+
 			} else {
 				SceneImage2D._root.transform.scaleTo(1, -1, 1);
 				SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
@@ -429,8 +439,17 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D._billboard.material.style.image = source;
 
 		if (matrix) {
-			SceneImage2D._billboardRoot.transform.scaleTo(matrix.a, -matrix.d, 1);
-			SceneImage2D._billboardRoot.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+			const m = SceneImage2D._billboardRoot.transform.matrix3D;
+			
+			m._rawData[0] = matrix.a;
+			m._rawData[1] = - matrix.b;
+			m._rawData[4] = matrix.c;
+			m._rawData[5] = - matrix.d;
+			m._rawData[12] = matrix.tx;
+			m._rawData[13] = this.rect.height - matrix.ty;
+
+			SceneImage2D._billboardRoot.transform.invalidateComponents();
+			SceneImage2D._billboardRoot.transform.invalidateConcatenatedMatrix3D();
 		} else {
 			SceneImage2D._billboardRoot.transform.scaleTo(1, -1, 1);
 			SceneImage2D._billboardRoot.transform.moveTo(0, this.rect.height,0);
