@@ -24,8 +24,6 @@ export class MovieClip extends Sprite {
 
 	public static _skipAdvance: boolean;
 
-	private _mcs_newly_added_by_timeline: IAssetAdapter[] = [];
-
 	public preventScript: boolean = false;
 
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
@@ -532,7 +530,7 @@ export class MovieClip extends Sprite {
 */
 	public _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
 		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
-
+		(<any>child).addedByTimeline=true;
 
 		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
 			(<any>child.adapter).deleteOwnProperties();
@@ -546,16 +544,15 @@ export class MovieClip extends Sprite {
 
 			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "added", this.isOnDisplayList()?"addedToStage":null);
 		}
-		if((<IDisplayObjectAdapter>child.adapter).executeConstructor)
-			this._mcs_newly_added_by_timeline.push(child.adapter);
 		return returnObj
 	}
 	public executeAdapterConstructors() {
-		let len=this._mcs_newly_added_by_timeline.length;
+		let i=this._children.length;
 		// execute constructors of as3 childs
-		for(let i=0; i<len; i++){
-			let mcadapter=this._mcs_newly_added_by_timeline[i];
-			let mc=<MovieClip>mcadapter.adaptee;
+		while(i>0){
+			i--;
+			let mc=<MovieClip>this._children[i];
+			let mcadapter=mc.adapter;
 			let constructorFunc = (<IDisplayObjectAdapter>mcadapter).executeConstructor;
 			if(constructorFunc){
 				(<IDisplayObjectAdapter>mcadapter).executeConstructor = null;
@@ -572,9 +569,11 @@ export class MovieClip extends Sprite {
 			}
 		}
 		// execute queued events (ADDED / ADDED_TO_STAGE) of as3 childs
-		for(let i=0; i<len; i++){
-			let mcadapter=this._mcs_newly_added_by_timeline[i];
-			let mc=<MovieClip>mcadapter.adaptee;
+		i=this._children.length;
+		while(i>0){
+			i--;
+			let mc=<MovieClip>this._children[i];
+			let mcadapter=mc.adapter;
 			let executeEventsFunc = (<any>mcadapter).executeQueuedEvents;
 			if(executeEventsFunc){
 				(<any>mcadapter).executeQueuedEvents = null;
@@ -582,7 +581,6 @@ export class MovieClip extends Sprite {
 			}
 		}
 		
-		this._mcs_newly_added_by_timeline.length=0;
 	}
 
 	public removeChildAtInternal(index: number): DisplayObject {
