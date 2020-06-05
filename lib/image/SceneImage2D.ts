@@ -349,13 +349,19 @@ export class SceneImage2D extends BitmapImage2D
 	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
 	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean):void
 	{
+		let root: DisplayObjectContainer;
+		let renderer: DefaultRenderer;
+
 		if (source instanceof DisplayObject) {
 			if (!SceneImage2D._renderer)
 				this.createRenderer();
 
-			var oldParent = source.parent;
-			var oldChildIdx = oldParent ? oldParent.getChildIndex(source) : 0;			
-			var oldVisible = source.visible;
+			root = SceneImage2D._root;
+			renderer = SceneImage2D._renderer;
+			
+			const oldParent = source.parent;
+			const oldChildIdx = oldParent ? oldParent.getChildIndex(source) : 0;			
+			const oldVisible = source.visible;
 
 			// because set new matrix, clone it ot needed and slower 
 			TMP_MATRIX3D.copyRawDataFrom(source.transform.matrix3D._rawData);
@@ -364,26 +370,40 @@ export class SceneImage2D extends BitmapImage2D
 			TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
 
 			if (matrix) {
+				const m = root.transform.matrix3D;
+				
+				m._rawData[0] = matrix.a;
+				m._rawData[1] = - matrix.b;
+				m._rawData[4] = matrix.c;
+				m._rawData[5] = - matrix.d;
+				m._rawData[12] = matrix.tx;
+				m._rawData[13] = this.rect.height - matrix.ty;
+
+				root.transform.invalidateComponents();
+				root.transform.invalidateConcatenatedMatrix3D();
+
+				/*
 				SceneImage2D._root.transform.scaleTo(matrix.a, -matrix.d, 1);
-				SceneImage2D._root.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+				SceneImage2D._root.transform.moveTo(matrix.tx, this.rect.height - matrix.ty, 0);
+				*/
 			} else {
-				SceneImage2D._root.transform.scaleTo(1, -1, 1);
-				SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
+				root.transform.scaleTo(1, -1, 1);
+				root.transform.moveTo(0, this.rect.height,0);
 			}
 			//root.transform.colorTransform = colorTransform;
 
-			SceneImage2D._renderer.view.target = this;
-			SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
+			renderer.view.target = this;
+			renderer.view.projection.scale = 1000/this.rect.height;
 
-			SceneImage2D._renderer.view.x = 0;
-			SceneImage2D._renderer.view.y = 0;
-			SceneImage2D._renderer.view.width = this.width;
-			SceneImage2D._renderer.view.height = this.height;
+			renderer.view.x = 0;
+			renderer.view.y = 0;
+			renderer.view.width = this.width;
+			renderer.view.height = this.height;
 
-			SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
-			SceneImage2D._root.addChild(source);
+			root.removeChildren(0, root.numChildren);
+			root.addChild(source);
 			
-			source.transform.matrix3D.identity();
+			source.transform.matrix3D = null;
 			source.visible = true;
 			source.transform.colorTransform = null;
 
@@ -393,7 +413,7 @@ export class SceneImage2D extends BitmapImage2D
 			//SceneImage2D.scene.renderer.disableClear = !this._locked;
 
 			//render
-			SceneImage2D._renderer.render();
+			renderer.render();
 
 			if(oldParent){
 				if(oldParent.adapter && oldParent.adapter!=oldParent &&
@@ -409,8 +429,8 @@ export class SceneImage2D extends BitmapImage2D
 
 			source.visible = oldVisible;
 
-			source.transform.matrix3D.copyRawDataFrom(TMP_MATRIX3D._rawData);
-			source.transform.colorTransform.copyRawDataFrom(TMP_COLOR_MATRIX._rawData);
+			source.transform.matrix3D = TMP_MATRIX3D;
+			source.transform.colorTransform = TMP_COLOR_MATRIX;
 			//SceneImage2D.scene.dispose();
 			//SceneImage2D.scene=null;
 
@@ -421,23 +441,35 @@ export class SceneImage2D extends BitmapImage2D
 	
 		if (!SceneImage2D._billboardRenderer)
 			this.createBillboardRenderer();
+			
+		renderer = SceneImage2D._billboardRenderer;
+		root = SceneImage2D._billboardRoot;
 
-		SceneImage2D._billboardRenderer.disableClear = true;
-		SceneImage2D._billboardRenderer.view.target = this;
-		SceneImage2D._billboardRenderer.view.projection.scale = 1000/this.rect.height;
+		renderer.disableClear = true;
+		renderer.view.target = this;
+		renderer.view.projection.scale = 1000 / this.rect.height;
 
 		SceneImage2D._billboard.material.style.image = source;
 
 		if (matrix) {
-			SceneImage2D._billboardRoot.transform.scaleTo(matrix.a, -matrix.d, 1);
-			SceneImage2D._billboardRoot.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+			const m = root.transform.matrix3D;
+
+			m._rawData[0] = matrix.a;
+			m._rawData[1] = - matrix.b;
+			m._rawData[4] = matrix.c;
+			m._rawData[5] = - matrix.d;
+			m._rawData[12] = matrix.tx;
+			m._rawData[13] = this.rect.height - matrix.ty;
+
+			root.transform.invalidateComponents();
+			root.transform.invalidateConcatenatedMatrix3D();
 		} else {
-			SceneImage2D._billboardRoot.transform.scaleTo(1, -1, 1);
-			SceneImage2D._billboardRoot.transform.moveTo(0, this.rect.height,0);
+			root.transform.scaleTo(1, -1, 1);
+			root.transform.moveTo(0, this.rect.height,0);
 		}
 
 		//render
-		SceneImage2D._billboardRenderer.render();
+		renderer.render();
 
 		this._imageDataDirty = true;
 	}
