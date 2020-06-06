@@ -155,25 +155,19 @@ export class FrameScriptManager
 			for (i = 0; i <queues_tmp.length; i++) {
 				// during the loop we might add more scripts to the queue
 				mc=queues_tmp[i];
-				//if(mc._implicitPartition && mc._implicitPartition.root) {
-					// first we execute any pending loadedAction for this MC
-					if ((<any>mc).onLoaded) {
-						//atm this is only used for avm1, to execute queued "onloaded" actions. 
-						let myFunc = (<any>mc).onLoaded;
-						(<any>mc).onLoaded = null;
-						myFunc();
-					}
-					if ((<IDisplayObjectAdapter>mc.adapter).executeConstructor) {
-						let myFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
-						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
-						myFunc();
-					}
-					if (queues_scripts_tmp[i] != null) {
-						//console.log("execute script", mc.name, queues_scripts_tmp[i]);
-						if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
-							(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
-					}
-				//}
+				// first we execute any pending loadedAction for this MC
+				if ((<any>mc).onLoaded) {
+					//atm this is only used for avm1, to execute queued "onloaded" actions. 
+					let myFunc = (<any>mc).onLoaded;
+					(<any>mc).onLoaded = null;
+					myFunc();
+				}
+				if (queues_scripts_tmp[i] != null) {
+					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
+					if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
+						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+				}
+				
 			}
 		}
 	}
