@@ -544,6 +544,9 @@ export class MovieClip extends Sprite {
 
 			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "added", this.isOnDisplayList()?"addedToStage":null);
 		}
+		if(this.adapter && (<any>this.adapter).dispatchStaticEvent){
+			(<any>this.adapter).dispatchStaticEvent("added", child.adapter);
+		}
 		return returnObj
 	}
 	public executeAdapterConstructors() {
@@ -609,6 +612,9 @@ export class MovieClip extends Sprite {
 		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
 			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "removed", this.isOnDisplayList()?"removedFromStage":null);
 		}
+		if(this.adapter && (<any>this.adapter).dispatchStaticEvent){
+			(<any>this.adapter).dispatchStaticEvent("removed", child.adapter);
+		}
 
 		return super.removeChildAtInternal(index);
 	}
@@ -625,11 +631,10 @@ export class MovieClip extends Sprite {
 		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
 			// todo: check if the mc was part of the display-list 
 			// if it was, we dispatch both events, if not, we only dispatch removed
-			(<any>child.adapter).dispatchStaticEvent(event);
+			(<any>child.adapter).dispatchStaticEvent(event, child.adapter);
 			if(stageEvent)
-				(<any>child.adapter).dispatchStaticEvent(stageEvent);
-		}
-		
+				(<any>child.adapter).dispatchStaticEvent(stageEvent, child.adapter);
+		}		
 	}
 
 	/*
