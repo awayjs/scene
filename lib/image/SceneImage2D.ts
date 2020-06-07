@@ -370,8 +370,15 @@ export class SceneImage2D extends BitmapImage2D
 			TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
 
 			if (matrix) {
-				const m = root.transform.matrix3D;
 				
+				/*
+				// this not works on `test subject` as should be
+				// why? i don't know
+				// but this works on CC2 and other. 
+				// - ex
+
+				const m = root.transform.matrix3D;
+
 				m._rawData[0] = matrix.a;
 				m._rawData[1] = - matrix.b;
 				m._rawData[4] = matrix.c;
@@ -381,11 +388,11 @@ export class SceneImage2D extends BitmapImage2D
 
 				root.transform.invalidateComponents();
 				root.transform.invalidateConcatenatedMatrix3D();
-
-				/*
-				SceneImage2D._root.transform.scaleTo(matrix.a, -matrix.d, 1);
-				SceneImage2D._root.transform.moveTo(matrix.tx, this.rect.height - matrix.ty, 0);
 				*/
+
+				root.transform.scaleTo(matrix.a, -matrix.d, 1);
+				root.transform.moveTo(matrix.tx, this.rect.height - matrix.ty, 0);
+				
 			} else {
 				root.transform.scaleTo(1, -1, 1);
 				root.transform.moveTo(0, this.rect.height,0);
