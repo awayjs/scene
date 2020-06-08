@@ -20,6 +20,7 @@ import { Billboard } from '../display/Billboard';
 const EMPTY_MATRIX = new Matrix3D();
 const TMP_MATRIX3D = new Matrix3D();
 const TMP_COLOR_MATRIX = new ColorTransform();
+const TMP_RAW: number[] = [];
 
 /**
  * 
@@ -375,6 +376,8 @@ export class SceneImage2D extends BitmapImage2D
 
 		if (matrix) {
 			const m = root.transform.matrix3D;
+			
+			m.identity();
 
 			m._rawData[0] = matrix.a;
 			m._rawData[1] = - matrix.b;
@@ -385,6 +388,8 @@ export class SceneImage2D extends BitmapImage2D
 
 			root.transform.invalidateComponents();
 		} else {
+
+			root.transform.rotateTo(0,0,0);
 			root.transform.scaleTo(1, -1, 1);
 			root.transform.moveTo(0, this.rect.height,0);
 		}
@@ -469,18 +474,21 @@ export class SceneImage2D extends BitmapImage2D
 		const oldChildIdx = oldParent ? oldParent.getChildIndex(source) : 0;			
 		const oldVisible = source.visible;
 
-		// because set new matrix, clone it ot needed and slower 
-		TMP_MATRIX3D.copyRawDataFrom(source.transform.matrix3D._rawData);
+		const sTrans = source.transform;
+
+		// clone TRS separatenly, because matrix saving/restoring is bugged, ex
+		// this works for all knowed cases
+
+		for(let i = 0; i < 4; i ++) {
+			TMP_RAW[0 + i] = sTrans.position._rawData[i];
+			TMP_RAW[4 + i] = sTrans.rotation._rawData[i];
+			TMP_RAW[8 + i] = sTrans.scale._rawData[i];
+		}
 
 		// same as matrix
 		TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
 
 		if (matrix) {
-			
-			// this not works on `test subject` as should be
-			// why? i don't know
-			// but this works on CC2 and other. 
-			// - ex
 
 			const m = root.transform.matrix3D;
 			m.identity();
@@ -495,6 +503,7 @@ export class SceneImage2D extends BitmapImage2D
 			root.transform.invalidateComponents();
 			
 		} else {
+			root.transform.rotateTo(0,0,0);
 			root.transform.scaleTo(1, -1, 1);
 			root.transform.moveTo(0, this.rect.height,0);
 		}
@@ -508,12 +517,12 @@ export class SceneImage2D extends BitmapImage2D
 		renderer.view.width = this.width;
 		renderer.view.height = this.height;
 		
-		//source.transform.matrix3D = null;
-		source.visible = true;
-		source.transform.colorTransform = null;
-
 		root.removeChildren(0, root.numChildren);
 		root.addChild(source);
+
+		source.transform.matrix3D = null;
+		source.visible = true;
+		source.transform.colorTransform = null;
 
 		//save snapshot if unlocked
 		//if (!this._locked)
@@ -524,7 +533,12 @@ export class SceneImage2D extends BitmapImage2D
 		renderer.render();
 
 		source.visible = oldVisible;
-		source.transform.matrix3D = TMP_MATRIX3D;
+		//source.transform.matrix3D = TMP_MATRIX3D;
+		
+		sTrans.moveTo(TMP_RAW[0 + 0], TMP_RAW[0 + 1], TMP_RAW[0 + 2]);
+		sTrans.rotateTo(TMP_RAW[4 + 0], TMP_RAW[4 + 1], TMP_RAW[4 + 2]);
+		sTrans.scaleTo(TMP_RAW[8 + 0], TMP_RAW[8 + 1], TMP_RAW[8 + 2]);
+
 		source.transform.colorTransform = TMP_COLOR_MATRIX;
 
 		if(oldParent){
