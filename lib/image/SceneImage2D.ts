@@ -349,114 +349,29 @@ export class SceneImage2D extends BitmapImage2D
 	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
 	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean):void
 	{
-		let root: DisplayObjectContainer;
-		let renderer: DefaultRenderer;
-
-		if (source instanceof DisplayObject) {
-			if (!SceneImage2D._renderer)
-				this.createRenderer();
-
-			root = SceneImage2D._root;
-			renderer = SceneImage2D._renderer;
-			
-			const oldParent = source.parent;
-			const oldChildIdx = oldParent ? oldParent.getChildIndex(source) : 0;			
-			const oldVisible = source.visible;
-
-			// because set new matrix, clone it ot needed and slower 
-			TMP_MATRIX3D.copyRawDataFrom(source.transform.matrix3D._rawData);
-
-			// same as matrix
-			TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
-
-			if (matrix) {
-				
-				/*
-				// this not works on `test subject` as should be
-				// why? i don't know
-				// but this works on CC2 and other. 
-				// - ex
-
-				const m = root.transform.matrix3D;
-
-				m._rawData[0] = matrix.a;
-				m._rawData[1] = - matrix.b;
-				m._rawData[4] = matrix.c;
-				m._rawData[5] = - matrix.d;
-				m._rawData[12] = matrix.tx;
-				m._rawData[13] = this.rect.height - matrix.ty;
-
-				root.transform.invalidateComponents();
-				root.transform.invalidateConcatenatedMatrix3D();
-				*/
-
-				root.transform.scaleTo(matrix.a, -matrix.d, 1);
-				root.transform.moveTo(matrix.tx, this.rect.height - matrix.ty, 0);
-				
-			} else {
-				root.transform.scaleTo(1, -1, 1);
-				root.transform.moveTo(0, this.rect.height,0);
-			}
-			//root.transform.colorTransform = colorTransform;
-
-			renderer.view.target = this;
-			renderer.view.projection.scale = 1000/this.rect.height;
-
-			renderer.view.x = 0;
-			renderer.view.y = 0;
-			renderer.view.width = this.width;
-			renderer.view.height = this.height;
-
-			root.removeChildren(0, root.numChildren);
-			root.addChild(source);
-			
-			source.transform.matrix3D = null;
-			source.visible = true;
-			source.transform.colorTransform = null;
-
-			//save snapshot if unlocked
-			//if (!this._locked)
-			//SceneImage2D.scene.view.target=this;
-			//SceneImage2D.scene.renderer.disableClear = !this._locked;
-
-			//render
-			renderer.render();
-
-			if(oldParent){
-				if(oldParent.adapter && oldParent.adapter!=oldParent &&
-					source.adapter && source.adapter!=source && (<any>oldParent.adapter).addChildAt){
-					(<any>oldParent.adapter).addChildAt(source.adapter, oldChildIdx);
-
-				}
-				else{
-					oldParent.addChildAt(source, oldChildIdx);
-				}
-				
-			}
-
-			source.visible = oldVisible;
-
-			source.transform.matrix3D = TMP_MATRIX3D;
-			source.transform.colorTransform = TMP_COLOR_MATRIX;
-			//SceneImage2D.scene.dispose();
-			//SceneImage2D.scene=null;
-
-			this._imageDataDirty = true;
-
-			return;
+		if(source instanceof DisplayObject) {
+			this._drawAsDisplay(source, matrix, colorTransform, blendMode, clipRect, smoothing);
+		} else {
+			this._drawAsBitmap(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 		}
-	
+
+		this._imageDataDirty = true;
+	}
+
+	private _drawAsBitmap(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean) {
+		
 		if (!SceneImage2D._billboardRenderer)
 			this.createBillboardRenderer();
 			
-		renderer = SceneImage2D._billboardRenderer;
-		root = SceneImage2D._billboardRoot;
+		const renderer = SceneImage2D._billboardRenderer;
+		const root = SceneImage2D._billboardRoot;
+		const billboard = SceneImage2D._billboard;
 
 		renderer.disableClear = true;
 		renderer.view.target = this;
 		renderer.view.projection.scale = 1000 / this.rect.height;
 
-		SceneImage2D._billboard.material.style.image = source;
+		billboard.material.style.image = source;
 
 		if (matrix) {
 			const m = root.transform.matrix3D;
@@ -469,7 +384,6 @@ export class SceneImage2D extends BitmapImage2D
 			m._rawData[13] = this.rect.height - matrix.ty;
 
 			root.transform.invalidateComponents();
-			root.transform.invalidateConcatenatedMatrix3D();
 		} else {
 			root.transform.scaleTo(1, -1, 1);
 			root.transform.moveTo(0, this.rect.height,0);
@@ -477,8 +391,155 @@ export class SceneImage2D extends BitmapImage2D
 
 		//render
 		renderer.render();
+	}
+/*
+	// older render process 
+	private _drawAsDisplay(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean) {
+		if (!SceneImage2D._renderer)
+			this.createRenderer();
 
-		this._imageDataDirty = true;
+		var oldParent:DisplayObjectContainer=source.parent;
+		var oldChildIdx:number=oldParent?oldParent.getChildIndex(source):0;
+		var oldMatrix3D:Matrix3D=source.transform.matrix3D.clone();
+		var oldVisible:boolean=source.visible;
+		var oldColorTransform:ColorTransform=source.transform.colorTransform.clone();
+
+		if (matrix) {
+			SceneImage2D._root.transform.scaleTo(matrix.a, -matrix.d, 1);
+			SceneImage2D._root.transform.moveTo(matrix.tx, this.rect.height-matrix.ty, 0);
+		} else {
+			SceneImage2D._root.transform.scaleTo(1, -1, 1);
+			SceneImage2D._root.transform.moveTo(0, this.rect.height,0);
+		}
+		//root.transform.colorTransform = colorTransform;
+
+		SceneImage2D._renderer.view.target = this;
+		SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
+
+		SceneImage2D._renderer.view.x = 0;
+		SceneImage2D._renderer.view.y = 0;
+		SceneImage2D._renderer.view.width = this.width;
+		SceneImage2D._renderer.view.height = this.height;
+
+		SceneImage2D._root.removeChildren(0, SceneImage2D._root.numChildren);
+		SceneImage2D._root.addChild(source);
+
+		source.transform.matrix3D = new Matrix3D();
+		source.visible=true;
+		source.transform.colorTransform = null;
+		//save snapshot if unlocked
+		//if (!this._locked)
+		//SceneImage2D.scene.view.target=this;
+		//SceneImage2D.scene.renderer.disableClear = !this._locked;
+
+		//render
+		SceneImage2D._renderer.render();
+
+		if(oldParent){
+			if(oldParent.adapter && oldParent.adapter!=oldParent &&
+				source.adapter && source.adapter!=source && (<any>oldParent.adapter).addChildAt){
+				(<any>oldParent.adapter).addChildAt(source.adapter, oldChildIdx);
+
+			}
+			else{
+				oldParent.addChildAt(source, oldChildIdx);
+			}
+			
+		}
+
+		source.transform.matrix3D = oldMatrix3D;
+		source.visible = oldVisible;
+		source.transform.colorTransform = oldColorTransform;
+		//SceneImage2D.scene.dispose();
+		//SceneImage2D.scene=null;
+	}
+*/
+	
+	// newest render process
+
+	private _drawAsDisplay(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean) {
+		
+		if (!SceneImage2D._renderer)
+			this.createRenderer();
+
+		const root = SceneImage2D._root;
+		const renderer = SceneImage2D._renderer;
+
+		const oldParent = source.parent;
+		const oldChildIdx = oldParent ? oldParent.getChildIndex(source) : 0;			
+		const oldVisible = source.visible;
+
+		// because set new matrix, clone it ot needed and slower 
+		TMP_MATRIX3D.copyRawDataFrom(source.transform.matrix3D._rawData);
+
+		// same as matrix
+		TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
+
+		if (matrix) {
+			
+			// this not works on `test subject` as should be
+			// why? i don't know
+			// but this works on CC2 and other. 
+			// - ex
+
+			const m = root.transform.matrix3D;
+
+			m._rawData[0] = matrix.a;
+			m._rawData[1] = - matrix.b;
+			m._rawData[4] = matrix.c;
+			m._rawData[5] = - matrix.d;
+			m._rawData[12] = matrix.tx;
+			m._rawData[13] = this.rect.height - matrix.ty;
+
+			root.transform.invalidateComponents();
+			
+		} else {
+			root.transform.scaleTo(1, -1, 1);
+			root.transform.moveTo(0, this.rect.height,0);
+		}
+		//root.transform.colorTransform = colorTransform;
+
+		renderer.view.target = this;
+		renderer.view.projection.scale = 1000 / this.rect.height;
+
+		renderer.view.x = 0;
+		renderer.view.y = 0;
+		renderer.view.width = this.width;
+		renderer.view.height = this.height;
+		
+		//source.transform.matrix3D = null;
+		source.visible = true;
+		source.transform.colorTransform = null;
+
+		root.removeChildren(0, root.numChildren);
+		root.addChild(source);
+
+		//save snapshot if unlocked
+		//if (!this._locked)
+		//SceneImage2D.scene.view.target=this;
+		//SceneImage2D.scene.renderer.disableClear = !this._locked;
+
+		//render
+		renderer.render();
+
+		source.visible = oldVisible;
+		source.transform.matrix3D = TMP_MATRIX3D;
+		source.transform.colorTransform = TMP_COLOR_MATRIX;
+
+		if(oldParent){
+			if(oldParent.adapter && oldParent.adapter!=oldParent &&
+				source.adapter && source.adapter!=source && (<any>oldParent.adapter).addChildAt){
+				(<any>oldParent.adapter).addChildAt(source.adapter, oldChildIdx);
+
+			}
+			else{
+				oldParent.addChildAt(source, oldChildIdx);
+			}
+			
+		}
+		//SceneImage2D.scene.dispose();
+		//SceneImage2D.scene=null;
+
 	}
 }
 
