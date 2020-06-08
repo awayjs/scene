@@ -483,6 +483,7 @@ export class SceneImage2D extends BitmapImage2D
 			// - ex
 
 			const m = root.transform.matrix3D;
+			m.identity();
 
 			m._rawData[0] = matrix.a;
 			m._rawData[1] = - matrix.b;
