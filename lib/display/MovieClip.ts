@@ -85,6 +85,7 @@ export class MovieClip extends Sprite {
 
 	public static movieClipSoundsManagerClass = null;
 
+
 	private _soundStreams: any;
 	public initSoundStream(streamInfo: any, maxFrameNum:number) {
 		if (!this._soundStreams) {
@@ -522,12 +523,7 @@ export class MovieClip extends Sprite {
 		this.doingSwap = false;
 
 	}
-/*
-	public addChildAtDepth(child: DisplayObject, depth: number, replace: boolean = true): DisplayObject {
-		
-		return child;
-	}
-*/
+
 	public _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
 		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
 		(<any>child).addedByTimeline=true;
@@ -538,50 +534,20 @@ export class MovieClip extends Sprite {
         if (!this.doingSwap) {
 			child.reset();// this takes care of transform and visibility
 		}
+		(<any>child).just_added_to_timeline=true;
 		var returnObj=this.addChildAtDepth(child, depth);
 		this._sessionID_childs[sessionID] = child;
-		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
-
-			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "added", this.isOnDisplayList()?"addedToStage":null);
-		}
-		if(this.adapter && (<any>this.adapter).dispatchStaticEvent){
-			(<any>this.adapter).dispatchStaticEvent("added", child.adapter);
-		}
 		return returnObj
 	}
-	public executeAdapterConstructors() {
-		let i=this._children.length;
-		// execute constructors of as3 childs
-		while(i>0){
-			i--;
+
+	public finalizeTimelineConstruction() {
+		let len=this._children.length;
+		// queue constructors of as3 childs
+		for(let i=0; i<len; i++){
 			let mc=<MovieClip>this._children[i];
-			let mcadapter=mc.adapter;
-			let constructorFunc = (<IDisplayObjectAdapter>mcadapter).executeConstructor;
-			if(constructorFunc){
-				(<IDisplayObjectAdapter>mcadapter).executeConstructor = null;
-				constructorFunc();
-				// in avm2, framescripts get created on timeline within the constructor of the mc
-				// so when the mc was added to parent, no framescripts exists and therefore none are queued now
-				// we need to execute the script manually. 
-				if (mc.isAsset(MovieClip)) {
-					var script = mc.timeline.get_script_for_frame(mc, mc.currentFrameIndex);
-					if (script) {
-						FrameScriptManager.add_script_to_queue(mc, script);
-					}
-				}
-			}
-		}
-		// execute queued events (ADDED / ADDED_TO_STAGE) of as3 childs
-		i=this._children.length;
-		while(i>0){
-			i--;
-			let mc=<MovieClip>this._children[i];
-			let mcadapter=mc.adapter;
-			let executeEventsFunc = (<any>mcadapter).executeQueuedEvents;
-			if(executeEventsFunc){
-				(<any>mcadapter).executeQueuedEvents = null;
-				executeEventsFunc();
-			}
+			if((<any>mc.adapter).executeConstructor || (<any>mc).just_added_to_timeline)
+				FrameScriptManager.queue_as3_constructor(mc);
+			
 		}
 		
 	}
@@ -610,47 +576,16 @@ export class MovieClip extends Sprite {
 
 		}
 		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
-			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>child, "removed", this.isOnDisplayList()?"removedFromStage":null);
+			(<any>child.adapter).dispatchStaticEvent("removed", child.adapter);
 		}
-		if(this.adapter && (<any>this.adapter).dispatchStaticEvent){
-			(<any>this.adapter).dispatchStaticEvent("removed", child.adapter);
+		if(this.isOnDisplayList() && (<any>child.adapter).dispatch_REMOVED_FROM_STAGE){
+			(<any>child.adapter).dispatch_REMOVED_FROM_STAGE(<DisplayObjectContainer>child);
 		}
 
 		return super.removeChildAtInternal(index);
 	}
 
-	public dispatchEventOnAdapterRecursiv(child:DisplayObjectContainer, event, stageEvent) {
-		let numChildren:number=child.numChildren;
-		let cnt:number=0;
 
-		while(cnt<numChildren){
-			let oneChild: DisplayObject = child._children[cnt];
-			this.dispatchEventOnAdapterRecursiv(<DisplayObjectContainer>oneChild, event, stageEvent);
-			cnt++;
-		}
-		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
-			// todo: check if the mc was part of the display-list 
-			// if it was, we dispatch both events, if not, we only dispatch removed
-			(<any>child.adapter).dispatchStaticEvent(event, child.adapter);
-			if(stageEvent)
-				(<any>child.adapter).dispatchStaticEvent(stageEvent, child.adapter);
-		}		
-	}
-
-	/*
-	this checks if the mc is part of the displaylist (child of the stage)
-	todo: probably not the best way to do this
-	probably better to get this info by looking at root
-	*/
-	public isOnDisplayList(): boolean {
-		let parent:DisplayObjectContainer=this;
-		while (parent){
-			if(parent.isAVMScene)
-				return true;
-			parent=parent.parent;
-		}
-		return false;
-	}
 
 	public get assetType(): string {
 		return MovieClip.assetType;
