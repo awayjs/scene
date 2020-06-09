@@ -225,6 +225,16 @@ export class Timeline
 				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[frame_idx]);
 
 		}
+		else{
+			// in avm2 script might not yet exists, because its created by constructor
+			// to handle this for now, while keeping our original order of scripts
+			// we queue the frame_idx, and when exeucting the script we check if its a number and try to get the script again
+			if (scriptPass1)
+				FrameScriptManager.add_script_to_queue(target_mc, frame_idx);
+			else
+				FrameScriptManager.add_script_to_queue_pass2(target_mc, frame_idx);
+
+		}
     }
     
 	public get_script_for_frame(target_mc: MovieClip, frame_idx: number): any {
@@ -494,7 +504,7 @@ export class Timeline
 		target_mc.preventScript = false;
 		
 		// if there is a framescript on this frame, we queue it now, so it sits after the initAdapter of the children
-		if (queue_script && this._framescripts[frame_idx])
+		if (queue_script)
 			this.add_script_for_postcontruct(target_mc, frame_idx, !queue_pass2);
 
 		// add the children that have been placed on the target frame
@@ -515,7 +525,7 @@ export class Timeline
 
 		target_mc.constructedKeyFrameIndex = target_keyframe_idx;
 		
-		target_mc.executeAdapterConstructors();
+		target_mc.finalizeTimelineConstruction();
 	}
 
 	public pass1(target_mc:MovieClip, start_construct_idx:number, target_keyframe_idx:number, depth_sessionIDs:Object, new_depth_sessionIDs:Object, queue_pass2:boolean):void
@@ -596,7 +606,7 @@ export class Timeline
 		var frameIndex:number = target_mc.currentFrameIndex;
 		var new_keyFrameIndex:number = this.keyframe_indices[frameIndex];
 
-		if (queueScript && this._framescripts[frameIndex])
+		if (queueScript)
 			this.add_script_for_postcontruct(target_mc, frameIndex, scriptPass1);
 
 		if(target_mc.constructedKeyFrameIndex != new_keyFrameIndex) {
@@ -622,7 +632,7 @@ export class Timeline
 			if(frame_recipe & 16)
 				this.start_sounds(target_mc, frame_command_idx++);
 
-			target_mc.executeAdapterConstructors();
+			target_mc.finalizeTimelineConstruction();
         }
 	}
 
