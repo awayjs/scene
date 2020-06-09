@@ -1766,6 +1766,21 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 	public _iController:ControllerBase;
 
+	public hasDispatchedAddedToStage:boolean=false;
+	/*
+	this checks if the mc is part of the displaylist (child of the stage)
+	todo: probably not the best way to do this
+	probably better to get this info by looking at root
+	*/
+	public isOnDisplayList(): boolean {
+		let parent:DisplayObject=this;
+		while (parent){
+			if(parent.isAVMScene)
+				return true;
+			parent=parent.parent;
+		}
+		return false;
+	}
 	/**
 	 * @internal
 	 */
