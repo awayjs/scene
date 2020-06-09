@@ -33,7 +33,6 @@ export class FrameScriptManager
 	private static _active_intervals:Object = new Object(); // maps id to function
 
 	private static _as3_constructor_queue:any[] = []; 
-	private static _as3_event_queue:any[] = []; 
 
 	private static _intervalID:number=0;
 	public static setInterval(fun:Function, time:number):number
@@ -128,6 +127,43 @@ export class FrameScriptManager
 		this._queued_scripts_pass2.push(script);
 	}
 
+	public static queue_as3_constructor(mc:MovieClip):void
+	{
+		this._as3_constructor_queue.push(mc);
+	}
+	
+	public static execute_as3_constructors():void
+	{
+		while(this._as3_constructor_queue.length>0){
+			let queues_tmp:any[]=this._as3_constructor_queue.concat();
+			//console.log("queue", queues_tmp)
+			this._as3_constructor_queue.length = 0;
+			let mc:MovieClip;
+			let i:number;
+			for (i = 0; i <queues_tmp.length; i++) {
+				// during the loop we might add more scripts to the queue
+				mc=queues_tmp[i];
+				let mcadapter=mc.adapter;
+				let constructorFunc = (<IDisplayObjectAdapter>mcadapter).executeConstructor;
+				if(constructorFunc){
+					(<IDisplayObjectAdapter>mcadapter).executeConstructor = null;
+					constructorFunc();
+				}
+				
+				// if mc was created by timeline, instanceID!=""
+				if((<any>mc).just_added_to_timeline && mc.instanceID!="" && mcadapter && (<any>mcadapter).dispatchStaticEvent){	
+					(<any>mcadapter).dispatchStaticEvent("added", mcadapter);
+					(<any>mc).just_added_to_timeline=false;
+					mc.hasDispatchedAddedToStage=mc.isOnDisplayList();
+					if(mc.hasDispatchedAddedToStage)
+						(<any>mcadapter).dispatchStaticEvent("addedToStage", mcadapter);
+				}
+				// 	todo: this does not dispatch ADDED and ADDED_TO_STAGE on timeline-SHAPE, 
+				//	because in awayjs timeline those are Sprite without any as3-adapter
+				
+			}
+		}
+	}
 	public static execute_queue():void
 	{
 		if(this._queued_mcs.length==0 && this._queued_mcs_pass2.length==0)
@@ -164,8 +200,10 @@ export class FrameScriptManager
 				}
 				if (queues_scripts_tmp[i] != null) {
 					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
+					this.execute_as3_constructors();
 					if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
 						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+					FrameScriptManager.execute_queue();
 				}
 				
 			}
