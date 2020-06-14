@@ -22,16 +22,14 @@ export class MovieClip extends Sprite {
 	public static avm1ScriptQueueScripts: any[] = [];
 	public static avm1LoadedActions: any[] = [];
 
-	public static _skipAdvance: boolean;
 
-	public preventScript: boolean = false;
+
+	public static movieClipSoundsManagerClass = null;
 
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
 
 	private static _activeSounds: any = {};
 	
-	public symbolID:number=0;
-
 	public static assetType: string = "[asset MovieClip]";
 
 	public static getNewMovieClip(timeline: Timeline = null): MovieClip {
@@ -48,6 +46,9 @@ export class MovieClip extends Sprite {
 	public static clearPool() {
 		MovieClip._movieClips = [];
 	}
+	
+	public symbolID:number=0;
+	public preventScript: boolean = false;
 	private _timeline: Timeline;
 
 	// buttonMode specifies if the mc has any mouse-listeners attached that should trigger showing the hand-cursor
@@ -69,8 +70,6 @@ export class MovieClip extends Sprite {
 
 	private _isPlaying: boolean = true;// false if paused or stopped
 
-	// not sure if needed
-	private _enterFrame: AssetEvent;
 	private _skipAdvance: boolean;
 	private _isInit: boolean = true;
 
@@ -83,10 +82,13 @@ export class MovieClip extends Sprite {
 	
 	private _parentSoundVolume: number;
 
-	public static movieClipSoundsManagerClass = null;
+	private _soundVolume: number;
+	private _skipFramesForStream:number=0;
 
+	public buttonEnabled: boolean = true;
 
 	private _soundStreams: any;
+
 	public initSoundStream(streamInfo: any, maxFrameNum:number) {
 		if (!this._soundStreams) {
 			this._soundStreams = new MovieClip.movieClipSoundsManagerClass(this);
@@ -133,7 +135,6 @@ export class MovieClip extends Sprite {
 		this._useHandCursor = true;
 		this.cursorType = "pointer";
 		//this.debugVisible=true;
-		this._enterFrame = new AssetEvent(AssetEvent.ENTER_FRAME, this);
 
 		this.inheritColorTransform = true;
 
@@ -167,7 +168,6 @@ export class MovieClip extends Sprite {
 
 		this._timeline = timeline || new Timeline();
 	}
-	public buttonEnabled: boolean = true;
 
 	public startSound(id: any, sound: WaveAudio, loopsToPlay: number) {
 		if (this._sounds[id]) {
@@ -209,7 +209,6 @@ export class MovieClip extends Sprite {
 	public get isPlaying(): boolean {
 		return this._isPlaying;
 	}
-	private _soundVolume: number;
 	public get soundVolume(): number {
 		return this._soundVolume;
 	}
@@ -457,7 +456,6 @@ export class MovieClip extends Sprite {
 		//update's advanceFrame function, unless advanceFrame has
 		//already been executed
 
-		//this._skipAdvance = MovieClip._skipAdvance;
 		this._timeline.gotoFrame(this, value, queue_script, false, true);
 	}
 
@@ -603,42 +601,8 @@ export class MovieClip extends Sprite {
 	/**
 	 * should be called right before the call to away3d-render.
 	 */
-	public update(events: any[] = null, dt: number = 0): void {
-
-		// Not used for AVM1 !!!
-		// in AVM1 this in done in the onEnter of AVMAwayStage, because we have multiple roots
-
-		//if events is null, this is as2, if it is not null, this is as3web
-
-		MovieClip._skipAdvance = true;
-		//if(events!=null){
-		//	(<any>this.adapter).dispatchEvent(events[0]);
-		//}
-		//if(this._timeline && this._timeline.numFrames>0)
-		this.advanceFrame(events);
-
-		MovieClip._skipAdvance = false;
-		/*
-		// after we advanced the scenegraph, we might have some script that needs executing
-		FrameScriptManager.execute_queue();
-
-		//this.dispatchEvent(this._enterFrame);
-
-		// after we executed the onEnter, we might have some script that needs executing
-		FrameScriptManager.execute_queue();
-
-		// now we execute any intervals queued
-		FrameScriptManager.execute_intervals(dt);
-
-		// finally, we execute any scripts that were added from intervals
-		FrameScriptManager.execute_queue();
-
-		//execute any disposes as a result of framescripts
-		FrameScriptManager.execute_dispose();
-
-		if (events != null) {
-			(<any>this.adapter).dispatchEvent(events[1]);
-		}*/
+	public update(dt: number = 0): void {
+		this.advanceFrame();
 	}
 
 	public getPotentialChildInstance(id: number, instanceID: string, forceClone:boolean=false): IAsset {
@@ -674,24 +638,7 @@ export class MovieClip extends Sprite {
 		movieClip.symbolID=this.symbolID;
 
 	}
-	/*
-	public getScriptsForFrameConstruct(): void {
-
-		if (this._skipAdvance) {
-			this._timeline.add_script_for_postcontruct(this, this._currentFrameIndex, true);
-		}
-		var len: number = this._children.length;
-		var child: DisplayObject;
-		for (var i: number = 0; i < len; ++i) {
-			child = this._children[i];
-
-			if (child.isAsset(MovieClip))
-				(<MovieClip>child).getScriptsForFrameConstruct();
-		}
-		this._skipAdvance = false;
-	}
-	*/
-	public advanceFrameInternal(events: any = null): void {
+	public advanceFrameInternal(): void {
 
 		// if this._skipadvance is true, the mc has already been moving on its timeline this frame
 		// this happens for objects that have been newly added to parent
@@ -727,20 +674,17 @@ export class MovieClip extends Sprite {
 			child = this._children[i];
 
 			if (child && child.isAsset(MovieClip)) {
-				(<MovieClip>child).advanceFrame(events);
+				(<MovieClip>child).advanceFrame();
 			}
 			if (child && child.isAsset(Sprite) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame) {
-				(<any>child.adapter).advanceFrame(events);
+				(<any>child.adapter).advanceFrame();
 			}
 		}
-		if (events)
-			(<any>this.adapter).dispatchEvent(events[0]);
 		this._skipAdvance = false;
 	}
-	private _skipFramesForStream:number=0;
-	public advanceFrame(events: any = null): void {
+	public advanceFrame(): void {
 		if(this._skipFramesForStream==0){
-			this.advanceFrameInternal(events);
+			this.advanceFrameInternal();
 		}
 		/*if(this._skipFramesForStream<0){
 			console.log("wait for audio to catch up");
@@ -749,7 +693,7 @@ export class MovieClip extends Sprite {
 		while(this._skipFramesForStream>0){
 			//console.log("skip frame for keeping audio stream synced");
 			FrameScriptManager.execute_queue();
-			this.advanceFrameInternal(events);
+			this.advanceFrameInternal();
 			this._skipFramesForStream=this._syncSounds(this._currentFrameIndex);
 		}
 	}
