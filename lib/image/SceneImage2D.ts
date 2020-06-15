@@ -488,6 +488,9 @@ export class SceneImage2D extends BitmapImage2D
 		// same as matrix
 		TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
 
+		// need correcting a root because maybe flipped around Z
+		const zFlip = source.transform.matrix3D._rawData[10];
+
 		if (matrix) {
 
 			const m = root.transform.matrix3D;
@@ -497,6 +500,7 @@ export class SceneImage2D extends BitmapImage2D
 			m._rawData[1] = - matrix.b;
 			m._rawData[4] = matrix.c;
 			m._rawData[5] = - matrix.d;
+			m._rawData[10] = zFlip;
 			m._rawData[12] = matrix.tx;
 			m._rawData[13] = this.rect.height - matrix.ty;
 
