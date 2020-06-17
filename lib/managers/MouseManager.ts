@@ -299,9 +299,13 @@ export class MouseManager {
 				return;
 			}
             if (dispatcher._iIsMouseEnabled())
-                dispatcher.dispatchEvent(event);
-
-            dispatcher = dispatcher.parent;
+				dispatcher.dispatchEvent(event);
+			if(!event._iAllowedToPropagate){
+				dispatcher=null;
+			}
+			else{
+				dispatcher = dispatcher.parent;
+			}
         }
     }
 
@@ -738,7 +742,9 @@ export class MouseManager {
     // Private.
     // ---------------------------------------------------------------------
     private setUpEvent(event: MouseEvent, sourceEvent, collision:PickingCollision, commonAncestor:DisplayObject=null): MouseEvent {
-        // 2D properties.
+		event._iAllowedToImmediatlyPropagate=true;
+		event._iAllowedToPropagate=true;
+		// 2D properties.
         if (sourceEvent) {
             const x = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches ? sourceEvent.changedTouches[0].clientX: 0;
             const y = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches? sourceEvent.changedTouches[0].clientY:0;    

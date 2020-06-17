@@ -12,9 +12,9 @@ import { DisplayObject } from '../display/DisplayObject';
 export class MouseEvent extends EventBase
 {
 	// Private.
-	public _iAllowedToPropagate:boolean = true;
 	public _iParentEvent:MouseEvent;
 	public commonAncestor:DisplayObject;
+
 
 	/**
 	 * Defines the value of the type property of a mouseOver3d event object.
@@ -196,8 +196,9 @@ export class MouseEvent extends EventBase
 	 */
 	public get bubbles():boolean
 	{
-		var doesBubble:boolean = this._iAllowedToPropagate;
+		var doesBubble:boolean = this._iAllowedToPropagate && this._iAllowedToImmediatlyPropagate;
 		this._iAllowedToPropagate = true;
+		this._iAllowedToImmediatlyPropagate = true;
 
 		// Don't bubble if propagation has been stopped.
 		return doesBubble;
@@ -220,6 +221,7 @@ export class MouseEvent extends EventBase
 	public stopImmediatePropagation():void
 	{
 		this._iAllowedToPropagate = false;
+		this._iAllowedToImmediatlyPropagate = false;
 
 		if (this._iParentEvent)
 			this._iParentEvent.stopImmediatePropagation();
