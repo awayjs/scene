@@ -9,6 +9,13 @@ interface IInterval{
 	dt:number;
 	isTimeout:boolean;
 }
+interface IScriptQueue{
+	queued_mcs:MovieClip[],
+	queued_scripts:any[],
+	queued_mcs_pass2:MovieClip[],
+	queued_scripts_pass2:any[],
+	constructors:MovieClip[],
+}
 export class FrameScriptManager
 {
 	// FrameScript debugging:
@@ -19,20 +26,15 @@ export class FrameScriptManager
 
 	public static frameScriptDebug:Object = undefined;
 
+
 	//queue of objects for disposal
 	private static _queued_dispose:DisplayObject[] = [];
 
-	// queues pass1 of scripts.
-	private static _queued_mcs:MovieClip[] = [];
-	private static _queued_scripts:any[] = [];
 
-	// queues pass2 of scripts. this will be inserted in reversed order into pass1 queue right before something should be added to pass1
-	private static _queued_mcs_pass2:MovieClip[] = [];
-	private static _queued_scripts_pass2:any[] = [];
+	private static _queue:IScriptQueue[] = [];
 
 	private static _active_intervals:Object = new Object(); // maps id to function
 
-	private static _as3_constructor_queue:any[] = []; 
 
 	private static _intervalID:number=0;
 	public static setInterval(fun:Function, time:number):number
@@ -89,55 +91,82 @@ export class FrameScriptManager
 		this._queued_dispose.push(child);
 	}
 
+
+	public static add_queue(){
+		FrameScriptManager._queue.push({
+			queued_mcs:[],
+			queued_scripts:[],
+			queued_mcs_pass2:[],
+			queued_scripts_pass2:[],
+			constructors:[],
+		});
+	}
+
+	public static get_queue():IScriptQueue{
+		let queue=FrameScriptManager._queue[FrameScriptManager._queue.length-1];
+		if(!queue){
+			FrameScriptManager.add_queue();
+		}
+		return FrameScriptManager._queue[FrameScriptManager._queue.length-1];
+	}
 	public static add_script_to_queue(mc:MovieClip, script:any):void
 	{
+		let queue=FrameScriptManager.get_queue();
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
-		var i=this._queued_mcs_pass2.length;
+		var i=queue.queued_mcs_pass2.length;
 		while(i>0){
 			i--;
-			this._queued_mcs.push(this._queued_mcs_pass2[i]);
-			this._queued_scripts.push(this._queued_scripts_pass2[i]);
+			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
+			queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
 		}
-		this._queued_mcs_pass2.length = 0;
-		this._queued_scripts_pass2.length = 0;
-		this._queued_mcs.push(mc);
-		this._queued_scripts.push(script);
+		queue.queued_mcs_pass2.length = 0;
+		queue.queued_scripts_pass2.length = 0;
+		queue.queued_mcs.push(mc);
+		queue.queued_scripts.push(script);
 	}
 	public static add_loaded_action_to_queue(mc:MovieClip):void
 	{
+		let queue=FrameScriptManager.get_queue();
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
-		var i=this._queued_mcs_pass2.length;
+		var i=queue.queued_mcs_pass2.length;
 		while(i>0){
 			i--;
-			this._queued_mcs.push(this._queued_mcs_pass2[i]);
-			this._queued_scripts.push(this._queued_scripts_pass2[i]);
+			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
+			queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
 		}
-		this._queued_mcs_pass2.length = 0;
-		this._queued_scripts_pass2.length = 0;
-		if(this._queued_mcs[this._queued_mcs.length-1]==mc){
+		queue.queued_mcs_pass2.length = 0;
+		queue.queued_scripts_pass2.length = 0;
+		if(queue.queued_mcs[queue.queued_mcs.length-1]==mc){
 			return;
 		}
-		this._queued_mcs.push(mc);
-		this._queued_scripts.push(null);
+		queue.queued_mcs.push(mc);
+		queue.queued_scripts.push(null);
 	}
 
 	public static add_script_to_queue_pass2(mc:MovieClip, script:any):void
 	{
-		this._queued_mcs_pass2.push(mc);
-		this._queued_scripts_pass2.push(script);
+		let queue=FrameScriptManager.get_queue();
+		queue.queued_mcs_pass2.push(mc);
+		queue.queued_scripts_pass2.push(script);
 	}
 
 	public static queue_as3_constructor(mc:MovieClip):void
 	{
-		this._as3_constructor_queue.push(mc);
+		let queue=FrameScriptManager.get_queue();
+		queue.constructors.push(mc);
 	}
 	
 	public static execute_as3_constructors():void
 	{
-		while(this._as3_constructor_queue.length>0){
-			let queues_tmp:any[]=this._as3_constructor_queue.concat();
+		if(FrameScriptManager._queue.length==0){	
+			return;
+		}
+		let queue = FrameScriptManager._queue[FrameScriptManager._queue.length-1];
+		
+		while(queue.constructors.length>0){
+			let queues_tmp:any[]=queue.constructors.concat();
 			//console.log("queue", queues_tmp)
-			this._as3_constructor_queue.length = 0;
+			queue.constructors.length = 0;
 			let mc:MovieClip;
 			let i:number;
 			for (i = 0; i <queues_tmp.length; i++) {
@@ -166,26 +195,39 @@ export class FrameScriptManager
 	}
 	public static execute_queue():void
 	{
-		if(this._queued_mcs.length==0 && this._queued_mcs_pass2.length==0)
+		let queue;
+		if(FrameScriptManager._queue.length>1){
+			queue = FrameScriptManager._queue.pop();
+		}
+		else if(FrameScriptManager._queue.length==0){	
+			return;
+		}
+		else{
+			queue = FrameScriptManager._queue[0];
+		}
+		if(queue.constructors.length>1){
+			FrameScriptManager.execute_as3_constructors();
+		}
+		if(queue.queued_mcs.length==0 && queue.queued_mcs_pass2.length==0)
 			return;
 
-		while(this._queued_mcs.length>0 || this._queued_mcs_pass2.length>0){
+		while(queue.queued_mcs.length>0 || queue.queued_mcs_pass2.length>0){
 
-			var queues_tmp:any[]=this._queued_mcs.concat();
-			var queues_scripts_tmp:any[]=this._queued_scripts.concat();		
-			this._queued_mcs.length = 0;
-			this._queued_scripts.length = 0;
+			var queues_tmp:any[]=queue.queued_mcs.concat();
+			var queues_scripts_tmp:any[]=queue.queued_scripts.concat();		
+			queue.queued_mcs.length = 0;
+			queue.queued_scripts.length = 0;
 	
-			var i=this._queued_mcs_pass2.length;
+			var i=queue.queued_mcs_pass2.length;
 			while(i>0){
 				i--;
-				queues_tmp.push(this._queued_mcs_pass2[i]);
-				queues_scripts_tmp.push(this._queued_scripts_pass2[i]);
+				queues_tmp.push(queue.queued_mcs_pass2[i]);
+				queues_scripts_tmp.push(queue.queued_scripts_pass2[i]);
 			}
-			this._queued_mcs_pass2.length = 0;
-			this._queued_scripts_pass2.length = 0;
+			queue.queued_mcs_pass2.length = 0;
+			queue.queued_scripts_pass2.length = 0;
 	
-			//console.log("execute queue",this._queued_scripts);
+			//console.log("execute queue",queue.queued_scripts);
 			
 			var mc:MovieClip;
 			for (i = 0; i <queues_tmp.length; i++) {
@@ -200,10 +242,8 @@ export class FrameScriptManager
 				}
 				if (queues_scripts_tmp[i] != null) {
 					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
-					this.execute_as3_constructors();
 					if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
 						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
-					FrameScriptManager.execute_queue();
 				}
 				
 			}
