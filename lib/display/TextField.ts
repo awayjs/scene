@@ -2069,9 +2069,8 @@ export class TextField extends DisplayObjectContainer
 			// if the textfield has a valid name, it might have been changed by scripts. 
 			// in that case we want to reset it to its original state
 			if(this.sourceTextField){
-                this.sourceTextField.copyTo(this);
-				this._textFormats=[this.newTextFormat];
-                this._textFormatsIdx=[this._iText.length];
+				this.sourceTextField.copyTo(this);
+	
 			}
 		//}
 		/*if(this.adapter != this){

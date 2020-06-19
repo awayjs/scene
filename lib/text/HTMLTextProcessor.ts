@@ -264,7 +264,7 @@ export class HTMLTextProcessor
 
 		target_tf._textFormat.italic=false;
 		target_tf._textFormat.bold=false;
-		target_tf._textFormat.align=TextFormatAlign.LEFT;
+		//target_tf._textFormat.align=TextFormatAlign.LEFT;
 		target_tf._textFormats=[target_tf._textFormat];
 		//target_tf._textFormat.size=16;
 		target_tf._textFormatsIdx=[0];
