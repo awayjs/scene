@@ -2107,141 +2107,144 @@ export class TextField extends DisplayObjectContainer
 
 			tf.font_table.initFontSize(tf.size);
 			c_end=(f==f_len-1)?thisText.length : this._textFormatsIdx[f];
-			// create a new textrun
-			this._textRuns_formats[this._textRuns_formats.length]=tf;
-			this._textRuns_words[this._textRuns_words.length]=this.words.length;
-			// loop over all chars for this format
-			//console.log("textrun tf = ", tf);
-			for (c = c_start; c < c_end; c++) {
-                char_code=thisText.charCodeAt(c);
-				// todo: clean this up + allow exscaping of special chars
-				//console.log("char = ", char_code);
-				//console.log("process char", c, thisText[c], char_code, tf.id);
-				if(char_code==92 || char_code == 10 || char_code == 13) {
-					// this is a backslash. if it is last char, we do not handle it special
-					// if it is followed by a "n" or a "r", we add a new paragraph
-					// if it is followed by a "\n" we add a paragraph too (legacy for icycle and sunflower - needs cleanup)
-					if (char_code == 10 || char_code == 13 || c < thisText.length - 1) {
-						next_char_code = thisText.charCodeAt(c + 1);
-						if (char_code == 10  || char_code == 13 || (next_char_code == 10) || (next_char_code == 110) || (next_char_code == 114)
-						|| (next_char_code == 92 && (c < thisText.length - 2) && thisText.charCodeAt(c + 2) == 110)) {
-							// next chars are "n" or "\n". we create a new paragraph
-							//console.log("create new paragraph");
-							//finish textrun:
-							
-							/*this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
-							this.words[this.words.length]=0;							// 	x-position
-							this.words[this.words.length]=0;							// 	y-position
-							this.words[this.words.length]=0;					// 	word width
-							this.words[this.words.length]=(char_code == 10)?1:(next_char_code == 110)?2:3;	*/
+			if(c_end>c_start){
+					
+				// create a new textrun
+				this._textRuns_formats[this._textRuns_formats.length]=tf;
+				this._textRuns_words[this._textRuns_words.length]=this.words.length;
+				// loop over all chars for this format
+				//console.log("textrun tf = ", tf);
+				for (c = c_start; c < c_end; c++) {
+					char_code=thisText.charCodeAt(c);
+					// todo: clean this up + allow exscaping of special chars
+					//console.log("char = ", char_code);
+					//console.log("process char", c, thisText[c], char_code, tf.id);
+					if(char_code==92 || char_code == 10 || char_code == 13) {
+						// this is a backslash. if it is last char, we do not handle it special
+						// if it is followed by a "n" or a "r", we add a new paragraph
+						// if it is followed by a "\n" we add a paragraph too (legacy for icycle and sunflower - needs cleanup)
+						if (char_code == 10 || char_code == 13 || c < thisText.length - 1) {
+							next_char_code = thisText.charCodeAt(c + 1);
+							if (char_code == 10  || char_code == 13 || (next_char_code == 10) || (next_char_code == 110) || (next_char_code == 114)
+							|| (next_char_code == 92 && (c < thisText.length - 2) && thisText.charCodeAt(c + 2) == 110)) {
+								// next chars are "n" or "\n". we create a new paragraph
+								//console.log("create new paragraph");
+								//finish textrun:
+								
+								/*this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
+								this.words[this.words.length]=0;							// 	x-position
+								this.words[this.words.length]=0;							// 	y-position
+								this.words[this.words.length]=0;					// 	word width
+								this.words[this.words.length]=(char_code == 10)?1:(next_char_code == 110)?2:3;	*/
 
-							this._textRuns_words[this._textRuns_words.length]=word_cnt;
-							this._textRuns_words[this._textRuns_words.length]=linewidth;
-							this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
+								this._textRuns_words[this._textRuns_words.length]=word_cnt;
+								this._textRuns_words[this._textRuns_words.length]=linewidth;
+								this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
 
-							this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
-							// create a new textrun
-							this._textRuns_formats[this._textRuns_formats.length]=tf;
-							this._textRuns_words[this._textRuns_words.length]=this.words.length;
-							c+=(char_code == 10 || char_code == 13)?0:(next_char_code == 110 || next_char_code == 114)?1:2;
-							
-							this.chars_codes[this.chars_codes.length]=55;
-							this.chars_width[this.chars_width.length]=0;
-							this.tf_per_char[this.tf_per_char.length]=tf;
-							/*if(next_char_code != 110){
+								this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
+								// create a new textrun
+								this._textRuns_formats[this._textRuns_formats.length]=tf;
+								this._textRuns_words[this._textRuns_words.length]=this.words.length;
+								c+=(char_code == 10 || char_code == 13)?0:(next_char_code == 110 || next_char_code == 114)?1:2;
+								
 								this.chars_codes[this.chars_codes.length]=55;
 								this.chars_width[this.chars_width.length]=0;
 								this.tf_per_char[this.tf_per_char.length]=tf;
+								/*if(next_char_code != 110){
+									this.chars_codes[this.chars_codes.length]=55;
+									this.chars_width[this.chars_width.length]=0;
+									this.tf_per_char[this.tf_per_char.length]=tf;
 
-							}*/
-							startNewWord=true; 
-							whitespace_cnt=0;
-							word_cnt=0;
+								}*/
+								startNewWord=true; 
+								whitespace_cnt=0;
+								word_cnt=0;
 
-							if(this._maxWidthLine<linewidth){
-								this._maxWidthLine=linewidth;
+								if(this._maxWidthLine<linewidth){
+									this._maxWidthLine=linewidth;
+								}
+								linewidth=0;
+								continue;
 							}
-							linewidth=0;
-							continue;
 						}
 					}
-				}
 
-				this.chars_codes[this.chars_codes.length]=char_code;
-				this.tf_per_char[this.tf_per_char.length]=tf;
-				char_width=tf.font_table.getCharWidth(char_code.toString());
-				//if(char_width<=0){
-					//char_width=tf.font_table.getCharWidth("32");
-					//console.log("ERROR in TextField.buildTextRuns(): char is not provided by FontTable", char_code, this.text[c]);
-				//}
+					this.chars_codes[this.chars_codes.length]=char_code;
+					this.tf_per_char[this.tf_per_char.length]=tf;
+					char_width=tf.font_table.getCharWidth(char_code.toString());
+					//if(char_width<=0){
+						//char_width=tf.font_table.getCharWidth("32");
+						//console.log("ERROR in TextField.buildTextRuns(): char is not provided by FontTable", char_code, this.text[c]);
+					//}
 
-				// if this is a letter, and next char is no whitespace, we add the letterSpacing to the letter-width
-				// todo: we might need to add the letterspacing also if next char is a linebreak ?
-				if(char_code!=32 && char_code!=9 && c<c_end-1){
-					char_width+=(thisText.charCodeAt(c+1)==32 || thisText.charCodeAt(c+1)==9)?0:tf.letterSpacing;
-				}
-				linewidth+=char_width;
-				this.chars_width[this.chars_width.length]=char_width;
-				
-				// we create a new word if the char is either:
-				// 	- first char of paragraph
-				//	- is a whitespace
-				//  - follows a whitespace
-				if(char_code==32 || char_code==9){
-					//console.log("add WhiteSpace");
-					whitespace_cnt++;
-					this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
-					this.words[this.words.length]=0;							// 	x-position
-					this.words[this.words.length]=0;							// 	y-position
-					this.words[this.words.length]=char_width;					// 	word width
-					this.words[this.words.length]=1;							// 	char count
-					word_cnt++;
-					// we also make sure to begin a new word for next char (could be whitespace again)
-					startNewWord=true;
-				}
-				else{
-                    // no whitespace
-                    
-                    if (this.multiline && this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
-                        if(this.words[this.words.length-2]+char_width>=maxLineWidth){                            
-							/*this._textRuns_words[this._textRuns_words.length]=word_cnt;
-							this._textRuns_words[this._textRuns_words.length]=linewidth;
-							this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
-
-							this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
-							// create a new textrun
-							this._textRuns_formats[this._textRuns_formats.length]=tf;
-                            this._textRuns_words[this._textRuns_words.length]=this.words.length;*/
-                            startNewWord=true;
-                        }
-                        
-                    }
-
-
-					if(startNewWord){
-						//console.log("startNewWord");
-						// create new word (either this is the first char, or the last char was whitespace)
+					// if this is a letter, and next char is no whitespace, we add the letterSpacing to the letter-width
+					// todo: we might need to add the letterspacing also if next char is a linebreak ?
+					if(char_code!=32 && char_code!=9 && c<c_end-1){
+						char_width+=(thisText.charCodeAt(c+1)==32 || thisText.charCodeAt(c+1)==9)?0:tf.letterSpacing;
+					}
+					linewidth+=char_width;
+					this.chars_width[this.chars_width.length]=char_width;
+					
+					// we create a new word if the char is either:
+					// 	- first char of paragraph
+					//	- is a whitespace
+					//  - follows a whitespace
+					if(char_code==32 || char_code==9){
+						//console.log("add WhiteSpace");
+						whitespace_cnt++;
 						this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
-						this.words[this.words.length]=0;							//	x-position
-						this.words[this.words.length]=0;							//	y-position
+						this.words[this.words.length]=0;							// 	x-position
+						this.words[this.words.length]=0;							// 	y-position
 						this.words[this.words.length]=char_width;					// 	word width
 						this.words[this.words.length]=1;							// 	char count
 						word_cnt++;
+						// we also make sure to begin a new word for next char (could be whitespace again)
+						startNewWord=true;
 					}
-					else{ 
-						// update-char length and width of active word.
-						this.words[this.words.length-2]+=char_width;
-						this.words[this.words.length-1]++;
-					}
-					startNewWord=false;
-				}
-			}
-			this._textRuns_words[this._textRuns_words.length]=word_cnt;
-			this._textRuns_words[this._textRuns_words.length]=linewidth;
-			this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
+					else{
+						// no whitespace
+						
+						if (this.multiline && this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
+							if(this.words[this.words.length-2]+char_width>=maxLineWidth){                            
+								/*this._textRuns_words[this._textRuns_words.length]=word_cnt;
+								this._textRuns_words[this._textRuns_words.length]=linewidth;
+								this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
 
-			if(this._maxWidthLine<linewidth){
-				this._maxWidthLine=linewidth;
+								this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
+								// create a new textrun
+								this._textRuns_formats[this._textRuns_formats.length]=tf;
+								this._textRuns_words[this._textRuns_words.length]=this.words.length;*/
+								startNewWord=true;
+							}
+							
+						}
+
+
+						if(startNewWord){
+							//console.log("startNewWord");
+							// create new word (either this is the first char, or the last char was whitespace)
+							this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
+							this.words[this.words.length]=0;							//	x-position
+							this.words[this.words.length]=0;							//	y-position
+							this.words[this.words.length]=char_width;					// 	word width
+							this.words[this.words.length]=1;							// 	char count
+							word_cnt++;
+						}
+						else{ 
+							// update-char length and width of active word.
+							this.words[this.words.length-2]+=char_width;
+							this.words[this.words.length-1]++;
+						}
+						startNewWord=false;
+					}
+				}
+				this._textRuns_words[this._textRuns_words.length]=word_cnt;
+				this._textRuns_words[this._textRuns_words.length]=linewidth;
+				this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
+
+				if(this._maxWidthLine<linewidth){
+					this._maxWidthLine=linewidth;
+				}
 			}
             c_start=c_end;
 		}
