@@ -43,11 +43,6 @@ export class SceneImage2D extends BitmapImage2D
 
 		if(this._imageDataDirty) {
 
-			if(this._wasCopied) {
-				// draw from texture to self framebuffer after copeing
-				this._drawAsBitmap(this);
-			}
-
 			this._stage.setRenderTarget(this, false);
 
 			const gl = (this._stage.context as ContextWebGL)._gl;
