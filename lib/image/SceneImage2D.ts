@@ -185,7 +185,7 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D._renderer.view.target = this;
 		SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
 
-		const alpha = this._transparent ? (color >> 24 & 0xff) / 0xff : 1;
+		const alpha = this._transparent ? (color >> 24 & 0xff) / 255 : 1;
 		const rgb = color & 0xffffff;
 
 		//make sure we are setup on view
@@ -358,7 +358,7 @@ export class SceneImage2D extends BitmapImage2D
 		} else {
 			this._drawAsBitmap(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 		}
-
+		
 		this._imageDataDirty = true;
 	}
 
