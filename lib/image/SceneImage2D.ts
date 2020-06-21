@@ -1,6 +1,6 @@
 import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform, Box, Matrix3D} from "@awayjs/core";
 
-import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace} from "@awayjs/stage";
+import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace, IContextGL, TextureWebGL} from "@awayjs/stage";
 
 import {DefaultRenderer, RenderGroup, RendererType, Style} from "@awayjs/renderer";
 
@@ -35,7 +35,37 @@ export class SceneImage2D extends BitmapImage2D
 	private static _billboardRoot:DisplayObjectContainer;
 	private static _billboard:Billboard;
 
-	private _imageDataDirty:boolean;
+	private _imageDataDirty: boolean;
+	private _wasCopied: boolean;
+
+	public get data(): Uint8ClampedArray {
+		const internalData = (this as any)._data;
+
+		if(this._imageDataDirty) {
+
+			if(this._wasCopied) {
+				// draw from texture to self framebuffer after copeing
+				this._drawAsBitmap(this);
+			}
+
+			this._stage.setRenderTarget(this, false);
+
+			const gl = (this._stage.context as ContextWebGL)._gl;
+			
+			// copy to self data, update it
+			gl.readPixels(0, 0, this.rect.width, this.rect.height, gl.RGBA, gl.UNSIGNED_BYTE, internalData);
+
+			this._stage.setRenderTarget(null);
+			// unlock without invalidate
+			this._locked = false;
+		}
+
+		this._wasCopied = false;
+		this._imageDataDirty = false;
+
+		// access to private
+		return internalData;
+	}
 
 	/**
 	 *
@@ -244,7 +274,8 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
-
+		
+		this._wasCopied = true;
 		this._imageDataDirty = true;
 	}
 
