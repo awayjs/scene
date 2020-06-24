@@ -21,6 +21,7 @@ const EMPTY_MATRIX = new Matrix3D();
 const TMP_MATRIX3D = new Matrix3D();
 const TMP_COLOR_MATRIX = new ColorTransform();
 const TMP_RAW: number[] = [];
+const TMP_PIXEL = new Uint8ClampedArray(4);
 
 /**
  * 
@@ -265,8 +266,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
-		
-		this._wasCopied = true;
+
 		this._imageDataDirty = true;
 	}
 
@@ -279,6 +279,51 @@ export class SceneImage2D extends BitmapImage2D
 		this._imageDataDirty = true;
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public getPixel32(x: number, y: number): number {
+
+		// because image is dirty, call a get data very expensive.
+		// grab 1 pixel instead of ALL pixels otherwice
+		if(this._imageDataDirty) {
+
+			this._stage.setRenderTarget(this, false);
+
+			const data = TMP_PIXEL;
+			const gl = (this._stage.context as ContextWebGL)._gl;
+			
+			// copy to self data, update it
+			gl.readPixels(x | 0, y | 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+			this._stage.setRenderTarget(null);
+
+			const a = data[3];
+			
+			//returns black if fully transparent
+			if (!a) {
+				return 0x0;
+			}
+
+			const r = data[0] * 0xFF / a | 0;
+			const g = data[1] * 0xFF / a | 0;
+			const b = data[2] * 0xFF / a | 0;
+
+			return (a << 24) | (r << 16) | ( g  << 8) | b ;
+		}
+
+		return super.getPixel32(x, y);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public getPixel(x: number, y: number): number 
+	{
+		const result = this.getPixel32(x, y);
+
+		return result & 0x00ffffff;
+	}
 	
 	// /**
 	//  *
