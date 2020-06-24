@@ -36,7 +36,6 @@ export class SceneImage2D extends BitmapImage2D
 	private static _billboard:Billboard;
 
 	private _imageDataDirty: boolean;
-	private _wasCopied: boolean;
 
 	public get data(): Uint8ClampedArray {
 		const internalData = (this as any)._data;
@@ -51,11 +50,8 @@ export class SceneImage2D extends BitmapImage2D
 			gl.readPixels(0, 0, this.rect.width, this.rect.height, gl.RGBA, gl.UNSIGNED_BYTE, internalData);
 
 			this._stage.setRenderTarget(null);
-			// unlock without invalidate
-			this._locked = false;
 		}
 
-		this._wasCopied = false;
 		this._imageDataDirty = false;
 
 		// access to private
