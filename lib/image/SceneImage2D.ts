@@ -309,7 +309,7 @@ export class SceneImage2D extends BitmapImage2D
 			const g = data[1] * 0xFF / a | 0;
 			const b = data[2] * 0xFF / a | 0;
 
-			return (a << 24) | (r << 16) | ( g  << 8) | b ;
+			return ((a << 24) | (r << 16) | ( g  << 8) | b) >>> 0 ;
 		}
 
 		return super.getPixel32(x, y);
