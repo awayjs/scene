@@ -1,6 +1,6 @@
-import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform, Box, Matrix3D} from "@awayjs/core";
+import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform} from "@awayjs/core";
 
-import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace, IContextGL, TextureWebGL} from "@awayjs/stage";
+import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace} from "@awayjs/stage";
 
 import {DefaultRenderer, RenderGroup, RendererType, Style} from "@awayjs/renderer";
 
@@ -8,20 +8,17 @@ import {DisplayObject} from "../display/DisplayObject";
 import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
 import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
-import {Scene} from "../Scene";
-import {Camera} from "../display/Camera";
-
-import { View, PickGroup } from '@awayjs/view';
+import { View } from '@awayjs/view';
 import { MethodMaterial } from '@awayjs/materials';
 import { Billboard } from '../display/Billboard';
 
 
 // empty matrix for transfrorm reset
-const EMPTY_MATRIX = new Matrix3D();
-const TMP_MATRIX3D = new Matrix3D();
 const TMP_COLOR_MATRIX = new ColorTransform();
 const TMP_RAW: number[] = [];
-const TMP_PIXEL = new Uint8ClampedArray(4);
+const TMP_AREA_SIZE = 5;
+const TMP_PIXEL = new Uint8ClampedArray(TMP_AREA_SIZE * TMP_AREA_SIZE * 4);
+const TMP_POINT = new Point(0,0);
 
 /**
  * 
@@ -36,11 +33,20 @@ export class SceneImage2D extends BitmapImage2D
 	private static _billboardRoot:DisplayObjectContainer;
 	private static _billboard:Billboard;
 
+	// regions that already updated by getPixel, getPixels methods
+	private _updateRegions: Rectangle[] = [];
+
+	private _dirtyRegions: Rectangle[] = [];
+	private _maxDirtyArea: Rectangle = null;
+	// when all SceneImageBitmap is updated 
+	private _fullDirty: boolean = false;
+	// legacy
 	private _imageDataDirty: boolean;
 
 	public get data(): Uint8ClampedArray {
 		const internalData = (this as any)._data;
 
+		// update data from pixels from GPU
 		if(this._imageDataDirty) {
 
 			this._stage.setRenderTarget(this, false);
@@ -53,12 +59,129 @@ export class SceneImage2D extends BitmapImage2D
 			this._stage.setRenderTarget(null);
 		}
 
-		this._imageDataDirty = false;
+		this.resetDirty();
 
 		// access to private
 		return internalData;
 	}
 
+	/**
+	 * Marks region as dirty for optiomisation for getPixel* methods
+	 */
+	private pushDirtyRegion(rect: Rectangle): void {
+		this._imageDataDirty = true;
+
+		if(this._fullDirty) {
+			if(this._updateRegions && this._updateRegions.length){
+				this._updateRegions.length = 0;
+			}
+
+			return;
+		}
+
+		if(!this._maxDirtyArea) {
+			this._maxDirtyArea = rect.clone();
+		} else {
+			this._maxDirtyArea = this._maxDirtyArea.union(rect);
+		}
+
+		const mx = this._maxDirtyArea;
+
+		//clamp
+		if(mx._rawData[0] < 0) (mx._rawData[0] = 0);
+		if(mx._rawData[1] < 0) (mx._rawData[1] = 0);
+		if(mx._rawData[2] > this.width) (mx._rawData[2] = this.width);
+		if(mx._rawData[3] > this.height) (mx._rawData[3] = this.height);
+
+
+		if(!this._dirtyRegions) {
+			this._dirtyRegions = [];
+		}
+
+		if(!rect.equals(this._rect)){
+			this._dirtyRegions.push(rect);
+		} else {
+			this._dirtyRegions = [this._rect];
+			this._fullDirty = true;
+		}
+
+		if(this._updateRegions ) {
+			for(let i = this._updateRegions.length - 1; i>= 0; i --) {
+				if(this._updateRegions[i].intersects(rect)) {
+					this._updateRegions.splice(i, 1);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * 
+	 */
+	private resetDirty() {
+		this._dirtyRegions = [];
+		this._updateRegions = [];
+
+		this._maxDirtyArea = null;		
+		this._fullDirty = false;
+
+		this._imageDataDirty = false;
+	}
+	/**
+	 * Test image dirty status under point
+	 */
+	private getImageDirtyUnderPoint(x: number, y: number) {
+		if(!this._imageDataDirty) {
+			return false;
+		}
+
+		const point = TMP_POINT;
+		point.setTo(x, y);
+
+		// original containsPoint is inclusive, we should test exclusive
+		for(let rect of this._updateRegions) {
+			const rx = rect.x;
+			const ry = rect.y;
+			const width = rect.width;
+			const hegit = rect.height;
+			
+			if(x >= rx && x < rx + width) {
+				if(y >= ry && y < ry + hegit) {
+					return false;
+				}
+			}
+		}
+
+		// if point out of max dirty area - return false
+		{
+			const rx = this._maxDirtyArea.x;
+			const ry = this._maxDirtyArea.y;
+			const width = this._maxDirtyArea.width;
+			const hegit = this._maxDirtyArea.height;
+			
+			if(!(x >= rx && x < rx + width)) {
+				return false;
+			}
+			if(!(y >= ry && y < ry + hegit)) {
+				return false;
+			}
+		}
+		
+		for(let rect of this._dirtyRegions) {
+			const rx = rect.x;
+			const ry = rect.y;
+			const width = rect.width;
+			const hegit = rect.height;
+			
+			if(x >= rx && x < rx + width) {
+				if(y >= ry && y < ry + hegit) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 	/**
 	 *
 	 * @returns {string}
@@ -185,6 +308,9 @@ export class SceneImage2D extends BitmapImage2D
 	{
 		super.dispose();
 
+		this._dirtyRegions = null;
+		this._updateRegions = null;
+		this._maxDirtyArea = null;
 		//todo
 	}
 
@@ -219,7 +345,7 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D._renderer.view.backgroundColor = rgb;
 		SceneImage2D._renderer.view.clear(true, true);
 
-		this._imageDataDirty = true;
+		this.pushDirtyRegion(rect)
 	}
 
 		/**
@@ -267,7 +393,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 
-		this._imageDataDirty = true;
+		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 	}
 
 	public threshold(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean):void
@@ -276,6 +402,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
 		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
 
+		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 		this._imageDataDirty = true;
 	}
 
@@ -286,28 +413,59 @@ export class SceneImage2D extends BitmapImage2D
 
 		// because image is dirty, call a get data very expensive.
 		// grab 1 pixel instead of ALL pixels otherwice
-		if(this._imageDataDirty) {
+		if(this.getImageDirtyUnderPoint(x, y)) {
 
 			this._stage.setRenderTarget(this, false);
 
+			/* 4 * 4 * 4 */
 			const data = TMP_PIXEL;
 			const gl = (this._stage.context as ContextWebGL)._gl;
 			
 			// copy to self data, update it
-			gl.readPixels(x | 0, y | 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+			// instead of grabbing every pixel, we grab area around and mark it as updated
+
+			let area = Math.min(this.width, this.height, TMP_AREA_SIZE);
+			const half = (area - 1) / 2 | 0 + 1;
+			
+			let mx = x - half;
+			let my = y - half;
+			
+			if(mx < 0) mx = 0;
+			if(my < 0) my = 0;
+			if(mx >= this.width - area) mx = this.width - area - 1;
+			if(my >= this.height - area) my = this.height - area - 1;
+
+			gl.readPixels(mx, my, area, area, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
 			this._stage.setRenderTarget(null);
 
-			const a = data[3];
+			const ox = x - mx;
+			const oy = y - my;
+			const diff = new Rectangle(mx, my, area, area);
+
+			// update data with grabbed image block
+			// without texture updating, otherwith it will corrupt texture
+			this.lock();
+			this.setPixels(diff, data);
+			this._locked = false;
+
+			// mark it as updated			
+			if(!this._updateRegions){
+				this._updateRegions = [];
+			}
+			this._updateRegions.push(diff);
+
+			const index = (ox + oy * area) * 4;
+			const a = data[index + 3];
 			
 			//returns black if fully transparent
 			if (!a) {
 				return 0x0;
 			}
 
-			const r = data[0] * 0xFF / a | 0;
-			const g = data[1] * 0xFF / a | 0;
-			const b = data[2] * 0xFF / a | 0;
+			const r = data[index + 0] * 0xFF / a | 0;
+			const g = data[index + 1] * 0xFF / a | 0;
+			const b = data[index + 2] * 0xFF / a | 0;
 
 			return ((a << 24) | (r << 16) | ( g  << 8) | b) >>> 0 ;
 		}
@@ -426,6 +584,8 @@ export class SceneImage2D extends BitmapImage2D
 			this._drawAsBitmap(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 		}
 		
+		//TODO implement passing real updated region
+		this.pushDirtyRegion(this._rect);
 		this._imageDataDirty = true;
 	}
 
