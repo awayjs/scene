@@ -51,6 +51,7 @@ export {SceneImage2D} from "./lib/image/SceneImage2D";
 
 export {FrameScriptManager} from "./lib/managers/FrameScriptManager";
 export {DefaultFontManager} from "./lib/managers/DefaultFontManager";
+export {IInputRecorder} from "./lib/managers/IInputRecorder";
 export {MouseManager} from "./lib/managers/MouseManager";
 
 export {SceneGraphNode} from "./lib/partition/SceneGraphNode";
