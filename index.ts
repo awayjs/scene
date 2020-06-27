@@ -1,4 +1,4 @@
-console.debug("AwayJS - Scene - 0.13.51");
+console.debug("AwayJS - Scene - 0.13.52");
 
 export {IDisplayObjectAdapter} from "./lib/adapters/IDisplayObjectAdapter";
 export {IMovieClipAdapter} from "./lib/adapters/IMovieClipAdapter";
@@ -51,6 +51,7 @@ export {SceneImage2D} from "./lib/image/SceneImage2D";
 
 export {FrameScriptManager} from "./lib/managers/FrameScriptManager";
 export {DefaultFontManager} from "./lib/managers/DefaultFontManager";
+export {IInputRecorder} from "./lib/managers/IInputRecorder";
 export {MouseManager} from "./lib/managers/MouseManager";
 
 export {SceneGraphNode} from "./lib/partition/SceneGraphNode";
