@@ -637,7 +637,8 @@ export class SceneImage2D extends BitmapImage2D
 		const renderer = SceneImage2D._renderer;
 
 		const oldParent = source.parent;
-		const oldChildIdx = oldParent ? oldParent.getChildIndex(source) : 0;			
+		const depth = source._depthID;
+		const index = oldParent ? oldParent.getChildIndex(source) : 0;
 		const oldVisible = source.visible;
 
 		const sTrans = source.transform;
@@ -711,17 +712,19 @@ export class SceneImage2D extends BitmapImage2D
 
 		source.transform.colorTransform = TMP_COLOR_MATRIX;
 
+		
 		if(oldParent){
 			if(oldParent.adapter && oldParent.adapter!=oldParent &&
 				source.adapter && source.adapter!=source && (<any>oldParent.adapter).addChildAt){
-				(<any>oldParent.adapter).addChildAt(source.adapter, oldChildIdx);
+				(<any>oldParent.adapter).addChildAt(source.adapter, index);
 
 			}
 			else{
-				oldParent.addChildAt(source, oldChildIdx);
+				oldParent.addChildAtDepth(source, depth, true);
 			}
 			
 		}
+		
 		//SceneImage2D.scene.dispose();
 		//SceneImage2D.scene=null;
 
