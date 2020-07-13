@@ -213,6 +213,18 @@ export class Timeline
 	}
 
 	public add_script_for_postcontruct(target_mc: MovieClip, frame_idx: number, scriptPass1: Boolean = false): void {
+		// todo: better was to check if this avm1 or avm2 mc:
+		if((<any>target_mc.adapter).clearPropsDic){
+			// in avm2 script might not yet exists, because its created by constructor
+			// to handle this for now, while keeping our original order of scripts
+			// we queue the frame_idx, and when exeucting the script we check if its a number and try to get the script again
+			if (scriptPass1)
+				FrameScriptManager.add_script_to_queue(target_mc, frame_idx);
+			else
+				FrameScriptManager.add_script_to_queue_pass2(target_mc, frame_idx);
+
+			return;
+		}
 		if (this._framescripts[frame_idx] != null) {
 			if (this._framescripts_translated[frame_idx] == null) {
 				this._framescripts[frame_idx] = (<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frame_idx], frame_idx);
@@ -223,16 +235,6 @@ export class Timeline
 				FrameScriptManager.add_script_to_queue(target_mc, this._framescripts[frame_idx]);
 			else
 				FrameScriptManager.add_script_to_queue_pass2(target_mc, this._framescripts[frame_idx]);
-
-		}
-		else{
-			// in avm2 script might not yet exists, because its created by constructor
-			// to handle this for now, while keeping our original order of scripts
-			// we queue the frame_idx, and when exeucting the script we check if its a number and try to get the script again
-			if (scriptPass1)
-				FrameScriptManager.add_script_to_queue(target_mc, frame_idx);
-			else
-				FrameScriptManager.add_script_to_queue_pass2(target_mc, frame_idx);
 
 		}
     }
