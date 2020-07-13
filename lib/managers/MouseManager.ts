@@ -298,8 +298,10 @@ export class MouseManager {
 			if(event.commonAncestor && dispatcher==event.commonAncestor){
 				return;
 			}
-            if (dispatcher._iIsMouseEnabled())
+            if (dispatcher._iIsMouseEnabled()){
 				dispatcher.dispatchEvent(event);
+                FrameScriptManager.execute_queue();
+			}
 			if(!event._iAllowedToPropagate){
 				dispatcher=null;
 			}
