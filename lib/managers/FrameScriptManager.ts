@@ -235,7 +235,7 @@ export class FrameScriptManager
 				mc=queues_tmp[i];
 				// first we execute any pending loadedAction for this MC
 				if ((<any>mc).onLoaded) {
-					//atm this is only used for avm1, to execute queued "onloaded" actions. 
+					// this is only used for avm1, to execute queued "onloaded" actions. 
 					let myFunc = (<any>mc).onLoaded;
 					(<any>mc).onLoaded = null;
 					myFunc();
