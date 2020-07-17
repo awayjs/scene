@@ -31,6 +31,11 @@ import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
  * <p>For more information, see the "Display Programming" chapter of the
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  */
+
+ function sortByDepth(a: DisplayObject, b: DisplayObject) {
+	 return a._depthID - b._depthID;
+ }
+
 export class DisplayObjectContainer extends DisplayObject
 {
 	public static assetType:string = "[asset DisplayObjectContainer]";
@@ -231,6 +236,7 @@ export class DisplayObjectContainer extends DisplayObject
 
 		child._setParent(this);
 
+		this._children.sort(sortByDepth);
 
 		if (!this.doingSwap) {
 			if (child.adapter != child) {
