@@ -539,15 +539,8 @@ export class MovieClip extends Sprite {
 	}
 
 	public finalizeTimelineConstruction() {
-		let len=this._children.length;
-		// queue constructors of as3 childs
-		for(let i=0; i<len; i++){
-			let mc=<MovieClip>this._children[i];
-			if((<any>mc.adapter).executeConstructor || (<any>mc).just_added_to_timeline)
-				FrameScriptManager.queue_as3_constructor(mc);
-			
-		}
-		
+		FrameScriptManager.queue_as3_constructor(this);
+
 	}
 
 	public removeChildAtInternal(index: number): DisplayObject {
