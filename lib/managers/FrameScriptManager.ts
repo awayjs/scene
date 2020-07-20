@@ -138,7 +138,6 @@ export class FrameScriptManager {
 		if (queue.queued_mcs[queue.queued_mcs.length - 1] == mc) {
 			return;
 		}
-		(<any>mc.adapter).allowScript=true;
 		queue.queued_mcs.push(mc);
 		queue.queued_scripts.push(null);
 	}
@@ -249,7 +248,6 @@ export class FrameScriptManager {
 		if (queue.queued_mcs.length == 0 && queue.queued_mcs_pass2.length == 0)
 			return;
 
-		let processed_mc={};
 		while (queue.queued_mcs.length > 0 || queue.queued_mcs_pass2.length > 0) {
 
 			var queues_tmp: any[] = queue.queued_mcs.concat();
@@ -272,9 +270,15 @@ export class FrameScriptManager {
 			for (i = 0; i < queues_tmp.length; i++) {
 				// during the loop we might add more scripts to the queue
 				mc = queues_tmp[i];
-				//if(processed_mc[mc.id])
-				//	continue;
-				processed_mc[mc.id]=true;
+
+				// this is needed for avm1, because otherwise non constructors will have been run yet
+				// for avm2 constructors should already have been processed, so having this here should make no difference
+				let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+				if (constructorFunc) {
+					(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
+					//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
+					constructorFunc();
+				}
 				// first we execute any pending loadedAction for this MC
 				if ((<any>mc).onLoaded) {
 					// this is only used for avm1, to execute queued "onloaded" actions. 
@@ -282,7 +286,12 @@ export class FrameScriptManager {
 					(<any>mc).onLoaded = null;
 					myFunc();
 				}
+			}
+			
+			for (i = 0; i < queues_tmp.length; i++) {
+				// during the loop we might add more scripts to the queue
 				if (queues_scripts_tmp[i] != null) {
+					mc = queues_tmp[i];
 					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
 					if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
 						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
