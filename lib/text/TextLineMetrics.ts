@@ -6,17 +6,6 @@
  */
 export class TextLineMetrics
 {
-
-	// for AVM1:
-	public axCallPublicProperty(value1:any, value2:any):any{
-		return null;
-	}
-	public axGetPublicProperty(value:any):any{
-		return null;
-	}
-	public axSetPublicProperty(value:any):any{
-		return null;
-	}
 	/**
 	 * The ascent value of the text is the length from the baseline to the top of
 	 * the line height in pixels.
