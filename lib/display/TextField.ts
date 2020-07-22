@@ -3024,20 +3024,26 @@ export class TextField extends DisplayObjectContainer
 	 */
 	public getLineMetrics(lineIndex:number /*int*/):TextLineMetrics
 	{
-		var newLineMetrics:TextLineMetrics=new TextLineMetrics();
-		if(this.lines_width.length==0){
+		var newLineMetrics = new TextLineMetrics();
+
+		if(!this.lines_width.length){
 			return newLineMetrics;
 		}
-		if(lineIndex>=this.lines_width.length)
-			lineIndex=this.lines_width.length-1;
 
-		newLineMetrics.x=this.lines_start_x[lineIndex];
-		newLineMetrics.width=this.lines_width[lineIndex];
+		// should throw error!
+		if(lineIndex >= this.lines_width.length) {
+			lineIndex = this.lines_width.length - 1;
+		}
+
+		newLineMetrics.x = this.lines_start_x[lineIndex];
+		newLineMetrics.width = this.lines_width[lineIndex];
+		newLineMetrics.height = this.lines_height[lineIndex];
+
 		//newLineMetrics.ascent=
 		//newLineMetrics.descent
 		//newLineMetrics.height
 		//newLineMetrics.leading
-		return this._lineMetrics;
+		return newLineMetrics;
 	}
 
 	/**
