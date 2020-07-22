@@ -25,6 +25,7 @@ export class FrameScriptManager {
 
 
 	public static frameScriptDebug: Object = undefined;
+	public static useAVM1: boolean = false;
 
 
 	//queue of objects for disposal
@@ -95,7 +96,7 @@ export class FrameScriptManager {
 				queued_scripts_pass2: [],
 				constructors: [],
 			});
-			console.warn("add_queue", FrameScriptManager._queue.length);
+			//console.warn("add_queue", FrameScriptManager._queue.length);
 
 		}
 	}
@@ -110,6 +111,7 @@ export class FrameScriptManager {
 		return FrameScriptManager._queue[0];
 	}
 	public static add_script_to_queue(mc: MovieClip, script: any): void {
+		//console.log("add_script_to_queue", mc.name);
 		let queue = FrameScriptManager.get_queue();
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
 		var i = queue.queued_mcs_pass2.length;
@@ -125,9 +127,10 @@ export class FrameScriptManager {
 		queue.queued_scripts.push(script);
 	}
 	public static add_loaded_action_to_queue(mc: MovieClip): void {
+		//console.log("add_loaded_action_to_queue", mc.name);
 		let queue = FrameScriptManager.get_queue();
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
-		var i = queue.queued_mcs_pass2.length;
+		/*var i = queue.queued_mcs_pass2.length;
 		while (i > 0) {
 			i--;
 			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
@@ -137,12 +140,14 @@ export class FrameScriptManager {
 		queue.queued_scripts_pass2.length = 0;
 		if (queue.queued_mcs[queue.queued_mcs.length - 1] == mc) {
 			return;
-		}
+		}*/
 		queue.queued_mcs.push(mc);
 		queue.queued_scripts.push(null);
 	}
 
 	public static add_script_to_queue_pass2(mc: MovieClip, script: any): void {
+		
+		//console.log("add_script_to_queue_pass2", mc.name);
 		let queue = FrameScriptManager.get_queue();
 		(<any>mc.adapter).allowScript=true;
 		queue.queued_mcs_pass2.push(mc);
@@ -153,6 +158,8 @@ export class FrameScriptManager {
 	public static _constructor_queues_dyn: MovieClip[][] = [];
 	public static _constructor_queueLevel: number = 0;
 	public static queue_as3_constructor(mc: MovieClip): void {
+		if(FrameScriptManager.useAVM1)
+			return;
 		while(FrameScriptManager._constructor_queue.length<=FrameScriptManager._constructor_queueLevel){
 			FrameScriptManager._constructor_queue.push([]);
 		}
@@ -241,7 +248,76 @@ export class FrameScriptManager {
 	}
 	public static queueLevel:number=0;
 
+	public static isOnStage(mc:DisplayObject):boolean{
+		let parent = mc;
+		while (parent && !parent.isAVMScene){
+			parent=parent.parent;
+		}
+		if(parent && parent.isAVMScene)
+			return true;
+		return false;
+
+	}
+	public static execute_avm1_constructors(): void {
+		
+		//console.log("execute_queue", FrameScriptManager.queueLevel);
+		let queue = FrameScriptManager.get_queue();
+
+		if (queue.queued_mcs.length == 0 && queue.queued_mcs_pass2.length == 0)
+			return;
+
+		//while (queue.queued_mcs.length > 0 || queue.queued_mcs_pass2.length > 0) {
+
+			var i = queue.queued_mcs_pass2.length;
+			while (i > 0) {
+				i--;
+				queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
+				queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
+			}
+			queue.queued_mcs_pass2.length = 0;
+			queue.queued_scripts_pass2.length = 0;
+
+			var queues_tmp: any[] = queue.queued_mcs;
+
+			//console.log("execute queue",queue.queued_scripts);
+
+			var mc: MovieClip;
+
+			if(FrameScriptManager.useAVM1){
+				for (var i = 0; i < queues_tmp.length; i++) {
+					mc = queues_tmp[i];
+					if(!FrameScriptManager.isOnStage(mc))
+						continue;
+					// onClipEvent (initialize)
+					if ((<any>mc).onInitialize) {
+						let myFunc = (<any>mc).onInitialize;
+						(<any>mc).onInitialize = null;
+						myFunc();
+					}
+				}
+				for (i = 0; i < queues_tmp.length; i++) {
+					mc = queues_tmp[i];	
+					if(!FrameScriptManager.isOnStage(mc))
+						continue;
+					// onClipEvent (construct) comes before class-constructor
+					if ((<any>mc).onConstruct) {
+						let myFunc = (<any>mc).onConstruct;
+						(<any>mc).onConstruct = null;
+						myFunc();
+					}					
+					// class-constructor
+					let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+					if (constructorFunc) {
+						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
+						//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
+						constructorFunc();
+					}
+				}
+			}
+		
+	}
 	public static execute_queue(): void {
+		
 		//console.log("execute_queue", FrameScriptManager.queueLevel);
 		let queue = FrameScriptManager.get_queue();
 
@@ -267,29 +343,58 @@ export class FrameScriptManager {
 			//console.log("execute queue",queue.queued_scripts);
 
 			var mc: MovieClip;
-			for (i = 0; i < queues_tmp.length; i++) {
-				// during the loop we might add more scripts to the queue
-				mc = queues_tmp[i];
 
-				// this is needed for avm1, because otherwise non constructors will have been run yet
-				// for avm2 constructors should already have been processed, so having this here should make no difference
-				let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
-				if (constructorFunc) {
-					(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
-					//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
-					constructorFunc();
+			if(FrameScriptManager.useAVM1){
+				for (i = 0; i < queues_tmp.length; i++) {
+					mc = queues_tmp[i];
+					if(!FrameScriptManager.isOnStage(mc))
+						continue;
+					// onClipEvent (initialize)
+					if ((<any>mc).onInitialize) {
+						let myFunc = (<any>mc).onInitialize;
+						(<any>mc).onInitialize = null;
+						myFunc();
+					}
 				}
-				// first we execute any pending loadedAction for this MC
-				if ((<any>mc).onLoaded) {
-					// this is only used for avm1, to execute queued "onloaded" actions. 
-					let myFunc = (<any>mc).onLoaded;
-					(<any>mc).onLoaded = null;
-					myFunc();
+				for (i = 0; i < queues_tmp.length; i++) {
+					mc = queues_tmp[i];	
+					if(!FrameScriptManager.isOnStage(mc))
+						continue;
+					// onClipEvent (construct) comes before class-constructor
+					if ((<any>mc).onConstruct) {
+						let myFunc = (<any>mc).onConstruct;
+						(<any>mc).onConstruct = null;
+						myFunc();
+					}					
+					// class-constructor
+					let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+					if (constructorFunc) {
+						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
+						//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
+						constructorFunc();
+					}
 				}
 			}
 			
 			for (i = 0; i < queues_tmp.length; i++) {
-				// during the loop we might add more scripts to the queue
+				mc = queues_tmp[i];	
+				//console.log("scriptqueue", mc.name);
+				if(FrameScriptManager.useAVM1){
+					if(!FrameScriptManager.isOnStage(mc))
+						continue;
+					if ((<any>mc).onLoaded) {
+						let myFunc = (<any>mc).onLoaded;
+						(<any>mc).onLoaded = null;
+						myFunc();
+					}
+					if(!(<any>mc.adapter).hasOnLoadExecuted){
+						(<any>mc.adapter).hasOnLoadExecuted=true;
+						let func=(<any>mc.adapter).alGet("onLoad");
+						if(func){
+							func.alCall(mc.adapter);
+						}
+					}
+				}
 				if (queues_scripts_tmp[i] != null) {
 					mc = queues_tmp[i];
 					//console.log("execute script", mc.name, queues_scripts_tmp[i]);

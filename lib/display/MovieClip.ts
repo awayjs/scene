@@ -535,6 +535,7 @@ export class MovieClip extends Sprite {
 		(<any>child).just_added_to_timeline=true;
 		var returnObj=this.addChildAtDepth(child, depth);
 		this._sessionID_childs[sessionID] = child;
+		//console.log(this.name, this.id, "addchild at ", depth, child.id)
 		return returnObj
 	}
 

@@ -240,14 +240,9 @@ export class DisplayObjectContainer extends DisplayObject
 
 		if (!this.doingSwap) {
 			if (child.adapter != child) {
-				// initAdapter (avm1): 
-				//		- executes the initial actionscript for the timeline (if any)
-				//		- initialize the events (this might add the "onLoaded"-event)
-				//		- add the Constructor function to FrameScriptManager
+				// initAdapter is only used for avm1 to queue constructirs / init-actions
+				// in avm2 this is handled by FrameScriptManager.queue_as3_constructor
 				
-				// initAdapter (avm1): 
-				//		- executes the initial actionscript for the timeline (if any)
-				//		- add the Constructor function to FrameScriptManager
 				(<IDisplayObjectAdapter>child.adapter).initAdapter();
 			}
 		}
