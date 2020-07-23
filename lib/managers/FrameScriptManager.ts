@@ -88,7 +88,7 @@ export class FrameScriptManager {
 
 
 	public static add_queue() {
-		if(FrameScriptManager._queue.length<2){
+		if (FrameScriptManager._queue.length < 2) {
 			FrameScriptManager._queue.push({
 				queued_mcs: [],
 				queued_scripts: [],
@@ -102,10 +102,10 @@ export class FrameScriptManager {
 	}
 
 	public static get_queue(): IScriptQueue {
-		while(FrameScriptManager._queue.length<2){
+		while (FrameScriptManager._queue.length < 2) {
 			FrameScriptManager.add_queue();
 		}
-		if(FrameScriptManager.queueLevel>0){
+		if (FrameScriptManager.queueLevel > 0) {
 			return FrameScriptManager._queue[1];
 		}
 		return FrameScriptManager._queue[0];
@@ -122,7 +122,7 @@ export class FrameScriptManager {
 		}
 		queue.queued_mcs_pass2.length = 0;
 		queue.queued_scripts_pass2.length = 0;
-		(<any>mc.adapter).allowScript=true;
+		(<any>mc.adapter).allowScript = true;
 		queue.queued_mcs.push(mc);
 		queue.queued_scripts.push(script);
 	}
@@ -146,10 +146,10 @@ export class FrameScriptManager {
 	}
 
 	public static add_script_to_queue_pass2(mc: MovieClip, script: any): void {
-		
+
 		//console.log("add_script_to_queue_pass2", mc.name);
 		let queue = FrameScriptManager.get_queue();
-		(<any>mc.adapter).allowScript=true;
+		(<any>mc.adapter).allowScript = true;
 		queue.queued_mcs_pass2.push(mc);
 		queue.queued_scripts_pass2.push(script);
 	}
@@ -158,9 +158,9 @@ export class FrameScriptManager {
 	public static _constructor_queues_dyn: MovieClip[][] = [];
 	public static _constructor_queueLevel: number = 0;
 	public static queue_as3_constructor(mc: MovieClip): void {
-		if(FrameScriptManager.useAVM1)
+		if (FrameScriptManager.useAVM1)
 			return;
-		while(FrameScriptManager._constructor_queue.length<=FrameScriptManager._constructor_queueLevel){
+		while (FrameScriptManager._constructor_queue.length <= FrameScriptManager._constructor_queueLevel) {
 			FrameScriptManager._constructor_queue.push([]);
 		}
 		FrameScriptManager._constructor_queue[FrameScriptManager._constructor_queueLevel].push(mc);
@@ -174,35 +174,35 @@ export class FrameScriptManager {
 		let queues = [[]];
 		let k;
 		let constructor_queue;
-		let constructor_queues=FrameScriptManager._constructor_queues;
-		if(FrameScriptManager._constructor_queue.length>1){
-			constructor_queue=FrameScriptManager._constructor_queue.pop();
+		let constructor_queues = FrameScriptManager._constructor_queues;
+		if (FrameScriptManager._constructor_queue.length > 1) {
+			constructor_queue = FrameScriptManager._constructor_queue.pop();
 			FrameScriptManager._constructor_queueLevel--;
-			constructor_queues=FrameScriptManager._constructor_queues_dyn;
+			constructor_queues = FrameScriptManager._constructor_queues_dyn;
 		}
-		else if (FrameScriptManager._constructor_queue.length==1){
-			constructor_queue=FrameScriptManager._constructor_queue[0].concat();
-			FrameScriptManager._constructor_queue[0].length=0;
+		else if (FrameScriptManager._constructor_queue.length == 1) {
+			constructor_queue = FrameScriptManager._constructor_queue[0].concat();
+			FrameScriptManager._constructor_queue[0].length = 0;
 		}
-		else{
+		else {
 			return;
 		}
 
 		//let names = FrameScriptManager._constructor_queue.length+" :";
-		let constrCnt=constructor_queue.length;
+		let constrCnt = constructor_queue.length;
 		for (let k = 0; k < constrCnt; k++) {
-			mc = constructor_queue.shift();				
+			mc = constructor_queue.shift();
 			//names+=mc.name+" - ";
 			queues[queues.length - 1].push(mc);
-			if (FrameScriptManager.queueLevel>0 || mc.isAVMScene || !mc.parent || mc.parent.isAVMScene || k == constrCnt - 1)
+			if (FrameScriptManager.queueLevel > 0 || mc.isAVMScene || !mc.parent || mc.parent.isAVMScene || k == constrCnt - 1)
 				queues.push([]);
-		}		
+		}
 		//console.log("FrameScriptManager._constructor_queue", names)
 		k = queues.length;
 		while (k > 0) {
 			k--;
 			if (queues[k].length > 0)
-			constructor_queues.unshift(queues[k]);
+				constructor_queues.unshift(queues[k]);
 		}
 
 		if (constructor_queues.length == 0) {
@@ -246,20 +246,20 @@ export class FrameScriptManager {
 
 
 	}
-	public static queueLevel:number=0;
+	public static queueLevel: number = 0;
 
-	public static isOnStage(mc:DisplayObject):boolean{
+	public static isOnStage(mc: DisplayObject): boolean {
 		let parent = mc;
-		while (parent && !parent.isAVMScene){
-			parent=parent.parent;
+		while (parent && !parent.isAVMScene) {
+			parent = parent.parent;
 		}
-		if(parent && parent.isAVMScene)
+		if (parent && parent.isAVMScene)
 			return true;
 		return false;
 
 	}
 	public static execute_avm1_constructors(): void {
-		
+
 		//console.log("execute_queue", FrameScriptManager.queueLevel);
 		let queue = FrameScriptManager.get_queue();
 
@@ -268,56 +268,58 @@ export class FrameScriptManager {
 
 		//while (queue.queued_mcs.length > 0 || queue.queued_mcs_pass2.length > 0) {
 
-			var i = queue.queued_mcs_pass2.length;
+		var i = queue.queued_mcs_pass2.length;
+		while (i > 0) {
+			i--;
+			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
+			queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
+		}
+		queue.queued_mcs_pass2.length = 0;
+		queue.queued_scripts_pass2.length = 0;
+
+		var queues_tmp: any[] = queue.queued_mcs;
+
+		//console.log("execute queue",queue.queued_scripts);
+
+		var mc: MovieClip;
+
+		if (FrameScriptManager.useAVM1) {
+			i = queues_tmp.length;
 			while (i > 0) {
 				i--;
-				queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
-				queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
-			}
-			queue.queued_mcs_pass2.length = 0;
-			queue.queued_scripts_pass2.length = 0;
-
-			var queues_tmp: any[] = queue.queued_mcs;
-
-			//console.log("execute queue",queue.queued_scripts);
-
-			var mc: MovieClip;
-
-			if(FrameScriptManager.useAVM1){
-				for (var i = 0; i < queues_tmp.length; i++) {
-					mc = queues_tmp[i];
-					if(!FrameScriptManager.isOnStage(mc))
-						continue;
-					// onClipEvent (initialize)
-					if ((<any>mc).onInitialize) {
-						let myFunc = (<any>mc).onInitialize;
-						(<any>mc).onInitialize = null;
-						myFunc();
-					}
-				}
-				for (i = 0; i < queues_tmp.length; i++) {
-					mc = queues_tmp[i];	
-					if(!FrameScriptManager.isOnStage(mc))
-						continue;
-					// onClipEvent (construct) comes before class-constructor
-					if ((<any>mc).onConstruct) {
-						let myFunc = (<any>mc).onConstruct;
-						(<any>mc).onConstruct = null;
-						myFunc();
-					}					
-					// class-constructor
-					let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
-					if (constructorFunc) {
-						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
-						//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
-						constructorFunc();
-					}
+				mc = queues_tmp[i];
+				if (!FrameScriptManager.isOnStage(mc))
+					continue;
+				// onClipEvent (initialize)
+				if ((<any>mc).onInitialize) {
+					let myFunc = (<any>mc).onInitialize;
+					(<any>mc).onInitialize = null;
+					myFunc();
 				}
 			}
-		
+			for (i = 0; i < queues_tmp.length; i++) {
+				mc = queues_tmp[i];
+				if (!FrameScriptManager.isOnStage(mc))
+					continue;
+				// onClipEvent (construct) comes before class-constructor
+				if ((<any>mc).onConstruct) {
+					let myFunc = (<any>mc).onConstruct;
+					(<any>mc).onConstruct = null;
+					myFunc();
+				}
+				// class-constructor
+				let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+				if (constructorFunc) {
+					(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
+					//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
+					constructorFunc();
+				}
+			}
+		}
+
 	}
 	public static execute_queue(): void {
-		
+
 		//console.log("execute_queue", FrameScriptManager.queueLevel);
 		let queue = FrameScriptManager.get_queue();
 
@@ -344,10 +346,10 @@ export class FrameScriptManager {
 
 			var mc: MovieClip;
 
-			if(FrameScriptManager.useAVM1){
+			if (FrameScriptManager.useAVM1) {
 				for (i = 0; i < queues_tmp.length; i++) {
 					mc = queues_tmp[i];
-					if(!FrameScriptManager.isOnStage(mc))
+					if (!FrameScriptManager.isOnStage(mc))
 						continue;
 					// onClipEvent (initialize)
 					if ((<any>mc).onInitialize) {
@@ -357,15 +359,15 @@ export class FrameScriptManager {
 					}
 				}
 				for (i = 0; i < queues_tmp.length; i++) {
-					mc = queues_tmp[i];	
-					if(!FrameScriptManager.isOnStage(mc))
+					mc = queues_tmp[i];
+					if (!FrameScriptManager.isOnStage(mc))
 						continue;
 					// onClipEvent (construct) comes before class-constructor
 					if ((<any>mc).onConstruct) {
 						let myFunc = (<any>mc).onConstruct;
 						(<any>mc).onConstruct = null;
 						myFunc();
-					}					
+					}
 					// class-constructor
 					let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
 					if (constructorFunc) {
@@ -375,22 +377,22 @@ export class FrameScriptManager {
 					}
 				}
 			}
-			
+
 			for (i = 0; i < queues_tmp.length; i++) {
-				mc = queues_tmp[i];	
+				mc = queues_tmp[i];
 				//console.log("scriptqueue", mc.name);
-				if(FrameScriptManager.useAVM1){
-					if(!FrameScriptManager.isOnStage(mc))
+				if (FrameScriptManager.useAVM1) {
+					if (!FrameScriptManager.isOnStage(mc))
 						continue;
 					if ((<any>mc).onLoaded) {
 						let myFunc = (<any>mc).onLoaded;
 						(<any>mc).onLoaded = null;
 						myFunc();
 					}
-					if(!(<any>mc.adapter).hasOnLoadExecuted){
-						(<any>mc.adapter).hasOnLoadExecuted=true;
-						let func=(<any>mc.adapter).alGet("onLoad");
-						if(func){
+					if (!(<any>mc.adapter).hasOnLoadExecuted) {
+						(<any>mc.adapter).hasOnLoadExecuted = true;
+						let func = (<any>mc.adapter).alGet("onLoad");
+						if (func) {
 							func.alCall(mc.adapter);
 						}
 					}
