@@ -75,34 +75,40 @@ export class SceneImage2D extends BitmapImage2D
 			if(this._updateRegions && this._updateRegions.length){
 				this._updateRegions.length = 0;
 			}
-
 			return;
 		}
 
-		if(!this._maxDirtyArea) {
-			this._maxDirtyArea = rect.clone();
-		} else {
-			this._maxDirtyArea = this._maxDirtyArea.union(rect);
-		}
-
-		const mx = this._maxDirtyArea;
-
-		//clamp
-		if(mx._rawData[0] < 0) (mx._rawData[0] = 0);
-		if(mx._rawData[1] < 0) (mx._rawData[1] = 0);
-		if(mx._rawData[2] > this.width) (mx._rawData[2] = this.width);
-		if(mx._rawData[3] > this.height) (mx._rawData[3] = this.height);
-
+		const eq = rect.equals(this._rect);
 
 		if(!this._dirtyRegions) {
 			this._dirtyRegions = [];
 		}
 
-		if(!rect.equals(this._rect)){
+		if(!eq){
 			this._dirtyRegions.push(rect);
 		} else {
 			this._dirtyRegions = [this._rect];
 			this._fullDirty = true;
+		}
+
+		if(!this._maxDirtyArea || eq) {
+			this._maxDirtyArea = rect.clone();
+		} else {
+			const rr = rect._rawData;
+			const ma = this._maxDirtyArea;
+			const mr = ma._rawData;
+
+			mr[0] = rr[0] < mr[0] ? rr[0] : mr[0];
+			mr[1] = rr[1] < mr[1] ? rr[1] : mr[1];
+			
+			ma.right = ma.right < rect.right ? ma.right : rect.right;
+			ma.bottom = ma.bottom < rect.bottom ? ma.bottom : rect.bottom;
+
+			//clamp
+			if(mr[0] < 0) (mr[0] = 0);
+			if(mr[1] < 0) (mr[1] = 0);
+			if(mr[2] > this.width) (mr[2] = this.width);
+			if(mr[3] > this.height) (mr[3] = this.height);	
 		}
 
 		if(this._updateRegions ) {
@@ -134,16 +140,17 @@ export class SceneImage2D extends BitmapImage2D
 		if(!this._imageDataDirty) {
 			return false;
 		}
-
+		
 		const point = TMP_POINT;
 		point.setTo(x, y);
 
 		// original containsPoint is inclusive, we should test exclusive
 		for(let rect of this._updateRegions) {
-			const rx = rect.x;
-			const ry = rect.y;
-			const width = rect.width;
-			const hegit = rect.height;
+
+			const rx = rect._rawData[0];
+			const ry = rect._rawData[1];
+			const width = rect._rawData[2];
+			const hegit = rect._rawData[3];
 			
 			if(x >= rx && x < rx + width) {
 				if(y >= ry && y < ry + hegit) {
@@ -154,24 +161,21 @@ export class SceneImage2D extends BitmapImage2D
 
 		// if point out of max dirty area - return false
 		{
-			const rx = this._maxDirtyArea.x;
-			const ry = this._maxDirtyArea.y;
-			const width = this._maxDirtyArea.width;
-			const hegit = this._maxDirtyArea.height;
-			
-			if(!(x >= rx && x < rx + width)) {
+			const mr = this._maxDirtyArea._rawData;
+
+			if(!(x >= mr[0] && x < mr[0] + mr[2])) {
 				return false;
 			}
-			if(!(y >= ry && y < ry + hegit)) {
+			if(!(y >= mr[1] && y < mr[1] + mr[3])) {
 				return false;
 			}
 		}
 		
 		for(let rect of this._dirtyRegions) {
-			const rx = rect.x;
-			const ry = rect.y;
-			const width = rect.width;
-			const hegit = rect.height;
+			const rx = rect._rawData[0];
+			const ry = rect._rawData[1];
+			const width = rect._rawData[2];
+			const hegit = rect._rawData[3];
 			
 			if(x >= rx && x < rx + width) {
 				if(y >= ry && y < ry + hegit) {
@@ -413,9 +417,11 @@ export class SceneImage2D extends BitmapImage2D
 
 		// because image is dirty, call a get data very expensive.
 		// grab 1 pixel instead of ALL pixels otherwice
-		if(this.getImageDirtyUnderPoint(x, y)) {
+		if(this._imageDataDirty && this.getImageDirtyUnderPoint(x, y)) {
 
 			this._stage.setRenderTarget(this, false);
+
+			//console.debug("[getPixel32] cache cilled. get to temp", {x, y});
 
 			/* 4 * 4 * 4 */
 			const data = TMP_PIXEL;
@@ -454,6 +460,7 @@ export class SceneImage2D extends BitmapImage2D
 				this._updateRegions = [];
 			}
 			this._updateRegions.push(diff);
+			this._fullDirty = false;
 
 			const index = (ox + oy * area) * 4;
 			const a = data[index + 3];
@@ -469,6 +476,8 @@ export class SceneImage2D extends BitmapImage2D
 
 			return ((a << 24) | (r << 16) | ( g  << 8) | b) >>> 0 ;
 		}
+
+		//console.debug("[getPixel32] get from cache", {x, y});
 
 		return super.getPixel32(x, y);
 	}
