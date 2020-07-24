@@ -480,9 +480,10 @@ export class MouseManager {
                     // need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
                     if((<any>this._mouseDragPickerEntity).buttonEnabled)
                         this.setupAndDispatchEvent(this._mouseOut, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
-
-                    this.setupAndDispatchEvent(this._mouseUpOutside, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
-                }else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity == dispatcher) {
+					if(!this._eventBubbling){
+						this.setupAndDispatchEvent(this._mouseUpOutside, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
+					}
+				}else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity == dispatcher) {
                     // no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
                     // need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
                     upPickerEntity = this._mouseDragPickerEntity;
@@ -498,8 +499,9 @@ export class MouseManager {
                 if(upPickerEntity){
                     //console.log("onRelease", upPickerEntity)
                     this.dispatchEvent(event, upPickerEntity);
-
-                }
+				}
+				else if(this._eventBubbling && this._stage)
+                    this._stage.dispatchEvent(event);
 
                 if(upEntity)
                     this.setupAndDispatchEvent(this._dragStop, event, this._pickGroup.getAbstraction(upEntity).pickingCollision);
@@ -513,10 +515,13 @@ export class MouseManager {
                 // no event-bubbling. dispatch on stage first
                 if(!this._eventBubbling){
                     if(this._stage)
-                    this._stage.dispatchEvent(event);
+                    	this._stage.dispatchEvent(event);
                 }
                 else{
-                    this.dispatchEvent(event, event.pickerEntity);
+					if(event.pickerEntity)
+                    	this.dispatchEvent(event, event.pickerEntity);
+					else if(this._stage)
+							this._stage.dispatchEvent(event);
 
                 }
 
