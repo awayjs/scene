@@ -59,31 +59,29 @@ export class DefaultFontManager
         //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
 		if(!fontName)
             return DefaultFontManager.getDefaultFont();
-        fontName=fontName.toString().toLowerCase();
-        if(!DefaultFontManager._registered_fonts[ns]){
-            DefaultFontManager._registered_fonts[ns]={};
-        }
-        if(ns==AssetBase.DEFAULT_NAMESPACE){  
-            if(!DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]){
-                DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]={};
-            }       
-            if(DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][fontName]){
-                return DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][fontName];                
-            }
-            for (var key in DefaultFontManager._registered_fonts){               
-                if(DefaultFontManager._registered_fonts[key][fontName]){
-                    return DefaultFontManager._registered_fonts[key][fontName];                
-                } 
-            }
-        }
+		fontName=fontName.toString().toLowerCase();
+		
+		// remove "bold" "italic" and "regular" from the name, so we get the basename of the font
+		let fontNameSplit=fontName.split(" ");
+		fontName="";
+		for(let i=0; i<fontNameSplit.length;i++){
+			if(fontNameSplit[i]!="bold" && fontNameSplit[i]!="italic" && fontNameSplit[i]!="regular"){
+				fontName+=fontNameSplit[i]+((i==fontNameSplit.length-1)?"":" ");
+			}
+		}
+        if(!DefaultFontManager._registered_fonts){
+            DefaultFontManager._registered_fonts={};
+		}
 
-		if(DefaultFontManager._registered_fonts[ns][fontName]){
-			return DefaultFontManager._registered_fonts[ns][fontName];
+
+		if(DefaultFontManager._registered_fonts[fontName]){
+			return DefaultFontManager._registered_fonts[fontName];
 		}
 		var newFont:Font=new Font();
 		newFont.name=fontName;
-		//DefaultFontManager._registered_fonts[fontName.toString().split(" ")[0].toLowerCase()]=newFont;
-		DefaultFontManager._registered_fonts[ns][fontName]=newFont;
+		if(!DefaultFontManager._default_font)
+			DefaultFontManager._default_font=newFont;
+		DefaultFontManager._registered_fonts[fontName]=newFont;
 		return newFont;
 	}
 
