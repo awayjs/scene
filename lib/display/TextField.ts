@@ -1090,7 +1090,10 @@ export class TextField extends DisplayObjectContainer
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
         else if (this._implicitPartition)
-            this._implicitPartition.invalidateEntity(this);
+			this._implicitPartition.invalidateEntity(this);
+		
+		this.newTextFormat = this._textFormats[this._textFormats.length-1];
+		
 
 	};
 		
@@ -3683,7 +3686,7 @@ export class TextField extends DisplayObjectContainer
 		newInstance.sourceTextField=this;
 
 		if(newInstance.html){
-            newInstance.htmlText = this.htmlText;              
+            newInstance.htmlText = this.htmlText;
 		}
 		else{
 			newInstance.text = this.text;
