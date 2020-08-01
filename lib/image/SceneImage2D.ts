@@ -395,6 +395,9 @@ export class SceneImage2D extends BitmapImage2D
 	{
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+
+		// need drop alpha from source when target is not has alpha
+		mergeAlpha = (!this.transparent && source.transparent);
 		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
