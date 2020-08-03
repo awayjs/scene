@@ -603,6 +603,7 @@ export class SceneImage2D extends BitmapImage2D
 
 	private _mapBlendMode(blendMode: string = ''): string {
 		switch(blendMode) {
+			case null:
 			case '':
 			case BlendMode.NORMAL:
 			case BlendMode.LAYER:			
@@ -613,7 +614,7 @@ export class SceneImage2D extends BitmapImage2D
 				return blendMode;
 		}
 
-		console.debug("[ImageBitmap] Unsupport BlendMode", blendMode);
+		//console.debug("[ImageBitmap] Unsupport BlendMode", blendMode);
 		return BlendMode.LAYER;
 	}
 
