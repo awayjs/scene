@@ -397,7 +397,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 
 		// need drop alpha from source when target is not has alpha
-		mergeAlpha = (!this.transparent && source.transparent);
+		mergeAlpha = (this.transparent !== source.transparent) || mergeAlpha;
 		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
@@ -586,9 +586,9 @@ export class SceneImage2D extends BitmapImage2D
 	 *                       restriction does not apply to AIR content in the
 	 *                       application security sandbox.
 	 */
-	public draw(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
-	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean);
-	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean):void
+	public draw(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean);
+	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean);
+	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean):void
 	{
 		if(source instanceof DisplayObject) {
 			this._drawAsDisplay(source, matrix, colorTransform, blendMode, clipRect, smoothing);
@@ -601,7 +601,23 @@ export class SceneImage2D extends BitmapImage2D
 		this._imageDataDirty = true;
 	}
 
-	private _drawAsBitmap(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean) {
+	private _mapBlendMode(blendMode: string = ''): string {
+		switch(blendMode) {
+			case '':
+			case BlendMode.NORMAL:
+			case BlendMode.LAYER:			
+				return BlendMode.LAYER;
+			case BlendMode.MULTIPLY:
+			case BlendMode.ADD:
+			case BlendMode.ALPHA:
+				return blendMode;
+		}
+
+		console.debug("[ImageBitmap] Unsupport BlendMode", blendMode);
+		return BlendMode.LAYER;
+	}
+
+	private _drawAsBitmap(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?: string, clipRect?:Rectangle, smoothing?:boolean) {
 		
 		if (!SceneImage2D._billboardRenderer)
 			this.createBillboardRenderer();
@@ -615,6 +631,7 @@ export class SceneImage2D extends BitmapImage2D
 		renderer.view.projection.scale = 1000 / this.rect.height;
 
 		billboard.material.style.image = source;
+		billboard.material.blendMode = this._mapBlendMode(blendMode);
 
 		if (matrix) {
 			const m = root.transform.matrix3D;
@@ -640,7 +657,7 @@ export class SceneImage2D extends BitmapImage2D
 		renderer.render();
 	}
 
-	private _drawAsDisplay(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:BlendMode, clipRect?:Rectangle, smoothing?:boolean) {
+	private _drawAsDisplay(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean) {
 		
 		if (!SceneImage2D._renderer)
 			this.createRenderer();
@@ -706,6 +723,9 @@ export class SceneImage2D extends BitmapImage2D
 		source.transform.matrix3D = null;
 		source.visible = true;
 		source.transform.colorTransform = null;
+
+		blendMode = blendMode || (<string>source.blendMode) || '';
+		root.blendMode = this._mapBlendMode(blendMode);
 
 		//save snapshot if unlocked
 		//if (!this._locked)
