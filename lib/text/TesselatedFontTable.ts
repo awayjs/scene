@@ -13,6 +13,15 @@ import {TextShape} from "./TextShape";
 
 import {TextField} from "../display/TextField";
 import { DefaultFontManager } from '../managers/DefaultFontManager';
+
+const ONCE_EMIT_TABLE: StringMap<boolean> = Object.create(null);
+function once(obj: any, key = "") {
+	const has = ONCE_EMIT_TABLE[obj._id + key];
+	
+	ONCE_EMIT_TABLE[obj._id + key] = true;
+	return !has;
+}
+
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
@@ -858,7 +867,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 						// todo: handle kerning
 					}
 					else{
-						console.log("TesselatedFontTable: Error: char not found in fontTable", tf.chars_codes[c], tf.chars_codes[c].toString());
+						if(once(this, "miss" + tf.chars_codes[c])) {
+							console.debug("[TesselatedFontTable] Error: char not found in fontTable", tf.chars_codes[c], tf.chars_codes[c].toString());
+						}
 					}
 				}
 			}
@@ -971,11 +982,15 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
                         */
                         var tesselated_font_char:TesselatedFontChar = new TesselatedFontChar(null, null, awayPath);
 						tesselated_font_char.char_width=(thisGlyph.advanceWidth*(1 / thisGlyph.path.unitsPerEm * 72));
-                        tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
-                        if(!tesselated_font_char.fill_data){
-                            console.log("error tesselating opentype glyph");
+						tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
+					  
+						if(!tesselated_font_char.fill_data){
+							if(once(this, "tess" + name)) {
+								console.debug("[TesselatedFontTable] Error:tesselating opentype glyph:", name.charCodeAt(0));
+							}
                             return null;
-                        }
+						}
+
 						this._font_chars.push(tesselated_font_char);
 						this._font_chars_dic[name]=tesselated_font_char;
 					}
@@ -996,7 +1011,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 			}
 			tesselated_font_char.fill_data=GraphicsFactoryFills.pathToAttributesBuffer(tesselated_font_char.fill_data_path, true);
 			if(!tesselated_font_char.fill_data){
-				console.log("error tesselating glyph");
+				if(once(this, "tess" + name)) {
+					console.debug("[TesselatedFontTable] Error:tesselating glyph:", name.charCodeAt(0));
+				}
 				return null;
 			}
 		}
