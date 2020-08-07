@@ -171,8 +171,11 @@ export class Timeline
 			throw new Error("Framescript is already translated to Function!!!");
 		}
 	}
-	
-	public add_framescript(script: any, frame_idx: number): void {
+	private script_mc_id:number=-1;
+	public add_framescript(script: any, frame_idx: number, target_mc:MovieClip): void {
+		if(this.script_mc_id>=0 && target_mc.id!=this.script_mc_id)
+			return;
+		this.script_mc_id = target_mc.id;
 		/*
 		// disable for now. but keep in mind to find a nicer way to allow debuggibgn for framescripts
 		if(FrameScriptManager.frameScriptDebug){
