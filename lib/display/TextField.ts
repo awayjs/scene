@@ -2839,6 +2839,11 @@ export class TextField extends DisplayObjectContainer
 	 * @param newText The string to append to the existing text.
 	 */
 	public appendText(newText:string) {
+		// append zero lenght text
+		if(!newText.length) {
+			return;
+		}
+
 		this._iText += newText;
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
@@ -3285,18 +3290,28 @@ export class TextField extends DisplayObjectContainer
         if(this.chars_codes.length==0 || !format)
             return;
 
-        
-
-		var i=0;
         if((beginIndex==-1 && endIndex==-1)
-            ||(beginIndex==0 && endIndex==-1)
-            || ((beginIndex==-1 || beginIndex==0)&& endIndex>=this.chars_codes.length)){
-            // easy: apply the format to all formats in the list
-            for(i=0; i<this._textFormats.length;i++){
-                this._textFormats[i]=this._textFormats[i].clone();
-                format.applyToFormat(this._textFormats[i]);
-		    }
-			this._textDirty=true;
+            || (beginIndex==0 && endIndex==-1)
+			|| ((beginIndex==-1 || beginIndex==0)
+				&& endIndex >= this.chars_codes.length)){
+
+			const len = this._textFormats.length;
+			let mutated = false;
+		
+			// easy: apply the format to all formats in the list
+            for(let i = 0; i < len; i++){
+				let f = this._textFormats[i] = this._textFormats[i].clone();
+
+				// check that we really update text format
+				const initial = f.updateID;
+
+				format.applyToFormat(this._textFormats[i]);
+				//mutated = mutated || (initial !== f.updateID);
+			}
+
+			if(mutated) {
+				this._textDirty = true;
+			}
 			return;
 		}
 
@@ -3306,7 +3321,8 @@ export class TextField extends DisplayObjectContainer
 		//console.log("\n\nadd format", this.id, this._iText, beginIndex, endIndex, format.color);
 		//console.log("this._textFormats", this._textFormats, this._textFormatsIdx);
 		
-        
+		var i = 0;
+
         /**
          * _textformatsIdx list should always be ordered numeric
          * todo: should this be verified here, or is it already taken care of ?
@@ -3317,24 +3333,23 @@ export class TextField extends DisplayObjectContainer
 		var oldEndIdx:number=-1;
         var oldFormat:TextFormat;
         var formatLen=this._textFormats.length;
-        var charLen=this.chars_codes.length;
-        if(beginIndex==-1)
-            beginIndex=0;
-        if(endIndex==-1){
-            endIndex=charLen;
-			}
-        if(endIndex<beginIndex){
-            var tmp=endIndex;
-            endIndex=beginIndex;
-            beginIndex=tmp;
-			}
-        if(endIndex==beginIndex){
-            endIndex++;
+		var charLen=this.chars_codes.length;
+
+        if(beginIndex == -1) beginIndex = 0;
+		if(endIndex == -1) endIndex = charLen;
+		
+        if(endIndex < beginIndex){
+            var tmp = endIndex;
+            endIndex = beginIndex;
+            beginIndex = tmp;
 		}
+
+        if(endIndex == beginIndex) endIndex++;
+
         //console.log("check formats");
-		for(i=0; i<formatLen;i++){
-            if(i>0)
-                oldStartIdx=oldEndIdx;
+		for(let i=0; i < formatLen; i++){
+			if(i > 0) oldStartIdx = oldEndIdx;
+
             oldEndIdx=this._textFormatsIdx[i];
 			oldFormat=this._textFormats[i];
 			//console.log("oldFormat", oldStartIdx, oldEndIdx);
@@ -3402,7 +3417,6 @@ export class TextField extends DisplayObjectContainer
 			this._textFormatsIdx[i]=newFormatsTextFormatsIdx[i];
 		}
 		this._textDirty=true;
-
 	}
 
 	/**

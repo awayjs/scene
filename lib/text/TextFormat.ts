@@ -35,10 +35,25 @@ import {DefaultFontManager} from "../managers/DefaultFontManager";
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
+
+const PUBLIC_FIELDS = [
+	"font", "align", "leftMargin",
+	"rightMargin", "indent",
+	"size", "color",
+	"bold", "italic",
+	"underline", "leading",
+	"letterSpacing"
+];
+
 export class TextFormat extends AssetBase
 {
 	public static assetType:string = "[asset TextFormat]";
-
+	
+	// flag marked that format is changed.
+	_updateID: number = 0;
+	public get updateID() {
+		return this._updateID;
+	}
 
     /**
      * return true if a certain property was set for this format.
@@ -69,7 +84,11 @@ export class TextFormat extends AssetBase
         return this._align?this._align:TextFormatAlign.LEFT;
     }
     public set align(value:string){
-        this._align=value;
+		if(this._align !== value) {
+			this._updateID ++;
+		}
+
+		this._align=value;
     }
 
 	/**
@@ -85,8 +104,12 @@ export class TextFormat extends AssetBase
     public get blockIndent():number{
         return this._blockIndent?this._blockIndent:0;
     }
-    public set blockIndent(value:number){
-        this._blockIndent=value;
+    public set blockIndent(value:number) {
+		if(this._blockIndent !== value) {
+			this._updateID ++;
+		}
+
+        this._blockIndent = value;
     }
 
 	/**
@@ -98,7 +121,12 @@ export class TextFormat extends AssetBase
 	public get leftMargin():number{
 		return this._leftMargin?this._leftMargin:0;
 	}
+
 	public set leftMargin(value:number){
+		if(value !== this._leftMargin) {
+			this._updateID ++;
+		}
+
 		this._leftMargin=value;
 	}
 
@@ -112,6 +140,10 @@ export class TextFormat extends AssetBase
 		return this._rightMargin?this._rightMargin:0;
 	}
 	public set rightMargin(value:number){
+		if(value !== this._rightMargin) {
+			this._updateID ++;
+		}
+
 		this._rightMargin=value;
 	}
 
@@ -126,10 +158,12 @@ export class TextFormat extends AssetBase
 		return this._indent?this._indent:0;
 	}
 	public set indent(value:number){
+		if(value !== this._indent) {
+			this._updateID ++;
+		}
+
 		this._indent=value;
 	}
-
-
 
     /**
      * character props
@@ -146,8 +180,13 @@ export class TextFormat extends AssetBase
 	private _color:number;
     public get color():number{
         return (this._color!==null)?this._color:0x000000;
-    }
+	}
+
     public set color(value:number){
+		if(value !== this._color) {
+			this._updateID ++;
+		}
+
         this._color=value;
     }
 	/**
@@ -167,7 +206,12 @@ export class TextFormat extends AssetBase
 	public get kerning():boolean{
 		return this._kerning?this._kerning:false;
 	}
+
 	public set kerning(value:boolean){
+		if(value !== this._kerning) {
+			this._updateID ++;
+		}
+
 		this._kerning=value;
 	}
 
@@ -181,6 +225,10 @@ export class TextFormat extends AssetBase
 		return this._leading?this._leading:0;
 	}
 	public set leading(value:number){
+		if(value !== this._leading) {
+			this._updateID ++;
+		}
+
 		this._leading=value;
 	}
 
@@ -196,9 +244,12 @@ export class TextFormat extends AssetBase
 		return this._letterSpacing?this._letterSpacing:0;
 	}
 	public set letterSpacing(value:number){
+		if(value !== this._letterSpacing) {
+			this._updateID ++;
+		}
+
 		this._letterSpacing=value;
 	}
-
 
 
 	/**
@@ -210,6 +261,10 @@ export class TextFormat extends AssetBase
 		return this._size?this._size:12;
 	}
 	public set size(value:number){
+		if(value !== this._size) {
+			this._updateID ++;
+		}
+
 		this._size=value;
 	}
 
@@ -227,8 +282,11 @@ export class TextFormat extends AssetBase
         return this._bold?this._bold:false;
     }
 	public set bold(value:boolean){
+		if(value !== this._bold) {
+			this._updateID ++;
+		}
+
 		this._bold=value;
-		
         if(this._font){		
             this.font_table=this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
         }
@@ -244,6 +302,10 @@ export class TextFormat extends AssetBase
 		return this._italic?this._italic:false;
 	}
 	public set italic(value:boolean){
+		if(value !== this._italic) {
+			this._updateID ++;
+		}
+
 		this._italic=value;
         if(this._font){
             this.font_table=this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
@@ -262,6 +324,10 @@ export class TextFormat extends AssetBase
 		return this._underline?this._underline:false;
 	}
 	public set underline(value:boolean){
+		if(value !== this._underline) {
+			this._updateID ++;
+		}
+
 		this._underline=value;
 	}
 	/**
@@ -280,6 +346,10 @@ export class TextFormat extends AssetBase
         return this._font_table;
     }
 	public set font_table(value:IFontTable){
+		if(value !== this._font_table) {
+			this._updateID ++;
+		}
+
         this._font_table=value;
 		this._style_name=this._font_table.name;
 		if(this._style_name==FontStyleName.ITALIC)
@@ -324,7 +394,12 @@ export class TextFormat extends AssetBase
 	public get font_name():string{
 		return this._font_name?this._font_name:"";
 	}
+
 	public set font_name(value:string){
+		if(value !== this._font_name) {
+			this._updateID ++;
+		}
+
 		var newFont=DefaultFontManager.getFont(value);
 		if(newFont){
 			this._font=newFont;
@@ -358,7 +433,12 @@ export class TextFormat extends AssetBase
 			this._style_name=FontStyleName.BOLDITALIC;
 		return this._style_name;
 	}
+
 	public set style_name(value:FontStyleName){
+		if(value !== this._style_name) {
+			this._updateID ++;
+		}
+
 		this._style_name=value;
 		if(this._style_name==FontStyleName.BOLD || this._style_name==FontStyleName.BOLDITALIC)
 			this._bold=true;
@@ -367,6 +447,7 @@ export class TextFormat extends AssetBase
         if(this._font)
 		    this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
+
 	public get font():Font{
         if(this._font){
             return this._font;
@@ -377,11 +458,16 @@ export class TextFormat extends AssetBase
   
 		return this._font;
 	}
-	public set font(value:Font){
-		if(typeof value === "string"){
+	public set font(value:Font) {
+		if(typeof value === "string") {
 			this.font_name = value;
 			return;
 		}
+
+		if(value !== this._font) {
+			this._updateID ++;
+		}
+
 		this._font=value;
         this._font_table=this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
@@ -519,12 +605,13 @@ export class TextFormat extends AssetBase
 		return clonedFormat;
 	}*/
 
-	public applyToFormat(format:TextFormat){
+	public applyToFormat(format:TextFormat) {
         
         /*if(this._style_name!==null){
             format.style_name=this._style_name;
         }*/
-        if(this._font!==null){
+		/*
+		if(this._font!==null){
             format.font=this._font;
         }
 		if(this._align!==null)
@@ -549,13 +636,19 @@ export class TextFormat extends AssetBase
         if(this._leading!==null)
             format.leading=this._leading;
         if(this._letterSpacing!==null)
-            format.letterSpacing=this._letterSpacing;
+			format.letterSpacing=this._letterSpacing;
+		*/
+		
+		for(let field of PUBLIC_FIELDS) {
+			if(this["_" + field] !== null) {
+				format[field] = this["_" + field];
+			}
+		}
+
         //if(this._font_name!==null)
         //    format.font_name=this._font_name;
 
         return format;
-            
-
 	}
 
 	/**
