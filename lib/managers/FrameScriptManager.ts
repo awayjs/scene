@@ -105,9 +105,9 @@ export class FrameScriptManager {
 		while (FrameScriptManager._queue.length < 2) {
 			FrameScriptManager.add_queue();
 		}
-		if (FrameScriptManager.queueLevel > 0) {
+		/*if (FrameScriptManager.queueLevel > 0) {
 			return FrameScriptManager._queue[1];
-		}
+		}*/
 		return FrameScriptManager._queue[0];
 	}
 	public static add_script_to_queue(mc: MovieClip, script: any): void {
@@ -167,6 +167,121 @@ export class FrameScriptManager {
 
 	}
 
+	public static execute_as3_constructors_finish_scene(mc: MovieClip): void {
+		/*if(!FrameScriptManager.lastProcessedParent)
+			return;
+		let parent=FrameScriptManager.lastProcessedParent;
+		while(parent){*/
+
+			let children=mc._children;
+			for(let i=0; i<children.length; i++){
+				if(children[i].parent && (<IDisplayObjectAdapter>children[i].adapter).executeConstructor)
+					FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>children[i]);
+			}
+			//parent=parent.parent;	
+		//}
+
+
+	}
+	public static constructors_children:any=null;
+	public static constructors_i:number=0;
+	public static constructors_current:MovieClip=null;
+	public static execute_as3_constructors_recursiv(mc: MovieClip): void {
+		/**
+		 * when called from advanceFrame, this should iterate all childs and execute constructors
+		 * 
+		 * when called after a navigation command, 
+		 * this should iterate the navigated object first, 
+		 * than it should continue with unprocessed top-level children
+		 * 
+		 * this scenegraph:
+		 * 	scene
+		 * 		- mc1
+		 * 			- child1
+		 *		- mc2
+		 *			- child2
+		 *		- mc3
+		 *			- child3
+		 *
+		 * should normally be executed in the same order. 
+		 * the constructors of childs will be executed from within the super-calls in the parent-constructors
+		 * this happens after the parent constructor has initialized the parent properties,
+		 * but before the parents custom constructor code has run
+		 * so when putting traces in the constructors, the order in which the traces appear is this:
+		 * - child1 - start constructor
+		 * - child1 - end constructor
+		 * - mc1 - start constructor
+		 * - mc1 - end constructor
+		 * - chidl2 - start constructor
+		 * - chidl2 - end constructor
+		 * - mc2 - start constructor
+		 * - mc2 - end constructor
+		 * - child3 - start constructor
+		 * - child3 - end constructor
+		 * - mc3 - start constructor
+		 * - mc3 - end constructor
+		 * 
+		 * now when we have a timeline navigation called from for example constructor of mc1
+		 * 
+		 * after the timeline navigation, it will first process new constructors added for the new frame we navigated too
+		 * it will than continue to work of top-level childs that have not been processed yet
+		 * so the order should look like this:
+		 * - child1 - start constructor
+		 * - child1 - end constructor
+		 * - mc1 - start constructor (calls timeline navigation on itself - gotoAndStop(2))
+		 * 		- child1.2 (on frame 2) - start constructor
+		 * 		- child1.2 (on frame 2) - end constructor
+		 * 		- chidl2 - start constructor
+		 * 		- chidl2 - end constructor
+		 * 		- mc2 - start constructor
+		 *		- mc2 - end constructor
+		 *		- child3 - start constructor
+		 *		- child3 - end constructor
+		 *		- mc3 - start constructor
+		 *		- mc3 - end constructor
+		 * 	- mc1 - end constructor
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 *
+		 * 
+		 */
+		
+
+		//if (!mc.parent)
+		//	continue;
+
+		let mcadapter = mc.adapter;
+		let constructorFunc = (<IDisplayObjectAdapter>mcadapter).executeConstructor;
+		if (constructorFunc) {
+			// constructor has not run yet. will run constructors of all childs 
+			(<IDisplayObjectAdapter>mcadapter).executeConstructor = null;
+			constructorFunc();
+		}
+		else{
+			// constructor already has run. we need to still do recursion on childs
+			let children=mc._children;
+			for(let i=0; i<children.length; i++){
+				if(children[i].parent)
+					FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>children[i]);
+			}
+		}
+
+		// if mc was created by timeline, instanceID != ""
+		if ((<any>mc).just_added_to_timeline && mc.instanceID != "" && mcadapter && (<any>mcadapter).dispatchStaticEvent) {
+
+			(<any>mcadapter).dispatchStaticEvent("added", mcadapter);
+			(<any>mc).just_added_to_timeline = false;
+			mc.hasDispatchedAddedToStage = mc.isOnDisplayList();
+			if (mc.hasDispatchedAddedToStage)
+				(<any>mcadapter).dispatchStaticEvent("addedToStage", mcadapter);
+			// 	todo: this does not dispatch ADDED and ADDED_TO_STAGE on timeline-SHAPE, 
+			//	because in awayjs timeline those are Sprite without any as3-adapter
+		}
+	}
+	
 
 	public static execute_as3_constructors(): void {
 
@@ -322,90 +437,123 @@ export class FrameScriptManager {
 
 		//console.log("execute_queue", FrameScriptManager.queueLevel);
 		let queue = FrameScriptManager.get_queue();
-
 		if (queue.queued_mcs.length == 0 && queue.queued_mcs_pass2.length == 0)
 			return;
 
-		while (queue.queued_mcs.length > 0 || queue.queued_mcs_pass2.length > 0) {
+		//while (queue.queued_mcs.length > 0 || queue.queued_mcs_pass2.length > 0) {
 
-			var queues_tmp: any[] = queue.queued_mcs.concat();
-			var queues_scripts_tmp: any[] = queue.queued_scripts.concat();
-			queue.queued_mcs.length = 0;
-			queue.queued_scripts.length = 0;
+		var queues_tmp: any[] = queue.queued_mcs.concat();
+		var queues_scripts_tmp: any[] = queue.queued_scripts.concat();
+		queue.queued_mcs.length = 0;
+		queue.queued_scripts.length = 0;
 
-			var i = queue.queued_mcs_pass2.length;
-			while (i > 0) {
-				i--;
-				queues_tmp.push(queue.queued_mcs_pass2[i]);
-				queues_scripts_tmp.push(queue.queued_scripts_pass2[i]);
-			}
-			queue.queued_mcs_pass2.length = 0;
-			queue.queued_scripts_pass2.length = 0;
+		var i = queue.queued_mcs_pass2.length;
+		while (i > 0) {
+			i--;
+			queues_tmp.push(queue.queued_mcs_pass2[i]);
+			queues_scripts_tmp.push(queue.queued_scripts_pass2[i]);
+		}
+		queue.queued_mcs_pass2.length = 0;
+		queue.queued_scripts_pass2.length = 0;
 
-			//console.log("execute queue",queue.queued_scripts);
+		//console.log("execute queue",queue.queued_scripts);
 
-			var mc: MovieClip;
+		var mc: MovieClip;
 
-			if (FrameScriptManager.useAVM1) {
-				for (i = 0; i < queues_tmp.length; i++) {
-					mc = queues_tmp[i];
-					if (!FrameScriptManager.isOnStage(mc))
-						continue;
-					// onClipEvent (initialize)
-					if ((<any>mc).onInitialize) {
-						let myFunc = (<any>mc).onInitialize;
-						(<any>mc).onInitialize = null;
-						myFunc();
-					}
-				}
-				for (i = 0; i < queues_tmp.length; i++) {
-					mc = queues_tmp[i];
-					if (!FrameScriptManager.isOnStage(mc))
-						continue;
-					// onClipEvent (construct) comes before class-constructor
-					if ((<any>mc).onConstruct) {
-						let myFunc = (<any>mc).onConstruct;
-						(<any>mc).onConstruct = null;
-						myFunc();
-					}
-					// class-constructor
-					let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
-					if (constructorFunc) {
-						(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
-						//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
-						constructorFunc();
-					}
-				}
-			}
-
+		if (FrameScriptManager.useAVM1) {
 			for (i = 0; i < queues_tmp.length; i++) {
 				mc = queues_tmp[i];
-				//console.log("scriptqueue", mc.name);
-				if (FrameScriptManager.useAVM1) {
-					if (!FrameScriptManager.isOnStage(mc))
-						continue;
-					if ((<any>mc).onLoaded) {
-						let myFunc = (<any>mc).onLoaded;
-						(<any>mc).onLoaded = null;
-						myFunc();
-					}
-					if (!(<any>mc.adapter).hasOnLoadExecuted) {
-						(<any>mc.adapter).hasOnLoadExecuted = true;
-						let func = (<any>mc.adapter).alGet("onLoad");
-						if (func) {
-							func.alCall(mc.adapter);
-						}
-					}
+				if (!FrameScriptManager.isOnStage(mc))
+					continue;
+				// onClipEvent (initialize)
+				if ((<any>mc).onInitialize) {
+					let myFunc = (<any>mc).onInitialize;
+					(<any>mc).onInitialize = null;
+					myFunc();
 				}
-				if (queues_scripts_tmp[i] != null) {
-					mc = queues_tmp[i];
-					//console.log("execute script", mc.name, queues_scripts_tmp[i]);
-					if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
-						(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+			}
+			for (i = 0; i < queues_tmp.length; i++) {
+				mc = queues_tmp[i];
+				if (!FrameScriptManager.isOnStage(mc))
+					continue;
+				// onClipEvent (construct) comes before class-constructor
+				if ((<any>mc).onConstruct) {
+					let myFunc = (<any>mc).onConstruct;
+					(<any>mc).onConstruct = null;
+					myFunc();
 				}
-
+				// class-constructor
+				let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+				if (constructorFunc) {
+					(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
+					//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
+					constructorFunc();
+				}
 			}
 		}
+		//console.log("execute scripts")
+		let orphan_queue_mcs=[];
+		let orphan_queue_scripts=[];
+		let names="";
+		for (i = 0; i < queues_tmp.length; i++) {
+			names+=" - "+queues_tmp[i].name;
+		}
+		//console.log("run scripts for", names)
+		for (i = 0; i < queues_tmp.length; i++) {
+			mc = queues_tmp[i];
+			//console.log("scriptqueue", mc.name);
+			if (FrameScriptManager.useAVM1) {
+				if (!FrameScriptManager.isOnStage(mc))
+					continue;
+				if ((<any>mc).onLoaded) {
+					let myFunc = (<any>mc).onLoaded;
+					(<any>mc).onLoaded = null;
+					myFunc();
+				}
+				if (!(<any>mc.adapter).hasOnLoadExecuted) {
+					(<any>mc.adapter).hasOnLoadExecuted = true;
+					let func = (<any>mc.adapter).alGet("onLoad");
+					if (func) {
+						func.alCall(mc.adapter);
+					}
+				}
+			}
+			if (queues_scripts_tmp[i] != null) {
+				mc = queues_tmp[i];
+				// only execute scripts for mcs that already had constructors run
+				if(mc && mc.adapter && !(<any>mc.adapter).constructorHasRun){
+					//console.log("mc with contructor - queue script", mc.name)
+					queue.queued_mcs.push(mc);
+					queue.queued_scripts.push(queues_scripts_tmp[i]);
+				}
+				// scripts for mcs with no parents get executed after all others
+				/*else if(!mc.parent){
+					console.log("orphan_queue_mcs - queue script")
+					orphan_queue_mcs.push(mc);
+					orphan_queue_scripts.push(queues_scripts_tmp[i]);
+				}*/
+
+				else if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript){
+					//console.log("mc script", mc.name);
+					(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
+				}
+				else{
+					//console.log("mc ignored", mc.name)
+				}
+			}
+			else{
+				//console.log("script is null", mc.name)
+			}
+
+		}
+		/*console.log("execute scripts orphans")
+		for (i = 0; i < orphan_queue_mcs.length; i++) {
+			mc = orphan_queue_mcs[i];
+			if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript)
+				(<IMovieClipAdapter>mc.adapter).executeScript(orphan_queue_scripts[i]);
+		}*/
+		//console.log("execute scripts end")
+		//}
 	}
 
 

@@ -540,7 +540,6 @@ export class MovieClip extends Sprite {
 	}
 
 	public finalizeTimelineConstruction() {
-		FrameScriptManager.queue_as3_constructor(this);
 
 	}
 
