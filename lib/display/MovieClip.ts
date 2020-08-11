@@ -14,6 +14,7 @@ import { DisplayObject } from "./DisplayObject";
 import { Sprite } from "./Sprite";
 import { TextField } from "./TextField";
 import { DisplayObjectContainer } from './DisplayObjectContainer';
+import { LoaderContainer } from './LoaderContainer';
 
 export class MovieClip extends Sprite {
 	public static mcForConstructor: MovieClip;
@@ -669,7 +670,7 @@ export class MovieClip extends Sprite {
 			if (child && child.isAsset(MovieClip)) {
 				(<MovieClip>child).advanceFrame();
 			}
-			if (child && child.isAsset(Sprite) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame) {
+			if (child && (child.isAsset(Sprite) || child.isAsset(LoaderContainer)) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame) {
 				(<any>child.adapter).advanceFrame();
 			}
 		}
