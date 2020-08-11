@@ -240,9 +240,8 @@ export class DisplayObjectContainer extends DisplayObject
 
 		if (!this.doingSwap) {
 			if (child.adapter != child) {
-				// initAdapter is only used for avm1 to queue constructirs / init-actions
-				// in avm2 this is handled by FrameScriptManager.queue_as3_constructor
-				
+				// initAdapter is only used for avm1 to queue constructors / init-actions
+				// for avm2 this is handled via FrameScriptManager.execute_as3_constructors_recursiv
 				(<IDisplayObjectAdapter>child.adapter).initAdapter();
 			}
 		}
