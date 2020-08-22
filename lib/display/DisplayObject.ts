@@ -359,7 +359,23 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * the table show <code>blendMode</code> values applied to a circular display
 	 * object(2) superimposed on another display object(1).</p>
 	 */
-	public blendMode:BlendMode;
+
+	public _blendMode:BlendMode = '';
+
+	public set blendMode(v: BlendMode) {
+		if(this._blendMode === v) {
+			return;
+		}
+
+		this._blendMode = v;
+		if(v === BlendMode.OVERLAY) {
+			this._transform.invalidateColorTransform();
+		}
+	}
+
+	public get blendMode() {
+		return this._blendMode;
+	}
 
 	/**
 	 *
@@ -2107,6 +2123,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this._pImplicitColorTransform.prepend(this._transform.colorTransform);
 		} else {
 			this._pImplicitColorTransform.copyFrom(this._transform.colorTransform);
+		}
+
+		if(this.blendMode === BlendMode.OVERLAY) {
+			// apply 0.5 alpha for object with `overlay` because we not support it now			
+			this._pImplicitColorTransform.alphaMultiplier *= 0.5;
 		}
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
