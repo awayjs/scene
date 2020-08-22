@@ -19,7 +19,21 @@ import {FrameScriptManager} from "../managers/FrameScriptManager";
 import { IFrameLabel } from './IFrameLabel';
 import { TimelineActionType } from './TimelineActionType';
 import { IFilter } from '../adapters/IFilter';
+import { BlendMode } from '@awayjs/stage';
 
+const BLEND_MODES = [
+	"", BlendMode.NORMAL, BlendMode.LAYER, 
+	BlendMode.MULTIPLY, BlendMode.SCREEN, 
+	BlendMode.LIGHTEN, BlendMode.DARKEN,
+	BlendMode.DIFFERENCE, BlendMode.ADD,
+	BlendMode.SUBTRACT, BlendMode.INVERT,
+	BlendMode.ALPHA, BlendMode.ERASE, BlendMode.OVERLAY,
+	BlendMode.HARDLIGHT
+]
+
+function mapBlendIdToString(id: number = 1): string {
+	return BLEND_MODES[id] || BLEND_MODES[1]; 
+}
 
 export class Timeline
 {
@@ -886,7 +900,8 @@ export class Timeline
 
 	public update_blendmode(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
-		console.log("update blendmode "+i);
+		child.blendMode=mapBlendIdToString(i);
+		//console.log("update blendmode "+mapBlendIdToString(i));
 	}
 	public update_rendermode(child:DisplayObject, target_mc:MovieClip, i:number):void
 	{
