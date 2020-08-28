@@ -16,8 +16,6 @@ import { Billboard } from '../display/Billboard';
 // empty matrix for transfrorm reset
 const TMP_COLOR_MATRIX = new ColorTransform();
 const TMP_RAW: number[] = [];
-const TMP_AREA_SIZE = 5;
-const TMP_PIXEL = new Uint8ClampedArray(TMP_AREA_SIZE * TMP_AREA_SIZE * 4);
 const TMP_POINT = new Point(0,0);
 
 /**
@@ -52,26 +50,30 @@ export class SceneImage2D extends BitmapImage2D
 	// legacy
 	private _imageDataDirty: boolean;
 
-	public get data(): Uint8ClampedArray {
+	protected syncData(): boolean {
 		const internalData = (this as any)._data;
 
 		// update data from pixels from GPU
-		if(this._imageDataDirty) {
-
-			this._stage.setRenderTarget(this, false);
-
-			const gl = (this._stage.context as ContextWebGL)._gl;
-			
-			// copy to self data, update it
-			gl.readPixels(0, 0, this.rect.width, this.rect.height, gl.RGBA, gl.UNSIGNED_BYTE, internalData);
-
-			this._stage.setRenderTarget(null);
+		if(!this._imageDataDirty) { 
+			return false;
 		}
 
-		this.resetDirty();
+		this._stage.setRenderTarget(this, false);
 
+		const gl = (this._stage.context as ContextWebGL)._gl;
+		
+		// copy to self data, update it
+		gl.readPixels(0, 0, this.rect.width, this.rect.height, gl.RGBA, gl.UNSIGNED_BYTE, internalData);
+
+		this._stage.setRenderTarget(null);
+		this.resetDirty();
+		return true;
+	}
+
+	public get data(): Uint8ClampedArray {
+		this.syncData();
 		// access to private
-		return internalData;
+		return (this as any)._data;
 	}
 
 	/**
@@ -450,70 +452,7 @@ export class SceneImage2D extends BitmapImage2D
 	 * @inheritdoc
 	 */
 	public getPixel32(x: number, y: number): number {
-
-		// because image is dirty, call a get data very expensive.
-		// grab 1 pixel instead of ALL pixels otherwice
-		if(this._imageDataDirty && this.getImageDirtyUnderPoint(x, y)) {
-
-			this._stage.setRenderTarget(this, false);
-
-			//console.debug("[getPixel32] cache cilled. get to temp", {x, y});
-
-			/* 4 * 4 * 4 */
-			const data = TMP_PIXEL;
-			const gl = (this._stage.context as ContextWebGL)._gl;
-			
-			// copy to self data, update it
-			// instead of grabbing every pixel, we grab area around and mark it as updated
-
-			let area = Math.min(this.width, this.height, TMP_AREA_SIZE);
-			const half = (area - 1) / 2 | 0 + 1;
-			
-			let mx = x - half;
-			let my = y - half;
-			
-			if(mx < 0) mx = 0;
-			if(my < 0) my = 0;
-			if(mx >= this.width - area) mx = this.width - area - 1;
-			if(my >= this.height - area) my = this.height - area - 1;
-
-			gl.readPixels(mx, my, area, area, gl.RGBA, gl.UNSIGNED_BYTE, data);
-
-			this._stage.setRenderTarget(null);
-
-			const ox = x - mx;
-			const oy = y - my;
-			const diff = new Rectangle(mx, my, area, area);
-
-			// update data with grabbed image block
-			// without texture updating, otherwith it will corrupt texture
-			this.lock();
-			this.setPixels(diff, data);
-			this._locked = false;
-
-			// mark it as updated			
-			if(!this._updateRegions){
-				this._updateRegions = [];
-			}
-			this._updateRegions.push(diff);
-			this._fullDirty = false;
-
-			const index = (ox + oy * area) * 4;
-			const a = data[index + 3];
-			
-			//returns black if fully transparent
-			if (!a) {
-				return 0x0;
-			}
-
-			const r = data[index + 0] * 0xFF / a | 0;
-			const g = data[index + 1] * 0xFF / a | 0;
-			const b = data[index + 2] * 0xFF / a | 0;
-
-			return ((a << 24) | (r << 16) | ( g  << 8) | b) >>> 0 ;
-		}
-
-		//console.debug("[getPixel32] get from cache", {x, y});
+		this.syncData();
 
 		return super.getPixel32(x, y);
 	}
