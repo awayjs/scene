@@ -28,6 +28,13 @@ export class SceneImage2D extends BitmapImage2D
 	public static assetType:string = "[image SceneImage2D]";
 
 	private static _tmpImage: SceneImage2D;
+	private static getTemp(width: number, height: number, stage: Stage) {
+		if(!this._tmpImage) {
+			SceneImage2D._tmpImage = new SceneImage2D(1024, 1024, true, 0, true, stage)
+		}
+
+		return this._tmpImage;
+	}
 
 	private static _renderer:DefaultRenderer;
 	private static _billboardRenderer:DefaultRenderer;
@@ -400,7 +407,17 @@ export class SceneImage2D extends BitmapImage2D
 
 		// need drop alpha from source when target is not has alpha
 		mergeAlpha = (this.transparent !== source.transparent) || mergeAlpha;
-		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
+		
+		if(source !== this) {
+			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
+		} else {
+			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage);
+
+			this._stage.copyPixels(source, tmp, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
+			this._stage.copyPixels(tmp, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, false);
+			// push temp back
+
+		}
 
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 	}
@@ -420,11 +437,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
 
-		if(!SceneImage2D._tmpImage) {
-			SceneImage2D._tmpImage = new SceneImage2D(1024, 1024, true, 0, true, this._stage)
-		}
-
-		const tmp = SceneImage2D._tmpImage;
+		const tmp = SceneImage2D.getTemp(rect.x + rect.width, rect.y + rect.height, this._stage);
 
 		this._stage.colorTransform(this, tmp, rect, colorTransform);
 		this._stage.copyPixels(tmp, this, rect, new Point(0,0), null, null, false);
