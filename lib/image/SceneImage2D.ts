@@ -17,6 +17,7 @@ import { Billboard } from '../display/Billboard';
 const TMP_COLOR_MATRIX = new ColorTransform();
 const TMP_RAW: number[] = [];
 const TMP_POINT = new Point(0,0);
+const TMP_RECT = new Rectangle();
 
 /**
  * 
@@ -415,10 +416,12 @@ export class SceneImage2D extends BitmapImage2D
 		} else {
 			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage);
 
-			this._stage.copyPixels(source, tmp, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
-			this._stage.copyPixels(tmp, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, false);
-			// push temp back
+			TMP_POINT.setTo(0,0);
+			TMP_RECT.setTo(0,0, sourceRect.width, sourceRect.height);
 
+			this._stage.copyPixels(source, tmp, sourceRect, TMP_POINT, alphaBitmapData, alphaPoint, false);
+			this._stage.copyPixels(tmp, this, TMP_RECT, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
+			// push temp back
 		}
 
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
