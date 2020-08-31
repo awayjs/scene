@@ -409,7 +409,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 
 		// need drop alpha from source when target is not has alpha
-		mergeAlpha = (this.transparent !== source.transparent) || mergeAlpha;
+		mergeAlpha = this.transparent !== source.transparent || mergeAlpha;
 		
 		if(source !== this) {
 			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
