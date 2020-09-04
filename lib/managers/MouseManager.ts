@@ -500,6 +500,8 @@ export class MouseManager {
                     //console.log("onRelease", upPickerEntity)
                     this.dispatchEvent(event, upPickerEntity);
 				}
+				else if(this._eventBubbling && dispatcher)
+					this.dispatchEvent(event, dispatcher);
 				else if(this._eventBubbling && this._stage)
                     this._stage.dispatchEvent(event);
 
