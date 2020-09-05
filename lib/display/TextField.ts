@@ -299,18 +299,24 @@ export class TextField extends DisplayObjectContainer
         super.setFocus(value, fromMouseDown, sendSoftKeyEvent);
 
 		this.enableInput(value);
+
+		if(!this._selectable) {
+			return;
+		}
+
         if(value){
-            this.setSelection(0, this._iText.length);
-        }
-        else{
+			this.setSelection(0, this._iText.length);
+			
+			// check if a adapter exists
+			if(sendSoftKeyEvent && this.adapter != this){
+				// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
+				(<any>this.adapter).selectTextField(fromMouseDown);
+			}
+        }else{
             this.setSelection(0, 0);
-        }
-		// check if a adapter exists
-		if(value && sendSoftKeyEvent && this.adapter != this){
-			// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
-			(<any>this.adapter).selectTextField(fromMouseDown);
-        }
-		this._glyphsDirty=true;
+		}
+
+		this._glyphsDirty = true;
 		if (this._implicitPartition)
 			this._implicitPartition.invalidateEntity(this);
 	}
@@ -1355,13 +1361,17 @@ export class TextField extends DisplayObjectContainer
 	public get selectable():boolean	{
 		return this._selectable;
 	}
+
 	public set selectable(value:boolean){
         if(this.selectable==value){
             return;
-        }
-		this._selectable=value;
+		}
+
+		this._selectable = value;
         this.mouseEnabled = value;
-        if(value){            
+		this.cursorType = value ? "text" : "";
+
+		if(value){
             this.addEventListener(MouseEvent.DRAG_START, this.startSelectionByMouseDelegate);
             this.addEventListener(MouseEvent.DRAG_STOP, this.stopSelectionByMouseDelegate);
             this.addEventListener(MouseEvent.DRAG_MOVE, this.updateSelectionByMouseDelegate);
@@ -1842,7 +1852,7 @@ export class TextField extends DisplayObjectContainer
 		this.cursorIntervalID=-1;
 
 		this._tabEnabled=true;
-		this.cursorType="text";
+		this.cursorType = "";
 		this.textOffsetX=0;
 		this.textOffsetY=0;
 		this.textShapes={};
@@ -1852,7 +1862,7 @@ export class TextField extends DisplayObjectContainer
 		this._textWidth=0;
 		this._textHeight=0;
 		this._type = TextFieldType.DYNAMIC;
-		this._selectable=false;
+		this._selectable = false;
 		this._numLines=0;
 		this.multiline = false;
 		this._autoSize=TextFieldAutoSize.NONE;
