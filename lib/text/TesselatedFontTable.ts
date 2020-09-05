@@ -34,17 +34,24 @@ function once(obj: any, key = "") {
 export class TesselatedFontTable extends AssetBase implements IFontTable
 {
 	public static assetType:string = "[asset TesselatedFontTable]";
+	public static DEFAULT_SPACE = 14;
+
+	public vertical_glyph_offset:number;
+	public font:any;
+
+	/*internal*/ _font_chars_dic:StringMap<TesselatedFontChar>;
+	/*internal*/ _current_size:number;
+	/*internal*/ _size_multiply:number;
+	
 	private _font_chars:Array<TesselatedFontChar>;
-	public _font_chars_dic:StringMap<TesselatedFontChar>;
 	private _font_em_size:number;
+
 	private _whitespace_width:number;
+
 	private _offset_x:number;
 	private _offset_y:number;
 	private _ascent:number;
 	private _descent:number;
-	public _current_size:number;
-	public _size_multiply:number;
-	public vertical_glyph_offset:number;
 	private _charDictDirty:Boolean;
 	private _usesCurves:boolean;
 	private _opentype_font:any;
@@ -53,7 +60,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	private _fntSizeLimit:number=-1;
 	private _fnt_channels:BitmapImage2D[];
 
-	public font:any;
+
 	public get fallbackTable():IFontTable{
 		if(DefaultFontManager.deviceFont && DefaultFontManager.deviceFont.font_styles[0]!=this){
 			return DefaultFontManager.deviceFont.font_styles[0];
@@ -82,9 +89,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 		// default size
 		this._font_em_size = 32;
-
-		// for default spaces 
-		this._whitespace_width = 14;
 
 		if(opentype_font){
 			this._opentype_font=opentype_font;
@@ -512,24 +516,31 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 
 		return 0;
 	}
+
 	public getCharWidth(char_code:string):number
 	{
-		if(char_code=="32"){
-			return (Math.floor(this._whitespace_width*this._size_multiply*20))/20;
+		const space = this._whitespace_width * this._size_multiply || TesselatedFontTable.DEFAULT_SPACE;
+
+		// SPACE
+		if(char_code == "32"){
+			return (space * 20 | 0) / 20;
 		}
-		if(char_code=="9"){
-			return (Math.floor(this._whitespace_width*this._size_multiply*8*20))/20;
+
+		// TAB
+		if (char_code == "9"){
+			return (space * 8 * 20) / 20;
 		}
+
 		var tesselated_font_char:TesselatedFontChar = this.getChar(char_code);
 		if(tesselated_font_char){
-			return (Math.floor(tesselated_font_char.char_width*this._size_multiply*20))/20;
-		}
-		else{
+			return (Math.floor(tesselated_font_char.char_width * this._size_multiply*20))/20;
+		} else {
 			if(char_code=="9679"){
-				tesselated_font_char=this.createPointGlyph_9679();
+				tesselated_font_char = this.createPointGlyph_9679();
 				return (Math.floor(tesselated_font_char.char_width*this._size_multiply*20))/20;
 			}
 		}
+
 		if(this.fallbackTable)
 			return this.fallbackTable.getCharWidth(char_code);
 
@@ -617,7 +628,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 	}
 	public set_whitespace_width(value:number):void
 	{
-		this._whitespace_width=value;
+		this._whitespace_width = value;
 	}
 	public get_whitespace_width():number
 	{
