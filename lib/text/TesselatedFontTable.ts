@@ -879,7 +879,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable
 					}
 					else{
 						if(once(this, "miss" + tf.chars_codes[c])) {
-							console.debug("[TesselatedFontTable] Error: char not found in fontTable", tf.chars_codes[c], tf.chars_codes[c].toString());
+							console.debug("[TesselatedFontTable] Error: char not found in fontTable", tf.chars_codes[c], String.fromCharCode(tf.chars_codes[c]));
 						}
 					}
 				}
