@@ -1336,7 +1336,7 @@ export class TextField extends DisplayObjectContainer
 	}
 	public set scrollV(value:number) /*int*/
 	{
-        if(Math.floor(value)==this._scrollH)
+        if(Math.floor(value)==this._scrollV)
             return;
         this._scrollV=Math.floor(value);
         
@@ -1884,7 +1884,8 @@ export class TextField extends DisplayObjectContainer
 		this.maxChars=0;
 		this._selectionBeginIndex=0;
 		this._selectionEndIndex=0;
-
+		this._scrollH=0;
+		this._scrollV=0;
 
 
 		this._graphics = Graphics.getGraphics(); //unique graphics object for each TextField
