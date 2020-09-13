@@ -41,6 +41,14 @@ const enum CHAR_CODES {
 	N = 110,
 	R = 114,
 }
+
+const MNEMOS = [
+	{
+		test: /\&apos;/g,
+		replace: '\''
+	}
+];
+
 /**
  * The TextField class is used to create display objects for text display and
  * input. <ph outputclass="flexonly">You can use the TextField class to
@@ -383,8 +391,7 @@ export class TextField extends DisplayObjectContainer
 		return charIdx;
 
     }
-    
-    
+
 	private startSelectionByMouseDelegate:(event)=>void;
 	private startSelectionByMouse(event){
 		this._selectionBeginIndex=this.findCharIdxForMouse(event);	
@@ -1462,12 +1469,13 @@ export class TextField extends DisplayObjectContainer
 
 	public set text(value:string)
 	{
-        value = (typeof value==="undefined")?"":value.toString();
+        value = (typeof value === "undefined") ? "" : value.toString();
 
         value = value.replace(String.fromCharCode(160), " ");
 
 		if (this._text == value)
 			return;
+
 		this._labelData=null;
 		this._text=value;
  
@@ -1480,8 +1488,12 @@ export class TextField extends DisplayObjectContainer
 		if(value!="" && (value.length>=3 && value[value.length-1]=="n" && value[value.length-2]=="\\")){
 			value=value.slice(0, value.length-2);
 		}
-		this._iText = value;
 
+		for(let m of MNEMOS) {
+			value = value.replace(m.test, m.replace);
+		}
+
+		this._iText = value;
 		this._textFormats=[this.newTextFormat];
 		this._textFormatsIdx=[this._iText.length];
 		this._textDirty = true;
@@ -1489,6 +1501,7 @@ export class TextField extends DisplayObjectContainer
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
+
 		else if (this._implicitPartition)
             this._implicitPartition.invalidateEntity(this);
             
