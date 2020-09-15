@@ -1,6 +1,6 @@
 import {Box, Point, ArgumentError, RangeError, Matrix3D} from "@awayjs/core";
 
-import { PartitionBase} from "@awayjs/view";
+import { PartitionBase, EntityNode} from "@awayjs/view";
 
 import {HierarchicalProperties} from "../base/HierarchicalProperties";
 
@@ -683,3 +683,4 @@ export class DisplayObjectContainer extends DisplayObject
 		super._updateMaskMode();
 	}
 }
+PartitionBase.registerAbstraction(EntityNode, DisplayObjectContainer);

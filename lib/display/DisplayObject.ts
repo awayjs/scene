@@ -171,6 +171,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _pickObjectDirty:boolean;
 	private _pName:string;
 
+	protected _scrollRect:Rectangle;
+	protected _scrollRectSprite:DisplayObject;
+	public static _scrollRectSpriteClass:any;
+
 	protected _parent:DisplayObjectContainer;
 	private _concatenatedMatrix3D:Matrix3D = new Matrix3D();
 	private _tempTransform:Matrix3D;
@@ -1226,7 +1230,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * 90° and you scroll it left and right, the display object actually scrolls
 	 * up and down.</p>
 	 */
-	public scrollRect:Rectangle;
+	public get scrollRect():Rectangle{
+		return this._scrollRect;
+	};
+
+	public set scrollRect(value:Rectangle){
+		this._scrollRect=value;
+		if(!value && this._scrollRectSprite){
+			let idx=this.masks.indexOf(this._scrollRectSprite);
+			this.masks.splice(idx, 1);
+			this._scrollRectSprite=null;
+		}
+		this._transform.invalidatePosition();
+	};
 
 
 	/**
@@ -1553,7 +1569,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	
 	public isEntity():boolean
 	{
-		return false;
+		return this._scrollRect?true:false;
 	}
 
 	/**
@@ -1741,6 +1757,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 	public getRenderSceneTransform(cameraTransform:Matrix3D):Matrix3D
 	{
+		
 		if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
 			var comps:Array<Vector3D> = cameraTransform.decompose();
 			comps[0].copyFrom(this.scenePosition);
@@ -1902,6 +1919,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._concatenatedMatrix3D.copyFrom(this._transform.matrix3D);
 
+		
 		if (this._registrationMatrix3D) {
 
 			this._concatenatedMatrix3D.prepend(this._registrationMatrix3D);
@@ -1909,8 +1927,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 				this._concatenatedMatrix3D.appendTranslation(-this._registrationMatrix3D._rawData[12]*this._transform.scale.x, -this._registrationMatrix3D._rawData[13]*this._transform.scale.y, -this._registrationMatrix3D._rawData[14]*this._transform.scale.z);
 		}
 
-		if (this._parent) // && this._partition == this._parent.partition
+		if (this._parent){ // && this._partition == this._parent.partition{
+			
 			this._concatenatedMatrix3D.append(this._parent._transform.concatenatedMatrix3D);
+		}
+
+		if(this.scrollRect){
+			this._concatenatedMatrix3D.prependTranslation(-this.scrollRect.x, -this.scrollRect.y, 0);
+		}
 
 		this._matrix3DDirty = false;
 
@@ -2022,7 +2046,22 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
-		//nothing to do here
+			
+		if(this._scrollRect){
+			if(!this._scrollRectSprite){
+				this._scrollRectSprite=<any>new DisplayObject._scrollRectSpriteClass();
+				(<any>this._scrollRectSprite).graphics.beginFill(0x0000ff, 1);
+				(<any>this._scrollRectSprite).graphics.drawRect(0,0,this._scrollRect.width,this._scrollRect.height);
+				(<any>this._scrollRectSprite).graphics.endFill();
+				this._scrollRectSprite._setParent(this.parent);
+				this.transform.copyRawDataTo(this._scrollRectSprite.transform);
+				this._scrollRectSprite.maskMode=true;
+				if(!this.masks)
+					this.masks=[];
+				this.masks.push(this._scrollRectSprite);
+			}
+			//this._scrollRectSprite.graphics._acceptTraverser(traverser);
+		}
 	}
 
 	/**

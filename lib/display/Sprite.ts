@@ -8,6 +8,7 @@ import {Graphics} from "@awayjs/graphics";
 
 import {DisplayObjectContainer} from "./DisplayObjectContainer";
 import { PrefabBase } from '../prefabs/PrefabBase';
+import { DisplayObject } from './DisplayObject';
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -126,7 +127,7 @@ export class Sprite extends DisplayObjectContainer
 
 	public isEntity():boolean
 	{
-		return Boolean(this._graphics && this._graphics.count);
+		return Boolean(this._scrollRect || (this._graphics && this._graphics.count));
 	}
 
 	/**
@@ -219,6 +220,7 @@ export class Sprite extends DisplayObjectContainer
 	 */
 	public _acceptTraverser(traverser:IEntityTraverser):void
 	{
+		super._acceptTraverser(traverser);
 		this.graphics._acceptTraverser(traverser);
 	}
 
@@ -232,4 +234,5 @@ export class Sprite extends DisplayObjectContainer
 	}
 }
 
+DisplayObject._scrollRectSpriteClass=Sprite;
 PartitionBase.registerAbstraction(EntityNode, Sprite);
