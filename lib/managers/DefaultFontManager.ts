@@ -16,41 +16,48 @@ export class DefaultFontManager
 		}
 		return DefaultFontManager._default_font;
 	}
+
 	public static applySharedFonts(ns:string)
 	{
-        if(ns==DefaultFontManager.shared_fonts_ns)
-            return;
-        if(!DefaultFontManager._registered_fonts[ns]){
-            DefaultFontManager._registered_fonts[ns]={};
-        }
-        if(!DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]){
-            DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]={};
-        }
-        if(!DefaultFontManager._default_font){
-            if(DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]["arial"]){
-                DefaultFontManager._default_font=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns]["arial"];
+        if(ns == this.shared_fonts_ns) {
+			return;
+		}
+
+        if(!this._registered_fonts[ns]) {
+            this._registered_fonts[ns] = {};
+		}
+
+        if(!this._registered_fonts[this.shared_fonts_ns]){
+            this._registered_fonts[this.shared_fonts_ns]={};
+		}
+
+        if(!this._default_font){
+            if(this._registered_fonts[this.shared_fonts_ns]["arial"]){
+                this._default_font = this._registered_fonts[this.shared_fonts_ns]["arial"];
             }
-        }
-        var fontsInSharedSWF=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns];
+		}
+
+        const fontsInSharedSWF = this._registered_fonts[this.shared_fonts_ns];
         for(var key in fontsInSharedSWF){
-            if(!DefaultFontManager._registered_fonts[ns][key]){
-                DefaultFontManager._registered_fonts[ns][key]=fontsInSharedSWF[key];
-            }
-            else{
-                var len=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][key].font_styles.length;
-                for(var i:number=0; i<len;i++){
-                    var fontStyle=DefaultFontManager._registered_fonts[DefaultFontManager.shared_fonts_ns][key].font_styles[i];
-                    var oldTable=DefaultFontManager._registered_fonts[ns][key].get_font_table(fontStyle.name, TesselatedFontTable.assetType, null, false);
-                    if(!oldTable)
-                        DefaultFontManager._registered_fonts[ns][key].font_styles.push(fontStyle);
-                    else{
-                        if(oldTable.getGlyphCount()==0){
-                            DefaultFontManager._registered_fonts[ns][key].replace_font_table(fontStyle.name, fontStyle);
-                        }
+            if(!this._registered_fonts[ns][key]){
+                this._registered_fonts[ns][key] = fontsInSharedSWF[key];
+            } else {
+                const len = this._registered_fonts[this.shared_fonts_ns][key].font_styles.length;
+				
+				for (let i = 0; i < len; i++ ) {
+                    const fontStyle = this._registered_fonts[this.shared_fonts_ns][key].font_styles[i];
+                    const oldTable = this._registered_fonts[ns][key].get_font_table(fontStyle.name, TesselatedFontTable.assetType, null, false);
+					
+					if (!oldTable) {
+						this._registered_fonts[ns][key].font_styles.push(fontStyle);
+					} else if (!oldTable.getGlyphCount()) {
+						this._registered_fonts[ns][key].replace_font_table(fontStyle.name, fontStyle);				
                     }
-                }
-            } if(DefaultFontManager._registered_fonts[ns][key].font){
-                DefaultFontManager._registered_fonts[ns][key]=fontsInSharedSWF[key];
+				}
+			} 
+			
+			if(this._registered_fonts[ns][key].font){
+                this._registered_fonts[ns][key] = fontsInSharedSWF[key];
             }
         }
 	}
@@ -58,31 +65,34 @@ export class DefaultFontManager
 	public static getFont(fontName:string, ns:string=AssetBase.DEFAULT_NAMESPACE):Font{
         //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
 		if(!fontName)
-            return DefaultFontManager.getDefaultFont();
-		fontName=fontName.toString().toLowerCase();
-		
-		// remove "bold" "italic" and "regular" from the name, so we get the basename of the font
-		let fontNameSplit=fontName.split(" ");
-		fontName="";
-		for(let i=0; i<fontNameSplit.length;i++){
-			if(fontNameSplit[i]!="bold" && fontNameSplit[i]!="italic" && fontNameSplit[i]!="regular"){
-				fontName+=fontNameSplit[i]+((i==fontNameSplit.length-1)?"":" ");
+			return DefaultFontManager.getDefaultFont();
+
+		fontName = (fontName + "").toLowerCase().replace(/bold|italic|regular/g, "").trim();
+
+		this._registered_fonts || (this._registered_fonts = {});
+		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
+
+		let font: Font = this._registered_fonts[ns][fontName];
+
+		if (font) {
+			return font;
+		} else if (this.shared_fonts_ns) {
+			font = this._registered_fonts[this.shared_fonts_ns][fontName];
+
+			if(font) {
+				return font;
 			}
 		}
-        if(!DefaultFontManager._registered_fonts){
-            DefaultFontManager._registered_fonts={};
-		}
 
+		font = new Font();
+		font.name = fontName;
 
-		if(DefaultFontManager._registered_fonts[fontName]){
-			return DefaultFontManager._registered_fonts[fontName];
-		}
-		var newFont:Font=new Font();
-		newFont.name=fontName;
-		if(!DefaultFontManager._default_font)
-			DefaultFontManager._default_font=newFont;
-		DefaultFontManager._registered_fonts[fontName]=newFont;
-		return newFont;
+		if(!this._default_font)
+			this._default_font = font;
+		
+		this._registered_fonts[ns][fontName] = font;
+
+		return font;
 	}
 
 
