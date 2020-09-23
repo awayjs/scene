@@ -4,7 +4,9 @@ import {AssetBase} from "@awayjs/core";
 export class DefaultFontManager
 {
 	private static _default_font:Font;
-	private static _registered_fonts:any={};
+	private static _registered_fonts:any = {};
+	private static _namespaces: string[] = [];
+
 	public static shared_fonts_ns:string;
 
     public static deviceFont:Font=null;
@@ -62,26 +64,22 @@ export class DefaultFontManager
         }
 	}
 
-	public static getFont(fontName:string, ns:string=AssetBase.DEFAULT_NAMESPACE):Font{
-        //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
-		if(!fontName)
-			return DefaultFontManager.getDefaultFont();
-
-		fontName = (fontName + "").toLowerCase().replace(/bold|italic|regular/g, "").trim();
-
+	public static defineFont(fontName: string, ns: string = AssetBase.DEFAULT_NAMESPACE) {		
 		this._registered_fonts || (this._registered_fonts = {});
 		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
 
-		let font: Font = this._registered_fonts[ns][fontName];
+		fontName = (fontName + "").toLowerCase().replace(/bold|italic|regular/g, "").trim();
+		
+		const alias = fontName.replace(/ |-/g, '');
+
+		let font: Font = this._registered_fonts[ns][fontName] || this._registered_fonts[ns][alias];
 
 		if (font) {
 			return font;
-		} else if (this.shared_fonts_ns) {
-			font = this._registered_fonts[this.shared_fonts_ns][fontName];
+		}
 
-			if(font) {
-				return font;
-			}
+		if(this._namespaces.indexOf(ns) === -1) {
+			this._namespaces.push(ns);
 		}
 
 		font = new Font();
@@ -91,8 +89,43 @@ export class DefaultFontManager
 			this._default_font = font;
 		
 		this._registered_fonts[ns][fontName] = font;
+		this._registered_fonts[ns][alias] = font;
 
 		return font;
+	}
+
+	public static getFont(fontName:string, namespace:string = undefined):Font{
+        //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
+		if(!fontName)
+			return DefaultFontManager.getDefaultFont();
+
+		const ns = namespace || AssetBase.DEFAULT_NAMESPACE;
+
+		fontName = (fontName + "").toLowerCase().replace(/bold|italic|regular|-/g, "").trim();
+
+		this._registered_fonts || (this._registered_fonts = {});
+		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
+
+		let font: Font = this._registered_fonts[ns][fontName];
+
+		if (font) {
+			return font;
+		} else if(this._namespaces.length > 1 && !namespace) {
+			// lookup over all NS
+			for(const ns of this._namespaces) {
+				if(this._registered_fonts[ns][fontName]) {
+					return this._registered_fonts[ns][fontName];
+				}
+			}
+		} else if (this.shared_fonts_ns) {
+			font = this._registered_fonts[this.shared_fonts_ns][fontName];
+
+			if(font) {
+				return font;
+			}
+		}
+
+		return DefaultFontManager.getDefaultFont();
 	}
 
 

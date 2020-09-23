@@ -1,4 +1,4 @@
-import {AssetBase} from "@awayjs/core";
+import {AssetBase, IgnoreConflictStrategy} from "@awayjs/core";
 
 import {IMaterial} from "@awayjs/renderer";
 
@@ -575,16 +575,33 @@ export class TextFormat extends AssetBase
 		this._italic = italic;
 		this._underline = underline;
 		this._leading = leading;
-        this._letterSpacing = null;
-        
+		this._letterSpacing = null;
+		this._font = null;
+    
         // not really used yet:
 		this.url = url;
         this.link_target = link_target;
         
-        // make sure a fontTable exists:
-		this._font=null;//DefaultFontManager.getFont(font);
 		this._font_table=null;//=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
-        this._style_name=FontStyleName.STANDART;
+		this._style_name = FontStyleName.STANDART;
+	
+		
+		if (typeof font === 'string') {
+			const asset = DefaultFontManager.getFont(font);
+			const low = font.toLowerCase();
+
+			if (asset) {
+				if(low.indexOf(FontStyleName.BOLD)) {
+					this._style_name = FontStyleName.BOLD;
+				} else if (low.indexOf(FontStyleName.BOLDITALIC.toLowerCase())) {
+					this._style_name = FontStyleName.BOLDITALIC;
+				} else if (low.indexOf(FontStyleName.ITALIC)) {
+					this._style_name = FontStyleName.ITALIC;
+				}
+			}
+
+			this.font = asset;
+		}
     }
     
 	public clone():TextFormat{
