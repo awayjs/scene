@@ -25,14 +25,80 @@ const TMP_RECT = new Rectangle();
 export class SceneImage2D extends BitmapImage2D
 {
 	public static assetType:string = "[image SceneImage2D]";
+	private static MAX_POOL_SIZE = 30;
+	private static MAX_GROW_SIZE = 300; // x10 of start value 
+	private static _pool: SceneImage2D[] = [];
 
-	private static _tmpImage: SceneImage2D;
-	private static getTemp(width: number, height: number, stage: Stage) {
-		if(!this._tmpImage) {
-			SceneImage2D._tmpImage = new SceneImage2D(1024, 1024, true, 0, true, stage)
+	public static getImage(
+		width: number, 
+		height: number, 
+		transparent: boolean = true, 
+		fillColor: number = 0xffffffff, 
+		powerOfTwo: boolean = true, 
+		stage:Stage = null) 
+	{
+		let index = -1;
+		for(let i = 0; i < this._pool.length; i ++) {
+			const e = this._pool[i];
+
+			if((!stage || e._stage === stage) 
+				&& e.width === width  
+				&& e.height === height
+				&& e.transparent === transparent
+				&& e.powerOfTwo === powerOfTwo
+			) {
+				index = i;
+				break;
+			}
 		}
 
-		return this._tmpImage;
+		if(index > -1) {
+			const e = this._pool.splice(index, 1)[0];
+
+			if(fillColor !== null)
+				e.fillRect(e.rect, fillColor);
+			return e;
+		} else {
+			if(this._pool.length === this.MAX_POOL_SIZE && this.MAX_POOL_SIZE < this.MAX_GROW_SIZE) {
+
+				// GROW POOL WHEN THERE ARE NOT needed image size 
+				this.MAX_POOL_SIZE += this .MAX_POOL_SIZE * 0.25 | 0;
+			}
+		}
+
+		return new SceneImage2D(
+			width, 
+			height, 
+			transparent, 
+			fillColor, 
+			powerOfTwo, 
+			stage
+		)
+	}
+	public static tryStoreImage(image: SceneImage2D, force = false): boolean {
+		if(this._pool.length <= this.MAX_POOL_SIZE || force) {
+			this._pool.push(image);
+			return true;
+		}
+
+		return false;
+	}
+
+	private static TMP_STEP = [128, 256, 512, 1024, 2048];
+	private static getTemp(width: number, height: number, stage: Stage) {
+
+		const max = Math.max(width, height);
+
+		let size = this.TMP_STEP[0];
+
+		for(let i = 0; i < this.TMP_STEP.length; i ++) {
+			if(max <= this.TMP_STEP[i]) {
+				size = this.TMP_STEP[i];
+				break;
+			}
+		}
+
+		return this.getImage(size, size, true, null, true, stage);
 	}
 
 	private static _renderer:DefaultRenderer;
@@ -321,15 +387,33 @@ export class SceneImage2D extends BitmapImage2D
 	 *
 	 */
 	public dispose():void
-	{
-		super.dispose();
-
+	{		
 		this._dirtyRegions = null;
 		this._updateRegions = null;
 		this._maxDirtyArea = null;
+		
+		this.unuseWeakRef();
+
+		// drop buffer, because is big 
+		(<any>this)._data = null;
+		(<any>this)._locked = null;
+		
+		if(!SceneImage2D.tryStoreImage(this, false)){
+			super.dispose();
+		}
+
 		//todo
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public clone(): SceneImage2D {
+		const clone = SceneImage2D.getImage(this.width, this.height, this.transparent, null, false, this._stage);
+		//clone.copyPixels(this, this.rect, new Point(0,0));
+
+		return clone;
+	}
 	
 	/**
 	 * Fills a rectangular area of pixels with a specified ARGB color.
@@ -422,6 +506,8 @@ export class SceneImage2D extends BitmapImage2D
 			this._stage.copyPixels(source, tmp, sourceRect, TMP_POINT, alphaBitmapData, alphaPoint, false);
 			this._stage.copyPixels(tmp, this, TMP_RECT, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 			// push temp back
+
+			SceneImage2D.tryStoreImage(tmp, true);
 		}
 
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
@@ -448,7 +534,10 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.copyPixels(tmp, this, rect, new Point(0,0), null, null, false);
 
 		this.pushDirtyRegion(new Rectangle(rect.x, rect.y, rect.width, rect.height));
+		
 		this._imageDataDirty = true;
+
+		SceneImage2D.tryStoreImage(tmp, true);
 	}
 
 	/**
