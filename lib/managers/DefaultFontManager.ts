@@ -85,8 +85,10 @@ export class DefaultFontManager
 		font = new Font();
 		font.name = fontName;
 
-		if(!this._default_font)
+		if(!this._default_font){			
+			DefaultFontManager.deviceFont=font;
 			this._default_font = font;
+		}
 		
 		this._registered_fonts[ns][fontName] = font;
 		this._registered_fonts[ns][alias] = font;
@@ -133,6 +135,7 @@ export class DefaultFontManager
 	{
 		if(!font)
 			font=new Font();
+		DefaultFontManager.deviceFont=font;
 		DefaultFontManager._default_font=font;
 		/*
 		var allchars=[];
