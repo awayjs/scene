@@ -118,7 +118,9 @@ export class SceneImage2D extends BitmapImage2D
 	private _imageDataDirty: boolean;
 
 	protected syncData(): boolean {
-		const internalData = (this as any)._data;
+		this.applySymbol();
+
+		const internalData = this._data;
 
 		// update data from pixels from GPU
 		if(!this._imageDataDirty) { 
