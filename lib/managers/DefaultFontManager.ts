@@ -13,15 +13,16 @@ export class DefaultFontManager
     
 	public static getDefaultFont():Font
 	{
-		if(DefaultFontManager._default_font==null){
-			DefaultFontManager.setDefaultFont();
+		if(this._default_font === null){
+			this.setDefaultFont();
 		}
-		return DefaultFontManager._default_font;
+
+		return this._default_font;
 	}
 
 	public static applySharedFonts(ns:string)
 	{
-        if(ns == this.shared_fonts_ns) {
+        if(ns === this.shared_fonts_ns) {
 			return;
 		}
 
@@ -85,11 +86,10 @@ export class DefaultFontManager
 		font = new Font();
 		font.name = fontName;
 
-		if(!this._default_font){			
-			DefaultFontManager.deviceFont=font;
-			this._default_font = font;
+		if(!this._default_font) {			
+			this.deviceFont = this._default_font = font;
 		}
-		
+
 		this._registered_fonts[ns][fontName] = font;
 		this._registered_fonts[ns][alias] = font;
 
@@ -98,8 +98,9 @@ export class DefaultFontManager
 
 	public static getFont(fontName:string, namespace:string = undefined):Font{
         //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
-		if(!fontName)
-			return DefaultFontManager.getDefaultFont();
+		if(!fontName) {
+			return this.getDefaultFont();
+		}
 
 		const ns = namespace || AssetBase.DEFAULT_NAMESPACE;
 
@@ -127,16 +128,14 @@ export class DefaultFontManager
 			}
 		}
 
-		return DefaultFontManager.getDefaultFont();
+		return this.getDefaultFont();
 	}
 
 
-	private static setDefaultFont(font:Font=null):void
+	private static setDefaultFont(font:Font = null):void
 	{
-		if(!font)
-			font=new Font();
-		DefaultFontManager.deviceFont=font;
-		DefaultFontManager._default_font=font;
+		this.deviceFont = this._default_font = (font || new Font());
+
 		/*
 		var allchars=[];
 		//allchars[cnt1++] = ['33',[0,0,226,67,0,192,11,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,212,67,0,192,204,68,127,127,0,0,0,0,212,67,0,192,204,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,129,67,0,192,204,68,127,127,0,0,0,0,129,67,0,192,204,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,100,67,0,192,11,68,127,127,0,0,0,0,100,67,0,192,11,68,127,127,0,0,0,128,177,67,0,80,137,68,127,127,0,0,0,0,226,67,0,192,11,68,127,127,0,0,0,0,221,67,0,0,0,69,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,110,67,0,0,0,69,127,127,0,0,0,0,110,67,0,0,0,69,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,110,67,0,160,229,68,127,127,0,0,0,0,110,67,0,160,229,68,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,221,67,0,160,229,68,127,127,0,0,0,0,221,67,0,160,229,68,127,127,0,0,0,0,170,67,0,208,242,68,127,127,0,0,0,0,221,67,0,0,0,69,127,127]]
@@ -161,9 +160,9 @@ export class DefaultFontManager
 		//DefaultFontManager._default_font_table.
 	}
     public static clearAll(){
-        DefaultFontManager._default_font=null;
-        DefaultFontManager._registered_fonts={};
-        DefaultFontManager.shared_fonts_ns=null;
+        this._default_font=null;
+        this._registered_fonts={};
+        this.shared_fonts_ns=null;
     }
 
 }
