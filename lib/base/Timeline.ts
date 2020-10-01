@@ -372,6 +372,10 @@ export class Timeline
 		return label;
 	}
 	public jumpToLabel(target_mc: MovieClip, label: string, offset: number = 0): void {
+		if(!this._labels[label]){
+			console.warn("[TIMELINE] - jumpToLabel with invalid label", target_mc, label, offset);
+			return;
+		}
 		var key_frame_index: number = this._labels[label].keyFrameIndex;
 		if (key_frame_index >= 0)
 			target_mc.currentFrameIndex = this.keyframe_firstframes[key_frame_index] + offset;
