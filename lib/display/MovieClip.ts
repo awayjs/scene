@@ -350,7 +350,7 @@ export class MovieClip extends Sprite {
 
 		this._timeline = value;
 
-		this.reset(false);
+		this.reset(false, false);
 	}
 
 	/**
@@ -372,8 +372,9 @@ export class MovieClip extends Sprite {
 	 */
 	public constructedKeyFrameIndex: number = -1;
 
-	public reset(fireScripts: boolean = true): void {
-		super.reset();
+	public reset(fireScripts: boolean = true, resetSelf:boolean=true): void {
+		if(resetSelf)
+			super.reset();
 
 		this.resetStreamStopped();
 
@@ -381,7 +382,7 @@ export class MovieClip extends Sprite {
 		this._time = 0;
 		//this.stopSounds();
 
-		if (this._adapter)
+		if (resetSelf && this._adapter)
 			(<IMovieClipAdapter>this.adapter).freeFromScript();
 
 		this.constructedKeyFrameIndex = -1;
