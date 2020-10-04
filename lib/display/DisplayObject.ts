@@ -20,6 +20,7 @@ import {FocusEvent} from "../events/FocusEvent";
 import { PrimitiveCubePrefab } from '../prefabs/PrimitiveCubePrefab';
 import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
 import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
+import { IFilter } from '../adapters/IFilter';
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -580,6 +581,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 //		public filters:Array<Dynamic>;
 
+	public updateFilters(newFilters:IFilter[]){
+		console.warn("[scene/DisplayObject] - updateFilters is just a stub");
+	}
 	/**
 	 * Indicates the instance container index of the DisplayObject. The object can be
 	 * identified in the child list of its parent display object container by
