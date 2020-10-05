@@ -89,9 +89,11 @@ export class MouseManager {
     private _isAVM1Dragging: Boolean = false;
 
     public startDragObject(obj:DisplayObject){
-        this._isAVM1Dragging=true;
-        this._mouseDragEntity=obj;
-        this._mouseDragPickerEntity=obj;
+		this._isAVM1Dragging=true;
+		if(!this._mouseDragEntity)
+			this._mouseDragEntity=obj;
+		if(!this._mouseDragPickerEntity)
+			this._mouseDragPickerEntity=obj;
     }
     public stopDragObject(){
         this._isAVM1Dragging=false;
