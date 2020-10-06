@@ -447,6 +447,8 @@ export class MouseManager {
                     //console.log("onPress", dispatcher)
                     this.dispatchEvent(event, dispatcher);
                 }
+				else if(this._eventBubbling && this._stage)
+                    this._stage.dispatchEvent(event);
 
                 //  in FP6, a mouseclick on non focus-able object still steal the focus
                 //  in newer FP they only steal the focus if the the new hit is focusable
