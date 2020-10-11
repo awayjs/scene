@@ -213,59 +213,7 @@ export class SceneImage2D extends BitmapImage2D
 
 		this._imageDataDirty = false;
 	}
-	/**
-	 * Test image dirty status under point
-	 */
-	private getImageDirtyUnderPoint(x: number, y: number) {
-		if(!this._imageDataDirty) {
-			return false;
-		}
-		
-		const point = TMP_POINT;
-		point.setTo(x, y);
 
-		// original containsPoint is inclusive, we should test exclusive
-		for(let rect of this._updateRegions) {
-
-			const rx = rect._rawData[0];
-			const ry = rect._rawData[1];
-			const width = rect._rawData[2];
-			const hegit = rect._rawData[3];
-			
-			if(x >= rx && x < rx + width) {
-				if(y >= ry && y < ry + hegit) {
-					return false;
-				}
-			}
-		}
-
-		// if point out of max dirty area - return false
-		{
-			const mr = this._maxDirtyArea._rawData;
-
-			if(!(x >= mr[0] && x < mr[0] + mr[2])) {
-				return false;
-			}
-			if(!(y >= mr[1] && y < mr[1] + mr[3])) {
-				return false;
-			}
-		}
-		
-		for(let rect of this._dirtyRegions) {
-			const rx = rect._rawData[0];
-			const ry = rect._rawData[1];
-			const width = rect._rawData[2];
-			const hegit = rect._rawData[3];
-			
-			if(x >= rx && x < rx + width) {
-				if(y >= ry && y < ry + hegit) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
 	/**
 	 *
 	 * @returns {string}
@@ -389,7 +337,9 @@ export class SceneImage2D extends BitmapImage2D
 	 *
 	 */
 	public dispose():void
-	{		
+	{	
+		this.dropAllReferences();
+
 		this._dirtyRegions = null;
 		this._updateRegions = null;
 		this._maxDirtyArea = null;
@@ -407,12 +357,14 @@ export class SceneImage2D extends BitmapImage2D
 		//todo
 	}
 
-	/**
-	 * @inheritdoc
-	 */
+	protected deepClone(from: BitmapImage2D) {
+		this.copyPixels(from, this._rect, new Point(0,0));
+	}
+
+	
 	public clone(): SceneImage2D {
 		const clone = SceneImage2D.getImage(this.width, this.height, this.transparent, null, false, this._stage);
-		//clone.copyPixels(this, this.rect, new Point(0,0));
+		this.addNestedReference(clone);
 
 		return clone;
 	}
@@ -428,6 +380,8 @@ export class SceneImage2D extends BitmapImage2D
 	 */
 	public fillRect(rect:Rectangle, color:number):void
 	{
+		this.dropAllReferences();
+
 		if (!SceneImage2D._renderer)
 			this.createRenderer();
 
@@ -491,6 +445,8 @@ export class SceneImage2D extends BitmapImage2D
 	 */
 	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean):void
 	{
+		this.dropAllReferences();
+
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 
@@ -517,6 +473,8 @@ export class SceneImage2D extends BitmapImage2D
 
 	public threshold(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean):void
 	{
+		this.dropAllReferences();
+
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
 		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
@@ -527,6 +485,8 @@ export class SceneImage2D extends BitmapImage2D
 
 	public colorTransform(rect:Rectangle, colorTransform:ColorTransform):void
 	{
+		this.dropAllReferences();
+
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
 
@@ -656,6 +616,8 @@ export class SceneImage2D extends BitmapImage2D
 	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean);
 	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean):void
 	{
+		this.dropAllReferences();
+
 		if(source instanceof DisplayObject) {
 			this._drawAsDisplay(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 		} else {
