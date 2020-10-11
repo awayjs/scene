@@ -89,9 +89,11 @@ export class MouseManager {
     private _isAVM1Dragging: Boolean = false;
 
     public startDragObject(obj:DisplayObject){
-        this._isAVM1Dragging=true;
-        this._mouseDragEntity=obj;
-        this._mouseDragPickerEntity=obj;
+		this._isAVM1Dragging=true;
+		if(!this._mouseDragEntity)
+			this._mouseDragEntity=obj;
+		if(!this._mouseDragPickerEntity)
+			this._mouseDragPickerEntity=obj;
     }
     public stopDragObject(){
         this._isAVM1Dragging=false;
@@ -445,6 +447,8 @@ export class MouseManager {
                     //console.log("onPress", dispatcher)
                     this.dispatchEvent(event, dispatcher);
                 }
+				else if(this._eventBubbling && this._stage)
+                    this._stage.dispatchEvent(event);
 
                 //  in FP6, a mouseclick on non focus-able object still steal the focus
                 //  in newer FP they only steal the focus if the the new hit is focusable
