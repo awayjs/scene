@@ -75,6 +75,7 @@ export class SceneImage2D extends BitmapImage2D
 			stage
 		)
 	}
+
 	public static tryStoreImage(image: SceneImage2D, force = false): boolean {
 		if(this._pool.length <= this.MAX_POOL_SIZE || force) {
 			this._pool.push(image);
@@ -120,12 +121,12 @@ export class SceneImage2D extends BitmapImage2D
 	protected syncData(): boolean {
 		this.applySymbol();
 
-		const internalData = this._data;
-
 		// update data from pixels from GPU
 		if(!this._imageDataDirty) { 
 			return false;
 		}
+		
+		const internalData = this._data || (this._data = new Uint8ClampedArray(this.width * this.height * 4));
 
 		this._stage.setRenderTarget(this, false);
 
@@ -339,22 +340,27 @@ export class SceneImage2D extends BitmapImage2D
 	public dispose():void
 	{	
 		this.dropAllReferences();
+		this.unmarkToUnload();
+		this.unuseWeakRef();
 
 		this._dirtyRegions = null;
 		this._updateRegions = null;
 		this._maxDirtyArea = null;
-		
-		this.unuseWeakRef();
 
 		// drop buffer, because is big 
-		(<any>this)._data = null;
-		(<any>this)._locked = null;
-		
+		this._data = null;
+		this._locked = false;
+
 		if(!SceneImage2D.tryStoreImage(this, false)){
 			super.dispose();
 		}
 
 		//todo
+	}
+
+	public unload() {
+		this.syncData();
+		super.unload();
 	}
 
 	protected deepClone(from: BitmapImage2D) {
@@ -446,6 +452,7 @@ export class SceneImage2D extends BitmapImage2D
 	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean):void
 	{
 		this.dropAllReferences();
+		this.unmarkToUnload();
 
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
@@ -474,6 +481,7 @@ export class SceneImage2D extends BitmapImage2D
 	public threshold(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean):void
 	{
 		this.dropAllReferences();
+		this.unmarkToUnload();
 
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
@@ -486,6 +494,7 @@ export class SceneImage2D extends BitmapImage2D
 	public colorTransform(rect:Rectangle, colorTransform:ColorTransform):void
 	{
 		this.dropAllReferences();
+		this.unmarkToUnload();
 
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
@@ -617,6 +626,7 @@ export class SceneImage2D extends BitmapImage2D
 	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean):void
 	{
 		this.dropAllReferences();
+		this.unmarkToUnload();
 
 		if(source instanceof DisplayObject) {
 			this._drawAsDisplay(source, matrix, colorTransform, blendMode, clipRect, smoothing);
