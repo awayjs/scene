@@ -1,6 +1,6 @@
 {
   "name": "@awayjs/scene",
-  "version": "0.13.92",
+  "version": "0.13.93",
   "description": "AwayJS scene classes",
   "main": "bundle/awayjs-scene.umd.js",
   "module": "dist/index.js",
@@ -58,14 +58,14 @@
     "@awayjs/renderer": "^0.11.0",
     "@awayjs/stage": "^0.11.0",
     "@awayjs/view": "^0.6.0",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
+    "eslint": "^7.11.0",
     "rimraf": "^2.5.2",
     "rollup": "^0.36.4",
     "rollup-plugin-includepaths": "^0.2.1",
     "tslib": "^1.9.0",
     "typescript": "^3.7.3",
-    "uglify-js": "^3.0.15",
-    "@typescript-eslint/eslint-plugin": "^4.4.1",
-    "@typescript-eslint/parser": "^4.4.1",
-    "eslint": "^7.11.0"
+    "uglify-js": "^3.0.15"
   }
 }
